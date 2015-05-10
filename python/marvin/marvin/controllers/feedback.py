@@ -62,3 +62,22 @@ def feedback():
     result = inspection.result()
     
     return render_template('feedback.html',**feedback)
+
+@feedback_page.route('/marvin/feedback/promotetracticket', methods=['GET','POST'])
+def promotetracticket():
+    ''' User feedback function to promote tracticket '''
+    
+    # get inspection
+    inspection = Inspection(current_session)
+    
+    # get id from button and promote trac ticket
+    if inspection.ready:
+        id = valueFromRequest(key='id',request=request, default=None)
+    
+        # add feedback to db
+        if id:
+            inspection.message("inspection looking up feedback id=%r" % id)
+            """inspection.set_feedback(id=id)
+            inspection.promote_tracticket()"""
+
+    return inspection.result
