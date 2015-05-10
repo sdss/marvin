@@ -1,0 +1,147 @@
+{% from 'buildTable.html' import sastable %}
+{% extends "layout.html" %}
+{% set active_page = active_page|default("current") %}
+
+{% block head %}
+    <link type="text/css" href="{{url_for('static',filename='css/index.css')}}" rel="stylesheet">  
+{% endblock head %}
+
+{% block code %}
+	<script type='text/javascript'>
+
+	// enable tool-tips
+	$(function () {
+ 		 $('[data-toggle="tooltip"]').tooltip();
+	});
+	
+	// enable pop-overs
+	$(function () {
+  		$('[data-toggle="popover"]').popover();
+	});
+	
+	// select sorting option from dropdown button menu
+	$(function () {
+		$('.dropdown-menu').on('click','li a', function(){
+			$.getJSON($SCRIPT_ROOT + '/sort', {col:$(this).attr('id')}, 
+			function(data){
+				$('#test').text(data.result);
+			});
+		});
+	});
+
+	</script>
+
+{% endblock code %}
+
+{% block body %}
+
+<div class='well' style='background-color:rgba(245,245,245,0.4)'>
+
+	{# Display status of current tag reductions #}
+	<div class='row'>
+		<div class='col-md-5'>
+			<div class='well'>
+			<h1>Current Tag: {{session['currentver']}}</h1>
+			<h4><a href='{{plfile}}' download='{{plfile}}'>Download latest Platelist</a></h4>
+			<h4><a href='{{drpall}}' download='{{drpall}}'>Download latest DRPall-{{session['currentver']}}</a></h4>
+			<form class='form-horizontal form-group' role='form' method='post'>
+				<button type='submit' name='plate2d' value='plate2d' class='btn btn-primary'>Platelist 2d</button>
+				<button type='submit' name='plate3d' value='plate3d' class='btn btn-primary'>Platelist 3d</button>
+			</form>
+			<a href='#faults'><button class='btn btn-danger' href='#faults' type='button'>Faults</button></a>
+			</div>
+		</div>
+		<div class='col-sm-4'>
+			<div class='well'>
+			<h2> Observed {{plates|count}} Plates over {{mjds|count}} MJDs</h2>
+			{% if stats3d %} <h2> With {{cubes|count}} IFUs over {{plates3d|count}} Plates Processed</h2> {% else %} <h2> No IFUs Processed Yet. </h2> {% endif %}
+
+		{# Table of status counts #}
+		<table class='table table-bordered table-condensed sastable' id='reduxstatus'>
+			<tr id='head'>
+				<th>Status</th><th>Number of MJDs</th><th>Number of IFUs</th>
+			</tr>
+			{% for stat in status %}
+				{% if stat != 'started' %}
+					<tr>
+						<th>{{stat|title|replace('Null','NA')}}</th>
+						<td>{{(stats2d).count(stat)}}</td>
+						{% if stats3d %} <td>{{(stats3d).count(stat)}}</td> {% else %} <td>NA</td> {% endif %}
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</table>
+			</div>
+		</div>
+	</div>
+
+	{# Display the Platelist Table #}
+	<div class='well'>
+	{% if stage == '2d' or stage == '3d' %}
+
+		<div id='viz'>
+			<div class='row'>
+				<div class='col-md-3'>
+	 				<h3> DRP {{stage}} Status</h3>
+	 			</div>
+	 		</div>
+	 
+	 		{# platelist table #}
+	 		{% if platelist %}
+				<div class='table-responsive' id='platetable'>
+					{{sastable(cols, keys, platelist, flags, stage=stage, type='data')}}
+					{#{{serverTable(cols, keys, 'platelist')}}#}
+				</div>
+			 {% else %}
+			 	<div class='row'>
+			 		<div class='col-md-4'>
+			 			<h4>No {{stage}} platelist found for {{session['currentver']}}</h4>
+			 		</div>
+			 	</div>
+			 {% endif %}
+		</div>
+	
+	{% else %}
+		<h3> Choose a platelist </h3>
+	{% endif %}
+	</div>	
+
+	{# Display Faults #}
+	<div class='well' >	
+		<div class='row' id='faults'>
+			<div class='col-md-8'><h3>Faults:</h3></div>
+			<div class='col-md-4'>
+				<a href='#' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
+			</div>
+		</div>
+		
+		{% if faults %}
+			{% for row in faults['platemjd'] %}
+				<div class='row panel panel-default' id='platemjd'>
+					<div class='col-md-2'><h4>{{row}}</h4></div>
+					<div class='col-md-5'><h4>{{faults['errline'][loop.index0]}}</h4></div>
+					<div class='col-sm-2'>
+						<a data-toggle="collapse" data-parent='#platemjd' href="#{{row}}">
+							<h4>Full Traceback</h4>
+						</a>
+					</div>
+					<div class='col-sm-1'><a target='_blank' href='{{faults['out'][loop.index0]}}'><h4>Out File</h4></a></div>
+					<div class='col-sm-1'><a target='_blank' href='{{faults['err'][loop.index0]}}'><h4>Err File</h4></a></div>
+				</div>
+				
+				<div id="{{row}}" class="panel-collapse collapse out">
+					<div class="panel-body">
+						{% for line in faults['full'][loop.index0] %}
+							<div class='row'><div class=''>{{line|string|escape}}</div></div>
+						{% endfor %}
+					</div>
+				</div>
+				
+			{% endfor %}
+		{% endif %}
+	</div>	
+	
+</div>
+
+	
+{% endblock body %}

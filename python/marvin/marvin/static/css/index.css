@@ -1,0 +1,92 @@
+
+.cover-container img 
+{
+width:70%;
+}
+
+/* Extra markup and styles for table-esque vertical and horizontal centering */
+.site-wrapper {
+  display: table;
+  width: 100%;
+  height: 100%; /* For at least Firefox */
+  min-height: 100%;
+}
+.site-wrapper-inner {
+  display: table-cell;
+  vertical-align: top;
+}
+.cover-container {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
+.cover {
+  padding: 0 20px;
+}
+.cover .btn-lg {
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+@media (min-width: 768px) {
+ .site-wrapper-inner {vertical-align: middle;}
+ .cover-container {width:100%;}
+}
+
+@media (min-width: 992px) {
+  .cover-container {
+    width: 700px;
+  }
+  
+
+/* SAS Tables */
+.sastable #head th {
+	background-color:#D5D5D5;
+} 
+
+.sastable td {
+	background-color:#FFFFFF;
+}  
+
+.sastable th {
+	background-color:#FFFFFF;
+}
+
+/* Image Carousel */
+.carousel {
+	margin-bottom: 0;
+	padding: 20px 0px 30px 0px;
+}
+.carousel-control {
+	left: -15px;
+}
+.carousel-control.right {
+	right: -15px;
+}
+
+.carousel-indicators {
+	margin-bottom: 0px;
+}
+
+#ifucar {
+	background-color:darkgrey;
+}
+
+/* Plate Design */
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.ifu {
+  cursor: pointer;
+}
+
+/* Comment Tag button */
+.btn-info {
+	background-color: #007BC7;
+}
