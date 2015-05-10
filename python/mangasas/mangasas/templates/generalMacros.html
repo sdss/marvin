@@ -1,0 +1,49 @@
+{# General Macros #}
+
+{# Drop-down download cube/rss button #}
+{% macro dropdownload(id, target) %}
+
+  <div class="btn-group" role="group">
+	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	  Download All ...
+	  <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu" id='{{id}}' role="menu" >
+	  <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>Cubes</a></li>
+	  <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>RSS</a></li>
+	</ul>
+  </div>	
+				  
+{% endmacro %}
+
+{# Rsync Modal window #}
+{% macro rsyncmodal() %}
+
+	{# Rsync command modal #}
+	<div id='rsynclink' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='rsynclabel' aria-hidden='true'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Your Rsync Link</h4>
+				</div>
+				<div class='modal-body'>
+					<input type='text' class='form-control' id='rsyncbox'/>
+				</div>	
+			</div>
+		</div>
+	</div> {# end rsync modal #}
+
+{% endmacro %}
+
+{% macro hline() %}
+
+	<div class='row'>
+		<div class='col-md-12'>
+			<hr>
+		</div>
+	</div>
+	
+{% endmacro %}
+
+

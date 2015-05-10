@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
+{% endblock head %}
+
+{% block body %}
+
+
+<div class="site-wrapper">
+	<div class="site-wrapper-inner well" style='background-color:rgba(245,245,245,0.4)'>
+		<div class="cover-container">
+			<div class='row'>
+				<div class='col-md-12 col-md-offset-1'>
+					<img id="logo" src="{{url_for('static',filename='images/logo.jpg')}}" class="img-rounded" class="img-responsive">
+				</div>
+        	</div>
+			<div class="inner cover row">
+				<div class='col-md-10 col-md-offset-1'>						
+					<h1 class="cover-heading"> MaNGA SAS Access </h1>
+					<div class='well'>	
+						<h4> Observed {{cubes|count}} galaxies across {{plates|count}} plates. (~{{(cubes|count)/10000}}% Complete)</h4>
+						<table class='table table-condensed'>
+							<thead><tr><th>Plate Label</th><th>Number</th></tr><thead>
+							<tbody>
+								{% for label in labels %}
+									<tr><th>{{label|replace(None,'Other')}}</th><td>{{types.count(label)}}</td></tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+{#	</div>
+</div>	#}
+
+{# image carousel slider #}	
+<div class="well">
+	<div class='row'>
+		<div class='col-md-10 col-md-offset-1 col-sm-12' id='ifucar'>     
+			<div id="ifuCarousel" class="carousel slide">
+			{% set modnum = 6 %}
+	 
+			<ol class="carousel-indicators">
+				{% for i in range(((imdict|count)/modnum)|round(0,'ceil')|int) %}
+					<li data-target="#ifuCarousel" data-slide-to="{{i}}" class="{{'active' if loop.index0==0}}"></li>
+				{% endfor %}        
+			</ol>
+	 
+			<!-- Carousel items -->
+			<div class="carousel-inner">
+			{% for key,val in imdict.items() %}
+				{% if loop.index0 % modnum == 0 %}
+					<div class="item {{'active' if loop.index0==0}}" >
+					<div class='row-fluid'>
+					<div class='col-md-10 col-md-offset-1'>
+				{% endif %}
+					<div class='col-sm-2 col-md-2'><a href="plateInfo.html?plateID={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
+				{% if loop.index0 % modnum == modnum-1 or loop.last %}
+					</div></div></div>
+				{% endif %}    	
+			{% endfor %}
+			</div><!--/carousel-inner-->
+	 
+				<a class="left carousel-control" href="#ifuCarousel" data-slide="prev" role='button'>
+					<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+					<span class="sr-only">Previous</span>
+				</a>
+				<a class="right carousel-control" href="#ifuCarousel" data-slide="next" role='button'>
+					<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+					<span class="sr-only">Next</span>
+				</a>
+			</div><!--/ifuCarousel-->
+
+		</div>
+	</div>     
+</div>
+
+</div></div>
+		
+{% endblock body %}

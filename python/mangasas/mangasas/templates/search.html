@@ -1,0 +1,411 @@
+{% from 'buildTable.html' import table %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal %}
+{% extends "layout.html" %}
+{% set active_page = active_page|default("search") %}
+
+{% block head %}
+    <link type="text/css" href="{{url_for('static',filename='css/index.css')}}" rel="stylesheet"> 
+    <link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
+{% endblock head %}
+
+{% block code %}
+<script type='text/javascript'>
+
+	// Enable select picker
+	$(function(){
+		$('.selectpicker').selectpicker();
+	});
+
+	// Toggle between plate and mjd search
+	$(function() {		
+		$('#searchon').change(function () {
+    		$('.search').hide();
+    		$('#by'+$(this).val()).fadeIn();
+		});
+	});
+	
+	// Grab SQL
+	function getSQL(){
+		var minplate = $('#minplate').val();
+		var maxplate = $('#maxplate').val();
+		var minmjd = $('#minmjd').val();
+		var maxmjd = $('#maxmjd').val();
+		var type = $('#type :selected').val();
+		var ifu = $('#ifu :selected').val();
+		var tag = $('#tag :selected').val();
+		var sql = $('#sqlinput').val();
+		
+		form = {'minplate':minplate,'maxplate':maxplate,'minmjd':minmjd,'maxmjd':maxmjd,
+			'type':type,'tag':tag,'ifu':ifu,'sql':sql};
+		
+		$.getJSON($SCRIPT_ROOT + '/manga/getsql', {'ifu':ifu,'minplate':minplate,'maxplate':maxplate,
+			'minmjd':minmjd,'maxmjd':maxmjd,'type':type,'tag':tag}, 
+			function(data){
+				var htmlstr='';
+				for (var i=0; i<data.result['rawsql'].length; ++i){
+					htmlstr += '<div class="row"><p>'+data.result['rawsql'][i]+'</p></div>';
+				}
+				$('#rawsql').html(htmlstr);
+				$('#sql').text(data.result['sql']);
+			});	
+		
+	}
+
+	// Erase any results when tabs switch
+	$(function(){
+		$('.nav-tabs').on('click','li a',function(){
+			$('#results').hide();
+		});
+	});
+	
+	// Submit table form
+	function tableform(){
+		var form = $('#sastableform');
+		var data = $('.sastable').bootstrapTable('getData');
+		$('#hiddendata').val(JSON.stringify(data));
+		form.submit();
+		$('#fitsform').modal('hide');
+	}
+	
+	// Submit comment form
+	$(function(){
+		$('#comment_form').submit(function(event){
+			var issuelist = [];
+			$('.selectpicker :checked').each(function(){
+				issuelist.push(this.value);
+			});
+			issuelist = (issuelist.length == 0) ? 'any' : issuelist
+			$('#issues').val(issuelist);
+		});
+	});
+	
+</script>
+{% endblock code %}
+
+{% block body %}
+
+<div class='well'>
+	<div class='row'>
+		  <div class="tabbable tabs-left">
+		  	{# List of Tabs #}
+			<ul class="nav nav-tabs">
+			  <li class="{{'active' if dosearch or (not dosearch and not dosql and not docomm)}}"><a href="#guidedsearch" id='guidetab' data-toggle="tab">Guided Search</a></li>
+			  <li class="{{'active' if dosql and not dosearch and not docomm}}"><a href="#directsql" id='directtab' data-toggle="tab">Direct SQL</a></li>
+			  <li class="disabled"><a href="#comments" id='commenttab' data-toggle="tab">Comments</a></li>
+			</ul>
+			{# TAB CONTENT #}
+			<div class="tab-content">
+			
+				{# Guided Search Tab #}
+				<div class="tab-pane {{'active' if dosearch or (not dosearch and not dosql and not docomm)}}" id="guidedsearch">
+					<div class='row'>
+						<div class='col-md-2 col-md-offset-4' style='text-align: center;'>
+							<span><h3> Search Cubes: </h3></span>
+						</div>
+					</div>			
+					<form class='form' role='form' action='search.html' method='post'>
+						<div class='row'>
+							<div class='col-md-2 col-md-offset-2'>
+								<div class='form-group'>
+									<label for='searchon' class='control-label'>Search by:</label>
+									<select class='form-control' id='searchon' placeholder='Search'>
+										<option value='plate' selected>Plate</option>
+										<option value='mjd'>MJD</option>
+									</select>
+								</div>
+							</div>
+							{# Column 1 #}
+							<div class='col-md-2 search' id='byplate'>
+								{# Min PlateID #}
+								<div class='form-group'>
+									<label for='minplate'>Minimum Plate ID</label>
+									<input type='text' class='form-control input-sm' name='minplate' placeholder="{{'PlateID'|filterForm('minplate',form)}}" value="{{''|filterForm('minplate',form)}}" id='minplate'/>
+								</div>
+								{# Max PlateID #}
+								<div class='form-group'>
+									<label for='maxplate'>Maximum Plate ID</label>
+									<input type='text' class='form-control input-sm' name='maxplate' placeholder="{{'PlateID'|filterForm('maxplate',form)}}" value="{{''|filterForm('maxplate',form)}}" id='maxplate'/>
+								</div>
+							</div>
+							{# hidden MJD column 1 #}
+							<div class='col-md-2 search' id='bymjd' style='display:none;'>
+								{# Min MJD #}
+								<div class='form-group'>
+									<label for='minmjd'>Minimum MJD</label>
+									<input type='text' class='form-control input-sm' name='minmjd' placeholder="{{'MJD'|filterForm('minmjd',form)}}" value="{{''|filterForm('minmjd',form)}}" id='minmjd'/>
+								</div>
+								{# Max MJD #}
+								<div class='form-group'>
+									<label for='maxmjd'>Maximum MJD</label>
+									<input type='text' class='form-control input-sm' name='maxmjd' placeholder="{{'MJD'|filterForm('maxmjd',form)}}" value="{{''|filterForm('maxmjd',form)}}" id='maxmjd'/>
+								</div>
+							</div>		
+							{# Column 2 #}
+							<div class='col-md-2'>
+								{# Plate type #}
+								<div class='form-group'>
+									<label for='type'>Plate Type</label>
+									<select class='form-control input-sm' name='type' id='type'>
+										{% for type in types %}
+										{% if type==form['type'] %}
+											<option id='{{type}}' value='{{type}}' selected>{{type|title|replace('Anc','Ancillary')}}</option>
+										{% else %}
+											<option id='{{type}}' value='{{type}}'>{{type|title|replace('Anc','Ancillary')}}</option>
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								{# IFU Type #}
+								<div class='form-group'>
+									<label for='ifu'>IFU Type</label>
+									<select class='form-control input-sm' id='ifu' name='ifu' placeholder='Any'>
+										{% for ifu in ['Any']+ifulist %}
+										{% if ifu|string==form['ifu'] %}
+											<option id='{{ifu}}' value='{{ifu}}' selected>{{ifu}}</option>
+										{% else %}
+											<option id='{{ifu}}' value='{{ifu}}'>{{ifu}}</option>
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							{# Column 3 #}
+							<div class='col-md-2'>
+								{# Tag #}
+								<div class='form-group'>
+									<label for='tag'>Tag</label>
+									<select class='form-control input-sm' id='tag' name='tag' placeholder='Any'>
+										{% for ver in versions+['Any'] %}
+										 {% if form %}
+										 {% if ver==form['tag'] %} <option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option> {% else %}
+											<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option> {% endif %}
+										{% else %}
+										{% if ver==current %} <option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option> {% else %}
+											<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option> {% endif %}
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="row">
+								{# Form Submit Buttons #} 
+								<div class="col-md-12 col-md-offset-5">
+									<input type="submit" name="search_form" value="Search" class="btn btn-primary btn-lg"/>
+									<button type="button" onClick='getSQL()' name="sql_form" value="sql" class="btn btn-primary btn-lg" data-toggle='modal' data-target='#sqlform'>See SQL</button>
+								</div>
+								{# SQL Form Modal #}
+								<div id='sqlform' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='sqllabel' aria-hidden='true'>
+									<div class='modal-dialog'>
+										<div class='modal-content'>
+											<div class='modal-header'>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+												<h4 class="modal-title">Your query in SQL</h4>
+											</div>
+											<div class='modal-body'>
+												<div class='panel panel-default'>
+													<div class='panel-heading'><h3 class='panel-title'>SQLAlchemy</h3></div>
+													<div class='panel-body' id='sql' style="word-break:break-all; whitespace:normal;">
+													</div>
+												</div>
+												<div class='panel panel-default'>
+													<div class='panel-heading'><h3 class='panel-title'>Raw SQL</h3></div>
+													<div class='panel-body' id='rawsql'>
+													</div>
+												</div>            		
+											</div>	
+										</div>
+									</div>
+								</div> {# end sql modal #}
+							</div>								
+						</div>
+					</form>
+				</div>
+				
+				{# Direct SQL Tab #}
+				<div class="tab-pane {{'active' if dosql and not dosearch and not docomm}}" id="directsql">
+					<div class='row'>
+						<div class='col-md-3 col-md-offset-3' style='text-align: center;'>
+							<span><h3> Direct SQL Search: </h3><span>
+							<span><h3><small>Note: what you query for is what you get!</small></h3></span>
+						</div>
+					</div>
+					<form class='form' role='form' action='search.html' method='post'>
+						<div class='row'>
+							<div class='col-md-4 col-md-offset-4'>
+								{% if form['sql'] %}
+									<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' >{{form['sql']}}</textarea>
+								{% else %}
+									<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' placeholder='Type your SQL here'></textarea>
+								{% endif %}
+							</div>
+							<div class='col-md-2'>
+								<input type="submit" name="directsql_form" value="Submit" class="btn btn-primary btn-lg"/>
+							</div>
+						</div>
+					</form>				
+				</div>
+				
+				{# Comment Search #}
+				<div class="tab-pane {{'active' if docomm and not dosearch and not dosql}}" id='comments'>
+					<div class='row'>
+						<div class='col-md-2 col-md-offset-4' style='text-align: center;'>
+							<span><h3> Search Comments: </h3><span>
+							<span><h3><small>Work In Progress</small></h3></span>
+						</div>
+					</div>
+					<form class='form' role='form' action='search.html' method='post' id='comment_form'>
+						<div class='row'>
+							{# Column 1 #}
+							<div class='col-md-2 col-md-offset-3 comment' id='commentcol1'>
+								{# Username #}
+								<div class='form-group'>
+									<label for='user'>Username</label>
+									<input type='text' class='form-control input-sm' name='user' placeholder="{{'Username'|filterForm('user',form)}}" value="{{''|filterForm('user',form)}}" id='user'/>
+								</div>
+								{# Keyword #}
+								<div class='form-group'>
+									<label for='keyword'>Keyword</label>
+									<input type='text' class='form-control input-sm' name='keyword' placeholder="{{'Keyword'|filterForm('keyword',form)}}" value="{{''|filterForm('keyword',form)}}" id='keyword'/>
+								</div>
+							</div>
+							{# Column 2 #}
+							<div class='col-md-2 comment' id='commentcol2'>
+								{# Date #}
+								<div class='form-group'>
+									<label for='date'>Date</label>
+									<input type='text' class='form-control input-sm' name='date' placeholder="{{'Date'|filterForm('date',form)}}" value="{{''|filterForm('date',form)}}" id='date'/>
+								</div>
+								{# Keyword #}
+								{#<div class='form-group'>
+									<label for='else'>Something Else</label>
+									<input type='text' class='form-control input-sm' name='else' placeholder="{{'Else'|filterForm('else',form)}}" value="{{''|filterForm('else',form)}}" id='else'/>
+								</div>#}
+							</div>							
+							{# Column 3 #}
+							<div class='col-md-2'>
+								{# Category #}
+								<div class='form-group'>
+									<label for='cat'>Category</label>									
+									<select class='form-control input-sm' name='cat' id='cat'>
+										<option id='any' value='any' selected>Any</option>
+										{% for category in feedback.category.values() %}
+											{% if category.key == form['cat'] %}
+												<option id='{{loop.index0}}' value='{{category.key}}' selected>{{category.category}}</option>
+											{% else %}
+												<option id='{{loop.index0}}' value='{{category.key}}'>{{category.category}}</option>
+											{% endif %}
+										{% endfor %}
+									</select> 
+								</div>
+								{# Issue #}
+								<div class='form-group'>
+									<label for='issue'>Issue</label>									
+									<select class="selectpicker" multiple id='issue' data-selected-text-format="count" title='Any'>
+										{% for catid, category in feedback.category.items() %}
+										{% for issid,issue in category.issues.items() %}
+											{% if 'issue'+issid|string in form['issues'] %}
+											<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
+											{% else %}
+											<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+											{% endif %}
+										{% endfor %}
+										{% endfor %}
+									</select>
+									<input class='hidden' name='issues' id='issues' values=''/>
+								</div>
+							</div>
+							<div class="row">
+								{# Form Submit Buttons #} 
+								<div class="col-md-12 col-md-offset-5">
+									<input type="submit" name="comment_form" value="Search" class="btn btn-primary btn-lg"/>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+								
+			</div> {# end tab content #}
+		  </div> {# end tabs #}
+	</div>  {# end outer row #}    
+</div> {# end well #}
+
+{# Search Results #}
+{% if cubes %}
+	<div class='well' id='results'>
+		<div class='row'>
+			<div class='col-md-2'>
+				<h4> Results: Found {{cubes|count}} {{'cube' if cubes|count == 1 else 'cubes'}}</h4>
+			</div>
+		</div>
+		{# Form Table - form is needed to send data to write table as fits (writeFits button) #}
+		<form class='form' role='form' method='post' action='writeFits' id='sastableform'>
+			{# write FITS pop-up modal, see buttons in table macro #}
+			<div class='modal fade' id='fitsform' tabindex='-1' role='dialog' aria-labeledby='fitslabel' aria-hidden='true'>
+				<div class='modal-dialog'>
+					<div class='modal-content'>
+						<div class='modal-header'>
+            				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            				<h4 class="modal-title">Write table to FITS file</h4>							
+						</div>
+						<div class='modal-body'>
+							<div class='row'>
+								<div class='col-md-10'>
+									<div class='form-group input-group'>
+										<span class='input-group-addon'>Filename</span>
+										<input type='text' class='form-control' placeholder='FITS name'  name='fitsname' id='fitsname'/>
+										<input type='hidden' class='form-control' name='hiddendata' id='hiddendata'/>
+										<span class='input-group-btn'>
+											<button class='btn btn-primary' type='button' name='writefits' onclick='tableform()'>Submit</button>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class='row'>
+								<div class='col-md-10'>
+									<h4 id='fitsout'></h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>{# end fitsform modal #}
+		{# Custom Toolbar for table #}	
+		<div id='toolbar'>
+			<button id="delete" class="btn btn-danger" type='button' onclick='deleteRows()'>Delete Rows</button>
+			<button class='btn btn-primary' type='button' data-toggle='modal' data-target='#fitsform'>Write FITS</button>
+						
+			{{dropdownload('platedl', 'rsynclink')}}				
+				
+		</div>
+        {{rsyncmodal()}}
+
+		{# Actual table of results #}
+		<div class='row'>
+			<div class='col-md-12'>
+				<div class='table-responsive' id='platetable'>
+					{{table(cols, keys, cubetable, flags, stage='3d')}}
+				</div>
+			</div>
+		</div>
+		</form>		
+	</div>
+{% else %}
+	{% if dosearch or dosql or docomm %}
+		<div class='well' id='results'>
+			<div class='row'>
+				<div class='col-md-12'>
+					{% if dosql and not goodsql %}
+						<h3> Syntax error with SQL query.  Check and try again! </h3>
+					{% elif not cubes and not docomm %}
+						<h3> No cubes found with given search parameters! </h3>
+					{% else %}
+						<h3> No comments found with given search parameters! </h3>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endif %}
+
+
+{% endblock body %}
