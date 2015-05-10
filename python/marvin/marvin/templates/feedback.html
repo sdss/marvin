@@ -17,6 +17,24 @@
 		location.reload();
 	}
 	
+	// promote ticket
+	function promoteticket(ticketid) {
+		
+		$.post('https://internal.sdss.org/inspection/marvin/feedback/ticket/promote', {'id':ticketid},'json')
+			.done(function(data){
+				if (data.result['status'] < 0) {
+					alert(data.result['message']);
+				} else {
+					alert('message', data.result['message']);
+					alert('tracticket id', data.result['tracticketid']);
+				}
+			})
+			.fail(function(data){
+                alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
+			});			
+		
+	}
+	
 </script>
 {% endblock code %}
 
