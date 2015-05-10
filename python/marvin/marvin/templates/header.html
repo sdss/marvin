@@ -1,0 +1,65 @@
+{% block code %}
+	<script type='text/javascript'>
+		$(function() {
+			$('#version').change(function(){
+				var version = $(this).val();
+				var active_page = {{active_page|tojson|safe}};
+				$.post($SCRIPT_ROOT + '/marvin/setversion', {'version':version, 'activepage':active_page},'json')
+				.done(function(data){
+					location.reload();
+				})
+				.fail(function(data){
+					alert('Failed to set the version!');
+				});
+			});
+		});
+	</script>
+{% endblock code %}
+
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+		{#<div class="navbar-header">
+           <img id="logo" src="/static/images/logo.jpg" class="img-rounded" class="img-responsive">
+		</div>#}
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Marvin</a>
+        </div>
+
+        <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="{{'active' if active_page=='current'}}"><a href="current.html">Current Reduction Status</a></li>
+                <li class="{{'active' if active_page=='search'}}"><a href="search.html">Search</a></li>
+                <li class="{{'active' if active_page=='feedback'}}"><a href="feedback.html">Feedback</a></li>
+                {#<li class="{{'active' if active_page=='doc'}}"><a href="documentation.html">Documentation</a></li>#}
+            </ul>
+            <form class="navbar-form navbar-left navbar-input-group" role="form" action="plateInfo.html" method="get">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="plateID" value="" placeholder="Plate ID">
+                </div>
+                <button type="submit" class="btn btn-primary">Get Plate ID</button>
+            </form>
+            <form class='navbar-form navbar-left navbar-input-group' role='form' action="setversion" method="post">
+            	<div class='form-group'>
+            		<label for='version'>Set Version:</label>
+            		<select class='form-control input-sm' name='version' id='version'>
+            			{% for ver in session['versions'] %}
+            				{% if ver == session['currentver'] %} 
+								<option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option>
+							{% else %}
+								<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option>
+							{% endif %}
+            			{% endfor %}
+            		</select>
+            	</div>
+            </form>
+        </div>
+    </div>
+</nav>
+

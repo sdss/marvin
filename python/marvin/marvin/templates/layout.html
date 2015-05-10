@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+{% set active_page = active_page|default("index") %}
+
+{#
+Current Marvin Dependencies
+
+Jquery
+Jquery-actual
+moment
+validator
+D3
+Bootstrap
+Bootstrap-Table
+Bootstrap-Table-flatJSON
+Bootstrap-Select
+Bootstrap-Datetimepicker
+Bootstrap-Tags
+#}
+
+<html lang="en">
+
+<head>
+	{# include css files #}
+	<meta charset="utf-8">
+	<title>{{title}}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="{{url_for('static',filename='css/bootstrap.min.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/bootstrap-select.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/bootstrap-table.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/bootstrap-datetimepicker.min.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/bootstrap-tags.css')}}" rel="stylesheet">
+	{% block head %}{% endblock head %}
+	
+	{# include js files #}
+	<script type="text/javascript" src="{{url_for('static',filename='js/jquery-1.11.2.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/jquery.actual.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-select.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-table.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-table-flatJSON.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/moment.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-datetimepicker.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-tags.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/validator.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
+	
+	<script type="text/javascript" src="{{url_for('static',filename='js/d3.min.js')}}"></script>
+	<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+	{% block code %}{% endblock code %}	
+</head>
+
+<body>
+
+{% include 'header.html' %}
+
+<div class="container-fluid" id="content">
+	{% block body %}{% endblock body %}
+</div>
+
+{% include 'footer.html' %}
+
+</body>
+</html>

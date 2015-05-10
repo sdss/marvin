@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default("feedback") %}
+{% from 'buildTable.html' import sastable %}
+{% from 'generalMacros.html' import login %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
+{% block code %}
+
+<script type='text/javascript'>
+	
+	// refresh the page (function to run after login)
+	function reloadPage() {
+		location.reload();
+	}
+	
+</script>
+{% endblock code %}
+
+{% block body %}
+
+{# Feedback Form #}
+<div class='well'>
+	<div class='row'>
+		<div class='col-md-2 col-md-offset-5' style='text-align: center;'>
+			<span><h3> Provide Feedback: </h3></span>
+		</div>
+	</div>
+
+ 	{% if ready %}
+		<form class='form' role='form' action='feedback.html' method='post'>
+
+			<div class='row'>
+				<div class='col-md-4 col-md-offset-3'>
+					{# Text field and Subject #}
+					<div class='form-group'>
+						<div class='input-group'>
+							<span class='input-group-addon'>Subject</span>
+							<input class='form-control input-sm' type='text' id='feedbacksubject' name='feedbacksubject' value='{% if inspection.feedbacksubject %}{{inspection.feedbacksubject}}{% endif %}'/>
+						</div>
+					</div>
+					<div class='form-group'>
+						<textarea class='form-control' rows='5' id='feedbackfield' name='feedbackfield' placeholder='Type your feedback here'>{% if inspection.feedbackfield %}{{inspection.feedbackfield}}{% endif %}</textarea>
+					</div>
+                    {% if inspection.message %}<div class='alert alert-{% if inspection.status==1 %}success{% else %}danger{% endif %}' role='alert'>{{inspection.message}}</div>{% endif %}
+				</div>
+				<div class='col-md-2'>
+					{# Type #}
+					<div class='form-group'>
+						<label for='type'>Type</label>
+						<select class='form-control input-sm' name='feedbacktype' id='type'>
+							{% for type in types %}
+								<option id='{{type}}' value='{{type}}' {% if type==inspection.feedbacktype %}selected{% endif %}>{{type|title}}</option>
+							{% endfor %}
+						</select>
+					</div>
+					{# Product #}
+					<div class='form-group'>
+						<label for='type'>Product</label>
+						<select class='form-control input-sm' name='feedbackproduct' id='product'>
+							{% for product in products %}
+								<option id='{{product}}' value='{{product}}' {% if product==inspection.feedbackproduct %}selected{% endif %}>{{product}}</option>
+							{% endfor %}
+						</select>
+					</div>
+					{# SDSS Ticket boolean #}
+					<div class='form-group'>
+						<div class="checkbox">
+						  <label>
+							<input type="checkbox" id='tracticket' name='tracticket' value="True" {% if inspection.tracticket %}checked{% endif %}>
+							Submit as Trac ticket
+						  </label>
+						</div>
+					</div>
+				</div>
+				<div class='col-md-2'>
+					{# Submit button #}
+					<div class='form-group vert-offset-top-4'>
+						<input type="submit" name="feedback_form" value="Submit" class="btn btn-primary btn-lg"/>
+					</div>
+				</div>
+			</div>
+		</form>
+	{% else %}
+		<div class='row'>
+			<div class='col-md-4 col-md-offset-4' style='text-align: center;'>
+				<button type='button' class='btn btn-primary' data-toggle="modal" data-target="#loginform" id='loginbut'>Please Login First</button>
+			</div>
+		</div>
+	{% endif %}
+	
+</div>
+
+{# Login modal #}
+{{login('reloadPage')}}
+
+{# Feedback Results from DB #}
+{% if inspection.feedbacks %}
+	<div class='well'>
+		<div class='row'>
+			<div class='col-md-12'>
+				<span align='center'><h3> Current Feedback: </h3></span>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='col-md-12'>
+				<div class='table-responsive' id='feedbacktable'>
+					{{sastable(inspection.cols, inspection.keys, inspection.feedbacks, type='feedback')}}
+				</div>
+			</div>			
+		</div>
+	</div>
+{% endif %}
+
+{% endblock body %}

@@ -1,0 +1,585 @@
+{% from 'buildTable.html' import sastable %}
+{% extends "layout.html" %}
+{% set active_page = active_page|default("plate") %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login %}
+
+{% block head %}
+	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
+	<link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
+{% endblock head %}
+
+{% block code %}
+{{js|safe}}
+<script type='text/javascript'>
+
+	// Get IFU hash from page
+	function getIFUHash() {
+		var hash = window.location.hash;
+		if (hash.search('comment') >= 0) {
+			newhash = hash.slice(hash.search('_')).replace('_','#');
+			return newhash;
+		} else {
+			return hash;
+		}			
+	}
+	
+    // Load ifu div element when image on page is clicked
+	$(function(){
+		$('.ifuims').on('click',function(){
+			$('.galinfo').hide();
+			$($(this).attr('href')).fadeIn();
+			renderTags($(this).attr('href'));
+		});
+	});
+	
+	// Load ifu div element if hash present when page loads
+	$(function(){
+		var hash = window.location.hash;
+		
+		if (hash.search('comment') >= 0) {
+			newhash = hash.slice(hash.search('_')).replace('_','#');
+			$(String(newhash)).fadeIn();
+			$(String(hash)).fadeIn();
+			renderTags(newhash);
+		} else {
+			$(String(hash)).fadeIn();
+			renderTags(hash);
+		}
+	});
+	
+	// Load ifu div element by left/right arrow key press
+	$(function() {
+		$(window).keyup(function(event) {
+			var ifuhash = getIFUHash();
+			var gals = $('.cubedetails');
+			if (ifuhash.length > 0) {
+				//left arrow
+				if (event.keyCode == 37) {
+					$('.galinfo').hide();
+					var newid = gals.find(ifuhash).prev('.galinfo').attr('id');
+					var newhash = '#'+newid;					
+					$(newhash).fadeIn();
+					renderTags(newhash);
+					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
+				}
+				//right arrow
+				if (event.keyCode == 39) {
+					$('.galinfo').hide();
+					var newid = gals.find(ifuhash).next('.galinfo').attr('id');
+					var newhash = '#'+newid;
+					$(newhash).fadeIn();
+					renderTags(newhash);
+					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
+				}
+			}
+		});
+	});
+	
+	// Render Tags in div
+	function renderTags(ifuhash) {
+		var ifu = ifuhash.slice(ifuhash.search('#')+1);
+		var tagdiv = $('#cubetags_'+ifu);
+		if (tagdiv.length > 0) {
+			var cubetags = {{inspection.cubetags|safe}};
+			var ifutags = cubetags[ifu];
+			var tagbox = tagdiv.tags({
+				tagData: ifutags,
+				tagSize: 'sm',
+				readOnly: true
+			})
+		}
+	}
+			
+	// Plate design layout toggle	
+	$(function(){
+		$('#pdtoggle').on('click',function(){
+			if ($(this).hasClass('active')){
+				$('#platedesign').hide();
+				$('#platedesign').empty()
+			} else {
+				$('#platedesign').show();
+				$('#platedesign').html('<h3><small>Unfinished</small></h3>')
+				loadPlateDesign();
+			}
+		});
+	});
+
+	// Toggle between comment form categories
+	$(function() {		
+		$('#commentcat').change(function () {
+    		$('.catissues').hide();
+    		$('#catissue_'+$(this).val()).fadeIn();
+    		$('.catcomments').hide();
+    		$('#catcomment_'+$(this).val()).fadeIn();
+		});
+	});
+
+	// Reset comment form
+	function resetCommentForm() {
+		$('#commentform').modal('hide');
+		$('#addcomment_form').trigger("reset");
+		$('#commentmessage').empty();
+        $('.catissues').hide();
+        $('#catissue_'+$('#commentcat').val()).fadeIn();
+        $('.catcomments').hide();
+        $('#catcomment_'+$('#commentcat').val()).fadeIn();
+        var tagbox = $('#tagfield').tags();
+        var tags = tagbox.getTags();
+        jQuery.each(tags, function(i,tag) {
+        	tagbox.removeTag(tag);
+        });
+        tagbox.removeLastTag();
+	}
+
+	// Submit add comment form
+	function submitcomment() {
+
+		// grab cube info
+		var plateid = {{plate.id}};		
+		var version = {{version|tojson|safe}};
+		var cubepk = $('#cubepk').val();
+		var ifuname = $('#ifuname').val(); 
+				
+		// grab comments from all boxes
+		var comments = [];
+		$('.commentfield').each(function(index){
+			comments.push(this.value);
+		});
+		comments = JSON.stringify(comments);
+
+		// grab all checked issues
+		var issueids = [];
+		$('input:checkbox.issues').each(function () {
+       		var thisval = (this.checked ? $(this).val() : "");
+       		if (thisval) {
+       			issueids.push(parseInt(thisval.split('issue')[1]));
+       		}
+  		});
+  		issueids = JSON.stringify(issueids);
+
+		//grab tags
+		var tagbox = $('#tagfield').tags();
+		var tags = tagbox.getTags();
+		tags = JSON.stringify(tags);
+
+		$.post($SCRIPT_ROOT + '/marvin/addcomment', {'cubepk':cubepk,'plateid':plateid,'ifuname':ifuname,'version':version,
+			'comments':comments,'issueids':issueids, 'tags':tags},'json')
+			.done(function(data){
+				if (data.result['status'] < 0) {
+					// bad submit
+					resetCommentForm();
+				} else {
+					// good response from Inspection, comment ignored with attention message
+                    if (data.result['message']!=''){
+                    	var stat = (data.result['status'] == 0) ? 'danger' : 'success'; 
+                        htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result['message'] + "</h4></div>";
+                        $('#commentmessage').html(htmlstr);
+                    }
+					// good response from Inspection, comment submitted with success
+                    if (data.result['status']==1){
+                        setTimeout(populateComments, 1500, data);
+                        setTimeout(resetCommentForm, 1500);
+                    }
+				}
+			})
+			.fail(function(data){
+                alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
+			});	
+
+	}
+	
+	// Initialize comment tags
+	$(function() {
+		var tagbox = $('#tagfield').tags({
+			tagData:[],
+			tagSize:'sm',
+			suggestions:[],
+			caseInsensitive: true
+		});		
+	});
+	
+	// Get previous comments on cube from specific user
+	function getComment(cubepk, ifuname) {
+	
+		// grab and set cube info
+		var plateid = {{plate.id}};
+		var version = {{version|tojson|safe}};
+		$('#cubepk').val(cubepk);
+		$('#ifuname').val(ifuname);
+												
+		$.post($SCRIPT_ROOT + '/marvin/getcomment', {'cubepk':cubepk,'plateid':plateid,'ifuname':ifuname,'version':version},'json') 
+			.done(function(data){
+                // show commentform if ready (login **may be** necessary)
+				if (data.result['ready']) {
+					$('#commentform').modal('show');
+					populateComments(data);
+					populateTags(data);
+                } else {
+					$('#loginform').modal('show');
+				}
+			})
+			.fail(function(data){
+			});							
+	}
+	
+	// Populate comment fields with prior comments
+	function populateComments(data) {
+		$('.catcomments').each(function(index){
+
+			var userlabel = $('#userlabel_'+(index+1)).text();
+            try {
+                var comment = data.result['comments'][index+1];
+                var comment_comment = comment['comment'];
+                var comment_issues = comment['issues'];
+                var comment_modified = comment['modified'];
+                if (!!comment_modified) {
+                    comment_modified = "Submitted on " + comment_modified
+                }
+            }
+            catch(err) {
+                var comment_comment = '';
+                var comment_issues = [];
+                var comment_modified = '';
+                //var comment_modified = err;
+            }
+			var recentcomments = data.result['recentcomments'][index+1];
+			var htmlstr="<option value='comment0' value='' selected></option>";
+
+			for (var i=0; i<recentcomments.length; ++i){
+				htmlstr += '<option value="comment'+(i+1)+'">'+recentcomments[i]+'</option>';
+			}
+							
+			if (userlabel.search(data.result['membername']) < 0){
+				userlabel += data.result['membername'];
+			}
+			$('#userlabel_'+(index+1)).text(userlabel);
+			$('#recentcomments_'+(index+1)).html(htmlstr);
+			$('#commentfield_'+(index+1)).html(comment_comment);
+			$('#commentsubmitted_'+(index+1)).html(comment_modified);
+            try {
+                for (var i=0; i<comment_issues.length; i++) {
+                   $('#issue'+comment_issues[i]).prop('checked',true);
+                }
+            }
+            catch(err) {
+                $('#commentsubmitted_'+(index+1)).html(err);
+            }
+		});
+	}		
+	
+	//Populate the comment box with current tags + suggestions
+	function populateTags(data) {
+		// set the tag suggestions (autocomplete) to all tags in db ; always run
+		var tagbox = $('#tagfield').tags();
+		tagbox.suggestions = data.result['alltags']
+		
+        //if none then returns empty list with length = 0
+        if (data.result['tags'].length > 0) {
+            jQuery.each(data.result['tags'], function(i,tag) {
+                tagbox.addTag(tag);
+            });
+        }
+		console.log('alltags',data.result['alltags']);
+		console.log('tags',data.result['tags']);
+		console.log('assigned tags',tagbox.getTags());
+	}
+	
+	// Input selected comment option into new comment 
+	$(function(){
+		$('.usercomments').change(function() {
+			var index = $(this).attr('id').search('_');
+			var id = $(this).attr('id').slice(index+1);
+			
+			var selectedcomment = $('#recentcomments_'+id+' option:selected').text();
+			$('#commentfield_'+id).text(selectedcomment);
+		});
+	});
+
+	// Grab the comments after a successful login (function to run after login)
+	function grabComments() {
+		var cubepk = $('#cubepk').val();
+		var ifuname = $('#ifuname').val();
+		resetLogin();
+		getComment(cubepk, ifuname);
+		//setTimeout(resetLogin, 1500);
+		//setTimeout(getComment, 1500, cubepk);	
+	}
+		
+</script>
+{% endblock code %}
+
+
+
+
+{% block body %}
+
+{% if plate and good %}
+	<div class='well' style='background-color:rgba(245,245,245,0.4)'>
+		<div class='well'>
+			{# Some General Plate Info #}
+			<div class='row'>
+				<div class='col-md-3'>
+					<h1>Plate: {{plate.id}} <small>Version: {{version}} </small></h1>
+				</div>
+				{# Rsync button and modal #}
+				<div class='col-md-1'>
+				  	{{dropdownload('platedl', 'rsynclink')}}				
+				</div>
+            	{{rsyncmodal()}}
+
+				<div class='col-md-1'>
+					<button type='button' class='btn btn-primary' id='pdtoggle' data-toggle='button' aria-pressed='false'>Toggle Design Layout</button>
+				</div>
+			</div>
+			<div class='row'>
+				<div class='col-md-4'>
+					<h1><small>add some general plate info here</small></h1>
+					<table class='table table-condense'>
+						<tbody>
+							<tr><th>Label</th><td>{{plate.type}} Plate</td></tr>
+							<tr><th>Plate Type</th><td>{{plate.platetype}}</td></tr>
+							<tr><th>Survey Mode</th><td>{{plate.surveymode}}</td></tr>
+							<tr><th>Date Observed</th><td>{{plate.dateobs}}</td></tr>
+							<tr><th>RA,Dec</th><td>{{plate.ra}}, {{plate.dec}}</td></tr>
+							<tr><th>Data Link</th><td><a target='_blank' data-toggle="tooltip" title="{{sasurl}}" href='{{sasurl}}'>SAS URL</a></td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div class='col-md-4 col-md-offset-1'>
+					<div id='platedesign'>
+					</div>
+				</div>				
+			</div>
+		</div>
+		{# Row of all Galaxy Images for Plate #}
+		<div class='well'>
+			<div class='row'>
+				<div class='col-md-12'>
+					<h2>Galaxy Images <small>Click for more info</small></h2>
+				</div>
+				{% if images %}
+					{% for image in images %}
+						<div class="col-xs-6 col-md-1">
+							<div class='caption'>
+								<h4>{{((image|split('/'))[-1]|split('.'))[0]}}</h4>
+							</div>					
+							<a href="#{{((image|split('/'))[-1]|split('.'))[0]}}" class="thumbnail ifuims">
+								<img class='img-responsive' src="{{image}}" alt="..." >
+							</a>
+						</div>
+					{% endfor %}
+				{% else %}
+					<div class='col-md-12'><h1> No IFU images found! </h1></div>
+				{% endif %}
+  			</div>
+		</div>
+
+		{# Drop-down DIV for each IFU #}
+		<div class='cubedetails'>
+		{% for cube in cubes %}
+		<div class='well galinfo' id='{{cube.ifu.name}}' style='display:none;'>
+			<div class='row'>
+				{# Left-hand side column of info #}
+				<div class='{{"col-md-3" if inspection.cubetags[cube.ifu.name] else "col-md-4"}}'>
+					<h3>MaNGA Id: {{cube.mangaid}}</h3>
+					<img class='img-responsive' src="{{ifudict[cube.ifu.name]['image']}}" alt="..." >
+					
+					<h4><small>More info here</small></h4>
+					<div id='galdetail'>
+						{% set hdr = cube.header_to_dict() %}
+						<h4>IFU Design: {{cube.ifu.name}}</h4>
+						<h4>MJD Reduced: {{hdr['MJDRED']}}</h4>
+						<h4>RA, Dec: {{hdr['OBJRA']}}, {{hdr['OBJDEC']}}</h4>
+					</div>
+					
+					<div class='btn-group-vertical'>
+					<button type='button' class='btn btn-warning' onclick='getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
+					<a href='#commenttable_{{cube.ifu.name}}' class='btn btn-success' id='showcomment'>Show Comments</a>
+					<a href='{{cube.location}}' class='btn btn-primary' id='cubedl' download='{{cube.name}}'>Download Cube</a>
+					<a href='{{cube.location|replace('CUBE','RSS')}}' class='btn btn-primary' id='rssdl' download='{{cube.name|replace('CUBE','RSS')}}'>Download RSS</a>
+					{#<a href='http://skyserver.sdss.org/dr12/en/tools/explore/Summary.aspx?ra={{cube.ra}}&dec={{cube.dec}}' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>#}
+					<a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cube.ra}}&dec={{cube.dec}}&opt=GS' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>
+					</div>
+				</div>
+
+				{% if inspection.cubetags[cube.ifu.name] %}
+					<div class='col-md-1'>
+						<label>Tags:</label>
+						<div class='cubetags' id='cubetags_{{cube.ifu.name}}'></div>
+					</div>
+				{% endif %}
+
+				{# Cube Tab Content #}
+				<div class='col-md-8'>
+					<ul class="nav nav-tabs" id='cubetabs'>
+					  <li role="presentation" class="active"><a href="#samplepane_{{cube.ifu.name}}" data-toggle='tab' id='sampletab'>Sample Info</a></li>
+					  <li role="presentation"><a href="#dapqapane_{{cube.ifu.name}}" data-toggle='tab' id='dapqatab'>DAP QA</a></li>
+					</ul>
+					<div class='tab-content'>
+						{# Sample Parameters Pane #}
+						<div class='tab-pane active' id='samplepane_{{cube.ifu.name}}'>				    
+							<table class='table table-condensed' id='sampletable'>
+								<thead>
+									<tr>
+										<th>Parameter</th><th>Value</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for key,val in ifudict[cube.ifu.name]|dictsort %}
+										<tr>
+											<th>{{key}}</th>
+											{% if key != 'image' %} <td>{{val}}</td> {% else %} <td><a target='_blank' href='{{val}}'>{{val}}</a></td> {% endif %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						
+						{# DAP QA Plots Pane #}
+						<div class='tab-pane' id='dapqapane_{{cube.ifu.name}}'>
+							<h4>Here lies DAP QA plots for {{cube.ifu.name}}</h4>
+						</div>
+					</div>
+				</div>	
+			</div> {# end row #}
+			
+			{{hline()}}
+			
+			{# Comment Table #}
+			<div class='comments' id='commenttable_{{cube.ifu.name}}'>
+				<div class='row'>
+					<div class='col-md-8'>
+						<h4>Comments for IFU {{cube.ifu.name}}, Version {{version}}</h4>
+					</div>
+					<div class='col-md-4'>
+						<a href='#{{cube.ifu.name}}' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
+					</div>
+				</div>
+				{# Comment Table Results #}
+				<div class='row'>
+					<div class='col-md-12'>
+						{% if inspection.cubecomments[cube.ifu.name] %}
+                        <div class='table-responsive' id='cubecomments'>
+							{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}
+						</div>
+						{% else %}
+							<h4> No comments found. </h4>
+						{% endif %}
+					</div>
+				</div>				
+			</div>
+
+		</div>
+		{% endfor %}
+		</div>
+
+		{# Comment Form #}
+		<div class='comments'>
+		<form class='form' role='form' method='post' action='addComment' id='addcomment_form'>
+			<div class='modal fade commentmodal' id='commentform' tabindex='-1' role='dialog' aria-labeledby='commentlabel' aria-hidden='true'>
+				<div class='modal-dialog modal-lg'>
+					<div class='modal-content'>
+						{# Comment header #}
+						<div class='modal-header well'>	
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="resetCommentForm()"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title">Comment Form</h4>								
+						</div>
+						{# Comment body #}
+						<div class='modal-body well'>
+							<div class='well container-fluid' style='background-color:rgba(245,245,245,0.4)'>
+								<div class='row'>
+									<input class='hidden' id='cubepk' name='cubepk' value=''/>
+									<input class='hidden' id='ifuname' name='ifuname' value=''/>
+									{# Comment Categories #}
+									<div class='col-md-4'>
+										<label for='commentcat' class='control-label'>Category / Issues:</label>
+										<select class='form-control' id='commentcat'>
+											{% for catid, category in inspection.category|dictsort %}
+												{% if loop.index0 == 0 %}
+													<option id='{{catid}}' value='{{category.key}}' selected>{{category.category}}</option>
+												{% else %}
+													<option id='{{catid}}' value='{{category.key}}'>{{category.category}}</option>
+												{% endif %}
+											{% endfor %}
+										</select>     
+									</div>
+									{# Comment Issues #}
+									<div class='col-md-8'>
+										{% for catid, category in inspection.category|dictsort %}
+											<div class='catissues' id='catissue_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
+												{% for issid,issue in category.issues|dictsort %}
+													{% if loop.index0 % 3 == 0 %}<div class='row'>{% endif %}
+													<div class='col-md-4'>
+													<div class='checkbox'>
+														<label class='checkbox-inline'><input class='issues' id='issue{{issid}}' type='checkbox' value='issue{{issid}}'>{{issue}}</label>
+													</div>
+													</div>
+													{% if loop.index0 % 3 == 2 or loop.last %}</div>{% endif %}
+												{% endfor %}
+											</div>
+										{% endfor %}
+									</div>																					
+								</div>
+								{# Comment Comments #}
+								{% for catid, category in inspection.category|dictsort %}
+								<div class='catcomments' id='catcomment_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
+									{# Previous comments from user #}
+									<div class='row'>
+										<div class='col-md-10'>
+											<label id='userlabel_{{catid}}'>Previous Comments on {{category.category}} from User: </label>
+											<select class='usercomments form-control' id='recentcomments_{{catid}}'>
+											</select>
+										</div>
+									</div>
+									{# Comment text box #}
+									<div class='row'>
+										<div class='col-md-10'>
+											<label for='commentfield' class='control-label'>Comment:</label>
+											<textarea class='form-control commentfield' rows='5' id='commentfield_{{catid}}' name='commentfield' placeholder='Comment for {{category.category}}'></textarea>
+											<label id='commentsubmitted_{{catid}}' class='pull-right'></label>
+										</div>
+									</div>
+								</div>
+								{% endfor %}
+								{# Comment Tags #}
+								<div class='row' id='commenttags'>
+									<div class='col-md-10'>
+										<label for='tagfield'>Tags: <small>(Enter a word or phrase and press Return)</small></label>
+										<div class='tag-list' id='tagfield'></div>
+									</div>
+								</div>
+							</div>	
+						</div> {# end modal body #}
+						{# Comment Footer #}
+						<div class='modal-footer well'>
+							{# Feedback message and Comment submit button #}	
+							<div class='row'>
+								<div class='col-md-9' id='commentmessage'>
+								</div>
+								<div class='col-md-3'>
+									<button type="button" onclick='submitcomment()' name="submitcomment_form" id='subcomment' class="btn btn-primary btn-lg" >Submit</button>
+								</div>
+							</div>								
+						</div>
+					</div>
+				</div>
+			</div>{# end comment modal #}
+		</form>
+		</div>
+
+		{# Login Modal #}
+		{{login('grabComments')}}
+
+	</div>
+{% elif not plate %}
+	<div class='well'>
+		<h1>No plate selected</h1>	
+	</div>
+{% elif plate and not good %}
+	<div class='well'>
+		<h1> Plate {{plate.id}} <small>(version: {{version}})</small> is not a valid plate! <h1>
+	</div>
+{% endif %}
+
+
+{% endblock body %}

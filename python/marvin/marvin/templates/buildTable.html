@@ -1,0 +1,77 @@
+{# TABLE MACRO #}
+
+{# cols - initial display columns, keys - all columns, data - table data 
+   flags - quality flag names, stage  - stage of pipeline, type - type of table
+#}
+
+{% macro sastable(cols, keys, data, flags=None, stage=None, type=None) %}
+
+{% if type == 'data' %}
+	{% set sortparam = 'plate' if stage=='3d' else 'mjd' %}
+{% elif type == 'comment' %}
+	{% set sortparam = 'modified' %}
+{% elif type == 'feedback' %}
+	{% set sortparam = 'modified' %}
+{% else %}
+	{% set sortparam = 'plate' if stage=='3d' else 'mjd' %}
+{% endif %}
+
+<table class='sastable' id='table' data-toggle='table' data-classes='table table-condensed table-bordered' 
+		data-sort-name="{{sortparam}}" data-sort-order='asc'
+		data-show-columns='true' data-pagination='true' data-search='true' data-page-size='10' 
+		data-select-item-name='input' data-toolbar='#toolbar' data-id-field='id' 
+		data-side-pagination='client' data-page-list="[10, 25, 50, 100]" name='sastable'>
+
+	<thead>
+ 		<tr id='head'>
+ 		    <th data-field="state" data-checkbox="true">ID</th>
+ 		    <th data-field="id" id='id' data-visible='false' data-switchable='false'>ID</th>
+	 		{% for column in keys %}
+ 			<th id='{{column}}' data-field='{{column}}' data-sortable='true' data-sorter="sort"
+ 				data-cell-style="{{'cellStyle' if (column=='plate' or 'status' in column or 'comp' in column) else ''}}"
+ 				data-visible="{{'false' if column not in cols else 'true'}}">{{column|upper}}</th>
+	 		{% endfor %} 		
+		</tr>	 		
+	</thead>
+	
+	<tbody>
+    		
+    	{% for row in data %}
+    		<tr class='col{{plate}}'>
+    			{% set rowloop = loop %}
+    			<td></td><td>{{loop.index0}}</td>
+    			{% for col in keys %}
+    				{% if col == 'plate' %}
+    					<td><a target='_blank' href='/marvin/plateInfo.html?plateID={{row[col]}}&version={{(row['versdrp2']|split())[0]}}'>{{row[col]}}</a></td>
+    				{% elif col == 'ifuname' or col == 'ifudesign' or col == 'ifudsgn' %}
+    					<td><a target='_blank' href='/marvin/plateInfo.html?plateID={{row['plate']}}&version={{(row['versdrp2']|split())[0]}}#{{row[col]}}'>{{row[col]}}</a></td>
+    				{% elif col == 'tracticket' %}
+                        {% if 'ticket' in row[col] %}
+                            <td><a target='_blank' href='https://internal.sdss.org/trac/test/{{row[col]}}'>{{row[col]}}</a></td>
+                        {% else %}
+                            <td><button type='button' class='btn btn-primary' id='feedback{{row["id"]}}'>Promote</button></td>
+                        {% endif %}
+    				{% else %}
+    					<td>{{row[col] if 'qual' not in col else flags[rowloop.index0] if flags else row[col]}}</td>
+    				{% endif %}
+    			{% endfor %}
+    		</tr>
+    	{% endfor %}
+					
+	</tbody>
+	
+</table>
+
+{% endmacro %}
+
+
+{% macro feedbacktable(cols, data) %}
+
+<table class='sastable' id='feedbacktable' data-toggle='table' data-classes='table table-condensed table-bordered'
+	data-sort-order='asc' data-sort-name=''>
+
+</table>
+
+{% endmacro %}
+
+

@@ -1,0 +1,99 @@
+{# General Macros #}
+
+{# Drop-down download cube/rss button #}
+{% macro dropdownload(id, target) %}
+
+  <div class="btn-group" role="group">
+	<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	  Download All ...
+	  <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu" id='{{id}}' role="menu" >
+	  <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>Cubes</a></li>
+	  <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>RSS</a></li>
+	</ul>
+  </div>	
+				  
+{% endmacro %}
+
+{# Rsync Modal window #}
+{% macro rsyncmodal() %}
+
+	{# Rsync command modal #}
+	<div id='rsynclink' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='rsynclabel' aria-hidden='true'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Your Rsync Link</h4>
+				</div>
+				<div class='modal-body'>
+					<input type='text' class='form-control' id='rsyncbox'/>
+				</div>	
+			</div>
+		</div>
+	</div> {# end rsync modal #}
+
+{% endmacro %}
+
+{% macro hline() %}
+
+	<div class='row'>
+		<div class='col-md-12'>
+			<hr>
+		</div>
+	</div>
+	
+{% endmacro %}
+
+
+{# Login Modal #}
+{% macro login(fxn) %}
+	<div class='login'>
+	<form class='form' role='form' method='post' action='login' id='login_form'>
+		<input class='hidden' id='fxn' value='{{fxn}}'/>
+		<div class='modal fade loginmodal' id='loginform' tabindex='-1' role='dialog' aria-labeledby='loginlabel' aria-hidden='true'>
+			<div class='modal-dialog'>
+				<div class='modal-content'>	
+					{# Header #}
+					<div class='modal-header well'>	
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="resetLogin()"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Trac User Login </h4>								
+					</div>
+					{# Body #}
+					<div class='modal-body well'>
+						<div class='row'>
+							<div class='col-md-10'>
+								{# Username #}
+								<div class='form-group'>
+									<label for='username'>Username: </label>
+									<input type='text' class='form-control input-sm' name='username' id='username' placeholder='Username' value="" id='username'/>
+								</div>
+								{# Password #}
+								<div class='form-group'>
+									<label for='password'>Password: </label>
+									<input type='password' class='form-control input-sm' name='password' id='password' placeholder='Password' value="" id='password'/>
+								</div>	
+							</div>
+						</div>
+					</div>
+					{# Footer #}
+					<div class='modal-footer well'>
+						{# Login message and Comment submit button #}	
+						<div class='row'>
+							<div class='col-md-9' id='loginmessage'>
+								{% if not fxn %}<h4 class='alert alert-danger'>Input function must be specified for Login!</h4>{% endif %}
+							</div>
+							<div class='col-md-3'>
+								{% if fxn %}
+									<button type="button" onclick='login({{fxn}})' name="submitlogin_form" id='sublogin' class="btn btn-primary btn-lg" >Submit</button>
+								{% endif %}
+							</div>
+						</div>								
+					</div>						
+				</div>
+			</div>
+		</div> {# end login modal #}
+	</form>
+	</div>
+{% endmacro %}
