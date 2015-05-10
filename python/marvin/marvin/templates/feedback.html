@@ -20,7 +20,12 @@
 	// promote ticket
 	function promoteticket(ticketid) {
 		
-		$.post('https://internal.sdss.org/inspection/marvin/feedback/ticket/promote', {'id':ticketid},'json')
+		$.post({
+				url:'https://internal.sdss.org/inspection/marvin/feedback/ticket/promote',
+				data: {'id':ticketid},
+				headers: {u'content-type': u'application/x-www-form-urlencoded'},
+				dataType: 'json'
+			})
 			.done(function(data){
 				if (data.result['status'] < 0) {
 					alert(data.result['message']);
