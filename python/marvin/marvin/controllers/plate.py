@@ -109,6 +109,7 @@ def plate():
     plver = valueFromRequest(key='version',request=request, default=None)
     print('pl version',plver)
     plateinfo['plate'] = plate
+    plateinfo['inspection'] = None
     if plver: 
         version = plver
         print('version',version)

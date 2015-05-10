@@ -48,8 +48,10 @@
     				{% elif col == 'tracticket' %}
                         {% if 'ticket' in row[col] %}
                             <td><a target='_blank' href='https://internal.sdss.org/trac/test/{{row[col]}}'>{{row[col]}}</a></td>
+                        {% elif 'promote' in row[col] %}
+                            <td><button type='button' class='btn btn-primary btn-sm' onclick='promoteticket({{row["id"]}})' id='feedback{{row["id"]}}'>Promote</button></td>
                         {% else %}
-                            <td><button type='button' class='btn btn-primary' id='feedback{{row["id"]}}'>Promote</button></td>
+                            <td><button type='button' class='btn btn-default btn-sm' disabled id='feedback{{row["id"]}}'>Promote</button></td>
                         {% endif %}
     				{% else %}
     					<td>{{row[col] if 'qual' not in col else flags[rowloop.index0] if flags else row[col]}}</td>
