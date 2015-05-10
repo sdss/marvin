@@ -23,7 +23,7 @@
 		$.post({
 				url:'https://internal.sdss.org/inspection/marvin/feedback/ticket/promote',
 				data: {'id':ticketid},
-				headers: {u'content-type': u'application/x-www-form-urlencoded'},
+				headers: {'content-type': 'application/x-www-form-urlencoded'},
 				dataType: 'json'
 			})
 			.done(function(data){
