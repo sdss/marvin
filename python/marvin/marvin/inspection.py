@@ -25,6 +25,7 @@ class Inspection:
         self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope']}
         self.searchcomments = None
         self.recentcomments = None
+        self.ticket = None
         self.feedback = None
         self.feedbacks = None
         self.feedbacksubject = None
@@ -32,8 +33,8 @@ class Inspection:
         self.feedbacktype =  None
         self.feedbackproduct =  None
         self.tracticket =  None
+        self.tracticketid =  None
         self.cols = self.keys = []
-        self.memberids = None
         self.category_id = None
         self.issueids = None
         self.memberids = None
@@ -194,6 +195,8 @@ class Inspection:
         self.feedbacks = {}
     
     def set_feedback(self,id=None): self.feedback = None
+    
+    def promote_tracticket(self): pass
 
     def result(self):
         result = {'ready':self.ready,'message':self.message,'status':self.status,'alltags':self.alltags}
