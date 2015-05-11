@@ -76,8 +76,13 @@ def promotetracticket():
     
         # add feedback to db
         if id:
-            inspection.message("inspection looking up feedback id=%r" % id)
+            inspection.message = "inspection looking up feedback id=%r" % id
             """inspection.set_feedback(id=id)
             inspection.promote_tracticket()"""
 
-    return json.dumps(inspection.result)
+    result = inspection.result()
+    
+    if inspection.ready: current_app.logger.warning('Inspection> Trac Ticket {0}'.format(result))
+    else: current_app.logger.warning('Inspection> FAILED PROMOTE Trac Ticket {0}'.format(result))
+
+    return jsonify(result=result)
