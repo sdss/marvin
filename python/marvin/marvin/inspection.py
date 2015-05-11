@@ -192,6 +192,8 @@ class Inspection:
     
     def set_feedbacks(self):
         self.feedbacks = {}
+    
+    def set_feedback(self,id=None): self.feedback = None
 
     def result(self):
         result = {'ready':self.ready,'message':self.message,'status':self.status,'alltags':self.alltags}
