@@ -22,10 +22,11 @@
 
 		$.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
 			.done(function(data){
-                alert(data.result['message']);
 				if (data.result['status'] == 1) {
                   location.reload();
-				}
+				} else {
+                  alert(data.result['message']);
+                }
 			})
 			.fail(function(data){
                 alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
