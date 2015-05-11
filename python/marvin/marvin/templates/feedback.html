@@ -20,7 +20,7 @@
 	// Promote tracticket
 	function promoteTracticket(id){
 
-		$('#promotemessage').val('Promoting your ticket. Please wait...');
+		$('#promotemessage').html('Promoting your ticket. Please wait...');
 		$.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
 			.done(function(data){
 				if (data.result['status'] == 1) {
@@ -33,7 +33,7 @@
                 alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
 			})	
 			.always(function(data){
-				$('#promotemessage').val('');
+				$('#promotemessage').html('');
 			});		
 	}
 
