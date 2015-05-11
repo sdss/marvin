@@ -77,7 +77,7 @@ def promotetracticket():
         # add feedback to db
         if id:
             inspection.set_feedback(id=id)
-            #inspection.promote_tracticket()
+            inspection.promote_tracticket()
 
     result = inspection.result()
     
