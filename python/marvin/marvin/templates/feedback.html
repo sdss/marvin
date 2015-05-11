@@ -20,6 +20,7 @@
 	// Promote tracticket
 	function promoteTracticket(id){
 
+		$('#promotemessage').value('Promoting your ticket. Please wait...');
 		$.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
 			.done(function(data){
 				if (data.result['status'] == 1) {
@@ -30,7 +31,10 @@
 			})
 			.fail(function(data){
                 alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
-			});			
+			})	
+			.always(function(data){
+				$('#promotemessage').val('');
+			});		
 	}
 
 </script>
@@ -117,8 +121,8 @@
 {% if inspection.feedbacks %}
 	<div class='well'>
 		<div class='row'>
-			<div class='col-md-12'>
-				<span align='center'><h3> Current Feedback: </h3></span>
+			<div class='col-md-12' style='text-align: center;'>
+				<span><h3> Current Feedback: <small><b id='promotemessage'></b></small></h3></span>
 			</div>
 		</div>
 		<div class='row'>
