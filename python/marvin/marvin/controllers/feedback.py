@@ -63,7 +63,7 @@ def feedback():
     
     return render_template('feedback.html',**feedback)
 
-@feedback_page.route('/marvin/feedback/promotetracticket', methods=['GET','POST'])
+@feedback_page.route('/feedback/tracticket/promote', methods=['GET','POST'])
 def promotetracticket():
     ''' User feedback function to promote tracticket '''
     
@@ -80,4 +80,4 @@ def promotetracticket():
             """inspection.set_feedback(id=id)
             inspection.promote_tracticket()"""
 
-    return inspection.result
+    return json.dumps(inspection.result)

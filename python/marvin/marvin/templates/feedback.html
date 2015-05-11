@@ -20,7 +20,7 @@
 	// Promote tracticket
 	function promoteTracticket(id){
 
-		$.post($SCRIPT_ROOT + '/marvin/feedback/promotetracticket', {'id':id}, 'json')
+		$.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
 			.done(function(data){
 				if (data.result['status'] < 0) {
 					alert(data.result['message']);
