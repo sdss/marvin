@@ -179,7 +179,10 @@ class Inspection:
             self.status = 0
 
     def set_comments(self): pass
-    def set_recentcomments(self): pass
+    
+    def set_recentcomments(self):
+        self.recentcomments = {}
+        for category_id,category in self.category.items(): self.recentcomments.update({category_id:[]})
     
     def submit_feedback(self,form={}):
         self.message = "Please use the production site!"
