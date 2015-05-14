@@ -145,10 +145,12 @@ class Inspection:
 
     def get_category(self):
         category = []
-        categories = {1:'General',2:'Meta-data problems',3:'Target info',4:'Data problems'}
-        keys = {1:'general',2:'metadata',3:'target',4:'data'}
-        issues = {1:'wrong redshift',2:'wrong effective radius',3:'wrong inclination',4:'wrong center',5:'galaxy pair (physical)',6:'galaxy pair (projected)',7:'bright foreground star',8:'type I AGN (broad lines)',9:'gas/star kinematics misaligned',10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A'}
-        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12]]
+        categories = {1:'General',2:'Meta-data problems',3:'Target info',4:'Data problems',5:'DAP QA'}
+        keys = {1:'general',2:'metadata',3:'target',4:'data',5:'dapqa'}
+        issues = {1:'wrong redshift',2:'wrong effective radius',3:'wrong inclination',4:'wrong center',5:'galaxy pair (physical)',
+             6:'galaxy pair (projected)',7:'bright foreground star',8:'type I AGN (broad lines)',9:'gas/star kinematics misaligned',
+             10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A'}
+        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12],[]]
         for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'category':categories[i+1],'issues':[{'id':id,'issue':issues[id]} for id in issue_id]})
         return category
 

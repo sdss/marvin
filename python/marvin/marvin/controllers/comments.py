@@ -32,6 +32,7 @@ def getCommentForm():
     issueids = json.loads(issueids) if issueids else []
     tags = valueFromRequest(key='tags',request=request, default=None)
     tags = json.loads(tags) if tags else []
+    qacomment = valueFromRequest(key='qacomment',request=request, default=None)
 
     form={}
     form['plateid'] = plateid
@@ -41,6 +42,7 @@ def getCommentForm():
     form['comments'] = comments
     form['issueids'] = issueids
     form['tags'] = tags
+    form['qacomment'] = qacomment
 
     return form    
 
