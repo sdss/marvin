@@ -1,11 +1,12 @@
 {% from 'buildTable.html' import sastable %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("plate") %}
-{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login, dapcommentmap %}
 
 {% block head %}
 	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
 	<link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">	
 {% endblock head %}
 
 {% block code %}
@@ -107,10 +108,13 @@
 	// Toggle between comment form categories
 	$(function() {		
 		$('#commentcat').change(function () {
+			$('#dapcommentmap').hide();
     		$('.catissues').hide();
     		$('#catissue_'+$(this).val()).fadeIn();
     		$('.catcomments').hide();
     		$('#catcomment_'+$(this).val()).fadeIn();
+    		var catvalue = $('#commentcat option:selected').val();
+    		if (catvalue == 'dapqa') $('#dapcommentmap').show();
 		});
 	});
 
@@ -129,6 +133,7 @@
         	tagbox.removeTag(tag);
         });
         tagbox.removeLastTag();
+        $('#dapcommentmap').hide();
 	}
 
 	// Submit add comment form
@@ -161,9 +166,19 @@
 		var tagbox = $('#tagfield').tags();
 		var tags = tagbox.getTags();
 		tags = JSON.stringify(tags);
+		
+		//grab DAP QA map comment
+		var qacomment = $('#qacomment').html();
+		var qalen = qacomment.split('-').length;
+		var qatype = qacomment.split('-')[0];
+		if (qalen > 1 && (qatype=='spectra' && qalen < 4) || (qatype=='map' && qalen < 3)) {
+			var htmlstr = "<div class='alert alert-danger' role='alert'><h4>DAP QA Map-Comment chain must be completed.</h4></div>";
+			$('#commentmessage').html(htmlstr);
+			return;
+		}
 
 		$.post($SCRIPT_ROOT + '/marvin/addcomment', {'cubepk':cubepk,'plateid':plateid,'ifuname':ifuname,'version':version,
-			'comments':comments,'issueids':issueids, 'tags':tags},'json')
+			'comments':comments,'issueids':issueids, 'tags':tags, 'qacomment':qacomment},'json')
 			.done(function(data){
 				if (data.result['status'] < 0) {
 					// bad submit
@@ -304,10 +319,62 @@
 		//setTimeout(resetLogin, 1500);
 		//setTimeout(getComment, 1500, cubepk);	
 	}
-		
+
+	// DAP QA Comment / Map functions
+
+	//toggle dap QA buttons
+	$(function() {
+		$('.dropdown-menu#qatypelist').on('click','li a', function() {
+			$('.qabtns').hide();
+			var id = $(this).attr('id');
+			$('#'+$(this).attr('id')+'grp').show();
+			$('#qacomment').html(id);
+		});
+	});
+
+	// toggle new dap QA buttons
+	$(function() {
+		$('.dropdown-menu.qalist').on('click','li a', function() {
+			var id = $(this).attr('id');
+			var parentid = $(this).parent().parent().attr('id');
+			if (parentid == 'spectralist') $('.spbtns').hide();
+			var butclass = $(this).parent().parent().attr('class').split(' ')[2];
+			var butid = butclass.split('but')[1];
+			var type = parentid.split('list')[0];
+			if (type == 'spectra') {
+				$('#'+type+'typegrp_'+id).show();
+			} else if (type == 'spectratype') {
+				$('#specnum').show();
+			} else {
+				$('#'+type+'typegrp').show();
+			}
+			
+			// build html reference
+			var html = $('#qacomment').html();
+			var htmlarr = html.split('-');
+			html = htmlarr.slice(0,butid).join('-')+'-';
+			html += id;
+			$('#qacomment').html(html);
+		});
+	});	
+	
+	// toggle dap QA spectrum input
+	$(function() {
+		$('#specnum').on('input', function() {
+    		var num = $(this).val();
+    		var butclass = $(this).attr('class').split(' ')[2];
+    		var butid = butclass.split('but')[1];
+			// build html reference
+			var html = $('#qacomment').html();
+			var htmlarr = html.split('-');
+			html = htmlarr.slice(0,butid).join('-')+'-';
+			html += num;
+			$('#qacomment').html(html);
+		});
+	});		
+	
 </script>
 {% endblock code %}
-
 
 
 
@@ -546,6 +613,13 @@
 									<div class='col-md-10'>
 										<label for='tagfield'>Tags: <small>(Enter a word or phrase and press Return)</small></label>
 										<div class='tag-list' id='tagfield'></div>
+									</div>
+								</div>
+								{# DAP QA Maps #}
+								<div class='row' id='dapcommentmap' style='padding-top:5px; display:none;'>
+									<div class='col-md-10'>
+									<label for='testbut'> DAP QA Map: </label>
+									 {{dapcommentmap()}} 									
 									</div>
 								</div>
 							</div>	

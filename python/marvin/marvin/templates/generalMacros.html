@@ -97,3 +97,73 @@
 	</form>
 	</div>
 {% endmacro %}
+
+{# DAP QA Comment-Map Map #}
+{% macro dapcommentmap() %}
+
+	<div class='btn-group' id='qagroup'>
+		<div class='btn-group'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='mapdownload' data-toggle='dropdown' aria-expanded='false'>QA Type <span class='caret'></span></button>
+			<ul class='dropdown-menu but0' role='menu' id='qatypelist'>
+				<li><a id='map'>Maps</a></li>
+				<li><a id='spectra'>Spectra</a></li>
+			</ul>					
+		</div>
+
+		<div class='btn-group qabtns' id='mapgrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='maplist' data-toggle='dropdown' aria-expanded='false'>Maps: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but1' role='menu' id='maplist'>
+				<li><a id='none'>None</a></li>
+				<li><a id='ston'>STON</a></li>
+			</ul>
+		</div>
+
+		<div class='btn-group qabtns' id='spectragrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='spectralist' data-toggle='dropdown' aria-expanded='false'>Spectra: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but1' role='menu' id='spectralist'>
+				<li><a id='cube'>Cube</a></li>
+				<li><a id='rss'>RSS</a></li>
+			</ul>
+		</div>
+
+		<div class='btn-group qabtns mapbtns' id='maptypegrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='maptypelist' data-toggle='dropdown' aria-expanded='false'>Map Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but2' role='menu' id='maptypelist'>
+				<li><a id='bin_num'>Bin_Num</a></li>
+				<li><a id='emflux'>EMflux</a></li>
+				<li><a id='kin'>Kin</a></li>
+				<li><a id='snr'>SNR</a></li>
+			</ul>
+		</div>	
+
+		<div class='btn-group qabtns spbtns' id='spectratypegrp_cube' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='spectratypelist' data-toggle='dropdown' aria-expanded='false'>Cube Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but2' role='menu' id='spectratypelist'>
+				<li><a id='ston1'>STON-001</a></li>
+				<li><a id='none2'>None-002</a></li>
+				<li><a id='rad3'>Radial-003</a></li>
+				<li><a id='rad4'>Radial-004</a></li>
+				<li><a id='all5'>All-005</a></li>
+				<li><a id='all6'>All-006</a></li>
+				<li><a id='all7'>All-007</a></li>
+			</ul>
+		</div>						
+
+		<div class='btn-group qabtns spbtns' id='spectratypegrp_rss' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='spectratypelist' data-toggle='dropdown' aria-expanded='false'>RSS Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but2' role='menu' id='spectratypelist'>
+				<li><a id='rad1'>Radial-001</a></li>
+				<li><a id='rad2'>Radial-002</a></li>
+				<li><a id='all3'>All-003</a></li>
+				<li><a id='all4'>All-004</a></li>
+				<li><a id='all5'>All-005</a></li>
+			</ul>
+		</div>	
+		
+		<input type='text' class='input-sm qabtns but3 spbtns' value='' name='specnum' style='display:none;' id='specnum' placeholder='Spectrum Number'/>				
+		
+	</div> 
+	
+	<div id='qacomment'>
+	</div>
+{% endmacro %}
