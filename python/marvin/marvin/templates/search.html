@@ -25,9 +25,7 @@
 	});
             
 	// Enable select picker
-	$(function(){
-		$('.selectpicker').selectpicker();
-	});
+	enableSelectPicker();
 
 	// Toggle between plate and mjd search
 	$(function() {		
@@ -98,11 +96,12 @@
 	// Submit comment form
 	$(function(){
 		$('#comment_form').submit(function(event){
-			var issuelist = [];
+			/*var issuelist = [];
 			$('.issuesp :checked').each(function(){
 				issuelist.push(this.value);
 			});
-			issuelist = (issuelist.length == 0) ? 'any' : issuelist
+			issuelist = (issuelist.length == 0) ? 'any' : issuelist*/
+			var issuelist = getSelected('issuesp');
 			$('#issues').val(issuelist);
 						
 		});
@@ -111,11 +110,12 @@
 	// Submit guided search form
 	$(function() {
 		$('#searchform').submit(function(event){
-			var taglist = [];
+			/*var taglist = [];
 			$('.tagsp :checked').each(function(){
 				taglist.push(this.value);
 			});
-			taglist = (taglist.length == 0) ? 'any' : taglist
+			taglist = (taglist.length == 0) ? 'any' : taglist*/
+			var taglist = getSelected('tagsp');
 			$('#tagids').val(taglist);
 		});
 	});	

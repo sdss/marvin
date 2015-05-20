@@ -24,7 +24,7 @@ class Inspection:
         self.alltags = {'1':'test','2':'elliptical','3':'galaxy'}
         self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope']}
         self.searchcomments = None
-        self.recentcomments = None
+        self.recentcomments = {'1':['Hello'],'2':[],'3':[],'4':[],'5':[]}
         self.ticket = None
         self.feedback = None
         self.feedbacks = None
@@ -136,7 +136,7 @@ class Inspection:
             self.category = []
             for category in self.get_category():
                 issues = [(issue['id'],issue['issue']) for issue in category['issues']]
-                self.category.append((category['id'],OrderedDict([('category',category['category']),('key',category['key']),('issues',OrderedDict(issues))])))
+                self.category.append((category['id'],OrderedDict([('category',category['category']),('subcats',category['subcats']),('key',category['key']),('subkeys',category['subkeys']),('issues',OrderedDict(issues))])))
             self.category = OrderedDict(self.category)
             if update_session: self.set_session_category()
         else:
@@ -146,14 +146,24 @@ class Inspection:
     def get_category(self):
         category = []
         categories = {1:'General',2:'Meta-data problems',3:'Target info',4:'Data problems',5:'DAP QA'}
+        subcats = {1:[],2:[],3:[],4:[],5:['Maps','Radial Gradients','Spectra']}
         keys = {1:'general',2:'metadata',3:'target',4:'data',5:'dapqa'}
+        subkeys = {1:[],2:[],3:[],4:[],5:['maps','radgrad','spectra']}
         issues = {1:'wrong redshift',2:'wrong effective radius',3:'wrong inclination',4:'wrong center',5:'galaxy pair (physical)',
              6:'galaxy pair (projected)',7:'bright foreground star',8:'type I AGN (broad lines)',9:'gas/star kinematics misaligned',
-             10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A'}
-        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12],[]]
-        for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'category':categories[i+1],'issues':[{'id':id,'issue':issues[id]} for id in issue_id]})
+             10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A', 
+             13:'Bad Color Scale',14:'High Chi^2 (w/ small residuals)',15:'Discontinuities',16:'Irregular Kinematics', 
+             17: 'Satellite(s)?',18:'Background/Foreground Galaxy?',19:'Foreground Star',
+             20:'Large Differences between Wang & Belfiore gradients',
+             21:'Poor Sky Subtraction (unmasked)',22:'Poor Continuum Fit',23:'Dichroic Dip',
+             24:'Strongly nonGaussian emission lines',
+             25:'Poor Wang OII', 26:'Poor Wang Hbeta', 27:'Poor Wang OIII', 28:'Poor Wang NII', 29:'Poor Wang Halpha', 30:'Poor Wang SII',
+             31:'Poor Belfiore OII', 32:'Poor Belfiore Hbeta', 33:'Poor Belfiore OIII', 34:'Poor Belfiore NII', 35:'Poor Belfiore Halpha', 36:'Poor Belfiore SII',
+             }
+        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12],[13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]]
+        subissues = [[],[],[],[],[1,1,1,1,1,1,1,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]]
+        for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'subkeys':subkeys[i+1],'category':categories[i+1],'subcats':subcats[i+1],'issues':[{'id':id,'issue':issues[id],'subissue':subissues[i][subi] if subissues[i] else None} for subi,id in enumerate(issue_id)]})
         return category
-
 
     def set_ifudesign(self,plateid=None,ifuname=None):
         self.plateid = plateid
@@ -208,4 +218,5 @@ class Inspection:
         if self.session and 'member_fullname' in self.session: result.update({'membername':self.session['member_fullname']})
         if self.comments: result.update({'comments':self.comments})
         if self.recentcomments: result.update({'recentcomments':self.recentcomments})
+        if self.tags: result.update({'tags':self.tags})
         return result

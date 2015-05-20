@@ -93,3 +93,18 @@ $(function() {
 	});
 });
 
+// Enable select picker
+function enableSelectPicker() {
+	$('.selectpicker').selectpicker();
+}
+
+// Get selected from picker
+function getSelected(name) {
+	var selectlist = [];
+	var jname = '.'+name+' :checked';
+	$(jname).each(function(){
+		selectlist.push(this.value);
+	});
+	selectlist = (selectlist.length == 0) ? 'any' : selectlist;
+	return selectlist;
+}

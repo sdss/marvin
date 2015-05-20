@@ -1,12 +1,12 @@
 {% from 'buildTable.html' import sastable %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("plate") %}
-{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login, dapcommentmap %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login %}
 
 {% block head %}
 	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
 	<link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
-    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">	
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
 {% endblock head %}
 
 {% block code %}
@@ -108,13 +108,43 @@
 	// Toggle between comment form categories
 	$(function() {		
 		$('#commentcat').change(function () {
-			$('#dapcommentmap').hide();
+			// hide everything
+			$('.dapqacomms').hide();
     		$('.catissues').hide();
-    		$('#catissue_'+$(this).val()).fadeIn();
     		$('.catcomments').hide();
+    		// display new things
     		$('#catcomment_'+$(this).val()).fadeIn();
     		var catvalue = $('#commentcat option:selected').val();
-    		if (catvalue == 'dapqa') $('#dapcommentmap').show();
+    		if (catvalue == 'dapqa') $('.dapqacomms').show();
+    		// deal with issues
+    		console.log('catvalue',catvalue);
+    		$('#catissue_'+$(this).val()).fadeIn();
+    		$('input.dapissues').attr('disabled',true);
+    		if (catvalue == 'dapqa') {
+    			console.log('test',$('.subcats').attr('id')+'_select');
+    			var subcatid = $('.subcats').attr('id')+'_select';
+    			console.log(subcatid+' option:selected');
+				var dapissuetype = $('#'+subcatid+' option:selected').val();
+				console.log('input.'+dapissuetype);
+				$('input.'+dapissuetype).removeAttr('disabled');
+				$('input[type=checkbox]:disabled').parent().parent().addClass('has-warning','tempdisabled');
+			}
+		});
+	});
+	
+	// Toggle between DAP issues
+	$(function() {
+		$('.subcats').change(function() {
+			$('input[type=checkbox]:disabled').parent().parent().removeClass('has-warning','tempdisabled');
+			$('input.dapissues').attr('disabled',true);
+			var subcatid = $('.subcats').attr('id')+'_select';
+			var dapissuetype = $('#'+subcatid+' option:selected').val();
+			$('input.'+dapissuetype).removeAttr('disabled');
+			$('input[type=checkbox]:disabled').parent().parent().addClass('has-warning','tempdisabled');
+			//$('.dapissues').hide();
+			//var dapissuetype = $(this).val();
+			//console.log('dap issue val',dapissuetype);
+			//$('.'+dapissuetype).fadeIn();
 		});
 	});
 
@@ -133,14 +163,14 @@
         	tagbox.removeTag(tag);
         });
         tagbox.removeLastTag();
-        $('#dapcommentmap').hide();
+        $('.dapqacomms').hide();
 	}
 
 	// Submit add comment form
 	function submitcomment() {
 
 		// grab cube info
-		var plateid = {{plate.id}};		
+		var plateid = {{plate.id|safe}};		
 		var version = {{version|tojson|safe}};
 		var cubepk = $('#cubepk').val();
 		var ifuname = $('#ifuname').val(); 
@@ -171,7 +201,8 @@
 		var qacomment = $('#qacomment').html();
 		var qalen = qacomment.split('-').length;
 		var qatype = qacomment.split('-')[0];
-		if (qalen > 1 && (qatype=='spectra' && qalen < 4) || (qatype=='map' && qalen < 3)) {
+		console.log('qacomment', qacomment, 'qalen', qalen);
+		if (qalen > 0 && qalen < 4) {
 			var htmlstr = "<div class='alert alert-danger' role='alert'><h4>DAP QA Map-Comment chain must be completed.</h4></div>";
 			$('#commentmessage').html(htmlstr);
 			return;
@@ -335,30 +366,54 @@
 	// toggle new dap QA buttons
 	$(function() {
 		$('.dropdown-menu.qalist').on('click','li a', function() {
+			// extract various ids and tags
 			var id = $(this).attr('id');
 			var parentid = $(this).parent().parent().attr('id');
-			if (parentid == 'spectralist') $('.spbtns').hide();
 			var butclass = $(this).parent().parent().attr('class').split(' ')[2];
 			var butid = butclass.split('but')[1];
 			var type = parentid.split('list')[0];
-			if (type == 'spectra') {
-				$('#'+type+'typegrp_'+id).show();
-			} else if (type == 'spectratype') {
-				$('#specnum').show();
-			} else {
-				$('#'+type+'typegrp').show();
-			}
 			
+			// hide and reset buttons and values
+			if ($.inArray(type,['maptype','cubetype','rsstype']) >= 0) $('.mapbtns').hide();
+			$('#specnum').val('');
+
 			// build html reference
 			var html = $('#qacomment').html();
 			var htmlarr = html.split('-');
 			html = htmlarr.slice(0,butid).join('-')+'-';
 			html += id;
 			$('#qacomment').html(html);
+			
+			// map type button 3
+			$('#mapgrp').show();
+			$('.mapgood').show();
+			if (id.search('rad') > -1 || html.search('rad') > -1) $('.norad').hide();
+			if (id.search('all') > -1 || html.search('all') > -1) $('.noall').hide();
+			
+			// sub-type button 4
+			if (id == 'spec' && parentid=='maptypelist') {
+				$('#specnum').show();
+			} else if (parentid == 'maptypelist' && id.search('binnum') < 0) {
+				$('#subtypegrp').show();
+				$('.all').hide();
+				if (id.search('em') > -1) $('.em').show();
+				if (id.search('sn') > -1) $('.sn').show();
+				if (id.search('kin') > -1) {
+					$('.kin').show();
+					if (html.search('ston') > -1) {
+						$('.none').hide();
+						$('.ston').show();
+					} else if (html.search('none') > -1) {
+						$('.ston').hide();
+						$('.none').show();
+					}					
+				}	
+			} else if (id.search('binnum') > -1) $('#subtypegrp').hide();
+
 		});
 	});	
-	
-	// toggle dap QA spectrum input
+
+	// toggle dap QA spectrum input	
 	$(function() {
 		$('#specnum').on('input', function() {
     		var num = $(this).val();
@@ -372,7 +427,6 @@
 			$('#qacomment').html(html);
 		});
 	});		
-	
 </script>
 {% endblock code %}
 
@@ -541,105 +595,7 @@
 		</div>
 
 		{# Comment Form #}
-		<div class='comments'>
-		<form class='form' role='form' method='post' action='addComment' id='addcomment_form'>
-			<div class='modal fade commentmodal' id='commentform' tabindex='-1' role='dialog' aria-labeledby='commentlabel' aria-hidden='true'>
-				<div class='modal-dialog modal-lg'>
-					<div class='modal-content'>
-						{# Comment header #}
-						<div class='modal-header well'>	
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="resetCommentForm()"><span aria-hidden="true">&times;</span></button>
-							<h4 class="modal-title">Comment Form</h4>								
-						</div>
-						{# Comment body #}
-						<div class='modal-body well'>
-							<div class='well container-fluid' style='background-color:rgba(245,245,245,0.4)'>
-								<div class='row'>
-									<input class='hidden' id='cubepk' name='cubepk' value=''/>
-									<input class='hidden' id='ifuname' name='ifuname' value=''/>
-									{# Comment Categories #}
-									<div class='col-md-4'>
-										<label for='commentcat' class='control-label'>Category / Issues:</label>
-										<select class='form-control' id='commentcat'>
-											{% for catid, category in inspection.category|dictsort %}
-												{% if loop.index0 == 0 %}
-													<option id='{{catid}}' value='{{category.key}}' selected>{{category.category}}</option>
-												{% else %}
-													<option id='{{catid}}' value='{{category.key}}'>{{category.category}}</option>
-												{% endif %}
-											{% endfor %}
-										</select>     
-									</div>
-									{# Comment Issues #}
-									<div class='col-md-8'>
-										{% for catid, category in inspection.category|dictsort %}
-											<div class='catissues' id='catissue_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
-												{% for issid,issue in category.issues|dictsort %}
-													{% if loop.index0 % 3 == 0 %}<div class='row'>{% endif %}
-													<div class='col-md-4'>
-													<div class='checkbox'>
-														<label class='checkbox-inline'><input class='issues' id='issue{{issid}}' type='checkbox' value='issue{{issid}}'>{{issue}}</label>
-													</div>
-													</div>
-													{% if loop.index0 % 3 == 2 or loop.last %}</div>{% endif %}
-												{% endfor %}
-											</div>
-										{% endfor %}
-									</div>																					
-								</div>
-								{# Comment Comments #}
-								{% for catid, category in inspection.category|dictsort %}
-								<div class='catcomments' id='catcomment_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
-									{# Previous comments from user #}
-									<div class='row'>
-										<div class='col-md-10'>
-											<label id='userlabel_{{catid}}'>Previous Comments on {{category.category}} from User: </label>
-											<select class='usercomments form-control' id='recentcomments_{{catid}}'>
-											</select>
-										</div>
-									</div>
-									{# Comment text box #}
-									<div class='row'>
-										<div class='col-md-10'>
-											<label for='commentfield' class='control-label'>Comment:</label>
-											<textarea class='form-control commentfield' rows='5' id='commentfield_{{catid}}' name='commentfield' placeholder='Comment for {{category.category}}'></textarea>
-											<label id='commentsubmitted_{{catid}}' class='pull-right'></label>
-										</div>
-									</div>
-								</div>
-								{% endfor %}
-								{# Comment Tags #}
-								<div class='row' id='commenttags'>
-									<div class='col-md-10'>
-										<label for='tagfield'>Tags: <small>(Enter a word or phrase and press Return)</small></label>
-										<div class='tag-list' id='tagfield'></div>
-									</div>
-								</div>
-								{# DAP QA Maps #}
-								<div class='row' id='dapcommentmap' style='padding-top:5px; display:none;'>
-									<div class='col-md-10'>
-									<label for='testbut'> DAP QA Map: </label>
-									 {{dapcommentmap()}} 									
-									</div>
-								</div>
-							</div>	
-						</div> {# end modal body #}
-						{# Comment Footer #}
-						<div class='modal-footer well'>
-							{# Feedback message and Comment submit button #}	
-							<div class='row'>
-								<div class='col-md-9' id='commentmessage'>
-								</div>
-								<div class='col-md-3'>
-									<button type="button" onclick='submitcomment()' name="submitcomment_form" id='subcomment' class="btn btn-primary btn-lg" >Submit</button>
-								</div>
-							</div>								
-						</div>
-					</div>
-				</div>
-			</div>{# end comment modal #}
-		</form>
-		</div>
+		{% include 'commentform.html' %}
 
 		{# Login Modal #}
 		{{login('grabComments')}}
