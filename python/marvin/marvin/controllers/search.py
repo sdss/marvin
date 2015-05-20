@@ -333,7 +333,7 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
 	               try: low,up = value.split(',')
 	               except ValueError:
 	                   try: low,up = value.split()
-	                   except ValueError: low,upp = [None,None]
+	                   except ValueError: low,up = [None,None]
 	            # build query
 	            if low:       
 	                query = query.filter(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) >= low, datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) <= up)

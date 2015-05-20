@@ -123,6 +123,7 @@ def create_app(debug=False):
     from .controllers.images import image_page
     from .controllers.comments import comment_page
     from .controllers.feedback import feedback_page
+    from .controllers.explore import explore_page
     
     url_prefix = '' if localhost else '/marvin'
 
@@ -133,6 +134,7 @@ def create_app(debug=False):
     app.register_blueprint(image_page, url_prefix=url_prefix)
     app.register_blueprint(comment_page, url_prefix=url_prefix)
     app.register_blueprint(feedback_page, url_prefix=url_prefix)
+    app.register_blueprint(explore_page, url_prefix=url_prefix)
     
     return app
 

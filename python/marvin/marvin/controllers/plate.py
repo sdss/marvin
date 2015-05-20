@@ -174,6 +174,7 @@ def plate():
         inspection.retrieve_cubecomments()
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
+        print(inspection.category)
         result = inspection.result()
         if inspection.ready: current_app.logger.warning('Inspection> GET cubecomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> NOT READY TO GET cubecomments: {0}'.format(result))

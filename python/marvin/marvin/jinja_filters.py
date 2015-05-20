@@ -100,3 +100,30 @@ def getNSAval(value, id, mag=None, form=None):
             value = nsatext[full.index(val)] if nsatext[full.index(val)] else value
     
     return value
+    
+def dapissuetype(value,id):
+    ''' Define the DAP QA issue type '''
+    
+    print('dap id',id)
+    if id in range(13,20): value = 'dapissues maps'
+    if id == 20: value = 'dapissues radgrad'
+    if id in range(21,37): value = 'dapissues spectra'
+    
+    return value
+    
+def dapclass(value,id):
+    ''' add a dap class '''
+    if id == 5: value='dapqacomms'
+    return value
+    
+def issuesubcat(value):
+    ''' returns a subcategory for a given issue '''
+    #temporary fix
+    print('value',value)
+    if value in range(13,20): return 1
+    if value == 20: return 2
+    if value in range(21,37): return 3
+    
+    
+    
+    

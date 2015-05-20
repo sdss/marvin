@@ -11,6 +11,7 @@ python/marvin/marvin/configuration_files/utah.cfg -text
 python/marvin/marvin/controllers/__init__.py -text
 python/marvin/marvin/controllers/comments.py -text
 python/marvin/marvin/controllers/current.py -text
+python/marvin/marvin/controllers/explore.py -text
 python/marvin/marvin/controllers/feedback.py -text
 python/marvin/marvin/controllers/images.py -text
 python/marvin/marvin/controllers/index.py -text
@@ -41,6 +42,7 @@ python/marvin/marvin/static/fonts/glyphicons-halflings-regular.ttf -text svneol=
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff -text
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff2 -text
 python/marvin/marvin/static/images/logo.jpg -text svneol=unset#image/jpeg
+python/marvin/marvin/static/images/marvin_favicon.ico -text
 python/marvin/marvin/static/js/bootstrap-datetimepicker.min.js -text
 python/marvin/marvin/static/js/bootstrap-select.js -text
 python/marvin/marvin/static/js/bootstrap-select.js.map -text
@@ -62,7 +64,9 @@ python/marvin/marvin/static/js/tableMethods.js -text
 python/marvin/marvin/static/js/utils.js -text
 python/marvin/marvin/static/js/validator.min.js -text
 python/marvin/marvin/templates/buildTable.html -text
+python/marvin/marvin/templates/commentform.html -text
 python/marvin/marvin/templates/current.html -text
+python/marvin/marvin/templates/explore.html -text
 python/marvin/marvin/templates/feedback.html -text
 python/marvin/marvin/templates/footer.html -text
 python/marvin/marvin/templates/generalMacros.html -text
