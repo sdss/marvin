@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
-import flask, sqlalchemy, json
+import flask, sqlalchemy, json, os, glob
 from flask import request, render_template, send_from_directory, current_app, session as current_session,jsonify
 from ..model.database import db
-from ..utilities import processTableData
+from ..utilities import processTableData, getImages, getDAPImages
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 try:
-    from . import valueFromRequest
+    from . import valueFromRequest,processRequest
 except ValueError:
     pass
 
@@ -32,7 +32,6 @@ def getCommentForm():
     issueids = json.loads(issueids) if issueids else []
     tags = valueFromRequest(key='tags',request=request, default=None)
     tags = json.loads(tags) if tags else []
-    qacomment = valueFromRequest(key='qacomment',request=request, default=None)
 
     form={}
     form['plateid'] = plateid
@@ -42,7 +41,6 @@ def getCommentForm():
     form['comments'] = comments
     form['issueids'] = issueids
     form['tags'] = tags
-    form['qacomment'] = qacomment
 
     return form    
 
@@ -128,5 +126,67 @@ def login():
     else: current_app.logger.warning('Inspection> FAILED LOGIN {0}'.format(result))
 
     return jsonify(result=result)
+
+# DAP Plot Panel Retrieval    
+@comment_page.route('/marvin/getdappanel', methods=['GET','POST'])
+@comment_page.route('/getdappanel', methods=['GET','POST'])
+def getdappanel():
+    ''' Retrieve a DAP QA panel of plots based on form data'''
+    
+    current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
+    dapform = processRequest(request=request)
+    
+    # Get test plots
+    #images = getImages(plate=dapform['plateid'], version=dapform['drpver'])
+    #imglist = [images[0]]*6 if dapform['mapid']=='kin' else [images[10]]*6 if dapform['mapid']=='snr' else None
+    
+    # Get real plots
+    mode,bintype = dapform['qatype'].split('-')
+    imglist = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+    
+    print('imglist', imglist)
+    
+    # Filter List for large Spectra
+    #if dapform['key'] == 'spectra':
+    #    if len(imglist) > 5: imglist = imglist[0:1]
+    
+    # Build title
+    qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
+    defaulttitle = {'maps':'Maps','radgrad':'Radial Gradients','spectra':'Spectra'}
+    maptype = {'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}
+    newtitle = '{1}: {2}-{0}'.format(maptype[dapform['mapid']],defaulttitle[dapform['key']],qatype) if dapform['mapid'] in maptype else defaulttitle[dapform['key']]
+    
+    print('newtitle', newtitle)
+
+    result={}
+    result['title'] = newtitle
+    result['images'] = imglist
+    result['status'] = 'success'
+    
+    return jsonify(result=result)
+
+@comment_page.route('/marvin/getdapspeclist', methods=['POST'])   
+@comment_page.route('/getdapspeclist', methods=['POST'])   
+def getdapspeclist():
+    ''' Retrieve a list of DAP spectra for a given set of inputs '''
+    
+    current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
+    dapform = processRequest(request=request)
+
+    # get real plots
+    mode,bintype = dapform['qatype'].split('-')
+    imglist = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+    
+    # extract spectra names
+    speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
+    print('speclist', speclist)
+
+    result={}
+    result['speclist'] = speclist
+    result['status'] = 'success'
+    
+    return jsonify(result=result)
+
     
     
+        

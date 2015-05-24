@@ -17,6 +17,7 @@ class Inspection:
         self.set_ifudesign()
         self.set_cube()
         self.set_category()
+        self.set_dapqa_category()
         self.comment = None
         self.comments = None
         self.cubecomments = None
@@ -128,43 +129,62 @@ class Inspection:
                 except: self.session['inspection_counter'] = None
             else: self.session['inspection_counter'] = self.session['inspection_counter'] + 1 if 'inspection_counter' in self.session else 1
     
-    def set_session_category(self):
-        if self.session is not None: self.session['inspection_category'] = self.category
+    def set_session_category(self,dapqa=False):
+        if self.session is not None: 
+            if not dapqa: self.session['inspection_category'] = self.category
+            else: self.session['inspection_dapqacategory'] =  self.dapqacategory
 
     def set_category(self,update_session=True):
         if self.session is None or 'inspection_category' not in self.session:
             self.category = []
             for category in self.get_category():
                 issues = [(issue['id'],issue['issue']) for issue in category['issues']]
-                self.category.append((category['id'],OrderedDict([('category',category['category']),('subcats',category['subcats']),('key',category['key']),('subkeys',category['subkeys']),('issues',OrderedDict(issues))])))
+                self.category.append((category['id'],OrderedDict([('category',category['category']),('key',category['key']),('issues',OrderedDict(issues))])))
             self.category = OrderedDict(self.category)
             if update_session: self.set_session_category()
         else:
             self.category = self.session['inspection_category']
             self.set_counter()
 
+    def set_dapqa_category(self,update_session=True):
+        if self.session is None or 'inspection_dapqacategory' not in self.session:
+            self.dapqacategory = []
+            for category in self.get_dapqa_category():
+                issues = [(issue['id'],issue['issue']) for issue in category['issues']]
+                self.dapqacategory.append((category['id'],OrderedDict([('category',category['category']),('key',category['key']),('issues',OrderedDict(issues))])))
+            self.dapqacategory = OrderedDict(self.dapqacategory)
+            if update_session: self.set_session_category(dapqa=True)
+        else:
+            self.dapqacategory = self.session['inspection_dapqacategory']
+            self.set_counter()        	
+
     def get_category(self):
         category = []
         categories = {1:'General',2:'Meta-data problems',3:'Target info',4:'Data problems',5:'DAP QA'}
-        subcats = {1:[],2:[],3:[],4:[],5:['Maps','Radial Gradients','Spectra']}
         keys = {1:'general',2:'metadata',3:'target',4:'data',5:'dapqa'}
-        subkeys = {1:[],2:[],3:[],4:[],5:['maps','radgrad','spectra']}
         issues = {1:'wrong redshift',2:'wrong effective radius',3:'wrong inclination',4:'wrong center',5:'galaxy pair (physical)',
              6:'galaxy pair (projected)',7:'bright foreground star',8:'type I AGN (broad lines)',9:'gas/star kinematics misaligned',
-             10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A', 
-             13:'Bad Color Scale',14:'High Chi^2 (w/ small residuals)',15:'Discontinuities',16:'Irregular Kinematics', 
-             17: 'Satellite(s)?',18:'Background/Foreground Galaxy?',19:'Foreground Star',
-             20:'Large Differences between Wang & Belfiore gradients',
-             21:'Poor Sky Subtraction (unmasked)',22:'Poor Continuum Fit',23:'Dichroic Dip',
-             24:'Strongly nonGaussian emission lines',
-             25:'Poor Wang OII', 26:'Poor Wang Hbeta', 27:'Poor Wang OIII', 28:'Poor Wang NII', 29:'Poor Wang Halpha', 30:'Poor Wang SII',
-             31:'Poor Belfiore OII', 32:'Poor Belfiore Hbeta', 33:'Poor Belfiore OIII', 34:'Poor Belfiore NII', 35:'Poor Belfiore Halpha', 36:'Poor Belfiore SII',
-             }
-        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12],[13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]]
-        subissues = [[],[],[],[],[1,1,1,1,1,1,1,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]]
-        for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'subkeys':subkeys[i+1],'category':categories[i+1],'subcats':subcats[i+1],'issues':[{'id':id,'issue':issues[id],'subissue':subissues[i][subi] if subissues[i] else None} for subi,id in enumerate(issue_id)]})
+             10:'poor sky subtraction',11:'flux calibration problems',12:'excess light at > 9000 A'}
+        issue_id_per_category = [[],[1,2,3,4],[5,6,7,8,9],[10,11,12]]
+        for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'category':categories[i+1],'issues':[{'id':id,'issue':issues[id]} for id in issue_id]})
         return category
-
+    
+    def get_dapqa_category(self):
+        category = []
+        categories = {1:'Maps',2:'Radial Gradients',3:'Spectra'}
+        keys = {1:'maps',2:'radgrad',3:'spectra'}
+        issues = {1:'Bad Color Scale',2:'High Chi^2 (w/ small residuals)',3:'Discontinuities',4:'Irregular Kinematics', 
+             5: 'Satellite(s)?',6:'Background/Foreground Galaxy?',7:'Foreground Star',
+             8:'Large Differences between Wang & Belfiore gradients',
+             9:'Poor Sky Subtraction (unmasked)',10:'Poor Continuum Fit',11:'Dichroic Dip',
+             12:'Strongly nonGaussian emission lines',
+             13:'Poor Wang OII', 14:'Poor Wang Hbeta', 15:'Poor Wang OIII', 16:'Poor Wang NII', 17:'Poor Wang Halpha', 18:'Poor Wang SII',
+             19:'Poor Belfiore OII', 20:'Poor Belfiore Hbeta', 21:'Poor Belfiore OIII', 22:'Poor Belfiore NII', 23:'Poor Belfiore Halpha', 
+             24:'Poor Belfiore SII'}
+        issue_id_per_category = [[1,2,3,4,5,6,7],[8],[9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]]
+        for i,issue_id in enumerate(issue_id_per_category): category.append({'id':i+1,'key':keys[i+1],'category':categories[i+1],'issues':[{'id':id,'issue':issues[id]} for id in issue_id]})
+        return category             
+        
     def set_ifudesign(self,plateid=None,ifuname=None):
         self.plateid = plateid
         self.ifuname = ifuname

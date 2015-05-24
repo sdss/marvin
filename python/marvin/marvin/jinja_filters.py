@@ -123,6 +123,12 @@ def issuesubcat(value):
     if value in range(13,20): return 1
     if value == 20: return 2
     if value in range(21,37): return 3
+
+def dapmaptype(value,key):
+    ''' returns map type for a given value, key '''
+    
+    return value
+    
     
     
     

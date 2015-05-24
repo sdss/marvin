@@ -101,7 +101,7 @@ function enableSelectPicker() {
 // Get selected from picker
 function getSelected(name) {
 	var selectlist = [];
-	var jname = '.'+name+' :checked';
+	var jname = name+' :checked';
 	$(jname).each(function(){
 		selectlist.push(this.value);
 	});

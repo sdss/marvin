@@ -1,0 +1,235 @@
+{# DAP QA Options Map #}
+{% macro dapcattoggle(id,category) %}
+	
+	<div class='btn-group' id='qagroup_{{category.key}}'>
+		{# Cube Type #}
+		<div class='btn-group qabtns spbtns' id='cubegrp_{{category.key}}'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='cubetypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>Cube Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but1' role='menu' id='cubetypelist_{{category.key}}'>
+				{% if category.key != 'radgrad' %} <li><a id='ston1'>STON-001</a></li> {% endif %}
+				{% if category.key != 'radgrad' %} <li><a id='none2'>None-002</a></li> {% endif %}
+				{% if category.key != 'maps' %} <li><a id='rad3'>Radial-003</a></li> {% endif %}
+				{% if category.key != 'maps' %} <li><a id='rad4'>Radial-004</a></li> {% endif %}
+				{% if category.key == 'spectra' %} <li><a id='all5'>All-005</a></li> {% endif %}
+				{% if category.key == 'spectra' %} <li><a id='all6'>All-006</a></li> {% endif %}
+				{% if category.key == 'spectra' %} <li><a id='all7'>All-007</a></li> {% endif %}
+			</ul>
+		</div>
+
+		{# RSS Type #}		
+		{% if category.key != 'maps' %}
+			<div class='btn-group qabtns spbtns' id='rssgrp_{{category.key}}'>
+				<button type='button' class='btn btn-primary dropdown-toggle' id='rsstypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>RSS Type: <span class='caret'></span></button>
+				<ul class='dropdown-menu qalist but1' role='menu' id='rsstypelist_{{category.key}}'>
+					<li><a id='rad1'>Radial-001</a></li> 
+					<li><a id='rad2'>Radial-002</a></li>
+					{% if category.key == 'spectra' %} <li><a id='all3'>All-003</a></li> {% endif %}
+					{% if category.key == 'spectra' %} <li><a id='all4'>All-004</a></li> {% endif %}
+					{% if category.key == 'spectra' %} <li><a id='all5'>All-005</a></li> {% endif %}
+				</ul>
+			</div>		
+		{% endif %}
+				
+	</div>
+	<div class='qacomment' id='qacomment_{{category.key}}'>
+	</div>			
+{% endmacro %}
+
+{# DAP QA Comment-Map Map #}
+{% macro dapcommentmap() %}
+
+	<div class='btn-group' id='qagroup'>
+		<div class='btn-group'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='mapdownload' data-toggle='dropdown' aria-expanded='false'>QA Type <span class='caret'></span></button>
+			<ul class='dropdown-menu but0' role='menu' id='qatypelist'>
+				<li><a id='cube'>Cube</a></li>
+				<li><a id='rss'>RSS</a></li>
+			</ul>					
+		</div>
+
+		<div class='btn-group qabtns spbtns' id='cubegrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='cubetypelist' data-toggle='dropdown' aria-expanded='false'>Cube Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but1' role='menu' id='cubetypelist'>
+				<li><a id='ston1'>STON-001</a></li>
+				<li><a id='none2'>None-002</a></li>
+				<li><a id='rad3'>Radial-003</a></li>
+				<li><a id='rad4'>Radial-004</a></li>
+				<li><a id='all5'>All-005</a></li>
+				<li><a id='all6'>All-006</a></li>
+				<li><a id='all7'>All-007</a></li>
+			</ul>
+		</div>						
+
+		<div class='btn-group qabtns spbtns' id='rssgrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='rsstypelist' data-toggle='dropdown' aria-expanded='false'>RSS Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but1' role='menu' id='rsstypelist'>
+				<li><a id='rad1'>Radial-001</a></li>
+				<li><a id='rad2'>Radial-002</a></li>
+				<li><a id='all3'>All-003</a></li>
+				<li><a id='all4'>All-004</a></li>
+				<li><a id='all5'>All-005</a></li>
+			</ul>
+		</div>	
+		
+		<div class='btn-group qabtns spbtns' id='mapgrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='maptypelist' data-toggle='dropdown' aria-expanded='false'>Map Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but2' role='menu' id='maptypelist'>
+				<li class='mapgood'><a id='spec'>Spectrum No.</a></li>
+				<li class='mapgood noall'><a id='emfluxew'>EMflux_EW</a></li>
+				<li class='mapgood noall'><a id='emfluxfb'>EMflux_Fb</a></li>
+				<li class='mapgood norad noall'><a id='binnum'>Bin_Num</a></li>
+				<li class='mapgood norad noall'><a id='kin'>Kin</a></li>
+				<li class='mapgood norad noall'><a id='snr'>SNR</a></li>
+			</ul>
+		</div>					
+
+		<input type='text' class='input-sm qabtns but3 mapbtns' value='' name='specnum' style='display:none;' id='specnum' placeholder='Spectrum Number'/>
+		<div class='btn-group qabtns mapbtns' id='subtypegrp' style='display:none;'>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='subtypelist' data-toggle='dropdown' aria-expanded='false'>Sub Type: <span class='caret'></span></button>
+			<ul class='dropdown-menu qalist but3' role='menu' id='subtypelist'>
+				<li class='all em'><a id='o2'>OII</a></li>
+				<li class='all em'><a id='hbeta'>Hbeta</a></li>
+				<li class='all em'><a id='o3'>OIII</a></li>
+				<li class='all em'><a id='n2'>NII</a></li>
+				<li class='all sn2 em'><a id='halpha'>Halpha</a></li>
+				<li class='all em'><a id='s2'>SII</a></li>
+
+				<li class='all kin'><a id='vstar'>V_star</a></li>
+				<li class='all kin'><a id='sigmastar'>Sigma_star</a></li>
+				<li class='all kin ston'><a id='h3'>h3</a></li>
+				<li class='all kin ston'><a id='h4'>h4</a></li>
+				<li class='all kin'><a id='vgas'>V_gas</a></li>
+				<li class='all kin'><a id='sigmagas'>Sigma_gas</a></li>
+
+				<li class='all sn'><a id='signal'>Signal</a></li>
+				<li class='all sn'><a id='noise'>Noise</a></li>
+				<li class='all sn'><a id='sn'>S/N</a></li>
+				<li class='all sn none'><a id='resid'>Resid.</a></li>
+				<li class='all sn none'><a id='chisq'>ChiSq</a></li>
+				
+				<li><a id='all'>All</a></li>
+
+			</ul>				
+		</div>
+		
+	</div> 
+	
+	<div id='qacomment'>
+	</div>
+
+{% endmacro %}
+
+{# DAP Map List #}
+{% macro dapmaplist() %}
+	<label for='#dapmaplist'>Map List:</label>
+	<select class='form-control daptoggle' multiple id='dapmaplist' size='5'>
+		<option id='kin' val='kin' selected>Kinematic</option>
+		<option id='snr' val='snr'>SNR</option>
+		{#<option id='binnum' val='binnum'>Bin_Num</option>#}
+		<option id='emfluxew' val='kin'>EMflux_EW</option>
+		<option id='emfluxfb' val='kin'>EMflux_Fb</option>
+	</select>
+{% endmacro %}
+
+{# DAP Spectra List #}
+{% macro dapspectralist() %}
+	<label for='#dapspectralist'>Spectra List:</label>
+	<select class='form-control daptoggle' multiple id='dapspectralist' size='5'>
+		{#<option id='spec1' val='spec1' selected>Spec1</option>
+		<option id='spec2' val='spec2'>Spec2</option>
+		<option id='spec3' val='spec3'>Spec3</option>
+		<option id='spec4' val='spec4'>Spec4</option>#}
+	</select>
+{% endmacro %}
+
+{# DAP Radial Gradient List #}
+{% macro dapradgradlist() %}
+	<label for='#dapradgradlist'>Radial Gradient List:</label>
+	<select class='form-control daptoggle' multiple id='dapradgradlist'>
+		<option id='emflux' val='emflux' selected>EMflux</option>
+	</select>
+{% endmacro %}
+
+{# DAP Issue Selection #}
+{% macro dapqaissue(id,category,mapid) %}
+
+<div class='form-group'>
+{% if category.issues %}
+	<select class="selectpicker dapqaissuesp form-control" multiple id='dapqa_issue{{id}}{{"_"+mapid if mapid else ""}}' data-selected-text-format="count", title='Issues' data-width='99.5%'>
+		{% for issid,issue in category.issues|dictsort %}
+			<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+		{% endfor %}
+	</select>
+{% endif %}
+	<input class='form-control input-sm dapqacomments' type='text' id='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' placeholder='Comment' maxlength='256'/>
+
+</div>
+
+{% endmacro %}
+
+{# DAP 6 Panel Maps #}
+{% macro dapmap6panel(catid,category) %}
+
+	{% set altimg = 'Map Image' if 'maps' in category.key else 'Rad. Grad. Image' if 'radgrad' in category.key else '' %}
+	<div class='dapmappanel' id='dapmap6'>
+	{% for i in range(6) %}
+	{% if loop.index0 % 3 == 0 %}<div class='row'>{% endif %}
+		<div class='col-md-4' id='{{category.key}}panel{{(i+1)|string}}'>
+			<label>Map {{(i+1)|dapmaptype(category.key)}}</label>
+			<a href='#' data-toggle='modal' data-target='#dapimgmodal' onclick='daploadmodal({{category.key}}img{{(i+1)|string}})'><img src="..." class="img-responsive img-rounded" id='{{category.key}}img{{(i+1)|string}}' alt="{{altimg}}"></a>
+			{{ dapqaissue(catid,category,(i+1)|string) }}
+		</div>
+	{% if loop.index0 % 3 == 2 or loop.last %}</div>{% endif %}
+	{% endfor %}
+	</div>
+
+{% endmacro %}
+
+{# DAP Map Single Panel #}
+{% macro dapmapsinglepanel(catid,category) %}
+
+	{% set altimg = 'Map Image' if 'maps' in category.key else 'Rad. Grad. Image' if 'radgrad' in category.key else '' %}
+	<div class='dapmappanel' id='dapmapsingle'>
+	<div class='row'>
+		<div class='col-md-8' id='{{category.key}}panel1'>
+			<label>Map {{1|dapmaptype(category.key)}}</label>
+			<a href='#' data-toggle='modal' data-target='#dapimgmodal' onclick='daploadmodal({{category.key}}img1)'><img src="..." class="img-responsive img-rounded" id='{{category.key}}img1' alt="{{altimg}}"></a>
+			{{ dapqaissue(catid,category,'1') }}
+		</div>
+	</div>
+	</div>
+
+{% endmacro %}
+
+{# DAP Spectrum Panel #}
+{% macro dapspectrumpanel(catid,category) %}
+
+	{#{% for i in range(3) %}#}
+		<div class='row'>
+			<div class='col-md-12'>
+				<label>Spectrum {{1}}</label>
+				<a href='#' data-toggle='modal' data-target='#dapimgmodal' onclick='daploadmodal({{category.key}}img1)'><img src="..." class="img-responsive img-rounded" id='{{category.key}}img1' alt="Spectrum Image"></a>
+				{{ dapqaissue(catid,category,(1)|string) }}
+			</div>
+		</div>
+	{#{% endfor %}#}
+
+{% endmacro %}
+
+{# DAP Image Modal #}
+{% macro dapimagemodal() %}
+
+	<div id='dapimgmodal' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='dapimglabel' aria-hidden='true'>
+		<div class='modal-dialog modal-lg'>
+			<div class='modal-content'>
+				<div class='modal-header' id='dapimghead'>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id='dapimgtitle'></h4>
+				</div>
+				<div class='modal-body' id='dapimgbody'>
+				</div>	
+			</div>
+		</div>
+	</div> 
+	
+{% endmacro %}
