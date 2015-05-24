@@ -1,0 +1,83 @@
+{% from 'dapmacros.html' import dapcattoggle,dapqaissue,dapmaplist,
+	dapspectralist,dapradgradlist,dapmap6panel,dapspectrumpanel,dapmapsinglepanel,
+	dapimagemodal %}
+
+<div class='well'>
+
+<form class='form' role='form' method='post' action='' id='dapqacomment_form'>
+	<input class='hidden' id='dapplate' name='plateid' value='{{plate.id}}'/>
+	<input class='hidden' id='dapifu' name='ifu' value='{{cube.ifu.name}}'/>
+	<input class='hidden' id='drpver' name='drpver' value='{{version}}'/>
+	
+	<div class='row'>
+
+		{# DAP QA Categories #}
+		<div class='col-md-3'>
+			<div class='form-group' id='dapqacat'>
+				<label for='dapqacat_select' class='control-label'>Category:</label>
+				<select class='form-control' id='dapqacat_select'>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+						{% if loop.index0 == 0 %}
+							<option id='{{catid}}' value='{{category.key}}' selected>{{category.category}}</option>
+						{% else %}
+							<option id='{{catid}}' value='{{category.key}}'>{{category.category}}</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+			
+			{# DAP QA Category Options #}
+			{% for catid,category in inspection.dapqacategory|dictsort %}
+			<div class='dapqacatoptions' id='dapqacatoptions_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
+				<div class='form-group' id='dapqatoggle_{{category.key}}'>
+					<label for='testbut' class='control-label'> Options: </label>
+					{{dapcattoggle(catid,category)}}	
+				</div>
+				
+				{# Category List Selection #}
+				{% if category.key == 'maps' %}
+					<div class='catlist' id='catlist_{{category.key}}' style='display:none;'>{{dapmaplist()}}</div>
+				{% elif category.key == 'spectra' %}
+					<div class='catlist' id='catlist_{{category.key}}' style='display:none;'>{{dapspectralist()}}</div>
+				{% elif category.key == 'radgrad' %}
+					<div class='catlist' id='catlist_{{category.key}}' style='display:none;'>{{dapradgradlist()}}</div>
+				{% endif %}
+				
+			</div>
+			{% endfor %}
+			
+			{# DAP Map Magnify Toggle #}
+			{#<div class='form-group vert-offset-top-1'>
+				<button type='button' class='btn btn-primary' id='magtoggle' data-toggle='button' aria-pressed='false'>Toggle Magnify</button>
+			</div>#}
+		</div>	
+		
+		{# DAP QA Panels #}
+		<div class='col-md-8'>
+			
+			{% for catid,category in inspection.dapqacategory|dictsort %}
+				<div class='dapqapanel' id='dapqa_{{category.key}}' style='display:none;'>
+					<h4>{{category.category}}</h4>
+					
+					{% if 'maps' in category.key %}
+						{{dapmap6panel(catid,category)}}
+					{% elif 'spectra' in category.key %}
+						{{dapspectrumpanel(catid,category)}}
+					{% elif 'radgrad' in category.key %}
+						{{dapmap6panel(catid,category)}}
+					{% endif %}
+				</div>
+			{% endfor %}
+			
+		</div>
+		
+			
+	</div>
+	
+
+</form>
+	
+{# DAP Image Modal #}	
+{{ dapimagemodal() }}	
+	
+</div>

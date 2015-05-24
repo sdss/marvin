@@ -54,6 +54,7 @@ python/marvin/marvin/static/js/bootstrap.js -text
 python/marvin/marvin/static/js/bootstrap.min.js -text
 python/marvin/marvin/static/js/d3.js -text
 python/marvin/marvin/static/js/d3.min.js -text
+python/marvin/marvin/static/js/dapqa.js -text
 python/marvin/marvin/static/js/jquery-1.11.2.js -text
 python/marvin/marvin/static/js/jquery-1.11.2.min.js -text
 python/marvin/marvin/static/js/jquery-1.11.2.min.map -text
@@ -66,6 +67,8 @@ python/marvin/marvin/static/js/validator.min.js -text
 python/marvin/marvin/templates/buildTable.html -text
 python/marvin/marvin/templates/commentform.html -text
 python/marvin/marvin/templates/current.html -text
+python/marvin/marvin/templates/dapmacros.html -text
+python/marvin/marvin/templates/dapqapanel.html -text
 python/marvin/marvin/templates/explore.html -text
 python/marvin/marvin/templates/feedback.html -text
 python/marvin/marvin/templates/footer.html -text

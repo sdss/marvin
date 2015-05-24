@@ -7,10 +7,13 @@
 	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
 	<link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+    {#<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/bootstrap-magnify.css')}}">#}
 {% endblock head %}
 
 {% block code %}
 {{js|safe}}
+<script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
+{#<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-magnify.js')}}"></script>#}
 <script type='text/javascript'>
 
 	// Get IFU hash from page
@@ -109,7 +112,6 @@
 	$(function() {		
 		$('#commentcat').change(function () {
 			// hide everything
-			$('.dapqacomms').hide();
     		$('.catissues').hide();
     		$('.catcomments').hide();
     		// display new things
@@ -119,35 +121,9 @@
     		// deal with issues
     		console.log('catvalue',catvalue);
     		$('#catissue_'+$(this).val()).fadeIn();
-    		$('input.dapissues').attr('disabled',true);
-    		if (catvalue == 'dapqa') {
-    			console.log('test',$('.subcats').attr('id')+'_select');
-    			var subcatid = $('.subcats').attr('id')+'_select';
-    			console.log(subcatid+' option:selected');
-				var dapissuetype = $('#'+subcatid+' option:selected').val();
-				console.log('input.'+dapissuetype);
-				$('input.'+dapissuetype).removeAttr('disabled');
-				$('input[type=checkbox]:disabled').parent().parent().addClass('has-warning','tempdisabled');
-			}
 		});
 	});
 	
-	// Toggle between DAP issues
-	$(function() {
-		$('.subcats').change(function() {
-			$('input[type=checkbox]:disabled').parent().parent().removeClass('has-warning','tempdisabled');
-			$('input.dapissues').attr('disabled',true);
-			var subcatid = $('.subcats').attr('id')+'_select';
-			var dapissuetype = $('#'+subcatid+' option:selected').val();
-			$('input.'+dapissuetype).removeAttr('disabled');
-			$('input[type=checkbox]:disabled').parent().parent().addClass('has-warning','tempdisabled');
-			//$('.dapissues').hide();
-			//var dapissuetype = $(this).val();
-			//console.log('dap issue val',dapissuetype);
-			//$('.'+dapissuetype).fadeIn();
-		});
-	});
-
 	// Reset comment form
 	function resetCommentForm() {
 		$('#commentform').modal('hide');
@@ -163,7 +139,6 @@
         	tagbox.removeTag(tag);
         });
         tagbox.removeLastTag();
-        $('.dapqacomms').hide();
 	}
 
 	// Submit add comment form
@@ -184,32 +159,22 @@
 
 		// grab all checked issues
 		var issueids = [];
-		$('input:checkbox.issues').each(function () {
-       		var thisval = (this.checked ? $(this).val() : "");
-       		if (thisval) {
-       			issueids.push(parseInt(thisval.split('issue')[1]));
-       		}
-  		});
+  		var issuelist = getSelected('.issuesp');
+  		if (typeof issuelist == Array) {
+			$.each(issuelist, function (index,value) {
+				console.log(typeof value, value.length);
+				issueids.push(parseInt(value.split('issue')[1]));
+			});
+  		}
   		issueids = JSON.stringify(issueids);
 
 		//grab tags
 		var tagbox = $('#tagfield').tags();
 		var tags = tagbox.getTags();
 		tags = JSON.stringify(tags);
-		
-		//grab DAP QA map comment
-		var qacomment = $('#qacomment').html();
-		var qalen = qacomment.split('-').length;
-		var qatype = qacomment.split('-')[0];
-		console.log('qacomment', qacomment, 'qalen', qalen);
-		if (qalen > 0 && qalen < 4) {
-			var htmlstr = "<div class='alert alert-danger' role='alert'><h4>DAP QA Map-Comment chain must be completed.</h4></div>";
-			$('#commentmessage').html(htmlstr);
-			return;
-		}
 
 		$.post($SCRIPT_ROOT + '/marvin/addcomment', {'cubepk':cubepk,'plateid':plateid,'ifuname':ifuname,'version':version,
-			'comments':comments,'issueids':issueids, 'tags':tags, 'qacomment':qacomment},'json')
+			'comments':comments,'issueids':issueids, 'tags':tags},'json')
 			.done(function(data){
 				if (data.result['status'] < 0) {
 					// bad submit
@@ -304,12 +269,14 @@
 			$('#commentsubmitted_'+(index+1)).html(comment_modified);
             try {
                 for (var i=0; i<comment_issues.length; i++) {
-                   $('#issue'+comment_issues[i]).prop('checked',true);
+                   $('#issue'+comment_issues[i]).prop('selected',true);
                 }
             }
             catch(err) {
                 $('#commentsubmitted_'+(index+1)).html(err);
             }
+            $('.selectpicker').selectpicker('refresh');
+
 		});
 	}		
 	
@@ -347,86 +314,8 @@
 		var ifuname = $('#ifuname').val();
 		resetLogin();
 		getComment(cubepk, ifuname);
-		//setTimeout(resetLogin, 1500);
-		//setTimeout(getComment, 1500, cubepk);	
 	}
 
-	// DAP QA Comment / Map functions
-
-	//toggle dap QA buttons
-	$(function() {
-		$('.dropdown-menu#qatypelist').on('click','li a', function() {
-			$('.qabtns').hide();
-			var id = $(this).attr('id');
-			$('#'+$(this).attr('id')+'grp').show();
-			$('#qacomment').html(id);
-		});
-	});
-
-	// toggle new dap QA buttons
-	$(function() {
-		$('.dropdown-menu.qalist').on('click','li a', function() {
-			// extract various ids and tags
-			var id = $(this).attr('id');
-			var parentid = $(this).parent().parent().attr('id');
-			var butclass = $(this).parent().parent().attr('class').split(' ')[2];
-			var butid = butclass.split('but')[1];
-			var type = parentid.split('list')[0];
-			
-			// hide and reset buttons and values
-			if ($.inArray(type,['maptype','cubetype','rsstype']) >= 0) $('.mapbtns').hide();
-			$('#specnum').val('');
-
-			// build html reference
-			var html = $('#qacomment').html();
-			var htmlarr = html.split('-');
-			html = htmlarr.slice(0,butid).join('-')+'-';
-			html += id;
-			$('#qacomment').html(html);
-			
-			// map type button 3
-			$('#mapgrp').show();
-			$('.mapgood').show();
-			if (id.search('rad') > -1 || html.search('rad') > -1) $('.norad').hide();
-			if (id.search('all') > -1 || html.search('all') > -1) $('.noall').hide();
-			
-			// sub-type button 4
-			if (id == 'spec' && parentid=='maptypelist') {
-				$('#specnum').show();
-			} else if (parentid == 'maptypelist' && id.search('binnum') < 0) {
-				$('#subtypegrp').show();
-				$('.all').hide();
-				if (id.search('em') > -1) $('.em').show();
-				if (id.search('sn') > -1) $('.sn').show();
-				if (id.search('kin') > -1) {
-					$('.kin').show();
-					if (html.search('ston') > -1) {
-						$('.none').hide();
-						$('.ston').show();
-					} else if (html.search('none') > -1) {
-						$('.ston').hide();
-						$('.none').show();
-					}					
-				}	
-			} else if (id.search('binnum') > -1) $('#subtypegrp').hide();
-
-		});
-	});	
-
-	// toggle dap QA spectrum input	
-	$(function() {
-		$('#specnum').on('input', function() {
-    		var num = $(this).val();
-    		var butclass = $(this).attr('class').split(' ')[2];
-    		var butid = butclass.split('but')[1];
-			// build html reference
-			var html = $('#qacomment').html();
-			var htmlarr = html.split('-');
-			html = htmlarr.slice(0,butid).join('-')+'-';
-			html += num;
-			$('#qacomment').html(html);
-		});
-	});		
 </script>
 {% endblock code %}
 
@@ -559,6 +448,7 @@
 						{# DAP QA Plots Pane #}
 						<div class='tab-pane' id='dapqapane_{{cube.ifu.name}}'>
 							<h4>Here lies DAP QA plots for {{cube.ifu.name}}</h4>
+							{% include 'dapqapanel.html' %}
 						</div>
 					</div>
 				</div>	

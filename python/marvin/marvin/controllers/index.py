@@ -8,7 +8,7 @@ from manga_utils import generalUtils as gu
 from collections import OrderedDict
 
 from ..model.database import db
-from ..utilities import setGlobalVersion
+from ..utilities import setGlobalVersion,getImages
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -52,23 +52,17 @@ def index():
     # find and grab all images ; convert paths to sas paths
     current_app.logger.info('Building image list...')
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
-    sasredux = os.path.join(os.getenv('SAS_REDUX'),version)
-    try: sasurl = os.getenv('SAS_URL')
-    except: sasurl = None
     good = os.path.isdir(redux)
     index['good'] = good
-    imagedir = os.path.join(redux,'*','stack','images')
-    images = glob.glob(os.path.join(imagedir,'*.png'))
+    images = getImages(version=version)
 
-    if any(images):
-        images = [os.path.join(sasurl,sasredux,i.rsplit('/',4)[1],'stack/images',i.split('/')[-1]) for i in images]
-        
+    if any(images):        
         # randomize the images
         current_app.logger.info('Selecting 100 random images...')
         if len(images) < 100: biglist = [random.choice(images) for i in xrange(100)]
         else: biglist = random.sample(images,100)
         images = biglist
-        
+
         # make unique image dictionary
         current_app.logger.info('Building image dictionary...')
         imdict = OrderedDict()

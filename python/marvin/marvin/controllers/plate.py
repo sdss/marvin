@@ -7,7 +7,7 @@ from flask import request, render_template, send_from_directory, current_app, se
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
 from ..model.database import db
-from ..utilities import processTableData, setGlobalVersion
+from ..utilities import processTableData, setGlobalVersion, getImages
 from comments import getComment
 from astropy.table import Table
 
@@ -35,7 +35,7 @@ def buildPlateDesignDict(cubes):
         data.append({'name':str(cube.ifu.name),'cx':cube.xfocal,'cy':cube.yfocal,'ra':float(hdr['OBJRA']),'dec':float(hdr['OBJDEC']),'r':5.0,'color':'red' if len(cube.ifu.name) > 3 else 'blue'})
         
     return data
-
+    
 @plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
 @plate_page.route('/downloadFiles', methods=['GET','POST'])
 def downloadFiles():
@@ -107,26 +107,22 @@ def plate():
     plate = valueFromRequest(key='plateID',request=request, default=None)
     plate = plate if plate.isdigit() else None
     plver = valueFromRequest(key='version',request=request, default=None)
-    print('pl version',plver)
     plateinfo['plate'] = plate
     plateinfo['inspection'] = None
     if plver: 
         version = plver
-        print('version',version)
         plateinfo['version'] = plver
     
     if plate:
         plateinfo['title'] += " {0}".format(plate)
         # find and grab all images for plate ; convert paths to sas paths
         redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plate))
+        good = os.path.isdir(redux)
+        plateinfo['good'] = good
         sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plate))
         try: sasurl = os.getenv('SAS_URL')
         except: sasurl= None
-        good = os.path.isdir(redux)
-        plateinfo['good'] = good
-        imagedir = os.path.join(redux,'stack','images')
-        images = glob.glob(os.path.join(imagedir,'*.png'))
-        images = [os.path.join(sasurl,sasredux,'stack/images',i.split('/')[-1]) for i in images]
+        images = getImages(plate,version=version)
         plateinfo['images'] = sorted(images) if images else None
         sasurl = os.path.join(sasurl,sasredux)
         plateinfo['sasurl'] = os.path.join(sasurl,sasredux)
@@ -174,8 +170,8 @@ def plate():
         inspection.retrieve_cubecomments()
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
-        print(inspection.category)
         result = inspection.result()
+        
         if inspection.ready: current_app.logger.warning('Inspection> GET cubecomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> NOT READY TO GET cubecomments: {0}'.format(result))
 

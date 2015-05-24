@@ -101,7 +101,7 @@
 				issuelist.push(this.value);
 			});
 			issuelist = (issuelist.length == 0) ? 'any' : issuelist*/
-			var issuelist = getSelected('issuesp');
+			var issuelist = getSelected('.issuesp');
 			$('#issues').val(issuelist);
 						
 		});
@@ -115,7 +115,7 @@
 				taglist.push(this.value);
 			});
 			taglist = (taglist.length == 0) ? 'any' : taglist*/
-			var taglist = getSelected('tagsp');
+			var taglist = getSelected('.tagsp');
 			$('#tagids').val(taglist);
 		});
 	});	

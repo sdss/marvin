@@ -1,7 +1,7 @@
 
 ''' General Utilities for MaNGA SAS'''
 
-import json, os
+import json, os, glob
 from flask import session as current_session
 from ast import literal_eval
 from manga_utils import generalUtils as gu
@@ -136,4 +136,112 @@ def setGlobalVersion():
     if not ver: 
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),ver))]
         current_session['currentver'] = realvers[0]
+
+
+def getImages(plate=None,version=None):
+    ''' grab all PNG IFU images from a given directory '''
+    
+    # set version
+    if not version:
+        try: version = current_session['currentver']
+        except: 
+            setGlobalVersion()
+            version = current_session['currentver']
+            
+    # build paths 
+    if plate:
+        sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plate))
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plate))
+    else:
+        sasredux = os.path.join(os.getenv('SAS_REDUX'),version)
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,'*')    
+    try: sasurl = os.getenv('SAS_URL')
+    except: sasurl= None    
+    
+    # get images and replace path with sas path
+    imagedir = os.path.join(redux,'stack','images')
+    images = glob.glob(os.path.join(imagedir,'*.png'))
+    if plate:
+        images = [os.path.join(sasurl,sasredux,'stack/images',i.split('/')[-1]) for i in images]
+    else:
+        images = [os.path.join(sasurl,sasredux,i.rsplit('/',4)[1],'stack/images',i.split('/')[-1]) for i in images]
+        
+    return images
+ 
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, test=False):
+    ''' grab all the DAP PNG analysis plots '''   
+    
+    # build path
+    catdict = {'maps':'maps','spectra':'spectra','radgrad':'gradients'}
+    if not test:
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),drpver,dapver,str(plate),ifu,'plots')
+    else:
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),'test/andrews/trunk_mpl3',str(plate),ifu,'plots')        
+        
+    # build sas path
+    try: sasurl = os.getenv('SAS_URL')
+    except: sasurl= None
+    sasredux = os.getenv('SAS_ANALYSIS')
+    saspath = os.path.join(sasurl,sasredux)
+    
+    # modify if maptype not equal to binnum
+    if maptype != 'binnum':
+        sasredux = os.path.join(sasredux,catdict[catkey])
+        redux = os.path.join(redux,catdict[catkey])
+    
+    # grab images
+    if os.path.isdir(redux):
+        print('dap redux',redux)
+        print('dap sasredux',saspath)
+        # build filename
+        bindict = {'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}
+        binname = 'BIN-{0}-00{1}'.format(bindict[bintype[:-1]],bintype[-1])
+        name = 'manga-{0}-{1}-LOG{2}_{3}_*.png'.format(plate,ifu,mode.upper(),binname)
+        # search for images & filter
+        imgpath = os.path.join(redux,name)
+        images = glob.glob(imgpath)
+        if catkey != 'spectra': images = filterDAPimages(images,maptype,catkey)
+        images = [os.path.join(saspath,i.split('analysis/',1)[1]) for i in images]
+
+    return images if images else None
+
+def filterDAPimages(images, mapid, key):
+    ''' filter the DAP PNG images based on mapid and category key'''  
+    
+    if key == 'maps':
+        mapdict = {'emfluxew':'ew_map','emfluxfb':'fb_map','kin':['vel_map','vdisp_map','sth'],'snr':['noise', 'signal', 'snr', 'chisq','resid'],'binnum':'bin_num'}
+    elif key == 'radgrad':
+        mapdict = {'emflux':'gradient'}
+    elif key == 'spectra':
+        mapdict = {'spec1':'spec'}
+    
+    print('images', images)    
+    print('mapdict',mapdict)
+    
+    # filter images
+    if type(mapdict[mapid]) == list:
+        images = [i for i in images for val in mapdict[mapid] if val in i]
+    else:
+        images = [img for img in images if mapdict[mapid] in img]
+        
+    # sort images
+    if 'emflux' in mapid: 
+        s = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
+    elif 'snr' in mapid:
+        s = [(0,'signal'),(1,'noise'),(2,'snr'),(4,'resid'),(5,'chisq')]
+    elif 'kin' in mapid:
+        s = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
+    else: s = None
+    
+    if s and images:
+        s.sort(key=lambda t:t[1])
+        images = list(zip(*sorted(zip(s,images),key=lambda t:t[0][0]))[1])
+    
+    return images
+      
+    
+    
+    
+    
+    
     
