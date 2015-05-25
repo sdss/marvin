@@ -99,7 +99,7 @@ function getPanel(key, mapid, qatype) {
 	var plateid = $('#dapplate').val();
 	var ifu = $('#dapifu').val();
 	var drpver = $('#drpver').val();
-	var dapver = 'v1_0_0';	
+	var dapver = $('#dapver').val();	
 	console.log(key,qatype,mapid,plateid,ifu,drpver,dapver);
 	
 	dapformdata = {'key':key, 'qatype':qatype,'mapid':mapid,'plateid':plateid,'ifu':ifu,
@@ -110,8 +110,8 @@ function getPanel(key, mapid, qatype) {
 			$('#dapqa_'+key).show();
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
-			
-			loadImages(key,data.result['images']);
+
+			loadImages(key,data.result['images'],data.result['msg']);
 			
 		})
 		.fail(function(data){
@@ -129,14 +129,11 @@ function getSpectraList(key,mapid,qatype) {
 	var plateid = $('#dapplate').val();
 	var ifu = $('#dapifu').val();
 	var drpver = $('#drpver').val();
-	var dapver = 'v1_0_0';	
+	var dapver = $('#dapver').val();	
 
 	dapformdata = {'key':key, 'qatype':qatype,'mapid':mapid,'plateid':plateid,'ifu':ifu,
 		'drpver':drpver,'dapver':dapver}; 
 		
-	console.log('inside getSpectraList');
-	console.log('dapform',dapformdata);
-
 	$.post($SCRIPT_ROOT + '/marvin/getdapspeclist', dapformdata,null,'json')
 		.done(function(data){
 			
@@ -166,12 +163,11 @@ function getSpectraList(key,mapid,qatype) {
 			var title = $('#dapqa_'+key+' h4');
 			var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve list of spectra!</h4></div>";
 			title.html(alerthtml);
-			alert('Failed speclist');
 		});	
 } 
 
 // load DAP plot images
-function loadImages(key,images) {
+function loadImages(key,images, msg) {
 	$('#dapqa_'+key+' img').removeProp('src');
 	if (images) {
 		$('#dapqa_'+key+' img').each(function(index) {
@@ -181,7 +177,7 @@ function loadImages(key,images) {
 		});	
 	} else {
 		var title = $('#dapqa_'+key+' h4');
-		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Problem retrieving plots, or No Plots Found!</h4></div>";
+		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+msg+"</h4></div>";
 		title.html(alerthtml);		
 	}
 }
@@ -207,6 +203,11 @@ function daploadmodal(img) {
 	$('#dapimgbody').html(image);
 }
 
+// Submit DAP QA Comments
+function dapaddcomments() {
+	var dapform = $('#dapqacomment_form');
+	console.log(dapform.serialize());
+}
 
 
 

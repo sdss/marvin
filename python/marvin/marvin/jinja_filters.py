@@ -59,9 +59,14 @@ def getMPL(value):
     
     name = value
     
-    if value == 'v1_0_0': name='{0} (MPL 1)'.format(value)
-    if value == 'v1_1_2': name='{0} (MPL 2)'.format(value)
-    if value == 'v1_3_3': name='{0} (MPL 3)'.format(value)
+    if 'MPL' in value:
+        if value == 'MPL-3': name='{0}: v1_3_3, v1_0_0'.format(value)
+        if value == 'MPL-2': name='{0}: v1_2_0, NA'.format(value)
+        if value == 'MPL-1': name='{0}: v1_0_0, NA'.format(value)        
+    else:
+        if value == 'v1_0_0': name='{0} (MPL 1)'.format(value)
+        if value == 'v1_1_2': name='{0} (MPL 2)'.format(value)
+        if value == 'v1_3_3': name='{0} (MPL 3)'.format(value)
     
     return name
 

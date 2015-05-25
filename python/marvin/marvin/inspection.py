@@ -173,6 +173,7 @@ class Inspection:
         category = []
         categories = {1:'Maps',2:'Radial Gradients',3:'Spectra'}
         keys = {1:'maps',2:'radgrad',3:'spectra'}
+        subkeys = {'maps':['kin','snr','emfluxew','emfluxfb'],'radgrad':['emflux'],'spectra':[]}
         issues = {1:'Bad Color Scale',2:'High Chi^2 (w/ small residuals)',3:'Discontinuities',4:'Irregular Kinematics', 
              5: 'Satellite(s)?',6:'Background/Foreground Galaxy?',7:'Foreground Star',
              8:'Large Differences between Wang & Belfiore gradients',
