@@ -142,7 +142,7 @@ def getdappanel():
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
-    imglist = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
     
     print('imglist', imglist)
     
@@ -160,8 +160,9 @@ def getdappanel():
 
     result={}
     result['title'] = newtitle
-    result['images'] = imglist
-    result['status'] = 'success'
+    result['images'] = imglist if imglist else None
+    result['status'] = 0 if not imglist else 1
+    result['msg'] = msg
     
     return jsonify(result=result)
 
@@ -175,15 +176,18 @@ def getdapspeclist():
 
     # get real plots
     mode,bintype = dapform['qatype'].split('-')
-    imglist = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
     
     # extract spectra names
-    speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
-    print('speclist', speclist)
+    if imglist:
+        speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
+        print('speclist', speclist)
+    else: speclist = None
 
     result={}
-    result['speclist'] = speclist
-    result['status'] = 'success'
+    result['speclist'] = speclist 
+    result['status'] = 0 if not imglist else 1
+    result['msg'] = msg
     
     return jsonify(result=result)
 

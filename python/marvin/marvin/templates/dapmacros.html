@@ -155,13 +155,13 @@
 
 <div class='form-group'>
 {% if category.issues %}
-	<select class="selectpicker dapqaissuesp form-control" multiple id='dapqa_issue{{id}}{{"_"+mapid if mapid else ""}}' data-selected-text-format="count", title='Issues' data-width='99.5%'>
+	<select class="selectpicker dapqaissuesp form-control" multiple id='dapqa_issue{{id}}{{"_"+mapid if mapid else ""}}' data-selected-text-format="count" title='Issues' data-width='99.5%'>
 		{% for issid,issue in category.issues|dictsort %}
-			<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+			<option id='issue{{issid}}' value='issue{{issid}}' name='issue{{issid}}'>{{issue}}</option>
 		{% endfor %}
 	</select>
 {% endif %}
-	<input class='form-control input-sm dapqacomments' type='text' id='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' placeholder='Comment' maxlength='256'/>
+	<input class='form-control input-sm dapqacomments' type='text' name='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' id='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' placeholder='Comment' maxlength='256'/>
 
 </div>
 

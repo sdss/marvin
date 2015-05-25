@@ -98,11 +98,15 @@ def plate():
     plateinfo['title'] = "Marvin | Plate"
     
     # set global version
-    try: version = current_session['currentver']
+    try: 
+        version = current_session['currentver']
+        dapversion = current_session['currentdapver']
     except: 
         setGlobalVersion()
         version = current_session['currentver']
+        dapversion = current_session['currentdapver']
     plateinfo['version'] = version
+    plateinfo['dapversion'] = dapversion
     
     plate = valueFromRequest(key='plateID',request=request, default=None)
     plate = plate if plate.isdigit() else None

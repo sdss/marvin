@@ -1,27 +1,64 @@
 {% block code %}
 	<script type='text/javascript'>
+	
+		// on page load
 		$(function() {
-			$('#version').change(function(){
-				var version = $(this).val();
-				var active_page = {{active_page|tojson|safe}};
-				$.post($SCRIPT_ROOT + '/marvin/setversion', {'version':version, 'activepage':active_page},'json')
-				.done(function(data){
-					location.reload();
-				})
-				.fail(function(data){
-					alert('Failed to set the version!');
-				});
+			var vermode = "{{session['vermode']}}";
+			var id = (vermode.search('MPL') > -1) ? 'mpl' : 'drpdap';
+			$('.vertype').hide();
+			$('#by'+id).show();
+		});
+	
+		// on drp,dap,or mpl version change
+		$(function() {
+			$('#version, #dapversion, #mplver').change(function(){
+				var vermode = "{{session['vermode']}}";
+				var id = (vermode.search('MPL') > -1) ? 'mpl' : 'drpdap';
+				var verform = $('#verform').serializeArray();
+				verform.push({'name':'vermode','value':id});				
+				sendAjax(verform);
 			});
 		});
+				
+		// toggle version mode
+		function togglever(){
+			$('.dropdown-menu').on('click','li a', function(){
+				var id = $(this).attr('id');
+				var typetext = (id=='mpl') ? 'MPL' : 'DRP/DAP';
+
+				//switch button title text
+				var but = $('#verbut');
+				var newhtml = 'Set Version By: '+typetext+' <span class="caret"></span>';
+				but.html(newhtml);
+				
+				//get current set values
+				var verform = $('#verform').serializeArray();
+				verform.push({'name':'vermode','value':id});
+				
+				// set the default version
+				sendAjax(verform);
+			});	
+		}
+		
+		
+		// version Ajax request
+		function sendAjax(form) {
+			$.post($SCRIPT_ROOT + '/marvin/setversion', form,'json')
+			.done(function(data){
+				location.reload();
+			})
+			.fail(function(data){
+				alert('Failed to set the versions!');
+			});		
+		}		
+		
 	</script>
 {% endblock code %}
 
 
 <nav class="navbar navbar-default">
     <div class="container-fluid">
-		{#<div class="navbar-header">
-           <img id="logo" src="/static/images/logo.jpg" class="img-rounded" class="img-responsive">
-		</div>#}
+
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
             <span class="sr-only">Toggle navigation</span>
@@ -46,18 +83,57 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Get Plate ID</button>
             </form>
-            <form class='navbar-form navbar-left navbar-input-group' role='form' action="setversion" method="post">
-            	<div class='form-group'>
-            		<label for='version'>Set Version:</label>
-            		<select class='form-control input-sm' name='version' id='version'>
-            			{% for ver in session['versions'] %}
-            				{% if ver == session['currentver'] %} 
+            <form class='navbar-form navbar-left navbar-input-group' id='verform' role='form' action="setversion" method="post">
+
+				{# Toggle Version #}
+				<div class="btn-group form-group" role="group">
+					<button type="button" id='verbut' class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+						Set Version By: {{session['vermode']}} <span class="caret"></span></button>
+					<ul class="dropdown-menu" id='{{id}}' role="menu" >
+					  <li><a id='mpl' onclick='togglever()'>MPL</a></li>
+					  <li><a id='drpdap' onclick='togglever()'>DRP/DAP</a></li>
+					</ul>
+				</div>	
+				
+				{# MPL Versions #}
+				<div class='form-group vertype' id='bympl'>
+					<select class='form-control input-sm' id='mplver' name='mplver'>
+						{% for ver in ['MPL-3','MPL-2','MPL-1'] %}
+							{% if ver == session['currentmpl'] %} 
 								<option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option>
 							{% else %}
 								<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option>
 							{% endif %}
-            			{% endfor %}
-            		</select>
+						{% endfor %}
+					</select>
+				</div>
+				
+				{# Custom Versions #}
+				<div id='bydrpdap' class='form-group vertype' style='display:none;'>				
+					<div class='form-group'>
+						{# DRP Version #}
+						<select class='form-control input-sm' name='version' id='version'>
+							{% for ver in session['versions'] %}
+								{% if ver == session['currentver'] %} 
+									<option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option>
+								{% else %}
+									<option id='{{ver}}' value='{{ver}}'>{{ver}}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+					</div>
+					{# DAP Version #}
+					<div class='form-group'>
+						<select class='form-control input-sm' name='dapversion' id='dapversion'>
+							{% for ver in session['dapversions'] %}
+								{% if ver == session['currentdapver'] %} 
+									<option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option>
+								{% else %}
+									<option id='{{ver}}' value='{{ver}}'>{{ver}}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+					</div>
             	</div>
             </form>
         </div>

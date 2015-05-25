@@ -9,11 +9,12 @@ from collections import OrderedDict
 
 from ..model.database import db
 from ..utilities import setGlobalVersion,getImages
+from ..jinja_filters import getMPL
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 try:
-    from . import valueFromRequest
+    from . import valueFromRequest,processRequest
 except ValueError:
     pass
     
@@ -25,10 +26,25 @@ index_page = flask.Blueprint("index_page", __name__)
 def setVersion():
     ''' Set version to use during MaNGA SAS '''
     
-    version = valueFromRequest(key='version',request=request, default=None)
-    activepage = valueFromRequest(key='activepage',request=request, default=None)
-    current_session['currentver'] = version
-    print(activepage)
+    # get form    
+    verform = processRequest(request=request)
+
+    # set version mode
+    current_session['vermode'] = 'MPL' if verform['vermode']=='mpl' else 'DRP/DAP'
+    
+    # set version
+    if verform['vermode']=='mpl':
+        mpl = getMPL(verform['mplver'])
+        drpver,dapver = mpl.split(':')[1].strip().split(',')
+        current_session['currentver'] = drpver
+        current_session['currentdapver'] = dapver if dapver != 'NA' else None
+        current_session['currentmpl'] = verform['mplver']
+    else:
+        current_session['currentver'] = verform['version']
+        current_session['currentdapver'] = verform['dapversion']
+        current_session['currentmpl'] = verform['mplver']
+        
+    print(current_session['currentver'],current_session['currentdapver'],current_session['currentmpl'])
 
     return jsonify(result='set the version')
 

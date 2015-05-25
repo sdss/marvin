@@ -115,27 +115,58 @@ def processTableData(tableobj):
     return newtable
     
     
-def getVersion():
-    ''' Get version to use during MaNGA SAS '''
+def getDRPVersion():
+    ''' Get DRP version to use during MaNGA SAS '''
 
+	# DRP versions
     session = db.Session()    
     vers = session.query(datadb.PipelineVersion).filter(datadb.PipelineVersion.version.like('%v%')).order_by(datadb.PipelineVersion.version.desc()).all()
     versions = [v.version for v in vers]
     
     return versions    
 
+def getDAPVersion():
+    ''' Get DAP version to use during MaNGA SAS '''
+    
+    # DAP versions
+    session = db.Session()    
+    vers = session.query(datadb.PipelineVersion).join(datadb.PipelineInfo,datadb.PipelineName).filter(datadb.PipelineName.label=='DAP').order_by(datadb.PipelineVersion.version.desc()).all()
+    versions = [v.version for v in vers]
+    
+    return versions+['NA']
+    
 def setGlobalVersion():
     ''' set the global version '''
     
-    # set global version
+    # set global DRP version
     try: versions = current_session['versions'] 
-    except: versions = getVersion()
+    except: versions = getDRPVersion()
     current_session['versions'] = versions
-    try: ver = current_session['currentver']
-    except: ver = None
-    if not ver: 
+    try: drpver = current_session['currentver']
+    except: drpver = None
+    if not drpver: 
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),ver))]
         current_session['currentver'] = realvers[0]
+        
+    # set global DAP version
+    try: dapversions = current_session['dapversions'] 
+    except: dapversions = getDAPVersion()
+    current_session['dapversions'] = dapversions
+    try: ver = current_session['currentdapver']
+    except: ver = None
+    if not ver: 
+        realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),current_session['currentver'],ver))]
+        current_session['currentdapver'] = realvers[0]    
+        
+    # set MPL version
+    try: mplver = current_session['currentmpl']
+    except: mplver = None
+    if not mplver: current_session['currentmpl']='MPL-3'
+    
+    # set version mode
+    try: vermode = current_session['vermode']
+    except: vermode = None 
+    if not vermode: current_session['vermode']='MPL'
 
 
 def getImages(plate=None,version=None):
@@ -202,8 +233,12 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
         images = glob.glob(imgpath)
         if catkey != 'spectra': images = filterDAPimages(images,maptype,catkey)
         images = [os.path.join(saspath,i.split('analysis/',1)[1]) for i in images]
+        msg = 'No Plots Found!' if not images else 'Success!'
+    else:
+        images = None
+        msg = 'Not a valid DAP directory. Check version.'  
 
-    return images if images else None
+    return images, msg
 
 def filterDAPimages(images, mapid, key):
     ''' filter the DAP PNG images based on mapid and category key'''  
