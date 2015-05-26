@@ -234,7 +234,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
         redux = os.path.join(redux,catdict[catkey])
     
     print('redux', redux)
-    print('sasredux',sasredux)
+    print('saspath',saspath)
 
     # grab images
     if os.path.isdir(redux):
