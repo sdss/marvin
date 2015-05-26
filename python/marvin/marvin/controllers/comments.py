@@ -217,6 +217,24 @@ def setSessionDAPComments(form):
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['issues'] = issues
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['comments'] = comments
     
+    
+    '''
+    category = maps, radgrad, spectra (5,6,7)
+     - mode = cube, rss
+      - bintype = none2, ston1, rad1,rad2,rad3,rad4, all3,all4,5,6,7 
+        - maptype = kin, sn2, emfluxew, emfluxfb, emflux, spec-*	
+	     -mapsubtype =  oii, oiii, hbeta, halpha, nii, sii, chisq, signal, noise, snr, vdisp, chisq, resid, spectrum
+    oldqatype = mode-bintype
+   
+    issue(catid)_(mapnumber)  =  ( catid, map number ) as integer
+
+    '''
+    
+    #set_options(catid=catkey[form['oldkey']], mode=cattype, bintype=bin, mapid=form['oldmapid'])
+    #set_issues(issues)
+    #set_comments(comments)
+
+    
     print('orig form', form)
     print(' ')
     print('formdict', formdict)
