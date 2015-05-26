@@ -3,7 +3,7 @@
 import flask, sqlalchemy, json, os, glob
 from flask import request, render_template, send_from_directory, current_app, session as current_session,jsonify
 from ..model.database import db
-from ..utilities import processTableData, getImages, getDAPImages
+from ..utilities import processTableData, getImages, getDAPImages,buildDAPFormDict
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -197,7 +197,6 @@ def setSessionDAPComments(form):
     	form info
     		comment syntax: dapqa_comment{categoryid}_{mapnumber} - from all cat. divs
     		issue syntax: "issue{issueid}_{mapnumber} - only from given cat. div at a time
-    
     ''' 
 
     if not form['oldkey']: form['oldkey'] = form['key']
@@ -205,24 +204,18 @@ def setSessionDAPComments(form):
     if not form['oldqatype']: form['oldqatype'] = form['qatype']
     
     # build a new form dict
-    catkey={'maps':'1','radgrad':'2','spectra':'3'}
-    subkeys = {'maps':['kin','snr','emfluxew','emfluxfb'],'radgrad':['emflux'],'spectra':[]}
-    bintype = {'maps':{'cube':['none2','ston1']},'radgrad':{'cube':['rad3','rad4'],'rss':['rad1','rad2']},
-    'spectra':{'cube':['ston1','none2','rad3','rad4','all5','all6','all7'],'rss':['rad1','rad2','all3','all4','all5']}}
-    if form['oldkey'] == 'spectra':
-        subkeys['spectra']=[form['oldmapid']]
-    formdict = {key:{t:{b:{map:{'issues':[],'comments':[]} for map in subkeys[key]} for b in bin} for t,bin in type.iteritems()} for key,type in bintype.iteritems()}    
+    formdict = buildDAPFormDict(form)
     
     # populate appropriate point with comments/issues
+    catkey={'maps':'1','radgrad':'2','spectra':'3'}
     cattype,bin = form['oldqatype'].split('-')
     comments = [val for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key]
+    # make issues array of int tuples (issueid,mapnumber)
     issues = json.loads(form['issues'])
     issues = [(int(i.rsplit('_')[1]),int(i.rsplit('_')[2])) for i in issues] if 'any' not in issues else []
+    # add to formdict
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['issues'] = issues
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['comments'] = comments
-    
-    # add other form keys to new formdict
-    tmp=[formdict.update({key:val}) for key,val in form.iteritems() if 'dapqa_comment' not in key and 'issues' not in key]
     
     print('orig form', form)
     print(' ')
@@ -230,7 +223,13 @@ def setSessionDAPComments(form):
     
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
-    pass
+
+    if not form['oldkey']: form['oldkey'] = form['key']
+    if not form['oldmapid']: form['oldmapid'] = form['mapid']
+    if not form['oldqatype']: form['oldqatype'] = form['qatype']
+    
+    # build a new form dict
+    formdict = buildDAPFormDict(form)
     
     
         
