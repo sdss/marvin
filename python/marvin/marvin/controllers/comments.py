@@ -223,10 +223,6 @@ def setSessionDAPComments(form):
     
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
-
-    if not form['oldkey']: form['oldkey'] = form['key']
-    if not form['oldmapid']: form['oldmapid'] = form['mapid']
-    if not form['oldqatype']: form['oldqatype'] = form['qatype']
     
     # build a new form dict
     formdict = buildDAPFormDict(form)
