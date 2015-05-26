@@ -233,10 +233,11 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
         sasredux = os.path.join(sasredux,catdict[catkey])
         redux = os.path.join(redux,catdict[catkey])
     
+    print('redux', redux)
+    print('sasredux',sasredux)
+
     # grab images
     if os.path.isdir(redux):
-        print('redux', redux)
-        print('sasredux',sasredux)
         # build filename
         bindict = {'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}
         binname = 'BIN-{0}-00{1}'.format(bindict[bintype[:-1]],bintype[-1])
