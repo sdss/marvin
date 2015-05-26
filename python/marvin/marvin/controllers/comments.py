@@ -219,11 +219,16 @@ def setSessionDAPComments(form):
     
     
     '''
-    category = maps, radgrad, spectra (5,6,7)
-     - mode = cube, rss
-      - bintype = none2, ston1, rad1,rad2,rad3,rad4, all3,all4,5,6,7 
-        - maptype = kin, sn2, emfluxew, emfluxfb, emflux, spec-*	
-	     -mapsubtype =  oii, oiii, hbeta, halpha, nii, sii, chisq, signal, noise, snr, vdisp, chisq, resid, spectrum
+OPTIONS
+category = maps, radgrad, spectra (5,6,7)
+ - mode = cube, rss
+     - bintype = none2, ston1, rad1,rad2,rad3,rad4, all3,all4,5,6,7 
+          - maptype = kin, sn2, emfluxew, emfluxfb, emflux, spec-*
+
+COMMENTED ITEM
+ - panelnum = 
+ - panelname =  (1,oii), oiii, (2,hbeta), halpha, nii, sii, chisq, (1,signal), (2,noise), snr, vdisp, chisq, resid, spectrum
+
     oldqatype = mode-bintype
    
     issue(catid)_(mapnumber)  =  ( catid, map number ) as integer
