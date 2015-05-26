@@ -1,3 +1,4 @@
+// Javascript code for general things
 
 // Grab a GET parameter from the URL
 function GetURLParameter(sParam){

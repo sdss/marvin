@@ -1,3 +1,4 @@
+// Javascript code for Marvin DAP QA plots/comments on individual plates
 
 // toggle DAP categories
 $(function() {
@@ -26,17 +27,14 @@ $(function() {
 function setDefault(key) {
 	//var html = (key!='radgrad') ? 'cube-none2': 'rss-rad1';
 	var html = (key == 'maps') ? 'cube-none2' : (key =='spectra') ? 'cube-all5' : 'rss-rad1';
-	var mapid = (key=='maps') ? 'kin' : (key=='radgrad') ? 'emflux': 'spec1'; 
+	var mapid = (key=='maps') ? 'kin' : (key=='radgrad') ? 'emflux': 'spec0'; 
+	$('#oldmapid').val(mapid);
 	$('#qacomment_'+key).html(html);
+	$('#oldqatype').val(html);
 	displayList(key);
 	if (key=='spectra') getSpectraList(key,mapid,html);
 	getPanel(key,mapid,html);
 }
-
-// toggle DAP issues
-$(function() {
-	//console.log($('.dapqaissuesp'));
-});
 
 // toggle DAP QA cube/rss
 $(function() {
@@ -61,7 +59,9 @@ $(function() {
 		if (key=='spectra') getSpectraList(key,mapid,html);
 		
 		//get new panel
-		getPanel(key,mapid,html);	
+		getPanel(key,mapid,html);
+		$('#oldmapid').val(mapid);
+		$('#oldqatype').val(html);	
 	});
 });
 
@@ -82,12 +82,33 @@ $(function() {
 		var id = $(this).attr('id');
 		var key = (id.search('map') != -1) ? 'maps' : (id.search('spectra') != -1) ? 'spectra' : (id.search('radgrad') != -1) ? 'radgrad' : ''
 		var mapid = $('#'+id+' option:selected').attr('id');
+		var oldmapid = $('#oldmapid').val();
 		var qatype = $('#qacomment_'+key).html();
-		console.log('map select id,key,mapid',id,key,mapid);
+		var oldqatype = $('#oldqatype').val();
+		console.log('map select id,key,mapid',id,key,mapid,oldmapid,oldqatype);
 
 		getPanel(key,mapid,qatype);
+		$('#oldmapid').val(mapid);
+		$('#oldqatype').val(qatype);
 	});
 });
+
+// build the DAP form
+function buildDAPform(newdata=null,issues=null) {
+	var dapform = $('#dapqacomment_form').serializeArray();
+	if (newdata) {
+		$.each(newdata,function(i,val) {
+			dapform.push(val);
+		});
+	}
+	return dapform
+}
+
+// parse DAP issues
+function parseDAPissues() {
+	var issuelist = getSelected('.dapqaissuesp');
+	return issuelist;
+}
 
 // get a DAP panel
 function getPanel(key, mapid, qatype) {
@@ -96,21 +117,25 @@ function getPanel(key, mapid, qatype) {
 	// mapid = id of option from list selection
 
 	$('.dapqapanel').hide();
-	var plateid = $('#dapplate').val();
-	var ifu = $('#dapifu').val();
-	var drpver = $('#drpver').val();
-	var dapver = $('#dapver').val();	
-	console.log(key,qatype,mapid,plateid,ifu,drpver,dapver);
 	
-	dapformdata = {'key':key, 'qatype':qatype,'mapid':mapid,'plateid':plateid,'ifu':ifu,
-		'drpver':drpver,'dapver':dapver}; 
+	// build form data
+	issues = parseDAPissues();
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},
+			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)}];
+	dapformdata = buildDAPform(newdata=newdata)
+	console.log('dapform',dapformdata);	
+
 	
-	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json',{'async':false})
+	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
 		.done(function(data){
 			$('#dapqa_'+key).show();
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
+			
+			console.log($('.selectpicker'));
 
+			$('.selectpicker li').next();
+			$('.selectpicker').selectpicker('render');
 			loadImages(key,data.result['images'],data.result['msg']);
 			
 		})
@@ -126,18 +151,12 @@ function getPanel(key, mapid, qatype) {
 // get list of DAP spectrum plots available
 function getSpectraList(key,mapid,qatype) {
 
-	var plateid = $('#dapplate').val();
-	var ifu = $('#dapifu').val();
-	var drpver = $('#drpver').val();
-	var dapver = $('#dapver').val();	
-
-	dapformdata = {'key':key, 'qatype':qatype,'mapid':mapid,'plateid':plateid,'ifu':ifu,
-		'drpver':drpver,'dapver':dapver}; 
-		
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'qatype','value':qatype}];
+	dapformdata = buildDAPform(newdata=newdata)
+			
 	$.post($SCRIPT_ROOT + '/marvin/getdapspeclist', dapformdata,null,'json')
 		.done(function(data){
 			
-			console.log(data.result['speclist']);
 			var speclist = data.result['speclist'];
 			$('#dapspectralist').empty();
 			if (speclist) {
@@ -169,9 +188,10 @@ function getSpectraList(key,mapid,qatype) {
 // load DAP plot images
 function loadImages(key,images, msg) {
 	$('#dapqa_'+key+' img').removeProp('src');
+	//console.log($('#dapqa_'+key+' img'));
 	if (images) {
 		$('#dapqa_'+key+' img').each(function(index) {
-			console.log(images[index]);
+			//console.log($(this),index,images.length);
 			$(this).attr('src',images[index]);
 			//$(this).magnify();
 		});	

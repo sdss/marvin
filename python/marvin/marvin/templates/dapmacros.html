@@ -151,17 +151,17 @@
 {% endmacro %}
 
 {# DAP Issue Selection #}
-{% macro dapqaissue(id,category,mapid) %}
+{% macro dapqaissue(catid,category,mapnum) %}
 
 <div class='form-group'>
 {% if category.issues %}
-	<select class="selectpicker dapqaissuesp form-control" multiple id='dapqa_issue{{id}}{{"_"+mapid if mapid else ""}}' data-selected-text-format="count" title='Issues' data-width='99.5%'>
+	<select class="selectpicker dapqaissuesp form-control" multiple id='dapqa_issue{{catid}}{{"_"+mapnum if mapnum else ""}}' data-selected-text-format="count" title='Issues' data-width='99.5%'>
 		{% for issid,issue in category.issues|dictsort %}
-			<option id='issue{{issid}}' value='issue{{issid}}' name='issue{{issid}}'>{{issue}}</option>
+			<option id='issue{{issid}}{{"_"+mapnum if mapnum else ""}}' value='issue{{issid}}{{"_"+mapnum if mapnum else ""}}' name='issue{{issid}}{{"_"+mapnum if mapnum else ""}}'>{{issue}}</option>
 		{% endfor %}
 	</select>
 {% endif %}
-	<input class='form-control input-sm dapqacomments' type='text' name='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' id='dapqa_comment{{id}}{{"_"+mapid if mapid else ""}}' placeholder='Comment' maxlength='256'/>
+	<input class='form-control input-sm dapqacomments' type='text' name='dapqa_comment{{catid}}{{"_"+mapnum if mapnum else ""}}' id='dapqa_comment{{catid}}{{"_"+mapnum if mapnum else ""}}' placeholder='Comment' maxlength='256'/>
 
 </div>
 
@@ -209,7 +209,7 @@
 			<div class='col-md-12'>
 				<label>Spectrum {{1}}</label>
 				<a href='#' data-toggle='modal' data-target='#dapimgmodal' onclick='daploadmodal({{category.key}}img1)'><img src="..." class="img-responsive img-rounded" id='{{category.key}}img1' alt="Spectrum Image"></a>
-				{{ dapqaissue(catid,category,(1)|string) }}
+				{{ dapqaissue(catid,category,'1') }}
 			</div>
 		</div>
 	{#{% endfor %}#}

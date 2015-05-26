@@ -52,6 +52,7 @@ python/marvin/marvin/static/js/bootstrap-tags.js -text
 python/marvin/marvin/static/js/bootstrap-tags.min.js -text
 python/marvin/marvin/static/js/bootstrap.js -text
 python/marvin/marvin/static/js/bootstrap.min.js -text
+python/marvin/marvin/static/js/comments.js -text
 python/marvin/marvin/static/js/d3.js -text
 python/marvin/marvin/static/js/d3.min.js -text
 python/marvin/marvin/static/js/dapqa.js -text
