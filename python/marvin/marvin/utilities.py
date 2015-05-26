@@ -7,6 +7,7 @@ from ast import literal_eval
 from manga_utils import generalUtils as gu
 from astropy.table import Table
 from model.database import db
+from jinja_filters import getMPL
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 def getMaskBitLabel(bits):
@@ -134,9 +135,31 @@ def getDAPVersion():
     versions = [v.version for v in vers]
     
     return versions+['NA']
+
+def setMPLVersion(mplver):
+    ''' set the versions based on MPL '''
+    
+    mpl = getMPL(mplver)
+    drpver,dapver = mpl.split(':')[1].strip().split(',')
+    current_session['currentver'] = drpver
+    current_session['currentdapver'] = dapver if dapver != 'NA' else None
     
 def setGlobalVersion():
     ''' set the global version '''
+
+    # set MPL version
+    try: mplver = current_session['currentmpl']
+    except: mplver = None
+    if not mplver: current_session['currentmpl']='MPL-3'
+    
+    # set version mode
+    try: vermode = current_session['vermode']
+    except: vermode = None 
+    if not vermode: current_session['vermode']='MPL'
+    
+    # initialize
+    if 'MPL' in current_session['vermode']:
+        setMPLVersion(current_session['currentmpl'])
     
     # set global DRP version
     try: versions = current_session['versions'] 
@@ -157,16 +180,6 @@ def setGlobalVersion():
     if not ver: 
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),current_session['currentver'],ver))]
         current_session['currentdapver'] = realvers[0]    
-        
-    # set MPL version
-    try: mplver = current_session['currentmpl']
-    except: mplver = None
-    if not mplver: current_session['currentmpl']='MPL-3'
-    
-    # set version mode
-    try: vermode = current_session['vermode']
-    except: vermode = None 
-    if not vermode: current_session['vermode']='MPL'
 
 
 def getImages(plate=None,version=None):
@@ -199,7 +212,7 @@ def getImages(plate=None,version=None):
         
     return images
  
-def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, test=False):
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, test=False, filter=True):
     ''' grab all the DAP PNG analysis plots '''   
     
     # build path
@@ -222,8 +235,6 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
     
     # grab images
     if os.path.isdir(redux):
-        print('dap redux',redux)
-        print('dap sasredux',saspath)
         # build filename
         bindict = {'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}
         binname = 'BIN-{0}-00{1}'.format(bindict[bintype[:-1]],bintype[-1])
@@ -231,7 +242,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
         # search for images & filter
         imgpath = os.path.join(redux,name)
         images = glob.glob(imgpath)
-        if catkey != 'spectra': images = filterDAPimages(images,maptype,catkey)
+        if filter: images = filterDAPimages(images,maptype,catkey,bintype[:-1])
         images = [os.path.join(saspath,i.split('analysis/',1)[1]) for i in images]
         msg = 'No Plots Found!' if not images else 'Success!'
     else:
@@ -240,37 +251,41 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
 
     return images, msg
 
-def filterDAPimages(images, mapid, key):
+def filterDAPimages(images, mapid, key,bintype):
     ''' filter the DAP PNG images based on mapid and category key'''  
     
+    kinlist = ['vel_map','vdisp_map','sth'] if 'ston' in bintype else ['vel_map','vdisp_map','chisq','resid']
     if key == 'maps':
-        mapdict = {'emfluxew':'ew_map','emfluxfb':'fb_map','kin':['vel_map','vdisp_map','sth'],'snr':['noise', 'signal', 'snr', 'chisq','resid'],'binnum':'bin_num'}
+        mapdict = {'emfluxew':'ew_map','emfluxfb':'fb_map','kin': kinlist, 'snr':['noise', 'signal', 'snr', 'halpha_ew','chisq','resid'],'binnum':'bin_num'}
     elif key == 'radgrad':
         mapdict = {'emflux':'gradient'}
     elif key == 'spectra':
         mapdict = {'spec1':'spec'}
     
-    print('images', images)    
-    print('mapdict',mapdict)
-    
-    # filter images
-    if type(mapdict[mapid]) == list:
-        images = [i for i in images for val in mapdict[mapid] if val in i]
-    else:
-        images = [img for img in images if mapdict[mapid] in img]
+    # Filter
+    if key == 'spectra':
+        name = 'spec-{0:04d}'.format(int(mapid.split('c')[1]))
+        images = [i for i in images if name in i]
+    else: 
+        # filter images
+        if type(mapdict[mapid]) == list:
+            images = [i for i in images for val in mapdict[mapid] if val in i]
+        else:
+            images = [img for img in images if mapdict[mapid] in img]
+            
+        # sort images
+        if 'emflux' in mapid: 
+            s = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
+        elif 'snr' in mapid:
+            s = [(0,'signal'),(1,'noise'),(2,'snr'),(3,'halpha_ew'),(4,'resid'),(5,'chisq')]
+        elif 'kin' in mapid:
+            if 'ston' in bintype: s = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
+            elif 'none' in bintype: s = [(0,'emvel'),(1,'emvdisp'),(2,'chisq'),(3,'stvel'),(4,'stvdisp'),(5,'resid')]
+        else: s = None
         
-    # sort images
-    if 'emflux' in mapid: 
-        s = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
-    elif 'snr' in mapid:
-        s = [(0,'signal'),(1,'noise'),(2,'snr'),(4,'resid'),(5,'chisq')]
-    elif 'kin' in mapid:
-        s = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
-    else: s = None
-    
-    if s and images:
-        s.sort(key=lambda t:t[1])
-        images = list(zip(*sorted(zip(s,images),key=lambda t:t[0][0]))[1])
+        if s and images:
+            s.sort(key=lambda t:t[1])
+            images = list(zip(*sorted(zip(s,images),key=lambda t:t[0][0]))[1])
     
     return images
       

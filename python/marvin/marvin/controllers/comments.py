@@ -135,29 +135,27 @@ def getdappanel():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
+    print('dapform',dapform)
     
-    # Get test plots
-    #images = getImages(plate=dapform['plateid'], version=dapform['drpver'])
-    #imglist = [images[0]]*6 if dapform['mapid']=='kin' else [images[10]]*6 if dapform['mapid']=='snr' else None
+    # store form in session
+    setSessionDAPComments(dapform) # old mapid 
+    getSessionDAPComments(dapform) # current mapid
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
-    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
-    
-    print('imglist', imglist)
-    
-    # Filter List for large Spectra
-    #if dapform['key'] == 'spectra':
-    #    if len(imglist) > 5: imglist = imglist[0:1]
-    
+    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+        
     # Build title
     qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
     defaulttitle = {'maps':'Maps','radgrad':'Radial Gradients','spectra':'Spectra'}
-    maptype = {'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}
-    newtitle = '{1}: {2}-{0}'.format(maptype[dapform['mapid']],defaulttitle[dapform['key']],qatype) if dapform['mapid'] in maptype else defaulttitle[dapform['key']]
-    
-    print('newtitle', newtitle)
-
+    if dapform['key'] != 'spectra':
+        maptype = {'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}
+        newtitle = '{1}: {2}-{0}'.format(maptype[dapform['mapid']],defaulttitle[dapform['key']],qatype) if dapform['mapid'] in maptype else defaulttitle[dapform['key']]
+    else:
+        name = 'spec-{0:04d}'.format(int(dapform['mapid'].split('c')[1]))
+        newtitle = '{1}: {2}-{0}'.format(name,defaulttitle[dapform['key']],qatype)
+         
     result={}
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
@@ -176,12 +174,12 @@ def getdapspeclist():
 
     # get real plots
     mode,bintype = dapform['qatype'].split('-')
-    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+    imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'],filter=False)
     
     # extract spectra names
     if imglist:
         speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
-        print('speclist', speclist)
     else: speclist = None
 
     result={}
@@ -191,6 +189,16 @@ def getdapspeclist():
     
     return jsonify(result=result)
 
+
+def setSessionDAPComments(form):
+    ''' store session dap comments based on form input, uses oldmapid '''
+    pass
     
+def getSessionDAPComments(form):
+    ''' retrieve session dap comments based on form input, uses newmapid '''
+    pass
+    
+    
+        
     
         
