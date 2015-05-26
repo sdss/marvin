@@ -203,7 +203,7 @@ def setSessionDAPComments(form):
     if not form['oldmapid']: form['oldmapid'] = form['mapid']
     if not form['oldqatype']: form['oldqatype'] = form['qatype']
     
-    # build a new form dict
+    # build a blank new form dict
     formdict = buildDAPFormDict(form)
     
     # populate appropriate point with comments/issues
@@ -224,8 +224,10 @@ def setSessionDAPComments(form):
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
     
-    # build a new form dict
+    # build a blank new form dict
     formdict = buildDAPFormDict(form)
+    
+    
     
     
         
