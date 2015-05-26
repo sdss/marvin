@@ -135,11 +135,9 @@ def getdappanel():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
-    print('dapform',dapform)
-    
-    # store form in session
+
+    # store form in session, using old mapid, qatype
     setSessionDAPComments(dapform) # old mapid 
-    getSessionDAPComments(dapform) # current mapid
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
@@ -155,6 +153,9 @@ def getdappanel():
     else:
         name = 'spec-{0:04d}'.format(int(dapform['mapid'].split('c')[1]))
         newtitle = '{1}: {2}-{0}'.format(name,defaulttitle[dapform['key']],qatype)
+    
+    # load new form from session, using current mapid, qatype
+    getSessionDAPComments(dapform) # current mapid
          
     result={}
     result['title'] = newtitle
@@ -191,8 +192,41 @@ def getdapspeclist():
 
 
 def setSessionDAPComments(form):
-    ''' store session dap comments based on form input, uses oldmapid '''
-    pass
+    ''' store session dap comments based on form input, uses oldmapid 
+    
+    	form info
+    		comment syntax: dapqa_comment{categoryid}_{mapnumber} - from all cat. divs
+    		issue syntax: "issue{issueid}_{mapnumber} - only from given cat. div at a time
+    
+    ''' 
+
+    if not form['oldkey']: form['oldkey'] = form['key']
+    if not form['oldmapid']: form['oldmapid'] = form['mapid']
+    if not form['oldqatype']: form['oldqatype'] = form['qatype']
+    
+    # build a new form dict
+    catkey={'maps':'1','radgrad':'2','spectra':'3'}
+    subkeys = {'maps':['kin','snr','emfluxew','emfluxfb'],'radgrad':['emflux'],'spectra':[]}
+    bintype = {'maps':{'cube':['none2','ston1']},'radgrad':{'cube':['rad3','rad4'],'rss':['rad1','rad2']},
+    'spectra':{'cube':['ston1','none2','rad3','rad4','all5','all6','all7'],'rss':['rad1','rad2','all3','all4','all5']}}
+    if form['oldkey'] == 'spectra':
+        subkeys['spectra']=[form['oldmapid']]
+    formdict = {key:{t:{b:{map:{'issues':[],'comments':[]} for map in subkeys[key]} for b in bin} for t,bin in type.iteritems()} for key,type in bintype.iteritems()}    
+    
+    # populate appropriate point with comments/issues
+    cattype,bin = form['oldqatype'].split('-')
+    comments = [val for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key]
+    issues = json.loads(form['issues'])
+    issues = [(int(i.rsplit('_')[1]),int(i.rsplit('_')[2])) for i in issues] if 'any' not in issues else []
+    formdict[form['oldkey']][cattype][bin][form['oldmapid']]['issues'] = issues
+    formdict[form['oldkey']][cattype][bin][form['oldmapid']]['comments'] = comments
+    
+    # add other form keys to new formdict
+    tmp=[formdict.update({key:val}) for key,val in form.iteritems() if 'dapqa_comment' not in key and 'issues' not in key]
+    
+    print('orig form', form)
+    print(' ')
+    print('formdict', formdict)
     
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
