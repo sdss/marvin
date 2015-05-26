@@ -23,17 +23,28 @@ $(function() {
 	setDefault(key);
 });
 
+// store & set old values
+function storeold(key,mapid,qatype) {
+	$('#oldmapid').val(mapid);
+	$('#oldqatype').val(qatype);
+	$('#oldkey').val(key);
+}
+function setold(key,mapid,qatype) {
+
+}
+
 // set category default
 function setDefault(key) {
 	//var html = (key!='radgrad') ? 'cube-none2': 'rss-rad1';
 	var html = (key == 'maps') ? 'cube-none2' : (key =='spectra') ? 'cube-all5' : 'rss-rad1';
 	var mapid = (key=='maps') ? 'kin' : (key=='radgrad') ? 'emflux': 'spec0'; 
-	$('#oldmapid').val(mapid);
 	$('#qacomment_'+key).html(html);
-	$('#oldqatype').val(html);
+	
+	// display list and panels, store old values
 	displayList(key);
 	if (key=='spectra') getSpectraList(key,mapid,html);
 	getPanel(key,mapid,html);
+	storeold(key,mapid,html)	
 }
 
 // toggle DAP QA cube/rss
@@ -58,10 +69,10 @@ $(function() {
 		//for spectra, populate list for first time
 		if (key=='spectra') getSpectraList(key,mapid,html);
 		
-		//get new panel
+		//get new panel and store old values
 		getPanel(key,mapid,html);
-		$('#oldmapid').val(mapid);
-		$('#oldqatype').val(html);	
+		storeold(key,mapid,html);
+			
 	});
 });
 
@@ -82,14 +93,17 @@ $(function() {
 		var id = $(this).attr('id');
 		var key = (id.search('map') != -1) ? 'maps' : (id.search('spectra') != -1) ? 'spectra' : (id.search('radgrad') != -1) ? 'radgrad' : ''
 		var mapid = $('#'+id+' option:selected').attr('id');
-		var oldmapid = $('#oldmapid').val();
 		var qatype = $('#qacomment_'+key).html();
-		var oldqatype = $('#oldqatype').val();
-		console.log('map select id,key,mapid',id,key,mapid,oldmapid,oldqatype);
 
+		// get old values
+		var oldmapid = $('#oldmapid').val();
+		var oldqatype = $('#oldqatype').val();
+		var oldkey = $('#oldkey').val();
+		console.log('map select id,key,mapid',id,key,mapid,oldmapid,oldqatype,oldkey);
+
+		// get new panel and store old values
 		getPanel(key,mapid,qatype);
-		$('#oldmapid').val(mapid);
-		$('#oldqatype').val(qatype);
+		storeold(key,mapid,qatype);
 	});
 });
 
@@ -132,10 +146,8 @@ function getPanel(key, mapid, qatype) {
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
 			
-			console.log($('.selectpicker'));
-
-			$('.selectpicker li').next();
-			$('.selectpicker').selectpicker('render');
+			//$('.selectpicker li').next();
+			//$('.selectpicker').selectpicker('render');
 			loadImages(key,data.result['images'],data.result['msg']);
 			
 		})
