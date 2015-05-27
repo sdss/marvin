@@ -152,8 +152,14 @@ function getPanel(key, mapid, qatype) {
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
 			
+			// setsession status failure
+			if (data.result['setsession']['status'] == 0) {
+				var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
+				title.html(alerthtml);
+			}
+			
 			loadImages(key,data.result['images'],data.result['panelmsg']);
-			loadComments();
+			loadComments(key,data.result['getsession']);
 			
 		})
 		.fail(function(data){
@@ -220,12 +226,20 @@ function loadImages(key,images, msg) {
 }
 
 // reset and load all the issues and comments
-function loadComments() {
+function loadComments(key,results) {
 	// reset all issues
 	
+	if (results['status'] == 1) {
 	// load new issues
 	
 	// load new comments
+	
+	} else {
+		// getsession status failure
+		var title = $('#dapqa_'+key+' h4');
+		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results['message']+"</h4></div>";
+		title.html(alerthtml);	
+	}
 	
 }
 
