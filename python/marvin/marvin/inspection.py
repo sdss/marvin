@@ -211,7 +211,8 @@ class Inspection:
         else:
             self.message = "Please enter either a comment or an issue before submitting."
             self.status = 0
-
+    
+    def get_dapqacomments(self,catid=None): pass
     def submit_dapqacomments(self,catid=None,comments=None): pass
     
     def set_comments(self): pass
