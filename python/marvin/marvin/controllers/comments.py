@@ -229,7 +229,7 @@ def setSessionDAPComments(form):
     # add new comment to database
     inspection = Inspection(current_session)
     if inspection.ready:
-        inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
+        inspection.set_version(version=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(options=oldqatype,maptype=form['oldmapid'])
