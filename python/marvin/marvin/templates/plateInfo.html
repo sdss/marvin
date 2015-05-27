@@ -12,7 +12,6 @@
 
 {% block code %}
 {{js|safe}}
-<script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
 {#<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-magnify.js')}}"></script>#}
 <script type='text/javascript'>
@@ -32,8 +31,9 @@
 	$(function(){
 		$('.ifuims').on('click',function(){
 			$('.galinfo').hide();
-			$($(this).attr('href')).fadeIn();
-			renderTags($(this).attr('href'));
+			var hrefid = $(this).attr('href');
+			$(hrefid).fadeIn();
+			renderTags(hrefid);
 		});
 	});
 	
@@ -110,6 +110,8 @@
 	});
 
 </script>
+{#<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>#}
+<script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
 {% endblock code %}
 
 

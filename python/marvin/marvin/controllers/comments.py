@@ -209,7 +209,8 @@ def setSessionDAPComments(form):
     print('form', form)
     
     # populate appropriate point with comments/issues
-    catkey={'maps':'1','radgrad':'2','spectra':'3'}
+    inspection = Inspection(current_session)
+    catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
     mode,bin = form['oldqatype'].split('-')
     sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key])
     comments = [comment[1] for comment in sortedcomments]
@@ -234,10 +235,9 @@ def setSessionDAPComments(form):
     submit = True #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
     
     # add new comment to database
-    inspection = Inspection(current_session)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
-        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
@@ -251,16 +251,16 @@ def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
     
     # new key,map information
-    catkey={'maps':'1','radgrad':'2','spectra':'3'}
+    inspection = Inspection(current_session)
+    catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
     mode,bin = form['qatype'].split('-')
     maptype = form['mapid']
     catid = int(catkey[form['key']])
     
     # get comments from database
-    inspection = Inspection(current_session)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
-        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
         inspection.retrieve_dapqacomments(catid=catid)
