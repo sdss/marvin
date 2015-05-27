@@ -23,14 +23,11 @@ $(function() {
 	setDefault(key);
 });
 
-// store & set old values
+// store old values
 function storeold(key,mapid,qatype) {
 	$('#oldmapid').val(mapid);
 	$('#oldqatype').val(qatype);
 	$('#oldkey').val(key);
-}
-function setold(key,mapid,qatype) {
-
 }
 
 // set category default
@@ -119,8 +116,9 @@ function buildDAPform(newdata=null,issues=null) {
 }
 
 // parse DAP issues
-function parseDAPissues() {
-	var issuelist = getSelected('.dapqaissuesp');
+function parseDAPissues(key=null) {
+	var name = (key) ? 'select[id*="dapqa_issue_'+key+'"]' : '.dapqaissuesp';
+	var issuelist = getSelected(name);
 	return issuelist;
 }
 
@@ -133,8 +131,8 @@ function getPanel(key, mapid, qatype) {
 	$('.dapqapanel').hide();
 	
 	// build form data
-	issues = parseDAPissues();
-	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},
+	issues = parseDAPissues(key);
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk').val()},
 			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)}];
 	dapformdata = buildDAPform(newdata=newdata)
 	console.log('dapform',dapformdata);	
@@ -146,9 +144,8 @@ function getPanel(key, mapid, qatype) {
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
 			
-			//$('.selectpicker li').next();
-			//$('.selectpicker').selectpicker('render');
-			loadImages(key,data.result['images'],data.result['msg']);
+			loadImages(key,data.result['images'],data.result['panelmsg']);
+			loadComments();
 			
 		})
 		.fail(function(data){
@@ -212,6 +209,16 @@ function loadImages(key,images, msg) {
 		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+msg+"</h4></div>";
 		title.html(alerthtml);		
 	}
+}
+
+// reset and load all the issues and comments
+function loadComments() {
+	// reset all issues
+	
+	// load new issues
+	
+	// load new comments
+	
 }
 
 

@@ -182,6 +182,9 @@
 		{% for cube in cubes %}
 		<div class='well galinfo' id='{{cube.ifu.name}}' style='display:none;'>
 			<div class='row'>
+				{# Hidden input elements #}
+				<input class='hidden' id='cubepk' name='cubepk' value='{{cube.pk}}'/>
+				<input class='hidden' id='ifuname' name='ifuname' value=''/>
 				{# Left-hand side column of info #}
 				<div class='{{"col-md-3" if inspection.cubetags[cube.ifu.name] else "col-md-4"}}'>
 					<h3>MaNGA Id: {{cube.mangaid}}</h3>

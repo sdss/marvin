@@ -291,21 +291,6 @@ def filterDAPimages(images, mapid, key,bintype):
             images = list(zip(*sorted(zip(s,images),key=lambda t:t[0][0]))[1])
     
     return images
-      
-def buildDAPFormDict(form):
-    ''' builds a new nested form dict, based on the current DAP QA comment form'''    
-    
-    subkeys = {'maps':['kin','snr','emfluxew','emfluxfb'],'radgrad':['emflux'],'spectra':[]}
-    bintype = {'maps':{'cube':['none2','ston1']},'radgrad':{'cube':['rad3','rad4'],'rss':['rad1','rad2']},
-    'spectra':{'cube':['ston1','none2','rad3','rad4','all5','all6','all7'],'rss':['rad1','rad2','all3','all4','all5']}}
-    if form['oldkey'] == 'spectra':
-        subkeys['spectra']=[form['oldmapid']]
-    formdict = {key:{t:{b:{map:{'issues':[],'comments':[]} for map in subkeys[key]} for b in bin} for t,bin in type.iteritems()} for key,type in bintype.iteritems()}    
 
-    # add other form keys to new formdict
-    tmp=[formdict.update({key:val}) for key,val in form.iteritems() if 'dapqa_comment' not in key and 'issues' not in key]
-        
-    return formdict    
-    
-    
+
     
