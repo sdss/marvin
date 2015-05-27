@@ -213,8 +213,13 @@ class Inspection:
     
     def set_dapqacomments(self): pass
 
-    def retrieve_dapqacomments(self,catid=None): pass
-    def set_session_dapqacomments(self,catid=None,comments=None): pass
+    def retrieve_dapqacomments(self,catid=None): 
+        self.status = 1
+        self.message = 'Failed to retrieve new comments!'
+        
+    def set_session_dapqacomments(self,catid=None,comments=None): 
+        self.status = 1
+        self.message = 'Failed to save the previous comments in the session!'
     
     def submit_dapqacomments(self): pass
     
