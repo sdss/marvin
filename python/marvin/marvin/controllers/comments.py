@@ -162,7 +162,8 @@ def getdappanel():
     result['images'] = imglist if imglist else None
     result['status'] = 0 if not imglist else 1
     result['panelmsg'] = msg
-    result['setmsg'] = setresults['message']
+    result['setsession'] = setresults
+    result['getsession'] = getresults
     
     return jsonify(result=result)
 
@@ -246,7 +247,24 @@ def setSessionDAPComments(form):
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
     
-    pass
+    # new key,map information
+    catkey={'maps':'1','radgrad':'2','spectra':'3'}
+    mode,bin = form['qatype'].split('-')
+    maptype = form['mapid']
+    catid = int(catkey[form['key']])
+    
+    # get comments from database
+    inspection = Inspection(current_session)
+    if inspection.ready:
+        inspection.set_version(version=form['drpver'],dapver=form['dapver'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
+        inspection.set_cube(cubepk=form['cubepk'])
+        inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
+        inspection.get_dapqacomments(catid=catid)
+    result = inspection.result()
+
+    return result    
+    
     
     
     
