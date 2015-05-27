@@ -126,8 +126,8 @@ class Inspection:
 
     def set_option(self,id=None,options=None,mode=None,bintype=None,maptype=None,add=True):
         if options:
-            mode = options['mode'] if 'mode' in options else maptype
-            bintype = options['bintype'] if 'bintype' in options else maptype
+            mode = options['mode'] if 'mode' in options else mode
+            bintype = options['bintype'] if 'bintype' in options else bintype
             maptype = options['maptype'] if 'maptype' in options else maptype
         self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
 
