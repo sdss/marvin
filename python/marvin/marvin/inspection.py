@@ -22,6 +22,7 @@ class Inspection:
         self.option = None
         self.panel = None
         self.comments = None
+        self.dapqacomments = None
         self.cubecomments = None
         self.tags = {'1':'test'}
         self.alltags = {'1':'test','2':'elliptical','3':'galaxy'}
@@ -124,11 +125,7 @@ class Inspection:
         self.version = {'id':id,'drp2ver':drp2ver,'drp3ver':drp3ver,'dapver':dapver}
         if update_session: self.set_session_version(id=id,drp2ver=drp2ver,drp3ver=drp3ver,dapver=dapver)
 
-    def set_option(self,id=None,options=None,mode=None,bintype=None,maptype=None,add=True):
-        if options:
-            mode = options['mode'] if 'mode' in options else mode
-            bintype = options['bintype'] if 'bintype' in options else bintype
-            maptype = options['maptype'] if 'maptype' in options else maptype
+    def set_option(self,id=None,mode=None,bintype=None,maptype=None,add=True):
         self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
 
     def set_panel(self,id=None,panel=None,position=None,add=True):
@@ -212,10 +209,14 @@ class Inspection:
             self.message = "Please enter either a comment or an issue before submitting."
             self.status = 0
     
-    def get_dapqacomments(self,catid=None): pass
-    def submit_dapqacomments(self,catid=None,comments=None): pass
-    
     def set_comments(self): pass
+    
+    def set_dapqacomments(self): pass
+
+    def retrieve_dapqacomments(self,catid=None): pass
+    def set_session_dapqacomments(self,catid=None,comments=None): pass
+    
+    def submit_dapqacomments(self): pass
     
     def set_recentcomments(self):
         self.recentcomments = {}

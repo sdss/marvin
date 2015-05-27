@@ -227,18 +227,21 @@ def setSessionDAPComments(form):
     
     # build panel info list 
     panelcomments = [{'panel':name,'position':i+1,'comment':comments[i],
-    'issueids':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
+    'issues':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
     
     print('panelcomment', panelcomments)
+
+    submit = True #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
     
     # add new comment to database
     inspection = Inspection(current_session)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
-        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
-        inspection.submit_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
+        inspection.set_session_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
+        if submit: inspection.submit_dapqacomments()
     result = inspection.result()
 
     return result
@@ -257,10 +260,10 @@ def getSessionDAPComments(form):
     inspection = Inspection(current_session)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
-        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
-        inspection.get_dapqacomments(catid=catid)
+        inspection.retrieve_dapqacomments(catid=catid)
     result = inspection.result()
 
     return result    
