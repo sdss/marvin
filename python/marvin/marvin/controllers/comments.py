@@ -241,7 +241,9 @@ def setSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
-        if submit: inspection.submit_dapqacomments()
+        if submit:
+            print "setSessionDAPComments -> set session with panelcomments=%r category: %r" % (panelcomments,form['oldkey'])
+            inspection.submit_dapqacomments()
     result = inspection.result()
 
     return result
@@ -265,6 +267,9 @@ def getSessionDAPComments(form):
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
         inspection.retrieve_dapqacomments(catid=catid)
     result = inspection.result()
+    
+    if inspection.ready: current_app.logger.warning('Inspection> get DAPQA Comments {0}'.format(result))
+    else: current_app.logger.warning('Inspection> FAILED to get DAPQA Comments {0}'.format(result))
 
     return result    
     

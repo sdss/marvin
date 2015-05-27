@@ -230,9 +230,14 @@ function loadComments(key,results) {
 	// reset all issues
 	
 	if (results['status'] == 1) {
-	// load new issues
-	
-	// load new comments
+    
+        // load new comments
+        print "Loading results for key="+key+"..." //delete this print (just for debug)
+        for panelcomment in results['dapqacomments'] {
+        
+            //replace this print with actual javascript to replace the panel comments with panelcomment in this loop over results
+            print "Brian, please loadcomment for panelname="+panelcomment['panel']+", panelnumber="+panelcomment['position']+", comment="+panelcomment['comment']+", issueids="+panelcomment['issues']+"!"
+        }
 	
 	} else {
 		// getsession status failure
