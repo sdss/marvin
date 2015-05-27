@@ -217,32 +217,27 @@ def setSessionDAPComments(form):
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['issues'] = issues
     formdict[form['oldkey']][cattype][bin][form['oldmapid']]['comments'] = comments
     
+    print('form', form)
+
+    oldqatype = form['oldqatype'].split('-')
+    oldqatype = {'mode':oldqatype[0],'bintype':oldqatype[1]} if len(oldqatype)==2 else None
     
-    '''
-OPTIONS
-category = maps, radgrad, spectra (5,6,7)
- - mode = cube, rss
-     - bintype = none2, ston1, rad1,rad2,rad3,rad4, all3,all4,5,6,7 
-          - maptype = kin, sn2, emfluxew, emfluxfb, emflux, spec-*
-
-COMMENTED ITEM
- - panelnum = 
- - panelname =  (1,oii), oiii, (2,hbeta), halpha, nii, sii, chisq, (1,signal), (2,noise), snr, vdisp, chisq, resid, spectrum
-
-    oldqatype = mode-bintype
-   
-    issue(catid)_(mapnumber)  =  ( catid, map number ) as integer
-
-    '''
+    catid = 5 # or whatever it is!
+    whatever = [] #to be removed whenever the next line make sense.
+    comments = [{'panel':panelname,'position':panelnumber,'comment':panelcomment,'issueids':panelissueids} for something in whatever]
     
-    #set_options(catid=catkey[form['oldkey']], mode=cattype, bintype=bin, mapid=form['oldmapid'])
-    #set_issues(issues)
-    #set_comments(comments)
+    # add new comment to database
+    inspection = Inspection(current_session)
+    if inspection.ready:
+        inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
+        inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
+        inspection.set_cube(cubepk=form['cubepk'])
+        inspection.set_option(options=oldqatype,maptype=form['oldmapid'])
+        inspection.submit_daqpacomments(catid=catid,comments=comments)
+    result = inspection.result()
 
-    
-    print('orig form', form)
-    print(' ')
-    print('formdict', formdict)
+    return jsonify(result=result)
+
     
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''

@@ -19,6 +19,8 @@ class Inspection:
         self.set_category(forcomment=True)
         self.set_category(fordapqa=True)
         self.comment = None
+        self.option = None
+        self.panel = None
         self.comments = None
         self.cubecomments = None
         self.tags = {'1':'test'}
@@ -121,6 +123,16 @@ class Inspection:
     def set_version(self,id=None,version=None,drp2ver=None,drp3ver=None,dapver=None,add=True,update_session=True):
         self.version = {'id':id,'drp2ver':drp2ver,'drp3ver':drp3ver,'dapver':dapver}
         if update_session: self.set_session_version(id=id,drp2ver=drp2ver,drp3ver=drp3ver,dapver=dapver)
+
+    def set_option(self,id=None,options=None,mode=None,bintype=None,maptype=None,add=True):
+        if options:
+            mode = options['mode'] if 'mode' in options else maptype
+            bintype = options['bintype'] if 'bintype' in options else maptype
+            maptype = options['maptype'] if 'maptype' in options else maptype
+        self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
+
+    def set_panel(self,id=None,panel=None,position=None,add=True):
+        self.panel = {'id':id,'panel':panel,'position':position}
 
     def set_counter(self,counter=None):
         if self.session is not None:
