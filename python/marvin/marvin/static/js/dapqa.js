@@ -21,6 +21,14 @@ $(function() {
 	// load a default
 	var key = 'maps';
 	setDefault(key);
+		
+	/*var dapqa = new Dapqa('7443','9101','10');
+	if (typeof dapqa != 'undefined') {
+	console.log('dapqa',dapqa);
+	dapqa.print();
+	console.log('mainpane',dapqa.mainpane);
+	console.log('qaform',dapqa.qaform.find('#dapqacat'));
+	}*/
 });
 
 // store old values
