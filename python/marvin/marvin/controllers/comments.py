@@ -3,7 +3,7 @@
 import flask, sqlalchemy, json, os, glob
 from flask import request, render_template, send_from_directory, current_app, session as current_session,jsonify
 from ..model.database import db
-from ..utilities import processTableData, getImages, getDAPImages,buildDAPFormDict
+from ..utilities import getImages, getDAPImages
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -136,8 +136,8 @@ def getdappanel():
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
 
-    # store form in session, using old mapid, qatype
-    setSessionDAPComments(dapform) # old mapid 
+    # store form in session, using old mapid, qatype, and key
+    setresults = setSessionDAPComments(dapform)
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
@@ -154,14 +154,15 @@ def getdappanel():
         name = 'spec-{0:04d}'.format(int(dapform['mapid'].split('c')[1]))
         newtitle = '{1}: {2}-{0}'.format(name,defaulttitle[dapform['key']],qatype)
     
-    # load new form from session, using current mapid, qatype
-    getSessionDAPComments(dapform) # current mapid
+    # load new form from session, using current mapid, qatype, and key
+    getresults = getSessionDAPComments(dapform) 
          
     result={}
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
     result['status'] = 0 if not imglist else 1
-    result['msg'] = msg
+    result['panelmsg'] = msg
+    result['setmsg'] = setresults['message']
     
     return jsonify(result=result)
 
@@ -196,35 +197,38 @@ def setSessionDAPComments(form):
     
     	form info
     		comment syntax: dapqa_comment{categoryid}_{mapnumber} - from all cat. divs
-    		issue syntax: "issue{issueid}_{mapnumber} - only from given cat. div at a time
+    		issue syntax: "issue_{issueid}_{mapnumber} - only from given cat. div at a time
     ''' 
-
+    
+    # set default old values if they are empty 
     if not form['oldkey']: form['oldkey'] = form['key']
     if not form['oldmapid']: form['oldmapid'] = form['mapid']
     if not form['oldqatype']: form['oldqatype'] = form['qatype']
-    
-    # build a blank new form dict
-    formdict = buildDAPFormDict(form)
+
+    print('form', form)
     
     # populate appropriate point with comments/issues
     catkey={'maps':'1','radgrad':'2','spectra':'3'}
-    cattype,bin = form['oldqatype'].split('-')
-    comments = [val for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key]
-    # make issues array of int tuples (issueid,mapnumber)
+    mode,bin = form['oldqatype'].split('-')
+    sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key])
+    comments = [comment[1] for comment in sortedcomments]
+    # get issues, separate into ints by panel below
     issues = json.loads(form['issues'])
-    issues = [(int(i.rsplit('_')[1]),int(i.rsplit('_')[2])) for i in issues] if 'any' not in issues else []
-    # add to formdict
-    formdict[form['oldkey']][cattype][bin][form['oldmapid']]['issues'] = issues
-    formdict[form['oldkey']][cattype][bin][form['oldmapid']]['comments'] = comments
+    # make panel names
+    if 'emflux' in form['oldmapid']: 
+        panelname = ['oii','hbeta','oiii','halpha','nii','sii']
+    elif 'snr' in form['oldmapid']:
+        panelname = ['signal','noise','snr','halpha_ew','resid','chisq']
+    elif 'kin' in form['oldmapid']:
+        if 'ston' in bin: panelname = ['emvel','emvdisp','sth3','stvel','stvdisp','sth4']
+        elif 'none' in bin: panelname = ['emvel','emvdisp','chisq','stvel','stvdisp','resid']
+    else: panelname = ['spectrum']
     
-    print('form', form)
-
-    oldqatype = form['oldqatype'].split('-')
-    oldqatype = {'mode':oldqatype[0],'bintype':oldqatype[1]} if len(oldqatype)==2 else None
+    # build panel info list 
+    panelcomments = [{'panel':name,'position':i+1,'comment':comments[i],
+    'issueids':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
     
-    catid = 5 # or whatever it is!
-    whatever = [] #to be removed whenever the next line make sense.
-    comments = [{'panel':panelname,'position':panelnumber,'comment':panelcomment,'issueids':panelissueids} for something in whatever]
+    print('panelcomment', panelcomments)
     
     # add new comment to database
     inspection = Inspection(current_session)
@@ -232,18 +236,17 @@ def setSessionDAPComments(form):
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
-        inspection.set_option(options=oldqatype,maptype=form['oldmapid'])
-        inspection.submit_daqpacomments(catid=catid,comments=comments)
+        inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
+        inspection.submit_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
     result = inspection.result()
 
-    return jsonify(result=result)
+    return result
 
     
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
     
-    # build a blank new form dict
-    formdict = buildDAPFormDict(form)
+    pass
     
     
     
