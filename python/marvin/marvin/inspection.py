@@ -216,6 +216,9 @@ class Inspection:
     def retrieve_dapqacomments(self,catid=None): 
         self.status = 1
         self.message = 'Failed to retrieve new comments!'
+        self.dapqacomments = [
+        	{'position':1,'panel':'','issues':[],'comments':None}
+        ]
         
     def set_session_dapqacomments(self,catid=None,comments=None): 
         self.status = 1
@@ -249,5 +252,6 @@ class Inspection:
         if self.session and 'member_fullname' in self.session: result.update({'membername':self.session['member_fullname']})
         if self.comments: result.update({'comments':self.comments})
         if self.recentcomments: result.update({'recentcomments':self.recentcomments})
+        if self.dapqacomments: result.update({'dapqacomments':self.dapqacomments})
         if self.tags: result.update({'tags':self.tags})
         return result
