@@ -228,8 +228,9 @@ def setSessionDAPComments(form):
         elif 'none' in bin: panelname = ['emvel','emvdisp','chisq','stvel','stvdisp','resid']
     else: panelname = ['spectrum']
     
-    # build panel info list 
-    panelcomments = [{'panel':name,'position':i+1,'comment':comments[i],
+    # build panel info list
+    catid = catkey[form['oldkey']]
+    panelcomments = [{'panel':name,'position':i+1,'catid':catid,'comment':comments[i],
     'issues':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
     
     print('panelcomment', panelcomments)
@@ -242,7 +243,7 @@ def setSessionDAPComments(form):
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
-        inspection.set_session_dapqacomments(catid=int(catkey[form['oldkey']]),comments=panelcomments)
+        inspection.set_session_dapqacomments(catid=catid,comments=panelcomments)
         if submit:
             print "setSessionDAPComments -> set session with panelcomments=%r category: %r" % (panelcomments,form['oldkey'])
             inspection.submit_dapqacomments()
@@ -259,7 +260,7 @@ def getSessionDAPComments(form):
     catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
     mode,bin = form['qatype'].split('-')
     maptype = form['mapid']
-    catid = int(catkey[form['key']])
+    catid = catkey[form['key']]
     
     # get comments from database
     if inspection.ready:
