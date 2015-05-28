@@ -135,9 +135,11 @@ def getdappanel():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
+    
+    print('first dapform',dapform)
 
     # store form in session, using old mapid, qatype, and key
-    setresults = setSessionDAPComments(dapform)
+    setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
@@ -206,7 +208,7 @@ def setSessionDAPComments(form):
     if not form['oldmapid']: form['oldmapid'] = form['mapid']
     if not form['oldqatype']: form['oldqatype'] = form['qatype']
 
-    print('form', form)
+    print('inside setsession: form', form)
     
     # populate appropriate point with comments/issues
     inspection = Inspection(current_session)

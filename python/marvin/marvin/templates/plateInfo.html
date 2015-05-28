@@ -186,7 +186,7 @@
 			<div class='row'>
 				{# Hidden input elements #}
 				<input class='hidden' id='cubepk' name='cubepk' value='{{cube.pk}}'/>
-				<input class='hidden' id='ifuname' name='ifuname' value=''/>
+				<input class='hidden' id='ifuname' name='ifuname' value='{{cube.ifu.name}}'/>
 				{# Left-hand side column of info #}
 				<div class='{{"col-md-3" if inspection.cubetags[cube.ifu.name] else "col-md-4"}}'>
 					<h3>MaNGA Id: {{cube.mangaid}}</h3>
