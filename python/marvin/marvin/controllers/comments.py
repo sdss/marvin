@@ -121,7 +121,6 @@ def login():
     inspection = Inspection(current_session, username=username, auth=auth)
     if not inspection.ready: current_app.logger.warning('Inspection> NOT READY: %r %r' % (username,auth))
     result = inspection.result()
-    
     if inspection.ready: current_app.logger.warning('Inspection> SUCCESSFUL LOGIN {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED LOGIN {0}'.format(result))
 
@@ -235,7 +234,7 @@ def setSessionDAPComments(form):
     
     print('panelcomment', panelcomments)
 
-    submit = True #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
+    submit = False #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
     
     # add new comment to database
     if inspection.ready:

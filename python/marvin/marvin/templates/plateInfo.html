@@ -12,7 +12,6 @@
 
 {% block code %}
 {{js|safe}}
-<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
 {#<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap-magnify.js')}}"></script>#}
 <script type='text/javascript'>
 
@@ -109,7 +108,17 @@
 		});
 	});
 
+	// Toggle add comment login function
+	$(function() {
+		$('#addcommentbut').click(function() {
+			var fxn = 'grabComments';
+			$('#fxn').val(fxn);
+		});
+		
+	});
+
 </script>
+<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
 {#<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>#}
 <script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
 {% endblock code %}
@@ -177,6 +186,7 @@
 					<div class='col-md-12'><h1> No IFU images found! </h1></div>
 				{% endif %}
   			</div>
+  			<input class='hidden' id='inspectready' value='{{inspection.ready}}'/>
 		</div>
 
 		{# Drop-down DIV for each IFU #}
@@ -201,7 +211,7 @@
 					</div>
 					
 					<div class='btn-group-vertical'>
-					<button type='button' class='btn btn-warning' onclick='getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
+					<button type='button' class='btn btn-warning' id='addcommentbut' onclick='getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
 					<a href='#commenttable_{{cube.ifu.name}}' class='btn btn-success' id='showcomment'>Show Comments</a>
 					<a href='{{cube.location}}' class='btn btn-primary' id='cubedl' download='{{cube.name}}'>Download Cube</a>
 					<a href='{{cube.location|replace('CUBE','RSS')}}' class='btn btn-primary' id='rssdl' download='{{cube.name|replace('CUBE','RSS')}}'>Download RSS</a>
@@ -286,7 +296,7 @@
 		{% include 'commentform.html' %}
 
 		{# Login Modal #}
-		{{login('grabComments')}}
+		{{login()}}
 
 	</div>
 {% elif not plate %}
