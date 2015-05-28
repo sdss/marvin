@@ -14,23 +14,38 @@ $(function() {
 	});
 });
 
+
 // reset dapqa form on page load
-$(function() {
-	$('#dapqacomment_form').trigger('reset');
+/*$(function() {
+	$('.dapqacomment_form').trigger('reset');
 	$('.qacomment').html('');
 	// load a default
 	var key = 'maps';
 	setDefault(key);
 		
-	/*var dapqa = new Dapqa('7443','9101','10');
+	var dapqa = new Dapqa('7443','9101','10');
 	if (typeof dapqa != 'undefined') {
 	console.log('dapqa',dapqa);
 	dapqa.print();
 	console.log('mainpane',dapqa.mainpane);
 	console.log('qaform',dapqa.qaform.find('#dapqacat'));
-	}*/
-});
+	}
+});*/
 
+// dapqa tab selection
+$(function(){
+	$('#cubetabs a').click(function() {	
+		var ifu = getIFUHash().slice(1);
+		var dapifuform = $('#dapqacomment_form_'+ifu);
+		dapifuform.trigger('reset');
+		$('.qacomment').html('');
+		var key = 'maps';
+		//var test = "{{platera|tojson|safe}}";
+		//console.log('ready',test);
+		setDefault(key);		
+	});
+});
+	
 // store old values
 function storeold(key,mapid,qatype) {
 	$('#oldmapid').val(mapid);
@@ -113,8 +128,8 @@ $(function() {
 });
 
 // build the DAP form
-function buildDAPform(newdata=null,issues=null) {
-	var dapform = $('#dapqacomment_form').serializeArray();
+function buildDAPform(newdata=null,ifu=null) {
+	var dapform = $('#dapqacomment_form_'+ifu).serializeArray();
 	if (newdata) {
 		$.each(newdata,function(i,val) {
 			dapform.push(val);
@@ -137,23 +152,29 @@ function getPanel(key, mapid, qatype) {
 	// mapid = id of option from list selection
 
 	$('.dapqapanel').hide();
+	var ifu = $('#ifu').val();
+	console.log('ifu field',$('#ifu'));
+	var ifuname = $('#ifuname').val();
 	
 	// build form data
 	issues = parseDAPissues(key);
 	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk').val()},
 			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)}];
-	dapformdata = buildDAPform(newdata=newdata)
+	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
 	console.log('dapform',dapformdata);	
 
 	
 	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
 		.done(function(data){
-			$('#dapqa_'+key).show();
+			console.log('ifu',ifu,ifuname);
+			var ifupanel = $('#dapqapane_'+ifu).find('#dapqa_'+key);
+			console.log(ifupanel);
+			ifupanel.show();
 			var title = $('#dapqa_'+key+' h4');
 			if (data.result['title']) title.html(data.result['title']);
 			
 			// setsession status failure
-			if (data.result['setsession']['status'] == 0) {
+			if (data.result['setsession'] && data.result['setsession']['status'] == 0) {
 				var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
 				title.html(alerthtml);
 			}
@@ -270,8 +291,8 @@ function daploadmodal(img) {
 }
 
 // Submit DAP QA Comments
-function dapaddcomments() {
-	var dapform = $('#dapqacomment_form');
+function dapaddcomments(ifu) {
+	var dapform = $('#dapqacomment_form_'+ifu);
 	console.log(dapform.serialize());
 }
 

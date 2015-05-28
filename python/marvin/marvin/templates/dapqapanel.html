@@ -4,7 +4,7 @@
 
 <div class='well'>
 
-<form class='form' role='form' method='post' action='' id='dapqacomment_form'>
+<form class='form dapqacomment_form' role='form' method='post' action='' id='dapqacomment_form_{{cube.ifu.name}}'>
 	<input class='hidden' id='plate' name='plateid' value='{{plate.id}}'/>
 	<input class='hidden' id='ifu' name='ifu' value='{{cube.ifu.name}}'/>
 	<input class='hidden' id='drpver' name='drpver' value='{{version}}'/>
@@ -81,7 +81,7 @@
 	{# Bottom Row for Submit and General Comments #}
 	<div class='row'>
 		<div class='col-md-8'>
-			<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='dapaddcomments()'>Submit</button>
+			<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='dapaddcomments({{cube.ifu.name}})'>Submit</button>
 		</div>
 	</div>
 	<div class='row'>
