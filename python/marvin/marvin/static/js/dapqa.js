@@ -256,7 +256,7 @@ function loadComments(key,results) {
     
         // load new comments
         console.log("Loading results for key="+key+"..."); //delete this print (just for debug)
-        for (panelcomment in results['dapqacomments']) {
+        for (panelcomment in results.dapqacomments) {
         
             //replace this print with actual javascript to replace the panel comments with panelcomment in this loop over results
             //print "Brian, please loadcomment for panelname="+panelcomment['panel']+", panelnumber="+panelcomment['position']+", comment="+panelcomment['comment']+", issueids="+panelcomment['issues']+"!"
