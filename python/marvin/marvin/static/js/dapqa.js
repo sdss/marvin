@@ -250,10 +250,12 @@ function loadImages(key,images, msg) {
 function loadComments(key,results) {
 	// reset all issues
 	
+	console.log('loadComments results', results);
+	
 	if (results['status'] == 1) {
     
         // load new comments
-        console.log("Loading results for key="+key+"...") //delete this print (just for debug)
+        console.log("Loading results for key="+key+"..."); //delete this print (just for debug)
         for panelcomment in results['dapqacomments'] {
         
             //replace this print with actual javascript to replace the panel comments with panelcomment in this loop over results
