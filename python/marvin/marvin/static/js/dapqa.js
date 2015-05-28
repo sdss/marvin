@@ -263,7 +263,7 @@ function loadComments(key,results) {
             
             console.log('panelcomment',panelcomment);
             $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position).val(panelcomment.comment);
-        }
+        });
 	
 	} else {
 		// getsession status failure
