@@ -267,6 +267,7 @@ function loadComments(key,results) {
             $.each(panelcomment.issues, function(i,issid) {
             	//dapqa_issue_{{category.key}}{{"_"+mapnum if mapnum else ""}}
             	//issue_{{issid}}{{"_"+mapnum if mapnum else ""}}
+            	console.log('issue id,index',issid,i);
             	$('#issue_'+issid+'_'+panelcomment.position).prop('selected',true);
             });
         });
