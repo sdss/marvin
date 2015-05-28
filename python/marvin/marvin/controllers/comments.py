@@ -245,9 +245,10 @@ def setSessionDAPComments(form):
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments)
         if submit:
-            print "setSessionDAPComments -> set session with panelcomments=%r category: %r" % (panelcomments,form['oldkey'])
+            print "setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments']
             inspection.submit_dapqacomments()
     result = inspection.result()
+
 
     return result
 
