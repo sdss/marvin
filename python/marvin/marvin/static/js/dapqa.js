@@ -34,15 +34,22 @@ $(function() {
 
 // dapqa tab selection
 $(function(){
-	$('#cubetabs a').click(function() {	
+	$('#cubetabs a[href*="dapqapane"]').click(function() {	
 		var ifu = getIFUHash().slice(1);
 		var dapifuform = $('#dapqacomment_form_'+ifu);
 		dapifuform.trigger('reset');
 		$('.qacomment').html('');
 		var key = 'maps';
-		//var test = "{{platera|tojson|safe}}";
-		//console.log('ready',test);
-		setDefault(key);		
+		var ready = $('#inspectready').val();
+		
+		if (ready == 'True') {
+			setDefault(key);
+		} else {
+			var fxn = 'loadDapQaPanel';
+			$('#fxn').val(fxn);
+			$('#dapqapane_'+ifu).hide();
+			$('#loginform').modal('show');
+		}		
 	});
 });
 	
@@ -308,6 +315,14 @@ function dapaddcomments(ifu) {
 	console.log(dapform.serialize());
 }
 
+// Load the DAP QA Panel
+function loadDapQaPanel() {
+	var key = 'maps';
+	var ifu = getIFUHash().slice(1);
+	$('#dapqapane_'+ifu).show();
+	resetLogin();
+	setDefault(key);
+}
 
 
 

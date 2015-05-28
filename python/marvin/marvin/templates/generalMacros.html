@@ -48,11 +48,11 @@
 
 
 {# Login Modal #}
-{% macro login(fxn) %}
+{% macro login(fxn=None, modalid='loginform', formid='login_form') %}
 	<div class='login'>
-	<form class='form' role='form' method='post' action='login' id='login_form'>
-		<input class='hidden' id='fxn' value='{{fxn}}'/>
-		<div class='modal fade loginmodal' id='loginform' tabindex='-1' role='dialog' aria-labeledby='loginlabel' aria-hidden='true'>
+	<form class='form' role='form' method='post' action='login' id='{{formid}}'>
+		<input class='hidden' id='fxn' name='fxn' value='{{fxn}}'/>
+		<div class='modal fade loginmodal' id='{{modalid}}' tabindex='-1' role='dialog' aria-labeledby='loginlabel' aria-hidden='true'>
 			<div class='modal-dialog'>
 				<div class='modal-content'>	
 					{# Header #}
@@ -82,12 +82,12 @@
 						{# Login message and Comment submit button #}	
 						<div class='row'>
 							<div class='col-md-9' id='loginmessage'>
-								{% if not fxn %}<h4 class='alert alert-danger'>Input function must be specified for Login!</h4>{% endif %}
+								{#{% if not fxn %}<h4 class='alert alert-danger'>Input function must be specified for Login!</h4>{% endif %}#}
 							</div>
 							<div class='col-md-3'>
-								{% if fxn %}
-									<button type="button" onclick='login({{fxn}})' name="submitlogin_form" id='sublogin' class="btn btn-primary btn-lg" >Submit</button>
-								{% endif %}
+								{#{% if fxn %}#}
+									<button type="button" onclick='login()' name="submitlogin_form" id='sublogin' class="btn btn-primary btn-lg" >Submit</button>
+								{#{% endif %}#}
 							</div>
 						</div>								
 					</div>						

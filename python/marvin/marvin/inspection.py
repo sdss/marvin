@@ -211,14 +211,16 @@ class Inspection:
     
     def set_comments(self): pass
     
-    def set_dapqacomments(self): pass
+    def set_dapqacomments(self): 
+        self.status=1
+        self.message=''
 
     def retrieve_dapqacomments(self,catid=None): 
         self.status = 1
         self.message = 'Failed to retrieve new comments!'
-        self.dapqacomments = [
-        	{'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'}
-        ]
+        #self.dapqacomments = [
+        #	{'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'}
+        #]
         
     def set_session_dapqacomments(self,catid=None,comments=None): 
         self.status = 1

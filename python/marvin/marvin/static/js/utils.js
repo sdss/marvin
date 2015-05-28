@@ -37,8 +37,10 @@ function rsyncFiles(){
 // Submit username and password to Inspection DB for trac login
 function login(fxn) {
 
-  var form = $('#login_form').serialize();
-  console.log(fxn);
+  var form = $('#login_form').serialize();	
+  var fxnname = $('#fxn').val();
+  var fxn = window[fxnname];  
+  
   $.post($SCRIPT_ROOT + '/marvin/login', form,'json') 
 	  .done(function(data){
 		  if (data.result['status'] < 0) {
