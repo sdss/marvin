@@ -217,7 +217,7 @@ class Inspection:
         self.status = 1
         self.message = 'Failed to retrieve new comments!'
         self.dapqacomments = [
-        	{'position':1,'panel':'','issues':[],'comments':None}
+        	{'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'}
         ]
         
     def set_session_dapqacomments(self,catid=None,comments=None): 
