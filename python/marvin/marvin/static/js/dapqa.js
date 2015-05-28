@@ -263,6 +263,12 @@ function loadComments(key,results) {
             
             console.log('panelcomment',panelcomment);
             $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position).val(panelcomment.comment);
+            
+            $.each(panelcomment.issues, function(i,issid) {
+            	//dapqa_issue_{{category.key}}{{"_"+mapnum if mapnum else ""}}
+            	//issue_{{issid}}{{"_"+mapnum if mapnum else ""}}
+            	$('#issue_'+issid+'_'+panelcomment.position).prop('selected',true);
+            }
         });
 	
 	} else {
