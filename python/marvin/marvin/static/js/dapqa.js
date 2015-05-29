@@ -274,12 +274,7 @@ function loadComments(key,results) {
     $('[id^=dapqa_comment]').val('');
     
 	// reset all issue options
-    //$('[id^=dapqa_issue]').selectpicker('deselectAll');
-    $('select[id*="dapqa_issue_'+key+'"] :checked').each(function(i,issue) {
-    	console.log('issue',i,issue);
-    	issue.prop('selected',false);
-    	//issue.prop('checked',disabled);
-    });
+    $('[id^=issue]').prop('selected',false);    
 
 	console.log('loadComments results', results);
 	
@@ -309,7 +304,7 @@ function loadComments(key,results) {
 		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results['message']+"</h4></div>";
 		title.html(alerthtml);	
 	}
-    
+      
 	// render the issue multiple selector to update the count
     //$('[id^=dapqa_issue]').selectpicker('refresh');
     $('.dapqaissuesp').selectpicker('refresh');
