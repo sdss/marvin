@@ -78,7 +78,7 @@ function setDefault(key) {
 	$('#qacomment_'+key).html(html);
 	
 	var ifu = $('.galinfo:visible').attr('id');
-	console.log('in setdefault-obj', $);
+	console.log('in setdefault-obj');
 	
 	// display list and panels, store old values
 	displayList(key);
@@ -275,7 +275,10 @@ function loadComments(key,results) {
     
 	// reset all issue options
     //$('[id^=dapqa_issue]').selectpicker('deselectAll');
-    $('.dapqaissuesp').selectpicker('deselectAll');
+    $('select[id*="dapqa_issue_'+key+'"] :checked').each(function(i,issue) {
+    	console.log('issue',i,issue);
+    	
+    });
 
 	console.log('loadComments results', results);
 	
