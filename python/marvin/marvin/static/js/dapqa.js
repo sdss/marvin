@@ -24,13 +24,13 @@ $(function() {
 	setDefault(key);*/
 	
 	//console.log('alldapqapanes',$('.dapqapanes'));
-	$('.dapqapanes').each(function(i,pane) {
+	/*$('.dapqapanes').each(function(i,pane) {
 		var ifu = pane.id.split('_')[1];
 		var dapqa = new Dapqa('7443',ifu,null);
 		console.log('pane',pane,pane.id,ifu,$(this));
 		console.log('dapqa',dapqa);
 		$(this).data('dapqa',dapqa);
-	});
+	});*/
 	
 		
 	/*var dapqa = new Dapqa('7443','9101','10');
