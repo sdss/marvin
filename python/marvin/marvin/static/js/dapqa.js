@@ -16,21 +16,31 @@ $(function() {
 
 
 // reset dapqa form on page load
-/*$(function() {
-	$('.dapqacomment_form').trigger('reset');
+$(function() {
+	/*$('.dapqacomment_form').trigger('reset');
 	$('.qacomment').html('');
 	// load a default
 	var key = 'maps';
-	setDefault(key);
+	setDefault(key);*/
+	
+	//console.log('alldapqapanes',$('.dapqapanes'));
+	$('.dapqapanes').each(function(i,pane) {
+		var ifu = pane.id.split('_')[1];
+		var dapqa = new Dapqa('7443',ifu,null);
+		console.log('pane',pane,pane.id,ifu,$(this));
+		console.log('dapqa',dapqa);
+		$(this).data('dapqa',dapqa);
+	});
+	
 		
-	var dapqa = new Dapqa('7443','9101','10');
+	/*var dapqa = new Dapqa('7443','9101','10');
 	if (typeof dapqa != 'undefined') {
-	console.log('dapqa',dapqa);
-	dapqa.print();
-	console.log('mainpane',dapqa.mainpane);
-	console.log('qaform',dapqa.qaform.find('#dapqacat'));
-	}
-});*/
+		console.log('dapqa',dapqa);
+		dapqa.print();
+		console.log('mainpane',dapqa.mainpane);
+		console.log('qaform',dapqa.qaform.find('#dapqacat'));
+	}*/
+});
 
 // dapqa tab selection
 $(function(){
@@ -66,6 +76,9 @@ function setDefault(key) {
 	var html = (key == 'maps') ? 'cube-none2' : (key =='spectra') ? 'cube-all5' : 'rss-rad1';
 	var mapid = (key=='maps') ? 'kin' : (key=='radgrad') ? 'emflux': 'spec0'; 
 	$('#qacomment_'+key).html(html);
+	
+	var ifu = $('.galinfo:visible').attr('id');
+	console.log('in setdefault-obj', $);
 	
 	// display list and panels, store old values
 	displayList(key);
@@ -261,7 +274,8 @@ function loadComments(key,results) {
     $('[id^=dapqa_comment]').val('');
     
 	// reset all issue options
-    $('[id^=dapqa_issue]').selectpicker('deselectAll');
+    //$('[id^=dapqa_issue]').selectpicker('deselectAll');
+    $('.dapqaissuesp').selectpicker('deselectAll');
 
 	console.log('loadComments results', results);
 	
@@ -293,7 +307,8 @@ function loadComments(key,results) {
 	}
     
 	// render the issue multiple selector to update the count
-    $('[id^=dapqa_issue]').selectpicker('render');
+    //$('[id^=dapqa_issue]').selectpicker('refresh');
+    $('.dapqaissuesp').selectpicker('refresh');
 	
 }
 
