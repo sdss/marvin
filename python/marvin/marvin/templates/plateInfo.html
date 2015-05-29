@@ -119,7 +119,7 @@
 
 </script>
 <script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
-{#<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>#}
+<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
 {% endblock code %}
 
@@ -254,7 +254,7 @@
 						</div>
 						
 						{# DAP QA Plots Pane #}
-						<div class='tab-pane' id='dapqapane_{{cube.ifu.name}}'>
+						<div class='tab-pane dapqapanes' id='dapqapane_{{cube.ifu.name}}'>
 							<h4>Here lies DAP QA plots for {{cube.ifu.name}}</h4>
 							{% include 'dapqapanel.html' %}
 						</div>
