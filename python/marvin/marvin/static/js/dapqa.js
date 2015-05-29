@@ -260,6 +260,9 @@ function loadComments(key,results) {
 	// reset all panel comments
     $('[id^=dapqa_comment]').val('');
     
+	// reset all issue options
+    $('[id^=dapqa_issue]').selectpicker('deselectAll');
+
 	console.log('loadComments results', results);
 	
 	if (results['status'] == 1) {
@@ -288,6 +291,9 @@ function loadComments(key,results) {
 		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results['message']+"</h4></div>";
 		title.html(alerthtml);	
 	}
+    
+	// render the issue multiple selector to update the count
+    $('[id^=dapqa_issue]').selectpicker('render');
 	
 }
 
