@@ -257,6 +257,9 @@ function loadImages(key,images, msg) {
 function loadComments(key,results) {
 	// reset all issues
 	
+	// reset all panel comments
+    $('[id^=dapqa_comment]').val('');
+    
 	console.log('loadComments results', results);
 	
 	if (results['status'] == 1) {
