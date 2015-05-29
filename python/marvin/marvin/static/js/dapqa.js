@@ -277,7 +277,8 @@ function loadComments(key,results) {
     //$('[id^=dapqa_issue]').selectpicker('deselectAll');
     $('select[id*="dapqa_issue_'+key+'"] :checked').each(function(i,issue) {
     	console.log('issue',i,issue);
-    	
+    	issue.prop('selected',false);
+    	//issue.prop('checked',disabled);
     });
 
 	console.log('loadComments results', results);
