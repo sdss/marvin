@@ -23,10 +23,11 @@ class Inspection:
         self.panel = None
         self.comments = None
         self.dapqacomments = None
+        self.totaldapcomments = None
         self.cubecomments = None
-        self.tags = {'1':'test'}
-        self.alltags = {'1':'test','2':'elliptical','3':'galaxy'}
-        self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope']}
+        self.tags = {'1':'test','2':'daptest'}
+        self.alltags = {'1':'test','2':'elliptical','3':'galaxy','4':'daptest','5':'hello'}
+        self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope'],'9101':['daptest','hello']}
         self.searchcomments = None
         self.recentcomments = {'1':['Hello'],'2':[],'3':[],'4':[],'5':[]}
         self.ticket = None
@@ -220,6 +221,8 @@ class Inspection:
         self.message = 'Failed to retrieve new comments!'
         self.dapqacomments = []
         self.dapqacomments.append({'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'})
+        dapcount = [len(pancom['issues'])+1 if pancom['comment'] else len(pancom['issues']) for pancom in self.dapqacomments]
+        self.totaldapcomments = sum(dapcount)
         
     def set_session_dapqacomments(self,catid=None,comments=None): 
         self.status = 1
@@ -255,4 +258,5 @@ class Inspection:
         if self.recentcomments: result.update({'recentcomments':self.recentcomments})
         if self.dapqacomments: result.update({'dapqacomments':self.dapqacomments})
         if self.tags: result.update({'tags':self.tags})
+        if self.totaldapcomments: result.update({'totaldapcomments':self.totaldapcomments})
         return result

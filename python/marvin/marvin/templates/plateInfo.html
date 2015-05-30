@@ -33,22 +33,21 @@
 			var hrefid = $(this).attr('href');
 			$(hrefid).fadeIn();
 			renderTags(hrefid);
+			loadTab(hrefid);
+			//setDefault(hrefid.slice(hrefid.search('#')+1),'maps');
 		});
 	});
 	
 	// Load ifu div element if hash present when page loads
 	$(function(){
 		var hash = window.location.hash;
-		
-		if (hash.search('comment') >= 0) {
-			newhash = hash.slice(hash.search('_')).replace('_','#');
-			$(String(newhash)).fadeIn();
-			$(String(hash)).fadeIn();
-			renderTags(newhash);
-		} else {
-			$(String(hash)).fadeIn();
-			renderTags(hash);
-		}
+		var ifuhash = getIFUHash();
+		var ifu = ifuhash.slice(ifuhash.search('#')+1);
+		$(String(ifuhash)).fadeIn();	
+		if (hash.search('comment') >= 0) $(String(hash)).fadeIn();
+		renderTags(ifuhash);
+		loadTab(ifuhash);
+		//setDefault(ifu,'maps');
 	});
 	
 	// Load ifu div element by left/right arrow key press
@@ -57,22 +56,24 @@
 			var ifuhash = getIFUHash();
 			var gals = $('.cubedetails');
 			if (ifuhash.length > 0) {
-				//left arrow
-				if (event.keyCode == 37) {
+				//shift+left arrow
+				if (event.shiftKey && event.keyCode == 37) {
 					$('.galinfo').hide();
 					var newid = gals.find(ifuhash).prev('.galinfo').attr('id');
 					var newhash = '#'+newid;					
 					$(newhash).fadeIn();
 					renderTags(newhash);
+					loadTab(newhash);
 					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
 				}
-				//right arrow
-				if (event.keyCode == 39) {
+				//shift+right arrow
+				if (event.shiftKey && event.keyCode == 39) {
 					$('.galinfo').hide();
 					var newid = gals.find(ifuhash).next('.galinfo').attr('id');
 					var newhash = '#'+newid;
 					$(newhash).fadeIn();
 					renderTags(newhash);
+					loadTab(newhash);
 					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
 				}
 			}
@@ -116,6 +117,11 @@
 		});
 		
 	});
+	
+	// Set the first tab to display in cube details
+	function loadTab(ifuhref) {
+		//$(ifuhref+' #cubetabs a:first').tab('show')
+	}
 
 </script>
 <script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>

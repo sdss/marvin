@@ -111,3 +111,23 @@ function getSelected(name) {
 	selectlist = (selectlist.length == 0) ? 'any' : selectlist;
 	return selectlist;
 }
+
+// Initialize tags
+function initTags(name) {
+	var tagbox = $(name).tags({
+		tagData:[],
+		tagSize:'sm',
+		suggestions:[],
+		caseInsensitive: true
+	});	
+}
+
+// Reset tags
+function resetTags(name) {
+	var tagbox = $(name).tags();
+	var tags = tagbox.getTags();
+	jQuery.each(tags, function(i,tag) {
+		tagbox.removeTag(tag);
+	});
+	tagbox.removeLastTag();
+}

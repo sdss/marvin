@@ -1,48 +1,6 @@
 // Javascript code for Marvin DAP QA plots/comments on individual plates
 
-// toggle DAP categories
-$(function() {
-	$('#dapqacat_select').change(function() {
-		var key = $(this).val();
-		// show category options
-		$('.dapqacatoptions').hide();
-		$('#dapqacatoptions_'+key).show();
-		// show option reminder
-		$('.qacomment').html('');
-		// set default selection
-		setDefault(key);
-	});
-});
-
-
-// reset dapqa form on page load
-$(function() {
-	/*$('.dapqacomment_form').trigger('reset');
-	$('.qacomment').html('');
-	// load a default
-	var key = 'maps';
-	setDefault(key);*/
-	
-	//console.log('alldapqapanes',$('.dapqapanes'));
-	/*$('.dapqapanes').each(function(i,pane) {
-		var ifu = pane.id.split('_')[1];
-		var dapqa = new Dapqa('7443',ifu,null);
-		console.log('pane',pane,pane.id,ifu,$(this));
-		console.log('dapqa',dapqa);
-		$(this).data('dapqa',dapqa);
-	});*/
-	
-		
-	/*var dapqa = new Dapqa('7443','9101','10');
-	if (typeof dapqa != 'undefined') {
-		console.log('dapqa',dapqa);
-		dapqa.print();
-		console.log('mainpane',dapqa.mainpane);
-		console.log('qaform',dapqa.qaform.find('#dapqacat'));
-	}*/
-});
-
-// dapqa tab selection
+// DAPqa tab selection
 $(function(){
 	$('#cubetabs a[href*="dapqapane"]').click(function() {	
 		var ifu = getIFUHash().slice(1);
@@ -53,7 +11,8 @@ $(function(){
 		var ready = $('#inspectready').val();
 		
 		if (ready == 'True') {
-			setDefault(key);
+			setDefault(ifu,key);
+			initTags('#daptagfield');
 		} else {
 			var fxn = 'loadDapQaPanel';
 			$('#fxn').val(fxn);
@@ -62,90 +21,123 @@ $(function(){
 		}		
 	});
 });
-	
-// store old values
-function storeold(key,mapid,qatype) {
-	$('#oldmapid').val(mapid);
-	$('#oldqatype').val(qatype);
-	$('#oldkey').val(key);
-}
 
-// set category default
-function setDefault(key) {
+// Set category default
+function setDefault(ifu,key) {
 	//var html = (key!='radgrad') ? 'cube-none2': 'rss-rad1';
 	var html = (key == 'maps') ? 'cube-none2' : (key =='spectra') ? 'cube-all5' : 'rss-rad1';
 	var mapid = (key=='maps') ? 'kin' : (key=='radgrad') ? 'emflux': 'spec0'; 
-	$('#qacomment_'+key).html(html);
-	
-	var ifu = $('.galinfo:visible').attr('id');
-	console.log('in setdefault-obj');
-	
+	console.log('setdefault', ifu, key, mapid);
+	$('#dapqacatopts_'+ifu+' #qacomment_'+key).html(html);
+		
 	// display list and panels, store old values
-	displayList(key);
-	if (key=='spectra') getSpectraList(key,mapid,html);
-	getPanel(key,mapid,html);
-	storeold(key,mapid,html)	
+	displayOptions(ifu,key);
+	if (key=='spectra') getSpectraList(ifu,key,mapid,html);
+	getPanel(ifu,key,mapid,html);
+	storeold(ifu,key,mapid,html)	
 }
 
-// toggle DAP QA cube/rss
+
+// Toggle DAP categories
+function dapcatchange(ifu) {
+	// set default selection with new key
+	var key = $('#dapqacat_'+ifu).find('#dapqacat_select').val();	
+	$('.qacomment').html('');
+	setDefault(ifu,key);
+}
+
+// Toggle DAP QA cube/rss
 $(function() {
 	$('.dropdown-menu.qalist').on('click','li a', function() {
+		var ifu = getIFUHash().slice(1);
+		var maincat = $('#dapqacatopts_'+ifu);
 		var id = $(this).attr('id');
 		var parentid = $(this).parent().parent().attr('id');
 		var type = parentid.split('typelist')[0];
 		var key = parentid.split('_')[1];
 
 		// build html reference
-		var html = $('#qacomment_'+key).html();
+		var html = $('#qacomment_'+key,maincat).html();
 		html = type+'-'+id;
-		$('#qacomment_'+key).html(html);
+		$('#qacomment_'+key,maincat).html(html);
 		
 		//display the appropriate list
-		displayList(key);
+		displayList(ifu,key);
 
 		// get map id
-		var mapid = $('#catlist_'+key+' select option:selected').attr('id');
+		var mapid = $('#catlist_'+key+' select option:selected',maincat).attr('id');
 
+		console.log('cube/rss toggle', ifu, id,parentid,key, mapid, html);
 		//for spectra, populate list for first time
-		if (key=='spectra') getSpectraList(key,mapid,html);
+		if (key=='spectra') getSpectraList(ifu,key,mapid,html);
 		
 		//get new panel and store old values
-		getPanel(key,mapid,html);
-		storeold(key,mapid,html);
+		getPanel(ifu,key,mapid,html);
+		storeold(ifu,key,mapid,html);
 			
 	});
 });
 
+// Display options
+function displayOptions(ifu,key) {
+	var maincat = $('#dapqacatopts_'+ifu);
+	var catopts = $('.dapqacatoptions',maincat);
+	catopts.hide();
+	// mode-bin button
+	var singleopts = $('#dapqacatoptions_'+key,maincat);
+	singleopts.show();
+	// map list
+	var catlist = $('.catlist', catopts);
+	catlist.hide();
+	var singlelist = $('#catlist_'+key,maincat);
+	singlelist.show();
+}
+
 // Display the appropriate list and reset selection
-function displayList(key) {
-	$('.catlist').hide();
-	$('#catlist_'+key).show();
-	$('#catlist_'+key+' select').children().removeProp('selected');
+function displayList(ifu,key) {
+	var maincat = $('#dapqacatopts_'+ifu);
+	var catopts = $('.dapqacatoptions',maincat);
+	var catlist = $('.catlist', catopts);
+	catlist.hide();
+	var singlelist = $('#catlist_'+key,maincat);
+	singlelist.show();
+	$('select',singlelist).children().removeProp('selected');
 	
 	//set first option as default
-	var first = $('#catlist_'+key+' select :first-child');
+	var first = $('select :first-child',singlelist);
 	first.prop('selected',true);
 }
 
-// toggle DAP map selection
+// Toggle DAP map selection
 $(function() {
-	$('.daptoggle').change(function() {
+	$('[id^="dapqacatoptions"]').change(function() {
+		var ifu = getIFUHash().slice(1);
+		var maincat = $('#dapqacatopts_'+ifu);
 		var id = $(this).attr('id');
 		var key = (id.search('map') != -1) ? 'maps' : (id.search('spectra') != -1) ? 'spectra' : (id.search('radgrad') != -1) ? 'radgrad' : ''
-		var mapid = $('#'+id+' option:selected').attr('id');
-		var qatype = $('#qacomment_'+key).html();
+		var mapid = $('#'+id+' option:selected',maincat).attr('id');
+		var qatype = $('#dapqacatopts_'+ifu+' #qacomment_'+key).html();
 
 		// get old values
-		var oldmapid = $('#oldmapid').val();
-		var oldqatype = $('#oldqatype').val();
-		var oldkey = $('#oldkey').val();
-		console.log('map select id,key,mapid',id,key,mapid,oldmapid,oldqatype,oldkey);
+		var formcat = $('#dapqacomment_form_'+ifu);
+		var oldmapid = $('#oldmapid',formcat).val();
+		var oldqatype = $('#oldqatype',formcat).val();
+		var oldkey = $('#oldkey',formcat).val();
+		console.log('map select id,key,mapid',ifu,id,key,mapid,qatype,oldmapid,oldqatype,oldkey);
 
 		// get new panel and store old values
-		getPanel(key,mapid,qatype);
-		storeold(key,mapid,qatype);
+		getPanel(ifu,key,mapid,qatype);
+		storeold(ifu,key,mapid,qatype);
 	});
 });
+
+// store old values
+function storeold(ifu,key,mapid,qatype) {
+	var formcat = $('#dapqacomment_form_'+ifu);
+	$('#oldmapid',formcat).val(mapid);
+	$('#oldqatype',formcat).val(qatype);
+	$('#oldkey',formcat).val(key);
+}
 
 // build the DAP form
 function buildDAPform(newdata=null,ifu=null) {
@@ -159,70 +151,24 @@ function buildDAPform(newdata=null,ifu=null) {
 }
 
 // parse DAP issues
-function parseDAPissues(key=null) {
-	var name = (key) ? 'select[id*="dapqa_issue_'+key+'"]' : '.dapqaissuesp';
+function parseDAPissues(ifu,key) {
+	var name = '#dapqacomment_form_'+ifu+' select[id*="dapqa_issue_'+key+'"]';
 	var issuelist = getSelected(name);
 	return issuelist;
 }
 
-// get a DAP panel
-function getPanel(key, mapid, qatype) {
-	// key = category key
-	// qatype = category options from dropdowns
-	// mapid = id of option from list selection
-
-	$('.dapqapanel').hide();
-	var ifu = $('#ifu').val();
-	console.log('ifu field',$('#ifu'));
-	var ifuname = $('#ifuname').val();
-	
-	// build form data
-	issues = parseDAPissues(key);
-	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk').val()},
-			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)}];
-	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
-	console.log('dapform',dapformdata);	
-
-	
-	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
-		.done(function(data){
-			console.log('ifu',ifu,ifuname);
-			var ifupanel = $('#dapqapane_'+ifu).find('#dapqa_'+key);
-			console.log(ifupanel);
-			ifupanel.show();
-			var title = $('#dapqa_'+key+' h4');
-			if (data.result['title']) title.html(data.result['title']);
-			
-			// setsession status failure
-			if (data.result['setsession'] && data.result['setsession']['status'] == 0) {
-				var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
-				title.html(alerthtml);
-			}
-			
-			loadImages(key,data.result['images'],data.result['panelmsg']);
-			loadComments(key,data.result['getsession']);
-			
-		})
-		.fail(function(data){
-			$('#dapqa_'+key).show();
-			var title = $('#dapqa_'+key+' h4');
-			var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve data!</h4></div>";
-			title.html(alerthtml);
-		});	
-	
-}
-
 // get list of DAP spectrum plots available
-function getSpectraList(key,mapid,qatype) {
+function getSpectraList(ifu,key,mapid,qatype) {
 
-	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'qatype','value':qatype}];
-	dapformdata = buildDAPform(newdata=newdata)
+	var maincat = $('#dapqacatopts_'+ifu);
+	var newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'qatype','value':qatype}];
+	var dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
 			
 	$.post($SCRIPT_ROOT + '/marvin/getdapspeclist', dapformdata,null,'json')
 		.done(function(data){
 			
 			var speclist = data.result['speclist'];
-			$('#dapspectralist').empty();
+			$('#dapspectralist',maincat).empty();
 			if (speclist) {
 				$.each(speclist,function(i,name) {
 					
@@ -232,7 +178,7 @@ function getSpectraList(key,mapid,qatype) {
 					if (specnum.length == 0) specnum='0';
 					var id = specname+specnum
 					
-					$('#dapspectralist').append($('<option>', { 
+					$('#dapspectralist',maincat).append($('<option>', { 
 						id: id,
 						value: id,
 						text : name,
@@ -242,100 +188,190 @@ function getSpectraList(key,mapid,qatype) {
 			}
 		})
 		.fail(function(data){
-			$('#dapqa_'+key).show();
-			var title = $('#dapqa_'+key+' h4');
+			$('#dapqa_'+key,maincat).show();
+			var title = $('#dapqa_'+key+' h4',maincat);
 			var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve list of spectra!</h4></div>";
 			title.html(alerthtml);
 		});	
 } 
 
+// get a DAP panel
+function getPanel(ifu,key, mapid, qatype) {
+
+	var mainpanel = $('#dapqapanel_'+ifu);
+	var mainform = $('#dapqacomment_form_'+ifu);
+	$('.dapqapanel',mainpanel).hide();
+	
+	//grab tags
+	var tagbox = $('#daptagfield',mainform).tags();
+	var tags = tagbox.getTags();
+	tags = JSON.stringify(tags);
+		
+	// build form data
+	issues = parseDAPissues(ifu,key);
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk',mainform).val()},
+			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags}];
+	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
+	console.log('dapform',dapformdata);	
+
+	
+	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+		.done(function(data){
+			var ifupanel = $('#dapqa_'+key,mainpanel);
+			ifupanel.show();
+			var title = $('#dapqa_'+key+' h4',mainpanel);
+			if (data.result['title']) title.html(data.result['title']);
+			
+			// setsession status failure
+			if (data.result['setsession'] && data.result['setsession']['status'] == 0) {
+				var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
+				title.html(alerthtml);
+			}
+			
+			loadImages(mainpanel,key,data.result['images'],data.result['panelmsg']);
+			loadComments(mainpanel,key,data.result['getsession']);
+			loadTags(mainform,data.result['getsession']);
+
+    		// update count message
+    		var counthtml = '<h4>You have stored '+data.result['getsession']['totaldapcomments']+' total comments/issues. <small>Remember to press submit to permanently save them</small></h4>';
+    		$('#submitmsg',mainform).html(counthtml);			
+		})
+		.fail(function(data){
+			$('#dapqa_'+key,mainpanel).show();
+			var title = $('#dapqa_'+key+' h4',mainpanel);
+			var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve data!</h4></div>";
+			title.html(alerthtml);
+		});	
+	
+}
+
 // load DAP plot images
-function loadImages(key,images, msg) {
-	$('#dapqa_'+key+' img').removeProp('src');
-	//console.log($('#dapqa_'+key+' img'));
+function loadImages(panel,key,images, msg) {
+	$('#dapqa_'+key+' img',panel).removeProp('src');
 	if (images) {
-		$('#dapqa_'+key+' img').each(function(index) {
-			//console.log($(this),index,images.length);
+		$('#dapqa_'+key+' img',panel).each(function(index) {
 			$(this).attr('src',images[index]);
-			//$(this).magnify();
 		});	
 	} else {
-		var title = $('#dapqa_'+key+' h4');
+		var title = $('#dapqa_'+key+' h4',panel);
 		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+msg+"</h4></div>";
 		title.html(alerthtml);		
 	}
 }
 
 // reset and load all the issues and comments
-function loadComments(key,results) {
-	// reset all issues
-	
+function loadComments(panel,key,results) {	
 	// reset all panel comments
-    $('[id^=dapqa_comment]').val('');
+    $('[id^=dapqa_comment]',panel).val('');
     
 	// reset all issue options
-    $('[id^=issue]').prop('selected',false);    
+    $('[id^=issue]',panel).prop('selected',false);    
 
-	console.log('loadComments results', results);
-	
+	// load results if good status	
 	if (results['status'] == 1) {
     
-        // load new comments
-        console.log("Loading results for key="+key+"..."); //delete this print (just for debug)
-        
+        // load new comments        
         if (results['dapqacomments']) {
 			$.each(results['dapqacomments'],function(i,panelcomment) {
 		
-				console.log('panelcomment',panelcomment);
-				$('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position).val(panelcomment.comment);
+				//console.log('panelcomment',panelcomment);
+				$('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position,panel).val(panelcomment.comment);
 			
 				$.each(panelcomment.issues, function(i,issid) {
-					//dapqa_issue_{{category.key}}{{"_"+mapnum if mapnum else ""}}
-					//issue_{{issid}}{{"_"+mapnum if mapnum else ""}}
-					console.log('issue id,index',issid,i);
-					$('#issue_'+issid+'_'+panelcomment.position).prop('selected',true);
+					$('#issue_'+issid+'_'+panelcomment.position,panel).prop('selected',true);
 				});
 			});
         }
 	
 	} else {
 		// getsession status failure
-		var title = $('#dapqa_'+key+' h4');
+		var title = $('#dapqa_'+key+' h4',panel);
 		var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results['message']+"</h4></div>";
 		title.html(alerthtml);	
 	}
       
 	// render the issue multiple selector to update the count
-    //$('[id^=dapqa_issue]').selectpicker('refresh');
-    $('.dapqaissuesp').selectpicker('refresh');
+    $('.dapqaissuesp',panel).selectpicker('refresh');
 	
 }
 
-
-// Map magnify toggle	
-$(function(){
-	$('#magtoggle').on('click',function(){
-		if ($(this).hasClass('active')){
-			//$('.dapqapanel img').parent().removeClass('.magnify');
-		} else {
-			$('.dapqapanel img').magnify();
-		}
-	});
-});
+// load all the DAP QA current tags + suggestions
+function loadTags(panel,results) {
+	// set the tag suggestions (autocomplete) to all tags in db ; always run
+	var tagbox = $('#daptagfield',panel).tags();
+	tagbox.suggestions = results['alltags']
+	
+	//if none then returns empty list with length = 0
+	if (results['tags'].length > 0) {
+		jQuery.each(results['tags'], function(i,tag) {
+			tagbox.addTag(tag);
+		});
+	}
+}
 
 // Load the DAP image modal
 function daploadmodal(img) {
+	var ifu = getIFUHash().slice(1);
 	var src = img.src;
 	var name = src.slice(src.search('manga-'));
-	$('#dapimgtitle').html(name);
+	$('#dapimgmodal_'+ifu+' #dapimgtitle').html(name);
 	var image = '<img class="img-responsive img-rounded" src="'+src+'" alt="Image"/>';
-	$('#dapimgbody').html(image);
+	$('#dapimgmodal_'+ifu+' #dapimgbody').html(image);
 }
 
 // Submit DAP QA Comments
 function dapaddcomments(ifu) {
-	var dapform = $('#dapqacomment_form_'+ifu);
-	console.log(dapform.serialize());
+	var mainform = $('#dapqacomment_form_'+ifu);
+	var maincat =  $('#dapqacatopts_'+ifu);
+	var mainpanel = $('#dapqapanel_'+ifu);
+
+	// get current key,mapid,qatype
+	var key = $('#dapqacat_'+ifu+' #dapqacat_select').val();
+	var qatype = $('#qacomment_'+key,maincat).html();
+	var mapid = $('#dap'+key+'list :selected',maincat).attr('id');
+	storeold(ifu,'','','');
+	
+	//grab tags
+	var tagbox = $('#daptagfield',mainform).tags();
+	var tags = tagbox.getTags();
+	tags = JSON.stringify(tags);
+		
+	// build form data
+	issues = parseDAPissues(ifu,key);
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk',mainform).val()},
+			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags},
+			   {'name':'submit','value':true}];
+	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
+
+	$.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+		.done(function(data){
+			var title = $('#dapqa_'+key+' h4',mainpanel);
+			if (data.result['title']) title.html(data.result['title']);
+			
+			// submit success
+			var submithtml = '<h4>Submit successful!</h4>';
+    		$('#submitmsg',mainform).html(submithtml);					
+		})
+		.fail(function(data){
+			var title = $('#dapqa_'+key+' h4',mainpanel);
+			var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve data!</h4></div>";
+			title.html(alerthtml);
+		});		
+}
+
+// Reset the DAP QA form
+function resetDAPQA(ifu) {
+	var maincat =  $('#dapqacatopts_'+ifu);
+	var mainpanel = $('#dapqapanel_'+ifu);
+	var mainform = $('#dapqacomment_form_'+ifu);
+	//$('.qacomment',maincat).html('');
+	//mainform.trigger('reset');
+	//$('.dapqacatoptions',maincat).hide();
+	//$('.catlist',maincat).hide();
+	$('[id^=dapqa_comment]',mainpanel).val('');
+	$('[id^=issue]',mainpanel).prop('selected',false);
+	$('.dapqaissuesp',mainpanel).selectpicker('refresh');
+	resetTags('#dapqacomment_form_'+ifu+' #daptagfield');
 }
 
 // Load the DAP QA Panel
@@ -344,7 +380,7 @@ function loadDapQaPanel() {
 	var ifu = getIFUHash().slice(1);
 	$('#dapqapane_'+ifu).show();
 	resetLogin();
-	setDefault(key);
+	setDefault(ifu,key);
 }
 
 
