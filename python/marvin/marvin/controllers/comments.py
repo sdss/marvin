@@ -134,6 +134,7 @@ def getdappanel():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
+    dapform['tags'] = json.loads(dapform['tags']) if 'tags' in dapform else []
     
     print('first dapform',dapform)
 
@@ -157,7 +158,6 @@ def getdappanel():
     
     # load new form from session, using current mapid, qatype, and key
     getresults = getSessionDAPComments(dapform) 
-         
     result={}
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
@@ -190,7 +190,7 @@ def getdapspeclist():
     result['speclist'] = speclist 
     result['status'] = 0 if not imglist else 1
     result['msg'] = msg
-    
+        
     return jsonify(result=result)
 
 

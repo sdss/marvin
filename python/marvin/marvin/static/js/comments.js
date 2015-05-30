@@ -25,12 +25,13 @@
         $('#catissue_'+$('#commentcat').val()).fadeIn();
         $('.catcomments').hide();
         $('#catcomment_'+$('#commentcat').val()).fadeIn();
-        var tagbox = $('#tagfield').tags();
+        resetTags('#tagfield');
+        /*var tagbox = $('#tagfield').tags();
         var tags = tagbox.getTags();
         jQuery.each(tags, function(i,tag) {
         	tagbox.removeTag(tag);
         });
-        tagbox.removeLastTag();
+        tagbox.removeLastTag();*/
 	}
 
 	// Submit add comment form
@@ -92,14 +93,15 @@
 	}
 	
 	// Initialize comment tags
-	$(function() {
+	initTags('#tagfield');
+	/*$(function() {
 		var tagbox = $('#tagfield').tags({
 			tagData:[],
 			tagSize:'sm',
 			suggestions:[],
 			caseInsensitive: true
 		});		
-	});
+	});*/
 	
 	// Get previous comments on cube from specific user
 	function getComment(cubepk, ifuname) {

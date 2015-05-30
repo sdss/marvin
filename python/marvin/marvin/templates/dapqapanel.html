@@ -17,9 +17,9 @@
 
 		{# DAP QA Categories #}
 		<div class='col-md-3'>
-			<div class='form-group' id='dapqacat'>
+			<div class='form-group' id='dapqacat_{{cube.ifu.name}}'>
 				<label for='dapqacat_select' class='control-label'>Category:</label>
-				<select class='form-control' id='dapqacat_select'>
+				<select class='form-control' id='dapqacat_select' onchange='dapcatchange({{cube.ifu.name}})'>
 					{% for catid, category in inspection.dapqacategory|dictsort %}
 						{% if loop.index0 == 0 %}
 							<option id='{{catid}}' value='{{category.key}}' selected>{{category.category}}</option>
@@ -31,6 +31,7 @@
 			</div>
 			
 			{# DAP QA Category Options #}
+			<div id='dapqacatopts_{{cube.ifu.name}}'>
 			{% for catid,category in inspection.dapqacategory|dictsort %}
 			<div class='dapqacatoptions' id='dapqacatoptions_{{category.key}}' style='display:{{"none" if loop.index0 != 0}};'>
 				<div class='form-group' id='dapqatoggle_{{category.key}}'>
@@ -49,50 +50,54 @@
 				
 			</div>
 			{% endfor %}
+			</div>
 			
-			{# DAP Map Magnify Toggle #}
-			{#<div class='form-group vert-offset-top-1'>
-				<button type='button' class='btn btn-primary' id='magtoggle' data-toggle='button' aria-pressed='false'>Toggle Magnify</button>
-			</div>#}
 		</div>	
 		
 		{# DAP QA Panels #}
 		<div class='col-md-8'>
-			
+			<div id='dapqapanel_{{cube.ifu.name}}'>
 			{% for catid,category in inspection.dapqacategory|dictsort %}
 				<div class='dapqapanel' id='dapqa_{{category.key}}' style='display:none;'>
 					<h4>{{category.category}}</h4>
 					
 					{% if 'maps' in category.key %}
-						{{dapmap6panel(catid,category)}}
+						{{dapmap6panel(catid,category,cube.ifu.name)}}
 					{% elif 'spectra' in category.key %}
-						{{dapspectrumpanel(catid,category)}}
+						{{dapspectrumpanel(catid,category,cube.ifu.name)}}
 					{% elif 'radgrad' in category.key %}
-						{{dapmap6panel(catid,category)}}
+						{{dapmap6panel(catid,category,cube.ifu.name)}}
 					{% endif %}
 				</div>
 			{% endfor %}
-			
+			</div>
 		</div>
 		
 			
 	</div>
-	
+
+	{# DAP Image Modal #}	
+	{{ dapimagemodal(cube.ifu.name) }}	
+			
 	{# Bottom Row for Submit and General Comments #}
 	<div class='row'>
+		<div class='col-md-4'>
+			<div class='btn-group'>
+				<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='dapaddcomments({{cube.ifu.name}})'>Submit</button>
+				<button type='button' class='btn btn-primary btn-lg' id='dapqareset' onclick='resetDAPQA({{cube.ifu.name}})'>Reset</button>
+			</div>
+		</div>
 		<div class='col-md-8'>
-			<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='dapaddcomments({{cube.ifu.name}})'>Submit</button>
+			<label for='daptagfield'>Tags: <small>(Enter a word or phrase and press Return)</small></label>
+			<div class='tag-list' id='daptagfield'>
+			</div>
 		</div>
 	</div>
 	<div class='row'>
-		<div class='col-md-8'>
-			<h4 id='submitmsg'></h4>
+		<div class='col-md-5' id='submitmsg'>
 		</div>
 	</div>
 
 </form>
-	
-{# DAP Image Modal #}	
-{{ dapimagemodal() }}	
 	
 </div>
