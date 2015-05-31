@@ -200,6 +200,7 @@ function getPanel(ifu,key, mapid, qatype) {
 
 	var mainpanel = $('#dapqapanel_'+ifu);
 	var mainform = $('#dapqacomment_form_'+ifu);
+	var cubepk = $('#'+ifu+' #cubepk').val();
 	$('.dapqapanel',mainpanel).hide();
 	
 	//grab tags
@@ -209,7 +210,7 @@ function getPanel(ifu,key, mapid, qatype) {
 		
 	// build form data
 	issues = parseDAPissues(ifu,key);
-	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk',mainform).val()},
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':cubepk},
 			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags}];
 	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
 	console.log('dapform',dapformdata);	
@@ -324,12 +325,13 @@ function dapaddcomments(ifu) {
 	var mainform = $('#dapqacomment_form_'+ifu);
 	var maincat =  $('#dapqacatopts_'+ifu);
 	var mainpanel = $('#dapqapanel_'+ifu);
+	var cubepk = $('#'+ifu+' #cubepk').val();
 
 	// get current key,mapid,qatype
 	var key = $('#dapqacat_'+ifu+' #dapqacat_select').val();
 	var qatype = $('#qacomment_'+key,maincat).html();
 	var mapid = $('#dap'+key+'list :selected',maincat).attr('id');
-	storeold(ifu,'','','');
+	storeold(ifu,key,mapid,qatype);
 	
 	//grab tags
 	var tagbox = $('#daptagfield',mainform).tags();
@@ -338,7 +340,7 @@ function dapaddcomments(ifu) {
 		
 	// build form data
 	issues = parseDAPissues(ifu,key);
-	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':$('#cubepk',mainform).val()},
+	newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':cubepk},
 			   {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags},
 			   {'name':'submit','value':true}];
 	dapformdata = buildDAPform(newdata=newdata,ifu=ifu)
