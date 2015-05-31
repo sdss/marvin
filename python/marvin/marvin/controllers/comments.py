@@ -234,7 +234,7 @@ def setSessionDAPComments(form):
     
     print('panelcomment', panelcomments)
 
-    submit = False #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
+    submit = True #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
     
     # add new comment to database
     if inspection.ready:
@@ -243,9 +243,11 @@ def setSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments)
-        if submit:
-            print "setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments']
-            inspection.submit_dapqacomments()
+        if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
+        if 'submit' in form and form['submit']:
+            print("setSessionDAPComments -> SUBMIT!")
+            #inspection.submit_dapqacomments()
+        else: print("setSessionDAPComments -> PENDING SUBMIT...")
     result = inspection.result()
 
 
