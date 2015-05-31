@@ -221,10 +221,13 @@ class Inspection:
         self.message = 'Failed to retrieve new comments!'
         self.dapqacomments = []
         self.dapqacomments.append({'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'})
+        self.set_totaldapcomments()
+        
+    def set_totaldapcomments(self):
         dapcount = [len(pancom['issues'])+1 if pancom['comment'] else len(pancom['issues']) for pancom in self.dapqacomments]
         self.totaldapcomments = sum(dapcount)
-        
-    def set_session_dapqacomments(self,catid=None,comments=None): 
+
+    def set_session_dapqacomments(self,catid=None,comments=None):
         self.status = 1
         self.message = 'Failed to save the previous comments in the session!'
     
