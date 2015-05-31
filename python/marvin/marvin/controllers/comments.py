@@ -233,10 +233,9 @@ def setSessionDAPComments(form):
     'issues':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
     
     print('panelcomment', panelcomments)
-
-    submit = True #temporary switch to test session->db functionality (ie replaces the submit button for initial testing)
     
     # add new comment to database
+    #form['cubepk'] = '3394' (until Brian restores the cubepk I have to hardwire this)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
@@ -246,8 +245,7 @@ def setSessionDAPComments(form):
         if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         if 'submit' in form and form['submit']:
             print("setSessionDAPComments -> SUBMIT!")
-            #inspection.submit_dapqacomments()
-        else: print("setSessionDAPComments -> PENDING SUBMIT...")
+            inspection.submit_dapqacomments()
     result = inspection.result()
 
 
@@ -265,6 +263,7 @@ def getSessionDAPComments(form):
     catid = catkey[form['key']]
     
     # get comments from database
+    #form['cubepk'] = '3394' (until Brian restores the cubepk I have to hardwire this)
     if inspection.ready:
         inspection.set_version(version=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
