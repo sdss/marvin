@@ -35,7 +35,7 @@ def setVersion():
     # set version
     if verform['vermode']=='mpl':
         mpl = getMPL(verform['mplver'])
-        drpver,dapver = mpl.split(':')[1].strip().split(',')
+        drpver,dapver = mpl.split(':')[1].strip().split(', ')
         current_session['currentver'] = drpver
         current_session['currentdapver'] = dapver if dapver != 'NA' else None
         current_session['currentmpl'] = verform['mplver']
