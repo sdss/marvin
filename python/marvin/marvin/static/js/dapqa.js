@@ -349,9 +349,17 @@ function dapaddcomments(ifu) {
             var title = $('#dapqa_'+key+' h4',mainpanel);
             if (data.result.title) {title.html(data.result.title);}
             
-            // submit success
-            var submithtml = '<h4>Submit successful!</h4>';
-            $('#submitmsg',mainform).html(submithtml);
+			// submit message
+			if (data.result['setsession']) {
+                if (data.result['setsession']['status'] == 0) {
+                    var submithtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
+                } else if (data.result['setsession']['status'] == 1) {
+                    var submithtml = "<h4>"+data.result['setsession']['message']+"</h4>";
+                } else  {
+                    var submithtml = "<h4>Bad response from inspection module.</h4>";
+                }
+			}
+    		$('#submitmsg',mainform).html(submithtml);
         })
         .fail(function(){
             var title = $('#dapqa_'+key+' h4',mainpanel);
