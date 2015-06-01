@@ -59,7 +59,7 @@ def addComment():
     # add new comment to database
     inspection = Inspection(current_session)
     if inspection.ready:
-        inspection.set_version(version=form['version'])
+        inspection.set_drpver(drpver=form['version'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.submit_comments(comments=form['comments'],issueids=form['issueids'],tags=form['tags'])
@@ -96,7 +96,7 @@ def getComment(all=None, cube=None):
     
     inspection = Inspection(current_session)
     if inspection.ready:
-        inspection.set_version(version=form['version'])
+        inspection.set_drpver(drpver=form['version'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifuname'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.retrieve_comments()
@@ -235,19 +235,19 @@ def setSessionDAPComments(form):
     print('panelcomment', panelcomments)
     
     # add new comment to database
-    #form['cubepk'] = '3394' (until Brian restores the cubepk I have to hardwire this)
     if inspection.ready:
-        inspection.set_version(version=form['drpver'],dapver=form['dapver'])
+        inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments)
         if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         if 'submit' in form and form['submit']:
-            print("setSessionDAPComments -> SUBMIT!")
             inspection.submit_dapqacomments()
+            w = 'Inspection> setSessionDAPComments -> SUBMIT! {0}'.format(inspection.result())
+            print(w)
+            current_app.logger.warning(w)
     result = inspection.result()
-
 
     return result
 
@@ -263,9 +263,8 @@ def getSessionDAPComments(form):
     catid = catkey[form['key']]
     
     # get comments from database
-    #form['cubepk'] = '3394' (until Brian restores the cubepk I have to hardwire this)
     if inspection.ready:
-        inspection.set_version(version=form['drpver'],dapver=form['dapver'])
+        inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)

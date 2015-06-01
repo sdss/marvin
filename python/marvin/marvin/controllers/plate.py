@@ -169,7 +169,7 @@ def plate():
         
         plateinfo['inspection'] = inspection = Inspection(current_session)
         if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
-        inspection.set_version(version=version)
+        inspection.set_drpver(drpver=version)
         inspection.set_ifudesign(plateid=plate)
         inspection.retrieve_cubecomments()
         inspection.retrieve_cubetags()

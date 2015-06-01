@@ -13,7 +13,8 @@ class Inspection:
         if not self.ready: self.set_member(username=username,auth=auth)
         self.ready=True
         self.set_counter(None)
-        self.set_version()
+        self.set_drpver()
+        self.set_dapver()
         self.set_ifudesign()
         self.set_cube()
         self.set_category(forcomment=True)
@@ -98,33 +99,62 @@ class Inspection:
         else: self.member = None
         if self.member and update_session: self.set_session_member(id=self.member['id'],username=self.member['username'],fullname=fullname,auth=self.member['auth'])
 
-    
     def set_session_version(self,id=None,drp2ver=None,drp3ver=None,dapver=None):
+        self.set_session_drpver(id=id,drp2ver=drp2ver,drp3ver=drp3ver)
+        self.set_session_dapver(dapver=dapver)
+
+    def set_session_drpver(self,id=None,drp2ver=None,drp3ver=None):
         if self.session is not None:
-            if 'version_id' not in self.session or self.session['version_id']!=id:
+            if 'drpver_id' not in self.session or self.session['drpver_id']!=id:
                 try:
-                    self.session['version_id'] = int(id)
-                    self.session['version_drp2ver'] = drp2ver if drp2ver else 'None'
-                    self.session['version_drp3ver'] = drp3ver if drp3ver else 'None'
-                    self.session['version_dapver'] = dapver if dapver else 'None'
+                    self.session['drpver_id'] = int(id)
+                    self.session['drpver_drp2ver'] = drp2ver if drp2ver else 'None'
+                    self.session['drpver_drp3ver'] = drp3ver if drp3ver else 'None'
                 except:
-                    self.session['version_id'] = None
-                    self.session['version_drp2ver'] = None
-                    self.session['version_drp3ver'] = None
-                    self.session['version_dapver'] = None
+                    self.session['d rpver_id'] = None
+                    self.session['drpver_drp2ver'] = None
+                    self.session['drpver_drp3ver'] = None
+
+    def set_session_dapver(self,id=None,dapver=None):
+        if self.session is not None:
+            if 'dapver_id' not in self.session or self.session['dapver_id']!=id:
+                try:
+                    self.session['dapver_id'] = int(id)
+                    self.session['dapver_dapver'] = dapver if dapver else 'None'
+                except:
+                    self.session['dapver_id'] = None
+                    self.session['dapver_dapver'] = None
 
     def set_version_from_session(self):
-        if self.session is not None:
-            version_id = self.session['version_id'] if 'version_id' in self.session else None
-            version_drp2ver = self.session['version_drp2ver'] if 'version_drp2ver' in self.session else None
-            version_drp3ver = self.session['version_drp3ver'] if 'version_drp3ver' in self.session else None
-            version_dapver = self.session['version_dapver'] if 'version_dapver' in self.session else None
-            self.set_version(id=version_id,drp2ver=version_drp2ver,drp3ver=version_drp3ver,dapver=version_dapver,update_session=False)
-        else: self.version = None
+        self.set_drpver_from_session()
+        self.set_dapver_from_session()
 
-    def set_version(self,id=None,version=None,drp2ver=None,drp3ver=None,dapver=None,add=True,update_session=True):
-        self.version = {'id':id,'drp2ver':drp2ver,'drp3ver':drp3ver,'dapver':dapver}
-        if update_session: self.set_session_version(id=id,drp2ver=drp2ver,drp3ver=drp3ver,dapver=dapver)
+    def set_drpver_from_session(self):
+        if self.session is not None:
+            drpver_id = self.session['drpver_id'] if 'drpver_id' in self.session else None
+            drpver_drp2ver = self.session['drpver_drp2ver'] if 'drpver_drp2ver' in self.session else None
+            drpver_drp3ver = self.session['drpver_drp3ver'] if 'drpver_drp3ver' in self.session else None
+            self.set_drpver(id=drpver_id,drp2ver=drpver_drp2ver,drp3ver=drpver_drp3ver,update_session=False)
+        else: self.drpver = None
+
+    def set_dapver_from_session(self):
+        if self.session is not None:
+            dapver_id = self.session['dapver_id'] if 'dapver_id' in self.session else None
+            dapver_dapver = self.session['dapver_dapver'] if 'dapver_dapver' in self.session else None
+            self.set_dapver(id=dapver_id,dapver=dapver_dapver,update_session=False)
+        else: self.dapver = None
+
+    def set_version(self,id=None,drpver=None,drp2ver=None,drp3ver=None,dapver=None,add=True,update_session=True):
+        self.set_drpver(drpver=drpver,drp2ver=drp2ver,drp3ver=drp3ver,add=add,update_session=True)
+        self.set_dapver(dapver=dapver,add=add,update_session=True)
+
+    def set_drpver(self,id=None,drpver=None,drp2ver=None,drp3ver=None,add=True,update_session=True):
+        self.drpver = {'id':id,'drp2ver':drp2ver,'drp3ver':drp3ver}
+        if update_session: self.set_session_drpver(id=id,drp2ver=drp2ver,drp3ver=drp3ver)
+
+    def set_dapver(self,id=None,dapver=None,add=True,update_session=True):
+        self.dapver = {'id':id,'dapver':dapver}
+        if update_session: self.set_session_dapver(id=id,dapver=dapver)
 
     def set_option(self,id=None,mode=None,bintype=None,maptype=None,add=True):
         self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
