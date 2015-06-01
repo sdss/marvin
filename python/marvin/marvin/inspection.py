@@ -228,8 +228,8 @@ class Inspection:
     def retrieve_comments(self): pass
     def retrieve_alltags(self,ids=False): pass
     def retrieve_tags(self): pass
-    def retrieve_cubecomments(self):
-    def retrieve_dapqacubecomments(self):
+    def retrieve_cubecomments(self): pass
+    def retrieve_dapqacubecomments(self): pass
     def retrieve_cubetags(self): pass
     def retrieve_searchcomments(self): pass
     def set_search_parameters(self,form=None): pass
