@@ -172,6 +172,7 @@ def plate():
         inspection.set_drpver(drpver=version)
         inspection.set_ifudesign(plateid=plate)
         inspection.retrieve_cubecomments()
+        inspection.retrieve_dapqacubecomments()
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
         result = inspection.result()

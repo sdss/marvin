@@ -311,10 +311,9 @@
 				<div class='collapse in' id='dapcommcollapse_{{cube.ifu.name}}'>
 					<div class='row'>
 						<div class='col-md-12'>
-							{% if inspection.cubecomments[cube.ifu.name] %}
+							{% if inspection.dapqacubecomments[cube.ifu.name] %}
 							 <div class='table-responsive' id='dapcubecomments_{{cube.ifu.name}}'>
-							 	{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}							 
-								{#{{sastable(['test','name','comment','modified'], ['test','name','comment','modified'], [{'test':1,'name':'Bob','comment':'hello','modified':1945}], type='comment')}}#}
+							 	{{sastable(inspection.dapqacols, inspection.dapqakeys, inspection.dapqacubecomments[cube.ifu.name], type='comment')}}
 							</div>
 							{% else %}
 								<h4> No DAP QA comments found. </h4>
