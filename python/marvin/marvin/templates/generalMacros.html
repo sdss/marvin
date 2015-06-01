@@ -1,4 +1,5 @@
 {# General Macros #}
+{% from 'buildTable.html' import sastable %}
 
 {# Drop-down download cube/rss button #}
 {% macro dropdownload(id, target) %}
@@ -95,5 +96,20 @@
 			</div>
 		</div> {# end login modal #}
 	</form>
+	</div>
+{% endmacro %}
+
+{% macro panelitem(index,ifu,parentid,heading,body,off=False) %}
+	<div class='panel panel-default'>
+		<div class='panel-heading' role='tab' id='heading{{index}}_{{ifu}}'>
+			<h4 class='panel-title'>
+				<a data-toggle='collapse' data-parent='{{parentid}}' data-target='#collapse{{index}}_{{ifu}}' aria-expanded='{{"true" if not off else "false"}}' aria-controls='collapse{{index}}_{{ifu}}'>{{heading}}</a>
+			</h4>
+		</div>
+		<div id="collapse{{index}}_{{ifu}}" class="panel-collapse collapse {{'in' if not off}}" role="tabpanel" aria-labelledby="heading{{index}}_{{ifu}}">
+			  <div class="panel-body">
+				{{body}}
+			  </div>
+		</div>
 	</div>
 {% endmacro %}

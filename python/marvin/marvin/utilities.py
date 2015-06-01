@@ -131,7 +131,9 @@ def getDAPVersion():
     
     # DAP versions
     session = db.Session()    
-    vers = session.query(datadb.PipelineVersion).join(datadb.PipelineInfo,datadb.PipelineName).filter(datadb.PipelineName.label=='DAP').order_by(datadb.PipelineVersion.version.desc()).all()
+    vers = session.query(datadb.PipelineVersion).join(datadb.PipelineInfo,datadb.PipelineName).\
+    filter(datadb.PipelineName.label=='DAP',datadb.PipelineVersion.version.like('%v%')).\
+    order_by(datadb.PipelineVersion.version.desc()).all()
     versions = [v.version for v in vers]
     
     return versions+['NA']
