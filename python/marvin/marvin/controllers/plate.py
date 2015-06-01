@@ -169,16 +169,18 @@ def plate():
         
         plateinfo['inspection'] = inspection = Inspection(current_session)
         if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
-        inspection.set_drpver(drpver=version)
+        inspection.set_version(drpver=version,dapver='v1_0_0')
         inspection.set_ifudesign(plateid=plate)
         inspection.retrieve_cubecomments()
+        current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
         inspection.retrieve_dapqacubecomments()
+        current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
         result = inspection.result()
         
-        if inspection.ready: current_app.logger.warning('Inspection> GET cubecomments: {0}'.format(result))
-        else: current_app.logger.warning('Inspection> NOT READY TO GET cubecomments: {0}'.format(result))
+        if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
+        else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))
 
         # build plate design d3 
         jsdict={}
