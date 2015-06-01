@@ -305,7 +305,7 @@ function loadTags(panel,results) {
     tagbox.suggestions = results.alltags;
     
     //if none then returns empty list with length = 0
-    if (results.tags.length > 0) {
+    if (typeof results.tags !== 'undefined' && results.tags.length > 0) {
         jQuery.each(results.tags, function(i,tag) {
             tagbox.addTag(tag);
         });
