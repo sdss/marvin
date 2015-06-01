@@ -100,10 +100,10 @@
 		$('#pdtoggle').on('click',function(){
 			if ($(this).hasClass('active')){
 				$('#platedesign').hide();
-				$('#platedesign').empty()
+				$('#platedesign').empty();
 			} else {
 				$('#platedesign').show();
-				$('#platedesign').html('<h3><small>Unfinished</small></h3>')
+				$('#platedesign').html('<h3><small>Unfinished</small></h3>');
 				loadPlateDesign();
 			}
 		});
@@ -115,7 +115,6 @@
 			var fxn = 'grabComments';
 			$('#fxn').val(fxn);
 		});
-		
 	});
 	
 	// Set the first tab to display in cube details
@@ -143,7 +142,7 @@
 				</div>
 				{# Rsync button and modal #}
 				<div class='col-md-1'>
-				  	{{dropdownload('platedl', 'rsynclink')}}				
+				  	{{dropdownload('platedl', 'rsynclink')}}			
 				</div>
             	{{rsyncmodal()}}
 
@@ -274,24 +273,56 @@
 			<div class='comments' id='commenttable_{{cube.ifu.name}}'>
 				<div class='row'>
 					<div class='col-md-8'>
-						<h4>Comments for IFU {{cube.ifu.name}}, Version {{version}}</h4>
+						<h4>Comments for IFU {{cube.ifu.name}}, Version DRP/DAP: {{version}}, {{dapversion}}</h4>
 					</div>
 					<div class='col-md-4'>
 						<a href='#{{cube.ifu.name}}' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
 					</div>
 				</div>
+
 				{# Comment Table Results #}
-				<div class='row'>
-					<div class='col-md-12'>
-						{% if inspection.cubecomments[cube.ifu.name] %}
-                        <div class='table-responsive' id='cubecomments'>
-							{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}
-						</div>
-						{% else %}
-							<h4> No comments found. </h4>
-						{% endif %}
+				
+				<div class='row' id='commbuttonrow'>
+					<div class='col-md-4'>
+					<button class='btn btn-primary' data-toggle='collapse' data-target='#drpcommcollapse_{{cube.ifu.name}}' aria-expanded='true' aria-controls='drpcommcollapse_{{cube.ifu.name}}'>
+						DRP Comments</button>
+					<button class='btn btn-primary' data-toggle='collapse' data-target='#dapcommcollapse_{{cube.ifu.name}}' aria-expanded='true' aria-controls='dapcommcollapse_{{cube.ifu.name}}'>
+						DAP Comments</button>
 					</div>
-				</div>				
+				</div>
+		
+				{# DRP Comments #}
+				<div class='collapse in' id='drpcommcollapse_{{cube.ifu.name}}'>
+					<div class='row'>
+						<div class='col-md-12'>
+							{% if inspection.cubecomments[cube.ifu.name] %}
+							 <div class='table-responsive' id='drpcubecomments_{{cube.ifu.name}}'>
+							 	{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}
+								{#{{sastable(['test','name','comment','modified'], ['test','name','comment','modified'], [{'test':1,'name':'Bob','comment':'hello','modified':1945}], type='comment')}}#}
+							</div>
+							{% else %}
+								<h4> No DRP comments found. </h4>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+
+				{# DAP QA Comments #}
+				<div class='collapse in' id='dapcommcollapse_{{cube.ifu.name}}'>
+					<div class='row'>
+						<div class='col-md-12'>
+							{% if inspection.cubecomments[cube.ifu.name] %}
+							 <div class='table-responsive' id='dapcubecomments_{{cube.ifu.name}}'>
+							 	{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}							 
+								{#{{sastable(['test','name','comment','modified'], ['test','name','comment','modified'], [{'test':1,'name':'Bob','comment':'hello','modified':1945}], type='comment')}}#}
+							</div>
+							{% else %}
+								<h4> No DAP QA comments found. </h4>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+														
 			</div>
 
 		</div>

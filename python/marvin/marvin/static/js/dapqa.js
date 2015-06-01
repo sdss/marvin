@@ -20,6 +20,9 @@ $(function() {
             $('#dapqapane_'+ifu).hide();
             $('#loginform').modal('show');
         }
+
+        $('#drpcommcollapse_'+ifu).collapse('hide');        
+        $('#dapcommcollapse_'+ifu).collapse('show');
     });
 });
 
@@ -350,11 +353,11 @@ function dapaddcomments(ifu) {
             if (data.result.title) {title.html(data.result.title);}
             
 			// submit message
-			if (data.result['setsession']) {
-                if (data.result['setsession']['status'] == 0) {
-                    var submithtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result['setsession']['message']+"</h4></div>";
-                } else if (data.result['setsession']['status'] == 1) {
-                    var submithtml = "<h4>"+data.result['setsession']['message']+"</h4>";
+			if (data.result.setsession) {
+                if (data.result.setsession.status === 0) {
+                    var submithtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.setsession.message+"</h4></div>";
+                } else if (data.result.setsession.status === 1) {
+                    var submithtml = "<h4>"+data.result.setsession.message+"</h4>";
                 } else  {
                     var submithtml = "<h4>Bad response from inspection module.</h4>";
                 }
