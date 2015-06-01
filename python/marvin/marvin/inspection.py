@@ -26,6 +26,7 @@ class Inspection:
         self.dapqacomments = None
         self.totaldapcomments = None
         self.cubecomments = None
+        self.dapqacubecomments = None
         self.tags = {'1':'test','2':'daptest'}
         self.alltags = {'1':'test','2':'elliptical','3':'galaxy','4':'daptest','5':'hello'}
         self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope'],'9101':['daptest','hello']}
@@ -41,6 +42,7 @@ class Inspection:
         self.tracticket =  None
         self.tracticketid =  None
         self.cols = self.keys = []
+        self.dapqacols = self.dapqakeys = []
         self.category_id = None
         self.issueids = None
         self.memberids = None
@@ -226,7 +228,8 @@ class Inspection:
     def retrieve_comments(self): pass
     def retrieve_alltags(self,ids=False): pass
     def retrieve_tags(self): pass
-    def retrieve_cubecomments(self): pass
+    def retrieve_cubecomments(self):
+    def retrieve_dapqacubecomments(self):
     def retrieve_cubetags(self): pass
     def retrieve_searchcomments(self): pass
     def set_search_parameters(self,form=None): pass

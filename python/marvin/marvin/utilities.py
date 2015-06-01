@@ -215,15 +215,19 @@ def getImages(plate=None,version=None):
     return images
  
 def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, test=False, filter=True):
-    ''' grab all the DAP PNG analysis plots '''   
+    ''' grab all the DAP PNG analysis plots '''
     
+    # ignore Marvin's dapver (for now) and just use the plots corredsponding to the loaded mangadap module
+    try: dapver = os.getenv('MANGADAP_VER')
+    except: pass
+
     # build path
     catdict = {'maps':'maps','spectra':'spectra','radgrad':'gradients'}
     if not test:
         redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),drpver,dapver,str(plate),ifu,'plots')
     else:
-        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),'test/andrews/trunk_mpl3',str(plate),ifu,'plots')        
-        
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),'test/andrews/trunk_mpl3',str(plate),ifu,'plots')
+
     # build sas path
     try: sasurl = os.getenv('SAS_URL')
     except: sasurl= None
