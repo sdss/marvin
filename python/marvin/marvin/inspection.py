@@ -25,6 +25,9 @@ class Inspection:
         self.comments = None
         self.dapqacomments = None
         self.totaldapcomments = None
+        self.nstored_dapqacomments = None
+        self.nstored_dapqacommentissues = None
+        self.ntouched_dapqacomments = None
         self.cubecomments = None
         self.dapqacubecomments = None
         self.tags = {'1':'test','2':'daptest'}

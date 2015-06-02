@@ -238,7 +238,14 @@ function getPanel(ifu,key, mapid, qatype) {
             loadTags(mainform,data.result.getsession);
 
             // update count message
-            var counthtml = '<h4>You have stored '+data.result.getsession.totaldapcomments+' total comments/issues. <small>Remember to press submit to permanently save them</small></h4>';
+            //var counthtml = '<h4>You have stored '+data.result.getsession.totaldapcomments+' total comments/issues. <small>Remember to press submit to permanently save them</small></h4>';
+            if (data.result.getsession.ntouched_dapqacomments === 'no') {
+                var counthtml = '<h5><div class="alert alert-info" role="alert">You have '+data.result.getsession.nstored_dapqacomments+' DAP QA comments and '+data.result.getsession.nstored_dapqacommentissues+' issues saved in the database for this plate/ifudesign.</div></h5>';
+            } else if (data.result.getsession.nstored_dapqacomments === 'no') {
+                var counthtml = '<h5><div class="alert alert-info" role="alert">You have entered '+data.result.getsession.ntouched_dapqacomments+' new DAP QA comments into your session.  Press submit to save to the database!</div></h5>';
+            } else {
+                var counthtml = '<h5><div class="alert alert-info" role="alert">You have '+data.result.getsession.nstored_dapqacomments+' DAP QA comments saved in the database, and you have added '+data.result.getsession.ntouched_dapqacomments+' new comments into your session.  Press submit to save to the database!</div></h5>';
+            }
             $('#submitmsg',mainform).html(counthtml);
         })
         .fail(function(){
