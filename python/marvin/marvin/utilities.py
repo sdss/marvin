@@ -142,7 +142,7 @@ def setMPLVersion(mplver):
     ''' set the versions based on MPL '''
     
     mpl = getMPL(mplver)
-    drpver,dapver = mpl.split(':')[1].strip().split(',')
+    drpver,dapver = mpl.split(':')[1].strip().split(', ')
     current_session['currentver'] = drpver
     current_session['currentdapver'] = dapver if dapver != 'NA' else None
     
