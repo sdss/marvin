@@ -239,7 +239,7 @@ function getPanel(ifu,key, mapid, qatype) {
 
             // update count message
             if (data.result.getsession.status === 1) {
-                $('#submitmsg',mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.message+"</div></h5>");
+                $('#submitmsg',mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
             } else {
                 $('#submitmsg',mainform).html("<h5><div class='alert alert-danger' role='alert'>Bad response from inspection database</div></h5>");
             }
@@ -247,7 +247,7 @@ function getPanel(ifu,key, mapid, qatype) {
         .fail(function(){
             $('#dapqa_'+key,mainpanel).show();
             var title = $('#dapqa_'+key+' h4',mainpanel);
-            var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve data!</h4></div>";
+            var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to set session data!</h4></div>";
             title.html(alerthtml);
         });
 }
@@ -369,7 +369,7 @@ function dapaddcomments(ifu) {
         })
         .fail(function(){
             var title = $('#dapqa_'+key+' h4',mainpanel);
-            var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to retrieve data!</h4></div>";
+            var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to get session data!</h4></div>";
             title.html(alerthtml);
         });
 }
