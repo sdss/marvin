@@ -238,7 +238,9 @@ function getPanel(ifu,key, mapid, qatype) {
             loadTags(mainform,data.result.getsession);
 
             // update count message
-            if (data.result.getsession.status === 1) {
+            if (data.result.setsession.status === 0) {
+                $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
+            } else if (data.result.getsession.status === 1) {
                 $('#submitmsg',mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
             } else {
                 $('#submitmsg',mainform).html("<h5><div class='alert alert-danger' role='alert'>Bad response from inspection database</div></h5>");
@@ -358,11 +360,11 @@ function dapaddcomments(ifu) {
 			// submit message
 			if (data.result.setsession) {
                 if (data.result.setsession.status === 0) {
-                    var submithtml = "<div class='alert alert-danger' role='alert'><h5>"+data.result.setsession.message+"</h5></div>";
+                    var submithtml = "<h5><div class='alert alert-warning' role='alert'>"+data.result.setsession.message+"</div></h5>";
                 } else if (data.result.setsession.status === 1) {
-                    var submithtml = "<div class='alert alert-info' role='alert'><h5>"+data.result.setsession.message+"</h5></div>";
+                    var submithtml = "<h5><div class='alert alert-success' role='alert'><h5>"+data.result.setsession.message+"</div></h5>";
                 } else  {
-                    var submithtml = "<div class='alert alert-danger' role='alert'><h4>Bad response from inspection module.</h4></div>";
+                    var submithtml = "<h4><div class='alert alert-danger' role='alert'><h4>Bad response from inspection module.</div></h4>";
                 }
 			}
     		$('#submitmsg',mainform).html(submithtml);
