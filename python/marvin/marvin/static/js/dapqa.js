@@ -360,15 +360,14 @@ function dapaddcomments(ifu) {
 			// submit message
 			if (data.result.setsession) {
                 if (data.result.setsession.status === 0) {
-                    var submithtml = "<h5><div class='alert alert-warning' role='alert'>"+data.result.setsession.message+"</div></h5>";
+                    $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.setsession.message+"</div></h5>");
                 } else if (data.result.setsession.status === 1) {
-                    var submithtml = "<h5><div class='alert alert-success' role='alert'><h5>"+data.result.setsession.message+"</div></h5>";
+                    $('#submitmsg',mainform).html("<h5><div class='alert alert-success' role='alert'>"+data.result.setsession.message+"</div></h5>");
                 } else  {
-                    var submithtml = "<h4><div class='alert alert-danger' role='alert'><h4>Bad response from inspection module.</div></h4>";
+                    $('#submitmsg',mainform).html("<h4><div class='alert alert-danger' role='alert'>Bad response from inspection module.</div></h4>");
                 }
 			}
-    		$('#submitmsg',mainform).html(submithtml);
-
+            
         })
         .fail(function(){
             var title = $('#dapqa_'+key+' h4',mainpanel);
