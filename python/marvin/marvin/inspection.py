@@ -25,9 +25,6 @@ class Inspection:
         self.comments = None
         self.dapqacomments = None
         self.totaldapcomments = None
-        self.nstored_dapqacomments = None
-        self.nstored_dapqacommentissues = None
-        self.ntouched_dapqacomments = None
         self.cubecomments = None
         self.dapqacubecomments = None
         self.tags = {'1':'test','2':'daptest'}
@@ -253,8 +250,8 @@ class Inspection:
         self.message=''
 
     def retrieve_dapqacomments(self,catid=None): 
-        self.status = 1
-        self.message = 'Failed to retrieve new comments!'
+        self.message = "Please use the production site!"
+        self.status = 0
         self.dapqacomments = []
         self.dapqacomments.append({'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'})
         self.set_totaldapcomments()
