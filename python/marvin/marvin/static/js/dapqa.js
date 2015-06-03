@@ -238,7 +238,7 @@ function getPanel(ifu,key, mapid, qatype) {
             loadTags(mainform,data.result.getsession);
 
             // update count message
-            if (data.result.setsession.status === 0) {
+            if (data.result.getsession.status === 0) {
                 $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
             } else if (data.result.getsession.status === 1) {
                 $('#submitmsg',mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
