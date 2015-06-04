@@ -269,6 +269,7 @@ class Inspection:
         self.status = 1
         self.message = 'Failed to save the previous comments in the session!'
     def set_session_tags(self,tags=[]): pass
+    def reset_dapqacomments(self): pass
     def submit_dapqacomments(self): pass
     def set_recentcomments(self):
         self.recentcomments = {}

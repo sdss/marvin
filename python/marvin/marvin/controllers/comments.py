@@ -243,12 +243,14 @@ def setSessionDAPComments(form):
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
         inspection.set_session_tags(tags=form['tags'])
         if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
-        if 'submit' in form and form['submit']:
-            inspection.submit_dapqacomments()
-            w = 'Inspection> setSessionDAPComments -> SUBMIT! {0}'.format(inspection.result())
-            print(w)
-            current_app.logger.warning(w)
+        if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
+        if 'reset' in form and form['reset']:
+            inspection.drop_dapqacomments_from_session()
+            inspection.drop_dapqatags_from_session()
     result = inspection.result()
+
+    if inspection.ready: current_app.logger.warning('Inspection> set DAPQA Comments {0}'.format(result))
+    else: current_app.logger.warning('Inspection> FAILED to set DAPQA Comments {0}'.format(result))
 
     return result
 
