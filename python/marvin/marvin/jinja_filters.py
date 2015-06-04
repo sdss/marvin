@@ -131,10 +131,32 @@ def issuesubcat(value):
 
 def dapmaptype(value,key):
     ''' returns map type for a given value, key '''
+    return value    
     
-    return value
+def filterByName(value,name,ifu,type):
+    ''' filter the inspection dictionary by name, and type '''
+        
+    if 'drp' in name:
+        cols = value.cols
+        keys = value.keys
+        if type == 'comments':
+            comments = value.cubecomments[ifu] if value.cubecomments else None
+        elif type == 'search':
+            comments = value.searchcomments if value.searchcomments else None
+    elif 'dap' in name:
+        cols = value.dapqacols
+        keys = value.dapqakeys
+        if type == 'comments':
+            comments = value.dapqacubecomments[ifu] if value.dapqacubecomments else None
+        elif type == 'search':
+            comments = value.searchcomments if value.searchcomments else None
+
+    return cols,keys,comments
+
+def makeID(value,type):
+    ''' make a div id for the collapse panels for each name, and type '''
     
-    
+    return '{0}_{1}collapse'.format(value,type)
     
     
     

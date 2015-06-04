@@ -1,7 +1,7 @@
 {% from 'buildTable.html' import sastable %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("plate") %}
-{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login, buttoncollapse %}
 
 {% block head %}
 	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
@@ -281,46 +281,7 @@
 				</div>
 
 				{# Comment Table Results #}
-				
-				<div class='row' id='commbuttonrow'>
-					<div class='col-md-4'>
-					<button class='btn btn-primary' data-toggle='collapse' data-target='#drpcommcollapse_{{cube.ifu.name}}' aria-expanded='true' aria-controls='drpcommcollapse_{{cube.ifu.name}}'>
-						DRP Comments</button>
-					<button class='btn btn-primary' data-toggle='collapse' data-target='#dapcommcollapse_{{cube.ifu.name}}' aria-expanded='true' aria-controls='dapcommcollapse_{{cube.ifu.name}}'>
-						DAP Comments</button>
-					</div>
-				</div>
-		
-				{# DRP Comments #}
-				<div class='collapse in' id='drpcommcollapse_{{cube.ifu.name}}'>
-					<div class='row'>
-						<div class='col-md-12'>
-							{% if inspection.cubecomments[cube.ifu.name] %}
-							 <div class='table-responsive' id='drpcubecomments_{{cube.ifu.name}}'>
-							 	{{sastable(inspection.cols, inspection.keys, inspection.cubecomments[cube.ifu.name], type='comment')}}
-								{#{{sastable(['test','name','comment','modified'], ['test','name','comment','modified'], [{'test':1,'name':'Bob','comment':'hello','modified':1945}], type='comment')}}#}
-							</div>
-							{% else %}
-								<h4> No DRP comments found. </h4>
-							{% endif %}
-						</div>
-					</div>
-				</div>
-
-				{# DAP QA Comments #}
-				<div class='collapse in' id='dapcommcollapse_{{cube.ifu.name}}'>
-					<div class='row'>
-						<div class='col-md-12'>
-							{% if inspection.dapqacubecomments[cube.ifu.name] %}
-							 <div class='table-responsive' id='dapcubecomments_{{cube.ifu.name}}'>
-							 	{{sastable(inspection.dapqacols, inspection.dapqakeys, inspection.dapqacubecomments[cube.ifu.name], type='comment')}}
-							</div>
-							{% else %}
-								<h4> No DAP QA comments found. </h4>
-							{% endif %}
-						</div>
-					</div>
-				</div>
+				{{ buttoncollapse(['drp','dap'],cube.ifu.name,inspection,type='comments') }}
 														
 			</div>
 

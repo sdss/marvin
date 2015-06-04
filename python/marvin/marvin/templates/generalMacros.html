@@ -113,3 +113,42 @@
 		</div>
 	</div>
 {% endmacro %}
+
+{% macro buttoncollapse(names,ifu,inspection,type=None) %}
+
+	<div class='row' id='{{type}}buttonrow'>
+		<div class='col-md-4'>
+		{% for name in names %}
+			<button class='btn btn-primary' data-toggle='collapse' data-target='#{{name}}_{{type}}collapse_{{ifu}}' aria-expanded='true' aria-controls='{{name}}_{{type}}collapse_{{ifu}}'>
+			{{name|upper}} {{type|title}}</button>
+		{% endfor %}
+		</div>
+	</div>
+
+	{# Collapse Panels #}
+	{% for name in names %}
+		{{ collapsediv(name,name|makeID(type),ifu,inspection,type) }}
+	{% endfor %}
+
+{% endmacro %}
+
+{% macro collapsediv(name,id,ifu,inspection,type) %}
+
+	{% set cols,keys,comments = inspection|filterByName(name,ifu,type) %}
+	
+	<div class='collapse in' id='{{id}}_{{ifu}}'>
+		<div class='row'>
+			<div class='col-md-12'>
+				{% if comments %}
+				 <div class='table-responsive' id='{{name}}cubecomments_{{ifu}}'>
+					{{sastable(cols, keys, comments, type='comment')}}
+					{#{{sastable(['test','name','comment','modified'], ['test','name','comment','modified'], [{'test':1,'name':'Bob','comment':'hello','modified':1945}], type='comment')}}#}
+				</div>
+				{% else %}
+					<h4> No {{name|upper if 'drp' in name else name|upper+' QA'}} comments found{{' for given search parameters.' if type =='search' else '.'}} </h4>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	
+{% endmacro %}
