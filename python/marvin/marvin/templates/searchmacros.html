@@ -71,6 +71,23 @@
         
 		<div class='col-md-1'>
 			<div class='form-group'>
+				<label for='dapissues'>Issues</label>
+				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any' data-width='99%'>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+					{% for issid,issue in category.issues|dictsort %}
+						{% if 'issue'+issid|string in form['dapissues'] %}
+						<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
+						{% else %}
+						<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+						{% endif %}
+					{% endfor %}
+					{% endfor %}
+				</select>
+				<input class='hidden' name='dapissues' id='dapissues' values=''/>
+			</div>
+		</div>
+		<div class='col-md-1'>
+			<div class='form-group'>
 				<label for='dapmode'>Mode</label>
 				<select class='form-control input-sm'>
 				</select>
@@ -95,23 +112,6 @@
 				<label for='dappanel'>Panel</label>
 				<select class='form-control input-sm'>
 				</select>
-			</div>
-		</div>
-		<div class='col-md-1'>
-			<div class='form-group'>
-				<label for='dapissues'>Issues</label>
-				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any'>
-					{% for catid, category in inspection.dapqacategory|dictsort %}
-					{% for issid,issue in category.issues|dictsort %}
-						{% if 'issue'+issid|string in form['dapissues'] %}
-						<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
-						{% else %}
-						<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
-						{% endif %}
-					{% endfor %}
-					{% endfor %}
-				</select>
-				<input class='hidden' name='dapissues' id='dapissues' values=''/>
 			</div>
 		</div>
 	</div>
