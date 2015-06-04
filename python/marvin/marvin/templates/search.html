@@ -97,25 +97,16 @@
 	// Submit comment form
 	$(function(){
 		$('#comment_form').submit(function(event){
-			/*var issuelist = [];
-			$('.issuesp :checked').each(function(){
-				issuelist.push(this.value);
-			});
-			issuelist = (issuelist.length == 0) ? 'any' : issuelist*/
-			var issuelist = getSelected('.issuesp');
+			var issuelist = getSelected('#drpissue');
 			$('#issues').val(issuelist);
-						
+			var dapissuelist =  getSelected('#dapissue');
+			$('#dapissues').val(dapissuelist);
 		});
 	});
 	
 	// Submit guided search form
 	$(function() {
 		$('#searchform').submit(function(event){
-			/*var taglist = [];
-			$('.tagsp :checked').each(function(){
-				taglist.push(this.value);
-			});
-			taglist = (taglist.length == 0) ? 'any' : taglist*/
 			var taglist = getSelected('.tagsp');
 			$('#tagids').val(taglist);
 		});
@@ -502,7 +493,7 @@
 								{# Issue #}
 								<div class='form-group'>
 									<label for='issue'>Issue</label><br/>
-									<select class="selectpicker issuesp" multiple id='issue' data-selected-text-format="count" title='Any'>
+									<select class="selectpicker issuesp" multiple id='drpissue' data-selected-text-format="count" title='Any'>
                                         {% for catid, category in inspection.category|dictsort %}
                                         {% for issid,issue in category.issues|dictsort %}
 											{% if 'issue'+issid|string in form['issues'] %}
@@ -519,7 +510,7 @@
 						</div> {# end first row #}
 						
 						{# DAP QA Comment Row #}
-						{{ dapsearchrow(versions) }}
+						{{ dapsearchrow(dapversions,form,inspection) }}
 						
 						{# Form Submit Buttons #} 
 						<div class="row">

@@ -17,7 +17,8 @@ from collections import defaultdict
 import numpy as np
 
 from ..model.database import db
-from ..utilities import makeQualNames, processTableData,getMaskBitLabel, setGlobalVersion
+from ..utilities import makeQualNames, processTableData,getMaskBitLabel, \
+setGlobalVersion, getDRPVersion, getDAPVersion
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -349,7 +350,10 @@ def getFormParams():
         print('form tags', form['tagids'])
     if 'issues' in form:
         print('form issues', form['issues'])
-    
+    if 'dapissues' in form:
+        print('form dapissues', form['dapissues'])
+    print('search form',form)
+            
     return form
     
 search_page = flask.Blueprint("search_page", __name__)
@@ -449,7 +453,8 @@ def search():
     # pipeline versions
     #vers = session.query(datadb.PipelineVersion).filter(or_(datadb.PipelineVersion.version=='trunk',datadb.PipelineVersion.version=='v1_0_0',datadb.PipelineVersion.version=='v1_1_2')).all()
     vers = session.query(datadb.PipelineVersion).all()
-    search['versions'] = sorted([v.version for v in vers], reverse=True)
+    search['versions'] = getDRPVersion() #sorted([v.version for v in vers], reverse=True)
+    search['dapversions'] = getDAPVersion()
     search['current'] = version
     
     # get form params
