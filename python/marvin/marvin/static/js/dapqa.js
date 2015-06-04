@@ -295,7 +295,7 @@ function loadComments(panel,key,results) {
     } else {
         // getsession status failure
         var title = $('#dapqa_'+key+' h4',panel);
-        var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results.message+" status("+results.status+")"</h4></div>";
+        var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results.message+"</h4></div>";
         title.html(alerthtml);
     }
       

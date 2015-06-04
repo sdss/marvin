@@ -265,7 +265,7 @@ class Inspection:
         nissues = sum([len(pancom['issues']) for pancom in self.dapqacomments])
         self.totaldapcomments = "You have entered {0} comments and {1} issues.".format(ncomment,nissues)
 
-    def set_session_dapqacomments(self,catid=None,comments=None):
+    def set_session_dapqacomments(self,catid=None,comments=None,touched=None):
         self.status = 1
         self.message = 'Failed to save the previous comments in the session!'
     def set_session_tags(self,tags=[]): pass
