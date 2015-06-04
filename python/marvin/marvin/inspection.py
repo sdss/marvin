@@ -24,6 +24,7 @@ class Inspection:
         self.panel = None
         self.comments = None
         self.dapqacomments = None
+        self.dapqatags = None
         self.totaldapcomments = None
         self.cubecomments = None
         self.dapqacubecomments = None
@@ -229,7 +230,10 @@ class Inspection:
     def retrieve_alltags(self,ids=False): pass
     def retrieve_tags(self): pass
     def retrieve_cubecomments(self): pass
-    def retrieve_dapqacubecomments(self): pass
+    
+    def retrieve_dapqacubecomments(self):
+        self.dapqacols = self.dapqakeys = ['membername','category','mode','bintype','maptype','panel','comment','issues','modified']
+
     def retrieve_cubetags(self): pass
     def retrieve_searchcomments(self): pass
     def set_search_parameters(self,form=None): pass
@@ -251,21 +255,21 @@ class Inspection:
 
     def retrieve_dapqacomments(self,catid=None): 
         self.message = "Please use the production site!"
-        self.status = 0
+        self.status = 1
         self.dapqacomments = []
         self.dapqacomments.append({'catid':'1','position':'1','panel':'','issues':['1','4','5'],'comment':'Here is a comment'})
         self.set_totaldapcomments()
         
     def set_totaldapcomments(self):
-        dapcount = [len(pancom['issues'])+1 if pancom['comment'] else len(pancom['issues']) for pancom in self.dapqacomments]
-        self.totaldapcomments = sum(dapcount)
+        ncomment = sum([1 for pancom in self.dapqacomments if pancom['comment']])
+        nissues = sum([len(pancom['issues']) for pancom in self.dapqacomments])
+        self.totaldapcomments = "You have entered {0} comments and {1} issues.".format(ncomment,nissues)
 
     def set_session_dapqacomments(self,catid=None,comments=None):
         self.status = 1
         self.message = 'Failed to save the previous comments in the session!'
-    
+    def set_session_tags(self,tags=[]): pass
     def submit_dapqacomments(self): pass
-    
     def set_recentcomments(self):
         self.recentcomments = {}
         for category_id,category in self.category.items(): self.recentcomments.update({category_id:[]})
