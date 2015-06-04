@@ -140,14 +140,14 @@ def filterByName(value,name,ifu,type):
         cols = value.cols
         keys = value.keys
         if type == 'comments':
-            comments = value.cubecomments[ifu] if value.cubecomments else None
+            comments = value.cubecomments[ifu] if value.cubecomments and ifu in value.cubecomments else None
         elif type == 'search':
             comments = value.searchcomments if value.searchcomments else None
     elif 'dap' in name:
         cols = value.dapqacols
         keys = value.dapqakeys
         if type == 'comments':
-            comments = value.dapqacubecomments[ifu] if value.dapqacubecomments else None
+            comments = value.dapqacubecomments[ifu] if value.dapqacubecomments and ifu in value.dapqacomments else None
         elif type == 'search':
             comments = value.searchcomments if value.searchcomments else None
 
