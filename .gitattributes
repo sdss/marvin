@@ -82,6 +82,7 @@ python/marvin/marvin/templates/js/pltable.js -text
 python/marvin/marvin/templates/layout.html -text
 python/marvin/marvin/templates/plateInfo.html -text
 python/marvin/marvin/templates/search.html -text
+python/marvin/marvin/templates/searchmacros.html -text
 python/marvin/marvin/utilities.py -text
 python/marvin/profile_marvin.py -text
 python/marvin/run_marvin.py -text
