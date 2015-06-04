@@ -27,7 +27,7 @@
 
 {% endmacro %}
 
-{% macro dapsearchrow(versions) %}
+{% macro dapsearchrow(versions,form,inspection) %}
 
 	<div class='row' id='dapqarow'>
 		<div class='col-md-1 col-md-offset-2'>
@@ -38,14 +38,14 @@
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='daptag'>DAP Version</label>
-				<select class='form-control input-sm' id='commtag' name='daptag' placeholder='Any'>
+				<select class='form-control input-sm' id='commdaptag' name='daptag' placeholder='Any'>
 					{% for ver in versions+['Any'] %}
 					 {% if form %}
-					 {% if ver==form['tag'] %} <option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option> {% else %}
-						<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option> {% endif %}
+					 {% if ver==form['tag'] %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
+						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
 					{% else %}
-					{% if ver=='Any' %} <option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option> {% else %}
-						<option id='{{ver}}' value='{{ver}}'>{{ver|getMPL}}</option> {% endif %}
+					{% if ver=='Any' %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
+						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
 					{% endif %}
 					{% endfor %}
 				</select>
@@ -53,44 +53,62 @@
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='daptag'>Category</label>
+				<label for='dapcat'>Category</label>
+				<select class='form-control input-sm' name='dapcat' id='dapcat'>
+					<option id='any' value='any' selected>Any</option>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+						{% if catid == form['cat'] %}
+							<option id='{{loop.index0}}' value='{{catid}}' selected>{{category.category}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{catid}}'>{{category.category}}</option>
+						{% endif %}
+					{% endfor %}
+				</select> 
+			</div>
+		</div>
+		<div class='col-md-1'>
+			<div class='form-group'>
+				<label for='dapmode'>Mode</label>
 				<select class='form-control input-sm'>
 				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='daptag'>Mode</label>
-				<select class='form-control input-sm'>
-				</select>
-			</div>
-		</div>
-		<div class='col-md-1'>
-			<div class='form-group'>
-				<label for='daptag'>Bin Type</label>
+				<label for='dapbintype'>Bin Type</label>
 				<select class='form-control input-sm'>
 				</select>
 			</div>
 		</div>														
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='daptag'>Map Type</label>
+				<label for='dapmaptype'>Map Type</label>
 				<select class='form-control input-sm'>
 				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='daptag'>Panel</label>
+				<label for='dappanel'>Panel</label>
 				<select class='form-control input-sm'>
 				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='daptag'>Issues</label>
-				<select class='form-control input-sm'>
+				<label for='dapissues'>Issues</label>
+				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any'>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+					{% for issid,issue in category.issues|dictsort %}
+						{% if 'issue'+issid|string in form['dapissues'] %}
+						<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
+						{% else %}
+						<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+						{% endif %}
+					{% endfor %}
+					{% endfor %}
 				</select>
+				<input class='hidden' name='dapissues' id='dapissues' values=''/>
 			</div>
 		</div>
 	</div>
