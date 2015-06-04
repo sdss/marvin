@@ -241,6 +241,7 @@ def setSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
+        inspection.set_session_tags(tags=form['tags'])
         if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         if 'submit' in form and form['submit']:
             inspection.submit_dapqacomments()

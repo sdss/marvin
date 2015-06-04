@@ -228,7 +228,7 @@ function getPanel(ifu,key, mapid, qatype) {
             if (data.result.title) {title.html(data.result.title);}
             
             // setsession status failure
-            if (data.result.setsession && data.result.setsession.status === 0) {
+            if (data.result.setsession && data.result.setsession.status === -1) {
                 var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.setsession.message+"</h4></div>";
                 title.html(alerthtml);
             }
