@@ -327,8 +327,8 @@ function daploadmodal(img) {
     $('#dapimgmodal_'+ifu+' #dapimgbody').html(image);
 }
 
-// Submit DAP QA Comments
-function dapaddcomments(ifu) {
+// Submit/Reset DAP QA Comments
+function dapaddcomments(ifu,action) {
     var mainform = $('#dapqacomment_form_'+ifu);
     var maincat =  $('#dapqacatopts_'+ifu);
     var mainpanel = $('#dapqapanel_'+ifu);
@@ -349,45 +349,71 @@ function dapaddcomments(ifu) {
     var issues = parseDAPissues(ifu,key);
     var newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':cubepk},
                {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags},
-               {'name':'submit','value':true}];
+               {'name':action,'value':true}];
     var dapformdata = buildDAPform(newdata,ifu);
 
-    $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
-        .done(function(data){
-            var title = $('#dapqa_'+key+' h4',mainpanel);
-            if (data.result.title) {title.html(data.result.title);}
-            
-			// submit message
-			if (data.result.setsession) {
-                if (data.result.setsession.status === 0) {
-                    $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.setsession.message+"</div></h5>");
-                } else if (data.result.setsession.status === 1) {
-                    $('#submitmsg',mainform).html("<h5><div class='alert alert-success' role='alert'>"+data.result.setsession.message+"</div></h5>");
-                } else  {
-                    $('#submitmsg',mainform).html("<h4><div class='alert alert-danger' role='alert'>Bad response from inspection module.</div></h4>");
+    if (action === "submit") {
+        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+            .done(function(data){
+                var title = $('#dapqa_'+key+' h4',mainpanel);
+                if (data.result.title) {title.html(data.result.title);}
+                
+                // submit message
+                if (data.result.setsession) {
+                    if (data.result.setsession.status === 0) {
+                        $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.setsession.message+"</div></h5>");
+                    } else if (data.result.setsession.status === 1) {
+                        $('#submitmsg',mainform).html("<h5><div class='alert alert-success' role='alert'>"+data.result.setsession.message+"</div></h5>");
+                    } else  {
+                        $('#submitmsg',mainform).html("<h4><div class='alert alert-danger' role='alert'>Bad response from inspection module.</div></h4>");
+                    }
                 }
-			}
-            
-        })
-        .fail(function(){
-            var title = $('#dapqa_'+key+' h4',mainpanel);
-            var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to get session data!</h4></div>";
-            title.html(alerthtml);
-        });
-}
+                
+                resetTags('#dapqacomment_form_'+ifu+' #daptagfield');
+            })
+            .fail(function(){
+                var title = $('#dapqa_'+key+' h4',mainpanel);
+                var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to get session data!</h4></div>";
+                title.html(alerthtml);
+            });
+    } else if (action === "reset") {
+        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+            .done(function(data){
+                var ifupanel = $('#dapqa_'+key,mainpanel);
+                ifupanel.show();
+                var title = $('#dapqa_'+key+' h4',mainpanel);
+                if (data.result.title) {title.html(data.result.title);}
+                
+                // setsession status failure
+                if (data.result.setsession && data.result.setsession.status === -1) {
+                    var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.setsession.message+"</h4></div>";
+                    title.html(alerthtml);
+                }
+                
+                loadImages(mainpanel,key,data.result.images,data.result.panelmsg);
+                loadComments(mainpanel,key,data.result.getsession);
+                loadTags(mainform,data.result.getsession);
 
-// Reset the DAP QA form
-function resetDAPQA(ifu) {
-    //var maincat =  $('#dapqacatopts_'+ifu);
-    var mainpanel = $('#dapqapanel_'+ifu);
-    //$('.qacomment',maincat).html('');
-    //mainform.trigger('reset');
-    //$('.dapqacatoptions',maincat).hide();
-    //$('.catlist',maincat).hide();
-    $('[id^=dapqa_comment]',mainpanel).val('');
-    $('[id^=issue]',mainpanel).prop('selected',false);
-    $('.dapqaissuesp',mainpanel).selectpicker('refresh');
-    resetTags('#dapqacomment_form_'+ifu+' #daptagfield');
+                // update count message
+                if (data.result.getsession.status === 0) {
+                    $('#submitmsg',mainform).html("<h5><div class='alert alert-warning' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
+                } else if (data.result.getsession.status === 1) {
+                    $('#submitmsg',mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
+                } else {
+                    $('#submitmsg',mainform).html("<h5><div class='alert alert-danger' role='alert'>Bad response from inspection database</div></h5>");
+                }
+                
+                resetTags('#dapqacomment_form_'+ifu+' #daptagfield');
+
+            })
+            .fail(function(){
+                $('#dapqa_'+key,mainpanel).show();
+                var title = $('#dapqa_'+key+' h4',mainpanel);
+                var alerthtml = "<div class='alert alert-danger' role='alert'><h4>Server Error: Failed to set session data!</h4></div>";
+                title.html(alerthtml);
+            });
+    }
+    
 }
 
 // Load the DAP QA Panel
