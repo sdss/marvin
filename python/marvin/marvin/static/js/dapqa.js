@@ -276,8 +276,8 @@ function loadComments(panel,key,results) {
     // reset all issue options
     $('[id^=issue]',panel).prop('selected',false);
 
-    // load results if good status
-    if (results.status === 1) {
+    // load results if sessioned or stored status
+    if (results.status === 0 || results.status === 1) {
     
         // load new comments
         if (results.dapqacomments) {
@@ -295,7 +295,7 @@ function loadComments(panel,key,results) {
     } else {
         // getsession status failure
         var title = $('#dapqa_'+key+' h4',panel);
-        var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results.message+"</h4></div>";
+        var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+results.message+" status("+results.status+")"</h4></div>";
         title.html(alerthtml);
     }
       
