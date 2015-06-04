@@ -31,9 +31,7 @@
 
 	<div class='row' id='dapqarow'>
 		<div class='col-md-1 col-md-offset-2'>
-			<div class='form-group'>
-				<label>DAP QA: </label>
-			</div>
+				<h2><span class='label label-primary'>DAP QA: </span><h2>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
@@ -89,28 +87,32 @@
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dapmode'>Mode</label>
-				<select class='form-control input-sm'>
+				<select class='form-control input-sm' name='dapmode' id='dapmode'>
+					<option id='any' value='any' selected>Any</option>
 				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dapbintype'>Bin Type</label>
-				<select class='form-control input-sm'>
+				<select class='form-control input-sm' name='dapbintype' id='dapbintype'>
+					<option id='any' value='any' selected>Any</option>
 				</select>
 			</div>
 		</div>														
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dapmaptype'>Map Type</label>
-				<select class='form-control input-sm'>
+				<select class='form-control input-sm' name='dapmaptype' id='dapmaptype'>
+					<option id='any' value='any' selected>Any</option>
 				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dappanel'>Panel</label>
-				<select class='form-control input-sm'>
+				<select class='form-control input-sm' name='dappanel' id='dappanel'>
+					<option id='any' value='any' selected>Any</option>
 				</select>
 			</div>
 		</div>
