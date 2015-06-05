@@ -11,7 +11,7 @@ $(function() {
         var key = 'maps';
         var ready = $('#inspectready').val();
 
-        if (ready === 'true') {
+        if (ready === 'true' || ready === 'True') {
             setDefault(ifu,key);
             initTags('#daptagfield');
         } else {
