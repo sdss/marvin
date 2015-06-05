@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from astropy.table import Table
 
 class Inspection:
 
@@ -264,6 +265,8 @@ class Inspection:
 
     def retrieve_dapqacubecomments(self):
         self.dapqacols = self.dapqakeys = ['membername','category','mode','bintype','maptype','panel','comment','issues','modified']
+        self.dapqacubecomments = {'9101':Table([{'membername':'Brian','category':'maps','mode':'cube','bintype':'none2','maptype':'kin',
+        'panel':'oii','comment':'this is great','issues':['1','2','3'],'modified':'today'}])}
 
     def retrieve_cubetags(self): pass
     def retrieve_searchcomments(self):
