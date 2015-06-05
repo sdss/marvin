@@ -12,7 +12,7 @@ class Inspection:
         self.set_ready()
         if self.ready: self.set_member(id=self.session['member_id'],update_session=False)
         if not self.ready: self.set_member(username=username,auth=auth)
-        self.ready=False
+        self.ready=True
         self.set_counter(None)
         self.set_drpver()
         self.set_dapver()
