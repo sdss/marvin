@@ -152,3 +152,38 @@
 	</div>
 	
 {% endmacro %}
+
+{% macro writefits(fxn) %}
+
+	<div class='modal fade' id='fitsform' tabindex='-1' role='dialog' aria-labeledby='fitslabel' aria-hidden='true'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Write table to FITS file</h4>							
+				</div>
+				<div class='modal-body'>
+					<div class='row'>
+						<div class='col-md-10'>
+							<div class='form-group input-group'>
+								<span class='input-group-addon'>Filename</span>
+								<input type='text' class='form-control' placeholder='FITS name'  name='fitsname' id='fitsname'/>
+								<input type='hidden' class='form-control' name='hiddendata' id='hiddendata'/>
+								<span class='input-group-btn'>
+									<button class='btn btn-primary' type='button' name='writefits' onclick='{{fxn}}'>Submit</button>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div class='row'>
+						<div class='col-md-10'>
+							<h4 id='fitsout'></h4>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>{# end fitsform modal #}
+
+{% endmacro %}
+

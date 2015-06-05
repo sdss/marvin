@@ -453,9 +453,7 @@ def search():
     search['nsamap'] = []
 
     # pipeline versions
-    #vers = session.query(datadb.PipelineVersion).filter(or_(datadb.PipelineVersion.version=='trunk',datadb.PipelineVersion.version=='v1_0_0',datadb.PipelineVersion.version=='v1_1_2')).all()
-    vers = session.query(datadb.PipelineVersion).all()
-    search['versions'] = getDRPVersion() #sorted([v.version for v in vers], reverse=True)
+    search['versions'] = getDRPVersion() 
     search['dapversions'] = getDAPVersion()
     search['current'] = version
     

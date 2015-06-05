@@ -30,10 +30,10 @@
 {% macro dapsearchrow(versions,form,inspection) %}
 
 	<div class='row' id='dapqarow'>
-		<div class='col-md-1 col-md-offset-2'>
+		{#<div class='col-md-1 col-md-offset-2'>
 				<h2><span class='label label-primary'>DAP QA: </span><h2>
-		</div>
-		<div class='col-md-1'>
+		</div>#}
+		<div class='col-md-1 col-md-offset-3'>
 			<div class='form-group'>
 				<label for='daptag'>DAP Version</label>
 				<select class='form-control input-sm' id='commdaptag' name='daptag' placeholder='Any'>
@@ -94,13 +94,12 @@
 					<option id='any' value='any' selected>Any</option>
 					{% for mode in inspection.options.mode %}
 						{% if mode == form['dapmode'] %}
-							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode}}</option>
+							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
 						{% else %}
-							<option id='{{loop.index0}}' value='{{mode}}'>{{mode}}</option>
+							<option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
 						{% endif %}
 					{% endfor %}
 				</select> 
-				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
@@ -110,9 +109,9 @@
 					<option id='any' value='any' selected>Any</option>
 					{% for bintype in inspection.options.bintype %}
 						{% if bintype == form['dapbintype'] %}
-							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype}}</option>
+							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
 						{% else %}
-							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype}}</option>
+							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
 						{% endif %}
 					{% endfor %}
 				</select>
@@ -125,9 +124,9 @@
 					<option id='any' value='any' selected>Any</option>
 					{% for maptype in inspection.options.maptype %}
 						{% if maptype == form['maptype'] %}
-							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype}}</option>
+							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
 						{% else %}
-							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype}}</option>
+							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
 						{% endif %}
 					{% endfor %}
 				</select>
@@ -140,9 +139,9 @@
 					<option id='any' value='any' selected>Any</option>
 					{% for panel in inspection.panels %}
 						{% if panel == form['panel'] %}
-							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel}}</option>
+							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
 						{% else %}
-							<option id='{{loop.index0}}' value='{{panel}}'>{{panel}}</option>
+							<option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
 						{% endif %}
 					{% endfor %}
 				</select>
@@ -150,4 +149,116 @@
 		</div>
 	</div>
 	
+{% endmacro %}
+
+
+{# test layout of dap search form #}
+{% macro dapqatest(versions,form,inspection) %}
+
+<div class='form-inline'>
+	<div class='form-group col-md-offset-2'>
+			<div class='input-group'>
+				<div class='input-group-addon'>DAP Version</div>
+				<select class='form-control input-sm' id='commdaptag' name='daptag' placeholder='Any'>
+					{% for ver in versions+['Any'] %}
+					 {% if form %}
+					 {% if ver==form['tag'] %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
+						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
+					{% else %}
+					{% if ver=='Any' %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
+						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+
+			<div class='input-group'>
+				<div class='input-group-addon'>Category</div>
+				<select class='form-control input-sm' name='dapcat' id='dapcat'>
+					<option id='any' value='any' selected>Any</option>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+						{% if catid == form['dapcat'] %}
+							<option id='{{loop.index0}}' value='{{catid}}' selected>{{category.category}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{catid}}'>{{category.category}}</option>
+						{% endif %}
+					{% endfor %}
+				</select> 
+			</div>
+
+			<div class='input-group'>
+				<div class='input-group-addon'>Issues</div>
+				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any' data-width='60%'>
+					{% for catid, category in inspection.dapqacategory|dictsort %}
+					{% for issid,issue in category.issues|dictsort %}
+						{% if 'issue'+issid|string in form['dapissues'] %}
+						<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
+						{% else %}
+						<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
+						{% endif %}
+					{% endfor %}
+					{% endfor %}
+				</select>
+				<input class='hidden' name='dapissues' id='dapissues' values=''/>
+			</div>	
+			
+			<div class='input-group'>
+				<div class='input-group-addon'>Mode</div>
+				<select class='form-control input-sm' name='dapmode' id='dapmode'>
+					<option id='any' value='any' selected>Any</option>
+					{% for mode in inspection.options.mode %}
+						{% if mode == form['dapmode'] %}
+							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
+						{% endif %}
+					{% endfor %}
+				</select> 
+			</div>
+
+			<div class='input-group'>
+				<div class='input-group-addon'>Bin Type</div>
+				<select class='form-control input-sm' name='dapbintype' id='dapbintype'>
+					<option id='any' value='any' selected>Any</option>
+					{% for bintype in inspection.options.bintype %}
+						{% if bintype == form['dapbintype'] %}
+							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+
+			<div class='input-group'>
+				<div class='input-group-addon'>Map Type</div>
+				<select class='form-control input-sm' name='dapmaptype' id='dapmaptype'>
+					<option id='any' value='any' selected>Any</option>
+					{% for maptype in inspection.options.maptype %}
+						{% if maptype == form['maptype'] %}
+							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+
+			<div class='input-group'>
+				<div class='input-group-addon'>Panel</div>
+				<select class='form-control input-sm' name='dappanel' id='dappanel'>
+					<option id='any' value='any' selected>Any</option>
+					{% for panel in inspection.panels %}
+						{% if panel == form['panel'] %}
+							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
+						{% endif %}
+					{% endfor %}
+				</select>												
+			</div>
+		
+	</div>
+</div>
+		
 {% endmacro %}

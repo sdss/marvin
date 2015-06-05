@@ -178,6 +178,7 @@ def plate():
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
         result = inspection.result()
+        print('result',result)
         
         if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))

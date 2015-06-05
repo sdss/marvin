@@ -1,6 +1,6 @@
 {% from 'buildTable.html' import sastable %}
-{% from 'searchmacros.html' import dapsearchrow,directsql %}
-{% from 'generalMacros.html' import dropdownload, rsyncmodal,buttoncollapse %}
+{% from 'searchmacros.html' import dapsearchrow,directsql,dapqatest %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal,buttoncollapse,writefits %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("search") %}
 
@@ -493,7 +493,7 @@
 								{# Issue #}
 								<div class='form-group'>
 									<label for='issue'>Issue</label><br/>
-									<select class="selectpicker issuesp" multiple id='drpissue' data-selected-text-format="count" title='Any'>
+									<select class="selectpicker issuesp" multiple id='drpissue' data-selected-text-format="count" title='Any' data-width='99%'>
                                         {% for catid, category in inspection.category|dictsort %}
                                         {% for issid,issue in category.issues|dictsort %}
 											{% if 'issue'+issid|string in form['issues'] %}
@@ -511,6 +511,7 @@
 						
 						{# DAP QA Comment Row #}
 						{{ dapsearchrow(dapversions,form,inspection) }}
+						{#{{ dapqatest(dapversions,form,inspection) }}#}
 						
 						{# Form Submit Buttons #} 
 						<div class="row">
@@ -538,42 +539,13 @@
 		{# Form Table - form is needed to send data to write table as fits (writeFits button) #}
 		<form class='form' role='form' method='post' action='writeFits' id='sastableform'>
 			{# write FITS pop-up modal, see buttons in table macro #}
-			<div class='modal fade' id='fitsform' tabindex='-1' role='dialog' aria-labeledby='fitslabel' aria-hidden='true'>
-				<div class='modal-dialog'>
-					<div class='modal-content'>
-						<div class='modal-header'>
-            				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            				<h4 class="modal-title">Write table to FITS file</h4>							
-						</div>
-						<div class='modal-body'>
-							<div class='row'>
-								<div class='col-md-10'>
-									<div class='form-group input-group'>
-										<span class='input-group-addon'>Filename</span>
-										<input type='text' class='form-control' placeholder='FITS name'  name='fitsname' id='fitsname'/>
-										<input type='hidden' class='form-control' name='hiddendata' id='hiddendata'/>
-										<span class='input-group-btn'>
-											<button class='btn btn-primary' type='button' name='writefits' onclick='tableform()'>Submit</button>
-										</span>
-									</div>
-								</div>
-							</div>
-							<div class='row'>
-								<div class='col-md-10'>
-									<h4 id='fitsout'></h4>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>{# end fitsform modal #}
+			{{ writefits('tableform()') }}
+			
 		{# Custom Toolbar for table #}	
 		<div id='toolbar'>
 			<button id="delete" class="btn btn-danger" type='button' onclick='deleteRows()'>Delete Rows</button>
-			<button class='btn btn-primary' type='button' data-toggle='modal' data-target='#fitsform'>Write FITS</button>
-						
-			{{dropdownload('platedl', 'rsynclink')}}				
-				
+			<button class='btn btn-primary' type='button' data-toggle='modal' data-target='#fitsform'>Write FITS</button>		
+			{{dropdownload('platedl', 'rsynclink')}}
 		</div>
         {{rsyncmodal()}}
 
