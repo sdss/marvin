@@ -218,8 +218,8 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, tes
     ''' grab all the DAP PNG analysis plots '''
     
     # ignore Marvin's dapver (for now) and just use the plots corredsponding to the loaded mangadap module
-    #try: dapver = os.getenv('MANGADAP_VER')
-    #except: pass
+    try: dapver = os.getenv('MANGADAP_VER')
+    except: pass
 
     # build path
     catdict = {'maps':'maps','spectra':'spectra','radgrad':'gradients'}
