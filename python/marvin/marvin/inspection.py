@@ -19,11 +19,14 @@ class Inspection:
         self.set_cube()
         self.set_category(forcomment=True)
         self.set_category(fordapqa=True)
+        self.options = None
+        self.panels = None
         self.comment = None
         self.option = None
         self.panel = None
         self.comments = None
         self.dapqacomments = None
+        self.dapqasearchcomments = None
         self.dapqatags = None
         self.totaldapcomments = None
         self.cubecomments = None
@@ -159,6 +162,32 @@ class Inspection:
         self.dapver = {'id':id,'dapver':dapver}
         if update_session: self.set_session_dapver(id=id,dapver=dapver)
 
+    def set_options(self):
+        self.options = {'bintype': [u'all5', u'none2', u'rad1', u'rad2', u'rad3', u'rad4', u'ston1'],
+        'maptype': [u'emflux',  u'emfluxew',  u'emfluxfb',  u'kin',  u'snr',  u'spec0',  u'spec1',  u'spec8'],
+        'mode': [u'cube', u'rss']}
+    
+    def set_panels(self):
+        self.panels = [u'chisq',
+         u'emvdisp',
+         u'emvel',
+         u'halpha',
+         u'halpha_ew',
+         u'hbeta',
+         u'nii',
+         u'noise',
+         u'oii',
+         u'oiii',
+         u'resid',
+         u'signal',
+         u'sii',
+         u'snr',
+         u'spectrum',
+         u'sth3',
+         u'sth4',
+         u'stvdisp',
+         u'stvel']
+
     def set_option(self,id=None,mode=None,bintype=None,maptype=None,add=True):
         self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
 
@@ -230,7 +259,7 @@ class Inspection:
     def retrieve_alltags(self,ids=False): pass
     def retrieve_tags(self): pass
     def retrieve_cubecomments(self): pass
-    
+    def retrieve_dapqasearchcomments(self): pass
     def retrieve_dapqacubecomments(self):
         self.dapqacols = self.dapqakeys = ['membername','category','mode','bintype','maptype','panel','comment','issues','modified']
 
