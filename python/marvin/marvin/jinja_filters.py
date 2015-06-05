@@ -147,7 +147,7 @@ def filterByName(value,name,ifu,type):
         cols = value.dapqacols
         keys = value.dapqakeys
         if type == 'comments':
-            comments = value.dapqacubecomments[ifu] if value.dapqacubecomments and ifu in value.dapqacomments else None
+            comments = value.dapqacubecomments[ifu] if value.dapqacubecomments and ifu in value.dapqacubecomments else None
         elif type == 'search':
             comments = value.searchcomments if value.searchcomments else None
 
