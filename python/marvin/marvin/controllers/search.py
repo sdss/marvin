@@ -444,6 +444,8 @@ def search():
     search['ifulist'] = [127, 91, 61, 37, 19, 7]
     search['types'] = ['any','galaxy','stellar','sky','anc']
     search['inspection'] = inspection = Inspection(current_session)
+    inspection.set_options()
+    inspection.set_panels()
     inspection.retrieve_alltags(ids=True)
     nsalist = makeNSAList()
     flask.g.nsalist = nsalist
