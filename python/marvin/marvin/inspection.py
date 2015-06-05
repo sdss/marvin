@@ -259,12 +259,16 @@ class Inspection:
     def retrieve_alltags(self,ids=False): pass
     def retrieve_tags(self): pass
     def retrieve_cubecomments(self): pass
-    def retrieve_dapqasearchcomments(self): pass
+    def retrieve_dapqasearchcomments(self):
+        self.cols = self.keys = ['membername','plate','ifuname','drpver','category','comment','issues','modified']
+
     def retrieve_dapqacubecomments(self):
         self.dapqacols = self.dapqakeys = ['membername','category','mode','bintype','maptype','panel','comment','issues','modified']
 
     def retrieve_cubetags(self): pass
-    def retrieve_searchcomments(self): pass
+    def retrieve_searchcomments(self):
+        self.cols = self.keys = ['membername','plate','ifuname','drpver','category','comment','issues','modified']
+    
     def set_search_parameters(self,form=None): pass
     def refine_cubes_by_tagids(self, tagids=None, cubes=None): pass
     
