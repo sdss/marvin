@@ -504,6 +504,7 @@ def search():
         current_app.logger.warning('Inspection> search parameters %r' % form)
         inspection.set_search_parameters(form=form)
         inspection.retrieve_searchcomments()
+        inspection.retrieve_dapqasearchcomments()
         result = inspection.result()
         if inspection.status: current_app.logger.warning('Inspection> GET searchcomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> GET searchcomments: No Results')
