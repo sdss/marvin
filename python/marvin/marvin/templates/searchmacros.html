@@ -67,6 +67,7 @@
 			</div>
 		</div>
         
+        {# Issues #}
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dapissues'>Issues</label>
@@ -84,11 +85,21 @@
 				<input class='hidden' name='dapissues' id='dapissues' values=''/>
 			</div>
 		</div>
+        
+        {# Options #}
 		<div class='col-md-1'>
 			<div class='form-group'>
 				<label for='dapmode'>Mode</label>
 				<select class='form-control input-sm' name='dapmode' id='dapmode'>
 					<option id='any' value='any' selected>Any</option>
+					{% for mode in inspection.options.mode %}
+						{% if mode == form['dapmode'] %}
+							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{mode}}'>{{mode}}</option>
+						{% endif %}
+					{% endfor %}
+				</select> 
 				</select>
 			</div>
 		</div>
@@ -97,6 +108,13 @@
 				<label for='dapbintype'>Bin Type</label>
 				<select class='form-control input-sm' name='dapbintype' id='dapbintype'>
 					<option id='any' value='any' selected>Any</option>
+					{% for bintype in inspection.options.bintype %}
+						{% if bintype == form['dapbintype'] %}
+							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype}}</option>
+						{% endif %}
+					{% endfor %}
 				</select>
 			</div>
 		</div>														
@@ -105,6 +123,13 @@
 				<label for='dapmaptype'>Map Type</label>
 				<select class='form-control input-sm' name='dapmaptype' id='dapmaptype'>
 					<option id='any' value='any' selected>Any</option>
+					{% for maptype in inspection.options.maptype %}
+						{% if maptype == form['maptype'] %}
+							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype}}</option>
+						{% endif %}
+					{% endfor %}
 				</select>
 			</div>
 		</div>
@@ -113,6 +138,13 @@
 				<label for='dappanel'>Panel</label>
 				<select class='form-control input-sm' name='dappanel' id='dappanel'>
 					<option id='any' value='any' selected>Any</option>
+					{% for panel in inspection.panels %}
+						{% if panel == form['panel'] %}
+							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel}}</option>
+						{% else %}
+							<option id='{{loop.index0}}' value='{{panel}}'>{{panel}}</option>
+						{% endif %}
+					{% endfor %}
 				</select>
 			</div>
 		</div>
