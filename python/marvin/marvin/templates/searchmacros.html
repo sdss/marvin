@@ -235,7 +235,7 @@
 				<select class='form-control input-sm' name='dapmaptype' id='dapmaptype'>
 					<option id='any' value='any' selected>Any</option>
 					{% for maptype in inspection.options.maptype %}
-						{% if maptype == form['maptype'] %}
+						{% if maptype == form['dapmaptype'] %}
 							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
 						{% else %}
 							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
@@ -249,7 +249,7 @@
 				<select class='form-control input-sm' name='dappanel' id='dappanel'>
 					<option id='any' value='any' selected>Any</option>
 					{% for panel in inspection.panels %}
-						{% if panel == form['panel'] %}
+						{% if panel == form['dappanel'] %}
 							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
 						{% else %}
 							<option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
