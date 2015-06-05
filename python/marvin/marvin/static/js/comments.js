@@ -204,7 +204,7 @@
     });
 
     // Grab the comments after a successful login (function to run after login)
-    function grabComments(result) {
+    function grabComments() {
         var cubepk = $('#cubepk').val();
         var ifuname = $('#ifuname').val();
         resetLogin();

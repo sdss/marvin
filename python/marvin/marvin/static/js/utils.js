@@ -54,7 +54,8 @@ function login(fxn) {
 				  $('#loginmessage').html(htmlstr);
 			  }
 			  if (data.result['status']==1){
-			  	  fxn.call(this,data.result); 
+			  	  $('#inspectready').val(data.result.ready);
+			  	  fxn.call(); 
 			  }
 			
 		  }
