@@ -10,7 +10,7 @@ $(function() {
         $('.qacomment').html('');
         var key = 'maps';
         var ready = $('#inspectready').val();
-        
+        console.log('dapqa ready',ready);
         if (ready === 'True') {
             setDefault(ifu,key);
             initTags('#daptagfield');

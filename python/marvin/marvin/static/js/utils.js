@@ -54,7 +54,10 @@ function login(fxn) {
 				  $('#loginmessage').html(htmlstr);
 			  }
 			  if (data.result['status']==1){
+			  	  console.log('after login,ready',data.result.ready);
+			  	  console.log('before',$('#inspectready').val());
 			  	  $('#inspectready').val(data.result.ready);
+			  	  console.log('after',$('#inspectready').val());
 			  	  fxn.call(); 
 			  }
 			
