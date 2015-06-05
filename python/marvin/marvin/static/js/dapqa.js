@@ -417,7 +417,8 @@ function dapaddcomments(ifu,action) {
 }
 
 // Load the DAP QA Panel
-function loadDapQaPanel() {
+function loadDapQaPanel(result) {
+	console.log('fxn call results', result);
     var key = 'maps';
     var ifu = getIFUHash().slice(1);
     $('#dapqapane_'+ifu).show();
