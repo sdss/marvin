@@ -422,6 +422,7 @@ function loadDapQaPanel() {
     var ifu = getIFUHash().slice(1);
     $('#dapqapane_'+ifu).show();
     resetLogin();
+    $('#inspectready').val('True');
     setDefault(ifu,key);
 }
 
