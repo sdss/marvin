@@ -281,7 +281,7 @@ def filterDAPimages(images, mapid, key,bintype):
             images = [i for i in images for val in mapdict[mapid] if val in i]
         else:
             images = [img for img in images if mapdict[mapid] in img]
-        print('initial images - presort',images)    
+
         # sort images
         images.sort()
         if 'emflux' in mapid: 

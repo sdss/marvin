@@ -145,7 +145,7 @@ def getdappanel():
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
         dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
-    print('final images',imglist)    
+
     # Build title
     qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
     defaulttitle = {'maps':'Maps','radgrad':'Radial Gradients','spectra':'Spectra'}
