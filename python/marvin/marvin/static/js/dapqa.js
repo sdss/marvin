@@ -259,7 +259,6 @@ function loadImages(panel,key,images, msg) {
     $('#dapqa_'+key+' img',panel).removeProp('src');
     if (images) {
         $('#dapqa_'+key+' img',panel).each(function(index) {
-            console.log('images',index,images[index]);
             $(this).attr('src',images[index]);
         });
     } else {
