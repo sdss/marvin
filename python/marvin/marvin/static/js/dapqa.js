@@ -259,6 +259,7 @@ function loadImages(panel,key,images, msg) {
     $('#dapqa_'+key+' img',panel).removeProp('src');
     if (images) {
         $('#dapqa_'+key+' img',panel).each(function(index) {
+            console.log('images',index,images[index]);
             $(this).attr('src',images[index]);
         });
     } else {
@@ -285,7 +286,8 @@ function loadComments(panel,key,results) {
         		
         		// replace labels
         		var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
-        		var labelhtml = labelname+panelcomment.position+': '+panelcomment.panel;
+        		var labelend = (key !== 'spectra') ? ': '+panelcomment.panel : '';
+        		var labelhtml = labelname+panelcomment.position+labelend;
         		$('#'+key+'label'+(i+1),panel).html(labelhtml);
 
                 $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position,panel).val(panelcomment.comment);
