@@ -282,8 +282,12 @@ function loadComments(panel,key,results) {
         // load new comments
         if (results.dapqacomments) {
             $.each(results.dapqacomments,function(i,panelcomment) {
-        
-                //console.log('panelcomment',panelcomment);
+        		
+        		// replace labels
+        		var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
+        		var labelhtml = labelname+panelcomment.position+': '+panelcomment.name;
+        		$('#'+key+'label'+(i+1),panel).html(labelhtml);
+
                 $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position,panel).val(panelcomment.comment);
             
                 $.each(panelcomment.issues, function(i,issid) {
