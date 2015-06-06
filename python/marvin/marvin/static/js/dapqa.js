@@ -285,7 +285,7 @@ function loadComments(panel,key,results) {
         		
         		// replace labels
         		var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
-        		var labelhtml = labelname+panelcomment.position+': '+panelcomment.name;
+        		var labelhtml = labelname+panelcomment.position+': '+panelcomment.panel;
         		$('#'+key+'label'+(i+1),panel).html(labelhtml);
 
                 $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position,panel).val(panelcomment.comment);
