@@ -184,6 +184,7 @@ def getdapspeclist():
     # extract spectra names
     if imglist:
         speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
+        speclist.sort()
     else: speclist = None
 
     result={}
