@@ -275,6 +275,7 @@ def filterDAPimages(images, mapid, key,bintype):
     if key == 'spectra':
         name = 'spec-{0:04d}'.format(int(mapid.split('c')[1]))
         images = [i for i in images if name in i]
+        images.sort()
     else: 
         # filter images
         if type(mapdict[mapid]) == list:
