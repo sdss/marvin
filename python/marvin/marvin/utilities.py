@@ -214,19 +214,23 @@ def getImages(plate=None,version=None):
         
     return images
  
-def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, test=False, filter=True):
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, filter=True):
     ''' grab all the DAP PNG analysis plots '''
     
-    # ignore Marvin's dapver (for now) and just use the plots corredsponding to the loaded mangadap module
-    try: dapver = os.getenv('MANGADAP_VER')
-    except: pass
+    # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
+    try:
+        #Divert away from MANGA_SPECTRO_ANALYSIS and dapver if mangadapplot loaded
+        dapplotdir = os.getenv('MANGADAPPLOT_DIR')
+        dapplotver = os.getenv('MANGADAPPLOT_VER')
+    except:
+        #Nevermind, plots are in the location specified by module mangadap
+        dapplotdir = os.getenv('MANGA_SPECTRO_ANALYSIS')
+        dapplotver = dapver
 
     # build path
+    redux = os.path.join(dapplotdir,drpver,dapplotver,str(plate),ifu,'plots')
+
     catdict = {'maps':'maps','spectra':'spectra','radgrad':'gradients'}
-    if not test:
-        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),drpver,dapver,str(plate),ifu,'plots')
-    else:
-        redux = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),'test/andrews/trunk_mpl3',str(plate),ifu,'plots')
 
     # build sas path
     try: sasurl = os.getenv('SAS_URL')
