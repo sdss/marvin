@@ -31,7 +31,7 @@ function setDefault(ifu,key) {
     //var html = (key!='radgrad') ? 'cube-none2': 'rss-rad1';
     var html = (key === 'maps') ? 'cube-none2' : (key ==='spectra') ? 'cube-all5' : 'rss-rad1';
     var mapid = (key === 'maps') ? 'kin' : (key==='radgrad') ? 'emflux': 'spec0';
-    console.log('setdefault', ifu, key, mapid);
+    console.log('setdefault', ifu, key, mapid,html);
     $('#dapqacatopts_'+ifu+' #qacomment_'+key).html(html);
         
     // display list and panels, store old values
