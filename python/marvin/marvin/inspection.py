@@ -58,6 +58,8 @@ class Inspection:
         self.dapqaoptions = self.get_dapqaoptions()
     
     def get_dapqaoptions(self):
+        dapqacats = self.get_category(fordapqa=True)
+        print(dapqacats)
         dapqaoptions = {'option':'stuff'}
         return dapqaoptions
 
@@ -123,7 +125,7 @@ class Inspection:
                     self.session['drpver_drp2ver'] = drp2ver if drp2ver else 'None'
                     self.session['drpver_drp3ver'] = drp3ver if drp3ver else 'None'
                 except:
-                    self.session['d rpver_id'] = None
+                    self.session['drpver_id'] = None
                     self.session['drpver_drp2ver'] = None
                     self.session['drpver_drp3ver'] = None
 
