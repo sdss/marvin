@@ -126,7 +126,7 @@ def current():
         displayCols = ['plate','ifudsgn','harname','mangaid','status3d','drp3qual','versdrp3','verscore','mjdmax','objRA', 'objDEC','bluesn2','redsn2','nexp','exptime']
         
     # Load faults
-    sd = setStatusDone()
+    sd = setStatusDone(outver=version,nowrite=True)
     sd.loadFile()
     errs = sd.getErrorDict()
     current['faults'] = errs if errs else None
