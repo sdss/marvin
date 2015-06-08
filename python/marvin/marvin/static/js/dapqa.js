@@ -46,7 +46,7 @@ function setDefault(ifu,key) {
 function dapcatchange(ifu) {
     // set default selection with new key
     var key = $('#dapqacat_'+ifu).find('#dapqacat_select').val();
-    $('.qacomment').html('');
+    //$('.qacomment').html('');
     setDefault(ifu,key);
 }
 
