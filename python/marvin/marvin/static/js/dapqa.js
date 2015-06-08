@@ -7,7 +7,7 @@ $(function() {
         var ifu = getIFUHash().slice(1);
         var dapifuform = $('#dapqacomment_form_'+ifu);
         dapifuform.trigger('reset');
-        $('.qacomment').html('');
+        //$('.qacomment').html('');
         var key = 'maps';
         var ready = $('#inspectready').val();
 
