@@ -55,6 +55,11 @@ class Inspection:
         self.date = None
         self.component = {}
         self.type = {}
+        self.dapqaoptions = self.get_dapqaoptions()
+    
+    def get_dapqaoptions(self):
+        dapqaoptions = {'option':'stuff'}
+        return dapqaoptions
 
     def set_component(self): self.component = OrderedDict([('Marvin','marvin'),('DRP','mangadrp'),('DAP','mangadap'),('Mavis','mangacas')])
     def set_type(self): self.type = OrderedDict([('Feature Request','enhancement'), ('Bug','defect'), ('Use Case','task'), ('Other','task')])
