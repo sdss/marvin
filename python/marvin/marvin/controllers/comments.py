@@ -146,7 +146,9 @@ def getdappanel():
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
         dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
-
+    names = inspection.get_panelnames(dapform['mapid'],bin=bintype)
+    panelnames = [name[1] for name in names]
+    
     # Build title
     qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
     defaulttitle = inspection.dapqaoptions['defaulttitle']
@@ -162,6 +164,7 @@ def getdappanel():
     result={}
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
+    result['panels'] = panelnames
     result['status'] = 0 if not imglist else 1
     result['panelmsg'] = msg
     result['setsession'] = setresults
