@@ -313,6 +313,7 @@ function loadTags(panel,results) {
     // set the tag suggestions (autocomplete) to all tags in db ;always run
     var tagbox = $('#daptagfield',panel).tags();
     tagbox.suggestions = results.alltags;
+    tagbox.promptText = 'Enter a word or phrase and press Return';
     
     //if none then returns empty list with length = 0
     if (typeof results.tags !== 'undefined' && results.tags.length > 0) {

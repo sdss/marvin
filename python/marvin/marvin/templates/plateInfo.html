@@ -203,16 +203,20 @@
 				<input class='hidden' id='cubepk' name='cubepk' value='{{cube.pk}}'/>
 				<input class='hidden' id='ifuname' name='ifuname' value='{{cube.ifu.name}}'/>
 				{# Left-hand side column of info #}
-				<div class='{{"col-md-3" if inspection.cubetags[cube.ifu.name] else "col-md-4"}}'>
+				{#<div class='{{"col-md-3" if inspection.cubetags[cube.ifu.name] else "col-md-4"}}'>#}
+				<div class='col-md-2'>
 					<h3>MaNGA Id: {{cube.mangaid}}</h3>
 					<img class='img-responsive' src="{{ifudict[cube.ifu.name]['image']}}" alt="..." >
 					
-					<h4><small>More info here</small></h4>
-					<div id='galdetail'>
+					<div style='padding-top:5px;'>
+						<div class='cubetags' id='cubetags_{{cube.ifu.name}}'></div>
+					</div>
+					
+					<div id='galdetail' style='padding-top:22px;'>
 						{% set hdr = cube.header_to_dict() %}
-						<h4>IFU Design: {{cube.ifu.name}}</h4>
-						<h4>MJD Reduced: {{hdr['MJDRED']}}</h4>
-						<h4>RA, Dec: {{hdr['OBJRA']}}, {{hdr['OBJDEC']}}</h4>
+						<h5>IFU Design: {{cube.ifu.name}}</h5>
+						<h5>MJD Reduced: {{hdr['MJDRED']}}</h5>
+						<h5>RA, Dec: {{hdr['OBJRA']}}, {{hdr['OBJDEC']}}</h5>
 					</div>
 					
 					<div class='btn-group-vertical'>
@@ -220,20 +224,20 @@
 					<a href='#commenttable_{{cube.ifu.name}}' class='btn btn-success' id='showcomment'>Show Comments</a>
 					<a href='{{cube.location}}' class='btn btn-primary' id='cubedl' download='{{cube.name}}'>Download Cube</a>
 					<a href='{{cube.location|replace('CUBE','RSS')}}' class='btn btn-primary' id='rssdl' download='{{cube.name|replace('CUBE','RSS')}}'>Download RSS</a>
-					{#<a href='http://skyserver.sdss.org/dr12/en/tools/explore/Summary.aspx?ra={{cube.ra}}&dec={{cube.dec}}' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>#}
 					<a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cube.ra}}&dec={{cube.dec}}&opt=GS' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>
 					</div>
 				</div>
 
-				{% if inspection.cubetags[cube.ifu.name] %}
+				{#{% if inspection.cubetags[cube.ifu.name] %}
 					<div class='col-md-1'>
 						<label>Tags:</label>
 						<div class='cubetags' id='cubetags_{{cube.ifu.name}}'></div>
 					</div>
-				{% endif %}
+				{% endif %}#}
+				
 
 				{# Cube Tab Content #}
-				<div class='col-md-8'>
+				<div class='col-md-10'>
 					<ul class="nav nav-tabs" id='cubetabs'>
 					  <li role="presentation" class="active"><a href="#samplepane_{{cube.ifu.name}}" data-toggle='tab' id='sampletab'>Sample Info</a></li>
 					  <li role="presentation"><a href="#dapqapane_{{cube.ifu.name}}" data-toggle='tab' id='dapqatab'>DAP QA</a></li>
@@ -260,7 +264,6 @@
 						
 						{# DAP QA Plots Pane #}
 						<div class='tab-pane dapqapanes' id='dapqapane_{{cube.ifu.name}}'>
-							<h4>Here lies DAP QA plots for {{cube.ifu.name}}</h4>
 							{% include 'dapqapanel.html' %}
 						</div>
 					</div>
