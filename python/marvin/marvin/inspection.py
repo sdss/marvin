@@ -65,7 +65,7 @@ class Inspection:
         else:
             dapqacats = self.get_category(fordapqa=True)
             self.dapqaoptions = {}
-            self.dapqaoptions.update({'defaulttitle':{thing['key']:thing['category'] for thing in dapqacats}})
+            self.dapqaoptions.update({'defaulttitle':{dapqacat['key']:dapqacat['category'] for dapqacat in dapqacats}})
             self.dapqaoptions.update({'maptype':{'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}})
             self.dapqaoptions.update({'subfolder':{'maps':'maps','spectra':'spectra','radgrad':'gradients'}})
             self.dapqaoptions.update({'bindict':{'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}})
