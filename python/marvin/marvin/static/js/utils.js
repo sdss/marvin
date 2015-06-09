@@ -119,6 +119,7 @@ function initTags(name) {
 		tagData:[],
 		tagSize:'sm',
 		suggestions:[],
+		promptText:'Enter a word or phrase and press Return',
 		caseInsensitive: true
 	});	
 }

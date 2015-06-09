@@ -29,7 +29,6 @@
 					{% endfor %}
 				</select>
 			</div>
-			
 			{# DAP QA Category Options #}
 			<div id='dapqacatopts_{{cube.ifu.name}}'>
 			{% for catid,category in inspection.dapqacategory|dictsort %}
@@ -38,7 +37,7 @@
 					<label for='testbut' class='control-label'> Options: </label>
 					{{dapcattoggle(catid,category)}}	
 				</div>
-				
+
 				{# Category List Selection #}
 				{% if category.key == 'maps' %}
 					<div class='catlist' id='catlist_{{category.key}}' style='display:none;'>{{dapmaplist()}}</div>
@@ -50,12 +49,11 @@
 				
 			</div>
 			{% endfor %}
-			</div>
-			
-		</div>	
+			</div>		
+		</div>
 		
 		{# DAP QA Panels #}
-		<div class='col-md-8'>
+		<div class='col-md-9'>
 			<div id='dapqapanel_{{cube.ifu.name}}'>
 			{% for catid,category in inspection.dapqacategory|dictsort %}
 				<div class='dapqapanel' id='dapqa_{{category.key}}' style='display:none;'>
