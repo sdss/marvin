@@ -4,7 +4,7 @@
 	<div class='btn-group' id='qagroup_{{category.key}}'>
 		{# Cube Type #}
 		<div class='btn-group qabtns spbtns' id='cubegrp_{{category.key}}'>
-			<button type='button' class='btn btn-primary dropdown-toggle' id='cubetypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>Cube Type: <span class='caret'></span></button>
+			<button type='button' class='btn btn-primary dropdown-toggle' id='cubetypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>Cube <span class='caret'></span></button>
 			<ul class='dropdown-menu qalist but1' role='menu' id='cubetypelist_{{category.key}}'>
 				{% if category.key != 'radgrad' %} <li><a id='ston1'>STON-001</a></li> {% endif %}
 				{% if category.key != 'radgrad' %} <li><a id='none2'>None-002</a></li> {% endif %}
@@ -19,7 +19,7 @@
 		{# RSS Type #}		
 		{% if category.key != 'maps' %}
 			<div class='btn-group qabtns spbtns' id='rssgrp_{{category.key}}'>
-				<button type='button' class='btn btn-primary dropdown-toggle' id='rsstypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>RSS Type: <span class='caret'></span></button>
+				<button type='button' class='btn btn-primary dropdown-toggle' id='rsstypelist_{{category.key}}' data-toggle='dropdown' aria-expanded='false'>RSS <span class='caret'></span></button>
 				<ul class='dropdown-menu qalist but1' role='menu' id='rsstypelist_{{category.key}}'>
 					<li><a id='rad1'>Radial-001</a></li> 
 					<li><a id='rad2'>Radial-002</a></li>
