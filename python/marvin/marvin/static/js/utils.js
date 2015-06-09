@@ -133,3 +133,15 @@ function resetTags(name) {
 	});
 	tagbox.removeLastTag();
 }
+
+// Button Collapse Name Change Toggle
+$(function() {
+	$('.butcollapse').on('click',function() {
+		if ($(this).hasClass('collapsed')) {
+			$(this).button('reset');
+		} else {
+			$(this).button('complete');
+		}
+	});
+});
+

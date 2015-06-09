@@ -10,6 +10,9 @@ from model.database import db
 from jinja_filters import getMPL
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
+try: from inspection.marvin import Inspection
+except: from marvin.inspection import Inspection
+
 def getMaskBitLabel(bits):
     ''' Return a list of flag names '''
     
@@ -217,6 +220,9 @@ def getImages(plate=None,version=None):
 def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, filter=True):
     ''' grab all the DAP PNG analysis plots '''
     
+    # get inspection
+    inspection = Inspection(current_session)
+    
     # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
     # Divert away from MANGA_SPECTRO_ANALYSIS and dapver if mangadapplot loaded
     dapplotdir = os.getenv('MANGADAPPLOT_DIR') if 'MANGADAPPLOT_DIR' in os.environ else os.getenv('MANGA_SPECTRO_ANALYSIS')
@@ -225,8 +231,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, fil
     # build path
     print('dapplot', dapplotdir, dapplotver)
     redux = os.path.join(dapplotdir,drpver,dapplotver,str(plate),ifu,'plots')
-
-    catdict = {'maps':'maps','spectra':'spectra','radgrad':'gradients'}
+    catdict = inspection.dapqaoptions['subfolder']
 
     # build sas path
     try: sasurl = os.getenv('SAS_URL')
@@ -245,13 +250,13 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, fil
     # grab images
     if os.path.isdir(redux):
         # build filename
-        bindict = {'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}
+        bindict = inspection.dapqaoptions['bindict']
         binname = 'BIN-{0}-00{1}'.format(bindict[bintype[:-1]],bintype[-1])
         name = 'manga-{0}-{1}-LOG{2}_{3}_*.png'.format(plate,ifu,mode.upper(),binname)
         # search for images & filter
         imgpath = os.path.join(redux,name)
         images = glob.glob(imgpath)
-        if filter: images = filterDAPimages(images,maptype,catkey,bintype[:-1])
+        if filter: images = filterDAPimages(images,maptype,catkey,bintype[:-1],inspection)
         images = [os.path.join(saspath,i.split('analysis/',1)[1]) for i in images]
         msg = 'No Plots Found!' if not images else 'Success!'
     else:
@@ -260,16 +265,11 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, fil
 
     return images, msg
 
-def filterDAPimages(images, mapid, key,bintype):
+def filterDAPimages(images, mapid, key,bintype,inspection):
     ''' filter the DAP PNG images based on mapid and category key'''  
     
-    kinlist = ['vel_map','vdisp_map','sth'] if 'ston' in bintype else ['vel_map','vdisp_map','chisq','resid']
-    if key == 'maps':
-        mapdict = {'emfluxew':'ew_map','emfluxfb':'fb_map','kin': kinlist, 'snr':['noise', 'signal', 'snr', 'halpha_ew','chisq','resid'],'binnum':'bin_num'}
-    elif key == 'radgrad':
-        mapdict = {'emflux':'gradient'}
-    elif key == 'spectra':
-        mapdict = {'spec1':'spec'}
+    # get the map dictionary in order to filter the image list
+    mapdict = inspection.get_dapmapdict(key,bin=bintype)
     
     # Filter
     if key == 'spectra':
@@ -285,18 +285,12 @@ def filterDAPimages(images, mapid, key,bintype):
 
         # sort images
         images.sort()
-        if 'emflux' in mapid: 
-            s = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
-        elif 'snr' in mapid:
-            s = [(0,'signal'),(1,'noise'),(2,'snr'),(3,'halpha_ew'),(4,'resid'),(5,'chisq')]
-        elif 'kin' in mapid:
-            if 'ston' in bintype: s = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
-            elif 'none' in bintype: s = [(0,'emvel'),(1,'emvdisp'),(2,'chisq'),(3,'stvel'),(4,'stvdisp'),(5,'resid')]
-        else: s = None
+        sortbypanel = inspection.get_panelnames(mapid,bin=bintype)
+        if not any([i[0] for i in sortbypanel]): sortbypanel = None
         
-        if s and images:
-            s.sort(key=lambda t:t[1])
-            images = list(zip(*sorted(zip(s,images),key=lambda t:t[0][0]))[1])
+        if sortbypanel and images:
+            sortbypanel.sort(key=lambda t:t[1])
+            images = list(zip(*sorted(zip(sortbypanel,images),key=lambda t:t[0][0]))[1])
     
     return images
 

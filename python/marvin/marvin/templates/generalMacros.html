@@ -119,8 +119,8 @@
 	<div class='row' id='{{type}}buttonrow'>
 		<div class='col-md-4'>
 		{% for name in names %}
-			<button class='btn btn-primary' data-toggle='collapse' data-target='#{{name}}_{{type}}collapse_{{ifu}}' aria-expanded='true' aria-controls='{{name}}_{{type}}collapse_{{ifu}}'>
-			{{name|upper}} Comments</button>
+			<button class='btn btn-primary butcollapse' id='#butcollapse_{{type}}_{{name}}_{{ifu}}' data-toggle='collapse' data-target='#{{name}}_{{type}}collapse_{{ifu}}' data-complete-text='Show {{name|upper}} Comments' aria-expanded='true' aria-controls='{{name}}_{{type}}collapse_{{ifu}}'>
+			Hide {{name|upper}} Comments</button>
 		{% endfor %}
 		</div>
 	</div>
