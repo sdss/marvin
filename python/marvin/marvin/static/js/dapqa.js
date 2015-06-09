@@ -233,7 +233,7 @@ function getPanel(ifu,key, mapid, qatype) {
                 title.html(alerthtml);
             }
             
-            loadImages(mainpanel,key,data.result.images,data.result.panelmsg);
+            loadImages(mainpanel,key,data.result,data.result.panelmsg);
             loadComments(mainpanel,key,data.result.getsession);
             loadTags(mainform,data.result.getsession);
 
@@ -255,11 +255,17 @@ function getPanel(ifu,key, mapid, qatype) {
 }
 
 // load DAP plot images
-function loadImages(panel,key,images, msg) {
+function loadImages(panel,key,results,msg) {
     $('#dapqa_'+key+' img',panel).removeProp('src');
-    if (images) {
+    if (results.images) {
         $('#dapqa_'+key+' img',panel).each(function(index) {
-            $(this).attr('src',images[index]);
+        	//replace image
+            $(this).attr('src',results.images[index]);
+            //replace labels
+            var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
+            var labelend = (key !== 'spectra') ? ': '+results.panels[index] : '';
+            var labelhtml = labelname+(index+1)+labelend;
+            $('#'+key+'label'+(index+1),panel).html(labelhtml);
         });
     } else {
         var title = $('#dapqa_'+key+' h4',panel);
@@ -282,12 +288,6 @@ function loadComments(panel,key,results) {
         // load new comments
         if (results.dapqacomments) {
             $.each(results.dapqacomments,function(i,panelcomment) {
-        		
-        		// replace labels
-        		var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
-        		var labelend = (key !== 'spectra') ? ': '+panelcomment.panel : '';
-        		var labelhtml = labelname+panelcomment.position+labelend;
-        		$('#'+key+'label'+(i+1),panel).html(labelhtml);
 
                 $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position,panel).val(panelcomment.comment);
             
