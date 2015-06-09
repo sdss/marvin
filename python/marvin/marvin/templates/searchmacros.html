@@ -122,13 +122,15 @@
 				<label for='maptype'>Map Type</label>
 				<select class='form-control input-sm' name='maptype' id='maptype'>
 					<option id='any' value='any' selected>Any</option>
-					{% for maptype in inspection.options.maptype %}
-						{% if maptype == form['maptype'] %}
-							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
-						{% endif %}
-					{% endfor %}
+                    {% if inspection.options %}
+                        {% for maptype in inspection.options.maptype %}
+                            {% if maptype == form['maptype'] %}
+                                <option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 				</select>
 			</div>
 		</div>
@@ -137,13 +139,15 @@
 				<label for='panel'>Panel</label>
 				<select class='form-control input-sm' name='panel' id='panel'>
 					<option id='any' value='any' selected>Any</option>
-					{% for panel in inspection.panels %}
-						{% if panel == form['panel'] %}
-							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
-						{% endif %}
-					{% endfor %}
+                    {% if inspection.panels %}
+                        {% for panel in inspection.panels %}
+                            {% if panel == form['panel'] %}
+                                <option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 				</select>
 			</div>
 		</div>

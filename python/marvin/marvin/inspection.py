@@ -55,17 +55,22 @@ class Inspection:
         self.date = None
         self.component = {}
         self.type = {}
-        self.dapqaoptions = self.get_dapqaoptions()
+        self.set_dapqaoptions()
     
-    def get_dapqaoptions(self):
-        dapqacats = self.get_category(fordapqa=True)
-        dapqaoptions = {}
-        dapqaoptions.update({'defaulttitle':{thing['key']:thing['category'] for thing in dapqacats}})
-        dapqaoptions.update({'maptype':{'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}})
-        dapqaoptions.update({'subfolder':{'maps':'maps','spectra':'spectra','radgrad':'gradients'}})
-        dapqaoptions.update({'bindict':{'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}})
-        return dapqaoptions
-        
+    def set_session_dapqaoptions(self):
+        if self.session is not None: self.session['dapqaoptions'] = self.dapqaoptions
+
+    def set_dapqaoptions(self):
+        if 'dapqaoptions' in self.session: self.dapqaoptions = self.session['dapqaoptions']
+        else:
+            dapqacats = self.get_category(fordapqa=True)
+            self.dapqaoptions = {}
+            self.dapqaoptions.update({'defaulttitle':{thing['key']:thing['category'] for thing in dapqacats}})
+            self.dapqaoptions.update({'maptype':{'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}})
+            self.dapqaoptions.update({'subfolder':{'maps':'maps','spectra':'spectra','radgrad':'gradients'}})
+            self.dapqaoptions.update({'bindict':{'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}})
+            self.set_session_dapqaoptions()
+    
     def get_panelnames(self,mapid,bin=None):
         if 'emflux' in mapid:
             panelname = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
