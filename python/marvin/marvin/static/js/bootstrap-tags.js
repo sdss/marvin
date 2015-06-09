@@ -336,9 +336,9 @@
                     tagPosition = tagElement.position();
                     //hack to fix the padding problem for hidden div elements
                     //console.log('old tagposition',tagPosition);
-                    if (typeof tagPosition !=='undefined') {
-                    	tagPosition.top=0;
-                    }
+                    //if (typeof tagPosition !=='undefined') {
+                    //	tagPosition.top=0;
+                    //}
                     //console.log('new tagposition',tagPosition);
                     oldLeft = tagPosition != null ? tagPosition.left + tagElement.outerWidth(true) : 0;                    
                     pLeft = tagPosition != null ? tagPosition.left + tagElement.actual('outerWidth',{includeMargin:true}) : 0;

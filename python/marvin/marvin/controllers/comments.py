@@ -140,6 +140,7 @@ def getdappanel():
 
     # store form in session, using old mapid, qatype, and key
     setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
+    inspection = Inspection(current_session)
     
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
@@ -148,9 +149,9 @@ def getdappanel():
 
     # Build title
     qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
-    defaulttitle = {'maps':'Maps','radgrad':'Radial Gradients','spectra':'Spectra'}
+    defaulttitle = inspection.dapqaoptions['defaulttitle']
     if dapform['key'] != 'spectra':
-        maptype = {'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}
+        maptype = inspection.dapqaoptions['maptype']
         newtitle = '{1}: {2}-{0}'.format(maptype[dapform['mapid']],defaulttitle[dapform['key']],qatype) if dapform['mapid'] in maptype else defaulttitle[dapform['key']]
     else:
         name = 'spec-{0:04d}'.format(int(dapform['mapid'].split('c')[1]))
@@ -219,14 +220,8 @@ def setSessionDAPComments(form):
     # get issues, separate into ints by panel below
     issues = json.loads(form['issues'])
     # make panel names
-    if 'emflux' in form['oldmapid']: 
-        panelname = ['oii','hbeta','oiii','halpha','nii','sii']
-    elif 'snr' in form['oldmapid']:
-        panelname = ['signal','noise','snr','halpha_ew','resid','chisq']
-    elif 'kin' in form['oldmapid']:
-        if 'ston' in bin: panelname = ['emvel','emvdisp','sth3','stvel','stvdisp','sth4']
-        elif 'none' in bin: panelname = ['emvel','emvdisp','chisq','stvel','stvdisp','resid']
-    else: panelname = ['spectrum']
+    names = inspection.get_panelnames(form['oldmapid'],bin=bin)
+    panelname = [name[1] for name in names]
     
     # build panel info list
     catid = catkey[form['oldkey']]

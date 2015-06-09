@@ -34,7 +34,7 @@ class Inspection:
         self.dapqacubecomments = None
         self.tags = {'1':'test','2':'daptest'}
         self.alltags = {'1':'test','2':'elliptical','3':'galaxy','4':'daptest','5':'hello'}
-        self.cubetags = {'12701':['hello','world'], '1901':['new','test','challenge','hope'],'9101':['daptest','hello']}
+        self.cubetags = {'12701':['hello','world'], '1901':['new'],'9101':['daptest','hello','new','test','challenge','hope']}
         self.searchcomments = None
         self.recentcomments = {'1':['Hello'],'2':[],'3':[],'4':[],'5':[]}
         self.ticket = None
@@ -59,9 +59,33 @@ class Inspection:
     
     def get_dapqaoptions(self):
         dapqacats = self.get_category(fordapqa=True)
-        print(dapqacats)
-        dapqaoptions = {'option':'stuff'}
+        dapqaoptions = {}
+        dapqaoptions.update({'defaulttitle':{thing['key']:thing['category'] for thing in dapqacats}})
+        dapqaoptions.update({'maptype':{'kin':'Kinematic','snr':'SNR','binnum':'Bin_Num','emflux':'EMflux','emfluxew':'EMflux_EW','emfluxfb':'EMflux_FB'}})
+        dapqaoptions.update({'subfolder':{'maps':'maps','spectra':'spectra','radgrad':'gradients'}})
+        dapqaoptions.update({'bindict':{'none':'NONE','all':'ALL','ston':'STON','rad':'RADIAL'}})
         return dapqaoptions
+        
+    def get_panelnames(self,mapid,bin=None):
+        if 'emflux' in mapid:
+            panelname = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
+        elif 'snr' in mapid:
+            panelname = [(0,'signal'),(1,'noise'),(2,'snr'),(3,'halpha_ew'),(4,'resid'),(5,'chisq')]
+        elif 'kin' in mapid:
+            if 'ston' in bin: [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
+            elif 'none' in bin: panelname = [(0,'emvel'),(1,'emvdisp'),(2,'chisq'),(3,'stvel'),(4,'stvdisp'),(5,'resid')]
+        else: panelname = [(None,'spectrum')]
+        return panelname 
+        
+    def get_dapmapdict(self,key,bin=None):
+        kinlist = ['vel_map','vdisp_map','sth'] if 'ston' in bin else ['vel_map','vdisp_map','chisq','resid']
+        if key == 'maps':
+            mapdict = {'emfluxew':'ew_map','emfluxfb':'fb_map','kin': kinlist, 'snr':['noise', 'signal', 'snr', 'halpha_ew','chisq','resid'],'binnum':'bin_num'}
+        elif key == 'radgrad':
+            mapdict = {'emflux':'gradient'}
+        elif key == 'spectra':
+            mapdict = {'spec1':'spec'}
+        return mapdict
 
     def set_component(self): self.component = OrderedDict([('Marvin','marvin'),('DRP','mangadrp'),('DAP','mangadap'),('Mavis','mangacas')])
     def set_type(self): self.type = OrderedDict([('Feature Request','enhancement'), ('Bug','defect'), ('Use Case','task'), ('Other','task')])
