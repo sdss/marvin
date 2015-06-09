@@ -16,7 +16,7 @@
 	<div class='row'>
 
 		{# DAP QA Categories #}
-		<div class='col-md-3'>
+		<div class='col-md-2'>
 			<div class='form-group' id='dapqacat_{{cube.ifu.name}}'>
 				<label for='dapqacat_select' class='control-label'>Category:</label>
 				<select class='form-control' id='dapqacat_select' onchange='dapcatchange({{cube.ifu.name}})'>
@@ -53,7 +53,7 @@
 		</div>
 		
 		{# DAP QA Panels #}
-		<div class='col-md-9'>
+		<div class='col-md-10'>
 			<div id='dapqapanel_{{cube.ifu.name}}'>
 			{% for catid,category in inspection.dapqacategory|dictsort %}
 				<div class='dapqapanel' id='dapqa_{{category.key}}' style='display:none;'>
