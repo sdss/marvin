@@ -33,7 +33,7 @@ class Inspection:
         self.cubecomments = None
         self.dapqacubecomments = None
         self.tags = {'1':'test','2':'daptest'}
-        self.alltags = {'1':'test','2':'elliptical','3':'galaxy','4':'daptest','5':'hello'}
+        self.alltags = {'1':'test','2':'elliptical','3':'galaxy','4':'daptest','5':'hello','6':'world','7':'new','8':'hope'}
         self.cubetags = {'12701':['hello','world'], '1901':['new'],'9101':['daptest','hello','new','test','challenge','hope']}
         self.searchcomments = None
         self.recentcomments = {'1':['Hello'],'2':[],'3':[],'4':[],'5':[]}
