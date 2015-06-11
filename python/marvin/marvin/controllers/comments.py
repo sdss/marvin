@@ -271,6 +271,7 @@ def getSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
         inspection.retrieve_dapqacomments(catid=catid)
+        inspection.retrieve_alltags()
     result = inspection.result()
     
     if inspection.ready: current_app.logger.warning('Inspection> get DAPQA Comments {0}'.format(result))
