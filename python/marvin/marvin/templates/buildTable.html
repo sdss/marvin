@@ -47,7 +47,7 @@
     					<td><a target='_blank' href='/marvin/plateInfo.html?plateID={{row['plate']}}&version={{(row['versdrp2']|split())[0]}}#{{row[col]}}'>{{row[col]}}</a></td>
     				{% elif col == 'tracticket' %}
                         {% if 'ticket' in row[col] %}
-                            <td><a target='_blank' href='https://internal.sdss.org/trac/test/{{row[col]}}'>{{row[col]}}</a></td>
+                            <td><a target='_blank' href='https://trac.sdss.org/{{row[col]}}'>{{row[col]}}</a></td>
                         {% elif 'promote' in row[col] %}
                             <td><button type='button' class='btn btn-primary btn-sm' onclick='promoteTracticket({{row["id"]}})' id='feedback{{row["id"]}}'>Promote</button></td>
                         {% else %}
