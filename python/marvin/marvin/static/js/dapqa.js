@@ -311,6 +311,9 @@ function loadComments(panel,key,results) {
 // load all the DAP QA current tags + suggestions
 function loadTags(panel,results) {
     // set the tag suggestions (autocomplete) to all tags in db ;always run
+    console.log('inside tags');
+    console.log('panel', panel);
+    console.log('alltags',results.alltags);
     var tagbox = $('#daptagfield',panel).tags();
     tagbox.suggestions = results.alltags;
     tagbox.promptText = 'Enter a word or phrase and press Return';
