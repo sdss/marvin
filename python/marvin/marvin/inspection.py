@@ -78,7 +78,7 @@ class Inspection:
         elif 'snr' in mapid:
             panelname = [(0,'signal'),(1,'noise'),(2,'snr'),(3,'halpha_ew'),(4,'resid'),(5,'chisq')]
         elif 'kin' in mapid:
-            if 'ston' in bin: [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
+            if 'ston' in bin: panelname = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
             elif 'none' in bin: panelname = [(0,'emvel'),(1,'emvdisp'),(2,'chisq'),(3,'stvel'),(4,'stvdisp'),(5,'resid')]
         else: panelname = [(None,'spectrum')]
         return panelname 
