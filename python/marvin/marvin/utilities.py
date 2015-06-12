@@ -10,9 +10,6 @@ from model.database import db
 from jinja_filters import getMPL
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
-try: from inspection.marvin import Inspection
-except: from marvin.inspection import Inspection
-
 def getMaskBitLabel(bits):
     ''' Return a list of flag names '''
     
@@ -217,11 +214,8 @@ def getImages(plate=None,version=None):
         
     return images
  
-def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, filter=True):
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, inspection, filter=True):
     ''' grab all the DAP PNG analysis plots '''
-    
-    # get inspection
-    inspection = Inspection(current_session)
     
     # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
     # Divert away from MANGA_SPECTRO_ANALYSIS and dapver if mangadapplot loaded

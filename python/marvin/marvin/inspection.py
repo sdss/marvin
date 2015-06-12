@@ -4,6 +4,7 @@ from astropy.table import Table
 class Inspection:
 
     cols = keys = ['membername','category','comment','issues','modified']
+    trac_url = None
 
     def __init__(self, session=None, username=None, auth=None):
         self.session = session

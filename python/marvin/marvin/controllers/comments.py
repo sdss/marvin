@@ -145,7 +145,7 @@ def getdappanel():
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
-        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'])
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], inspection)
     names = inspection.get_panelnames(dapform['mapid'],bin=bintype)
     panelnames = [name[1] for name in names]
     
@@ -183,7 +183,7 @@ def getdapspeclist():
     # get real plots
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
-        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'],filter=False)
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], inspection, filter=False)
     
     # extract spectra names
     if imglist:
