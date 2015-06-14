@@ -262,7 +262,7 @@
 				<div class='input-group-addon'>Panel</div>
 				<select class='form-control input-sm' name='panel' id='panel'>
 					<option id='any' value='any' selected>Any</option>
-                    {% inspection.panels %}
+                    {% if inspection.panels %}
                         {% for panel in inspection.panels %}
                             {% if panel == form['panel'] %}
                                 <option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
