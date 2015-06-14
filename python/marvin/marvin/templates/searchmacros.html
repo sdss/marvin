@@ -92,14 +92,16 @@
 				<label for='mode'>Mode</label>
 				<select class='form-control input-sm' name='mode' id='mode'>
 					<option id='any' value='any' selected>Any</option>
-					{% for mode in inspection.options.mode %}
-						{% if mode == form['mode'] %}
-							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
-						{% endif %}
-					{% endfor %}
-				</select> 
+                    {% if inspection.options %}
+                        {% for mode in inspection.options.mode %}
+                            {% if mode == form['mode'] %}
+                                <option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+				</select>
 			</div>
 		</div>
 		<div class='col-md-1'>
@@ -107,13 +109,15 @@
 				<label for='bintype'>Bin Type</label>
 				<select class='form-control input-sm' name='bintype' id='bintype'>
 					<option id='any' value='any' selected>Any</option>
-					{% for bintype in inspection.options.bintype %}
-						{% if bintype == form['bintype'] %}
-							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
-						{% endif %}
-					{% endfor %}
+                    {% if inspection.options %}
+                        {% for bintype in inspection.options.bintype %}
+                            {% if bintype == form['bintype'] %}
+                                <option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 				</select>
 			</div>
 		</div>														
@@ -210,27 +214,31 @@
 				<div class='input-group-addon'>Mode</div>
 				<select class='form-control input-sm' name='mode' id='mode'>
 					<option id='any' value='any' selected>Any</option>
-					{% for mode in inspection.options.mode %}
-						{% if mode == form['mode'] %}
-							<option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
-						{% endif %}
-					{% endfor %}
-				</select> 
+                    {% if inspection.options %}
+                        {% for mode in inspection.options.mode %}
+                            {% if mode == form['mode'] %}
+                                <option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+				</select>
 			</div>
 
 			<div class='input-group'>
 				<div class='input-group-addon'>Bin Type</div>
 				<select class='form-control input-sm' name='bintype' id='bintype'>
 					<option id='any' value='any' selected>Any</option>
-					{% for bintype in inspection.options.bintype %}
-						{% if bintype == form['bintype'] %}
-							<option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
-						{% endif %}
-					{% endfor %}
+                    {% if inspection.options %}
+                        {% for bintype in inspection.options.bintype %}
+                            {% if bintype == form['bintype'] %}
+                                <option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 				</select>
 			</div>
 
@@ -238,13 +246,15 @@
 				<div class='input-group-addon'>Map Type</div>
 				<select class='form-control input-sm' name='maptype' id='maptype'>
 					<option id='any' value='any' selected>Any</option>
-					{% for maptype in inspection.options.maptype %}
-						{% if maptype == form['maptype'] %}
-							<option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
-						{% endif %}
-					{% endfor %}
+                    {% if inspection.options %}
+                        {% for maptype in inspection.options.maptype %}
+                            {% if maptype == form['maptype'] %}
+                                <option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 				</select>
 			</div>
 
@@ -252,16 +262,17 @@
 				<div class='input-group-addon'>Panel</div>
 				<select class='form-control input-sm' name='panel' id='panel'>
 					<option id='any' value='any' selected>Any</option>
-					{% for panel in inspection.panels %}
-						{% if panel == form['panel'] %}
-							<option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
-						{% endif %}
-					{% endfor %}
-				</select>												
+                    {% inspection.panels %}
+                        {% for panel in inspection.panels %}
+                            {% if panel == form['panel'] %}
+                                <option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
+                            {% else %}
+                                <option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+				</select>
 			</div>
-		
 	</div>
 </div>
 		
