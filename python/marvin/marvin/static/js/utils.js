@@ -72,6 +72,10 @@ function resetLogin() {
 	$('#loginmessage').empty();
 }
 
+// Set Focus to Username on loginform
+$('#loginform').on('shown.bs.modal',function() {
+	$('#username').focus();
+});
 
 // Submit loginform on username enter keypress
 $(function() {		
