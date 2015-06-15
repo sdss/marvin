@@ -53,7 +53,7 @@
 	<div class='login'>
 	<form class='form' role='form' method='post' action='login' id='{{formid}}'>
 		<input class='hidden' id='fxn' name='fxn' value='{{fxn}}'/>
-		<div class='modal fade loginmodal' id='{{modalid}}' tabindex='-1' role='dialog' aria-labeledby='loginlabel' aria-hidden='true'>
+		<div class='modal fade loginmodal' id='{{modalid}}' role='dialog' aria-labeledby='loginlabel' aria-hidden='true'>
 			<div class='modal-dialog'>
 				<div class='modal-content'>	
 					{# Header #}
@@ -68,7 +68,7 @@
 								{# Username #}
 								<div class='form-group'>
 									<label for='username'>Username: </label>
-									<input type='text' class='form-control input-sm' name='username' id='username' placeholder='Username' value="" id='username'/>
+									<input type='text' class='form-control input-sm' autofocus name='username' id='username' placeholder='Username' value="" id='username'/>
 								</div>
 								{# Password #}
 								<div class='form-group'>
