@@ -399,7 +399,7 @@ function dapaddcomments(ifu,action) {
                     title.html(alerthtml);
                 }
                 
-                loadImages(mainpanel,key,data.result.images,data.result.panelmsg);
+                loadImages(mainpanel,key,data.result,data.result.panelmsg);
                 loadComments(mainpanel,key,data.result.getsession);
                 loadTags(mainform,data.result.getsession);
 

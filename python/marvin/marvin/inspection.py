@@ -322,6 +322,9 @@ class Inspection:
     
     def set_comments(self): pass
     
+    def drop_dapqatags_from_session(self): pass
+    def drop_dapqacomments_from_session(self): pass
+
     def set_dapqacomments(self): 
         self.status=1
         self.message=''
