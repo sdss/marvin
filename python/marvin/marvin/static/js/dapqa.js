@@ -173,6 +173,7 @@ function getSpectraList(ifu,key,mapid,qatype) {
             
             var speclist = data.result.speclist;
             $('#dapspectralist',maincat).empty();
+            console.log('spectra list', speclist);
             if (speclist) {
                 $.each(speclist,function(i,name) {
                     

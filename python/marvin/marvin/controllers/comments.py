@@ -179,6 +179,7 @@ def getdapspeclist():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
+    print('first speclist dapform',dapform)
     inspection = Inspection(current_session)
 
     # get real plots
