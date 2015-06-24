@@ -148,7 +148,7 @@
 		$('#nsainfo a').on('click', function() {
 			var id = $(this).attr('id');
 			var number = parseInt(id.slice(3));
-			var magarr = [2,7,8,13,14];
+			var magarr = {{nsamagids|safe}};
 			var href = '#by'+id;
 			$('.nsa').hide();
 			$('#nsabandbutton').hide();
@@ -335,14 +335,14 @@
 										{% for row in nsalist %}
 										    {% set outer_loop = loop %}
 											{% if loop.index0 == 0 %}
-												<div class='nsa' id='bynsa{{row["id"]}}' data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}' placeholder='{{row["name"]}}' value="{{''|getNSAval(loop.index,form=form)}}" type='text' pattern='([0-9 .,-<>!=])+' data-error='Only numeric characters allowed.'/></div>
+												<div class='nsa' id='bynsa{{row["id"]}}' data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}' placeholder='{{row["name"]}}' value="{{''|getNSAval(loop.index,form=form,magids=nsamagids)}}" type='text' pattern='([0-9 .,-<>!=])+' data-error='Only numeric characters allowed.'/></div>
 											{% else %}	
-												{% if loop.index in [2,7,8,13,14] %}
+												{% if loop.index in nsamagids %}
 													{% for m in mag %}
-														<div class='nsa nsaband{{m}}' id='bynsa{{row["id"]}}{{m}}' style='display:none;'  data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}{{m}}' placeholder='{{row["name"]}}_{{m}}' value="{{''|getNSAval(outer_loop.index,mag=m,form=form)}}" type='text'/></div>
+														<div class='nsa nsaband{{m}}' id='bynsa{{row["id"]}}{{m}}' style='display:none;'  data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}{{m}}' placeholder='{{row["name"]}}_{{m}}' value="{{''|getNSAval(outer_loop.index,mag=m,form=form,magids=nsamagids)}}" type='text'/></div>
 													{% endfor %}
 												{% else %}
-													<div class='nsa' id='bynsa{{row["id"]}}' style='display:none;'  data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}' placeholder='{{row["name"]}}' value="{{''|getNSAval(loop.index,form=form)}}" type='text'/></div>
+													<div class='nsa' id='bynsa{{row["id"]}}' style='display:none;'  data-toggle='tooltip' data-placement='top' title="{{''|nsatip(row['id'])}}"><input class='form-control input-sm' name='nsatext' id='nsa{{row["id"]}}' placeholder='{{row["name"]}}' value="{{''|getNSAval(loop.index,form=form,magids=nsamagids)}}" type='text'/></div>
 												{% endif %}
 											{% endif %}	
 										{% endfor %}
