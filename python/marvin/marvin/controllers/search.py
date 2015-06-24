@@ -34,23 +34,27 @@ except ValueError:
 def makeNSAList():
     ''' Make the initial NSA list '''
 
-    nsanames = ['redshift','absMag','stellar mass','vel disp','inclination','petro th50',
-    	'petroflux', 'petroivar', 'sersic b/a', 'sersic n', 'sersic phi', 'sersic th50', 
+    nsanames = ['redshift','absMag','absMag_el','amivar_el','stellar mass','stellar mass_el','ba','phi','extinction','petro th50',
+    	'petro th50_el','petroflux', 'petroivar', 'petroflux_el','petroivar_el','sersic b/a', 'sersic n', 'sersic phi', 'sersic th50', 
     	'sersicflux', 'sersicivar']
     nsalist = [{'id':i+1,'name':name} for i,name in enumerate(nsanames)]
+    nsamagids = [2,3,4,9,12,13,14,15,20,21]
 
-    return nsalist
+    return nsalist, nsamagids
         
 def parseNSA(nsatext):
     ''' Parse the NSA search form list '''
     
     nsalist = flask.g.get('nsalist',None)
+    nsamagids = flask.g.get('nsamagids',None)
     bands = ['f','n','u','g','r','i','z']
-    magids = [2,7,8,13,14]
+    magids = nsamagids
         
-    coldict = {'redshift':'redshift','absMag':'absmag','stellar mass':'mstar','vel disp':'vdisp',
-    	'inclination':'inclination','petro th50':'petro_th50','petroflux':'petroflux', 
-    	'petroivar':'petroflux_ivar', 'sersic b/a':'sersic_ba', 'sersic n':'sersic_n', 
+    coldict = {'redshift':'redshift','absMag':'absmag','absMag_el':'absmag_el','amivar_el':'amivar_el',
+        'stellar mass':'mstar','stellar mass_el':'mstar_el','ba':'ba','phi':'phi','extinction':'extinction',
+    	'petro th50_el':'petro_th50_el','petro th50':'petro_th50','petroflux':'petroflux', 
+    	'petroivar':'petroflux_ivar', 'petroflux_el':'petroflux_el', 
+    	'petroivar_el':'petroflux_ivar_el','sersic b/a':'sersic_ba', 'sersic n':'sersic_n', 
     	'sersic phi':'sersic_phi', 'sersic th50':'sersic_th50', 
     	'sersicflux':'sersicflux', 'sersicivar':'sersicflux_ivar'}
     
@@ -447,9 +451,11 @@ def search():
     inspection.set_options()
     inspection.set_panels()
     inspection.retrieve_alltags(ids=True)
-    nsalist = makeNSAList()
+    nsalist,nsamagids = makeNSAList()
     flask.g.nsalist = nsalist
+    flask.g.nsamagids = nsamagids
     search['nsalist'] = nsalist
+    search['nsamagids'] = nsamagids
     search['nsamap'] = []
 
     # pipeline versions

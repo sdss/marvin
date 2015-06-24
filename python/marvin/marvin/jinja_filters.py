@@ -88,17 +88,19 @@ def nsatip(value,id):
     
     return tip
     
-def getNSAval(value, id, mag=None, form=None):
+def getNSAval(value, id, mag=None, form=None, magids=None):
     ''' Get any NSA values from the form '''
     
     if form:
         nsatext = form['nsatext'] if 'nsatext' in form else []
         if any(nsatext):
             # construct full index array of string ids
-            magid=[2,7,8,13,14]
+            #magid=[2,7,8,13,14] #pre PT column change
+            #magid=[2,3,4,9,12,13,14,15,20,21]
+            magid = magids
             mags=['f','n','u','g','r','i','z']
             full=[]
-            tmp = [full.append(str(i)) if i not in magid else full.extend([''.join(z) for z in zip([str(i)]*7,mags)]) for i in xrange(1,15)]
+            tmp = [full.append(str(i)) if i not in magid else full.extend([''.join(z) for z in zip([str(i)]*7,mags)]) for i in xrange(1,max(magid)+1)]
             # get unique input id
             val = str(id)+mag if mag else str(id)
             # select the nsa text if it exists
