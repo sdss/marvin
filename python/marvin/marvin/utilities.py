@@ -220,11 +220,14 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, ins
     # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
     # Divert away from MANGA_SPECTRO_ANALYSIS and dapver if mangadapplot loaded
     dapplotdir = os.getenv('MANGADAPPLOT_DIR') if 'MANGADAPPLOT_DIR' in os.environ else os.getenv('MANGA_SPECTRO_ANALYSIS')
+    dapplotmode = os.getenv('MANGADAPPLOT_MODE') if 'MANGADAPPLOT_MODE' in os.environ else None
+    dapverplotmode = '_'.join([drpver,dapplotmode]) if dapplotmode else drpver
+    
     dapplotver = os.getenv('MANGADAPPLOT_VER') if 'MANGADAPPLOT_VER' in os.environ else dapver
 
     # build path
-    print('dapplot', dapplotdir, dapplotver)
-    redux = os.path.join(dapplotdir,drpver,dapplotver,str(plate),ifu,'plots')
+    print('dapplot', dapplotdir, dapverplotmode, dapplotver)
+    redux = os.path.join(dapplotdir,dapverplotmode,dapplotver,str(plate),ifu,'plots')
     catdict = inspection.dapqaoptions['subfolder']
 
     # build sas path
