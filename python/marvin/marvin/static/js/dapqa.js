@@ -330,7 +330,9 @@ function loadTags(panel,results) {
 // Load the DAP image modal
 function daploadmodal(img) {
     var ifu = getIFUHash().slice(1);
-    var src = img.src;
+    console.log('modal img',img);
+    var src = $('#'+img).attr('src');
+    console.log('src',src);
     var name = src.slice(src.search('manga-'));
     $('#dapimgmodal_'+ifu+' #dapimgtitle').html(name);
     var image = '<img class="img-responsive img-rounded" src="'+src+'" alt="Image"/>';
