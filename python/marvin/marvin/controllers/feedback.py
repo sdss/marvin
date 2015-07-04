@@ -85,3 +85,52 @@ def promotetracticket():
     else: current_app.logger.warning('Inspection> FAILED PROMOTE Trac Ticket {0}'.format(result))
 
     return jsonify(result=result)
+
+@feedback_page.route('/feedback/status/update', methods=['GET','POST'])
+def updatefeedbackstatus():
+    ''' User feedback function to update status '''
+    
+    # get inspection
+    inspection = Inspection(current_session)
+    
+    # get id from button and update feedback with status
+    if inspection.ready:
+        id = valueFromRequest(key='id',request=request, default=None)
+        status = valueFromRequest(key='feedbackstatus',request=request, default=None)
+    
+        # add feedback to db
+        if id:
+            inspection.set_feedback(id=id)
+            inspection.update_feedback(status=status)
+
+    result = inspection.result()
+    
+    if inspection.ready: current_app.logger.warning('Inspection> Feedback Update {0}'.format(result))
+    else: current_app.logger.warning('Inspection> FAILED FEEDBACK UPDATE {0}'.format(result))
+
+    return jsonify(result=result)
+
+@feedback_page.route('/feedback/vote', methods=['GET','POST'])
+def updatefeedbackstatus():
+    ''' User feedback function to upvote/novote/downvote '''
+    
+    # get inspection
+    inspection = Inspection(current_session)
+    
+    # get id from button and vote in [-1,0,1]
+    if inspection.ready:
+        id = valueFromRequest(key='id',request=request, default=None)
+        vote = valueFromRequest(key='feedbackvote',request=request, default=None)
+    
+        # add feedback to db
+        if id:
+            inspection.set_feedback(id=id)
+            inspection.vote_feedback(vote=vote)
+
+    result = inspection.result()
+    
+    if inspection.ready: current_app.logger.warning('Inspection> Feedback Vote {0}'.format(result))
+    else: current_app.logger.warning('Inspection> FAILED FEEDBACK VOTE {0}'.format(result))
+
+    return jsonify(result=result)
+
