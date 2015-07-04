@@ -45,6 +45,9 @@ class Inspection:
         self.feedbackfield = None
         self.feedbacktype =  None
         self.feedbackproduct =  None
+        self.feedbackstatuses =  ['Submitted', 'Opened', 'Resolved' ,'Will Not Fix']
+        self.feedbackstatus = None
+        self.feedbackvote = None
         self.tracticket =  None
         self.tracticketid =  None
         self.cols = self.keys = []
@@ -365,6 +368,8 @@ class Inspection:
         self.feedbacks = {}
     
     def set_feedback(self,id=None): self.feedback = None
+    def update_feedback(self,status=None): self.feedbackstatus = status
+    def vote_feedback(self,status=None): self.feedbackvote = vote
     
     def promote_tracticket(self): pass
 
