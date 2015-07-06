@@ -38,6 +38,7 @@ python/marvin/marvin/static/css/bootstrap/bootstrap.min.css -text
 python/marvin/marvin/static/css/index.css -text
 python/marvin/marvin/static/css/tabs.css -text
 python/marvin/marvin/static/css/verticals.css -text
+python/marvin/marvin/static/css/vote.css -text
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.eot -text svneol=unset#application/vnd.ms-fontobject
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.svg -text svneol=unset#application/xml
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.ttf -text svneol=unset#application/x-font-ttf

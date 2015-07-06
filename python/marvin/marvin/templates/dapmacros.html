@@ -31,8 +31,18 @@
 		{% endif %}
 				
 	</div>
+
+	{# DAP Spectrum View Toggle #}
+	{% if category.key == 'spectra' %}
+		<div class='specview' id='specview'>
+			<button class='btn btn-primary' id='toggle_specview' aria-pressed='false' type='button' data-toggle='button' data-complete-text='Toggle Full View'>Toggle Panel View</button>
+		</div>
+	{% endif %}	
+	
+	{# DAP Options String#}
 	<div class='qacomment' id='qacomment_{{category.key}}'>
-	</div>			
+	</div>
+		
 {% endmacro %}
 
 {# DAP Map List #}

@@ -1,0 +1,61 @@
+
+.vote {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+}
+
+
+.roundrect .up { border-radius: 2rem 2rem 0 0; }
+.roundrect .down { border-radius: 0 0 2rem 2rem; }
+.roundrect .count { border-radius: .5rem .5rem; }
+
+.chev .up { border-radius: 50% 50% 0 0; }
+.chev .down { border-radius: 0 0 50% 50%; }
+.chev .count { border-radius: 100%/50%; }
+
+.circle .up { border-radius: 10rem 10rem 0 0; }
+.circle .down { border-radius: 0 0 10rem 10rem; }
+.circle .count { border-radius: 50%; }
+
+.up {
+  background: #4BC35F;
+  height: 50%;
+  margin-bottom: 0.25rem;  
+}
+.down {
+  background: #C15044;
+  height: 50%;  
+}
+
+.increment {
+  flex: 1 0 0;
+  text-align: center;
+  opacity: .5;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.increment:hover { 
+  opacity : 1;
+}
+
+.count {
+  position: absolute;
+  top: 0;
+  background: rgba(245,245,245,1.0);
+  border-radius: 0.1rem;
+  margin: 25%;
+  width: 50%;
+  height: 50%;
+  font-size: 2.0rem;
+  font-weight: bold;
+  line-height: 2.5rem;
+  text-align: center;
+  box-shadow: 0 0 0 0.2rem rgba(245,245,245,1.0);
+  pointer-events: none;
+  
+  &.upvoted { color: #4BC35F; }
+  &.downvoted { color: #C15044; }
+}

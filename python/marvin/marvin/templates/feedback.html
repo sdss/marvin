@@ -1,11 +1,13 @@
 {% extends "layout.html" %}
 {% set active_page = active_page|default("feedback") %}
-{% from 'buildTable.html' import sastable %}
 {% from 'generalMacros.html' import login %}
+{% from 'buildTable.html' import sastable %}
+
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/vote.css')}}">
 {% endblock head %}
 
 {% block code %}
@@ -36,6 +38,48 @@
 				$('#promotemessage').html('');
 			});		
 	}
+
+	// Feedback status change
+	$(function() {
+		$('.feedback_status').change(function() {
+			var id = $(this).attr('id');
+			var idsplit = id.split('_');
+			var rowid = parseInt(idsplit[idsplit.length-1]);
+			var status = $(this).find(':selected').text();
+
+			$.post($SCRIPT_ROOT + '/marvin/feedback/status/update', {'id':rowid,'status':status}, 'json')
+				.done(function(data) {
+					if (data.result['status'] !== 1) {
+	                  alert(data.result['message']);
+	                }
+				})
+				.fail(function(data) {
+					alert('Error in repsonse from Inspection webapp. Please contact admin@sdss.org')
+				});
+
+		});
+	});
+
+	// Feedback vote change
+	$(function() {
+		$('.increment').click(function() {
+			var type = $(this).hasClass('up') ? 'up' : 'down';
+			var count = $("~ .count", this).text();
+			var id = $(this).attr('id');
+			var idsplit = id.split('_');
+			var rowid = parseInt(idsplit[idsplit.length-1]);			
+			
+			$.post($SCRIPT_ROOT + 'marvin//feedback/vote', {'id':rowid,'type':type,'count':count},'json')
+				.done(function(data) {
+					if (data.result['status'] !== 1) {
+	                  alert(data.result['message']);
+	                }
+				})
+				.fail(function(data) {
+					alert('Error in repsonse from Inspection webapp. Please contact admin@sdss.org')					
+				});
+		});
+	});
 
 </script>
 {% endblock code %}
@@ -128,7 +172,7 @@
 		<div class='row'>
 			<div class='col-md-12'>
 				<div class='table-responsive' id='feedbacktable'>
-					{{sastable(inspection.cols, inspection.keys, inspection.feedbacks, type='feedback', trac_url=inspection.trac_url)}}
+					{{sastable(inspection.cols, inspection.keys, inspection.feedbacks, type='feedback', trac_url=inspection.trac_url,statuses=inspection.feedbackstatuses)}}
 				</div>
 			</div>			
 		</div>
