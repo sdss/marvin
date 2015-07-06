@@ -135,6 +135,19 @@ $(function() {
     });
 });
 
+// Toggle DAP spectrum view
+$(function() {
+    $('.specview').click(function(){
+        var ifu = getIFUHash().slice(1);
+        var specviewbut = $('#dapqacatopts_'+ifu+' #toggle_specview');
+        if (specviewbut.hasClass('active')) {
+            specviewbut.button('reset');
+        } else {
+            specviewbut.button('complete');
+        }
+    });
+});
+
 // store old values
 function storeold(ifu,key,mapid,qatype) {
     var formcat = $('#dapqacomment_form_'+ifu);

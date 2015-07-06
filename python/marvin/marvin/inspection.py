@@ -365,7 +365,10 @@ class Inspection:
         self.status = 1
     
     def set_feedbacks(self):
-        self.feedbacks = {}
+        self.feedbacks = Table([{'id':1,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':'yes'},{'id':2,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':'yes'}])
+        self.cols = self.keys = ['id','membername','subject','feedback','type','product','tracticket','modified','status','vote']
     
     def set_feedback(self,id=None): self.feedback = None
     def update_feedback(self,status=None): self.feedbackstatus = status

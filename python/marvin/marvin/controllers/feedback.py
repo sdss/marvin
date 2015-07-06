@@ -10,15 +10,10 @@ from flask import session as current_session
 from manga_utils import generalUtils as gu
 from collections import defaultdict, OrderedDict
 
-import numpy as np
-
 from ..model.database import db
-from ..utilities import makeQualNames, processTableData
 
 try: from inspection.marvin import Inspection
 except: from marvin.inspection import Inspection
-
-import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 try:
     from . import valueFromRequest, processRequest
@@ -111,7 +106,7 @@ def updatefeedbackstatus():
     return jsonify(result=result)
 
 @feedback_page.route('/feedback/vote', methods=['GET','POST'])
-def updatefeedbackstatus():
+def updatefeedbackvote():
     ''' User feedback function to upvote/novote/downvote '''
     
     # get inspection
