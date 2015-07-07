@@ -366,8 +366,8 @@ class Inspection:
     
     def set_feedbacks(self):
         self.feedbacks = Table([{'id':1,'membername':'Brian','subject':'test','feedback':'some feedback',
-            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':'yes'},{'id':2,'membername':'Brian','subject':'test','feedback':'some feedback',
-            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':'yes'}])
+            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':0},{'id':2,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':0}])
         self.cols = self.keys = ['id','membername','subject','feedback','type','product','tracticket','modified','status','vote']
     
     def set_feedback(self,id=None): self.feedback = None

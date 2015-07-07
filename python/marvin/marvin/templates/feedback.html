@@ -19,6 +19,14 @@
 		location.reload();
 	}
 	
+	function getRowId(thing) {
+		var id = thing.attr('id');
+		var idsplit = id.split('_');
+		var rowid = parseInt(idsplit[idsplit.length-1]);		
+		return rowid;
+	}
+
+
 	// Promote tracticket
 	function promoteTracticket(id){
 
@@ -42,15 +50,13 @@
 	// Feedback status change
 	$(function() {
 		$('.feedback_status').change(function() {
-			var id = $(this).attr('id');
-			var idsplit = id.split('_');
-			var rowid = parseInt(idsplit[idsplit.length-1]);
+			var rowid = getRowId($(this));
 			var status = $(this).find(':selected').text();
 
 			$.post($SCRIPT_ROOT + '/marvin/feedback/status/update', {'id':rowid,'status':status}, 'json')
 				.done(function(data) {
 					if (data.result['status'] == 1) {
-                        location.reload(true);
+
                     } else {
                         alert(data.result['message']);
 	                }
@@ -67,14 +73,12 @@
 		$('.increment').click(function() {
 			var vote = $(this).hasClass('up') ? 1 : -1;
 			//var count = $("~ .count", this).text();
-			var id = $(this).attr('id');
-			var idsplit = id.split('_');
-			var rowid = parseInt(idsplit[idsplit.length-1]);			
+			var rowid = getRowId($(this));
 			
 			$.post($SCRIPT_ROOT + '/marvin/feedback/vote/update', {'id':rowid,'vote':vote},'json')
 				.done(function(data) {
 					if (data.result['status'] == 1) {
-                        location.reload(true);
+                        
                     } else {
                         alert(data.result['message']);
 	                }
@@ -176,7 +180,7 @@
 		<div class='row'>
 			<div class='col-md-12'>
 				<div class='table-responsive' id='feedbacktable'>
-					{{sastable(inspection.cols, inspection.keys, inspection.feedbacks, type='feedback', trac_url=inspection.trac_url,statuses=inspection.feedbackstatuses)}}
+					{{sastable(inspection.cols, inspection.keys, inspection.feedbacks, type='feedback', trac_url=inspection.trac_url,statuses=inspection.feedbackstatuses,ready=ready)}}
 				</div>
 			</div>			
 		</div>
