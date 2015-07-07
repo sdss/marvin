@@ -49,8 +49,10 @@
 
 			$.post($SCRIPT_ROOT + '/marvin/feedback/status/update', {'id':rowid,'status':status}, 'json')
 				.done(function(data) {
-					if (data.result['status'] !== 1) {
-	                  alert(data.result['message']);
+					if (data.result['status'] == 1) {
+                        location.reload(true);
+                    } else {
+                        alert(data.result['message']);
 	                }
 				})
 				.fail(function(data) {
@@ -63,16 +65,18 @@
 	// Feedback vote change
 	$(function() {
 		$('.increment').click(function() {
-			var type = $(this).hasClass('up') ? 'up' : 'down';
-			var count = $("~ .count", this).text();
+			var vote = $(this).hasClass('up') ? 1 : -1;
+			//var count = $("~ .count", this).text();
 			var id = $(this).attr('id');
 			var idsplit = id.split('_');
 			var rowid = parseInt(idsplit[idsplit.length-1]);			
 			
-			$.post($SCRIPT_ROOT + 'marvin//feedback/vote', {'id':rowid,'type':type,'count':count},'json')
+			$.post($SCRIPT_ROOT + '/marvin/feedback/vote/update', {'id':rowid,'vote':vote},'json')
 				.done(function(data) {
-					if (data.result['status'] !== 1) {
-	                  alert(data.result['message']);
+					if (data.result['status'] == 1) {
+                        location.reload(true);
+                    } else {
+                        alert(data.result['message']);
 	                }
 				})
 				.fail(function(data) {

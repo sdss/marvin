@@ -57,7 +57,7 @@
                     {% elif col == 'status' %}
                         <td> {{select_feedbackstatus(row[col], statuses, row['id'])}} </td>
                     {% elif col == 'vote' %}
-                        <td> {{votebutton(row['id'])}} </td>
+                        <td> {{votebutton(row['id'],row['vote'])}} </td>
     				{% else %}
     					<td>{{row[col] if 'qual' not in col else flags[rowloop.index0] if flags else row[col]}}</td>
     				{% endif %}
@@ -73,13 +73,13 @@
 
 
 {# Upvote/Downvote Button #}
-{% macro votebutton(id) %}
+{% macro votebutton(id,vote) %}
 
     <div class="vote circle" id='vote_{{id}}'>
       <div class="increment up" id='up_{{id}}'></div>
       <div class="increment down" id='down_{{id}}'></div>
       
-      <div class="count" id='count_{{id}}'>0</div>
+      <div class="count" id='count_{{id}}'>{{vote}}</div>
     </div>
 
 {% endmacro %}
