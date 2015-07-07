@@ -5,7 +5,7 @@
    flags - quality flag names, stage  - stage of pipeline, type - type of table
 #}
 
-{% macro sastable(cols, keys, data, flags=None, stage=None, type=None, trac_url=None, statuses=None) %}
+{% macro sastable(cols, keys, data, flags=None, stage=None, type=None, trac_url=None, statuses=None, ready=None) %}
 
 {% if type == 'data' %}
 	{% set sortparam = 'plate' if stage=='3d' else 'mjd' %}
@@ -55,9 +55,9 @@
                             <td><button type='button' class='btn btn-default btn-sm' disabled id='feedback{{row["id"]}}'>Promote</button></td>
                         {% endif %}
                     {% elif col == 'status' %}
-                        <td> {{select_feedbackstatus(row[col], statuses, row['id'])}} </td>
+                        <td> {{select_feedbackstatus(row[col], statuses, row['id'],ready)}} </td>
                     {% elif col == 'vote' %}
-                        <td> {{votebutton(row['id'],row['vote'])}} </td>
+                        {% if ready %} <td> {{votebutton(row['id'],row['vote'])}} </td> {% else %} <td>{{row['vote']}}</td> {% endif %}
     				{% else %}
     					<td>{{row[col] if 'qual' not in col else flags[rowloop.index0] if flags else row[col]}}</td>
     				{% endif %}
@@ -85,9 +85,9 @@
 {% endmacro %}
 
 {# Feedback Status Select #}
-{% macro select_feedbackstatus(current,statuses,id) %}
+{% macro select_feedbackstatus(current,statuses,id,ready) %}
     
-    <select class='feedback_status' id='feedback_status_{{id}}'>
+    <select class='feedback_status' id='feedback_status_{{id}}' {% if not ready %} disabled {% endif %} >
         {% for status in statuses %}
             {% if current == status %}
                 <option name='{{status}}' id='{{status}}' val='{{status}}' selected>{{status}}</option>
