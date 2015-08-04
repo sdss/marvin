@@ -113,6 +113,21 @@ def create_app(debug=False):
     #    RuntimeError: working outside of application context
     with app.app_context():
         from .model.database import db
+
+    # ----------------
+    # Error Handling
+    # ----------------
+    @app.errorhandler(404)
+    def page_not_found(e):
+        error={}
+        error['title']='Marvin|Page Not Found'
+        return flask.render_template('page_not_found.html',**error),404 
+
+    @app.errorhandler(500)
+    def page_not_found(e):
+        error={}
+        error['title']='Marvin|Internal Server Error'
+        return flask.render_template('internal_server_error.html',**error),500
     
     # -------------------
     # Register blueprints
@@ -125,6 +140,7 @@ def create_app(debug=False):
     from .controllers.comments import comment_page
     from .controllers.feedback import feedback_page
     from .controllers.explore import explore_page
+    from .controllers.documentation import doc_page
     
     url_prefix = '' if localhost else '/marvin'
 
@@ -136,6 +152,7 @@ def create_app(debug=False):
     app.register_blueprint(comment_page, url_prefix=url_prefix)
     app.register_blueprint(feedback_page, url_prefix=url_prefix)
     app.register_blueprint(explore_page, url_prefix=url_prefix)
+    app.register_blueprint(doc_page, url_prefix=url_prefix)
     
     return app
 
