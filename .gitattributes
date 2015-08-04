@@ -45,6 +45,7 @@ python/marvin/marvin/static/fonts/glyphicons-halflings-regular.ttf -text svneol=
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff -text
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff2 -text
 python/marvin/marvin/static/images/logo.jpg -text svneol=unset#image/jpeg
+python/marvin/marvin/static/images/logo5_hires.png -text svneol=unset#image/png
 python/marvin/marvin/static/images/marvin_favicon.ico -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-datetimepicker.min.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-magnify.js -text
@@ -80,6 +81,7 @@ python/marvin/marvin/templates/feedback.html -text
 python/marvin/marvin/templates/footer.html -text
 python/marvin/marvin/templates/generalMacros.html -text
 python/marvin/marvin/templates/header.html -text
+python/marvin/marvin/templates/ifumacros.html -text
 python/marvin/marvin/templates/images.html -text
 python/marvin/marvin/templates/index.html -text
 python/marvin/marvin/templates/js/platedesign.js -text
@@ -88,6 +90,7 @@ python/marvin/marvin/templates/layout.html -text
 python/marvin/marvin/templates/plateInfo.html -text
 python/marvin/marvin/templates/search.html -text
 python/marvin/marvin/templates/searchmacros.html -text
+python/marvin/marvin/templates/singleifu.html -text
 python/marvin/marvin/utilities.py -text
 python/marvin/profile_marvin.py -text
 python/marvin/run_marvin.py -text

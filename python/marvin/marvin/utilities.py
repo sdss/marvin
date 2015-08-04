@@ -184,7 +184,7 @@ def setGlobalVersion():
         current_session['currentdapver'] = realvers[0]    
 
 
-def getImages(plate=None,version=None):
+def getImages(plate=None,version=None,ifuname=None):
     ''' grab all PNG IFU images from a given directory '''
     
     # set version
@@ -211,10 +211,14 @@ def getImages(plate=None,version=None):
         images = [os.path.join(sasurl,sasredux,'stack/images',i.split('/')[-1]) for i in images]
     else:
         images = [os.path.join(sasurl,sasredux,i.rsplit('/',4)[1],'stack/images',i.split('/')[-1]) for i in images]
-        
+    
+    # filter by ifu name
+    if ifuname:
+        images = [im for im in images if ifuname in im]
+
     return images
  
-def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, inspection, filter=True):
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, specpaneltype,inspection, filter=True):
     ''' grab all the DAP PNG analysis plots '''
     
     # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
@@ -253,7 +257,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, ins
         # search for images & filter
         imgpath = os.path.join(redux,name)
         images = glob.glob(imgpath)
-        if filter: images = filterDAPimages(images,maptype,catkey,bintype[:-1],inspection)
+        if filter: images = filterDAPimages(images,maptype,catkey,bintype[:-1],specpaneltype,inspection)
         images = [os.path.join(saspath,i.split('analysis/',1)[1]) for i in images]
         msg = 'No Plots Found!' if not images else 'Success!'
     else:
@@ -262,7 +266,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, ins
 
     return images, msg
 
-def filterDAPimages(images, mapid, key,bintype,inspection):
+def filterDAPimages(images, mapid, key,bintype,specpaneltype,inspection):
     ''' filter the DAP PNG images based on mapid and category key'''  
     
     # get the map dictionary in order to filter the image list
@@ -271,8 +275,17 @@ def filterDAPimages(images, mapid, key,bintype,inspection):
     # Filter
     if key == 'spectra':
         name = 'spec-{0:04d}'.format(int(mapid.split('c')[1]))
-        images = [i for i in images if name in i]
-        images.sort()
+        if 'single' in specpaneltype:
+            images = [i for i in images if name+'.' in i]
+            images.sort()
+        else:
+            images = [i for i in images if name+'_' in i and 'emlines' not in i]
+            sortbypanel = inspection.get_panelnames('specmap',bin=bintype)
+            if not any([i[0] for i in sortbypanel]): sortbypanel = None
+
+            if sortbypanel and images:
+                sortbypanel.sort(key=lambda t:t[1])
+                images = list(zip(*sorted(zip(sortbypanel,images),key=lambda t:t[0][0]))[1])
     else: 
         # filter images
         if type(mapdict[mapid]) == list:

@@ -1,7 +1,9 @@
 {% from 'buildTable.html' import sastable %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("plate") %}
+{% from 'ifumacros.html' import ifupanel %}
 {% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login, buttoncollapse %}
+
 
 {% block head %}
 	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
@@ -182,7 +184,7 @@
 								<h4>{{((image|split('/'))[-1]|split('.'))[0]}}</h4>
 							</div>					
 							<a href="#{{((image|split('/'))[-1]|split('.'))[0]}}" class="thumbnail ifuims">
-								<img class='img-responsive' src="{{image}}" alt="..." >
+								<img class='img-responsive' src="{{image}}" alt="Image" >
 							</a>
 						</div>
 					{% endfor %}
@@ -196,109 +198,7 @@
 		{# Drop-down DIV for each IFU #}
 		<div class='cubedetails'>
 		{% for cube in cubes %}
-		<div class='well galinfo' id='{{cube.ifu.name}}' style='display:none;'>
-			<div class='row'>
-				{# Hidden input elements #}
-				<input class='hidden' id='cubepk' name='cubepk' value='{{cube.pk}}'/>
-				<input class='hidden' id='ifuname' name='ifuname' value='{{cube.ifu.name}}'/>
-				{# Left-hand side column of info #}
-				<div class='col-md-2'>
-					<div class='row'>
-						<div class='col-md-12'>
-							<h3>MaNGA Id: {{cube.mangaid}}</h3>
-							<img class='img-responsive' src="{{ifudict[cube.ifu.name]['image']}}" alt="..." >
-						</div>
-					</div>
-					
-					<div class='row'>
-						<div class='col-md-12' style='padding-top:5px;'>
-							<div class='cubetags' id='cubetags_{{cube.ifu.name}}'></div>
-						</div>
-					</div>
-
-					<div class='row' id='galdetail'>
-						<div class='col-md-12'>
-							{% set hdr = cube.header_to_dict() %}
-							<h5>IFU Design: {{cube.ifu.name}}</h5>
-							<h5>MJD Reduced: {{hdr['MJDRED']}}</h5>
-							<h5>RA, Dec: {{hdr['OBJRA']}}, {{hdr['OBJDEC']}}</h5>
-						</div>
-					</div>
-					
-					<div class='row'>
-						<div class='col-md-12'>
-							<div class='btn-group-vertical'>
-							<button type='button' class='btn btn-warning' id='addcommentbut' onclick='getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
-							<a href='#commenttable_{{cube.ifu.name}}' class='btn btn-success' id='showcomment'>Show Comments</a>
-							<a href='{{cube.location}}' class='btn btn-primary' id='cubedl' download='{{cube.name}}'>Download Cube</a>
-							<a href='{{cube.location|replace('CUBE','RSS')}}' class='btn btn-primary' id='rssdl' download='{{cube.name|replace('CUBE','RSS')}}'>Download RSS</a>
-							<a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cube.ra}}&dec={{cube.dec}}&opt=GS' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{#{% if inspection.cubetags[cube.ifu.name] %}
-					<div class='col-md-1'>
-						<label>Tags:</label>
-						<div class='cubetags' id='cubetags_{{cube.ifu.name}}'></div>
-					</div>
-				{% endif %}#}
-				
-
-				{# Cube Tab Content #}
-				<div class='col-md-10'>
-					<ul class="nav nav-tabs" id='cubetabs'>
-					  <li role="presentation" class="active"><a href="#samplepane_{{cube.ifu.name}}" data-toggle='tab' id='sampletab'>Sample Info</a></li>
-					  <li role="presentation"><a href="#dapqapane_{{cube.ifu.name}}" data-toggle='tab' id='dapqatab'>DAP QA</a></li>
-					</ul>
-					<div class='tab-content'>
-						{# Sample Parameters Pane #}
-						<div class='tab-pane active' id='samplepane_{{cube.ifu.name}}'>				    
-							<table class='table table-condensed' id='sampletable'>
-								<thead>
-									<tr>
-										<th>Parameter</th><th>Value</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for key,val in ifudict[cube.ifu.name]|dictsort %}
-										<tr>
-											<th>{{key}}</th>
-											{% if key != 'image' %} <td>{{val}}</td> {% else %} <td><a target='_blank' href='{{val}}'>{{val}}</a></td> {% endif %}
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
-						
-						{# DAP QA Plots Pane #}
-						<div class='tab-pane dapqapanes' id='dapqapane_{{cube.ifu.name}}'>
-							{% include 'dapqapanel.html' %}
-						</div>
-					</div>
-				</div>	
-			</div> {# end row #}
-			
-			{{hline()}}
-			
-			{# Comment Table #}
-			<div class='comments' id='commenttable_{{cube.ifu.name}}'>
-				<div class='row'>
-					<div class='col-md-8'>
-						<h4>Comments for IFU {{cube.ifu.name}}, Version DRP/DAP: {{version}}, {{dapversion}}</h4>
-					</div>
-					<div class='col-md-4'>
-						<a href='#{{cube.ifu.name}}' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
-					</div>
-				</div>
-
-				{# Comment Table Results #}
-				{{ buttoncollapse(['drp','dap'],cube.ifu.name,inspection,type='comments') }}
-														
-			</div>
-
-		</div>
+			{{ifupanel(cube,ifudict[cube.ifu.name],inspection,version,dapversion)}}
 		{% endfor %}
 		</div>
 
@@ -310,9 +210,15 @@
 
 	</div>
 {% elif not plate %}
-	<div class='well'>
-		<h1>No plate selected</h1>	
-	</div>
+	{% if not mangaid %}
+		<div class='well'>
+			<h1>No plate selected</h1>	
+		</div>
+	{% else %}
+		<div class='well'>
+			<h1>No MaNGA-ID for selected data version</h1>	
+		</div>
+	{% endif %}
 {% elif plate and not good %}
 	<div class='well'>
 		<h1> Plate {{plate.id}} <small>(version: {{version}})</small> is not a valid plate! <h1>

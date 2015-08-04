@@ -1,0 +1,82 @@
+{% from 'buildTable.html' import sastable %}
+{% extends "layout.html" %}
+{% set active_page = active_page|default("plate") %}
+{% from 'ifumacros.html' import ifupanel %}
+{% from 'generalMacros.html' import dropdownload, rsyncmodal, hline, login, buttoncollapse %}
+
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
+    <link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
+
+{% block code %}
+<script>
+    // Get IFU hash from page
+    function getIFUHash() {
+        var hash = window.location.hash;
+        if (hash.search('comment') >= 0) {
+            newhash = hash.slice(hash.search('_')).replace('_','#');
+            return newhash;
+        } else {
+            return (hash === "") ? '#'+$('.galinfo').attr('id') : hash;
+        }           
+    }
+
+    // Render Tags in div
+    function renderTags(ifuhash) {
+        var ifu = ifuhash.slice(ifuhash.search('#')+1);
+        var tagdiv = $('#cubetags_'+ifu);
+        if (tagdiv.length > 0) {
+            var cubetags = {{inspection.cubetags|safe}};
+            var ifutags = cubetags[ifu];
+            var tagbox = tagdiv.tags({
+                tagData: ifutags,
+                tagSize: 'sm',
+                readOnly: true
+            });
+            tagbox.adjustInputPosition();
+        }
+    }
+
+    // Toggle add comment login function
+    $(function() {
+        $('#addcommentbut').click(function() {
+            var fxn = 'grabComments';
+            $('#fxn').val(fxn);
+        });
+    });
+    
+    // Set the first tab to display in cube details
+    function loadTab(ifuhref) {
+        //$(ifuhref+' #cubetabs a:first').tab('show')
+    }
+</script>
+<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
+{#<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>#}
+<script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
+{% endblock code %}
+
+{% block body %}
+
+{# test line #}
+{# <h4>MaNGA-ID: {{mangaid}}, {{version}}, {{dapversion}}, {{plate}}, {{name}} </h4> #}
+
+<input class='hidden' id='inspectready' value='{{inspection.ready}}'/>
+
+{% if cube %}
+    {{ ifupanel(cube,ifudict[cube.ifu.name],inspection,version,dapversion,display='block') }}
+
+    {# Comment Form #}
+    {% include 'commentform.html' %}
+
+    {# Login Modal #}
+    {{login()}}
+
+{% else %}
+    <h4>No cube found for MaNGA-ID: {{mangaid}} <small>(version: {{version}})</small></h4>
+{% endif %}
+
+{% endblock body %}

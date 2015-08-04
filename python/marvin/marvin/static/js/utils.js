@@ -18,17 +18,21 @@ function rsyncFiles(){
 	$('.dropdown-menu').on('click','li a', function(){
 					
 		var id = $(this).attr('id');
-		var plate = GetURLParameter('plateID');
+		var plate = GetURLParameter('plateid');
 		var version = GetURLParameter('version');
-		var table = ($('.sastable').length == 0) ? null : $('.sastable').bootstrapTable('getData');
+		var table = ($('#platetable .sastable').length == 0) ? null : $('#platetable .sastable').bootstrapTable('getData');
 
 		// JSON request
 		$.post($SCRIPT_ROOT + '/marvin/downloadFiles', {'id':id, 'plate':plate, 'version':version, 'table':JSON.stringify(table)},'json')
 		.done(function(data){
-			$('#rsyncbox').val(data.result);
+			if (data.result.message !== null) {
+				$('#rsyncbox').val('Error Message: '+data.result.message);
+			} else {
+				$('#rsyncbox').val(data.result.command);				
+			}
 		})
 		.fail(function(data){
-			$('#rsyncbox').val('Request for rsync link failed.');
+			$('#rsyncbox').val('Request for rsync link failed. Error: '+data.result.message);
 		});
 	});
 						
@@ -149,20 +153,15 @@ $(function() {
 	});
 });
 
-// Upvote/Downvote Counter Update
-$(function() {
-  $(".increment").click(function() {
-    var count = parseInt($("~ .count", this).text());
-    
-    if($(this).hasClass("up")) {
-      var count = count + 1;
-      
-       $("~ .count", this).text(count);
-    } else {
-      var count = count - 1;
-       $("~ .count", this).text(count);     
-    }
-    
-  });
-});
+function incrementVote(votediv) {
+	    var count = parseInt($("~ .count", votediv).text());
+
+	    if($(votediv).hasClass("up")) {
+	      var count = count + 1;
+	      $("~ .count", votediv).text(count);
+	    } else {
+	      var count = count - 1;
+	      $("~ .count", votediv).text(count);     
+	    }    
+};
 

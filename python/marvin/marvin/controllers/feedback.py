@@ -58,6 +58,7 @@ def feedback():
     
     return render_template('feedback.html',**feedback)
 
+@feedback_page.route('/marvin/feedback/tracticket/promote', methods=['GET','POST'])
 @feedback_page.route('/feedback/tracticket/promote', methods=['GET','POST'])
 def promotetracticket():
     ''' User feedback function to promote tracticket '''
@@ -81,6 +82,7 @@ def promotetracticket():
 
     return jsonify(result=result)
 
+@feedback_page.route('/marvin/feedback/status/update', methods=['GET','POST'])
 @feedback_page.route('/feedback/status/update', methods=['GET','POST'])
 def updatefeedbackstatus():
     ''' User feedback function to update status '''
@@ -105,13 +107,14 @@ def updatefeedbackstatus():
 
     return jsonify(result=result)
 
+@feedback_page.route('/marvin/feedback/vote/update', methods=['GET','POST'])
 @feedback_page.route('/feedback/vote/update', methods=['GET','POST'])
 def updatefeedbackvote():
     ''' User feedback function to upvote/novote/downvote '''
     
     # get inspection
     inspection = Inspection(current_session)
-    
+
     # get id from button and vote in [-1,0,1]
     if inspection.ready:
         id = valueFromRequest(key='id',request=request, default=None)
@@ -123,6 +126,7 @@ def updatefeedbackvote():
             inspection.vote_feedback(vote=vote)
 
     result = inspection.result()
+    print('feedback vote',result)
     
     if inspection.ready: current_app.logger.warning('Inspection> Feedback Vote {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED FEEDBACK VOTE {0}'.format(result))

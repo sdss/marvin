@@ -145,10 +145,10 @@ def getdappanel():
     # Get real plots
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
-        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], inspection)
-    names = inspection.get_panelnames(dapform['mapid'],bin=bintype)
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], dapform['specpanel'],inspection)
+    names = inspection.get_panelnames(dapform['mapid'],bin=bintype) if dapform['key'] != 'spectra' else inspection.get_panelnames('specmap',bin=bintype)
     panelnames = [name[1] for name in names]
-    
+
     # Build title
     qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
     defaulttitle = inspection.dapqaoptions['defaulttitle']
@@ -185,11 +185,11 @@ def getdapspeclist():
     # get real plots
     mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
-        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], inspection, filter=False)
-    
+        dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], dapform['specpanel'],inspection, filter=False)
+
     # extract spectra names
     if imglist:
-        speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist]
+        speclist = [i.rsplit('_',1)[1].split('.')[0] for i in imglist if 'spec-' in i.rsplit('_',1)[1]]
         speclist.sort()
     else: speclist = None
 

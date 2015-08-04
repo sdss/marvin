@@ -50,8 +50,18 @@
 			.fail(function(data){
 				alert('Failed to set the versions!');
 			});		
-		}		
-		
+		}
+
+        // PlateID/MangaID Select		
+        $(function() {
+            $('#idselect').change(function(){
+                var id = $('select option:selected').attr('id');
+                var text = (id == 'plate') ? 'Plate ID' : 'MaNGA ID';
+                $('#idtext').attr('placeholder',text);
+                $('#idtext').attr('name',id);
+            });
+        });
+
 	</script>
 {% endblock code %}
 
@@ -77,11 +87,18 @@
                 <li class="{{'active' if active_page=='feedback'}}"><a href="feedback.html">Feedback</a></li>
                 {#<li class="{{'active' if active_page=='doc'}}"><a href="documentation.html">Documentation</a></li>#}
             </ul>
-            <form class="navbar-form navbar-left navbar-input-group" role="form" action="plateInfo.html" method="get">
-                <div class="form-group">
+            <form class="navbar-form navbar-left navbar-input-group" role="form" action="navidselect" method="get">
+                {#<div class="form-group">
                     <input type="text" class="form-control" name="plateID" value="" placeholder="Plate ID">
                 </div>
-                <button type="submit" class="btn btn-primary">Get Plate ID</button>
+                <button type="submit" class="btn btn-primary">Get Plate ID</button>#}
+                <div class='form-group form-inline'>
+                    <input class='form-control' type='text' name='plateid' placeholder='Plate ID' id='idtext' val=''/>
+                    <select class='btn btn-primary form-control' id='idselect'>
+                        <option id='plate' val='plateid' selected>Get by Plate ID</option>
+                        <option id='mangaid' val='mangaid' >Get by Manga ID</option>
+                    </select>
+                </div>
             </form>
             <form class='navbar-form navbar-left navbar-input-group' id='verform' role='form' action="setversion" method="post">
 

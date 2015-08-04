@@ -5,14 +5,15 @@
 <div class='well'>
 
 <form class='form dapqacomment_form' role='form' method='post' action='' id='dapqacomment_form_{{cube.ifu.name}}'>
-	<input class='hidden' id='plate' name='plateid' value='{{plate.id}}'/>
+	<input class='hidden' id='plate' name='plateid' value='{{cube.plate}}'/>
 	<input class='hidden' id='ifu' name='ifu' value='{{cube.ifu.name}}'/>
 	<input class='hidden' id='drpver' name='drpver' value='{{version}}'/>
 	<input class='hidden' id='dapver' name='dapver' value='{{dapversion}}'/>
 	<input class='hidden' id='oldmapid' name='oldmapid' value=''/>
 	<input class='hidden' id='oldqatype' name='oldqatype' value=''/>
 	<input class='hidden' id='oldkey' name='oldkey' value=''/>
-	
+	<input class='hidden' id='specpanel' name='specpanel' value=''/>	
+
 	<div class='row'>
 
 		{# DAP QA Categories #}
@@ -61,8 +62,10 @@
 					
 					{% if 'maps' in category.key %}
 						{{dapmap6panel(catid,category,cube.ifu.name)}}
+						{{dapmapsinglepanel(catid,category,cube.ifu.name,'none')}}
 					{% elif 'spectra' in category.key %}
 						{{dapspectrumpanel(catid,category,cube.ifu.name)}}
+						{{dapmap6panel(catid,category,cube.ifu.name,display='none')}}
 					{% elif 'radgrad' in category.key %}
 						{{dapmap6panel(catid,category,cube.ifu.name)}}
 					{% endif %}

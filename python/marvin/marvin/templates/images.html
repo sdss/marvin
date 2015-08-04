@@ -60,7 +60,7 @@
 						{% if loop.index0 % modnum == 0 %}
 							<div class='row-fluid'>
 						{% endif %}
-							<div class='col-md-1'><a class='thumbnail' href="{{val}}" data-gallery data-title-html= "<a target='_blank' href='plateInfo.html?plateID={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}'>Plate: {{(key|split('-'))[0]}} IFU: {{(key|split('-'))[1]}}</a>"><img class='img-rounded img-responsive' src="{{val}}" alt="{{key}}" style="max-width:100%;"></a></div>
+							<div class='col-md-1'><a class='thumbnail' href="{{val}}" data-gallery data-title-html= "<a target='_blank' href='plateInfo.html?plateid={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}'>Plate: {{(key|split('-'))[0]}} IFU: {{(key|split('-'))[1]}}</a>"><img class='img-rounded img-responsive' src="{{val}}" alt="{{key}}" style="max-width:100%;"></a></div>
 						{% if loop.index0 % modnum == modnum-1 or loop.last %}
 							</div>
 						{% endif %}    	
