@@ -145,7 +145,7 @@ def buildTable(cubes):
     return cubetable, displayCols
     
 
-def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, 
+def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, mangaid=None,
                 tag=gu.getMangaVersion(simple=True),type='any',ifu='any', sql=None,
                 user=None, keyword=None, date=None, cat='any', issues='any', ra=None, 
                 dec=None, searchrad=None, radecmode=None, nsatext=None,search_form=None,tagids=None):
@@ -242,10 +242,14 @@ def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None,
 	            # build query
 	            if low:       
 	                query += ".filter(datadb.Sample.{2} >= {0}, datadb.Sample.{2} <= {1})".format(low,up,key)
-	 
+
+    # MaNGA-ID
+    if mangaid:
+        query += ".filter(datadb.Cube.mangaid = {0})".format(mangaid)  
+
     return query
     
-def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=None, 
+def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=None, mangaid=None,
                 tag=gu.getMangaVersion(simple=True),type='any',ifu='any', sql=None,
                 user=None, keyword=None, date=None, cat='any', issues='any', ra=None, 
                 dec=None, searchrad=None, radecmode=None, nsatext=None, search_form=None, tagids=None):
@@ -342,7 +346,10 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
 	            # build query
 	            if low:       
 	                query = query.filter(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) >= low, datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) <= up)
-	        
+	# MaNGA-ID
+    if mangaid:
+        query = query.filter(datadb.Cube.mangaid == mangaid)
+        print('mangaid',mangaid)           
             
     return query
 

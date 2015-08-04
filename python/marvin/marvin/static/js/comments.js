@@ -189,7 +189,7 @@
         }
         console.log('alltags',data.result.alltags);
         console.log('tags',data.result.tags);
-        console.log('assigned tags',tagbox.getTags());
+        //console.log('assigned tags',tagbox.getTags());
     }
     
     // Input selected comment option into new comment 

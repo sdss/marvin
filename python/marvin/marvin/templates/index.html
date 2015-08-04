@@ -12,7 +12,12 @@
 		<div class="cover-container">
 			<div class='row'>
 				<div class='col-md-12 col-md-offset-1'>
-					<img id="logo" src="{{url_for('static',filename='images/logo.jpg')}}" class="img-rounded" class="img-responsive">
+					<h4>New to Marvin? Click <a href='documentation.html'>Me</a></h4>
+				</div>
+			</div>
+			<div class='row'>
+				<div class='col-md-12 col-md-offset-1'>
+					<img id="logo" src="{{url_for('static',filename='images/logo5_hires.png')}}" class="img-rounded" class="img-responsive">
 				</div>
         	</div>
 			<div class="inner cover row">
@@ -57,7 +62,7 @@
 					<div class='row-fluid'>
 					<div class='col-md-10 col-md-offset-1'>
 				{% endif %}
-					<div class='col-sm-2 col-md-2'><a href="plateInfo.html?plateID={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
+					<div class='col-sm-2 col-md-2'><a href="plateInfo.html?plateid={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
 				{% if loop.index0 % modnum == modnum-1 or loop.last %}
 					</div></div></div>
 				{% endif %}    	

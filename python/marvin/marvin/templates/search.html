@@ -207,6 +207,7 @@
 									<select class='form-control' id='searchon' placeholder='Search'>
 										<option value='plate' selected>Plate</option>
 										<option value='mjd'>MJD</option>
+										<option value='mangaid'>MaNGA-ID</option>
 										<option value='radec'>RA,Dec</option>
 									</select>
 								</div>
@@ -272,7 +273,16 @@
 									</div>
 									<span class="help-block with-errors">
 								</div>
-							</div>		
+							</div>
+							{# hidden MaNGA-ID column 1 #}
+							<div class='col-md-2 search' id='bymangaid' style='display:none;'>
+								{# MaNGA-ID #}
+								<div class='form-group'>
+									<label for='mangaid'>MaNGA-ID</label>
+									<input type='text' class='form-control input-sm' pattern='([0-9-])+' data-error='Only numeric characters allowed.' name='mangaid' placeholder="{{'MaNGA-ID'|filterForm('mangaid',form)}}" value="{{''|filterForm('mangaid',form)}}" id='mangaid'/>
+									<span class="help-block with-errors">
+								</div>
+							</div>									
 							{# Column 2 #}
 							<div class='col-md-2'>
 								{# Plate type #}

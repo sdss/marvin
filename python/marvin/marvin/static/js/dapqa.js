@@ -31,14 +31,29 @@ function setDefault(ifu,key) {
     //var html = (key!='radgrad') ? 'cube-none2': 'rss-rad1';
     var html = (key === 'maps') ? 'cube-none2' : (key ==='spectra') ? 'cube-all5' : 'rss-rad1';
     var mapid = (key === 'maps') ? 'kin' : (key==='radgrad') ? 'emflux': 'spec0';
-    console.log('setdefault', ifu, key, mapid,html);
     $('#dapqacatopts_'+ifu+' #qacomment_'+key).html(html);
+    console.log('setdefault', ifu, key, mapid,html);
+    console.log($('#dapqacomment_form_'+ifu+' #specpanel'));
+    console.log($('#dapqacomment_form_'+ifu+' #specpanel').val());
+    $('#dapqacomment_form_'+ifu+' #specpanel').val('single')
+    console.log($('#dapqacomment_form_'+ifu+' #specpanel').val());
+
+    // insure correct divs shown
+    var mainpanel = $('#dapqapanel_'+ifu);
+    if (key === 'maps') {
+        $('#dapmap6_'+ifu+'_'+key,mainpanel).show();
+        $('#dapmapsingle_'+ifu,mainpanel).hide();        
+    } else if (key === 'spectra') {
+        $('#dapspecsingle_'+ifu,mainpanel).show();        
+        $('#dapmap6_'+ifu+'_'+key,mainpanel).hide();
+    }
         
     // display list and panels, store old values
     displayOptions(ifu,key);
     if (key==='spectra') { getSpectraList(ifu,key,mapid,html); }
     getPanel(ifu,key,mapid,html);
     storeold(ifu,key,mapid,html);
+    
 }
 
 
@@ -94,6 +109,10 @@ function displayOptions(ifu,key) {
     var catlist = $('.catlist', catopts);
     catlist.hide();
     var singlelist = $('#catlist_'+key,maincat);
+    //select first entry and show list
+    $('select',singlelist).children().removeProp('selected');
+    var first = $('select :first-child',singlelist);
+    first.prop('selected',true);
     singlelist.show();
 }
 
@@ -129,6 +148,16 @@ $(function() {
         var oldkey = $('#oldkey',formcat).val();
         console.log('map select id,key,mapid',ifu,id,key,mapid,qatype,oldmapid,oldqatype,oldkey);
 
+        // if mapid is binnum, change to single panel view
+        var mainpanel = $('#dapqapanel_'+ifu);
+        if (mapid == 'binnum' & oldmapid != 'binnum') {
+            $('#dapmap6_'+ifu+'_'+key,mainpanel).hide();
+            $('#dapmapsingle_'+ifu,mainpanel).show();
+        } else if (mapid !='binnum' & oldmapid == 'binnum') {
+            $('#dapmap6_'+ifu+'_'+key,mainpanel).show();
+            $('#dapmapsingle_'+ifu,mainpanel).hide();
+        }
+
         // get new panel and store old values
         getPanel(ifu,key,mapid,qatype);
         storeold(ifu,key,mapid,qatype);
@@ -139,14 +168,37 @@ $(function() {
 $(function() {
     $('.specview').click(function(){
         var ifu = getIFUHash().slice(1);
+        var formcat = $('#dapqacomment_form_'+ifu);
+        var mainpanel = $('#dapqapanel_'+ifu);
         var specviewbut = $('#dapqacatopts_'+ifu+' #toggle_specview');
         if (specviewbut.hasClass('active')) {
             specviewbut.button('reset');
+            $('div[id*="dapmap6"]',mainpanel).hide();
+            var subpanel = $('div[id*="dapspecsingle"]',mainpanel);
+            subpanel.show();
+            $('#specpanel',formcat).val('single')
+            var oldvals = getold(ifu);
+            getPanel(ifu,oldvals.key,oldvals.mapid,oldvals.qatype);
         } else {
             specviewbut.button('complete');
+            $('div[id*="dapspecsingle"]',mainpanel).hide();
+            var subpanel = $('div[id*="dapmap6"]',mainpanel);
+            subpanel.show();
+            $('#specpanel',formcat).val('map')            
+            var oldvals = getold(ifu);
+            getPanel(ifu,oldvals.key,oldvals.mapid,oldvals.qatype);
         }
     });
 });
+
+// get current values
+function getold(ifu) {
+    var formcat = $('#dapqacomment_form_'+ifu);
+    var mapid = $('#oldmapid',formcat).val();
+    var qatype = $('#oldqatype',formcat).val();
+    var key = $('#oldkey',formcat).val();
+    return {'key':key,'mapid':mapid,'qatype':qatype};
+}
 
 // store old values
 function storeold(ifu,key,mapid,qatype) {
@@ -186,7 +238,6 @@ function getSpectraList(ifu,key,mapid,qatype) {
             
             var speclist = data.result.speclist;
             $('#dapspectralist',maincat).empty();
-            console.log('spectra list', speclist);
             if (speclist) {
                 $.each(speclist,function(i,name) {
                     
@@ -220,19 +271,20 @@ function getPanel(ifu,key, mapid, qatype) {
     var mainform = $('#dapqacomment_form_'+ifu);
     var cubepk = $('#'+ifu+' #cubepk').val();
     $('.dapqapanel',mainpanel).hide();
+    var specpanel = $('#specpanel',mainform).val();
     
     //grab tags
     var tagbox = $('#daptagfield',mainform).tags();
     var tags = tagbox.getTags();
     tags = JSON.stringify(tags);
-        
+
     // build form data
     var issues = parseDAPissues(ifu,key);
     var newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'cubepk','value':cubepk},
-               {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},{'name':'tags','value':tags}];
+               {'name':'qatype','value':qatype},{'name':'issues','value':JSON.stringify(issues)},
+               {'name':'tags','value':tags}];
     var dapformdata = buildDAPform(newdata,ifu);
     console.log('dapform',dapformdata);
-
     
     $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
         .done(function(data){
@@ -246,8 +298,8 @@ function getPanel(ifu,key, mapid, qatype) {
                 var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.setsession.message+"</h4></div>";
                 title.html(alerthtml);
             }
-            
-            loadImages(mainpanel,key,data.result,data.result.panelmsg);
+
+            loadImages(mainpanel,key,mapid,specpanel,data.result,data.result.panelmsg);
             loadComments(mainpanel,key,data.result.getsession);
             loadTags(mainform,data.result.getsession);
 
@@ -269,15 +321,24 @@ function getPanel(ifu,key, mapid, qatype) {
 }
 
 // load DAP plot images
-function loadImages(panel,key,results,msg) {
+function loadImages(panel,key,mapid,specpanel,results,msg) {
     $('#dapqa_'+key+' img',panel).removeProp('src');
     if (results.images) {
-        $('#dapqa_'+key+' img',panel).each(function(index) {
+
+        // select 6 panel or single panel based on map selection (i.e. if binnum)
+        if (key != 'spectra') {
+            var subpanel = (mapid === 'binnum') ? $('#dapqa_'+key+' div[id*="dapmapsingle"] img',panel) : $('#dapqa_'+key+' div[id*="dapmap6"] img',panel);
+        } else {
+            var subpanel = (specpanel === 'single') ? $('#dapqa_'+key+' div[id*="dapspecsingle"] img',panel) : $('#dapqa_'+key+' div[id*="dapmap6"] img',panel);
+        }
+
+        // load images into panels
+        subpanel.each(function(index) {
         	//replace image
             $(this).attr('src',results.images[index]);
             //replace labels
-            var labelname = (key !== 'spectra') ? 'Map ' : 'Spectrum ';
-            var labelend = (key !== 'spectra') ? ': '+results.panels[index] : '';
+            var labelname = (key !== 'spectra') ? 'Map ' : (specpanel === 'single') ? 'Spectrum ' : 'Line ';
+            var labelend = (key !== 'spectra') ? ': '+results.panels[index] : (specpanel === 'map') ? ': '+results.panels[index] : '';
             var labelhtml = labelname+(index+1)+labelend;
             $('#'+key+'label'+(index+1),panel).html(labelhtml);
         });
@@ -325,9 +386,6 @@ function loadComments(panel,key,results) {
 // load all the DAP QA current tags + suggestions
 function loadTags(panel,results) {
     // set the tag suggestions (autocomplete) to all tags in db ;always run
-    console.log('inside tags');
-    console.log('panel', panel);
-    console.log('alltags',results.alltags);
     var tagbox = $('#daptagfield',panel).tags();
     tagbox.suggestions = results.alltags;
     tagbox.promptText = 'Enter a word or phrase and press Return';
@@ -356,6 +414,7 @@ function dapaddcomments(ifu,action) {
     var maincat =  $('#dapqacatopts_'+ifu);
     var mainpanel = $('#dapqapanel_'+ifu);
     var cubepk = $('#'+ifu+' #cubepk').val();
+    var specpanel = $('#specpanel',mainform).val();
 
     // get current key,mapid,qatype
     var key = $('#dapqacat_'+ifu+' #dapqacat_select').val();
@@ -413,7 +472,7 @@ function dapaddcomments(ifu,action) {
                     title.html(alerthtml);
                 }
                 
-                loadImages(mainpanel,key,data.result,data.result.panelmsg);
+                loadImages(mainpanel,key,mapid,specpanel,data.result,data.result.panelmsg);
                 loadComments(mainpanel,key,data.result.getsession);
                 loadTags(mainform,data.result.getsession);
 

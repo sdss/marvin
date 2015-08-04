@@ -83,6 +83,10 @@ class Inspection:
         elif 'kin' in mapid:
             if 'ston' in bin: panelname = [(0,'emvel'),(1,'emvdisp'),(2,'sth3'),(3,'stvel'),(4,'stvdisp'),(5,'sth4')]
             elif 'none' in bin: panelname = [(0,'emvel'),(1,'emvdisp'),(2,'chisq'),(3,'stvel'),(4,'stvdisp'),(5,'resid')]
+        elif 'binnum' in mapid:
+            panelname = [(0,'spaxel number')]
+        elif 'specmap' in mapid:
+            panelname = [(0,'oii'),(1,'hbeta'),(2,'oiii'),(3,'halpha'),(4,'nii'),(5,'sii')]
         else: panelname = [(None,'spectrum')]
         return panelname 
         
@@ -372,8 +376,10 @@ class Inspection:
     
     def set_feedback(self,id=None): self.feedback = None
     def update_feedback(self,status=None): self.feedbackstatus = status
-    def vote_feedback(self,status=None): self.feedbackvote = vote
-    
+    def vote_feedback(self,vote=None): 
+        self.feedbackvote = vote
+        self.status = 1
+         
     def promote_tracticket(self): pass
 
     def result(self):

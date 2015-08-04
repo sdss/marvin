@@ -71,16 +71,17 @@
 	// Feedback vote change
 	$(function() {
 		$('.increment').click(function() {
-			var vote = $(this).hasClass('up') ? 1 : -1;
-			//var count = $("~ .count", this).text();
-			var rowid = getRowId($(this));
+			var votediv = $(this);
+			var vote = votediv.hasClass('up') ? 1 : -1;
+			var count = $("~ .count", this).text();
+			var rowid = getRowId(votediv);
 			
 			$.post($SCRIPT_ROOT + '/marvin/feedback/vote/update', {'id':rowid,'vote':vote},'json')
 				.done(function(data) {
-					if (data.result['status'] == 1) {
-                        
+					if (data.result.status == 1) {
+                        incrementVote(votediv);
                     } else {
-                        alert(data.result['message']);
+                        alert(data.result.message);
 	                }
 				})
 				.fail(function(data) {
