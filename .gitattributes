@@ -11,6 +11,7 @@ python/marvin/marvin/configuration_files/utah.cfg -text
 python/marvin/marvin/controllers/__init__.py -text
 python/marvin/marvin/controllers/comments.py -text
 python/marvin/marvin/controllers/current.py -text
+python/marvin/marvin/controllers/documentation.py -text
 python/marvin/marvin/controllers/explore.py -text
 python/marvin/marvin/controllers/feedback.py -text
 python/marvin/marvin/controllers/images.py -text
@@ -84,9 +85,11 @@ python/marvin/marvin/templates/header.html -text
 python/marvin/marvin/templates/ifumacros.html -text
 python/marvin/marvin/templates/images.html -text
 python/marvin/marvin/templates/index.html -text
+python/marvin/marvin/templates/internal_server_error.html -text
 python/marvin/marvin/templates/js/platedesign.js -text
 python/marvin/marvin/templates/js/pltable.js -text
 python/marvin/marvin/templates/layout.html -text
+python/marvin/marvin/templates/page_not_found.html -text
 python/marvin/marvin/templates/plateInfo.html -text
 python/marvin/marvin/templates/search.html -text
 python/marvin/marvin/templates/searchmacros.html -text

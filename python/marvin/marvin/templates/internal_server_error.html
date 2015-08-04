@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <h1>500: Internal Server Error</h1>
+
+    <p>Uh oh! Something bad happened on the server side. </p>
+
+    {% if page %}
+        <h4>{{page}} page broke down!</h4>
+    {% endif %}
+    
+{% endblock body %} 
+
