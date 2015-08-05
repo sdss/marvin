@@ -1,13 +1,31 @@
 {% extends "layout.html" %}
 
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
 {% block body %}
-    <h1>500: Internal Server Error</h1>
 
-    <p>Uh oh! Something bad happened on the server side. </p>
+    <div>
+        <div class='row'>
+            <div class='col-md-2'>
+                <img id="marvin500" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
+            </div>
+            <div class='col-md-6 vert-offset-top-7' id='errortext'>
 
-    {% if page %}
-        <h4>{{page}} page broke down!</h4>
-    {% endif %}
-    
+                {#<h1>"Incredible...It's even worse than I thought it would be."</h1>#}
+                <h1 id='quote'>"I'm just trying to die."</h1>
+
+                <h2>500: Internal Server Error</h2>
+                <p>Uh oh! Something bad happened on the server side.</p>
+
+                {% if page %}
+                    <h4>{{page}} page broke down!</h4>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
 {% endblock body %} 
 
