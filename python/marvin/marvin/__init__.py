@@ -120,13 +120,13 @@ def create_app(debug=False):
     @app.errorhandler(404)
     def page_not_found(e):
         error={}
-        error['title']='Marvin|Page Not Found'
+        error['title']='Marvin | Page Not Found'
         return flask.render_template('page_not_found.html',**error),404 
 
     @app.errorhandler(500)
     def internal_server_error(e):
         error={}
-        error['title']='Marvin|Internal Server Error'
+        error['title']='Marvin | Internal Server Error'
         return flask.render_template('internal_server_error.html',**error),500
     
     # -------------------

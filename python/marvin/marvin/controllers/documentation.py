@@ -32,7 +32,7 @@ def doc():
 def page_not_found(e):
     error={}
     error['page']='Documentation'
-    error['title']='Marvin|Page Not Found'
+    error['title']='Marvin | Page Not Found'
     return render_template('page_not_found.html',**error) 
 
 
