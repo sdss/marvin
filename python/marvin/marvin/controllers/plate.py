@@ -51,7 +51,7 @@ def navidselect():
     mangaid = valueFromRequest(key='mangaid',request=request, default=None)
 
     if plateid:
-        current_app.logger.info('===1=== {0}'.format(url_for('plate_page.plate',plateid=plateid))
+        current_app.logger.info('===1=== {0}'.format(url_for('plate_page.plate',plateid=plateid)))
         current_app.logger.info('===2=== {0}'.format(url_for('plate_page.plate',plateid=plateid,_external=True)))
         return redirect(url_for('plate_page.plate',plateid=plateid))
 
