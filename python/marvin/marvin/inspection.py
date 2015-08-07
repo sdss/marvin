@@ -13,6 +13,7 @@ class Inspection:
         self.set_ready()
         if self.ready: self.set_member(id=self.session['member_id'],update_session=False)
         if not self.ready: self.set_member(username=username,auth=auth)
+        self.set_super()
         self.ready=True
         self.set_counter(None)
         self.set_drpver()
@@ -61,6 +62,9 @@ class Inspection:
         self.type = {}
         self.set_dapqaoptions()
     
+    def set_super(self):
+        self.super = True
+
     def set_session_dapqaoptions(self):
         if self.session is not None: self.session['dapqaoptions'] = self.dapqaoptions
 
