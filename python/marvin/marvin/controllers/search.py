@@ -31,6 +31,24 @@ except ValueError:
     pass 
 
 
+def selectByMangaTarget(query,name,type):
+
+    # look to see if the tables are already joined
+    try:
+        fitsheadin = 'fits_header' in str(query._from_obj[0])
+    except: 
+        fitsheadin = False
+
+    # if not, make the join
+    if not fitsheadin: query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
+
+    # filter on criteria
+    if type == 'in':
+        query = query.filter(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value != '0')
+    elif type == 'out':
+        query = query.filter(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value == '0')
+    return query
+
 def makeNSAList():
     ''' Make the initial NSA list '''
 
@@ -114,12 +132,20 @@ def buildSQLTable(cubes):
 def buildTable(cubes):
     ''' Build the data table as a dictionary '''
     
+    # build table column list
+
+    # from header
     cols = ['plate','ifudesign','mangaid','versdrp2','versdrp3','verscore','versutil','platetyp','srvymode',
     'objra','objdec','objglon','objglat','ebvgal','nexp','exptime','drp3qual','bluesn2','redsn2','harname','frlplug',
     'cartid','designid','cenra','cendec','airmsmin','airmsmed','airmsmax','seemin','seemed','seemax','transmin',
     'transmed','transmax','mjdmin','mjdmed','mjdmax','ufwhm','gfwhm','rfwhm','ifwhm','zfwhm','mngtarg1','mngtarg2',
     'mngtarg3','catidnum','plttarg']
     
+    # sample db cols
+    sampcols = [s for s in datadb.Sample().cols if 'nsa' in s]
+
+    # combine
+    cols.extend(sampcols)
     displayCols=['plate','ifudesign','harname','mangaid','drp3qual','versdrp3','verscore','mjdmax','objra', 'objdec','bluesn2','redsn2','nexp','exptime']
     
     cubedict=defaultdict(list)
@@ -136,8 +162,14 @@ def buildTable(cubes):
                 try: cubedict[col].append(hdr[''.join(col.split('a')).upper()])
                 except: cubedict[col].append(None) 
             else: 
-                try: cubedict[col].append(hdr[col.upper()])
-                except: cubedict[col].append(None)
+                if col.upper() in hdr:
+                    # grab from header
+                    try: cubedict[col].append(hdr[col.upper()])
+                    except: cubedict[col].append(None)
+                elif col in sampcols:
+                    # grab from sample table
+                    try: cubedict[col].append(cube.sample[0].__getattribute__(col))                
+                    except: cubedict[col].append(None)
                 
     cubetable = Table(cubedict)
     cubetable = cubetable[cols]
@@ -148,7 +180,7 @@ def buildTable(cubes):
 def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, mangaid=None,
                 tag=gu.getMangaVersion(simple=True),type='any',ifu='any', sql=None,
                 user=None, keyword=None, date=None, cat='any', issues='any', ra=None, 
-                dec=None, searchrad=None, radecmode=None, nsatext=None,search_form=None,tagids=None):
+                dec=None, searchrad=None, radecmode=None, nsatext=None,search_form=None,tagids=None,defaultids=None):
     ''' Build a string version of the SQLalchemy query'''
     
     query = 'session.query(datadb.Cube)'
@@ -252,7 +284,7 @@ def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, manga
 def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=None, mangaid=None,
                 tag=gu.getMangaVersion(simple=True),type='any',ifu='any', sql=None,
                 user=None, keyword=None, date=None, cat='any', issues='any', ra=None, 
-                dec=None, searchrad=None, radecmode=None, nsatext=None, search_form=None, tagids=None):
+                dec=None, searchrad=None, radecmode=None, nsatext=None, search_form=None, tagids=None, defaultids=None):
     ''' Build the SQLalchemy query'''
     
     query = session.query(datadb.Cube)
@@ -349,7 +381,19 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
 	# MaNGA-ID
     if mangaid:
         query = query.filter(datadb.Cube.mangaid == mangaid)
-        print('mangaid',mangaid)           
+
+    # Set Defaults
+    #print('defaults',defaultids)
+    #if defaultids != 'any':
+    #    ids = [int(d.split('def')[1]) for d in defaultids.split(',')]
+    #    num = len(ids)
+    #    # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
+    #    defaults = flask.g.get('defaults',None)
+    #    query = selectByMangaTarget(query,'MNGTRG1','in') if 1 and 2 and 3 in ids else selectByMangaTarget(query,'MNGTRG1','out')
+    #    query = selectByMangaTarget(query,'MNGTRG3','in') if 4 in ids else selectByMangaTarget(query,'MNGTRG3','out')
+    #    query = selectByMangaTarget(query,'MNGTRG2','in') if 5 in ids else selectByMangaTarget(query,'MNGTRG2','out')
+    #    if 6 in ids: query = query.join(datadb.IFUDesign,datadb.Fibers,datadb.TargetType).filter(datadb.TargetType.label == 'standard')
+    #    else: query = query.join(datadb.IFUDesign,datadb.Fibers,datadb.TargetType).filter(datadb.TargetType.label != 'standard')
             
     return query
 
@@ -363,6 +407,15 @@ def getFormParams():
         print('form issues', form['issues'])
     if 'dapissues' in form:
         print('form dapissues', form['dapissues'])
+
+    if 'defaultids' in form:
+        if form['defaultids'] != 'any':        
+            ids = [int(d.split('def')[1]) for d in form['defaultids'].split(',')]
+            if ids and current_session['defaults'] != ids:
+                current_session['defaults'] = ids
+        else:
+            current_session['defaults'] = ['any']
+
     print('search form',form)
             
     return form
@@ -440,6 +493,11 @@ def search():
     except: 
         setGlobalVersion()
         version = current_session['currentver']
+
+    # set default search options
+    search['defaults'] = {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
+    flask.g.defaults = search['defaults']
+    current_session['defaults'] = [1,2,3,4] if 'defaults' not in current_session else current_session['defaults']
 
     # set default cubes to None
     dosearch = valueFromRequest(key='search_form',request=request, default=None)

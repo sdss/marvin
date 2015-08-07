@@ -20,6 +20,7 @@ def getMaskBitLabel(bits):
             try: 
                 masklabels = session.query(datadb.MaskLabels).filter_by(maskbit=long(bit)).one()
                 labels = json.loads(masklabels.labels)
+                labels = str(','.join(labels))
             except:
                 labels = None
         else: labels = None

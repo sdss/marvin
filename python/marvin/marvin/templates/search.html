@@ -109,6 +109,8 @@
 		$('#searchform').submit(function(event){
 			var taglist = getSelected('.tagsp');
 			$('#tagids').val(taglist);
+			var defaultlist = getSelected('.defsp');
+			$('#defaultids').val(defaultlist);
 		});
 	});	
 	
@@ -202,6 +204,7 @@
 						<div class='row'>
 							{# Column 0 #}
 							<div class='col-md-2 col-md-offset-2'>
+								{# Search by #}
 								<div class='form-group'>
 									<label for='searchon' class='control-label'>Search by:</label>
 									<select class='form-control' id='searchon' placeholder='Search'>
@@ -210,6 +213,22 @@
 										<option value='mangaid'>MaNGA-ID</option>
 										<option value='radec'>RA,Dec</option>
 									</select>
+								</div>
+								{# Set Defaults #}
+								<div class='form-group'>
+									<label for='setdefaults' class='control-label'>Set Defaults:</label>
+
+									<select class="selectpicker defsp" multiple id='defaults' data-selected-text-format="count" title='Any'>
+										{% for defid,default in defaults|dictsort %}
+											{% if defid in session['defaults'] %}
+											<option id='def{{defid}}' value='def{{defid}}' selected>{{default}}</option>
+											{% else %}
+											<option id='def{{defid}}' value='def{{defid}}'>{{default}}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+									<input class='hidden' name='defaultids' id='defaultids' values=''/>
+
 								</div>
 							</div>
 							{# Column 1 #}

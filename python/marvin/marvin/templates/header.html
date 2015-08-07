@@ -56,7 +56,7 @@
         $(function() {
             $('#idselect').change(function(){
                 var id = $('select option:selected').attr('id');
-                var text = (id == 'plate') ? 'Plate ID' : 'MaNGA ID';
+                var text = (id == 'plateid') ? 'Plate ID' : 'MaNGA ID';
                 $('#idtext').attr('placeholder',text);
                 $('#idtext').attr('name',id);
             });
@@ -95,7 +95,7 @@
                 <div class='form-group form-inline'>
                     <input class='form-control' type='text' name='plateid' placeholder='Plate ID' id='idtext' val=''/>
                     <select class='btn btn-primary form-control' id='idselect'>
-                        <option id='plate' val='plateid' selected>Get by Plate ID</option>
+                        <option id='plateid' val='plateid' selected>Get by Plate ID</option>
                         <option id='mangaid' val='mangaid' >Get by Manga ID</option>
                     </select>
                 </div>
