@@ -80,6 +80,7 @@
 				.done(function(data) {
 					if (data.result.status == 1) {
                         incrementVote(votediv);
+                        location.reload(true);
                     } else {
                         alert(data.result.message);
 	                }
