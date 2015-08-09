@@ -128,7 +128,13 @@ def create_app(debug=False):
         error={}
         error['title']='Marvin | Internal Server Error'
         return flask.render_template('internal_server_error.html',**error),500
-    
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        error={}
+        error['title']='Marvin | Bad Request'
+        return flask.render_template('bad_request.html',**error),400
+
     # -------------------
     # Register blueprints
     # -------------------

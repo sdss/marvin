@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
+{% block body %}
+
+    <div>
+        <div class='row'>
+            <div class='col-md-2'>
+                <img id="marvin400" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
+            </div>
+            <div class='col-md-6 vert-offset-top-7' id='errortext'>
+
+                <h1 id='quote'>"I’d give you advice, but you wouldn’t listen. No one ever does."</h1>
+
+                <h2>400: Bad Request</h2>
+                <p>The server does not understand your access attempt.  Maybe you need some s in your http?</p>
+
+                {% if page %}
+                    <h4>{{page}} page broke down!</h4>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock body %} 
+
+
