@@ -52,10 +52,10 @@ def navidselect():
     localhost = 'MANGA_LOCALHOST' in os.environ
 
     if plateid:
-        return redirect(url_for('plate_page.plate',plateid=plateid)) if localhost else redirect(url_for('plate_page.plate',plateid=plateid,_external=True,_scheme='https'))
+        return redirect(url_for('plate_page.plate',plateid=plateid)) #if localhost else redirect(url_for('plate_page.plate',plateid=plateid,_external=True,_scheme='https'))
 
     if mangaid:
-        return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) if localhost else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
+        return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) #if localhost else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
 
     
 @plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
@@ -238,7 +238,7 @@ def singleifu():
 
     session = db.Session()
     ifu={}
-    ifu['title'] = "Marvin | IFU"
+    ifu['title'] = "Marvin | ID"
     
     # set global version
     try: 
@@ -263,6 +263,7 @@ def singleifu():
         ifu['plate'] = plate = cube[0].plate if cube else None
         ifu['name'] = ifuname = cube[0].ifu.name if cube else None
         ifu['cube'] = cube = cube[0] if cube else None
+        ifu['title'] += ' {0}'.format(mangaid)
 
     # image
     images = getImages(plate,version=version,ifuname=ifuname)
