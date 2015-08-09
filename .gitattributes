@@ -73,6 +73,7 @@ python/marvin/marvin/static/js/jquery/npm.js -text
 python/marvin/marvin/static/js/jquery/validator.min.js -text
 python/marvin/marvin/static/js/tableMethods.js -text
 python/marvin/marvin/static/js/utils.js -text
+python/marvin/marvin/templates/bad_request.html -text
 python/marvin/marvin/templates/buildTable.html -text
 python/marvin/marvin/templates/commentform.html -text
 python/marvin/marvin/templates/current.html -text
