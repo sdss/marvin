@@ -84,7 +84,7 @@ def create_app(debug=False):
     try: localhost = bool(os.environ['MANGA_LOCALHOST'])
     except: localhost = machine == 'manga'
     
-    try: utah = os.environ['UUFSCELL']='kingspeak.peaks'
+    try: utah = os.environ['UUFSCELL']=='kingspeak.peaks'
     except: utah = None
 
     if app.debug: 
