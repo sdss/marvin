@@ -50,13 +50,13 @@ def navidselect():
     plateid = valueFromRequest(key='plateid',request=request, default=None)
     mangaid = valueFromRequest(key='mangaid',request=request, default=None)
     localhost = 'MANGA_LOCALHOST' in os.environ
-    utah = 'UUFSCELL' in os.environ['UUFSCELL'] and os.environ['UUFSCELL'] == 'kingspeak.peaks'
+    sasvm = 'sas-vm' in os.environ['HOSTNAME']
 
     if plateid:
-        return redirect(url_for('plate_page.plate',plateid=plateid)) if utah else redirect(url_for('plate_page.plate',plateid=plateid,_external=True,_scheme='https'))
+        return redirect(url_for('plate_page.plate',plateid=plateid)) if sasvm else redirect(url_for('plate_page.plate',plateid=plateid,_external=True,_scheme='https'))
 
     if mangaid:
-        return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) if utah else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
+        return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) if sasvm else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
 
     
 @plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
