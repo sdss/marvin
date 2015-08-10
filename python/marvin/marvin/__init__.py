@@ -84,12 +84,15 @@ def create_app(debug=False):
     try: localhost = bool(os.environ['MANGA_LOCALHOST'])
     except: localhost = machine == 'manga'
     
-    try: utah = os.environ['UUFSCELL']=='kingspeak.peaks'
+    try: utah = os.environ['UUFSCELL'] == 'kingspeak.peaks'
     except: utah = None
+
+    try: sasvm = 'sas-vm' in os.environ['HOSTNAME']
+    except: sasvm = None
 
     if app.debug: 
         if localhost: server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),'configuration_files','localhost.cfg')
-        elif utah: server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),'configuration_files','utah.cfg')
+        elif utah or sasvm: server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),'configuration_files','utah.cfg')
         else:
             print("Trying to run in debug mode, but not running\n"
                   "on a development machine that has database access.")
