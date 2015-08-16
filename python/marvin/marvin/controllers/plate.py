@@ -145,7 +145,7 @@ def plate():
 
     # Check if input is plateID for mangaID    
     plate = valueFromRequest(key='plateid',request=request, default=None)
-    plate = plate if plate.isdigit() else None 
+    plate = plate if plate and plate.isdigit() else None
 
     plver = valueFromRequest(key='version',request=request, default=None)
     plateinfo['plate'] = plate
