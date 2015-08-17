@@ -56,6 +56,8 @@ def feedback():
     inspection.retrieve_feedbacks()
     result = inspection.result()
     
+    current_app.logger.warning('>>> current_session {0}'.format(current_session))
+
     return render_template('feedback.html',**feedback)
 
 @feedback_page.route('/marvin/feedback/tracticket/promote', methods=['GET','POST'])
