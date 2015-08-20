@@ -155,7 +155,7 @@ $(function() {
 
 function incrementVote(votediv) {
 	    var count = parseInt($("~ .count", votediv).text());
-
+	    console.log('inside incrementvote, votediv id', $(votediv).attr('id'));
 	    if($(votediv).hasClass("up")) {
 	      var count = count + 1;
 	      $("~ .count", votediv).text(count);

@@ -55,6 +55,9 @@ def feedback():
             inspection.submit_feedback(form=form)
     inspection.retrieve_feedbacks()
     result = inspection.result()
+
+    print('feedback statuses in inspection',inspection.feedbackstatuses)
+    print('feedback table in inspection', inspection.feedbacks)
     
     return render_template('feedback.html',**feedback)
 
@@ -95,13 +98,16 @@ def updatefeedbackstatus():
         id = valueFromRequest(key='id',request=request, default=None)
         status = valueFromRequest(key='status',request=request, default=None)
     
+        print('inside feedback status', id, status)
+
         # add feedback to db
         if id:
             inspection.set_feedback(id=id)
             inspection.update_feedback(status=status)
 
     result = inspection.result()
-    
+    print('feedback status',result)
+
     if inspection.ready: current_app.logger.warning('Inspection> Feedback Status Update {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED FEEDBACK STATUS UPDATE {0}'.format(result))
 
@@ -120,6 +126,8 @@ def updatefeedbackvote():
         id = valueFromRequest(key='id',request=request, default=None)
         vote = valueFromRequest(key='vote',request=request, default=None)
     
+        print('inside feedback vote', id, vote)
+
         # add feedback to db
         if id and vote:
             inspection.set_feedback(id=id)

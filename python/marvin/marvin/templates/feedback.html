@@ -52,11 +52,12 @@
 		$('.feedback_status').change(function() {
 			var rowid = getRowId($(this));
 			var status = $(this).find(':selected').text();
+			console.log('status changed: rowid, status: ',rowid,status);
 
 			$.post($SCRIPT_ROOT + '/marvin/feedback/status/update', {'id':rowid,'status':status}, 'json')
 				.done(function(data) {
 					if (data.result['status'] == 1) {
-
+						console.log('returned from status feedback', data.result);
                     } else {
                         alert(data.result['message']);
 	                }
@@ -75,10 +76,12 @@
 			var vote = votediv.hasClass('up') ? 1 : -1;
 			var count = $("~ .count", this).text();
 			var rowid = getRowId(votediv);
+			console.log('vote changed: rowid, vote: ', rowid, vote);
 			
 			$.post($SCRIPT_ROOT + '/marvin/feedback/vote/update', {'id':rowid,'vote':vote},'json')
 				.done(function(data) {
 					if (data.result.status == 1) {
+						console.log('returned from vote feedback',data.result);
                         incrementVote(votediv);
                         location.reload(true);
                     } else {
