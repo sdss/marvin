@@ -17,7 +17,7 @@
 	{% set sortparam = 'plate' if stage=='3d' else 'mjd' %}
 {% endif %}
 
-<table class='sastable' id='table' data-toggle='table' data-classes='table table-condensed table-bordered' 
+<table class='sastable' id='table_{{type}}' data-toggle='table' data-classes='table table-condensed table-bordered' 
 		data-sort-name="{{sortparam}}" data-sort-order='asc'
 		data-show-columns='true' data-pagination='true' data-search='true' data-page-size='10' 
 		data-select-item-name='input' data-toolbar='#toolbar' data-id-field='id' 

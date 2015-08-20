@@ -341,6 +341,7 @@ function loadImages(panel,key,mapid,specpanel,results,msg) {
             var labelend = (key !== 'spectra') ? ': '+results.panels[index] : (specpanel === 'map') ? ': '+results.panels[index] : '';
             var labelhtml = labelname+(index+1)+labelend;
             $('#'+key+'label'+(index+1),panel).html(labelhtml);
+            console.log('inside loadImages', specpanel, results.panels[index], labelhtml, panel);
         });
     } else {
         var title = $('#dapqa_'+key+' h4',panel);
