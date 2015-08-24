@@ -49,7 +49,7 @@
 
 	// Feedback status change
 	$(function() {
-		$('.feedback_status').change(function() {
+		$(document).on('change','.feedback_status',function() {
 			var rowid = getRowId($(this));
 			var status = $(this).find(':selected').text();
 			console.log('status changed: rowid, status: ',rowid,status);
@@ -71,7 +71,7 @@
 
 	// Feedback vote change
 	$(function() {
-		$('.increment').click(function() {
+		$(document).on('click','.increment',function() {
 			var votediv = $(this);
 			var vote = votediv.hasClass('up') ? 1 : -1;
 			var count = $("~ .count", this).text();
