@@ -54,7 +54,9 @@ python/marvin/marvin/static/js/bootstrap/bootstrap-magnify.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-magnify.min.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-select.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-select.js.map -text
-python/marvin/marvin/static/js/bootstrap/bootstrap-table-flatJSON.js -text
+python/marvin/marvin/static/js/bootstrap/bootstrap-table-all.js -text
+python/marvin/marvin/static/js/bootstrap/bootstrap-table-all.min.js -text
+python/marvin/marvin/static/js/bootstrap/bootstrap-table-flat-json.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-table.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-tags.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-tags.min.js -text

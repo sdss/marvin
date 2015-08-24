@@ -374,8 +374,20 @@ class Inspection:
     
     def set_feedbacks(self):
         self.feedbacks = Table([{'id':1,'membername':'Brian','subject':'test','feedback':'some feedback',
-            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':0},{'id':2,'membername':'Brian','subject':'test','feedback':'some feedback',
-            'type':'Bug','product':'Marvin','tracticket':'no','modified':'now','status':'Submitted','vote':0}])
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':2,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':3,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':4,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':5,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':6,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':7,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':8,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':9,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':10,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':11,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':12,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':13,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0},{'id':14,'membername':'Brian','subject':'test','feedback':'some feedback',
+            'type':'Bug','product':'Marvin','tracticket':'promote','modified':'now','status':'Submitted','vote':0}])
         self.cols = self.keys = ['id','membername','subject','feedback','type','product','tracticket','modified','status','vote']
     
     def set_feedback(self,id=None): self.feedback = None
