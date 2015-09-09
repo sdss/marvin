@@ -214,7 +214,7 @@ def setSessionDAPComments(form):
     if not form['oldmapid']: form['oldmapid'] = form['mapid']
     if not form['oldqatype']: form['oldqatype'] = form['qatype']
 
-    print('inside setsession: form', form)
+    #print('inside setsession: form', form)
     
     # populate appropriate point with comments/issues
     inspection = Inspection(current_session)
@@ -233,7 +233,7 @@ def setSessionDAPComments(form):
     panelcomments = [{'panel':name,'position':i+1,'catid':catid,'comment':comments[i],
     'issues':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
     
-    print('panelcomment', panelcomments)
+    #print('panelcomment', panelcomments)
     
     # add new comment to database
     if inspection.ready:
@@ -243,7 +243,7 @@ def setSessionDAPComments(form):
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
         inspection.set_session_tags(tags=form['tags'])
-        if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
+        #if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
         if 'reset' in form and form['reset']:
             inspection.drop_dapqacomments_from_session()
