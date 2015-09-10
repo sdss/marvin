@@ -233,7 +233,7 @@ function getSpectraList(ifu,key,mapid,qatype) {
     var newdata = [{'name':'key','value':key},{'name':'mapid','value':mapid},{'name':'qatype','value':qatype}];
     var dapformdata = buildDAPform(newdata,ifu);
             
-    $.post($SCRIPT_ROOT + '/marvin/getdapspeclist', dapformdata,null,'json')
+    $.post($SCRIPT_ROOT + '/marvin/getdapspeclist', dapformdata,'json')
         .done(function(data){
             
             var speclist = data.result.speclist;
@@ -286,7 +286,7 @@ function getPanel(ifu,key, mapid, qatype) {
     var dapformdata = buildDAPform(newdata,ifu);
     console.log('dapform',dapformdata);
     
-    $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+    $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,'json')
         .done(function(data){
             var ifupanel = $('#dapqa_'+key,mainpanel);
             ifupanel.show();
@@ -300,8 +300,8 @@ function getPanel(ifu,key, mapid, qatype) {
             }
 
             loadImages(mainpanel,key,mapid,specpanel,data.result,data.result.panelmsg);
-            loadComments(mainpanel,key,data.result.getsession);
-            loadTags(mainform,data.result.getsession);
+            //loadComments(mainpanel,key,data.result.getsession);
+            //loadTags(mainform,data.result.getsession);
 
             // update count message
             if (data.result.getsession.status === 0) {
@@ -322,7 +322,7 @@ function getPanel(ifu,key, mapid, qatype) {
 
 // load DAP plot images
 function loadImages(panel,key,mapid,specpanel,results,msg) {
-    $('#dapqa_'+key+' img',panel).removeProp('src');
+    //$('#dapqa_'+key+' img',panel).removeProp('src'); //seemingly useless, removed to remove the ajax request to unknown
     if (results.images) {
 
         // select 6 panel or single panel based on map selection (i.e. if binnum)
@@ -436,7 +436,7 @@ function dapaddcomments(ifu,action) {
     var dapformdata = buildDAPform(newdata,ifu);
 
     if (action === "submit") {
-        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,'json')
             .done(function(data){
                 var title = $('#dapqa_'+key+' h4',mainpanel);
                 if (data.result.title) {title.html(data.result.title);}
@@ -460,7 +460,7 @@ function dapaddcomments(ifu,action) {
                 title.html(alerthtml);
             });
     } else if (action === "reset") {
-        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,null,'json')
+        $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,'json')
             .done(function(data){
                 var ifupanel = $('#dapqa_'+key,mainpanel);
                 ifupanel.show();
