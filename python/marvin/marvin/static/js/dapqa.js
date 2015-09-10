@@ -300,8 +300,8 @@ function getPanel(ifu,key, mapid, qatype) {
             }
 
             loadImages(mainpanel,key,mapid,specpanel,data.result,data.result.panelmsg);
-            //loadComments(mainpanel,key,data.result.getsession);
-            //loadTags(mainform,data.result.getsession);
+            loadComments(mainpanel,key,data.result.getsession);
+            loadTags(mainform,data.result.getsession);
 
             // update count message
             if (data.result.getsession.status === 0) {
@@ -341,7 +341,7 @@ function loadImages(panel,key,mapid,specpanel,results,msg) {
             var labelend = (key !== 'spectra') ? ': '+results.panels[index] : (specpanel === 'map') ? ': '+results.panels[index] : '';
             var labelhtml = labelname+(index+1)+labelend;
             $('#'+key+'label'+(index+1),panel).html(labelhtml);
-            console.log('inside loadImages', specpanel, results.panels[index], labelhtml, panel);
+            //console.log('inside loadImages', specpanel, results.panels[index], labelhtml, panel);
         });
     } else {
         var title = $('#dapqa_'+key+' h4',panel);
