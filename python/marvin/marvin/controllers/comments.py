@@ -127,8 +127,8 @@ def login():
     return jsonify(result=result)
 
 # DAP Plot Panel Retrieval    
-@comment_page.route('/marvin/getdappanel', methods=['GET','POST'])
-@comment_page.route('/getdappanel', methods=['GET','POST'])
+@comment_page.route('/marvin/getdappanel', methods=['POST'])
+@comment_page.route('/getdappanel', methods=['POST'])
 def getdappanel():
     ''' Retrieve a DAP QA panel of plots based on form data'''
     
@@ -136,7 +136,7 @@ def getdappanel():
     dapform = processRequest(request=request)
     dapform['tags'] = json.loads(dapform['tags']) if 'tags' in dapform else []
     
-    print('first dapform',dapform)
+    #print('first dapform',dapform)
 
     # store form in session, using old mapid, qatype, and key
     setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
