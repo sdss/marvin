@@ -7,7 +7,7 @@ import sys
 import socket
 from os.path import join
 from inspect import getmembers, isfunction
-#from raven.contrib.flask import Sentry
+from raven.contrib.flask import Sentry
 
 import flask
 import jinja_filters
@@ -48,9 +48,9 @@ def create_app(debug=False):
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
         # ----------------------------------------------------------        
-        #dsn = 'https://f2cd2a5dbd7e45d2bd61faa74ae0b8c6:6fcddd5d410444f1a2de2f63441dec8f@app.getsentry.com/29141'
-        #app.config['SENTRY_DSN'] = dsn
-        #sentry = Sentry(app)
+        dsn = 'https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254'
+        app.config['SENTRY_DSN'] = dsn
+        sentry = Sentry(app)
         
 
         # --------------------------------------
