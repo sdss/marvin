@@ -43,11 +43,24 @@ Bootstrap-Tags v1.1.5
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-datetimepicker.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-tags.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/validator.min.js')}}"></script>
+	<script src="//cdn.ravenjs.com/1.1.20/jquery,native/raven.min.js"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
 	
 	<script type="text/javascript" src="{{url_for('static',filename='js/d3/d3.min.js')}}"></script>
 	<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+
+
+	<script>
+		Raven.config('https://989c330efbc346c7916e97b4edbf6b80@app.getsentry.com/52254', {
+		// pass along the version of your application
+		release: '1.0.0',
+
+    	// we highly recommend restricting exceptions to a domain in order to filter out clutter
+    	whitelistUrls: ['/sas\.sdss\.org/marvin/'],
+    	includePaths: ['/https?:\/\/(sas\.)?sdss\.org/marvin']
+		}).install();
+	</script>
 	{% block code %}{% endblock code %}	
 </head>
 
@@ -59,7 +72,7 @@ Bootstrap-Tags v1.1.5
 	{% block body %}{% endblock body %}
 </div>
 
-{% include 'footer.html' %}
+{#{% include 'footer.html' %}#}
 
 </body>
 </html>

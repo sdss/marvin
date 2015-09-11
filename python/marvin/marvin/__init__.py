@@ -50,7 +50,7 @@ def create_app(debug=False):
         # ----------------------------------------------------------        
         dsn = 'https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254'
         app.config['SENTRY_DSN'] = dsn
-        sentry = Sentry(app)
+        sentry = Sentry(app,logging=True,level=logging.ERROR)
         
 
         # --------------------------------------

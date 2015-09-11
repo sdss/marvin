@@ -126,9 +126,13 @@ def current():
         displayCols = ['plate','ifudsgn','harname','mangaid','status3d','drp3qual','versdrp3','verscore','mjdmax','objRA', 'objDEC','bluesn2','redsn2','nexp','exptime']
         
     # Load faults
-    sd = setStatusDone(outver=version,nowrite=True)
-    sd.loadFile()
-    errs = sd.getErrorDict()
+    try: 
+        sd = setStatusDone(outver=version,nowrite=True)
+    except TypeError as e:
+        sd = None
+        current_app.logger.error('Error accessing platelist.setStatusDone. TypeError: {0}'.format(e))
+    if sd: sd.loadFile()
+    errs = sd.getErrorDict() if sd else None
     current['faults'] = errs if errs else None
     	
     # Make platelist

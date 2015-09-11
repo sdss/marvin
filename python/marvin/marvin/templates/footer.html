@@ -1,27 +1,44 @@
 
-<div class="footer">
-	<div class="row-fluid">
-	{# junk for now
-		<div class="span4">
-	 		<ul>
-				<li>Contact: Brian Cherinka</li>
-			</ul>
-		</div>
-		<div class="span4">
-			<ul>
-				<li>Other SDSS Pages</li>
-				<li>Petunia</li>
-				<li>API</li>
-				<li>...</li>
-			</ul>
-		</div>
-		<div class="span4">
-			<ul>
-				<li>Tweets from space!</li>
-				<li>...</li>
-			</ul>
-		</div>
-     #}
-	</div>
+<footer>
+	<nav class="navbar navbar-default ">
+		<div class='row'>
+			<div class="col-md-2 col-md-offset-1">
+				<h5>Contacts: </h5>
+				<div class='row'><a href="mailto:bcherin1@jhu.edu?subject=Marvin:" target="_top">Brian Cherinka</a></div>
+				<div class='row'><a href="mailto:andrewsb@pitt.edu?subject=Marvin:" target="_top">Brett Andrews</a></div>
+			</div>
+			<div class="col-md-1">
+				<h5>Other Pages: </h5>
+				<div class='row'><a href='http://www.sdss.org/' target='_blank'>SDSS</a></div>
+				<div class='row'><a href="http://skyserver.sdss.org/dr12/en/home.aspx" target="_blank">Skyserver</a></div>
+				<div class='row'><a href='https://data.sdss.org/sas/mangawork/manga/spectro/redux/{{session['currentver']}}/', target='_blank'>SAS Redux</a></div>
+				{#<div class='row'><a href='https://data.sdss.org/sas/mangawork/manga/spectro/analysis/{{session['currentver']}}/{{session['currentdapver']}}', target='_blank'>SAS Analysis</a></div>#}
 
-</div>
+			</div>
+			<div class="col-md-6">
+				<h5>Version Info: </h5>
+				<div class='row'>
+					<div class='col-md-3'>
+						<p>marvin: {{session['marvinver']}}</p>
+					</div>
+					<div class='col-md-3'>
+						<p>mangadrp: {{session['drpver']}}</p>
+					</div>
+					<div class='col-md-4'>
+						<p>sdss_python_module: {{session['sdssver']}}</p>
+					</div>										
+				</div>
+				<div class='row'>
+					<div class='col-md-2'>
+						<p>Bootstrap</p>
+					</div>
+					<div class='col-md-2'>
+						<p>Javascript</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+</footer>
+

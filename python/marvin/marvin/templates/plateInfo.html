@@ -85,8 +85,13 @@
 		var ifu = ifuhash.slice(ifuhash.search('#')+1);
 		var tagdiv = $('#cubetags_'+ifu);
 		if (tagdiv.length > 0) {
-			var cubetags = {{inspection.cubetags|safe}};
-			var ifutags = cubetags[ifu];
+			try {
+				var cubetags = {{inspection.cubetags|safe}};
+			} catch (error) {
+				Raven.captureException(error);
+				var cubetags = null;
+			}
+			var ifutags = (cubetags === null) ? [] : cubetags[ifu];
 			var tagbox = tagdiv.tags({
 				tagData: ifutags,
 				tagSize: 'sm',
