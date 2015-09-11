@@ -72,6 +72,11 @@ def index():
     index['good'] = good
     images = getImages(version=version)
 
+    # get versions
+    current_session['marvinver'] = gu.getMangaVersion(marvin=True)
+    current_session['sdssver'] = gu.getMangaVersion(sdss=True)
+    current_session['drpver'] = gu.getMangaVersion(drp=True)
+
     if any(images):        
         # randomize the images
         current_app.logger.info('Selecting 100 random images...')

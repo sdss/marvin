@@ -47,6 +47,7 @@ python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff -text
 python/marvin/marvin/static/fonts/glyphicons-halflings-regular.woff2 -text
 python/marvin/marvin/static/images/logo.jpg -text svneol=unset#image/jpeg
 python/marvin/marvin/static/images/logo5_hires.png -text svneol=unset#image/png
+python/marvin/marvin/static/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/marvin/static/images/marvin.jpg -text svneol=unset#image/jpeg
 python/marvin/marvin/static/images/marvin_favicon.ico -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-datetimepicker.min.js -text

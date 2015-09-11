@@ -17,7 +17,7 @@
 			</div>
 			<div class='row'>
 				<div class='col-md-12 col-md-offset-1'>
-					<img id="logo" src="{{url_for('static',filename='images/logo5_hires.png')}}" class="img-rounded" class="img-responsive">
+					<img id="logo" src="{{url_for('static',filename='images/logo5_lores.png')}}" class="img-rounded" class="img-responsive">
 				</div>
         	</div>
 			<div class="inner cover row">
@@ -27,7 +27,7 @@
 						<div class='well'>	
 							<h4> Observed {{cubes|count}} galaxies across {{plates|count}} plates. (~{{(cubes|count)/10000*100}}% Complete)</h4>
 							<table class='table table-condensed'>
-								<thead><tr><th>Plate Label</th><th>Number</th></tr><thead>
+								<thead><tr><th>Plate Label</th><th>Number</th></tr></thead>
 								<tbody>
 									{% for label in labels %}
 										<tr><th>{{label|replace(None,'Other')}}</th><td>{{types.count(label)}}</td></tr>
@@ -84,4 +84,7 @@
 </div>
 {% endif %}
 		
+	</div>
+</div>
+
 {% endblock body %}
