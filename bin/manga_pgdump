@@ -1,0 +1,5 @@
+#!/bin/sh
+NOW=$(date +"%m%d%Y")
+DB=manga
+PG_DUMP_FILE=$MARVIN_DUMP_DIR/${DB}_$NOW.sql
+pg_dump -U manga -d $DB -Fc > $PG_DUMP_FILE

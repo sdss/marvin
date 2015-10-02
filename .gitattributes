@@ -1,4 +1,5 @@
 * text=auto !eol
+bin/manga_pgdump -text
 bin/marvin_version -text
 bin/profile_marvin -text
 bin/run_marvin -text
