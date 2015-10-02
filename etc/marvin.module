@@ -28,7 +28,7 @@ proc ModulesHelp {{ }} {{
 set product {name}
 set version {version}
 set inspection_version trunk
-conflict $product
+# conflict $product
 #
 # The line below is another part of the Modules help system.  You can
 # modify the part in quotes if you really need to, but most products should
@@ -65,7 +65,7 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 {needs_bin}prepend-path PATH $PRODUCT_DIR/bin
 {needs_python}prepend-path PYTHONPATH $PRODUCT_DIR/lib/{pyversion}/site-packages
-{needs_trunk_python}prepend-path PYTHONPATH $PRODUCT_DIR/python
+{needs_trunk_python}prepend-path PYTHONPATH $PRODUCT_DIR/python/$product
 {needs_ld_lib}prepend-path LD_LIBRARY_PATH $PRODUCT_DIR/lib
 {needs_idl}prepend-path IDL_PATH +$PRODUCT_DIR/pro
 #
