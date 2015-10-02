@@ -2,7 +2,8 @@
 bin/marvin_version -text
 bin/profile_marvin -text
 bin/run_marvin -text
-etc/marvin.table -text
+etc/config.ini -text
+etc/marvin.module -text
 python/marvin/app.config -text
 python/marvin/marvin/__init__.py -text
 python/marvin/marvin/config.py -text

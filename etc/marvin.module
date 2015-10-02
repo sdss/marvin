@@ -25,7 +25,7 @@ proc ModulesHelp {{ }} {{
 # prevents multiple versions from being loaded simultaneously.  Do not
 # change it.
 #
-set product marvin
+set product {name}
 set version {version}
 conflict $product
 #
@@ -42,27 +42,15 @@ module-whatis "Sets up $product/$version in your environment."
 # A mandatory dependency is a module load command followed by a prereq
 # command.  An optional dependency is not followed by a prereq statement.
 #
-module unload sdss_python_module
-module load sdss_python_module/v1_7_9
-prereq sdss_python_module/v1_7_9 
-module load inspection
-prereq inspection
+#module load sdss4tools
+#prereq sdss4tools
 #
 # ENVIRONMENT SECTION
 #
 # The PRODUCT_ROOT and PRODUCT_DIR variables are used to set other
-# environment variables but are not exported to the actual environment.
-# If you are not working at NERSC, but still want to use Modules, you
-# will need to set the SDSS4_PRODUCT_ROOT environment variable
+# environment variables, exported to the actual environment, by sdss4install
 #
-if {{[info exists env(SDSS4_PRODUCT_ROOT)]}} {{
-    set PRODUCT_ROOT $env(SDSS4_PRODUCT_ROOT)
-}} elseif {{[info exists env(NERSC_HOST)]}} {{
-    set PRODUCT_ROOT /project/projectdirs/sdss4/software/$env(NERSC_HOST)
-}} else {{
-    puts stderr "Please set your SDSS4_PRODUCT_ROOT environmental variable and try again"
-    exit 1
-}}
+set PRODUCT_ROOT {root}
 set PRODUCT_DIR $PRODUCT_ROOT/$product/$version
 #
 # This line creates an environment variable pointing to the install
@@ -82,4 +70,3 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 # Add any non-standard Module code below this point.
 #
-setenv [string toupper $product]_VER $version
