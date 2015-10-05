@@ -74,12 +74,9 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 module unload sdss_python_module
 module load sdss_python_module/briandev
 prereq sdss_python_module/briandev
-setenv SAS_LOGS_DIR                             $env(SAS_DIR)/logs
 module load inspection/$inspection_version
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
-setenv [string toupper $product]_LOGS_DIR       $env(SAS_DIR)/$product/log
-setenv PYTHON_EGG_CACHE                         $env(SAS_DIR)/.egg-cache
 setenv SAS_URL                                  https://sas.sdss.org
 setenv TRAC_URL                                 https://trac.sdss.org
 set-alias startmarvin "profile_marvin &> /home/www/sas.sdss.org/marvin/log/marvin_$version.log"
