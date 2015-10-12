@@ -136,9 +136,9 @@ def buildTable(cubes):
 
     # from header
     cols = ['plate','ifudesign','mangaid','versdrp2','versdrp3','verscore','versutil','platetyp','srvymode',
-    'objra','objdec','objglon','objglat','ebvgal','nexp','exptime','drp3qual','bluesn2','redsn2','harname','frlplug',
+    'objra','objdec','ifuglon','ifuglat','ebvgal','nexp','exptime','drp3qual','bluesn2','redsn2','harname','frlplug',
     'cartid','designid','cenra','cendec','airmsmin','airmsmed','airmsmax','seemin','seemed','seemax','transmin',
-    'transmed','transmax','mjdmin','mjdmed','mjdmax','ufwhm','gfwhm','rfwhm','ifwhm','zfwhm','mngtarg1','mngtarg2',
+    'transmed','transmax','mjdmin','mjdmed','mjdmax','gfwhm','rfwhm','ifwhm','zfwhm','mngtarg1','mngtarg2',
     'mngtarg3','catidnum','plttarg']
     
     # sample db cols
