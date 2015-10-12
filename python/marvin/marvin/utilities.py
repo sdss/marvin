@@ -183,7 +183,7 @@ def setGlobalVersion():
     except: ver = None
     if not ver: 
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),current_session['currentver'],ver))]
-        current_session['currentdapver'] = realvers[0]    
+        current_session['currentdapver'] = realvers[0] if realvers else 'NA'   
 
 
 def getImages(plate=None,version=None,ifuname=None):
