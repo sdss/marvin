@@ -170,6 +170,7 @@ def buildTable(cubes):
                     # grab from sample table
                     try: cubedict[col].append(cube.sample[0].__getattribute__(col))                
                     except: cubedict[col].append(None)
+                else: cubedict[col].append(None)
                 
     cubetable = Table(cubedict)
     cubetable = cubetable[cols]
