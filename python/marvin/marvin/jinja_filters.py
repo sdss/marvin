@@ -162,5 +162,13 @@ def makeID(value,type):
     
     return '{0}_{1}collapse'.format(value,type)
     
+def filterVersion(value):
+    ''' filter the version based on criteria '''
+
+    newver = 'v1_5_1' if value=='v1_5_0' else value
+
+    return newver
+
+
     
     
