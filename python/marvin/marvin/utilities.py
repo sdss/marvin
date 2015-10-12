@@ -81,7 +81,8 @@ def getColumnTypes(columns):
         'objglon':float, 'objglat':float, 'designid':long,'catidnum':long,
         'seemin':float, 'seemed':float, 'seemax':float,'transmin':float, 'transmed':float, 
         'transmax':float, 'mngtarg1':long, 'mngtarg2':long, 'plttarg':str,'mjdred':str,
-        'mngtarg3':long, 'mangaid':str, 'plate':long, 'platetyp':str, 'srvymode':str, 'versdrp2':str}
+        'mngtarg3':long, 'mangaid':str, 'plate':long, 'platetyp':str, 'srvymode':str, 'versdrp2':str,
+        'ifura':float,'ifudec':float,'ifuglon':float,'ifuglat':float}
     
     types = [typedict[col] if col in typedict.keys() else str for col in columns]
         
