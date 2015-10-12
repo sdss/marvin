@@ -115,7 +115,7 @@
 				{# MPL Versions #}
 				<div class='form-group vertype' id='bympl'>
 					<select class='form-control input-sm' id='mplver' name='mplver'>
-						{% for ver in ['MPL-4',MPL-3','MPL-2','MPL-1'] %}
+						{% for ver in ['MPL-4','MPL-3','MPL-2','MPL-1'] %}
 							{% if ver == session['currentmpl'] %} 
 								<option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option>
 							{% else %}
