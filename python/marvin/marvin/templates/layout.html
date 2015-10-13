@@ -15,6 +15,8 @@ Bootstrap-Table-flatJSON v1.0.0
 Bootstrap-Select v1.6.3
 Bootstrap-Datetimepicker v4.7.14
 Bootstrap-Tags v1.1.5
+Bootstrap-Typeahead v1.1.5
+QUnit v1.19.0
 #}
 
 <html lang="en">
@@ -29,6 +31,7 @@ Bootstrap-Tags v1.1.5
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-table.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-datetimepicker.min.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-tags.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/qunit-1.19.0.css')}}" rel="stylesheet">
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	{% block head %}{% endblock head %}
 	
@@ -42,24 +45,48 @@ Bootstrap-Tags v1.1.5
 	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/moment.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-datetimepicker.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-tags.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bloodhound.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap3-typeahead.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/validator.min.js')}}"></script>
 	<script src="//cdn.ravenjs.com/1.1.20/jquery,native/raven.min.js"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
-	
 	<script type="text/javascript" src="{{url_for('static',filename='js/d3/d3.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-1.19.0.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-html.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-classes.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-once.js')}}"></script>
 	<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
 
-
-	<script>
+	{# setup Raven javascript exception handling #}
+	<script type='text/javascript'>
 		Raven.config('https://989c330efbc346c7916e97b4edbf6b80@app.getsentry.com/52254', {
 		// pass along the version of your application
-		release: '1.0.0',
+		release: 'e9d2d3f8694e11e5ac8f0025902e143c',
 
     	// we highly recommend restricting exceptions to a domain in order to filter out clutter
     	whitelistUrls: ['/sas\.sdss\.org/marvin/'],
     	includePaths: ['/https?:\/\/(sas\.)?sdss\.org/marvin']
 		}).install();
+	</script>
+
+	{# setup Bloodhound for typeahead #}
+	<script type='text/javascript'>
+		var numbers = new Bloodhound({
+			datumTokenizer: Bloodhound.tokenizers.whitespace,
+			queryTokenizer: Bloodhound.tokenizers.whitespace,
+			local:['Test']
+		});
+		numbers.initialize();
+	</script>
+
+	{# initialize various global things #}
+	<script type='text/javascript'>
+		var utils, tm ={};
+		$(function() {
+			utils = new Utils();
+			tm = new TableMethods();
+		});
 	</script>
 	{% block code %}{% endblock code %}	
 </head>

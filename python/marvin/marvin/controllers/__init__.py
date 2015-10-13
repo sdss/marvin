@@ -3,7 +3,7 @@
 from flask import request
 
 # List all of the views to be automatically imported here.
-__all__ = ["index", "search","current","plate","images","comments","explore","feedback","documentation"]
+__all__ = ["index", "search","current","plate","images","comments","explore","feedback","documentation","tests"]
 
 
 def valueFromRequest(key=None, request=None, default=None, lower=False, list=False, boolean=False):

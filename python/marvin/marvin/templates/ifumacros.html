@@ -34,8 +34,8 @@
                     <div class='row'>
                         <div class='col-md-12'>
                             <div class='btn-group-vertical'>
-                            <button type='button' class='btn btn-warning' id='addcommentbut' onclick='getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
-                            <a href='#commenttable_{{cube.ifu.name}}' class='btn btn-success' id='showcomment'>Show Comments</a>
+                            <button type='button' class='btn btn-warning' id='addcommentbut' onclick='ifu.comments.getComment({{cube.pk}}, {{cube.ifu.name}})'>Add Comment</button>
+                            <a onclick='ifu.scrollTo("comments")' class='btn btn-success' id='showcomment'>Show Comments</a>
                             <a href='{{cube.location}}' class='btn btn-primary' id='cubedl' download='{{cube.name}}'>Download Cube</a>
                             <a href='{{cube.location|replace('CUBE','RSS')}}' class='btn btn-primary' id='rssdl' download='{{cube.name|replace('CUBE','RSS')}}'>Download RSS</a>
                             <a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cube.ra}}&dec={{cube.dec}}&opt=GS&scale=0.2' class='btn btn-danger' id='gotocas' target='_blank'>Go to CAS</a>
@@ -95,7 +95,7 @@
                         <h4>Comments for IFU {{cube.ifu.name}}, Version DRP/DAP: {{version}}, {{dapversion}}</h4>
                     </div>
                     <div class='col-md-4'>
-                        <a href='#{{cube.ifu.name}}' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
+                        <a onclick='ifu.scrollTo("top")' class='btn btn-default btn-sm'><span class='glyphicon glyphicon-chevron-up'></span></a>
                     </div>
                 </div>
 

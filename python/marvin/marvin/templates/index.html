@@ -12,7 +12,7 @@
 		<div class="cover-container">
 			<div class='row'>
 				<div class='col-md-12 col-md-offset-1'>
-					<h4>New to Marvin? Click <a href='documentation.html'>Me</a></h4>
+					<h4>New to Marvin? Click <a href="{{url_for('doc_page.doc')}}">Me</a></h4>
 				</div>
 			</div>
 			<div class='row'>
@@ -62,7 +62,7 @@
 					<div class='row-fluid'>
 					<div class='col-md-10 col-md-offset-1'>
 				{% endif %}
-					<div class='col-sm-2 col-md-2'><a href="plateInfo.html?plateid={{(key|split('-'))[0]}}#{{(key|split('-'))[1]}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
+					<div class='col-sm-2 col-md-2'><a href="{{url_for('plate_page.plate',plateid=(key|split('-'))[0],ifuid=(key|split('-'))[1])}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
 				{% if loop.index0 % modnum == modnum-1 or loop.last %}
 					</div></div></div>
 				{% endif %}    	

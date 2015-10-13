@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import flask, sqlalchemy, json, os, glob
+import flask, sqlalchemy, json, os, glob, warnings
 from flask import request, render_template, send_from_directory, current_app, session as current_session,jsonify
 from ..model.database import db
 from ..utilities import getImages, getDAPImages
@@ -126,12 +126,24 @@ def login():
 
     return jsonify(result=result)
 
+# split the DAP qatype
+def splitQAType(qatype):
+    ''' split the DAP qatype variable into mode (cube/rss) and bintype'''
+    try:
+        mode,bintype = qatype.split('-')
+    except ValueError as e:
+        raise ValueError('ValueError: {0}'.format(e))
+    
+    return mode, bintype
+
+
 # DAP Plot Panel Retrieval    
 @comment_page.route('/marvin/getdappanel', methods=['POST'])
 @comment_page.route('/getdappanel', methods=['POST'])
 def getdappanel():
     ''' Retrieve a DAP QA panel of plots based on form data'''
-    
+
+    result={}    
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
     dapform['tags'] = json.loads(dapform['tags']) if 'tags' in dapform else []
@@ -141,16 +153,28 @@ def getdappanel():
     # store form in session, using old mapid, qatype, and key
     setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
     inspection = Inspection(current_session)
-    
+
+    # split the QA type into cube/rss mode and bintype
+    try:
+        mode,bintype = splitQAType(dapform['qatype'])
+    except ValueError as e:
+        result['status'] = -1
+        msg = 'Error splitting qatype {0}: {1}'.format(dapform['qatype'],e)
+        result['panelmsg'] = msg
+        warnings.warn(msg,RuntimeWarning)
+        return jsonify(result=result)
+
     # Get real plots
-    mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
         dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], dapform['specpanel'],inspection)
-    names = inspection.get_panelnames(dapform['mapid'],bin=bintype) if dapform['key'] != 'spectra' else inspection.get_panelnames('specmap',bin=bintype)
-    panelnames = [name[1] for name in names]
+
+    # Get panel names
+    if bintype:
+        names = inspection.get_panelnames(dapform['mapid'],bin=bintype) if dapform['key'] != 'spectra' else inspection.get_panelnames('specmap',bin=bintype)
+        panelnames = [name[1] for name in names]
 
     # Build title
-    qatype = '-'.join([x.upper() for x in dapform['qatype'].split('-')])
+    qatype = dapform['qatype'].upper()
     defaulttitle = inspection.dapqaoptions['defaulttitle']
     if dapform['key'] != 'spectra':
         maptype = inspection.dapqaoptions['maptype']
@@ -161,7 +185,7 @@ def getdappanel():
     
     # load new form from session, using current mapid, qatype, and key
     getresults = getSessionDAPComments(dapform) 
-    result={}
+
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
     result['panels'] = panelnames
@@ -179,11 +203,19 @@ def getdapspeclist():
     
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
-    print('first speclist dapform',dapform)
     inspection = Inspection(current_session)
 
+    # split the QA type into cube/rss mode and bintype
+    try:
+        mode,bintype = splitQAType(dapform['qatype'])
+    except ValueError as e:
+        result['status'] = -1
+        msg = 'Error splitting qatype {0}: {1}'.format(dapform['qatype'],e)
+        result['msg'] = msg
+        warnings.warn(msg,RuntimeWarning)
+        return jsonify(result=result)
+
     # get real plots
-    mode,bintype = dapform['qatype'].split('-')
     imglist,msg = getDAPImages(dapform['plateid'], dapform['ifu'], dapform['drpver'], 
         dapform['dapver'], dapform['key'], mode, bintype, dapform['mapid'], dapform['specpanel'],inspection, filter=False)
 
@@ -209,18 +241,28 @@ def setSessionDAPComments(form):
     		issue syntax: "issue_{issueid}_{mapnumber} - only from given cat. div at a time
     ''' 
     
-    # set default old values if they are empty 
-    if not form['oldkey']: form['oldkey'] = form['key']
-    if not form['oldmapid']: form['oldmapid'] = form['mapid']
-    if not form['oldqatype']: form['oldqatype'] = form['qatype']
+    result={}
 
-    #print('inside setsession: form', form)
-    
+    # set default old values if they are empty 
+    if not form['oldkey'].strip(): form['oldkey'] = form['key']
+    if not form['oldmapid'].strip(): form['oldmapid'] = form['mapid']
+    if not form['oldqatype'].strip(): form['oldqatype'] = form['qatype']
+
     # populate appropriate point with comments/issues
     inspection = Inspection(current_session)
     catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
-    mode,bin = form['oldqatype'].split('-')
-    sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment'+catkey[form['oldkey']] in key])
+
+    # split the QA type into cube/rss mode and bintype
+    try:
+        mode,bin = splitQAType(form['oldqatype'])
+    except ValueError as e:
+        result['status'] = -1
+        msg = 'setSessionDAPComments: Error splitting qatype {0}: {1}'.format(form['oldqatype'],e)
+        result['message'] = msg
+        warnings.warn(msg,RuntimeWarning)
+        return result
+
+    sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment{0}'.format(catkey[form['oldkey']]) in key])
     comments = [comment[1] for comment in sortedcomments]
     # get issues, separate into ints by panel below
     issues = json.loads(form['issues'])
@@ -240,7 +282,7 @@ def setSessionDAPComments(form):
         inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
-        inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
+        inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'],specpanel=form['specpanel']) #####new stuff to fix
         inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
         inspection.set_session_tags(tags=form['tags'])
         #if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
@@ -259,13 +301,23 @@ def setSessionDAPComments(form):
 def getSessionDAPComments(form):
     ''' retrieve session dap comments based on form input, uses newmapid '''
     
+    result={}
     # new key,map information
     inspection = Inspection(current_session)
     catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
-    mode,bin = form['qatype'].split('-')
     maptype = form['mapid']
     catid = catkey[form['key']]
-    
+
+    # split the QA type into cube/rss mode and bintype
+    try:
+        mode,bin = splitQAType(form['qatype'])
+    except ValueError as e:
+        result['status'] = -1
+        msg = 'getSessionDAPComments: Error splitting qatype {0}: {1}'.format(form['qatype'],e)
+        result['message'] = msg
+        warnings.warn(msg,RuntimeWarning)
+        return result
+
     # get comments from database
     if inspection.ready:
         inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])

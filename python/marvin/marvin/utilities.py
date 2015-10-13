@@ -1,13 +1,14 @@
 
 ''' General Utilities for MaNGA SAS'''
 
-import json, os, glob
-from flask import session as current_session
+import json, os, glob, sys, traceback
+from flask import session as current_session, render_template
 from ast import literal_eval
 from manga_utils import generalUtils as gu
 from astropy.table import Table
 from model.database import db
 from jinja_filters import getMPL
+import sqlalchemy
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 def getMaskBitLabel(bits):
@@ -74,45 +75,52 @@ def getColumnTypes(columns):
     typedict = {'nexp':int, 'exptime':float, 'bluesn2':float, 'redsn2':float,
         'airmsmin':float, 'airmsmed':float, 'airmsmax':float, 'mjdmin':long, 
         'mjdmed':long, 'mjdmax':long, 'objra':float, 'objdec':float,
-        'ifudesign':str, 'harname':str, 'cenra':float, 'cendec':float,
-        'frlplug':int, 'mangaid':str, 'ufwhm':float,'gfwhm':float,
-        'rfwhm':float,'ifwhm':float,'zfwhm':float, 'ebvgal':float, 'datered':long,'cartid':str,
-        'versdrp3':str,'verscore':str, 'versutil':str, 'drp3qual':long,
-        'objglon':float, 'objglat':float, 'designid':long,'catidnum':long,
+        'ifudesign':str, 'ifudsgn':str, 'harname':str, 'cenra':float, 'cendec':float,
+        'frlplug':int, 'mangaid':str,'ufwhm':float, 'gfwhm':float,
+        'rfwhm':float,'ifwhm':float,'zfwhm':float, 'ebvgal':float, 'datered':str,'cartid':str,
+        'versdrp3':str,'verscore':str, 'versutil':str, 'drp3qual':'mask', 'objglon':float, 'objglat':float,
+        'ifuglon':float, 'ifuglat':float, 'designid':long,'catidnum':long,'versprim':str,
         'seemin':float, 'seemed':float, 'seemax':float,'transmin':float, 'transmed':float, 
-        'transmax':float, 'mngtarg1':long, 'mngtarg2':long, 'plttarg':str,'mjdred':str,
-        'mngtarg3':long, 'mangaid':str, 'plate':long, 'platetyp':str, 'srvymode':str, 'versdrp2':str,
-        'ifura':float,'ifudec':float,'ifuglon':float,'ifuglat':float}
+        'transmax':float, 'mngtarg1':'mask', 'mngtarg2':'mask', 'plttarg':str,'mjdred':long,
+        'mngtarg3':'mask','plateifu':str, 'platetyp':str, 'srvymode':str, 'versdrp2':str,'status3d':str,'image':str,
+        'ifura':float, 'ifudec':float, 'mangaid':str, 'manga_tileid':long, 'iauname':str, 'ifudesignsize':long,
+        'ifutargetsize':long,'ifudesignwrongsize':long,'field':long,'run':long,'nsa_version':str,'nsa_id':long,
+        'nsa_redshift':float, 'nsa_zdist':float}   
     
-    types = [typedict[col] if col in typedict.keys() else str for col in columns]
+    newtypedict = {col:typedict[col] if col in typedict.keys() else float if 'nsa' in col else str for col in columns}
         
-    return types, typedict    
+    return newtypedict    
     
 def processTableData(tableobj):
     ''' Process a JSON object table and convert to an Astropy Table '''
     
     table = (json.loads(tableobj))
-    nrows = len(table)
 
-    keys = [k for k in table[0].keys() if '_class' not in k]
-    types,typedict = getColumnTypes(keys)
-   
+    # remove junk columns
+    table = [{key:val for key,val in row.items() if '_data' not in key and '_class' not in key} for row in table]
+
+    # get keys and column types
+    keys = sorted(table[0].keys())
+    typedict = getColumnTypes(keys)
+    types = [typedict[key] if typedict[key] != 'mask' else long for key in keys]
+
+    # fix certain cells
     for row in table:
         for key,val in row.items():
-            # pull the plate id from the link
-            index = val.find('">')
-            if index != -1: row[key] = val[index+2:index+6]
+            # pull the link values from href columns
+            if 'href' in val:
+                lindex = val.find('>')+1
+                rindex = val.rfind('<')
+                if lindex != -1 and rindex != -1: row[key] = val[lindex:rindex]
             
             # convert QUAL keys back to bits
-            if 'qual' in key: row[key] = gu.getSDSSFlagBit(literal_eval(row[key]),name='MANGA_DRP3QUAL') if row[key] != 'NULL' else None
+            if 'qual' in key: row[key] = gu.getSDSSFlagBit(row[key].split(','),name='MANGA_DRP3QUAL') if row[key] != 'NULL' else None
             
             # reset NULL values to the right type
             if val == None or val=='None' or val=='NULL':
                 row[key] = gu.getNullVal(typedict[key])
-        
-        # Delete the _class key
-        tmp = row.pop('_class',None) 
-    
+
+    # build new table
     newtable = Table(table,dtype=types,names=keys)    
     
     return newtable
@@ -183,7 +191,7 @@ def setGlobalVersion():
     except: ver = None
     if not ver: 
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),current_session['currentver'],ver))]
-        current_session['currentdapver'] = realvers[0] if realvers else 'NA'   
+        current_session['currentdapver'] = realvers[0] if realvers else 'NA' 
 
 
 def getImages(plate=None,version=None,ifuname=None):
@@ -264,7 +272,7 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, spe
         msg = 'No Plots Found!' if not images else 'Success!'
     else:
         images = None
-        msg = 'Not a valid DAP directory. Check version.'  
+        msg = 'Not a valid DAP directory. Check the versions that you are using.'  
 
     return images, msg
 
@@ -305,6 +313,27 @@ def filterDAPimages(images, mapid, key,bintype,specpaneltype,inspection):
             images = list(zip(*sorted(zip(sortbypanel,images),key=lambda t:t[0][0]))[1])
     
     return images
+
+def testDBConnection(session):
+    ''' test the connection to the session '''
+
+    error = False
+    try:
+        tmp = session.query(datadb.PipelineVersion).all()
+    except:
+        error1 = 'Error connecting to manga database: {0}'.format(sys.exc_info()[1])
+        error2 = 'Full traceback: {0}'.format(''.join(traceback.format_tb(sys.exc_info()[2])))
+        error = ' '.join([error1,error2])
+
+    return error
+
+def configFeatures(app,mode):
+    ''' configure feature flags '''
+
+    app.config['FEATURE_FLAGS']['collab'] = False if mode == 'dr13' else True
+    app.config['FEATURE_FLAGS']['new'] = False if mode == 'dr13' else True
+    app.config['FEATURE_FLAGS']['unfinished'] = False if mode == 'dr13' else True
+
 
 
     

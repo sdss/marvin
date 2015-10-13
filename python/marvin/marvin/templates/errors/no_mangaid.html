@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
+{% block body %}
+
+    <div>
+        <div class='row'>
+            <div class='col-md-2'>
+                <img id="nomangaid" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
+            </div>
+            <div class='col-md-6 vert-offset-top-7' id='errortext'>
+                <h1>"This will all end in tears I just know it."</h1>
+
+                <h2>No MaNGA-ID specified!</h2>
+
+            </div>
+        </div>
+    </div>
+    
+{% endblock body %} 
+

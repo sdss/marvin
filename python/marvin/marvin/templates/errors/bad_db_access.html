@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
+{% endblock head %}
+
+{% block body %}
+
+    <div>
+        <div class='row'>
+            <div class='col-md-2'>
+                <img id="marvinbaddb" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
+            </div>
+            <div class='col-md-6 vert-offset-top-7' id='errortext'>
+
+                <h1 id='quote'>"This will all end in tears I just know it."</h1>
+
+                <h2>Bad Database Request</h2>
+                <p>Marvin could not connect to mangaDataDb.  There was a problem accessing the Utah system or the session. </p>
+                <p>{{message}}</p>
+
+                {% if page %}
+                    <h4>{{page}} page broke down!</h4>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock body %} 
+
+

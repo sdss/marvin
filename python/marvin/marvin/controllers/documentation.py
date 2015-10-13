@@ -17,8 +17,8 @@ except ValueError:
     
 doc_page = flask.Blueprint("doc_page", __name__)
 
-@doc_page.route('/documentation.html', methods=['GET'])
-@doc_page.route('/marvin/documentation.html', methods=['GET'])
+@doc_page.route('/documentation/', methods=['GET'])
+@doc_page.route('/marvin/documentation/', methods=['GET'])
 def doc():
     ''' Documentation here. '''
     
@@ -33,6 +33,6 @@ def page_not_found(e):
     error={}
     error['page']='Documentation'
     error['title']='Marvin | Page Not Found'
-    return render_template('page_not_found.html',**error) 
+    return render_template('errors/page_not_found.html',**error) 
 
 

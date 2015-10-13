@@ -2,7 +2,7 @@
 
 import os, glob
 
-import flask, sqlalchemy
+import flask, sqlalchemy, json
 from flask import request, redirect,render_template, send_from_directory, current_app, session as current_session, jsonify,url_for
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
@@ -10,6 +10,11 @@ from ..model.database import db
 from ..utilities import processTableData, setGlobalVersion, getImages
 from comments import getComment
 from astropy.table import Table
+
+from flask_wtf import Form
+from wtforms import StringField
+from wtforms.validators import DataRequired 
+
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -23,12 +28,6 @@ except ValueError:
 
 plate_page = flask.Blueprint("plate_page", __name__)
 
-
-def setupInspection():
-    ''' set up the inspection system '''
-
-    return ''
-
 def buildPlateDesignDict(cubes):
     ''' Builds a list of dictionaries to pass to the plate design d3 code '''
     
@@ -37,15 +36,16 @@ def buildPlateDesignDict(cubes):
     #using xfocal,yfocal
     data = [{'name':plateclass.id,'cx':0.0,'cy':0.0,'r':200,'color':'white'}]
     for cube in cubes:
-        hdr = cube.header_to_dict()
+        hdr = json.loads(cube.hdr[0].header)
         data.append({'name':str(cube.ifu.name),'cx':cube.xfocal,'cy':cube.yfocal,'ra':float(hdr['OBJRA']),'dec':float(hdr['OBJDEC']),'r':5.0,'color':'red' if len(cube.ifu.name) > 3 else 'blue'})
         
     return data
 
-@plate_page.route('/marvin/navidselect',methods=['GET'])
-@plate_page.route('/navidselect',methods=['GET'])
+@plate_page.route('/navidselect',methods=['POST'])
+@plate_page.route('/marvin/navidselect',methods=['POST'])
 def navidselect():
     ''' Select plate id or manga id based from navigation bar '''
+
 
     plateid = valueFromRequest(key='plateid',request=request, default=None)
     mangaid = valueFromRequest(key='mangaid',request=request, default=None)
@@ -53,14 +53,16 @@ def navidselect():
     #sasvm = 'HOSTNAME' in os.environ and 'sas-vm' in os.environ['HOSTNAME']
 
     if plateid:
+        current_session['searchmode']='plateid'
         return redirect(url_for('plate_page.plate',plateid=plateid)) #if sasvm else redirect(url_for('plate_page.plate',plateid=plateid,_external=True,_scheme='https'))
 
     if mangaid:
+        current_session['searchmode']='mangaid'
         return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) #if sasvm else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
 
     
-@plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
-@plate_page.route('/downloadFiles', methods=['GET','POST'])
+@plate_page.route('/marvin/downloadFiles', methods=['POST'])
+@plate_page.route('/downloadFiles', methods=['POST'])
 def downloadFiles():
     ''' Builds an rsync command to download all specified files '''
     
@@ -69,12 +71,24 @@ def downloadFiles():
     table = valueFromRequest(key='table',request=request, default=None)
     version = valueFromRequest(key='version',request=request, default=None)
     if not version: version = current_session['currentver']
-    newtable = processTableData(table) if table != 'null' else None
+    result = {'message':None}
     
+    if table != 'null':
+        try:
+            newtable = processTableData(table) 
+        except AttributeError as e:
+            result['message'] = 'AttributeError getting rsync, in processTableData: {0}'.format(e)
+            result['status'] = -1
+            return jsonify(result=result)
+        except KeyError as e:
+            result['message'] = 'KeyError getting rsync, in processTableData: {0}'.format(e)
+            result['status'] = -1
+            return jsonify(result=result)
+    else: newtable = None
+
     # Build some general paths
     rsyncpath = 'rsync://sdss@dtn01.sdss.utah.edu:/'
     localpath = '.'
-    result = {'message':None}
     
     # Build rsync
     if not newtable:
@@ -123,11 +137,55 @@ def downloadFiles():
 
     return jsonify(result=result)
 
-@plate_page.route('/marvin/plateInfo.html', methods=['GET'])
-@plate_page.route('/plateInfo.html', methods=['GET'])
-def plate():
-    ''' Documentation here. '''
-    
+
+def getifu(cube=None):
+    ''' get an ifu from the plate page '''
+
+    plateid = valueFromRequest(key='plateid',request=request, default=None)
+    ifuid = valueFromRequest(key='ifuid',request=request, default=None)
+    session = db.Session()
+
+    if not cube:
+        cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.IFUDesign,
+            datadb.PipelineVersion).filter(datadb.Cube.plate==int(plateid),datadb.PipelineVersion.version==version,datadb.IFUDesign.name==ifuid).one()
+
+    ifudict=OrderedDict()
+    imindex = [images.index(i) for i in images if '/{0}.png'.format(cube.ifu.name) in i]
+    ifudict[cube.ifu.name]=OrderedDict()
+    ifudict[cube.ifu.name]['image']=images[imindex[0]] if imindex else None
+    if cube.sample:
+        for col in cube.sample[0].cols:
+            if ('absmag' in col) or ('flux' in col):
+                if 'absmag' in col: name='nsa_absmag'
+                if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
+                if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
+                try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
+                except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
+            else:
+                ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+               
+
+    result={}
+    result['plate'] = plateid
+    result['ifuid'] = ifuid
+    result['ifudict'] = ifudict
+
+    return jsonify(result=result)
+
+@plate_page.route('/plate/')
+@plate_page.route('/marvin/plate/')
+@plate_page.route('/plate/<int:plateid>/')
+@plate_page.route('/marvin/plate/<int:plateid>/')
+
+@plate_page.route('/marvin/plate/<int:plateid>/<ifuid>/',defaults={'plver':None})
+
+@plate_page.route('/plate/<int:plateid>/<ifuid>/<plver>/')
+@plate_page.route('/marvin/plate/<int:plateid>/<ifuid>/<plver>/')
+
+#@plate_page.route('/plate/<int:plateid>/<plver>')
+#@plate_page.route('/marvin/plate/<int:plateid>/<plver>')
+
+def plate(plateid=None, plver=None, ifuid=None):
     session = db.Session() 
     plateinfo = {}
     plateinfo['title'] = "Marvin | Plate"
@@ -144,43 +202,70 @@ def plate():
     plateinfo['dapversion'] = dapversion
 
     # Check if input is plateID for mangaID    
-    plate = valueFromRequest(key='plateid',request=request, default=None)
-    plate = plate if plate and plate.isdigit() else None
+    #plate = valueFromRequest(key='plateid',request=request, default=None)
+    #plate = plate if plate and plate.isdigit() else None
 
-    plver = valueFromRequest(key='version',request=request, default=None)
-    plateinfo['plate'] = plate
+    # check if ifuid is actually a version 
+    if ifuid and not ifuid.isdigit() and 'v' in ifuid:
+        plver = ifuid
+        ifuid = None
+
+    #plver = valueFromRequest(key='version',request=request, default=None)
+    plateinfo['plate'] = plateid
     plateinfo['inspection'] = None
+    cube=cubes= None
     if plver: 
         version = plver
         plateinfo['version'] = plver
 
+    plateinfo['inspection'] = inspection = Inspection(current_session)
+
     # Get info from plate   
-    if plate:
-        plateinfo['title'] += " {0}".format(plate)
+    if plateid:
+        plateinfo['title'] += " {0}".format(plateid)
         # find and grab all images for plate ; convert paths to sas paths
-        redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plate))
+        redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plateid))
         good = os.path.isdir(redux)
         plateinfo['good'] = good
-        sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plate))
+        sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plateid))
         try: sasurl = os.getenv('SAS_URL')
         except: sasurl= None
-        images = getImages(plate,version=version)
+        images = getImages(plateid,version=version)
         plateinfo['images'] = sorted(images) if images else None
+        print('sas stuff',sasredux, sasurl)
         sasurl = os.path.join(sasurl,sasredux)
         plateinfo['sasurl'] = sasurl
         
         # get cubes for this plate and current tag, sort by ifu name
-        cubes = session.query(datadb.Cube).join(datadb.PipelineInfo,
-            datadb.PipelineVersion).filter(datadb.Cube.plate==plate,datadb.PipelineVersion.version==version).all()
-        cubes=sorted(cubes,key=lambda t: t.ifu.name)
+        if ifuid:
+            try:
+                cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.IFUDesign,
+                    datadb.PipelineVersion).filter(datadb.Cube.plate==plateid,datadb.PipelineVersion.version==version,datadb.IFUDesign.name==ifuid).one()
+            except sqlalchemy.orm.exc.NoResultFound as error:
+                plateinfo['error'] = 'Error querying for single cube with plate {0}, ifuid {1}, and version {2}: {3}'.format(plateid,ifuid,version,error)
+                plateinfo['ifuid']  = ifuid
+                return render_template('errors/no_plateid.html',**plateinfo)
+
+        # get all the cubes
+        try:
+            cubes = session.query(datadb.Cube).join(datadb.PipelineInfo,
+                datadb.PipelineVersion).filter(datadb.Cube.plate==plateid,datadb.PipelineVersion.version==version).all()
+            cubes=sorted(cubes,key=lambda t: t.ifu.name)
+        except sqlalchemy.orm.exc.NoResultFound as error:
+            plateinfo['error'] = error
+            return render_template('errors/no_plateid.html',**plateinfo)
+
+        if not cube and cubes:
+            cube = cubes[0]
         
         # get plate info
-        plateclass = cubes[0].plateclass if cubes else datadb.Plate(id=plate)
+        plateclass = cube.plateclass if cube else datadb.Plate(id=plateid)
         plateinfo['plate'] = plateclass
-         
-        # put sample info into a dictionary
+
+        # ifu
         ifudict=OrderedDict()
-        for cube in cubes:
+        if ifuid:
+            #cube = [cube for cube in cubes if cube.ifu.name == ifuid][0]
             imindex = [images.index(i) for i in images if '/{0}.png'.format(cube.ifu.name) in i]
             ifudict[cube.ifu.name]=OrderedDict()
             ifudict[cube.ifu.name]['image']=images[imindex[0]] if imindex else None
@@ -194,11 +279,11 @@ def plate():
                         except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
                     else:
                         ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
-                        
-        
-        plateinfo['cubes'] = cubes
+                       
+        plateinfo['cube'] = cube
+        plateinfo['ifuid'] = ifuid
         plateinfo['ifudict'] = ifudict
-        
+
         # set comment information
         if 'http_authorization' not in current_session:
             try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
@@ -207,7 +292,7 @@ def plate():
         plateinfo['inspection'] = inspection = Inspection(current_session)
         if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
         inspection.set_version(drpver=version,dapver=dapversion)
-        inspection.set_ifudesign(plateid=plate)
+        inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
         inspection.retrieve_cubecomments()
         current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
         inspection.retrieve_dapqacubecomments()
@@ -215,26 +300,29 @@ def plate():
         inspection.retrieve_cubetags()
         inspection.retrieve_alltags()
         result = inspection.result()
-        print('result',result)
+        print('inspection cubetags',inspection.ifudesign, inspection.cubetags)
         
         if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))
 
         # build plate design d3 
         jsdict={}
-        jsdict['plateid'] = plate
+        jsdict['plateid'] = plateid
         jsdict['platera'] = plateclass.ra if plateclass.cube else None
         jsdict['platedec'] = plateclass.dec if plateclass.cube else None
         jsdict['platedata'] =  buildPlateDesignDict(cubes) if plateclass.cube else None
         js = render_template('js/platedesign.js',**jsdict)
-        plateinfo['js'] = js
-        
+        plateinfo['platedesignjs'] = js
 
-    return render_template("plateInfo.html", **plateinfo)
+    return render_template("plateInfo.html", **plateinfo)    
 
-@plate_page.route('/marvin/singleifu', methods=['GET'])
-@plate_page.route('/singleifu', methods=['GET'])
-def singleifu():
+@plate_page.route('/mangaid/')
+@plate_page.route('/marvin/mangaid/')
+@plate_page.route('/mangaid/<mangaid>/')
+@plate_page.route('/marvin/mangaid/<mangaid>/')
+@plate_page.route('/mangaid/<mangaid>/<getver>/')
+@plate_page.route('/marvin/mangaid/<mangaid>/<getver>/')
+def singleifu(mangaid=None, getver=None):
     ''' '''
 
     session = db.Session()
@@ -252,9 +340,9 @@ def singleifu():
     ifu['version'] = version
     ifu['dapversion'] = dapversion
 
-    mangaid = valueFromRequest(key='mangaid',request=request, default=None)
+    #mangaid = valueFromRequest(key='mangaid',request=request, default=None)
     ifu['mangaid'] = mangaid
-    getver = valueFromRequest(key='version',request=request, default=None)
+    #getver = valueFromRequest(key='version',request=request, default=None)
     if getver: 
         version = getver
         ifu['version'] = getver
@@ -265,6 +353,8 @@ def singleifu():
         ifu['name'] = ifuname = cube[0].ifu.name if cube else None
         ifu['cube'] = cube = cube[0] if cube else None
         ifu['title'] += ' {0}'.format(mangaid)
+    else:
+        return render_template('errors/no_mangaid.html', **ifu)
 
     # image
     images = getImages(plate,version=version,ifuname=ifuname)
@@ -308,5 +398,6 @@ def singleifu():
     ifu['ifudict'] = ifudict
 
     return render_template('singleifu.html', **ifu)
+
 
 

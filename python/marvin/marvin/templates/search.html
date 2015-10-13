@@ -10,172 +10,18 @@
 {% endblock head %}
 
 {% block code %}
+<script type="text/javascript" src="{{url_for('static',filename='js/search.js')}}"></script>
 <script type='text/javascript'>
-
-	// initialize tooltips
-	$(function () {
-		$('[data-toggle="tooltip"]').tooltip()
-	})
-
-	// initialize datetime picker
-	$(function () {
-		$('#datetimepicker').datetimepicker({
-			widgetPositioning: {horizontal:'right'},
-            format: 'YYYY-MM-DD'
-		});
+    
+    var search = {};     
+    $(function() {
+	    // Enable tool-tips, date-time and select pickers
+		utils.initToolTips();
+		utils.initDateTimePicker();
+		utils.enableSelectPicker();
+		// instantiate search object
+		search = new Search({{nsamagids|tojson|safe}});
 	});
-            
-	// Enable select picker
-	enableSelectPicker();
-
-	// Toggle between plate and mjd search
-	$(function() {		
-		$('#searchon').change(function () {
-    		$('.search').hide();
-    		$('#by'+$(this).val()).fadeIn();
-		});
-	});
-	
-	// Grab SQL
-	function getSQL(){
-		
-		formdata = $('#searchform').serialize();
-			
-		$.post($SCRIPT_ROOT + '/marvin/getsql', formdata, 'json')
-		$.post($SCRIPT_ROOT + '/marvin/getsql', formdata,'json')
-			.done(function(data){
-				var htmlstr='';
-				for (var i=0; i<data.result['rawsql'].length; ++i){
-					htmlstr += '<div class="row"><p>'+data.result['rawsql'][i]+'</p></div>';
-				}
-				$('#rawsql').html(htmlstr);
-				$('#sql').text(data.result['sql']);
-			})
-			.fail(function(data){
-				$('#sql').text('Server request failed to grab sql!');
-			});
-				
-	}
-	
-	// Reset SQL
-	function sqlreset() {
-		$('#sqlinput').val('');
-	}
-
-	// Reset Comments
-	function commentreset() {
-		$('#comment_form').trigger("reset");
-		var form = $('#comment_form :input[type="text"]');
-		form.each(function() {
-			$(this).val('');
-		});
-		$('#commtag option[value=Any]').attr('selected','selected');
-		$('#cat option[value=any]').attr('selected','selected');
-		$('.selectpicker :checked').each(function() {
-			this.selected = false;
-		});
-		$('.selectpicker').selectpicker('refresh');
-		
-	}
-	
-	// Erase any results when tabs switch
-	$(function(){
-		$('.nav-tabs').on('click','li a',function(){
-			$('#results').hide();
-		});
-	});
-	
-	// Submit table form
-	function tableform(){
-		var form = $('#sastableform');
-		var data = $('.sastable').bootstrapTable('getData');
-		$('#hiddendata').val(JSON.stringify(data));
-		form.submit();
-		$('#fitsform').modal('hide');
-	}
-	
-	// Submit comment form
-	$(function(){
-		$('#comment_form').submit(function(event){
-			var issuelist = getSelected('#drpissue');
-			$('#issues').val(issuelist);
-			var dapissuelist =  getSelected('#dapissue');
-			$('#dapissues').val(dapissuelist);
-		});
-	});
-	
-	// Submit guided search form
-	$(function() {
-		$('#searchform').submit(function(event){
-			var taglist = getSelected('.tagsp');
-			$('#tagids').val(taglist);
-			var defaultlist = getSelected('.defsp');
-			$('#defaultids').val(defaultlist);
-		});
-	});	
-	
-	// RA,Dec toggle mode
-	$(function(){
-		$('#radecmode a').on('click',function() {
-			var id = $(this).attr('id');
-			var input = $('#radectext');
-			if (id == 'cone') {
-				input.prop('disabled',false); 
-				input.attr('placeholder','Cone: input radius [deg]');
-				$('#radechidden').val(id);
-			} else {
-				input.prop('disabled',true);
-				input.attr('placeholder','Between mode');
-				input.val('');
-				$('#radechidden').val(id);
-			}			
-		});
-	});
-
-	// Toggle between date mode	
-	$(function(){
-		$('#datetoggle').on('click',function(){
-			if ($(this).hasClass('active')){
-				$(this).button('reset');
-				$('#datehide').val('before');
-			} else {
-				$(this).button('complete');
-				$('#datehide').val('after');
-			}
-		});
-	});
-			
-	// NSA info search
-	$(function(){
-		$('#nsainfo a').on('click', function() {
-			var id = $(this).attr('id');
-			var number = parseInt(id.slice(3));
-			var magarr = {{nsamagids|safe}};
-			var href = '#by'+id;
-			$('.nsa').hide();
-			$('#nsabandbutton').hide();
-			
-			if ($.inArray(number,magarr) > -1) {
-				$('#nsabandbutton').show();
-				$(href+'f').show();
-			} else {
-				$(href).show();
-			}
-		});
-	});
-	
-	// NSA magnitude band 
-	$(function(){
-		$('#nsaband a').on('click', function() {
-			var id = $(this).attr('id');
-			var mag = id.slice(7);
-			var inputid = $('.nsa :visible').attr('id');
-			var finalid = 'by'+inputid.slice(0,inputid.length-1)+mag;
-			$('.nsa').hide();
-			$('#'+finalid).show();
-		});
-	});
-	
 </script>
 {% endblock code %}
 
@@ -187,8 +33,10 @@
 		  	{# List of Tabs #}
 			<ul class="nav nav-tabs">
 			  <li class="{{'active' if dosearch or (not dosearch and not dosql and not docomm)}}"><a href="#guidedsearch" id='guidetab' data-toggle="tab">Guided Search</a></li>
+			  {% if 'collab' is active_feature %}
 			  <li class="{{'active' if dosql and not dosearch and not docomm}}"><a href="#directsql" id='directtab' data-toggle="tab">Direct SQL</a></li>
 			  <li class="{{'active' if docomm and not dosearch and not dosql}}"><a href="#comments" id='commenttab' data-toggle="tab">Comments</a></li>
+			  {% endif %}
 			</ul>
 			{# TAB CONTENT #}
 			<div class="tab-content">
@@ -200,7 +48,7 @@
 							<span><h3> Search Cubes: </h3></span>
 						</div>
 					</div>			
-					<form class='form' id='searchform' role='form' action='search.html' method='post' data-toggle='validator'>
+					<form class='form' id='searchform' role='form' action="{{url_for('search_page.search')}}" method='post' data-toggle='validator'>
 						<div class='row'>
 							{# Column 0 #}
 							<div class='col-md-2 col-md-offset-2'>
@@ -412,7 +260,7 @@
 								{# Form Submit Buttons #} 
 								<div class="col-md-12 col-md-offset-5">
 									<input type="submit" name="search_form" value="Search" class="btn btn-primary btn-lg"/>
-									<button type="button" onClick='getSQL()' name="sql_form" value="sql" class="btn btn-primary btn-lg" data-toggle='modal' data-target='#sqlform'>See SQL</button>
+									<button type="button" onClick='search.getSQL()' name="sql_form" value="sql" class="btn btn-primary btn-lg" data-toggle='modal' data-target='#sqlform'>See SQL</button>
 								</div>
 								{# SQL Form Modal #}
 								<div id='sqlform' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='sqllabel' aria-hidden='true'>
@@ -442,6 +290,7 @@
 					</form>
 				</div>
 				
+				{% if 'collab' is active_feature %}
 				{# Direct SQL Tab #}
 				<div class="tab-pane {{'active' if dosql and not dosearch and not docomm}}" id="directsql">
 					{{ directsql(form) }}			
@@ -454,7 +303,7 @@
 							<span><h3> Search Comments: </h3><span>
 						</div>
 					</div>
-					<form class='form' role='form' action='search.html' method='post' id='comment_form'>
+					<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post' id='comment_form'>
 						<div class='row'>
 							{# Column 1 #}
 							<div class='col-md-2 col-md-offset-3 comment' id='commentcol1'>
@@ -546,10 +395,11 @@
 						<div class="row">
 							<div class="col-md-12 col-md-offset-5">
 								<input type="submit" name="comment_form" value="Search" class="btn btn-primary btn-lg"/>
-								<button type='button' name='resetcomment' class='btn btn-primary btn-lg' onclick='commentreset()'>Reset</button>
+								<button type='button' name='resetcomment' class='btn btn-primary btn-lg' onclick='search.resetComments()'>Reset</button>
 							</div>
 						</div>
 					</form> {# end comment form #}
+					{% endif %}
 				</div>
 								
 			</div> {# end tab content #}
@@ -566,13 +416,13 @@
 			</div>
 		</div>
 		{# Form Table - form is needed to send data to write table as fits (writeFits button) #}
-		<form class='form' role='form' method='post' action='writeFits' id='sastableform'>
+		<form class='form' role='form' method='post' action='{{url_for("search_page.writeFits")}}' id='sastableform'>
 			{# write FITS pop-up modal, see buttons in table macro #}
-			{{ writefits('tableform()') }}
+			{{ writefits('search.submitTableForm()') }}
 			
 		{# Custom Toolbar for table #}	
 		<div id='toolbar'>
-			<button id="delete" class="btn btn-danger" type='button' onclick='deleteRows()'>Delete Rows</button>
+			<button id="delete" class="btn btn-danger" type='button' onclick='tm.deleteRows()'>Delete Rows</button>
 			<button class='btn btn-primary' type='button' data-toggle='modal' data-target='#fitsform'>Write FITS</button>		
 			{{dropdownload('platedl', 'rsynclink')}}
 		</div>

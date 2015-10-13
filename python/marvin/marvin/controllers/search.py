@@ -170,7 +170,8 @@ def buildTable(cubes):
                     # grab from sample table
                     try: cubedict[col].append(cube.sample[0].__getattribute__(col))                
                     except: cubedict[col].append(None)
-                else: cubedict[col].append(None)
+                else:
+                    cubedict[col].append(None)
                 
     cubetable = Table(cubedict)
     cubetable = cubetable[cols]
@@ -410,7 +411,7 @@ def getFormParams():
         print('form dapissues', form['dapissues'])
 
     if 'defaultids' in form:
-        if form['defaultids'] != 'any':        
+        if form['defaultids'] != 'any':
             ids = [int(d.split('def')[1]) for d in form['defaultids'].split(',')]
             if ids and current_session['defaults'] != ids:
                 current_session['defaults'] = ids
@@ -480,8 +481,8 @@ def getSQL():
     
     return jsonify(result={'text':'sql results','rawsql':rawsql,'sql':sql})
 
-@search_page.route('/marvin/search.html', methods=['GET','POST'])
-@search_page.route('/search.html', methods=['GET','POST'])
+@search_page.route('/search/', methods=['GET','POST'])
+@search_page.route('/marvin/search/', methods=['GET','POST'])
 def search():
     ''' Documentation here. '''
     
