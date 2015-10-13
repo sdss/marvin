@@ -87,6 +87,10 @@ python/marvin/marvin/static/js/jquery/moment.min.js -text
 python/marvin/marvin/static/js/jquery/npm.js -text
 python/marvin/marvin/static/js/jquery/validator.min.js -text
 python/marvin/marvin/static/js/plateinfo.js -text
+python/marvin/marvin/static/js/qunit/qunit-1.19.0.js -text
+python/marvin/marvin/static/js/qunit/qunit-assert-classes.js -text
+python/marvin/marvin/static/js/qunit/qunit-assert-html.min.js -text
+python/marvin/marvin/static/js/qunit/qunit-once.js -text
 python/marvin/marvin/static/js/search.js -text
 python/marvin/marvin/static/js/tableMethods.js -text
 python/marvin/marvin/static/js/tests/test_comments.js -text
