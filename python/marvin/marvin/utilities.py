@@ -154,7 +154,7 @@ def setGlobalVersion():
     # set MPL version
     try: mplver = current_session['currentmpl']
     except: mplver = None
-    if not mplver: current_session['currentmpl']='MPL-3'
+    if not mplver: current_session['currentmpl']='MPL-4'
     
     # set version mode
     try: vermode = current_session['vermode']
