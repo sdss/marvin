@@ -167,7 +167,7 @@ def plate():
         images = getImages(plate,version=version)
         plateinfo['images'] = sorted(images) if images else None
         sasurl = os.path.join(sasurl,sasredux)
-        plateinfo['sasurl'] = os.path.join(sasurl,sasredux)
+        plateinfo['sasurl'] = sasurl
         
         # get cubes for this plate and current tag, sort by ifu name
         cubes = session.query(datadb.Cube).join(datadb.PipelineInfo,
