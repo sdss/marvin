@@ -33,7 +33,7 @@ eval "myDir=\$${myEnv}"
 # The following line will include an URL name after the colon
 # for any SVN version.
 #
-svnURL='$HeadURL: https://svn.sdss.org/repo/manga/marvin/trunk/bin/marvin_version $'
+svnURL='$HeadURL$'
 #
 # Special case the trunk, which we want to recognize as a version named "trunk"
 #
