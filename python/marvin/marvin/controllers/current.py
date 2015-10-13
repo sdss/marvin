@@ -75,8 +75,8 @@ def buildPlateDict(stage='2d', cols=None):
 
 current_page = flask.Blueprint("current_page", __name__)
 
-@current_page.route('/marvin/current.html', methods=['GET','POST'])    
-@current_page.route('/current.html', methods=['GET','POST'])
+@current_page.route('/current/', methods=['GET','POST'])
+@current_page.route('/marvin/current/', methods=['GET','POST'])    
 def current():
     ''' Documentation here. '''
     
@@ -101,7 +101,8 @@ def current():
     # platelist and drpall files
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
     sasredux = os.path.join(os.getenv('SAS_REDUX'),version)
-    plfile = os.path.join(os.getenv('SAS_URL'),sasredux, 'platelist.fits')
+    try : plfile = os.path.join(os.getenv('SAS_URL'),sasredux, 'platelist-{0}.fits'.format(version))
+    except: plfile = os.path.join(os.getenv('SAS_URL'),sasredux, 'platelist.fits')
     drpall = os.path.join(os.getenv('SAS_URL'),sasredux, 'drpall-{0}.fits'.format(version))
     current['plfile'] = plfile
     current['drpall'] = drpall
@@ -123,7 +124,7 @@ def current():
     if stage == '2d':
         displayCols = ['plate','mjd','apocomp','versdrp2','status2d','type','complete','drp2qual','badifu','cartid','platetyp','srvymode','nexp','nscigood','nscibad','totalexptime','b1sn2','r1sn2','b2sn2','r2sn2']
     elif stage == '3d':
-        displayCols = ['plate','ifudsgn','harname','mangaid','status3d','drp3qual','versdrp3','verscore','mjdmax','objRA', 'objDEC','bluesn2','redsn2','nexp','exptime']
+        displayCols = ['plate','ifudsgn','harname','mangaid','status3d','drp3qual','versdrp3','verscore','mjdmax','objra', 'objdec','bluesn2','redsn2','nexp','exptime']
         
     # Load faults
     try: 

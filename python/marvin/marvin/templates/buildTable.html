@@ -28,8 +28,8 @@
  		    <th data-field="state" data-checkbox="true">ID</th>
  		    <th data-field="id" id='id' data-visible='false' data-switchable='false'>ID</th>
 	 		{% for column in keys %}
- 			<th id='{{column}}' data-field='{{column}}' data-sortable='true' data-sorter="sort"
- 				data-cell-style="{{'cellStyle' if (column=='plate' or 'status' in column or 'comp' in column) else ''}}"
+ 			<th id='{{column}}' data-field='{{column}}' data-sortable='true' data-sorter="tm.sort"
+ 				data-cell-style="{{'tm.cellStyle' if (column=='plate' or 'status' in column or 'comp' in column) else ''}}"
  				data-visible="{{'false' if column not in cols else 'true'}}">{{column|upper}}</th>
 	 		{% endfor %} 		
 		</tr>	 		
@@ -43,16 +43,16 @@
     			<td></td><td>{{loop.index0}}</td>
     			{% for col in keys %}
     				{% if col == 'plate' %}
-    					<td><a target='_blank' href='/marvin/plateInfo.html?plateid={{row[col]}}&version={{(row['versdrp2']|split())[0]|filterVersion()}}'>{{row[col]}}</a></td>
+    					<td><a target='_blank' href="{{url_for('plate_page.plate',plateid=row[col],ifuid=(row['versdrp2']|split())[0]|filterVersion())}}">{{row[col]}}</a></td>
     				{% elif col == 'ifuname' or col == 'ifudesign' or col == 'ifudsgn' %}
-    					<td><a target='_blank' href='/marvin/plateInfo.html?plateid={{row['plate']}}&version={{(row['versdrp2']|split())[0]|filterVersion()}}#{{row[col]}}'>{{row[col]}}</a></td>
+                        <td><a target='_blank' href="{{url_for('plate_page.plate',plateid=row['plate'],plver=(row['versdrp2']|split())[0]|filterVersion(),ifuid=row[col])}}">{{row[col]}}</a></td>
                     {% elif col == 'mangaid' %}
-                        <td><a target='_blank' href='/marvin/singleifu?mangaid={{row['mangaid']}}&version={{(row['versdrp2']|split())[0]|filterVersion()}}'>{{row[col]}}</a></td>
+                        <td><a target='_blank' href="{{url_for('plate_page.singleifu',mangaid=row['mangaid'],getver=(row['versdrp2']|split())[0]|filterVersion())}}">{{row[col]}}</a></td>
     				{% elif col == 'tracticket' %}
                         {% if 'ticket' in row[col] %}
                             <td>{% if trac_url %}<a target='_blank' href='{{trac_url}}/{{row[col]}}'>{{row[col]}}</a>{% else %}{{row[col]}}{% endif %}</td>
                         {% elif 'promote' in row[col] %}
-                            <td><button type='button' class='btn btn-primary btn-sm' onclick='promoteTracticket({{row["id"]}})' id='feedback{{row["id"]}}'>Promote</button></td>
+                            <td><button type='button' class='btn btn-primary btn-sm' onclick='feedback.promoteTracTicket({{row["id"]}})' id='feedback{{row["id"]}}'>Promote</button></td>
                         {% else %}
                             <td><button type='button' class='btn btn-default btn-sm' disabled id='feedback{{row["id"]}}'>Promote</button></td>
                         {% endif %}

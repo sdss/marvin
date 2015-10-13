@@ -1,67 +1,12 @@
 {% block code %}
+    
+    <script type="text/javascript" src="{{url_for('static',filename='js/header.js')}}"></script>
 	<script type='text/javascript'>
-	
-		// on page load
-		$(function() {
-			var vermode = "{{session['vermode']}}";
-			var id = (vermode.search('MPL') > -1) ? 'mpl' : 'drpdap';
-			$('.vertype').hide();
-			$('#by'+id).show();
-		});
-	
-		// on drp,dap,or mpl version change
-		$(function() {
-			$('#version, #dapversion, #mplver').change(function(){
-				var vermode = "{{session['vermode']}}";
-				var id = (vermode.search('MPL') > -1) ? 'mpl' : 'drpdap';
-				var verform = $('#verform').serializeArray();
-				verform.push({'name':'vermode','value':id});				
-				sendAjax(verform);
-			});
-		});
-				
-		// toggle version mode
-		function togglever(){
-			$('.dropdown-menu').on('click','li a', function(){
-				var id = $(this).attr('id');
-				var typetext = (id=='mpl') ? 'MPL' : 'DRP/DAP';
-
-				//switch button title text
-				var but = $('#verbut');
-				var newhtml = 'Set Version By: '+typetext+' <span class="caret"></span>';
-				but.html(newhtml);
-				
-				//get current set values
-				var verform = $('#verform').serializeArray();
-				verform.push({'name':'vermode','value':id});
-				
-				// set the default version
-				sendAjax(verform);
-			});	
-		}
-		
-		
-		// version Ajax request
-		function sendAjax(form) {
-			$.post($SCRIPT_ROOT + '/marvin/setversion', form,'json')
-			.done(function(data){
-				location.reload();
-			})
-			.fail(function(data){
-				alert('Failed to set the versions!');
-			});		
-		}
-
-        // PlateID/MangaID Select		
+        
+        var header = {};
         $(function() {
-            $('#idselect').change(function(){
-                var id = $('select option:selected').attr('id');
-                var text = (id == 'plateid') ? 'Plate ID' : 'MaNGA ID';
-                $('#idtext').attr('placeholder',text);
-                $('#idtext').attr('name',id);
-            });
+            header = new Header({{session.vermode|tojson|safe}}, {{session.searchoptions|tojson|safe}});
         });
-
 	</script>
 {% endblock code %}
 
@@ -76,45 +21,45 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Marvin</a>
+          <a class="navbar-brand" href="{{url_for('index_page.index')}}">Marvin</a>
         </div>
 
         <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="{{'active' if active_page=='current'}}"><a href="current.html">Current Reduction Status</a></li>
-                <li class="{{'active' if active_page=='search'}}"><a href="search.html">Search</a></li>
-                <li class="{{'active' if active_page=='explore'}}"><a href="explore.html">Explore</a></li>
-                <li class="{{'active' if active_page=='feedback'}}"><a href="feedback.html">Feedback</a></li>
-                {#<li class="{{'active' if active_page=='doc'}}"><a href="documentation.html">Documentation</a></li>#}
+                <li class="{{'active' if active_page=='current'}}"><a href="{{url_for('current_page.current')}}">Current Reduction Status</a></li>
+                <li class="{{'active' if active_page=='search'}}"><a href="{{url_for('search_page.search')}}">Search</a></li>
+                <li class="{{'active' if active_page=='explore'}}"><a href="{{url_for('explore_page.explore')}}">Explore</a></li>
+                {% if 'collab' is active_feature %}<li class="{{'active' if active_page=='feedback'}}"><a href="{{url_for('feedback_page.feedback')}}">Feedback</a></li>{% endif %}
+                {#<li class="{{'active' if active_page=='doc'}}"><a href="{{url_for('doc_page.doc')}}">Documentation</a></li>#}
             </ul>
-            <form class="navbar-form navbar-left navbar-input-group" role="form" action="navidselect" method="get">
-                {#<div class="form-group">
-                    <input type="text" class="form-control" name="plateID" value="" placeholder="Plate ID">
-                </div>
-                <button type="submit" class="btn btn-primary">Get Plate ID</button>#}
+
+            {# Marvin PlateId/MaNGAId Search #}
+            <form class="navbar-form navbar-left navbar-input-group" role="form" action="{{url_for('plate_page.navidselect')}}" method="post">
                 <div class='form-group form-inline'>
-                    <input class='form-control' type='text' name='plateid' placeholder='Plate ID' id='idtext' val=''/>
+                    <input class='form-control typeahead' type='text' name='plateid' placeholder='Plate ID' id='idtext' val='' autocomplete='off'/>
                     <select class='btn btn-primary form-control' id='idselect'>
-                        <option id='plateid' val='plateid' selected>Get by Plate ID</option>
-                        <option id='mangaid' val='mangaid' >Get by Manga ID</option>
+                        <option id='plateid' val='plateid' {% if session['searchmode'] == 'plateid' %}selected{% endif %}>Get by Plate ID</option>
+                        <option id='mangaid' val='mangaid' {% if session['searchmode'] == 'mangaid' %}selected{% endif %}>Get by Manga ID</option>
                     </select>
                 </div>
             </form>
-            <form class='navbar-form navbar-left navbar-input-group' id='verform' role='form' action="setversion" method="post">
 
+            {% if 'collab' is active_feature %}
+            {# Marvin Version Control #}
+            <form class='navbar-form navbar-left navbar-input-group' id='verform' role='form' action="{{url_for('index_page.setversion')}}" method="post">
 				{# Toggle Version #}
 				<div class="btn-group form-group" role="group">
 					<button type="button" id='verbut' class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
 						Set Version By: {{session['vermode']}} <span class="caret"></span></button>
 					<ul class="dropdown-menu" id='{{id}}' role="menu" >
-					  <li><a id='mpl' onclick='togglever()'>MPL</a></li>
-					  <li><a id='drpdap' onclick='togglever()'>DRP/DAP</a></li>
+					  <li><a id='mpl' onclick='header.toggleVersion("mpl")'>MPL</a></li>
+					  <li><a id='drpdap' onclick='header.toggleVersion("drpdap")'>DRP/DAP</a></li>
 					</ul>
 				</div>	
 				
 				{# MPL Versions #}
 				<div class='form-group vertype' id='bympl'>
-					<select class='form-control input-sm' id='mplver' name='mplver'>
+					<select class='form-control input-sm verselecttype' id='mplver' name='mplver'>
 						{% for ver in ['MPL-4','MPL-3','MPL-2','MPL-1'] %}
 							{% if ver == session['currentmpl'] %} 
 								<option id='{{ver}}' value='{{ver}}' selected>{{ver|getMPL}}</option>
@@ -126,10 +71,10 @@
 				</div>
 				
 				{# Custom Versions #}
-				<div id='bydrpdap' class='form-group vertype' style='display:none;'>				
+				<div class='form-group vertype' id='bydrpdap' style='display:none;'>				
 					<div class='form-group'>
 						{# DRP Version #}
-						<select class='form-control input-sm' name='version' id='version'>
+						<select class='form-control input-sm verselecttype' name='version' id='version'>
 							{% for ver in session['versions'] %}
 								{% if ver == session['currentver'] %} 
 									<option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option>
@@ -141,7 +86,7 @@
 					</div>
 					{# DAP Version #}
 					<div class='form-group'>
-						<select class='form-control input-sm' name='dapversion' id='dapversion'>
+						<select class='form-control input-sm verselecttype' name='dapversion' id='dapversion'>
 							{% for ver in session['dapversions'] %}
 								{% if ver == session['currentdapver'] %} 
 									<option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option>
@@ -153,6 +98,18 @@
 					</div>
             	</div>
             </form>
+            {% endif %}
+
+            {# Marvin Mode #}
+            <form class='navbar-form navbar-right navbar-input-group' id='modeform' role='form' action="{{url_for('index_page.setmode')}}" method="post">
+                <div id='marvinmode' class='form-group'>
+                    <select class='form-control btn btn-primary input-sm' id='marvinmodeselect'>
+                        <option id='dr13' value='dr13' {% if session['marvinmode'] == 'dr13' %}selected{% endif %} >DR13</option>
+                        <option id='mangawork' value='mangawork' {% if session['marvinmode'] == 'mangawork' %}selected{% endif %}>mangawork</option>
+                    </select>
+                </div>
+            </form>           
+
         </div>
     </div>
 </nav>

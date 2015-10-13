@@ -237,8 +237,8 @@ class Inspection:
          u'stvdisp',
          u'stvel']
 
-    def set_option(self,id=None,mode=None,bintype=None,maptype=None,add=True):
-        self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype}
+    def set_option(self,id=None,mode=None,bintype=None,maptype=None,specpanel=None,add=True):
+        self.option = {'id':id,'mode':mode,'bintype':bintype,'maptype':maptype,'specpanel':specpanel}
 
     def set_panel(self,id=None,panel=None,position=None,add=True):
         self.panel = {'id':id,'panel':panel,'position':position}

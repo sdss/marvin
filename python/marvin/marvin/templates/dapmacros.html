@@ -47,7 +47,7 @@
 
 {# DAP Map List #}
 {% macro dapmaplist() %}
-	<label for='#dapmaplist'>Map List:</label>
+	<label for='#dapmapslist'>Map List:</label>
 	<select class='form-control daptoggle' multiple id='dapmapslist' size='5'>
 		<option id='kin' val='kin' selected>Kinematic</option>
 		<option id='snr' val='snr'>SNR</option>
@@ -99,7 +99,7 @@
 	{% if loop.index0 % 3 == 0 %}<div class='row'>{% endif %}
 		<div class='col-md-4' id='{{category.key}}panel{{(i+1)|string}}'>
 			<label id='{{category.key}}label{{(i+1)|string}}'>Map {{(i+1)|dapmaptype(category.key)}}</label>
-			<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='daploadmodal("{{category.key}}img{{(i+1)|string}}_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}img{{(i+1)|string}}_{{ifu}}' alt="{{altimg}}"></a>
+			<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='ifu.dapqa.loadImageModal("{{category.key}}img{{(i+1)|string}}_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}img{{(i+1)|string}}_{{ifu}}' alt="{{altimg}}"></a>
 			{{ dapqaissue(catid,category,(i+1)|string) }}
 		</div>
 	{% if loop.index0 % 3 == 2 or loop.last %}</div>{% endif %}
@@ -116,8 +116,8 @@
 	<div class='row'>
 		<div class='col-md-8' id='{{category.key}}panel1'>
 			<label id='{{category.key}}label1'>Map {{1|dapmaptype(category.key)}}</label>
-			<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='daploadmodal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="{{altimg}}"></a>
-			{{ dapqaissue(catid,category,'1') }}
+			<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='ifu.dapqa.loadImageModal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="{{altimg}}"></a>
+			{{ dapqaissue(catid,category,'1s') }}
 		</div>
 	</div>
 	</div>
@@ -131,8 +131,8 @@
 		<div class='row singlepane' id='dapspecsingle_{{ifu}}'>
 			<div class='col-md-12'>
 				<label id='{{category.key}}label1'>Spectrum {{1}}</label>
-				<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='daploadmodal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="Spectrum Image"></a>
-				{{ dapqaissue(catid,category,'1') }}
+				<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='ifu.dapqa.loadImageModal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="Spectrum Image"></a>
+				{{ dapqaissue(catid,category,'1s') }}
 			</div>
 		</div>
 	{#{% endfor %}#}

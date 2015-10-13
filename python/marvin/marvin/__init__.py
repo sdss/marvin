@@ -8,6 +8,7 @@ import socket
 from os.path import join
 from inspect import getmembers, isfunction
 from raven.contrib.flask import Sentry
+from flask_featureflags import FeatureFlag
 
 import flask
 import jinja_filters
@@ -124,19 +125,29 @@ def create_app(debug=False):
     def page_not_found(e):
         error={}
         error['title']='Marvin | Page Not Found'
-        return flask.render_template('page_not_found.html',**error),404 
+        app.logger.error('Page Not Found Exception {0}'.format(e))
+        return flask.render_template('errors/page_not_found.html',**error),404 
 
     @app.errorhandler(500)
     def internal_server_error(e):
         error={}
         error['title']='Marvin | Internal Server Error'
-        return flask.render_template('internal_server_error.html',**error),500
+        app.logger.error('Internal Server Error Exception {0}'.format(e))        
+        return flask.render_template('errors/internal_server_error.html',**error),500
 
     @app.errorhandler(400)
     def bad_request(e):
         error={}
         error['title']='Marvin | Bad Request'
-        return flask.render_template('bad_request.html',**error),400
+        app.logger.error('Bad Request Exception {0}'.format(e))        
+        return flask.render_template('errors/bad_request.html',**error),400
+
+    # -------------
+    # Initialize feature flags
+    feature_flags = FeatureFlag(app)
+    #configFeatures(debug=app.debug)
+
+    # -------------
 
     # -------------------
     # Register blueprints
@@ -150,6 +161,7 @@ def create_app(debug=False):
     from .controllers.feedback import feedback_page
     from .controllers.explore import explore_page
     from .controllers.documentation import doc_page
+    from .controllers.tests import test_page
     
     url_prefix = '' if localhost else '/marvin'
 
@@ -162,6 +174,7 @@ def create_app(debug=False):
     app.register_blueprint(feedback_page, url_prefix=url_prefix)
     app.register_blueprint(explore_page, url_prefix=url_prefix)
     app.register_blueprint(doc_page, url_prefix=url_prefix)
+    app.register_blueprint(test_page, url_prefix=url_prefix)
     
     return app
 

@@ -10,8 +10,8 @@
 	  <span class="caret"></span>
 	</button>
 	<ul class="dropdown-menu" id='{{id}}' role="menu" >
-	  <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>Cubes</a></li>
-	  <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='rsyncFiles()'>RSS</a></li>
+	  <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>Cubes</a></li>
+	  <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>RSS</a></li>
 	</ul>
   </div>	
 				  
@@ -58,7 +58,7 @@
 				<div class='modal-content'>	
 					{# Header #}
 					<div class='modal-header well'>	
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="resetLogin()"><span aria-hidden="true">&times;</span></button>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="utils.resetLogin()"><span aria-hidden="true">&times;</span></button>
 						<h4 class="modal-title">Trac User Login </h4>								
 					</div>
 					{# Body #}
@@ -87,7 +87,7 @@
 							</div>
 							<div class='col-md-3'>
 								{#{% if fxn %}#}
-									<button type="button" onclick='login()' name="submitlogin_form" id='sublogin' class="btn btn-primary btn-lg" >Submit</button>
+									<button type="button" onclick='utils.login()' name="submitlogin_form" id='sublogin' class="btn btn-primary btn-lg" >Submit</button>
 								{#{% endif %}#}
 							</div>
 						</div>								

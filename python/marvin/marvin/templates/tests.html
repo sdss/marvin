@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default("tests") %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block code %}
+<script type='text/javascript'>var ifu={};</script>
+<script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/ifu.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/tests/test_header.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/tests/test_explore.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/tests/test_ifu.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/tests/test_comments.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/tests/test_dapqa.js')}}"></script>
+{% endblock code %}
+
+{% block body %}
+
+<div class='well'>
+    <div class='row'>
+        <div class='col-md-12'>
+            <h2>MaNGA Javascript Testing Page</h2>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-6' id='qunit'></div>
+    </div>
+    <div class='row'>
+        <div class='col-md-6' id='qunit-fixture'>
+            <div class='row' id='testcomments'>
+                {% include 'commentform.html' %}
+            </div>
+
+            <div class='tab-pane dapqapanes' id='dapqapane_{{cube.ifu.name}}'>
+                {% include 'dapqapanel.html' %}
+            </div>            
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock body %}

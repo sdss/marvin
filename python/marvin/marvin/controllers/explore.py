@@ -12,18 +12,39 @@ from ..utilities import setGlobalVersion
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
+from flask.ext.classy import FlaskView, route
+
 try:
     from . import valueFromRequest
 except ValueError:
-    pass
-    
-    
+    pass 
+
+
+"""
+class Explore(FlaskView):
+
+    @route('/')
+    def explore(self):
+        explore={}
+        explore['title'] = "Marvin | Explore"
+        return render_template('explore.html', **explore)
+
+    def get(self):
+        pass
+
+    def post(self):
+        pass
+
+explore_page = flask.Blueprint("explore_page", __name__)
+Explore.register(explore_page)
+"""
+
 explore_page = flask.Blueprint("explore_page", __name__)
 
-@explore_page.route('/explore.html', methods=['GET'])
-@explore_page.route('/marvin/explore.html', methods=['GET'])
+@explore_page.route('/explore/', methods=['GET'])
+@explore_page.route('/marvin/explore/', methods=['GET'])
 def explore():
-    ''' explore dataset page '''
+    '''explore dataset page'''
     
     session = db.Session() 
     explore = {}
@@ -37,4 +58,3 @@ def explore():
         
     
     return render_template("explore.html", **explore)
-    

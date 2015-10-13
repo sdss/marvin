@@ -69,7 +69,7 @@ def getMPL(value):
         if value == 'v1_1_2': name='{0} (MPL 2)'.format(value)
         if value == 'v1_3_3': name='{0} (MPL 3)'.format(value)
         if value == 'v1_5_1': name='{0} (MPL 4)'.format(value)
-    
+   
     return name
 
 def filterForm(value,name,form):
@@ -161,7 +161,7 @@ def makeID(value,type):
     ''' make a div id for the collapse panels for each name, and type '''
     
     return '{0}_{1}collapse'.format(value,type)
-    
+
 def filterVersion(value):
     ''' filter the version based on criteria '''
 
@@ -169,6 +169,6 @@ def filterVersion(value):
 
     return newver
 
-
+    
     
     

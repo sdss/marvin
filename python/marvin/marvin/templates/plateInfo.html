@@ -6,228 +6,125 @@
 
 
 {% block head %}
-	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
-	<link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/index.css')}}">
+    <link type="text/css" href="{{url_for('static',filename='css/tabs.css')}}" rel="stylesheet"> 
     <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/verticals.css')}}">
 {% endblock head %}
 
 {% block code %}
-{{js|safe}}
-<script type='text/javascript'>
-
-	// Get IFU hash from page
-	function getIFUHash() {
-		var hash = window.location.hash;
-		if (hash.search('comment') >= 0) {
-			newhash = hash.slice(hash.search('_')).replace('_','#');
-			return newhash;
-		} else {
-			return hash;
-		}			
-	}
-	
-    // Load ifu div element when image on page is clicked
-	$(function(){
-		$('.ifuims').on('click',function(){
-			$('.galinfo').hide();
-			var hrefid = $(this).attr('href');
-			$(hrefid).fadeIn();
-			renderTags(hrefid);
-			loadTab(hrefid);
-			//setDefault(hrefid.slice(hrefid.search('#')+1),'maps');
-		});
-	});
-	
-	// Load ifu div element if hash present when page loads
-	$(function(){
-		var hash = window.location.hash;
-		var ifuhash = getIFUHash();
-		var ifu = ifuhash.slice(ifuhash.search('#')+1);
-		$(String(ifuhash)).fadeIn();	
-		if (hash.search('comment') >= 0) $(String(hash)).fadeIn();
-		renderTags(ifuhash);
-		loadTab(ifuhash);
-		//setDefault(ifu,'maps');
-	});
-	
-	// Load ifu div element by left/right arrow key press
-	$(function() {
-		$(window).keyup(function(event) {
-			var ifuhash = getIFUHash();
-			var gals = $('.cubedetails');
-			if (ifuhash.length > 0) {
-				//shift+left arrow
-				if (event.shiftKey && event.keyCode == 37) {
-					$('.galinfo').hide();
-					var newid = gals.find(ifuhash).prev('.galinfo').attr('id');
-					var newhash = '#'+newid;					
-					$(newhash).fadeIn();
-					renderTags(newhash);
-					loadTab(newhash);
-					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
-				}
-				//shift+right arrow
-				if (event.shiftKey && event.keyCode == 39) {
-					$('.galinfo').hide();
-					var newid = gals.find(ifuhash).next('.galinfo').attr('id');
-					var newhash = '#'+newid;
-					$(newhash).fadeIn();
-					renderTags(newhash);
-					loadTab(newhash);
-					window.location.hash = (typeof newid !== 'undefined') ? newhash : '';
-				}
-			}
-		});
-	});
-	
-	// Render Tags in div
-	function renderTags(ifuhash) {
-		var ifu = ifuhash.slice(ifuhash.search('#')+1);
-		var tagdiv = $('#cubetags_'+ifu);
-		if (tagdiv.length > 0) {
-			try {
-				var cubetags = {{inspection.cubetags|safe}};
-			} catch (error) {
-				Raven.captureException(error);
-				var cubetags = null;
-			}
-			var ifutags = (cubetags === null) ? [] : cubetags[ifu];
-			var tagbox = tagdiv.tags({
-				tagData: ifutags,
-				tagSize: 'sm',
-				readOnly: true
-			});
-			tagbox.adjustInputPosition();
-		}
-	}
-			
-	// Plate design layout toggle	
-	$(function(){
-		$('#pdtoggle').on('click',function(){
-			if ($(this).hasClass('active')){
-				$('#platedesign').hide();
-				$('#platedesign').empty();
-			} else {
-				$('#platedesign').show();
-				$('#platedesign').html('<h3><small>Unfinished</small></h3>');
-				loadPlateDesign();
-			}
-		});
-	});
-
-	// Toggle add comment login function
-	$(function() {
-		$('#addcommentbut').click(function() {
-			var fxn = 'grabComments';
-			$('#fxn').val(fxn);
-		});
-	});
-	
-	// Set the first tab to display in cube details
-	function loadTab(ifuhref) {
-		//$(ifuhref+' #cubetabs a:first').tab('show')
-	}
-
-</script>
-<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
-{#<script type="text/javascript" src="{{url_for('static',filename='js/dapqa_test.js')}}"></script>#}
+{{platedesignjs|safe}}
 <script type="text/javascript" src="{{url_for('static',filename='js/dapqa.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/comments.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/ifu.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static',filename='js/plateinfo.js')}}"></script>
+<script type='text/javascript'>
+    // Load the plateinfo object when the page loads
+    var ifu,plateinfo = {}; // global ifu
+    $(function(){
+        try {
+            plateinfo = new Plateinfo('{{plate.id}}', $('.plateifu_images'), {{inspection.cubetags|tojson|safe}});
+            plateinfo.loadIfu('{{ifuid}}');
+        } catch (error) {
+            Raven.captureException('Error loading plateinfo javascript object: '+error);            
+        }
+
+        // if ifu present, scroll to it
+        if ($.isEmptyObject(ifu) == false) {
+            ifu.scrollTo('top');
+        }
+    });
+</script>
 {% endblock code %}
-
-
 
 {% block body %}
 
 {% if plate and good %}
-	<div class='well' style='background-color:rgba(245,245,245,0.4)'>
-		<div class='well'>
-			{# Some General Plate Info #}
-			<div class='row'>
-				<div class='col-md-3'>
-					<h1>Plate: {{plate.id}} <small>Version: {{version}} </small></h1>
-				</div>
-				{# Rsync button and modal #}
-				<div class='col-md-1'>
-				  	{{dropdownload('platedl', 'rsynclink')}}			
-				</div>
-            	{{rsyncmodal()}}
+    <div class='well' style='background-color:rgba(245,245,245,0.4)'>
+        <div class='well'>
+            {# Some General Plate Info #}
+            <div class='row'>
+                <div class='col-md-3'>
+                    <h1>Plate: {{plate.id}} <small>Version: {{version}} </small></h1>
+                </div>
+                {# Rsync button and modal #}
+                <div class='col-md-1'>
+                    {{dropdownload('platedl', 'rsynclink')}}            
+                </div>
+                {{rsyncmodal()}}
 
-				<div class='col-md-1'>
-					<button type='button' class='btn btn-primary' id='pdtoggle' data-toggle='button' aria-pressed='false'>Toggle Design Layout</button>
-				</div>
-			</div>
-			<div class='row'>
-				<div class='col-md-4'>
-					<h1><small>add some general plate info here</small></h1>
-					<table class='table table-condense'>
-						<tbody>
-							<tr><th>Label</th><td>{{plate.type}} Plate</td></tr>
-							<tr><th>Plate Type</th><td>{{plate.platetype}}</td></tr>
-							<tr><th>Survey Mode</th><td>{{plate.surveymode}}</td></tr>
-							<tr><th>Date Observed</th><td>{{plate.dateobs}}</td></tr>
-							<tr><th>RA,Dec</th><td>{{plate.ra}}, {{plate.dec}}</td></tr>
-							<tr><th>Data Link</th><td><a target='_blank' data-toggle="tooltip" title="{{sasurl}}" href='{{sasurl}}'>SAS URL</a></td></tr>
-						</tbody>
-					</table>
-				</div>
-				<div class='col-md-4 col-md-offset-1'>
-					<div id='platedesign'>
-					</div>
-				</div>				
-			</div>
-		</div>
-		{# Row of all Galaxy Images for Plate #}
-		<div class='well'>
-			<div class='row'>
-				<div class='col-md-12'>
-					<h2>Galaxy Images <small>Click for more info</small></h2>
-				</div>
-				{% if images %}
-					{% for image in images %}
-						<div class="col-xs-6 col-md-1">
-							<div class='caption'>
-								<h4>{{((image|split('/'))[-1]|split('.'))[0]}}</h4>
-							</div>					
-							<a href="#{{((image|split('/'))[-1]|split('.'))[0]}}" class="thumbnail ifuims">
-								<img class='img-responsive' src="{{image}}" alt="Image" >
-							</a>
-						</div>
-					{% endfor %}
-				{% else %}
-					<div class='col-md-12'><h1> No IFU images found! </h1></div>
-				{% endif %}
-  			</div>
-  			<input class='hidden' id='inspectready' value='{{inspection.ready}}'/>
-		</div>
+                <div class='col-md-1'>
+                    <button type='button' class='btn btn-primary' id='pdtoggle' data-toggle='button' aria-pressed='false'>Toggle Design Layout</button>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-md-4'>
+                    <h1><small>add some general plate info here</small></h1>
+                    <table class='table table-condense'>
+                        <tbody>
+                            <tr><th>Label</th><td>{{plate.type}} Plate</td></tr>
+                            <tr><th>Plate Type</th><td>{{plate.platetype}}</td></tr>
+                            <tr><th>Survey Mode</th><td>{{plate.surveymode}}</td></tr>
+                            <tr><th>Date Observed</th><td>{{plate.dateobs}}</td></tr>
+                            <tr><th>RA,Dec</th><td>{{plate.ra}}, {{plate.dec}}</td></tr>
+                            <tr><th>Data Link</th><td><a target='_blank' data-toggle="tooltip" title="{{sasurl}}" href='{{sasurl}}'>SAS URL</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class='col-md-4 col-md-offset-1'>
+                    <div id='platedesign'>
+                    </div>
+                </div>              
+            </div>
+        </div>
+        {# Row of all Galaxy Images for Plate #}
+        <div class='well plateifu_images'>
+            <div class='row'>
+                <div class='col-md-12'>
+                    <h2>Galaxy Images <small>Click for more info</small></h2>
+                </div>
+                {% if images %}
+                    {% for image in images %}
+                        <div class="col-xs-6 col-md-1">
+                            <div class='caption'>
+                                <h4>{{((image|split('/'))[-1]|split('.'))[0]}}</h4>
+                            </div>                  
+                            {#<img class='img-responsive' src="{{image}}" alt="Image" onclick='plateinfo.loadIfu({{((image|split('/'))[-1]|split('.'))[0]}})'>#}
+                            <a class="thumbnail ifuims" href="{{url_for('plate_page.plate',plateid=plate.id,ifuid=((image|split('/'))[-1]|split('.'))[0])}}"><img class='img-responsive' src="{{image}}" alt="Image"></a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class='col-md-12'><h1> No IFU images found! </h1></div>
+                {% endif %}
+            </div>
+            <input class='hidden' id='inspectready' value='{{inspection.ready}}'/>
+        </div>
 
-		{# Drop-down DIV for each IFU #}
-		<div class='cubedetails'>
-		{% for cube in cubes %}
-			{{ifupanel(cube,ifudict[cube.ifu.name],inspection,version,dapversion)}}
-		{% endfor %}
-		</div>
+        {# Drop-down DIV for each IFU #}
+        <div class='cubedetails'>
+            {% if ifuid %} {{ifupanel(cube,ifudict[cube.ifu.name],inspection,version,dapversion,display='block')}} {% endif %}
+        </div>
 
-		{# Comment Form #}
-		{% include 'commentform.html' %}
+        {# Comment Form #}
+        {% include 'commentform.html' %}
 
-		{# Login Modal #}
-		{{login()}}
+        {# Login Modal #}
+        {{login()}}
 
-	</div>
+    </div>
 {% elif not plate %}
-	{% if not mangaid %}
-		<div class='well'>
-			<h1>No plate selected</h1>	
-		</div>
-	{% else %}
-		<div class='well'>
-			<h1>No MaNGA-ID for selected data version</h1>	
-		</div>
-	{% endif %}
+    {% if not mangaid %}
+        <div class='well'>
+            <h1>No plate specified. Try again ... </h1>  
+        </div>
+    {% else %}
+        <div class='well'>
+            <h1>No MaNGA-ID for selected data version</h1>  
+        </div>
+    {% endif %}
 {% elif plate and not good %}
-	<div class='well'>
-		<h1> Plate {{plate.id}} <small>(version: {{version}})</small> is not a valid plate! <h1>
-	</div>
+    <div class='well'>
+        <h1> Plate {{plate.id}} <small>(version: {{version}})</small> is not a valid plate! <h1>
+    </div>
 {% endif %}
 
 

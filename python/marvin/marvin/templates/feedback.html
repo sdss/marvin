@@ -11,88 +11,12 @@
 {% endblock head %}
 
 {% block code %}
-
+<script type="text/javascript" src="{{url_for('static',filename='js/feedback.js')}}"></script>
 <script type='text/javascript'>
-	
-	// refresh the page (function to run after login)
-	function reloadPage() {
-		location.reload();
-	}
-	
-	function getRowId(thing) {
-		var id = thing.attr('id');
-		var idsplit = id.split('_');
-		var rowid = parseInt(idsplit[idsplit.length-1]);		
-		return rowid;
-	}
-
-	// Promote tracticket
-	function promoteTracticket(id){
-
-		$('#promotemessage').html('Promoting your ticket. Please wait...');
-		$.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
-			.done(function(data){
-				if (data.result['status'] == 1) {
-                  location.reload(true);
-				} else {
-                  alert(data.result['message']);
-                }
-			})
-			.fail(function(data){
-                alert("Error in response from Inspection webapp.  Please contact admin@sdss.org");
-			})	
-			.always(function(data){
-				$('#promotemessage').html('');
-			});		
-	}
-
-	// Feedback status change
+	var feedback = {};
 	$(function() {
-		$(document).on('change','.feedback_status',function() {
-			var rowid = getRowId($(this));
-			var status = $(this).find(':selected').text();
-			console.log('status changed: rowid, status: ',rowid,status);
-
-			$.post($SCRIPT_ROOT + '/marvin/feedback/status/update', {'id':rowid,'status':status}, 'json')
-				.done(function(data) {
-					if (data.result['status'] == 1) {
-						console.log('returned from status feedback', data.result);
-                    } else {
-                        alert(data.result['message']);
-	                }
-				})
-				.fail(function(data) {
-					alert('Error in repsonse from Inspection webapp. Please contact admin@sdss.org')
-				});
-
-		});
+		feedback = new Feedback();
 	});
-
-	// Feedback vote change
-	$(function() {
-		$(document).on('click','.increment',function() {
-			var votediv = $(this);
-			var vote = votediv.hasClass('up') ? 1 : -1;
-			var count = $("~ .count", this).text();
-			var rowid = getRowId(votediv);
-			console.log('vote changed: rowid, vote: ', rowid, vote);
-			
-			$.post($SCRIPT_ROOT + '/marvin/feedback/vote/update', {'id':rowid,'vote':vote},'json')
-				.done(function(data) {
-					if (data.result.status == 1) {
-						console.log('returned from vote feedback',data.result);
-                        incrementVote(votediv);
-                        location.reload(true);
-                    } else {
-                        alert(data.result.message);
-	                }
-				})
-				.fail(function(data) {
-					alert('Error in repsonse from Inspection webapp. Please contact admin@sdss.org')					
-				});
-		});
-	});
-
 </script>
 {% endblock code %}
 
@@ -107,7 +31,7 @@
 	</div>
 
  	{% if ready %}
-		<form class='form' role='form' action='feedback.html' method='post'>
+		<form class='form' role='form' action='feedback' method='post'>
 
 			<div class='row'>
 				<div class='col-md-4 col-md-offset-3'>

@@ -12,7 +12,7 @@
 	<input class='hidden' id='oldmapid' name='oldmapid' value=''/>
 	<input class='hidden' id='oldqatype' name='oldqatype' value=''/>
 	<input class='hidden' id='oldkey' name='oldkey' value=''/>
-	<input class='hidden' id='specpanel' name='specpanel' value=''/>	
+	<input class='hidden' id='specpanel' name='specpanel' value='single'/>	
 
 	<div class='row'>
 
@@ -20,7 +20,7 @@
 		<div class='col-md-2'>
 			<div class='form-group' id='dapqacat_{{cube.ifu.name}}'>
 				<label for='dapqacat_select' class='control-label'>Category:</label>
-				<select class='form-control' id='dapqacat_select' onchange='dapcatchange({{cube.ifu.name}})'>
+				<select class='form-control' id='dapqacat_select'>
 					{% for catid, category in inspection.dapqacategory|dictsort %}
 						{% if loop.index0 == 0 %}
 							<option id='{{catid}}' value='{{category.key}}' selected>{{category.category}}</option>
@@ -59,7 +59,7 @@
 			{% for catid,category in inspection.dapqacategory|dictsort %}
 				<div class='dapqapanel' id='dapqa_{{category.key}}' style='display:none;'>
 					<h4>{{category.category}}</h4>
-					
+
 					{% if 'maps' in category.key %}
 						{{dapmap6panel(catid,category,cube.ifu.name)}}
 						{{dapmapsinglepanel(catid,category,cube.ifu.name,'none')}}
@@ -81,11 +81,13 @@
 	{{ dapimagemodal(cube.ifu.name) }}	
 			
 	{# Bottom Row for Submit and General Comments #}
-	<div class='row'>
+	<div class='row' id='dapsubmitrow'>
 		<div class='col-md-4'>
 			<div class='btn-group'>
-				<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='dapaddcomments({{cube.ifu.name}},"submit")'>Submit</button>
-				<button type='button' class='btn btn-primary btn-lg' id='dapqareset' onclick='dapaddcomments({{cube.ifu.name}},"reset")'>Reset</button>
+				{#<button type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='ifu.dapqa.addComments("submit")'>Submit</button>
+				<button type='button' class='btn btn-primary btn-lg' id='dapqareset' onclick='ifu.dapqa.addComments("reset")'>Reset</button>#}
+				<a type='button' class='btn btn-primary btn-lg' id='dapqasubmit' onclick='ifu.dapqa.addComments("submit")'>Submit</a>
+				<a type='button' class='btn btn-primary btn-lg' id='dapqareset' onclick='ifu.dapqa.addComments("reset")'>Reset</a>
 			</div>
 		</div>
 		<div class='col-md-8'>
@@ -94,7 +96,7 @@
 			</div>
 		</div>
 	</div>
-	<div class='row'>
+	<div class='row' id='dapsubmitmsg'>
 		<div class='col-md-12' id='submitmsg'>
 		</div>
 	</div>
