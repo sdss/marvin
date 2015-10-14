@@ -42,7 +42,6 @@ Explore.register(explore_page)
 explore_page = flask.Blueprint("explore_page", __name__)
 
 @explore_page.route('/explore/', methods=['GET'])
-@explore_page.route('/marvin/explore/', methods=['GET'])
 def explore():
     '''explore dataset page'''
     

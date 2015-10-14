@@ -14,7 +14,7 @@ import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 image_page = flask.Blueprint("image_page", __name__)
 
-@image_page.route('/images.html', methods=['GET'])
+@image_page.route('/images/', methods=['GET'])
 def images():
     ''' Images page '''
     

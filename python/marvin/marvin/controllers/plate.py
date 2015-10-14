@@ -61,8 +61,8 @@ def navidselect():
         return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) #if sasvm else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
 
     
-@plate_page.route('/marvin/downloadFiles', methods=['POST'])
 @plate_page.route('/downloadFiles', methods=['POST'])
+@plate_page.route('/marvin/downloadFiles', methods=['POST'])
 def downloadFiles():
     ''' Builds an rsync command to download all specified files '''
     
@@ -173,18 +173,9 @@ def getifu(cube=None):
     return jsonify(result=result)
 
 @plate_page.route('/plate/')
-@plate_page.route('/marvin/plate/')
 @plate_page.route('/plate/<int:plateid>/')
-@plate_page.route('/marvin/plate/<int:plateid>/')
-
-@plate_page.route('/marvin/plate/<int:plateid>/<ifuid>/',defaults={'plver':None})
-
+@plate_page.route('/plate/<int:plateid>/<ifuid>/',defaults={'plver':None})
 @plate_page.route('/plate/<int:plateid>/<ifuid>/<plver>/')
-@plate_page.route('/marvin/plate/<int:plateid>/<ifuid>/<plver>/')
-
-#@plate_page.route('/plate/<int:plateid>/<plver>')
-#@plate_page.route('/marvin/plate/<int:plateid>/<plver>')
-
 def plate(plateid=None, plver=None, ifuid=None):
     session = db.Session() 
     plateinfo = {}
@@ -313,11 +304,8 @@ def plate(plateid=None, plver=None, ifuid=None):
     return render_template("plateInfo.html", **plateinfo)    
 
 @plate_page.route('/mangaid/')
-@plate_page.route('/marvin/mangaid/')
 @plate_page.route('/mangaid/<mangaid>/')
-@plate_page.route('/marvin/mangaid/<mangaid>/')
 @plate_page.route('/mangaid/<mangaid>/<getver>/')
-@plate_page.route('/marvin/mangaid/<mangaid>/<getver>/')
 def singleifu(mangaid=None, getver=None):
     ''' '''
 
