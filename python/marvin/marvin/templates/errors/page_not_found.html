@@ -20,6 +20,9 @@
 
                 {% if page %}
                     <h4>{{page}} page not found!</h4>
+                    {% if '.html' in page %}
+                        <h4>Try removing the .html</h4>
+                    {% endif %}
                 {% endif %}
 
             </div>
