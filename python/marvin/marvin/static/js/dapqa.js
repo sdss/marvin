@@ -45,6 +45,7 @@ Dapqa = (function() {
         this.oldmapid = null;
         this.oldqatype = null;
         this.specpaneltype = $('#specpanel', this.mainpanel).val();
+        this.mappaneltype = null;
         this.ready = $('#inspectready').val();
         this.fxn = 'loadDapQaPanel';
         this.optionstype = null;
@@ -140,6 +141,7 @@ Dapqa = (function() {
         this.optionstype = this.qatype.split('-')[0];
         this.optionsid = this.qatype.split('-')[1];
         this.specpaneltype = 'single';
+        this.mappaneltype = 'map';
         $('#specpanel', this.mainpanel).val(this.specpaneltype);
 
         // set new panels with new key
@@ -156,7 +158,8 @@ Dapqa = (function() {
         // insure correct divs shown for maps/spectra (6-panel or single panel)
         if (this.key === 'maps') {
             this.map6panel.show();
-            this.mapsinglepanel.hide();        
+            this.mapsinglepanel.hide();
+            this.mappaneltype='map';        
         } else if (this.key === 'spectra') {
             this.specsinglepanel.show();        
             this.map6panel.hide();
@@ -237,9 +240,11 @@ Dapqa = (function() {
         if (_this.mapid == 'binnum' & _this.oldmapid != 'binnum') {
             _this.map6panel.hide();
             _this.mapsinglepanel.show();
+            _this.mappaneltype = 'single';
         } else if (_this.mapid !='binnum' & _this.oldmapid == 'binnum') {
             _this.map6panel.show();
             _this.mapsinglepanel.hide();
+            _this.mappaneltype = 'map';
         }
 
         // get new panel and store old values
@@ -450,7 +455,7 @@ Dapqa = (function() {
         // build form data
         var newdata = [{'name':'key','value':this.key},{'name':'mapid','value':this.mapid},{'name':'cubepk','value':this.cubepk},
                    {'name':'qatype','value':this.qatype},{'name':'issues','value':this.issues},
-                   {'name':'tags','value': this.tags}];
+                   {'name':'tags','value': this.tags}, {'name':'mappanel','value':this.mappaneltype}];
         var dapformdata = this.buildDapForm(newdata);
         console.log('dapform',dapformdata);
         

@@ -11,7 +11,7 @@ from manga_utils import generalUtils as gu
 from runmanga import plateList, setStatusDone
 from collections import OrderedDict
 
-from ..utilities import makeQualNames, getMaskBitLabel, setGlobalVersion
+from ..utilities import makeQualNames, getMaskBitLabel, setGlobalSession
 try:
     from . import valueFromRequest
 except ValueError:
@@ -92,12 +92,10 @@ def current():
     stage = '2d' if plate2d else '3d' if plate3d else None
     current['stage'] = stage
         
-    # redux version
-    try: version = current_session['currentver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
-         
+    # set global session
+    setGlobalSession()
+    version = current_session['currentver']
+
     # platelist and drpall files
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
     sasredux = os.path.join(os.getenv('SAS_REDUX'),version)

@@ -8,7 +8,7 @@ from manga_utils import generalUtils as gu
 from collections import OrderedDict
 
 from ..model.database import db
-from ..utilities import setGlobalVersion,getImages, testDBConnection, configFeatures
+from ..utilities import getImages, testDBConnection, configFeatures, setGlobalSession
 from ..jinja_filters import getMPL
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
@@ -154,14 +154,9 @@ def index():
         current_session['vermode']='MPL'
         return render_template('errors/bad_db_access.html', **{'message':error})
 
-    # set global version and session variables
-    setGlobalVersion()
+    # set global session variables
+    setGlobalSession()
     version = current_session['currentver']
-    if 'searchmode' not in current_session: current_session['searchmode']='plateid'
-    if 'marvinmode' not in current_session: current_session['marvinmode']='mangawork'
-    configFeatures(current_app, current_session['marvinmode'])
-    current_session['searchoptions'] = getDblist(current_session['searchmode'])
-    print('search options',current_session['searchoptions'])
 
     current_app.logger.info('Loading index page...')
     
@@ -169,18 +164,7 @@ def index():
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
     good = os.path.isdir(redux)
     index['good'] = good
-    images = getImages(version=version)
-
-    # get versions
-    try: current_session['marvinver'] = gu.getMangaVersion(marvin=True)
-    except TypeError as e:
-        current_session['marvinver'] = None
-    try: current_session['sdssver'] = gu.getMangaVersion(sdss=True)
-    except TypeError as e:
-        current_session['sdssver'] = None
-    try: current_session['drpver'] = gu.getMangaVersion(drp=True)
-    except TypeError as e:
-        current_session['drpver'] = None        
+    images = getImages(version=version)   
     
     if any(images):        
         # randomize the images

@@ -2,7 +2,7 @@
 ''' General Utilities for MaNGA SAS'''
 
 import json, os, glob, sys, traceback
-from flask import session as current_session, render_template
+from flask import session as current_session, render_template, current_app
 from ast import literal_eval
 from manga_utils import generalUtils as gu
 from astropy.table import Table
@@ -334,6 +334,24 @@ def configFeatures(app,mode):
     app.config['FEATURE_FLAGS']['new'] = False if mode == 'dr13' else True
     app.config['FEATURE_FLAGS']['unfinished'] = False if mode == 'dr13' else True
 
+def setGlobalSession():
+    ''' set default global session variables '''
 
+    if 'currentver' not in current_session: setGlobalVersion()
+    if 'searchmode' not in current_session: current_session['searchmode']='plateid'
+    if 'marvinmode' not in current_session: current_session['marvinmode']='mangawork'
+    configFeatures(current_app, current_session['marvinmode'])
+    #current_session['searchoptions'] = getDblist(current_session['searchmode'])
+
+    # get versions
+    try: current_session['marvinver'] = gu.getMangaVersion(marvin=True)
+    except TypeError as e:
+        current_session['marvinver'] = None
+    try: current_session['sdssver'] = gu.getMangaVersion(sdss=True)
+    except TypeError as e:
+        current_session['sdssver'] = None
+    try: current_session['drpver'] = gu.getMangaVersion(drp=True)
+    except TypeError as e:
+        current_session['drpver'] = None  
 
     
