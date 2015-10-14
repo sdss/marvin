@@ -18,7 +18,6 @@ except ValueError:
 doc_page = flask.Blueprint("doc_page", __name__)
 
 @doc_page.route('/documentation/', methods=['GET'])
-@doc_page.route('/marvin/documentation/', methods=['GET'])
 def doc():
     ''' Documentation here. '''
     

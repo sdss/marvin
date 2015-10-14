@@ -76,7 +76,6 @@ def buildPlateDict(stage='2d', cols=None):
 current_page = flask.Blueprint("current_page", __name__)
 
 @current_page.route('/current/', methods=['GET','POST'])
-@current_page.route('/marvin/current/', methods=['GET','POST'])    
 def current():
     ''' Documentation here. '''
     

@@ -72,7 +72,7 @@ Feedback = (function () {
 
     // Send feedback Ajax request
     Feedback.prototype.sendAjax = function(form, div) {
-        var url = '/marvin/feedback/'+form.type+'/update';
+        var url = '/feedback/'+form.type+'/update';
         var _this = this;
         $.post($SCRIPT_ROOT + url, form, 'json')
             .done(function(data) {
@@ -83,7 +83,7 @@ Feedback = (function () {
                         _this.reloadPage();
                     }
                 } else {
-                    alert('Inspection failed with message:',data.result['message']);
+                    alert('Inspection failed with message: '+data.result['message']);
                 }
             })
             .fail(function(data) {
@@ -95,12 +95,12 @@ Feedback = (function () {
     Feedback.prototype.promoteTracTicket = function(id) {
         var _this = this;
         $('#promotemessage').html('Promoting your ticket. Please wait...');
-        $.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
+        $.post($SCRIPT_ROOT + '/feedback/tracticket/promote', {'id':id}, 'json')
             .done(function(data){
                 if (data.result['status'] == 1) {
                   _this.reloadPage();
                 } else {
-                  alert(data.result['message']);
+                  alert('Error promoting ticket (returned status != 1): '+data.result['message']);
                 }
             })
             .fail(function(data){

@@ -424,7 +424,6 @@ def getFormParams():
     
 search_page = flask.Blueprint("search_page", __name__)
 
-@search_page.route('/marvin/writeFits',methods=['GET','POST'])
 @search_page.route('/writeFits',methods=['GET','POST'])
 def writeFits():
     ''' Write a FITs file from the data table '''
@@ -465,8 +464,8 @@ def writeFits():
     
     return response
 
-@search_page.route('/marvin/getsql',methods=['GET','POST'])
-@search_page.route('/getsql',methods=['GET','POST'])
+@search_page.route('/getsql/',methods=['GET','POST'])
+@search_page.route('/marvin/getsql/',methods=['GET','POST'])
 def getSQL():
     ''' Get the sql with the current form data '''
     
@@ -482,7 +481,6 @@ def getSQL():
     return jsonify(result={'text':'sql results','rawsql':rawsql,'sql':sql})
 
 @search_page.route('/search/', methods=['GET','POST'])
-@search_page.route('/marvin/search/', methods=['GET','POST'])
 def search():
     ''' Documentation here. '''
     

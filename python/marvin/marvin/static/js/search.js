@@ -99,7 +99,7 @@ Search = (function () {
         event.data = this;
         this.buildSearchForm(event);
             
-        $.post($SCRIPT_ROOT + '/marvin/getsql', this.searchform,'json')
+        $.post($SCRIPT_ROOT + '/marvin/getsql/', this.searchform,'json')
             .done(function(data){
                 var htmlstr='';
                 for (var i=0; i<data.result['rawsql'].length; ++i){

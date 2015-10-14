@@ -24,7 +24,6 @@ except ValueError:
 feedback_page = flask.Blueprint("feedback_page", __name__)
 
 @feedback_page.route('/feedback/', methods=['GET','POST'])
-@feedback_page.route('/marvin/feedback/', methods=['GET','POST'])
 def feedback():
     ''' User feedback page '''
     
@@ -62,7 +61,6 @@ def feedback():
     return render_template('feedback.html',**feedback)
 
 @feedback_page.route('/feedback/tracticket/promote', methods=['GET','POST'])
-@feedback_page.route('/marvin/feedback/tracticket/promote', methods=['GET','POST'])
 def promotetracticket():
     ''' User feedback function to promote tracticket '''
     
@@ -86,7 +84,6 @@ def promotetracticket():
     return jsonify(result=result)
 
 @feedback_page.route('/feedback/status/update', methods=['GET','POST'])
-@feedback_page.route('/marvin/feedback/status/update', methods=['GET','POST'])
 def updatefeedbackstatus():
     ''' User feedback function to update status '''
     
@@ -111,7 +108,6 @@ def updatefeedbackstatus():
     return jsonify(result=result)
 
 @feedback_page.route('/feedback/vote/update', methods=['GET','POST'])
-@feedback_page.route('/marvin/feedback/vote/update', methods=['GET','POST'])
 def updatefeedbackvote():
     ''' User feedback function to upvote/novote/downvote '''
     
