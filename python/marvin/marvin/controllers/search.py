@@ -18,7 +18,7 @@ import numpy as np
 
 from ..model.database import db
 from ..utilities import makeQualNames, processTableData,getMaskBitLabel, \
-setGlobalVersion, getDRPVersion, getDAPVersion
+setGlobalSession, getDRPVersion, getDAPVersion
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -490,11 +490,9 @@ def search():
     search = {}
     search['title'] = "Marvin | Search"
     
-    # set global version    
-    try: version = current_session['currentver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
+    # set global session variables
+    setGlobalSession()    
+    version = current_session['currentver']
 
     # set default search options
     search['defaults'] = {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}

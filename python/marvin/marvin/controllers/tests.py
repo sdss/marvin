@@ -8,7 +8,7 @@ from manga_utils import generalUtils as gu
 from collections import OrderedDict
 
 from ..model.database import db
-from ..utilities import setGlobalVersion
+from ..utilities import setGlobalSession
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -28,22 +28,16 @@ test_page = flask.Blueprint("test_page", __name__)
 def test():
     '''unit test page'''
     
-    # set global version
-    try: 
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
+    # set global session variables
+    setGlobalSession()
 
     session = db.Session() 
     tests = {}
     tests['title'] = "Marvin | Testing"
     tests['inspection'] = inspection = Inspection(current_session)
     tests['cube'] = {'ifu':{'name':'9101'},'plate':'7443'}
-    tests['version'] = version
-    tests['dapversion'] = dapversion
+    tests['version'] = current_session['currentver']
+    tests['dapversion'] = current_session['currentdapver']
 
     return render_template("tests.html", **tests)
 

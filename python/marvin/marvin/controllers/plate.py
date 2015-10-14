@@ -7,7 +7,7 @@ from flask import request, redirect,render_template, send_from_directory, curren
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
 from ..model.database import db
-from ..utilities import processTableData, setGlobalVersion, getImages
+from ..utilities import processTableData, getImages, setGlobalSession
 from comments import getComment
 from astropy.table import Table
 
@@ -190,14 +190,10 @@ def plate(plateid=None, plver=None, ifuid=None):
     plateinfo = {}
     plateinfo['title'] = "Marvin | Plate"
     
-    # set global version
-    try: 
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
+    # set global session variables
+    setGlobalSession()
+    version = current_session['currentver']
+    dapversion = current_session['currentdapver'] 
     plateinfo['version'] = version
     plateinfo['dapversion'] = dapversion
 
@@ -329,14 +325,10 @@ def singleifu(mangaid=None, getver=None):
     ifu={}
     ifu['title'] = "Marvin | ID"
     
-    # set global version
-    try: 
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
-        dapversion = current_session['currentdapver']
+    # set global session variables
+    setGlobalSession()
+    version = current_session['currentver']
+    dapversion = current_session['currentdapver']    
     ifu['version'] = version
     ifu['dapversion'] = dapversion
 

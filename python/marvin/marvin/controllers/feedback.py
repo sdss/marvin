@@ -11,6 +11,7 @@ from manga_utils import generalUtils as gu
 from collections import defaultdict, OrderedDict
 
 from ..model.database import db
+from ..utilities import setGlobalSession
 
 try: from inspection.marvin import Inspection
 except: from marvin.inspection import Inspection
@@ -27,9 +28,11 @@ feedback_page = flask.Blueprint("feedback_page", __name__)
 def feedback():
     ''' User feedback page '''
     
+    setGlobalSession()
+
     feedback = {}
     feedback['title'] = "Marvin | Feedback"
-    
+
     # get inspection
     feedback['inspection'] = inspection = Inspection(current_session)
     feedback['ready'] = inspection.ready

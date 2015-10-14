@@ -5,14 +5,14 @@ var Header,
 
 Header = (function () {
 
-    function Header(vermode,options) {
+    function Header(vermode) {
 
         // in case constructor called without new
         if (false === (this instanceof Header)) {
             return new Header();
         }
         
-        this.init(vermode,options);
+        this.init(vermode);
         
         // Event Handlers
         $('#idselect').on('change',this,this.toggleSearchType);
@@ -21,12 +21,12 @@ Header = (function () {
     }
     
     // initialize the object
-    Header.prototype.init = function(vermode,options) {
+    Header.prototype.init = function(vermode) {
         this.versionmode = vermode;
         this.versionid = null;
         this.searchid = null;
         this.searchtext = null;
-        this.searchoptions = options;
+        this.searchoptions = null;
         this.typetext = null;
         this.innerhtml = null;
         this.marvinmode = null;

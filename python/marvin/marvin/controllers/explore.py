@@ -8,7 +8,7 @@ from manga_utils import generalUtils as gu
 from collections import OrderedDict
 
 from ..model.database import db
-from ..utilities import setGlobalVersion
+from ..utilities import setGlobalSession
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -50,11 +50,7 @@ def explore():
     explore = {}
     explore['title'] = "Marvin | Explore"
     
-    # set global version    
-    try: version = current_session['currentver']
-    except: 
-        setGlobalVersion()
-        version = current_session['currentver']
-        
+    # set global session
+    setGlobalSession() 
     
     return render_template("explore.html", **explore)

@@ -3,9 +3,10 @@
 import os, glob, random
 
 import flask
-from flask import request, render_template, send_from_directory, current_app
+from flask import request, render_template, send_from_directory, current_app, session as current_session
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
+from ..utilities import setGlobalSession
 
 from ..model.database import db
 
@@ -20,8 +21,8 @@ def images():
     session = db.Session()    
     images = {}
 
-    version = gu.getMangaVersion(simple=True)
-    images['version'] = version
+    setGlobalSession()
+    images['version'] = current_session['currentver']
     
     # find and grab all images ; convert paths to sas paths
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
