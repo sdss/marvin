@@ -125,6 +125,8 @@ def create_app(debug=False):
     def page_not_found(e):
         error={}
         error['title']='Marvin | Page Not Found'
+        error['page'] = flask.request.url
+        flask.session['vermode']='MPL'
         app.logger.error('Page Not Found Exception {0}'.format(e))
         return flask.render_template('errors/page_not_found.html',**error),404 
 
@@ -132,6 +134,7 @@ def create_app(debug=False):
     def internal_server_error(e):
         error={}
         error['title']='Marvin | Internal Server Error'
+        flask.session['vermode']='MPL'
         app.logger.error('Internal Server Error Exception {0}'.format(e))        
         return flask.render_template('errors/internal_server_error.html',**error),500
 
@@ -139,6 +142,7 @@ def create_app(debug=False):
     def bad_request(e):
         error={}
         error['title']='Marvin | Bad Request'
+        flask.session['vermode']='MPL'
         app.logger.error('Bad Request Exception {0}'.format(e))        
         return flask.render_template('errors/bad_request.html',**error),400
 
