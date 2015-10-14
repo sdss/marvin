@@ -279,16 +279,17 @@ def plate(plateid=None, plver=None, ifuid=None):
         plateinfo['inspection'] = inspection = Inspection(current_session)
         if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
         inspection.set_version(drpver=version,dapver=dapversion)
-        inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
-        inspection.retrieve_cubecomments()
-        current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
-        inspection.retrieve_dapqacubecomments()
-        current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
-        inspection.retrieve_cubetags()
-        inspection.retrieve_alltags()
-        result = inspection.result()
-        print('inspection cubetags',inspection.ifudesign, inspection.cubetags)
-        
+
+        if ifuid:
+            inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
+            inspection.retrieve_cubecomments()
+            current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
+            inspection.retrieve_dapqacubecomments()
+            current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
+            inspection.retrieve_cubetags()
+            inspection.retrieve_alltags()
+
+        result = inspection.result()        
         if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))
 
@@ -348,7 +349,7 @@ def singleifu(mangaid=None, getver=None):
     ifu['inspection'] = inspection = Inspection(current_session)
     if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
     inspection.set_version(drpver=version,dapver=dapversion)
-    inspection.set_ifudesign(plateid=plate)
+    inspection.set_ifudesign(plateid=plate,ifuname=ifuname)
     inspection.retrieve_cubecomments()
     current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
     inspection.retrieve_dapqacubecomments()
