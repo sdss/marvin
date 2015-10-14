@@ -192,6 +192,8 @@ def plate(plateid=None, plver=None, ifuid=None):
     #plate = valueFromRequest(key='plateid',request=request, default=None)
     #plate = plate if plate and plate.isdigit() else None
 
+    print('early input ifu',plateid,ifuid)
+
     # check if ifuid is actually a version 
     if ifuid and not ifuid.isdigit() and 'v' in ifuid:
         plver = ifuid
