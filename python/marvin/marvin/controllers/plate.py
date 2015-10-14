@@ -280,10 +280,12 @@ def plate(plateid=None, plver=None, ifuid=None):
         if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
         inspection.set_version(drpver=version,dapver=dapversion)
 
+        print('pre input ifu',plateid,ifuid)
+
         if ifuid:
             print('input ifu',plateid,ifuid)
             inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
-            print('inspection',inspection.ifudesign)
+            print('inspection ifu',inspection.ifudesign)
             inspection.retrieve_cubecomments()
             current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
             inspection.retrieve_dapqacubecomments()
