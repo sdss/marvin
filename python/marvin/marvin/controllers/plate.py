@@ -281,7 +281,9 @@ def plate(plateid=None, plver=None, ifuid=None):
         inspection.set_version(drpver=version,dapver=dapversion)
 
         if ifuid:
+            print('input ifu',plateid,ifuid)
             inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
+            print('inspection',inspection.ifudesign)
             inspection.retrieve_cubecomments()
             current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
             inspection.retrieve_dapqacubecomments()
