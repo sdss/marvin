@@ -174,7 +174,8 @@ def getifu(cube=None):
 
 @plate_page.route('/plate/')
 @plate_page.route('/plate/<int:plateid>/')
-@plate_page.route('/plate/<int:plateid>/<ifuid>/',defaults={'plver':None})
+@plate_page.route('/plate/<int:plateid>/<plver>') 
+@plate_page.route('/plate/<int:plateid>/<ifuid>/')
 @plate_page.route('/plate/<int:plateid>/<ifuid>/<plver>/')
 def plate(plateid=None, plver=None, ifuid=None):
     session = db.Session() 
