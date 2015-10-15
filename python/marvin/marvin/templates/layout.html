@@ -36,7 +36,7 @@ QUnit v1.19.0
 	{% block head %}{% endblock head %}
 	
 	{# include js files #}
-	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/jquery-1.11.2.min.js')}}"></script>
+	{#<script type="text/javascript" src="{{url_for('static',filename='js/jquery/jquery-1.11.2.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/jquery.actual.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-select.js')}}"></script>
@@ -55,7 +55,25 @@ QUnit v1.19.0
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-1.19.0.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-html.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-classes.js')}}"></script>
-	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-once.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-once.js')}}"></script>#}
+
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.17/jquery.actual.min.js"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/moment.min.js')}}"></script>
+	<script type="text/javascript" src="//code.jquery.com/qunit/qunit-1.19.0.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table.min.js"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-datetimepicker.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap-tags.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bloodhound.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap3-typeahead.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/validator.min.js')}}"></script>	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+	<script src="//cdn.ravenjs.com/1.1.20/jquery,native/raven.min.js"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
+
 	<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
 
 	{# setup Raven javascript exception handling #}
