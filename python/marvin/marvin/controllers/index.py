@@ -168,8 +168,8 @@ def index():
     
     if any(images):        
         # randomize the images
-        if len(images) < 100: biglist = [random.choice(images) for i in xrange(100)]
-        else: biglist = random.sample(images,100)
+        if len(images) < 24: biglist = [random.choice(images) for i in xrange(24)]
+        else: biglist = random.sample(images,24)
         images = biglist
 
         # make unique image dictionary
