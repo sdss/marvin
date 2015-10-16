@@ -2,7 +2,7 @@
 ''' General Utilities for MaNGA SAS'''
 
 import json, os, glob, sys, traceback
-from flask import session as current_session, render_template, current_app
+from flask import session as current_session, render_template, current_app, request
 from ast import literal_eval
 from manga_utils import generalUtils as gu
 from astropy.table import Table
@@ -353,5 +353,10 @@ def setGlobalSession():
     try: current_session['drpver'] = gu.getMangaVersion(drp=True)
     except TypeError as e:
         current_session['drpver'] = None  
+
+    # user authentication
+    if 'http_authorization' not in current_session: 
+        try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
+        except: pass
 
     
