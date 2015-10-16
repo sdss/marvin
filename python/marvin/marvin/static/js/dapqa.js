@@ -94,6 +94,7 @@ Dapqa = (function() {
 
     // load the DAP QA Panel
     Dapqa.prototype.loadDapQaPanel = function loadDapQaPanel() {
+        console.log('loading dap qa', this);
         this.key = 'maps';
         this.maintab.show();
         utils.resetLogin();
@@ -115,7 +116,7 @@ Dapqa = (function() {
             _this.setDefault(_this.ifu,_this.key);
         } else {
             $('#fxn').val(_this.fxn);
-            utils.setFunction(_this.loadDapQaPanel);
+            utils.setFunction(_this.loadDapQaPanel, _this);
             _this.maintab.hide();
             $('#loginform').modal('show');
         }

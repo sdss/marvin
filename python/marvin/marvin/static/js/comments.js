@@ -183,8 +183,9 @@ Comment = (function () {
         $('#commentfield_'+_this.catid).text(selectedcomment);
     };
 
-    // Grab comments after successfull login 
+    // Grab comments after successful login 
     Comment.prototype.grabComments = function grabComments() {
+        console.log('grabbing comments', this);
         utils.resetLogin();
         this.getComment();
     };
@@ -242,9 +243,10 @@ Comment = (function () {
         // set cube pk and ifu form info
         $('#cubepk').val(cubepk);
         $('#ifuname').val(ifu);
-                                                        
+
         $.post($SCRIPT_ROOT + '/marvin/getcomment', {'cubepk':cubepk,'plateid':this.plateid,'ifuname':ifu,'version':this.version},'json') 
             .done(function(data){
+                console.log('getting comments', data.result.ready);
                 // show commentform if ready (login **may be** necessary)
                 if (data.result.ready) {
                     $('#commentform').modal('show');

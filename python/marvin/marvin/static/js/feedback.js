@@ -46,7 +46,7 @@ Feedback = (function () {
     // Set the Feedback login function
     Feedback.prototype.setLoginFxn = function() {
         $('#fxn').val(this.fxn);
-        utils.setFunction(this.reloadPage);
+        utils.setFunction(this.reloadPage, this);
     };
 
     // Get the Row ID 
