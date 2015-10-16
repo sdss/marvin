@@ -73,28 +73,31 @@ Utils = (function() {
     Utils.prototype.login = function(fxn) {
 	  var form = $('#login_form').serialize();	
 	  var fxn = this.getFunction();
+      console.log('login fxn', fxn);
       var _this = this;
 	  
 	  $.post($SCRIPT_ROOT + '/marvin/login', form,'json') 
 		  .done(function(data){
-			  if (data.result['status'] < 0) {
+              console.log('logging in',data.result.status, data.result.ready);            
+			  if (data.result.status < 0) {
 				  // bad submit
 				  _this.resetLogin();
 			  } else {
 				  // good submit
-				  if (data.result['message']!=''){
-					  var stat = (data.result['status'] == 0) ? 'danger' : 'success'; 
-					  htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result['message'] + "</h4></div>";
+				  if (data.result.message != ''){
+					  var stat = (data.result.status == 0) ? 'danger' : 'success'; 
+					  htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result.message + "</h4></div>";
 					  $('#loginmessage').html(htmlstr);
 				  }
 				  if (data.result['status']==1){
 				  	  $('#inspectready').val(data.result.ready);
-				  	  fxn.call(); 
+				  	  fxn.call(_this.object); 
 				  }
 				
 			  }
 		  })
 		  .fail(function(data){
+            alert('Bad login attempt');
 		  });	
     };
     
@@ -112,13 +115,15 @@ Utils = (function() {
             return this.fxn;
         } else {
             console.error('Login function '+this.fxn.name+' does not match requested function '+fxnname);
+            Raven.captureException('Login function '+this.fxn.name+' does not match requested function '+fxnname)
             return undefined;
         }
     }
 
     // Set the Utils login function
-    Utils.prototype.setFunction = function(fxn) {
+    Utils.prototype.setFunction = function(fxn, object) {
         this.fxn = fxn;
+        this.object = object;
     }
 
     // Submit Login on Keyups

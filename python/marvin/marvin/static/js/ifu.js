@@ -101,7 +101,7 @@ Ifu = (function () {
         var _this = event.data;
         _this.fxn = 'grabComments';
         $('#fxn').val(_this.fxn);
-        utils.setFunction(_this.comments.grabComments);
+        utils.setFunction(_this.comments.grabComments, _this.comments);
     };
 
     // scroll to the IFU div
