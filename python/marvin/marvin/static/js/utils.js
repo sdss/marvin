@@ -73,12 +73,10 @@ Utils = (function() {
     Utils.prototype.login = function(fxn) {
 	  var form = $('#login_form').serialize();	
 	  var fxn = this.getFunction();
-      console.log('login fxn', fxn);
       var _this = this;
 	  
 	  $.post($SCRIPT_ROOT + '/marvin/login', form,'json') 
 		  .done(function(data){
-              console.log('logging in',data.result.status, data.result.ready);            
 			  if (data.result.status < 0) {
 				  // bad submit
 				  _this.resetLogin();
