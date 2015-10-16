@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, glob
+import os, glob, sys
 
 import flask, sqlalchemy, json
 from flask import request, redirect,render_template, send_from_directory, current_app, session as current_session, jsonify,url_for
@@ -138,39 +138,77 @@ def downloadFiles():
     return jsonify(result=result)
 
 
-def getifu(cube=None):
+def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None):
     ''' get an ifu from the plate page '''
 
-    plateid = valueFromRequest(key='plateid',request=request, default=None)
-    ifuid = valueFromRequest(key='ifuid',request=request, default=None)
     session = db.Session()
 
-    if not cube:
-        cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.IFUDesign,
-            datadb.PipelineVersion).filter(datadb.Cube.plate==int(plateid),datadb.PipelineVersion.version==version,datadb.IFUDesign.name==ifuid).one()
+    # query by plate and ifu id
+    if all([plateid,ifuid]):
+        try:
+            cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.IFUDesign,
+                datadb.PipelineVersion).filter(datadb.Cube.plate==int(plateid),datadb.PipelineVersion.version==version,datadb.IFUDesign.name==ifuid).one()
+        except sqlalchemy.orm.exc.NoResultFound as error:
+            raise RuntimeError('Error querying for single cube with plate {0}, ifuid {1}, and version {2}: {3}'.format(plateid,ifuid,version,error))
 
+    # query by mangaid
+    if mangaid:
+        cubes = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.Cube.mangaid==mangaid,datadb.PipelineVersion.version==version).all()
+        if not cubes:
+            raise RuntimeError('Error querying for mangaid {0}, version {1}.  Check the mangaid and/or version.'.format(mangaid,version))
+        else:
+            cube = cubes[0]
+            plateid = cube.plate
+            ifuid = cube.ifu.name
+
+    # build ifu dictionary of parameter info
+    try:
+        images = getImages(plateid,version=version,ifuname=ifuid)
+    except:
+        raise RuntimeError('Error retrieving image for plate {0}, ifuid {0}'.format(plateid, ifuid))
     ifudict=OrderedDict()
-    imindex = [images.index(i) for i in images if '/{0}.png'.format(cube.ifu.name) in i]
-    ifudict[cube.ifu.name]=OrderedDict()
-    ifudict[cube.ifu.name]['image']=images[imindex[0]] if imindex else None
-    if cube.sample:
-        for col in cube.sample[0].cols:
-            if ('absmag' in col) or ('flux' in col):
-                if 'absmag' in col: name='nsa_absmag'
-                if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
-                if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
-                try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
-                except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
-            else:
-                ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
-               
+    if cube:
+        ifudict[cube.ifu.name]=OrderedDict()
+        ifudict[cube.ifu.name]['image']=images[0] 
+        if cube.sample:
+            try:
+                for col in cube.sample[0].cols:
+                    if ('absmag' in col) or ('flux' in col):
+                        if 'absmag' in col: name='nsa_absmag'
+                        if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
+                        if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
+                        try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
+                        except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
+                        else:
+                            ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+            except:
+                raise RuntimeError('Error populating sample parameters for ifu {0}: {1}'.format(ifuid,sys.exc_info()[1]))
 
-    result={}
-    result['plate'] = plateid
-    result['ifuid'] = ifuid
-    result['ifudict'] = ifudict
+    # get inspection information for ifu
+    inspection=None
+    if all([plateid,ifuid]):
+        inspection = Inspection(current_session)
+        if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
+        inspection.set_version(drpver=version,dapver=dapversion)
+        inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
+        try: 
+            inspection.retrieve_cubecomments()
+            current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
+            inspection.retrieve_dapqacubecomments()
+            current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
+            inspection.retrieve_cubetags()
+            inspection.retrieve_alltags()
+        except:
+            raise RuntimeError('Error retrieving comments and tags from Inspection for plate {0},ifu {1}: {2}'.format(plateid,ifuid,sys.exc_info()[1]))
 
-    return jsonify(result=result)
+        result = inspection.result()
+        if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
+        else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result)) 
+    else:
+        raise RuntimeError('Both plateid and ifuid must be specified as input to Inspection: plateid {0},ifuid {1}'.format(plateid,ifuid))
+
+    return cube, ifudict, inspection
+
 
 @plate_page.route('/plate/')
 @plate_page.route('/plate/<int:plateid>/')
@@ -189,26 +227,18 @@ def plate(plateid=None, plver=None, ifuid=None):
     plateinfo['version'] = version
     plateinfo['dapversion'] = dapversion
 
-    # Check if input is plateID for mangaID    
-    #plate = valueFromRequest(key='plateid',request=request, default=None)
-    #plate = plate if plate and plate.isdigit() else None
-
-    print('early input ifu',plateid,ifuid)
-
     # check if ifuid is actually a version 
     if ifuid and not ifuid.isdigit() and 'v' in ifuid:
         plver = ifuid
         ifuid = None
 
-    #plver = valueFromRequest(key='version',request=request, default=None)
     plateinfo['plate'] = plateid
-    plateinfo['inspection'] = None
     cube=cubes= None
     if plver: 
         version = plver
         plateinfo['version'] = plver
 
-    plateinfo['inspection'] = inspection = Inspection(current_session)
+    plateinfo['inspection'] = Inspection(current_session)
 
     # Get info from plate   
     if plateid:
@@ -220,21 +250,17 @@ def plate(plateid=None, plver=None, ifuid=None):
         sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plateid))
         try: sasurl = os.getenv('SAS_URL')
         except: sasurl= None
-        images = getImages(plateid,version=version)
+        # try to grab the ifu images
+        try:
+            images = getImages(plateid,version=version)
+        except:
+            plateinfo['error'] = 'Could not grab images for plate {0}: {1}'.format(plateid,sys.exc_info()[1])
+            return render_template('errors/no_plateid.html',**plateinfo)
+
         plateinfo['images'] = sorted(images) if images else None
-        print('sas stuff',sasredux, sasurl)
         sasurl = os.path.join(sasurl,sasredux)
         plateinfo['sasurl'] = sasurl
-        
-        # get cubes for this plate and current tag, sort by ifu name
-        if ifuid:
-            try:
-                cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.IFUDesign,
-                    datadb.PipelineVersion).filter(datadb.Cube.plate==plateid,datadb.PipelineVersion.version==version,datadb.IFUDesign.name==ifuid).one()
-            except sqlalchemy.orm.exc.NoResultFound as error:
-                plateinfo['error'] = 'Error querying for single cube with plate {0}, ifuid {1}, and version {2}: {3}'.format(plateid,ifuid,version,error)
-                plateinfo['ifuid']  = ifuid
-                return render_template('errors/no_plateid.html',**plateinfo)
+        plateinfo['ifuid']  = ifuid
 
         # get all the cubes
         try:
@@ -242,65 +268,29 @@ def plate(plateid=None, plver=None, ifuid=None):
                 datadb.PipelineVersion).filter(datadb.Cube.plate==plateid,datadb.PipelineVersion.version==version).all()
             cubes=sorted(cubes,key=lambda t: t.ifu.name)
         except sqlalchemy.orm.exc.NoResultFound as error:
-            plateinfo['error'] = error
+            plateinfo['error'] = 'Error querying for cubes on plate {0}, version {1}: {2}'.format(plateid,version,error)
             return render_template('errors/no_plateid.html',**plateinfo)
+
+        # get the ifu information when necessary
+        if ifuid:
+            try:
+                cube, ifudict, inspection = getifu(plateid=plateid, ifuid=ifuid, version=version, dapversion=dapversion)
+            except RuntimeError as error:
+                plateinfo['error'] = error
+                return render_template('errors/no_plateid.html', **plateinfo)
+
+            plateinfo['ifudict'] = ifudict
+            plateinfo['inspection'] = inspection
 
         if not cube and cubes:
             cube = cubes[0]
         
-        # get plate info
+        # get plate info and populate dict.
         plateclass = cube.plateclass if cube else datadb.Plate(id=plateid)
         plateinfo['plate'] = plateclass
-
-        # ifu
-        ifudict=OrderedDict()
-        if ifuid:
-            #cube = [cube for cube in cubes if cube.ifu.name == ifuid][0]
-            imindex = [images.index(i) for i in images if '/{0}.png'.format(cube.ifu.name) in i]
-            ifudict[cube.ifu.name]=OrderedDict()
-            ifudict[cube.ifu.name]['image']=images[imindex[0]] if imindex else None
-            if cube.sample:
-                for col in cube.sample[0].cols:
-                    if ('absmag' in col) or ('flux' in col):
-                        if 'absmag' in col: name='nsa_absmag'
-                        if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
-                        if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
-                        try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
-                        except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
-                    else:
-                        ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
-                       
         plateinfo['cube'] = cube
-        plateinfo['ifuid'] = ifuid
-        plateinfo['ifudict'] = ifudict
 
-        # set comment information
-        if 'http_authorization' not in current_session:
-            try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
-            except: pass
-        
-        plateinfo['inspection'] = inspection = Inspection(current_session)
-        if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
-        inspection.set_version(drpver=version,dapver=dapversion)
-
-        print('pre input ifu',plateid,ifuid)
-
-        if ifuid:
-            print('input ifu',plateid,ifuid)
-            inspection.set_ifudesign(plateid=plateid,ifuname=ifuid)
-            print('inspection ifu',inspection.ifudesign)
-            inspection.retrieve_cubecomments()
-            current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
-            inspection.retrieve_dapqacubecomments()
-            current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
-            inspection.retrieve_cubetags()
-            inspection.retrieve_alltags()
-
-        result = inspection.result()        
-        if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
-        else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))
-
-        # build plate design d3 
+        # build plate design D3 
         jsdict={}
         jsdict['plateid'] = plateid
         jsdict['platera'] = plateclass.ra if plateclass.cube else None
@@ -320,6 +310,7 @@ def singleifu(mangaid=None, getver=None):
     session = db.Session()
     ifu={}
     ifu['title'] = "Marvin | ID"
+    ifu['mangaid'] = mangaid
     
     # set global session variables
     setGlobalSession()
@@ -328,61 +319,29 @@ def singleifu(mangaid=None, getver=None):
     ifu['version'] = version
     ifu['dapversion'] = dapversion
 
-    #mangaid = valueFromRequest(key='mangaid',request=request, default=None)
-    ifu['mangaid'] = mangaid
-    #getver = valueFromRequest(key='version',request=request, default=None)
+    # reset new version if specified in url
     if getver: 
         version = getver
         ifu['version'] = getver
 
+    # get the ifu information
     if mangaid:
-        cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.Cube.mangaid==mangaid,datadb.PipelineVersion.version==version).all()
-        ifu['plate'] = plate = cube[0].plate if cube else None
-        ifu['name'] = ifuname = cube[0].ifu.name if cube else None
-        ifu['cube'] = cube = cube[0] if cube else None
-        ifu['title'] += ' {0}'.format(mangaid)
+        try:
+            cube, ifudict, inspection = getifu(mangaid=mangaid,version=version, dapversion=dapversion)
+        except RuntimeError as error:
+            ifu['error'] = error
+            return render_template('errors/no_mangaid.html', **ifu)
     else:
         return render_template('errors/no_mangaid.html', **ifu)
 
-    # image
-    images = getImages(plate,version=version,ifuname=ifuname)
-    ifu['images'] = sorted(images) if images else None
-
-    # Inspection
-    if 'http_authorization' not in current_session:
-        try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
-        except: pass
-        
-    ifu['inspection'] = inspection = Inspection(current_session)
-    if 'inspection_counter' in inspection.session: current_app.logger.info("Inspection Counter %r" % inspection.session['inspection_counter'])
-    inspection.set_version(drpver=version,dapver=dapversion)
-    inspection.set_ifudesign(plateid=plate,ifuname=ifuname)
-    inspection.retrieve_cubecomments()
-    current_app.logger.warning('Inspection> RETRIEVE cubecomments: {0}'.format(inspection.cubecomments))
-    inspection.retrieve_dapqacubecomments()
-    current_app.logger.warning('Inspection> RETRIEVE dapqacubecomments: {0}'.format(inspection.dapqacubecomments))
-    inspection.retrieve_cubetags()
-    inspection.retrieve_alltags()
-    result = inspection.result()
-
-    if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
-    else: current_app.logger.warning('Inspection> NOT READY TO GET recentcomments: {0}'.format(result))
-
-    # put sample info into a dictionary
-    ifudict=OrderedDict()
+    # push parameters to dict.
     if cube:
-        ifudict[cube.ifu.name]=OrderedDict()
-        ifudict[cube.ifu.name]['image']=images[0] 
-        if cube.sample:
-            for col in cube.sample[0].cols:
-                if ('absmag' in col) or ('flux' in col):
-                    if 'absmag' in col: name='nsa_absmag'
-                    if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
-                    if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
-                    try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
-                    except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
-                    else:
-                        ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+        ifu['plate'] = plate = cube.plate if cube else None
+        ifu['name'] = ifuname = cube.ifu.name if cube else None
+        ifu['cube'] = cube = cube if cube else None
+        ifu['title'] += ' {0}'.format(mangaid)
+
+    ifu['inspection'] = inspection 
     ifu['ifudict'] = ifudict
 
     return render_template('singleifu.html', **ifu)

@@ -14,7 +14,11 @@
             <div class='col-md-6 vert-offset-top-7' id='errortext'>
                 <h1>"This will all end in tears I just know it."</h1>
 
-                <h2>No MaNGA-ID specified!</h2>
+                {% if not mangaid %} 
+                    <h3>No MaNGA-ID specified!</h3>
+                {% else %}
+                    <h3>{{error}}</h3>
+                {% endif %}
 
             </div>
         </div>
