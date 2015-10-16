@@ -94,7 +94,6 @@ Dapqa = (function() {
 
     // load the DAP QA Panel
     Dapqa.prototype.loadDapQaPanel = function loadDapQaPanel() {
-        console.log('loading dap qa', this);
         this.key = 'maps';
         this.maintab.show();
         utils.resetLogin();
