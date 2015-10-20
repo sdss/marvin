@@ -570,6 +570,8 @@ Dapqa = (function() {
             if (results.dapqacomments) {
                 $.each(results.dapqacomments,function(i,panelcomment) {
 
+                    //var position = (_this.mapid=='binnum') ? 'binnum' : (_this.key=='spectra' && _this.specpaneltype=='single') ? 'single' : panelcomment.position;
+
                     $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position, _this.mainpanel).val(panelcomment.comment);
                 
                     $.each(panelcomment.issues, function(i,issid) {
