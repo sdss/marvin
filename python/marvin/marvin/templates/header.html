@@ -34,7 +34,7 @@
             </ul>
 
             {# Marvin PlateId/MaNGAId Search #}
-            <form class="navbar-form navbar-left navbar-input-group" role="form" action="{{url_for('plate_page.navidselect')}}" method="post">
+            <form class="navbar-form navbar-left navbar-input-group" role="form" id='headform' action="{{url_for('plate_page.navidselect')}}" method="post">
                 <div class='form-group form-inline'>
                     <input class='form-control typeahead' type='text' name='plateid' placeholder='Plate ID' id='idtext' val='' autocomplete='off'/>
                     <select class='btn btn-primary form-control' id='idselect'>

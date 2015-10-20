@@ -35,7 +35,7 @@
 	{# DAP Spectrum View Toggle #}
 	{% if category.key == 'spectra' %}
 		<div class='specview' id='specview'>
-			<button class='btn btn-primary' id='toggle_specview' aria-pressed='false' type='button' data-toggle='button' data-complete-text='Toggle Full View'>Toggle Panel View</button>
+			<button class='btn btn-primary' id='toggle_specview' aria-pressed='false' type='button' data-toggle='button' data-complete-text='Toggle Full Spectrum'>Toggle EMLine Zoom-In</button>
 		</div>
 	{% endif %}	
 	
@@ -90,11 +90,11 @@
 {% endmacro %}
 
 {# DAP 6 Panel Maps #}
-{% macro dapmap6panel(catid,category,ifu,display='block') %}
+{% macro dapmap6panel(catid,category,ifu,display) %}
 
 	{% set altimg = 'Map Image' if 'maps' in category.key else 'Rad. Grad. Image' if 'radgrad' in category.key else 'Spec. Image' if 'spectra' in category.key else '' %}
 
-	<div class='dapmappanel' id='dapmap6_{{ifu}}_{{category.key}}',style='display:{{display}}'>
+	<div class='dapmappanel' id='dapmap6_{{ifu}}_{{category.key}}'>
 	{% for i in range(6) %}
 	{% if loop.index0 % 3 == 0 %}<div class='row'>{% endif %}
 		<div class='col-md-4' id='{{category.key}}panel{{(i+1)|string}}'>
@@ -117,7 +117,7 @@
 		<div class='col-md-8' id='{{category.key}}panel1'>
 			<label id='{{category.key}}label1'>Map {{1|dapmaptype(category.key)}}</label>
 			<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='ifu.dapqa.loadImageModal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="{{altimg}}"></a>
-			{{ dapqaissue(catid,category,'1s') }}
+			{{ dapqaissue(catid,category,'binnum') }}
 		</div>
 	</div>
 	</div>
@@ -132,7 +132,7 @@
 			<div class='col-md-12'>
 				<label id='{{category.key}}label1'>Spectrum {{1}}</label>
 				<a href='#' data-toggle='modal' data-target='#dapimgmodal_{{ifu}}' onclick='ifu.dapqa.loadImageModal("{{category.key}}imgsingle_{{ifu}}")'><img src="" class="img-responsive img-rounded" id='{{category.key}}imgsingle_{{ifu}}' alt="Spectrum Image"></a>
-				{{ dapqaissue(catid,category,'1s') }}
+				{{ dapqaissue(catid,category,'single') }}
 			</div>
 		</div>
 	{#{% endfor %}#}

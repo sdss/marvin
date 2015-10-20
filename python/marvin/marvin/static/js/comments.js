@@ -84,6 +84,8 @@ Comment = (function () {
         this.hideCatsAndIssues();
         this.loadCatsAndIssues('general');
         utils.resetTags(this.tagname);
+        $('.selectpicker').selectpicker('deselectAll');
+        $('.selectpicker').selectpicker('refresh');
     };
 
     // Load any Comment texts and checked issues 
@@ -155,7 +157,7 @@ Comment = (function () {
 
             // set the new comment text into the object comments
             _this.retrieveComments();
-            _this.getIssues('.issuesp');
+            _this.getIssues($('.issuesp'));
 
         });
     };

@@ -43,7 +43,6 @@ Header = (function () {
 
     // initialize the typeahead
     Header.prototype.initTypeahead = function() {
-        console.log('init typeahead', $('.typeahead'), $('#idtext').attr('placeholder'));
         options = {
             source:["Blah","hello","test"]
         };
@@ -75,6 +74,11 @@ Header = (function () {
     Header.prototype.getVisibleVersionID = function() {
         return $('.vertype:visible').attr('id');
     }
+
+    // Submit the header plate/manga id form
+    Header.prototype.submitHeadForm = function() {
+        $('#headform').submit();
+    };
 
     // Build version form
     Header.prototype.buildForm = function() {
@@ -123,6 +127,7 @@ Header = (function () {
 
     // Send Header Ajax request
     Header.prototype.sendAjax = function(form,url,fxn) {
+        var _this = this;
         $.post($SCRIPT_ROOT + url, form,'json')
         .done(function(data){
             // reload the current page, this re-instantiates a new Header with new version info from session

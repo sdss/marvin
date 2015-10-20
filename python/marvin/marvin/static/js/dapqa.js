@@ -46,6 +46,7 @@ Dapqa = (function() {
         this.oldqatype = null;
         this.specpaneltype = $('#specpanel', this.mainpanel).val();
         this.mappaneltype = null;
+        this.oldspecpanel = this.specpaneltype;
         this.ready = $('#inspectready').val();
         this.fxn = 'loadDapQaPanel';
         this.optionstype = null;
@@ -141,6 +142,7 @@ Dapqa = (function() {
         this.optionstype = this.qatype.split('-')[0];
         this.optionsid = this.qatype.split('-')[1];
         this.specpaneltype = 'single';
+        this.oldspecpanel = this.specpaneltype;
         this.mappaneltype = 'map';
         $('#specpanel', this.mainpanel).val(this.specpaneltype);
 
@@ -220,6 +222,7 @@ Dapqa = (function() {
         if (_this.key==='spectra') { _this.getSpectraList(); }
         
         //get new panel and store old values
+        _this.getOldValues();
         _this.getPanel();
         _this.storeOldValues();        
     };
@@ -238,12 +241,12 @@ Dapqa = (function() {
 
         // if mapid is binnum, change to single panel view
         if (_this.mapid == 'binnum' & _this.oldmapid != 'binnum') {
-            _this.map6panel.hide();
-            _this.mapsinglepanel.show();
+            _this.map6panel.toggle();
+            _this.mapsinglepanel.toggle();
             _this.mappaneltype = 'single';
         } else if (_this.mapid !='binnum' & _this.oldmapid == 'binnum') {
-            _this.map6panel.show();
-            _this.mapsinglepanel.hide();
+            _this.map6panel.toggle();
+            _this.mapsinglepanel.toggle();
             _this.mappaneltype = 'map';
         }
 
@@ -255,27 +258,25 @@ Dapqa = (function() {
     // Toggle the DAP Spectral View (6 Panel or Single)
     Dapqa.prototype.toggleSpecView = function(event) {
         var _this = event.data;
+        _this.oldspecpanel = _this.specpaneltype;
         if (_this.specviewbut.hasClass('active')) {
             _this.specviewbut.button('reset');
-            $('div[id*="dapmap6"]', _this.mainpanel).hide();
+            $('div[id*="dapmap6"]', _this.mainpanel).toggle();
             _this.subpanel = $('div[id*="dapspecsingle"]', _this.mainpanel);
-            _this.subpanel.show();
+            _this.subpanel.toggle();
             _this.specpaneltype = 'single';
-            $('#specpanel', _this.mainform).val(_this.specpaneltype);
-            _this.getOldValues();
-            //getPanel(ifu,oldvals.key,oldvals.mapid,oldvals.qatype);
-            _this.getPanel();
         } else {
             _this.specviewbut.button('complete');
-            $('div[id*="dapspecsingle"]', _this.mainpanel).hide();
+            $('div[id*="dapspecsingle"]', _this.mainpanel).toggle();
             _this.subpanel = $('div[id*="dapmap6"]', _this.mainpanel);
-            _this.subpanel.show();
+            _this.subpanel.toggle();
             _this.specpaneltype = 'map';
-            $('#specpanel', _this.mainform).val(_this.specpaneltype);            
-            _this.getOldValues();
-            //getPanel(ifu,oldvals.key,oldvals.mapid,oldvals.qatype);
-            _this.getPanel();
-        }        
+        }
+        $('#specpanel',_this.mainform).val(_this.specpaneltype);        
+        $('#oldspecpanel', _this.mainform).val(_this.oldspecpanel);
+        _this.getOldValues();
+        _this.getPanel();
+        _this.storeOldValues();
     };
 
     // Validate DAP form
@@ -317,8 +318,17 @@ Dapqa = (function() {
         return dapform;
     };
 
+    // Get new form data
+    Dapqa.prototype.getNewFormData = function() {
+        var newdata = [{'name':'key','value':this.key},{'name':'mapid','value':this.mapid},{'name':'cubepk','value':this.cubepk},
+                   {'name':'qatype','value':this.qatype},{'name':'issues','value':this.issues},
+                   {'name':'tags','value': this.tags}, {'name':'mappanel','value':this.mappaneltype}];
+        return newdata;
+    };
+
     // Validate issues
     Dapqa.prototype.validateIssues = function(issues) {
+        var _this = this;
         // issues is not an array or a string value of 'any'
         if (typeof issues !== Array && typeof issues !== 'object' && issues !== 'any') {
             throw new Error('Error validating issues: '+issues+' is not an array or any');
@@ -334,14 +344,22 @@ Dapqa = (function() {
                 // 2nd element not a number
                 if ($.isNumeric(tmpval[1]) == false) throw new Error('Error validating issues: 2nd element of '+value+' not a number');
                 // 3rd element not a number or not 1-6
-                if ($.isNumeric(tmpval[2]) == false || tmpval[2] < 1 || tmpval[2] > 6) throw new Error('Error validating issues: 3rd element of '+value+' not a number or outside range 1-6');
+                if (_this.oldmapid == 'binnum') {
+                    if (tmpval[2] !== 'binnum') throw new Error('Error validating issues: binnum mapid - 3rd element of '+value+' not equal to binnum');
+                } else if (_this.oldkey == 'spectra' & _this.oldspecpanel == 'single') {
+                    if (tmpval[2] !== 'single') throw new Error('Error validating issues: single spectra - 3rd element of '+value+' not equal to single');
+                } else {
+                    if ($.isNumeric(tmpval[2]) == false || tmpval[2] < 1 || tmpval[2] > 6) throw new Error('Error validating issues: 3rd element of '+value+' not a number or outside range 1-6');
+                }
             });
         }
     };    
 
     // Parse the DAP Issues
-    Dapqa.prototype.parseDapIssues = function() {
-        var name = '#dapqacomment_form_'+this.ifu+' select[id*="dapqa_issue_'+this.key+'"]';
+    Dapqa.prototype.parseDapIssues = function(element) {
+        //var name = '#dapqacomment_form_'+this.ifu+' select[id*="dapqa_issue_'+this.key+'"]';
+        var name = $('select[id*="dapqa_issue_'+this.key+'"]', element);
+
         var issuelist = utils.getSelected(name);
         // remove duplicate entries        
         var issuelist = (typeof issuelist == 'object') ? utils.unique(issuelist) : issuelist;
@@ -362,7 +380,8 @@ Dapqa = (function() {
     Dapqa.prototype.storeOldValues = function() {
         $('#oldmapid',this.mainform).val(this.mapid);
         $('#oldqatype',this.mainform).val(this.qatype);
-        $('#oldkey',this.mainform).val(this.key);        
+        $('#oldkey',this.mainform).val(this.key);
+        $('#oldspecpanel',this.mainform).val(this.specpaneltype);        
     }
 
     // Get old values for key, mapid, qatype from the form
@@ -370,6 +389,7 @@ Dapqa = (function() {
         this.oldmapid = $('#oldmapid',this.mainform).val();
         this.oldqatype = $('#oldqatype',this.mainform).val();
         this.oldkey = $('#oldkey',this.mainform).val();
+        this.oldspecpanel = $('#oldspecpanel',this.mainform).val();
     }
 
     // Get the appropriate subpanel
@@ -440,22 +460,29 @@ Dapqa = (function() {
             });
     };
 
+    Dapqa.prototype.isVisible = function(element) {
+        return element.css('display') != 'none';
+    };
+
+    Dapqa.prototype.getVisibleChildren = function(element) {
+        return element.children('div:not([style*="none"])');
+    };
+
     // Retrieve the DAP map panels
     Dapqa.prototype.getPanel = function() {
         var _this = this;
         $('.dapqapanel', this.mainpanel).hide();
         this.specpaneltype = $('#specpanel', this.mainform).val();
+        var visiblechildren  = this.getVisibleChildren(this.ifupanel);
         
         // grab tags
         this.grabTags();
 
         // parse DAP issues
-        this.parseDapIssues();
+        this.parseDapIssues(this.ifupanel);
 
         // build form data
-        var newdata = [{'name':'key','value':this.key},{'name':'mapid','value':this.mapid},{'name':'cubepk','value':this.cubepk},
-                   {'name':'qatype','value':this.qatype},{'name':'issues','value':this.issues},
-                   {'name':'tags','value': this.tags}, {'name':'mappanel','value':this.mappaneltype}];
+        var newdata = this.getNewFormData();
         var dapformdata = this.buildDapForm(newdata);
         console.log('dapform',dapformdata);
         
@@ -486,7 +513,9 @@ Dapqa = (function() {
 
                 } else {
                     var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.panelmsg+"</h4></div>";
-                    _this.paneltitle.html(alerthtml);                    
+                    _this.paneltitle.html(alerthtml);
+                    $('img',_this.ifupanel).attr('src','');
+                    _this.resetCommentsAndIssues();                    
                 }
 
             })
@@ -506,14 +535,16 @@ Dapqa = (function() {
             // select 6 panel or single panel based on map selection (i.e. if binnum)
             this.getSubPanel();
 
+            console.log('panels', results.panels);
             // load images into panels
             var _this = this;
             this.subpanel.each(function(index) {
                 //replace image & labels
                 $(this).attr('src',results.images[index]);
-                var labelname = (_this.key !== 'spectra') ? 'Map ' : (_this.specpaneltype === 'single') ? 'Spectrum ' : 'Line ';
-                var labelend = (_this.key !== 'spectra') ? ': '+results.panels[index] : (_this.specpaneltype === 'map') ? ': '+results.panels[index] : '';
+                var labelname = (_this.key !== 'spectra') ? 'Map ' : (_this.specpaneltype == 'single') ? 'Spectrum ' : 'Line ';
+                var labelend = (_this.key !== 'spectra') ? ': '+results.panels[index] : (_this.specpaneltype == 'map') ? ': '+results.panels[index] : '';
                 var labelhtml = labelname+(index+1)+labelend;
+                console.log('new label', labelhtml);
                 $('#'+_this.key+'label'+(index+1),_this.mainpanel).html(labelhtml);
             });
         } else {
@@ -525,7 +556,7 @@ Dapqa = (function() {
     // Load the DAP comments + issues
     Dapqa.prototype.loadComments = function(results) {
         var _this = this;
-        console.log('loading comments',results.dapqacomments);
+        console.log('loading comments',results.dapqacomments, results.status);
         // reset all panel comments
         $('[id^=dapqa_comment]', this.mainpanel).val('');
         
@@ -581,6 +612,13 @@ Dapqa = (function() {
         this.imagemodalbody.html(image);
     };
 
+    // Reset DAP comments and issues
+    Dapqa.prototype.resetCommentsAndIssues = function() {
+        $('[id^=dapqa_comment]', this.mainpanel).val('');        
+        $('[id^=issue]', this.mainpanel).prop('selected',false);
+        $('.dapqaissuesp', this.mainpanel).selectpicker('refresh');
+    };
+
     // Submit or Reset DAP Comments
     Dapqa.prototype.addComments = function(action) {
         console.log('adding comments',action);
@@ -588,12 +626,10 @@ Dapqa = (function() {
         var _this = this;
         this.storeOldValues();
         this.grabTags(); //grab tags
-        this.parseDapIssues(); //parse issues    
+        this.parseDapIssues(this.ifupanel); //parse issues    
 
         // build form data
-        var newdata = [{'name':'key','value':this.key},{'name':'mapid','value':this.mapid},{'name':'cubepk','value':this.cubepk},
-                   {'name':'qatype','value':this.qatype},{'name':'issues','value':this.issues},
-                   {'name':'tags','value': this.tags}];
+        var newdata = this.getNewFormData();
         var dapformdata = this.buildDapForm(newdata);
 
         // perform the Ajax request based on the action
