@@ -629,6 +629,7 @@ Dapqa = (function() {
 
         // build form data
         var newdata = this.getNewFormData();
+        newdata.push({'name':action,'value':true})
         var dapformdata = this.buildDapForm(newdata);
 
         // perform the Ajax request based on the action
