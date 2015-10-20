@@ -169,6 +169,19 @@ def filterVersion(value):
 
     return newver
 
+def prettyError(value):
+    ''' make the error captured via sys_exc presentable '''
+
+    # set None defaults
+    trace=None; val=None; type=None; msg=None
+
+    # get values
+    if len(value.args) == 4: msg, type, val, trace = value.args
+    elif len(value.args) == 3:  msg, type, val = value.args
+    elif len(value.args) == 2:  msg, type  = value.args
+    elif len(value.args) == 1:  msg = value.args[0]
+
+    return msg, type, val, trace
     
     
     
