@@ -379,7 +379,9 @@ def getSessionDAPComments(form):
         inspection.retrieve_alltags()
     result = inspection.result()
 
-    print('getting comments', result)
+    # set up binnum and single spectra positions
+    if form['mapid'] == 'binnum': result['dapqacomments'][0]['position'] = 'binnum'
+    if form['key'] == 'spectra' and form['specpanel'] == 'single': result['dapqacomments'][0]['position'] = 'single'
     
     if inspection.ready: current_app.logger.warning('Inspection> get DAPQA Comments {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED to get DAPQA Comments {0}'.format(result))
