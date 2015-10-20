@@ -303,7 +303,7 @@ def setSessionDAPComments(form):
         panelname = [name[1] for name in names]
     except:
         result['status'] = -1
-        result['message'] = 'Error getting panel names from inspection with panel input {0}, bin {1}: {2}'.format(panel_input,bin,sys.exc_info()[1])
+        result['message'] = 'Error getting panel names from inspection with panel input {0}, bin {1}: {2} {3}'.format(panel_input,bin,sys.exc_info()[0],sys.exc_info()[1])
         raise RuntimeError(result['message'])   
     
     # build panel info list
@@ -320,7 +320,7 @@ def setSessionDAPComments(form):
             panelcomments.append(tmp)
     except:
         result['status'] = -1
-        result['message'] = 'Error building panel comments for inspection: {0}'.format(sys.exc_info()[1])
+        result['message'] = 'Error building panel comments for inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
         raise RuntimeError(result['message'])   
     
     print('inside set session panelcomment', panelcomments)
@@ -330,14 +330,32 @@ def setSessionDAPComments(form):
         inspection.set_version(drpver=form['drpver'],dapver=form['dapver'])
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
-        inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid']) 
-        inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
-        inspection.set_session_tags(tags=form['tags'])
+        inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
+        try:  
+            inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
+            inspection.set_session_tags(tags=form['tags'])
+        except:
+            result['status'] = -1
+            result['message'] = 'Error setting session comments for inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            raise RuntimeError(result['message'])   
+
         #if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
-        if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
-        if 'reset' in form and form['reset']:
-            inspection.drop_dapqacomments_from_session()
-            inspection.drop_dapqatags_from_session()
+        try:
+            if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
+        except:
+            result['status'] = -1
+            result['message'] = 'Error submitting comments to inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            raise RuntimeError(result['message'])   
+
+        try:
+            if 'reset' in form and form['reset']:
+                inspection.drop_dapqacomments_from_session()
+                inspection.drop_dapqatags_from_session()
+        except:
+            result['status'] = -1
+            result['message'] = 'Error resetting session comments for inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            raise RuntimeError(result['message'])   
+
     result = inspection.result()
 
     if inspection.ready: current_app.logger.warning('Inspection> set DAPQA Comments {0}'.format(result))
