@@ -1,4 +1,6 @@
 
+{% from 'generalMacros.html' import versiontable %}
+
 <footer>
 	<nav class="navbar navbar-default ">
 		<div class='row'>
@@ -15,26 +17,11 @@
 				{#<div class='row'><a href='https://data.sdss.org/sas/mangawork/manga/spectro/analysis/{{session['currentver']}}/{{session['currentdapver']}}', target='_blank'>SAS Analysis</a></div>#}
 
 			</div>
-			<div class="col-md-6">
+			<div class='col-md-2'>
 				<h5>Version Info: </h5>
 				<div class='row'>
-					<div class='col-md-3'>
-						<p>marvin: {{session['marvinver']}}</p>
-					</div>
-					<div class='col-md-3'>
-						<p>mangadrp: {{session['drpver']}}</p>
-					</div>
-					<div class='col-md-4'>
-						<p>sdss_python_module: {{session['sdssver']}}</p>
-					</div>										
-				</div>
-				<div class='row'>
-					<div class='col-md-2'>
-						<p>Bootstrap</p>
-					</div>
-					<div class='col-md-2'>
-						<p>Javascript</p>
-					</div>
+					<button type="button" id='verspopover' data-trigger='hover' class="btn btn-primary" data-toggle="popover" title="Versions" data-content="{{versiontable(session['codeversions'])}}">Code Versions</button>
+					{#{{versiontable(session['codeversions'])}}#}
 				</div>
 			</div>
 		</div>

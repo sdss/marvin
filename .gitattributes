@@ -100,6 +100,7 @@ python/marvin/marvin/static/js/tests/test_header.js -text
 python/marvin/marvin/static/js/tests/test_ifu.js -text
 python/marvin/marvin/static/js/utils.js -text
 python/marvin/marvin/static/sql/utah_mangadb.sql -text
+python/marvin/marvin/static/text/versions.txt -text
 python/marvin/marvin/templates/buildTable.html -text
 python/marvin/marvin/templates/commentform.html -text
 python/marvin/marvin/templates/current.html -text

@@ -187,4 +187,22 @@
 
 {% endmacro %}
 
+{% macro versiontable(versions) %}
+
+	<div id='versiontable' class='table-responsive'>
+		<table class='sastable' data-toggle='table' data-classes='table table-condensed table-bordered table-striped' 
+			data-height='200' name='versiontable'>
+
+			<thead id='head'><tr><th>Code</th><th>Version</th></tr></thead>
+			<tbody>
+				{% for version in versions %}
+					<tr><td>{{version['name']}}</td><td>{{version['version']}}</td></tr>
+				{% endfor %}			
+			</tbody>
+		</table>
+	</div>
+
+{% endmacro %}
+
+
 

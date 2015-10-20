@@ -86,6 +86,7 @@ QUnit v1.19.0
 		$(function() {
 			utils = new Utils();
 			tm = new TableMethods();
+			$('#verspopover').popover({html:true});
 		});
 	</script>
 	{% block code %}{% endblock code %}	
@@ -99,7 +100,7 @@ QUnit v1.19.0
 	{% block body %}{% endblock body %}
 </div>
 
-{#{% include 'footer.html' %}#}
+{% include 'footer.html' %}
 
 </body>
 </html>
