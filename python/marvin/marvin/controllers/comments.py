@@ -380,7 +380,7 @@ def getSessionDAPComments(form):
     result = inspection.result()
 
     # set up binnum and single spectra positions
-    if 'dapqacomments' in results:
+    if 'dapqacomments' in result:
         if form['mapid'] == 'binnum': result['dapqacomments'][0]['position'] = 'binnum'
         if form['key'] == 'spectra' and form['specpanel'] == 'single': result['dapqacomments'][0]['position'] = 'single'
         
