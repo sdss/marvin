@@ -170,8 +170,8 @@ Utils = (function() {
     // Get selected items from bootstrap select-picker
     Utils.prototype.getSelected = function(name) {
 		var selectlist = [];
-		var jname = name+' :checked';
-		$(jname).each(function(){
+		var jname = $(' :checked',name);
+		jname.each(function(){
 			selectlist.push(this.value);
 		});
 		selectlist = (selectlist.length == 0) ? 'any' : selectlist;

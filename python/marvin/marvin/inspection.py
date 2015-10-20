@@ -344,7 +344,7 @@ class Inspection:
         self.message = "Please use the production site!"
         self.status = 1
         self.dapqacomments = []
-        self.dapqacomments.append({'catid':'1','position':'1','panel':'OII','issues':['1','4','5'],'comment':'Here is a comment'})
+        #self.dapqacomments.append({'catid':'1','position':'1','panel':'OII','issues':['1','4','5'],'comment':'Here is a comment'})
         self.set_totaldapcomments()
         
     def set_totaldapcomments(self):

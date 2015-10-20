@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import flask, sqlalchemy, json, os, glob, warnings
+import flask, sqlalchemy, json, os, glob, warnings, sys
 from flask import request, render_template, send_from_directory, current_app, session as current_session,jsonify
 from ..model.database import db
 from ..utilities import getImages, getDAPImages
@@ -15,6 +15,7 @@ except ValueError:
 try: from inspection.marvin import Inspection
 except: from marvin.inspection import Inspection
 from hashlib import md5
+from itertools import groupby
 
 
 comment_page = flask.Blueprint("comment_page", __name__)
@@ -147,12 +148,18 @@ def getdappanel():
     current_app.logger.warning("REQUEST.FORM ==> %r" % request.form if request.method == 'POST' else "REQUEST.ARGS ==> %r" % request.args)
     dapform = processRequest(request=request)
     dapform['tags'] = json.loads(dapform['tags']) if 'tags' in dapform else []
+    inspection = Inspection(current_session)
     
     print('first dapform',dapform)
 
     # store form in session, using old mapid, qatype, and key
-    setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
-    inspection = Inspection(current_session)
+    try: 
+        setresults = setSessionDAPComments(dapform) if any([dapform['oldmapid'],dapform['oldkey'],dapform['oldqatype']]) else None
+    except RuntimeError as error:
+        result['status'] = -1
+        result['setsession']={'status':-1, 'message':'Error in setSessionDAPComments: {0}'.format(error)}
+        result['panelmsg'] = result['setsession']['message'];
+        return jsonify(result=result)
 
     # split the QA type into cube/rss mode and bintype
     try:
@@ -184,7 +191,13 @@ def getdappanel():
         newtitle = '{1}: {2}-{0}'.format(name,defaulttitle[dapform['key']],qatype)
     
     # load new form from session, using current mapid, qatype, and key
-    getresults = getSessionDAPComments(dapform) 
+    try:
+        getresults = getSessionDAPComments(dapform)
+    except RuntimeError as error: 
+        result['status'] = -1
+        result['getsession']={'status':-1, 'message':'Error in getSessionDAPComments: {0}'.format(error)}
+        result['panelmsg'] = result['getsession']['message'];
+        return jsonify(result=result)
 
     result['title'] = newtitle
     result['images'] = imglist if imglist else None
@@ -257,23 +270,58 @@ def setSessionDAPComments(form):
         mode,bin = splitQAType(form['oldqatype'])
     except ValueError as e:
         result['status'] = -1
-        msg = 'setSessionDAPComments: Error splitting qatype {0}: {1}'.format(form['oldqatype'],e)
-        result['message'] = msg
-        warnings.warn(msg,RuntimeWarning)
-        return result
+        result['message'] = 'Error splitting old qatype {0}: {1}'.format(form['oldqatype'],e)
+        raise RuntimeError(result['message'])
 
-    sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment{0}'.format(catkey[form['oldkey']]) in key])
-    comments = [comment[1] for comment in sortedcomments]
+    # grab the right panel comments and generate single array of panel comments
+    try:
+        if 'binnum' in form['oldmapid']:
+            sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment{0}_binnum'.format(catkey[form['oldkey']]) in key])
+        elif 'spectra' in form['oldkey'] and 'single' in form['oldspecpanel']:
+            sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment{0}_single'.format(catkey[form['oldkey']]) in key])
+        else:
+            sortedcomments = sorted([(key,val) for key,val in form.iteritems() if 'dapqa_comment{0}'.format(catkey[form['oldkey']]) in key and key.split('_')[2].isdigit()])
+        comments = [comment[1] for comment in sortedcomments]
+    except:
+        result['status'] = -1
+        result['message'] = 'Error sorting comments with old key {0},mapid {1},specpanel {2}: {3}'.format(form['oldkey'],form['oldmapid'],form['oldspecpanel'],sys.exc_info()[1])
+        raise RuntimeError(result['message'])        
+
     # get issues, separate into ints by panel below
     issues = json.loads(form['issues'])
+    try: 
+        issues = {key: list(int(iss.split('_')[1]) for iss in val) for key, val in groupby(issues, key=lambda x: x.split('_')[-1])} if type(issues)==list else issues
+    except:
+        result['status'] = -1
+        result['message'] = 'Error separating issues {0}: {1}'.format(issues,sys.exc_info()[1])
+        raise RuntimeError(result['message'])
+
     # make panel names
-    names = inspection.get_panelnames(form['oldmapid'],bin=bin)
-    panelname = [name[1] for name in names]
+    panel_input = 'specmap' if form['oldspecpanel'] != 'single' and form['oldkey'] == 'spectra' else form['oldmapid']
+    try:
+        names =  inspection.get_panelnames(panel_input,bin=bin)
+        panelname = [name[1] for name in names]
+    except:
+        result['status'] = -1
+        result['message'] = 'Error getting panel names from inspection with panel input {0}, bin {1}: {2}'.format(panel_input,bin,sys.exc_info()[1])
+        raise RuntimeError(result['message'])   
     
     # build panel info list
     catid = catkey[form['oldkey']]
-    panelcomments = [{'panel':name,'position':i+1,'catid':catid,'comment':comments[i],
-    'issues':[int(iss.split('_')[1]) for iss in issues if iss.rsplit('_')[-1] == str(i+1)]} for i,name in enumerate(panelname)]
+    panelcomments = []
+    try:
+        for i,name in enumerate(panelname):
+            if issues == 'any': panelissues = []
+            elif 'binnum' in issues: panelissues = issues['binnum']
+            elif 'single' in issues: panelissues = issues['single']
+            else: panelissues = issues[str(i+1)] if str(i+1) in issues else []
+
+            tmp = {'panel':name, 'position':i+1,'catid':catid,'comment':comments[i],'issues':panelissues}
+            panelcomments.append(tmp)
+    except:
+        result['status'] = -1
+        result['message'] = 'Error building panel comments for inspection: {0}'.format(sys.exc_info()[1])
+        raise RuntimeError(result['message'])   
     
     print('inside set session panelcomment', panelcomments)
 
@@ -304,19 +352,22 @@ def getSessionDAPComments(form):
     result={}
     # new key,map information
     inspection = Inspection(current_session)
-    catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
     maptype = form['mapid']
-    catid = catkey[form['key']]
+    try: 
+        catkey = {val['key']:key for key,val in inspection.dapqacategory.iteritems()}
+        catid = catkey[form['key']]
+    except:
+        result['status'] = -1
+        result['message'] = 'Error parsing inspection categories: {0}'.format(sys.exc_info()[1])
+        raise RuntimeError(result['message'])          
 
     # split the QA type into cube/rss mode and bintype
     try:
         mode,bin = splitQAType(form['qatype'])
     except ValueError as e:
         result['status'] = -1
-        msg = 'getSessionDAPComments: Error splitting qatype {0}: {1}'.format(form['qatype'],e)
-        result['message'] = msg
-        warnings.warn(msg,RuntimeWarning)
-        return result
+        result['message'] = 'Error splitting qatype {0}: {1}'.format(form['qatype'],e)
+        raise RuntimeError(result['message'])
 
     # get comments from database
     if inspection.ready:
@@ -327,6 +378,8 @@ def getSessionDAPComments(form):
         inspection.retrieve_dapqacomments(catid=catid)
         inspection.retrieve_alltags()
     result = inspection.result()
+
+    print('getting comments', result)
     
     if inspection.ready: current_app.logger.warning('Inspection> get DAPQA Comments {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED to get DAPQA Comments {0}'.format(result))

@@ -13,6 +13,7 @@
 	<input class='hidden' id='oldqatype' name='oldqatype' value=''/>
 	<input class='hidden' id='oldkey' name='oldkey' value=''/>
 	<input class='hidden' id='specpanel' name='specpanel' value='single'/>	
+	<input class='hidden' id='oldspecpanel' name='oldspecpanel' value='single'/>	
 
 	<div class='row'>
 
@@ -65,7 +66,7 @@
 						{{dapmapsinglepanel(catid,category,cube.ifu.name,'none')}}
 					{% elif 'spectra' in category.key %}
 						{{dapspectrumpanel(catid,category,cube.ifu.name)}}
-						{{dapmap6panel(catid,category,cube.ifu.name,display='none')}}
+						{{dapmap6panel(catid,category,cube.ifu.name)}}
 					{% elif 'radgrad' in category.key %}
 						{{dapmap6panel(catid,category,cube.ifu.name)}}
 					{% endif %}

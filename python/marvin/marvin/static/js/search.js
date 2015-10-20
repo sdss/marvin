@@ -46,25 +46,25 @@ Search = (function () {
 
     // Set list for DRP issue  ids
     Search.prototype.setDRPIssueIds = function() {
-        var issuelist = utils.getSelected('#drpissue');
+        var issuelist = utils.getSelected($('#drpissue'));
         $('#issues').val(issuelist);
     }; 
 
     // Set list for DAP issue  ids
     Search.prototype.setDAPIssueIds = function() {
-        var dapissuelist =  utils.getSelected('#dapissue');
+        var dapissuelist =  utils.getSelected($('#dapissue'));
         $('#dapissues').val(dapissuelist);
     }; 
 
     // Set list for tag  ids
     Search.prototype.setTagIds = function() {
-        var taglist = utils.getSelected('.tagsp');
+        var taglist = utils.getSelected($('.tagsp'));
         $('#tagids').val(taglist);
     }; 
 
     // Set list for default search ids
     Search.prototype.setDefaultIds = function() {
-        var defaultlist = utils.getSelected('.defsp');
+        var defaultlist = utils.getSelected($('.defsp'));
         $('#defaultids').val(defaultlist);
     }; 
 

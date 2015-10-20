@@ -95,9 +95,9 @@ class TestCommentsPage(marvinTester.MarvinTester, unittest.TestCase):
         self.assertEqual(True, msg)        
 
     def test_dappanel_formfail_oldqatype(self):
-        self._changeform({'oldqatype':'hjhj'})
+        self._changeform({'oldqatype':'badqatype'})
         self._loadPage('post', 'marvin/getdappanel', params=self.dapform)
-        errmsg = 'setSessionDAPComments: Error splitting qatype' 
+        errmsg = 'Error in setSessionDAPComments: Error splitting old qatype' 
         self.assertEqual(self.data['result']['setsession']['status'],-1, msg='Marvin should die in setSessionDAPComments, status=-1')
         self.assertIn(errmsg, self.data['result']['setsession']['message'], msg='Error message should be value unpack')
 
