@@ -343,13 +343,11 @@ Dapqa = (function() {
                 if (tmpval[0] !== 'issue') throw new Error('Error validating issues: 1st element of '+value+' not issue');
                 // 2nd element not a number
                 if ($.isNumeric(tmpval[1]) == false) throw new Error('Error validating issues: 2nd element of '+value+' not a number');
-                // 3rd element not a number or not 1-6
-                if (_this.oldmapid == 'binnum') {
-                    if (tmpval[2] !== 'binnum') throw new Error('Error validating issues: binnum mapid - 3rd element of '+value+' not equal to binnum');
-                } else if (_this.oldkey == 'spectra' & _this.oldspecpanel == 'single') {
-                    if (tmpval[2] !== 'single') throw new Error('Error validating issues: single spectra - 3rd element of '+value+' not equal to single');
-                } else {
-                    if ($.isNumeric(tmpval[2]) == false || tmpval[2] < 1 || tmpval[2] > 6) throw new Error('Error validating issues: 3rd element of '+value+' not a number or outside range 1-6');
+                // 3rd element not a number between 1-6 or not a string of binnum or single
+                if ($.isNumeric(tmpval[2]) == false) {
+                    if (tmpval[2] !== 'binnum' && tmpval[2] !== 'single') throw new Error('Error validating issues: 3rd element of '+value+' not string binnum or single');
+                } else if (tmpval[2] < 1 || tmpval[2] > 6) {
+                    throw new Error('Error validating issues: 3rd element of '+value+' not a number or outside range 1-6');
                 }
             });
         }
@@ -535,7 +533,6 @@ Dapqa = (function() {
             // select 6 panel or single panel based on map selection (i.e. if binnum)
             this.getSubPanel();
 
-            console.log('panels', results.panels);
             // load images into panels
             var _this = this;
             this.subpanel.each(function(index) {
@@ -544,8 +541,8 @@ Dapqa = (function() {
                 var labelname = (_this.key !== 'spectra') ? 'Map ' : (_this.specpaneltype == 'single') ? 'Spectrum ' : 'Line ';
                 var labelend = (_this.key !== 'spectra') ? ': '+results.panels[index] : (_this.specpaneltype == 'map') ? ': '+results.panels[index] : '';
                 var labelhtml = labelname+(index+1)+labelend;
-                console.log('new label', labelhtml);
-                $('#'+_this.key+'label'+(index+1),_this.mainpanel).html(labelhtml);
+                var label = _this.getVisibleChildren(_this.ifupanel).find('#'+_this.key+'label'+(index+1));
+                label.html(labelhtml);
             });
         } else {
             var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+msg+"</h4></div>";
