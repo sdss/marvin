@@ -2,7 +2,7 @@
 ''' General Utilities for MaNGA SAS'''
 
 import json, os, glob, sys, traceback
-from flask import session as current_session, render_template, current_app, request
+from flask import session as current_session, render_template, current_app, request, url_for
 from ast import literal_eval
 from manga_utils import generalUtils as gu
 from astropy.table import Table
@@ -343,20 +343,33 @@ def setGlobalSession():
     configFeatures(current_app, current_session['marvinmode'])
     #current_session['searchoptions'] = getDblist(current_session['searchmode'])
 
-    # get versions
-    try: current_session['marvinver'] = gu.getMangaVersion(marvin=True)
-    except TypeError as e:
-        current_session['marvinver'] = None
-    try: current_session['sdssver'] = gu.getMangaVersion(sdss=True)
-    except TypeError as e:
-        current_session['sdssver'] = None
-    try: current_session['drpver'] = gu.getMangaVersion(drp=True)
-    except TypeError as e:
-        current_session['drpver'] = None  
+    # get code versions
+    if 'codeversions' not in current_session: buildCodeVersions() 
 
     # user authentication
     if 'http_authorization' not in current_session: 
         try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
         except: pass
+
+def buildCodeVersions():
+    ''' Build a dictionary of the versions of code used in Marvin '''
+
+    versions=[]
+
+    # svn product versions
+    versions.append({'name':'marvinver','version':gu.getMangaVersion(marvin=True)})
+    versions.append({'name':'drpver','version':gu.getMangaVersion(drp=True)})
+    versions.append({'name':'sdssver','version':gu.getMangaVersion(sdss=True)})
+
+    # javascript versions
+    versfile = os.path.join(os.getcwd(),'marvin/static/text/versions.txt')
+    f = open(versfile,'r')
+    for line in f:
+        versplit = line.splitlines()[0].split(' ')
+        versions.append({'name':versplit[0],'version':versplit[1]})
+
+    current_session['codeversions'] = versions
+
+
 
     

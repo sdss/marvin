@@ -345,7 +345,8 @@ class Inspection:
         self.status = 1
         self.dapqacomments = []
         self.dapqacomments.append({'catid':'1','position':'1','panel':'OII','issues':['1','4','5'],'comment':'Here is a comment'})
-        self.dapqacomments.append({'catid':'3','position':'2','panel':'Hbeta','issues':['12','13','17'],'comment':'Here is a spec comment'})
+        self.dapqacomments.append({'catid':'3','position':'1','panel':'OII','issues':['12','13','17'],'comment':'Here is a oii spec comment'})
+        self.dapqacomments.append({'catid':'3','position':'2','panel':'Hbeta','issues':['12','13','17'],'comment':'Here is a hbeta spec comment'})
         self.set_totaldapcomments()
         
     def set_totaldapcomments(self):
