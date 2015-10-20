@@ -370,6 +370,13 @@ def buildCodeVersions():
 
     current_session['codeversions'] = versions
 
+def parseError(error):
+    ''' parse a system error '''
 
+    type = error[0]
+    val = error[1]
+    trace = traceback.format_tb(error[2])
+
+    return type, val, trace
 
     

@@ -19,7 +19,17 @@
                 {% else %}
                     <h2>Wrong version specified</h2>
                 {% endif %}
-                <h3>{{error}}</h3>
+
+                {% set msg, type, val, trace = error|prettyError() %}
+                <h3>{{msg}}</h3>
+                {% if type %} <h4>Type: {{type}}</h4> {% endif %}
+                {% if val %} <h4>Value: {{val}}</h4> {% endif %}
+                {% if trace %}
+                    <h4>Traceback: </h4>
+                    {% for line in trace %}
+                        <h5>{{line}}</h5>
+                    {% endfor %}
+                {% endif %}
 
             </div>
         </div>

@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-import os, glob, sys
+import os, glob, sys, traceback
 
 import flask, sqlalchemy, json
 from flask import request, redirect,render_template, send_from_directory, current_app, session as current_session, jsonify,url_for
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
 from ..model.database import db
-from ..utilities import processTableData, getImages, setGlobalSession
+from ..utilities import processTableData, getImages, setGlobalSession, parseError
 from comments import getComment
 from astropy.table import Table
 
@@ -165,7 +165,9 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
     try:
         images = getImages(plateid,version=version,ifuname=ifuid)
     except:
-        raise RuntimeError('Error retrieving image for plate {0}, ifuid {0}'.format(plateid, ifuid))
+        type,val,trace = parseError(sys.exc_info())
+        raise RuntimeError('Error retrieving image for plate {0}, ifuid {0}'.format(plateid, ifuid),type,val,trace)
+
     ifudict=OrderedDict()
     if cube:
         ifudict[cube.ifu.name]=OrderedDict()
@@ -182,7 +184,8 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
                         else:
                             ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
             except:
-                raise RuntimeError('Error populating sample parameters for ifu {0}: {1}'.format(ifuid,sys.exc_info()[1]))
+                type,val,trace = parseError(sys.exc_info())
+                raise RuntimeError('Error populating sample parameters for ifu {0}: '.format(ifuid),type,val,trace)
 
     # get inspection information for ifu
     inspection=None
@@ -199,7 +202,8 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
             inspection.retrieve_cubetags()
             inspection.retrieve_alltags()
         except:
-            raise RuntimeError('Error retrieving comments and tags from Inspection for plate {0},ifu {1}: {2}'.format(plateid,ifuid,sys.exc_info()[1]))
+            type,val,trace = parseError(sys.exc_info())
+            raise RuntimeError('Error retrieving comments and tags from Inspection for plate {0},ifu {1}: '.format(plateid,ifuid),type,val,trace)
 
         result = inspection.result()
         if inspection.ready: current_app.logger.warning('Inspection> GET recentcomments: {0}'.format(result))
@@ -254,7 +258,8 @@ def plate(plateid=None, plver=None, ifuid=None):
         try:
             images = getImages(plateid,version=version)
         except:
-            plateinfo['error'] = 'Could not grab images for plate {0}: {1}'.format(plateid,sys.exc_info()[1])
+            type,val,trace = parseError(sys.exc_info())
+            plateinfo['error'] = RuntimeError('Could not grab images for plate {0}: '.format(plateid),type,val,trace)
             return render_template('errors/no_plateid.html',**plateinfo)
 
         plateinfo['images'] = sorted(images) if images else None
