@@ -362,7 +362,7 @@ def buildCodeVersions():
     versions.append({'name':'sdssver','version':gu.getMangaVersion(sdss=True)})
 
     # javascript versions
-    versfile = os.path.join(os.getcwd(),'marvin/static/text/versions.txt')
+    versfile = os.path.join(os.getenv('MARVIN_DIR'),'python/marvin/marvin/static/text/versions.txt')
     f = open(versfile,'r')
     for line in f:
         versplit = line.splitlines()[0].split(' ')
