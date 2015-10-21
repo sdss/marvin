@@ -393,6 +393,7 @@ def getSessionDAPComments(form):
         inspection.set_ifudesign(plateid=form['plateid'],ifuname=form['ifu'])
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=maptype)
+        if form['specpanel'] == 'single': inspection.single=True
         inspection.retrieve_dapqacomments(catid=catid)
         inspection.retrieve_alltags()
     result = inspection.result()
