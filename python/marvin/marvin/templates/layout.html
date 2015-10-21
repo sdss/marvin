@@ -86,7 +86,7 @@ QUnit v1.19.0
 		$(function() {
 			utils = new Utils();
 			tm = new TableMethods();
-			$('#verspopover').popover({html:true});
+			$('#verspopover').popover({html:true,content:$('#versiontable').html()});
 		});
 	</script>
 	{% block code %}{% endblock code %}	
