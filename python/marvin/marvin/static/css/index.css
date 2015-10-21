@@ -90,3 +90,9 @@ width:70%;
 .btn-info {
 	background-color: #007BC7;
 }
+
+#versiontable {display:none; float:right;}
+.popover {
+  width:300px;
+  overflow-y:scroll;
+}

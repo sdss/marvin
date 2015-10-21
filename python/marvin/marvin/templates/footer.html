@@ -20,12 +20,12 @@
 			<div class='col-md-2'>
 				<h5>Version Info: </h5>
 				<div class='row'>
-					<button type="button" id='verspopover' data-trigger='hover' class="btn btn-primary" data-toggle="popover" title="Versions" data-content="{{versiontable(session['codeversions'])}}">Code Versions</button>
-					{#{{versiontable(session['codeversions'])}}#}
+					<a tabindex='0' role="button" id='verspopover' data-trigger='focus' class="btn btn-primary" data-toggle="popover" title="Versions">Code Versions</a>
 				</div>
 			</div>
 		</div>
 	</nav>
 
+	{{versiontable(session['codeversions'])}}
 </footer>
 
