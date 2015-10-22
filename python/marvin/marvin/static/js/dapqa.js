@@ -645,7 +645,7 @@ Dapqa = (function() {
                         } else if (data.result.setsession.status === 1) {
                             $('#submitmsg', _this.mainform).html("<h5><div class='alert alert-success' role='alert'>"+data.result.setsession.message+"</div></h5>");
                         } else  {
-                            $('#submitmsg', _this.mainform).html("<h4><div class='alert alert-danger' role='alert'>Bad response from inspection module.</div></h4>");
+                            $('#submitmsg', _this.mainform).html("<h4><div class='alert alert-danger' role='alert'>Bad response from inspection module. "+data.result.setsession.message+"</div></h4>");
                         }
                     }
                     //reset tags
