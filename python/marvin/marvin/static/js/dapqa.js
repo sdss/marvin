@@ -569,10 +569,10 @@ Dapqa = (function() {
 
                     var position = (_this.mapid=='binnum') ? 'binnum' : (_this.key=='spectra' && _this.specpaneltype=='single') ? 'single' : panelcomment.position;
 
-                    $('#dapqa_comment'+panelcomment.catid+'_'+panelcomment.position, _this.mainpanel).val(panelcomment.comment);
+                    $('#dapqa_comment'+panelcomment.catid+'_'+position, _this.mainpanel).val(panelcomment.comment);
                 
                     $.each(panelcomment.issues, function(i,issid) {
-                        $('#issue_'+issid+'_'+panelcomment.position, _this.mainpanel).prop('selected',true);
+                        $('#issue_'+issid+'_'+position, _this.mainpanel).prop('selected',true);
                     });
                 });
             }
