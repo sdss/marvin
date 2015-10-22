@@ -342,9 +342,9 @@ def setSessionDAPComments(form):
         #if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         try:
             if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
-        except:
+        except Exception as error:
             result['status'] = -1
-            result['message'] = 'Error submitting comments to inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            result['message'] = 'Error submitting comments to inspection: {0}'.format(error)
             raise RuntimeError(result['message'])   
 
         try:
