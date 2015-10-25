@@ -96,3 +96,7 @@ width:70%;
   width:300px;
   overflow-y:scroll;
 }
+
+#verstable #head th {
+  background-color:#D5D5D5;
+}
