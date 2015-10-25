@@ -491,6 +491,7 @@ Dapqa = (function() {
                 
                 // setsession status failure
                 if (data.result.setsession && data.result.setsession.status === -1) {
+                    console.log('message',data.result.setsession.message);
                     var alerthtml = "<div class='alert alert-danger' role='alert'><h4>"+data.result.setsession.message+"</h4></div>";
                     _this.paneltitle.html(alerthtml);
                 }
@@ -637,7 +638,6 @@ Dapqa = (function() {
             $.post($SCRIPT_ROOT + '/marvin/getdappanel', dapformdata,'json')
                 .done(function(data){
                     if (data.result.title) {_this.paneltitle.html(data.result.title);}
-                    
                     // submit message
                     if (data.result.setsession) {
                         if (data.result.setsession.status === 0) {
@@ -677,7 +677,7 @@ Dapqa = (function() {
                     } else if (data.result.getsession.status === 1) {
                         $('#submitmsg', _this.mainform).html("<h5><div class='alert alert-info' role='alert'>"+data.result.getsession.totaldapcomments+"</div></h5>");
                     } else {
-                        $('#submitmsg', _this.mainform).html("<h5><div class='alert alert-danger' role='alert'>Bad response from inspection database</div></h5>");
+                        $('#submitmsg', _this.mainform).html("<h5><div class='alert alert-danger' role='alert'>Bad response from inspection database. "+data.result.getsession.message+"</div></h5>");
                     }
                     
                     utils.resetTags(_this.tagname);

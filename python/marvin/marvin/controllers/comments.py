@@ -332,14 +332,14 @@ def setSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         try:  
+            tmp = 1 if form['bye'] == 'test' else None
             inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
             inspection.set_session_tags(tags=form['tags'])
-        except:
+        except Exception as error:
             result['status'] = -1
-            result['message'] = 'Error setting session comments for inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            result['message'] = 'Error setting session comments for inspection: {0}, {1}'.format(str(type(error)),error)
             raise RuntimeError(result['message'])   
 
-        #if 'dapqacomments' in current_session: print("setSessionDAPComments -> current_session['dapqacomments']=%r" % current_session['dapqacomments'])
         try:
             if 'submit' in form and form['submit']: inspection.submit_dapqacomments()
         except Exception as error:
@@ -351,9 +351,9 @@ def setSessionDAPComments(form):
             if 'reset' in form and form['reset']:
                 inspection.drop_dapqacomments_from_session()
                 inspection.drop_dapqatags_from_session()
-        except:
+        except Exception as error:
             result['status'] = -1
-            result['message'] = 'Error resetting session comments for inspection: {0}, {1}'.format(sys.exc_info()[0],sys.exc_info()[1])
+            result['message'] = 'Error resetting session comments for inspection: {0}, {1}'.format(type(error),error)
             raise RuntimeError(result['message'])   
 
     result = inspection.result()

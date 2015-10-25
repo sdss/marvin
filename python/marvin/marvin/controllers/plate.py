@@ -11,11 +11,6 @@ from ..utilities import processTableData, getImages, setGlobalSession, parseErro
 from comments import getComment
 from astropy.table import Table
 
-from flask_wtf import Form
-from wtforms import StringField
-from wtforms.validators import DataRequired 
-
-
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
 try: from inspection.marvin import Inspection
@@ -175,17 +170,27 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
         if cube.sample:
             try:
                 for col in cube.sample[0].cols:
-                    if ('absmag' in col) or ('flux' in col):
-                        if 'absmag' in col: name='nsa_absmag'
-                        if 'petro' in col: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
+                    if ('absmag' in col) or ('flux' in col) or ('amivar' in col) or ('extinction' in col):
+                        if 'absmag' in col: name='nsa_absmag_el' if 'el' in col else 'nsa_absmag'
+                        if 'amivar' in col: name='nsa_amivar_el' if 'el' in col else 'nsa_amivar'
+                        if 'extinction' in col: name='nsa_extinction_el' if 'el' in col else 'nsa_extinction'
+                        if 'petro' in col: 
+                            if 'el' in col: name='nsa_petroflux_el' if 'ivar' not in col else 'nsa_petroflux_el_ivar'
+                            else: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
                         if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
                         try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
                         except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
+                    elif 'ifu_' in col:
+                        # NOTE: temporary solution only                      
+                        if cube.sample[0].__getattribute__(col): ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
                         else:
-                            ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+                            ifudict[cube.ifu.name][col] = json.loads(cube.hdr[0].header)[''.join(col.upper().split('_'))]
+                    else:                         
+                        ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
             except:
                 type,val,trace = parseError(sys.exc_info())
                 raise RuntimeError('Error populating sample parameters for ifu {0}: '.format(ifuid),type,val,trace)
+            print('ifudict',ifudict)
 
     # get inspection information for ifu
     inspection=None
