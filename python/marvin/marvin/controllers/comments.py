@@ -124,6 +124,7 @@ def login():
     result = inspection.result()
     if inspection.ready: current_app.logger.warning('Inspection> SUCCESSFUL LOGIN {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED LOGIN {0}'.format(result))
+    current_session['ready'] = inspection.ready
 
     return jsonify(result=result)
 
@@ -332,7 +333,7 @@ def setSessionDAPComments(form):
         inspection.set_cube(cubepk=form['cubepk'])
         inspection.set_option(mode=mode,bintype=bin,maptype=form['oldmapid'])
         try:  
-            tmp = 1 if form['bye'] == 'test' else None
+            #tmp = 1 if form['bye'] == 'test' else None
             inspection.set_session_dapqacomments(catid=catid,comments=panelcomments,touched=True)
             inspection.set_session_tags(tags=form['tags'])
         except Exception as error:
