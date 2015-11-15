@@ -24,6 +24,7 @@
         var allcubetags = {{inspection.cubetags|safe}};
         ifu = new Ifu(ifuid);
         ifu.showCubeTags(allcubetags[ifuid]);
+        //ifu.startAladin({{ifudict[cube.ifu.name]['target']|tojson|safe}}, {{ifudict[cube.ifu.name]['coords']|tojson|safe}});
     });
 </script>
 {% endblock code %}
@@ -36,6 +37,7 @@
 <input class='hidden' id='inspectready' value='{{inspection.ready}}'/>
 
 {% if cube %}
+
     {{ ifupanel(cube,ifudict[cube.ifu.name],inspection,version,dapversion,display='block') }}
 
     {# Comment Form #}

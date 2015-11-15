@@ -152,7 +152,7 @@ QUnit.test('Dapqa.buildDapForm_failed', 2, function(assert) {
     }
 
     function changeForm(name, value, msgbit) {
-        msg = Error('Error validating form: Parameter '+name+' with value '+value+' '+msgbit);
+        var msg = Error('Error validating form: Parameter '+name+' with value '+value+' '+msgbit);
         $.each(dapform, function(i,param) {
             if (param.name == name) param.value = value;
         });
@@ -174,11 +174,11 @@ QUnit.test('Dapqa.buildDapForm_failed', 2, function(assert) {
     // set initial form
     resetForm();
     // test if a value is not a string
-    msg = changeForm('mapid',5,'is not a string');
+    var msg = changeForm('mapid',5,'is not a string');
     validate(dapform, msg, 'Error should be caught on element not a string: mapid 5');
 
     resetForm();
-    msg = changeForm('dapqa_comment1_1',['',''],'is not a string');
+    var msg = changeForm('dapqa_comment1_1',['',''],'is not a string');
     validate(dapform, msg, 'Error should be caught on element not a string: dapqa_comment1_1 [","]');
 
     

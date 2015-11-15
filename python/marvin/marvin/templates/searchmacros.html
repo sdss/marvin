@@ -1,29 +1,96 @@
 
 
 
+{% macro byfile(types,form) %}
+    <div class='row'>
+        <div class='col-md-4 col-md-offset-3' style='text-align: center;'>
+            <span><h3> Upload a File: </h3><span>
+            <span><h3><small>(Please provide a list of plate-ifus, manga-ids, or exact coords)</small></h3></span>
+        </div>
+    </div>
+    <form class='form' role='form' enctype=multipart/form-data action="{{url_for('search_page.search')}}" method='post' id='file_form'>
+        <div class='row'>
+            <div class='col-md-4 col-md-offset-4'>
+                <div class='form-group'>
+                    <div class="input-group">
+                        <div class="input-group-btn" role="group">
+                            <button type="button" id='filelist' class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                List Of <span class="caret"></span></button>
+                            <ul class="dropdown-menu" id='filelist_ul' role="menu" id='uploadtype'>
+                                {% for type,format in types.iteritems() %}
+                                    <li><a id="{{type}}" onclick='search.changeUploadFormat({{type}})'>{{type|uploadType()}}</a></li>
+                                {% endfor %}   
+                            </ul>
+                        </div>  
+                        <input type='text' class='form-control' id='uploadtype_text' readonly>
+                        <span class="input-group-btn">
+                            <span class="btn btn-primary btn-file">
+                                Browse&hellip; <input type="file" name='filelist'>
+                            </span>
+                        </span>
+                        <input type="text" class="form-control" readonly>
+                        <div class='input-group-btn'>
+                            <input type="submit" name="uploadfile_form" value="Submit" class="btn btn-danger"/>
+                            <button type='button' name='clear' class='btn btn-success' onclick=''>Clear</button>
+                        </div>   
+                    </div>             
+                </div>
+            </div>
+
+            {#<div class='col-md-1 col-md-offset-4'>
+                <div class='form-group'>
+                    <label for='uploadlist'>List of</label>
+                    <select class='form-control input-sm' name='uploadtype' id='uploadtype'>
+                        {% for type,format in types.iteritems() %}
+                        {% if type==form['uploadtype'] %}
+                            <option id='{{type}}' value='{{type}}' selected>{{type|uploadType()}}</option>
+                        {% else %}
+                            <option id='{{type}}' value='{{type}}'>{{type|uploadType()}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class='form-group'>
+                    {% for type,format in types.iteritems() %}
+                        <p class='uploadtype_format' id='uploadtype_format_{{type}}'>{{format}}</p>
+                    {% endfor %}
+                </div>
+            </div>            
+            <div class='col-md-2'>
+                <div class='form-group'><input type='file' name='filelist'/></div>
+            </div>
+            <div class='col-md-1'>
+                <div class='form-group'><input type="submit" name="uploadfile_form" value="Submit" class="btn btn-primary btn-lg"/></div>
+                <div class='form-group'><button type='button' name='clear' class='btn btn-primary btn-lg' onclick=''>Clear</button></div>
+            </div>#}
+        </div>
+
+    </form> 
+{% endmacro %}
+
 {% macro directsql(form) %}
 
-					<div class='row'>
-						<div class='col-md-3 col-md-offset-3' style='text-align: center;'>
-							<span><h3> Direct SQL Search: </h3><span>
-							<span><h3><small>Note: what you query for is what you get!</small></h3></span>
-						</div>
-					</div>
-					<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post'>
-						<div class='row'>
-							<div class='col-md-4 col-md-offset-4'>
-								{% if form['sql'] %}
-									<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' >{{form['sql']}}</textarea>
-								{% else %}
-									<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' placeholder='Type your SQL here'></textarea>
-								{% endif %}
-							</div>
-							<div class='col-md-2'>
-								<div class='form-group'><input type="submit" name="directsql_form" value="Submit" class="btn btn-primary btn-lg"/></div>
-								<div class='form-group'><button type='button' name='resetsql' class='btn btn-primary btn-lg' onclick='search.resetSQL()'>Reset</button></div>
-							</div>
-						</div>
-					</form>	
+	<div class='row'>
+		<div class='col-md-3 col-md-offset-3' style='text-align: center;'>
+			<span><h3> Direct SQL Search: </h3><span>
+			<span><h3><small>Note: what you query for is what you get!</small></h3></span>
+		</div>
+	</div>
+	<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post'>
+		<div class='row'>
+			<div class='col-md-4 col-md-offset-4'>
+				{% if form['sql'] %}
+					<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' >{{form['sql']}}</textarea>
+				{% else %}
+					<textarea class='form-control' rows='5' id='sqlinput' name='sqlinput' placeholder='Type your SQL here'></textarea>
+				{% endif %}
+			</div>
+			<div class='col-md-2'>
+				<div class='form-group'><input type="submit" name="directsql_form" value="Submit" class="btn btn-primary btn-lg"/></div>
+				<div class='form-group'><button type='button' name='resetsql' class='btn btn-primary btn-lg' onclick='search.resetSQL()'>Reset</button></div>
+			</div>
+		</div>
+	</form>	
 
 {% endmacro %}
 
@@ -53,7 +120,7 @@
         {# Category #}
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='dapcat'>Category</label>
+				<label for='dapcat'>DAP Category</label>
 				<select class='form-control input-sm' name='dapcat' id='dapcat'>
 					<option id='any' value='any' selected>Any</option>
 					{% for catid, category in inspection.dapqacategory|dictsort %}
@@ -70,7 +137,7 @@
         {# Issues #}
 		<div class='col-md-1'>
 			<div class='form-group'>
-				<label for='dapissues'>Issues</label>
+				<label for='dapissues'>DAP Issues</label>
 				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any' data-width='99%'>
 					{% for catid, category in inspection.dapqacategory|dictsort %}
 					{% for issid,issue in category.issues|dictsort %}
@@ -157,123 +224,4 @@
 		</div>
 	</div>
 	
-{% endmacro %}
-
-
-{# test layout of dap search form #}
-{% macro dapqatest(versions,form,inspection) %}
-
-<div class='form-inline'>
-	<div class='form-group col-md-offset-2'>
-			<div class='input-group'>
-				<div class='input-group-addon'>DAP Version</div>
-				<select class='form-control input-sm' id='commdaptag' name='daptag' placeholder='Any'>
-					{% for ver in versions+['Any'] %}
-					 {% if form %}
-					 {% if ver==form['tag'] %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
-						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
-					{% else %}
-					{% if ver=='Any' %} <option id='{{ver}}' value='{{ver}}' selected>{{ver}}</option> {% else %}
-						<option id='{{ver}}' value='{{ver}}'>{{ver}}</option> {% endif %}
-					{% endif %}
-					{% endfor %}
-				</select>
-			</div>
-
-			<div class='input-group'>
-				<div class='input-group-addon'>Category</div>
-				<select class='form-control input-sm' name='dapcat' id='dapcat'>
-					<option id='any' value='any' selected>Any</option>
-					{% for catid, category in inspection.dapqacategory|dictsort %}
-						{% if catid == form['dapcat'] %}
-							<option id='{{loop.index0}}' value='{{catid}}' selected>{{category.category}}</option>
-						{% else %}
-							<option id='{{loop.index0}}' value='{{catid}}'>{{category.category}}</option>
-						{% endif %}
-					{% endfor %}
-				</select> 
-			</div>
-
-			<div class='input-group'>
-				<div class='input-group-addon'>Issues</div>
-				<select class="selectpicker issuesp" multiple id='dapissue' data-selected-text-format="count" title='Any' data-width='60%'>
-					{% for catid, category in inspection.dapqacategory|dictsort %}
-					{% for issid,issue in category.issues|dictsort %}
-						{% if 'issue'+issid|string in form['dapissues'] %}
-						<option id='issue{{issid}}' value='issue{{issid}}' selected>{{issue}}</option>
-						{% else %}
-						<option id='issue{{issid}}' value='issue{{issid}}'>{{issue}}</option>
-						{% endif %}
-					{% endfor %}
-					{% endfor %}
-				</select>
-				<input class='hidden' name='dapissues' id='dapissues' values=''/>
-			</div>	
-			
-			<div class='input-group'>
-				<div class='input-group-addon'>Mode</div>
-				<select class='form-control input-sm' name='mode' id='mode'>
-					<option id='any' value='any' selected>Any</option>
-                    {% if inspection.options %}
-                        {% for mode in inspection.options.mode %}
-                            {% if mode == form['mode'] %}
-                                <option id='{{loop.index0}}' value='{{mode}}' selected>{{mode|title}}</option>
-                            {% else %}
-                                <option id='{{loop.index0}}' value='{{mode}}'>{{mode|title}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-				</select>
-			</div>
-
-			<div class='input-group'>
-				<div class='input-group-addon'>Bin Type</div>
-				<select class='form-control input-sm' name='bintype' id='bintype'>
-					<option id='any' value='any' selected>Any</option>
-                    {% if inspection.options %}
-                        {% for bintype in inspection.options.bintype %}
-                            {% if bintype == form['bintype'] %}
-                                <option id='{{loop.index0}}' value='{{bintype}}' selected>{{bintype|title}}</option>
-                            {% else %}
-                                <option id='{{loop.index0}}' value='{{bintype}}'>{{bintype|title}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-				</select>
-			</div>
-
-			<div class='input-group'>
-				<div class='input-group-addon'>Map Type</div>
-				<select class='form-control input-sm' name='maptype' id='maptype'>
-					<option id='any' value='any' selected>Any</option>
-                    {% if inspection.options %}
-                        {% for maptype in inspection.options.maptype %}
-                            {% if maptype == form['maptype'] %}
-                                <option id='{{loop.index0}}' value='{{maptype}}' selected>{{maptype|title}}</option>
-                            {% else %}
-                                <option id='{{loop.index0}}' value='{{maptype}}'>{{maptype|title}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-				</select>
-			</div>
-
-			<div class='input-group'>
-				<div class='input-group-addon'>Panel</div>
-				<select class='form-control input-sm' name='panel' id='panel'>
-					<option id='any' value='any' selected>Any</option>
-                    {% if inspection.panels %}
-                        {% for panel in inspection.panels %}
-                            {% if panel == form['panel'] %}
-                                <option id='{{loop.index0}}' value='{{panel}}' selected>{{panel|title}}</option>
-                            {% else %}
-                                <option id='{{loop.index0}}' value='{{panel}}'>{{panel|title}}</option>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-				</select>
-			</div>
-	</div>
-</div>
-		
 {% endmacro %}

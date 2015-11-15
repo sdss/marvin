@@ -69,6 +69,7 @@ def getMPL(value):
         if value == 'v1_1_2': name='{0} (MPL 2)'.format(value)
         if value == 'v1_3_3': name='{0} (MPL 3)'.format(value)
         if value == 'v1_5_1': name='{0} (MPL 4)'.format(value)
+        if value == 'v1_5_2': name='{0} (DR13)'.format(value)
    
     return name
 
@@ -183,5 +184,16 @@ def prettyError(value):
 
     return msg, type, val, trace
     
+def uploadType(value):
+    ''' filter the upload type name '''
+
+    if value == 'plateifu': new = 'Plate-IFU'
+    if value == 'mangaid': new = 'MaNGA ID'
+    if value == 'radec': new = 'RA/Dec'
+
+    return new
+
+    
+
     
     

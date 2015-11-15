@@ -146,6 +146,14 @@ def create_app(debug=False):
         app.logger.error('Bad Request Exception {0}'.format(e))        
         return flask.render_template('errors/bad_request.html',**error),400
 
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        error={}
+        error['title']='Marvin | Method Not Allowed'
+        flask.session['vermode']='MPL'
+        app.logger.error('Method Not Allowed Exception {0}'.format(e))        
+        return flask.render_template('errors/method_not_allowed.html',**error),405
+
     # -------------
     # Initialize feature flags
     feature_flags = FeatureFlag(app)

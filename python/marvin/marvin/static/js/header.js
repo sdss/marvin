@@ -5,6 +5,8 @@ var Header,
 
 Header = (function () {
 
+    marvin.Header = Header;
+
     function Header(vermode) {
 
         // in case constructor called without new
@@ -18,6 +20,8 @@ Header = (function () {
         $('#idselect').on('change',this,this.toggleSearchType);
         $('.verselecttype').on('change',this,this.sendVersionInfo);
         $('#marvinmodeselect').on('change',this,this.toggleMode);
+        $('#userlogin').on('click',this,this.showLogin);
+        $('#usersettings').on('click',this,this.showUserSettings);
     }
     
     // initialize the object
@@ -171,6 +175,19 @@ Header = (function () {
         _this.marvinmode = $(this).val();
         var modeform = {'marvinmode':_this.marvinmode};
         _this.sendAjax(modeform, '/marvin/setmode/', _this.reloadPage);
+    };
+
+    // Display the login screen
+    Header.prototype.showLogin = function(event) {
+        var _this = event.data;
+        console.log('logging in user', $('#loginform'));
+        $('#loginform').modal('show');
+    };
+
+    // Display the User Settings Page
+    Header.prototype.showUserSettings = function(event) {
+        var _this = event.data;
+        console.log('going to user settings page');
     };
 
     return Header;

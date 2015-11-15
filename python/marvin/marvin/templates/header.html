@@ -5,7 +5,7 @@
         
         var header = {};
         $(function() {
-            header = new Header({{session.vermode|tojson|safe}});
+            header = new marvin.Header({{session.vermode|tojson|safe}});
         });
 	</script>
 {% endblock code %}
@@ -108,7 +108,20 @@
                         <option id='mangawork' value='mangawork' {% if session['marvinmode'] == 'mangawork' %}selected{% endif %}>mangawork</option>
                     </select>
                 </div>
-            </form>           
+            </form>
+
+            {% if 'dev' is active_feature %}
+            {# Login / User Settings #}
+            <form class='navbar-form navbar-right navbar-input-group' id='userform' role='form' method='post'>
+                <div class='form-group'>
+                    {% if session['ready'] %}
+                        <button type='button' id='usersettings' class='btn btn-primary' aria-label='User Settings'><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
+                    {% else %}
+                        <button type='button' class='btn btn-primary' id='userlogin'>Login</button>                        
+                    {% endif %}
+                </div>
+            </form>
+            {% endif %}
 
         </div>
     </div>

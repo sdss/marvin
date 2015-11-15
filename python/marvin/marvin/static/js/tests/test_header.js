@@ -55,7 +55,7 @@ QUnit.test('Header.versiontext_matches_versionmode', 1, function(assert) {
 // test the form output
 QUnit.test('Header.buildForm', 1, function(assert) {
     var form = this.header.buildForm();
-    expect_form = [{'name':'mplver','value':'MPL-3'},{'name':'version','value':'v1_3_3'},
+    var expect_form = [{'name':'mplver','value':'MPL-3'},{'name':'version','value':'v1_3_3'},
     {'name':'dapversion','value':'v1_0_0'},{'name':'vermode','value':'mpl'}];
 
     assert.deepEqual(form,expect_form, 'Header form is in correct shape');

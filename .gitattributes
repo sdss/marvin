@@ -26,6 +26,7 @@ python/marvin/marvin/inspection.py -text
 python/marvin/marvin/jinja_filters.py -text
 python/marvin/marvin/model/__init__.py -text
 python/marvin/marvin/model/database.py -text
+python/marvin/marvin/static/css/aladin.min.css -text
 python/marvin/marvin/static/css/bootstrap/bootstrap-datetimepicker.min.css -text
 python/marvin/marvin/static/css/bootstrap/bootstrap-magnify.css -text
 python/marvin/marvin/static/css/bootstrap/bootstrap-magnify.min.css -text
@@ -54,6 +55,7 @@ python/marvin/marvin/static/images/logo5_hires.png -text svneol=unset#image/png
 python/marvin/marvin/static/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/marvin/static/images/marvin.jpg -text svneol=unset#image/jpeg
 python/marvin/marvin/static/images/marvin_favicon.ico -text
+python/marvin/marvin/static/js/aladin.min.js -text
 python/marvin/marvin/static/js/bootstrap/bloodhound.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-datetimepicker.min.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap-magnify.js -text
@@ -109,6 +111,7 @@ python/marvin/marvin/templates/dapqapanel.html -text
 python/marvin/marvin/templates/errors/bad_db_access.html -text
 python/marvin/marvin/templates/errors/bad_request.html -text
 python/marvin/marvin/templates/errors/internal_server_error.html -text
+python/marvin/marvin/templates/errors/method_not_allowed.html -text
 python/marvin/marvin/templates/errors/no_mangaid.html -text
 python/marvin/marvin/templates/errors/no_plateid.html -text
 python/marvin/marvin/templates/errors/page_not_found.html -text

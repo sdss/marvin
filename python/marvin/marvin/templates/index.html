@@ -7,7 +7,6 @@
 
 {% block body %}
 
-
 <div class="site-wrapper">
 	<div class="site-wrapper-inner well" style='background-color:rgba(245,245,245,0.4)'>
 		<div class="cover-container">
@@ -22,11 +21,17 @@
 				</div>
         	</div>
 			<div class="inner cover row">
-				<div class='col-md-10 col-md-offset-1 col-xs-12'>						
-					<div class='row'><h2 class="cover-heading"> MaNGA Observing Status </h2></div>
+				<div class='col-md-10 col-xs-12'>						
 					<div class='row'>
-						<div class='well'>	
-							<h4> Observed {{cubes|count}} galaxies across {{plates|count}} plates. (~{{(cubes|count)/10000*100}}% Complete)</h4>
+						<div class='well' id='obstable'>	
+							<div id='surveyprogress' data-toggle='popover' data-placement='top' data-trigger='hover' data-content='<h5>Observed {{cubes|count}} main sample galaxies across {{plates|count}} plates.</h5>' data-container='body'>
+								<span class="col-md-4 cover-heading"> <strong>Survey Progress: </strong></span>
+								<div class="progress">
+								  <div class="progress-bar active" role="progressbar" aria-valuenow="{{(cubes|count)/10000*100}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{(cubes|count)/10000*100}}%;">
+								    {{(cubes|count)/10000*100}}%
+								  </div>
+								</div>
+							</div>
 							<table class='table table-condensed'>
 								<thead><tr><th>Plate Label</th><th>Number</th></tr></thead>
 								<tbody>

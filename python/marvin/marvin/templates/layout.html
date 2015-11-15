@@ -32,6 +32,7 @@ QUnit v1.19.0
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-datetimepicker.min.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-tags.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/qunit-1.19.0.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/aladin.min.css')}}" rel="stylesheet">
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	{% block head %}{% endblock head %}
 	
@@ -49,8 +50,6 @@ QUnit v1.19.0
 	<script type="text/javascript" src="{{url_for('static',filename='js/bootstrap/bootstrap3-typeahead.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/jquery/validator.min.js')}}"></script>
 	<script src="//cdn.ravenjs.com/1.1.20/jquery,native/raven.min.js"></script>
-	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
-	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/d3/d3.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-1.19.0.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-html.min.js')}}"></script>
@@ -83,12 +82,17 @@ QUnit v1.19.0
 	{# initialize various global things #}
 	<script type='text/javascript'>
 		var utils, tm ={};
+		var marvin = marvin || {};
 		$(function() {
-			utils = new Utils();
-			tm = new TableMethods();
+			utils = new marvin.Utils();
+			tm = new marvin.TableMethods();
 			$('#verspopover').popover({html:true,content:$('#versiontable').html()});
+			$('#surveyprogress').popover({html:true});
 		});
 	</script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/tableMethods.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>	
+	<script type="text/javascript" src="{{url_for('static',filename='js/aladin.min.js')}}"></script>	
 	{% block code %}{% endblock code %}	
 </head>
 

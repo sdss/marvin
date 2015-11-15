@@ -48,8 +48,8 @@ Comment = (function () {
         this.cubepk = parseInt($('#cubepk').val());
         this.plateid = $('#plate').val();
         this.version = $('#drpver').val();
-        this.selectedCategory = $('#commentcat option:selected').val();
-        this.catid = $('#commentcat option:selected').attr('id');         
+        this.selectedCategory = $('#commentcat').find('option:selected').val();
+        this.catid = $('#commentcat').find('option:selected').attr('id');         
     };
 
     // Hide Issue and Category elements
@@ -71,7 +71,7 @@ Comment = (function () {
         _this.hideCatsAndIssues();
         // display new things
         _this.selectedCategory = $(this).val();
-        _this.catid = $('option:selected',this).attr('id')
+        _this.catid = $(this).find('option:selected').attr('id')
         _this.loadCatsAndIssues();
         if (_this.selectedCategory === 'dapqa') {$('.dapqacomms').show();}
     };
@@ -181,7 +181,7 @@ Comment = (function () {
     // Input previous comment into new comment field
     Comment.prototype.inputComment = function(event) {
         var _this = event.data;
-        var selectedcomment = $('#recentcomments_'+_this.catid+' option:selected').text();
+        var selectedcomment = $('#recentcomments_'+_this.catid).find('option:selected').text();
         $('#commentfield_'+_this.catid).text(selectedcomment);
     };
 

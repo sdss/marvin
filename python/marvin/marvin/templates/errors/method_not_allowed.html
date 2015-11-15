@@ -10,14 +10,14 @@
     <div>
         <div class='row'>
             <div class='col-md-2'>
-                <img id="marvin500" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
+                <img id="marvin400" src="{{url_for('static',filename='images/marvin.jpg')}}" class="img-responsive">
             </div>
             <div class='col-md-6 vert-offset-top-7' id='errortext'>
 
-                <h1 id='quote'>"I'm just trying to die."</h1>
+                <h1 id='quote'>"Incredible...It's even worse than I thought it would be."</h1>
 
-                <h2>500: Internal Server Error</h2>
-                <p>Uh oh! Something bad happened on the server side.</p>
+                <h2>405: Method Not Allowed</h2>
+                <p>The server does not understand your access attempt.  Maybe you need some s in your http?</p>
 
                 {% if page %}
                     <h4>{{page}} page broke down!</h4>
@@ -28,4 +28,5 @@
     </div>
 
 {% endblock body %} 
+
 

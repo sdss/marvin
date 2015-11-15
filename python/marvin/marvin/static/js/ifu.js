@@ -115,6 +115,16 @@ Ifu = (function () {
         }
     };
 
+    // start Aladin view for given ifu
+    Ifu.prototype.startAladin = function(target, coords) {
+        console.log('starting aladin: target',target, ' coords: ',coords);
+        var aladin = A.aladin('#aladin-lite-div', {survey: "P/SDSS9/color", fov:0.02, target:target,showZoomControl:false,showFrame:false,showGotoControl:false});
+        aladin.setFOVRange(0.01,0.17)
+        var overlay = A.graphicOverlay({color: 'magenta', lineWidth: 2});
+        aladin.addOverlay(overlay);
+        overlay.add(A.polyline(coords));
+    };
+
     return Ifu;
 
 })();

@@ -5,6 +5,8 @@ var Utils,
 
 Utils = (function() {
 
+    marvin.Utils = Utils;
+
 	// Constructor
     function Utils() {
 
@@ -149,6 +151,11 @@ Utils = (function() {
     	$('#username').focus();
     };
 
+    // Enable pop-overs
+    Utils.prototype.initPopOvers = function() {
+        $('[data-toggle="popover"]').popover();
+    };
+
     // Enable tooltips
     Utils.prototype.initToolTips = function() {
         $('[data-toggle="tooltip"]').tooltip();
@@ -201,11 +208,16 @@ Utils = (function() {
     };
 
     // Name change for button collapse
-    Utils.prototype.changeName = function(event) {
+    Utils.prototype.changeName = function(event) {  
+        var id = $(this).attr('id');
+        var name = (id.search('drp') > 0) ? 'drp' : 'dap';
+        console.log(id,name);
+        //$('.toolbars').hide();
 		if ($(this).hasClass('collapsed')) {
 			$(this).button('reset');
 		} else {
 			$(this).button('complete');
+            $('#toolbar_'+name).toggle();
 		}
     };
 
