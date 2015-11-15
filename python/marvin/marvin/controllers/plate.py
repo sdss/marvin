@@ -10,6 +10,7 @@ from ..model.database import db
 from ..utilities import processTableData, getImages, setGlobalSession, parseError
 from comments import getComment
 from astropy.table import Table
+from sdss.manga import bundle
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -132,6 +133,14 @@ def downloadFiles():
 
     return jsonify(result=result)
 
+def getBundle(ra, dec, size):
+    ''' get bundle and hexagon coords of IFU for Aladin '''
+
+    hexbundle = bundle.Bundle(ra, dec, size)
+    coords = hexbundle.hexagon.tolist()
+    coords.append(coords[0])
+
+    return coords
 
 def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None):
     ''' get an ifu from the plate page '''
@@ -166,7 +175,9 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
     ifudict=OrderedDict()
     if cube:
         ifudict[cube.ifu.name]=OrderedDict()
-        ifudict[cube.ifu.name]['image']=images[0] 
+        ifudict[cube.ifu.name]['image']=images[0] if images else None
+        ifudict[cube.ifu.name]['sample']=OrderedDict()
+        hdr = json.loads(cube.hdr[0].header)         
         if cube.sample:
             try:
                 for col in cube.sample[0].cols:
@@ -178,19 +189,25 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
                             if 'el' in col: name='nsa_petroflux_el' if 'ivar' not in col else 'nsa_petroflux_el_ivar'
                             else: name='nsa_petroflux' if 'ivar' not in col else 'nsa_petroflux_ivar'
                         if 'sersic' in col: name='nsa_sersicflux' if 'ivar' not in col else 'nsa_sersicflux_ivar'
-                        try: ifudict[cube.ifu.name][name].append(cube.sample[0].__getattribute__(col))
-                        except: ifudict[cube.ifu.name][name] = [cube.sample[0].__getattribute__(col)]
+                        try: ifudict[cube.ifu.name]['sample'][name].append(cube.sample[0].__getattribute__(col))
+                        except: ifudict[cube.ifu.name]['sample'][name] = [cube.sample[0].__getattribute__(col)]
                     elif 'ifu_' in col:
                         # NOTE: temporary solution only                      
-                        if cube.sample[0].__getattribute__(col): ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+                        if cube.sample[0].__getattribute__(col): ifudict[cube.ifu.name]['sample'][col] = cube.sample[0].__getattribute__(col)
                         else:
-                            ifudict[cube.ifu.name][col] = json.loads(cube.hdr[0].header)[''.join(col.upper().split('_'))]
+                            ifudict[cube.ifu.name]['sample'][col] = hdr[''.join(col.upper().split('_'))]
                     else:                         
-                        ifudict[cube.ifu.name][col] = cube.sample[0].__getattribute__(col)
+                        ifudict[cube.ifu.name]['sample'][col] = cube.sample[0].__getattribute__(col)
             except:
                 type,val,trace = parseError(sys.exc_info())
                 raise RuntimeError('Error populating sample parameters for ifu {0}: '.format(ifuid),type,val,trace)
-            print('ifudict',ifudict)
+
+            # add hex bundle info
+            ra = hdr['IFURA'] if current_session['currentver'] > 'v1_5_0' else hdr['OBJRA']
+            dec = hdr['IFUDEC'] if current_session['currentver'] > 'v1_5_0' else hdr['OBJDEC']
+            ifudict[cube.ifu.name]['target'] = '{0}, {1}'.format(ra,dec)
+            ifudict[cube.ifu.name]['coords'] = getBundle(ra,dec,int(cube.ifu.name[:-2]))
+            print('ifudict',ifudict[cube.ifu.name]['coords'])
 
     # get inspection information for ifu
     inspection=None

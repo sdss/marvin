@@ -4,6 +4,8 @@ var TableMethods,
 
 TableMethods = (function() {
 
+    marvin.TableMethods = TableMethods;
+
 	// Constructor
     function TableMethods() {
 

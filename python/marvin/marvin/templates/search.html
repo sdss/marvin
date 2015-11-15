@@ -1,5 +1,5 @@
 {% from 'buildTable.html' import sastable %}
-{% from 'searchmacros.html' import dapsearchrow,directsql,dapqatest %}
+{% from 'searchmacros.html' import dapsearchrow,directsql,dapqatest,byfile %}
 {% from 'generalMacros.html' import dropdownload, rsyncmodal,buttoncollapse,writefits %}
 {% extends "layout.html" %}
 {% set active_page = active_page|default("search") %}
@@ -17,10 +17,12 @@
     $(function() {
 	    // Enable tool-tips, date-time and select pickers
 		utils.initToolTips();
+		utils.initPopOvers();
 		utils.initDateTimePicker();
 		utils.enableSelectPicker();
 		// instantiate search object
 		search = new Search({{nsamagids|tojson|safe}});
+		console.log('search',search);
 	});
 </script>
 {% endblock code %}
@@ -32,17 +34,20 @@
 		  <div class="tabbable tabs-left">
 		  	{# List of Tabs #}
 			<ul class="nav nav-tabs">
-			  <li class="{{'active' if dosearch or (not dosearch and not dosql and not docomm)}}"><a href="#guidedsearch" id='guidetab' data-toggle="tab">Guided Search</a></li>
+			  <li class="{{'active' if activeform == 'dosearch'}}"><a href="#guidedsearch" id='guidetab' data-toggle="tab">Guided Search</a></li>
 			  {% if 'collab' is active_feature %}
-			  <li class="{{'active' if dosql and not dosearch and not docomm}}"><a href="#directsql" id='directtab' data-toggle="tab">Direct SQL</a></li>
-			  <li class="{{'active' if docomm and not dosearch and not dosql}}"><a href="#comments" id='commenttab' data-toggle="tab">Comments</a></li>
+			  <li class="{{'active' if activeform == 'dosql'}}"><a href="#directsql" id='directtab' data-toggle="tab">Direct SQL</a></li>
+			  <li class="{{'active' if activeform == 'docomm'}}"><a href="#comments" id='commenttab' data-toggle="tab">Comments</a></li>
+			  {% endif %}
+			  {% if 'dev' is active_feature %}
+			  <li class="{{'active' if activeform == 'dofile'}}"><a href="#byfile" id='filetab' data-toggle="tab">By File</a></li>
 			  {% endif %}
 			</ul>
 			{# TAB CONTENT #}
 			<div class="tab-content">
 			
 				{# Guided Search Tab #}
-				<div class="tab-pane {{'active' if dosearch or (not dosearch and not dosql and not docomm)}}" id="guidedsearch">
+				<div class="tab-pane {{'active' if activeform =='dosearch'}}" id="guidedsearch">
 					<div class='row'>
 						<div class='col-md-2 col-md-offset-4' style='text-align: center;'>
 							<span><h3> Search Cubes: </h3></span>
@@ -292,15 +297,15 @@
 				
 				{% if 'collab' is active_feature %}
 				{# Direct SQL Tab #}
-				<div class="tab-pane {{'active' if dosql and not dosearch and not docomm}}" id="directsql">
+				<div class="tab-pane {{'active' if activeform == 'dosql'}}" id="directsql">
 					{{ directsql(form) }}			
 				</div>
 				
 				{# Comment Search #}
-				<div class="tab-pane {{'active' if docomm and not dosearch and not dosql}}" id='comments'>
+				<div class="tab-pane {{'active' if activeform == 'docomm'}}" id='comments'>
 					<div class='row'>
 						<div class='col-md-2 col-md-offset-4' style='text-align: center;'>
-							<span><h3> Search Comments: </h3><span>
+							<span><h3> Search Comments: </h3></span>
 						</div>
 					</div>
 					<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post' id='comment_form'>
@@ -356,7 +361,7 @@
 							<div class='col-md-2'>
 								{# Category #}
 								<div class='form-group'>
-									<label for='cat'>Category</label>									
+									<label for='cat'>DRP Category</label>									
 									<select class='form-control input-sm' name='cat' id='cat'>
 										<option id='any' value='any' selected>Any</option>
                                         {% for catid, category in inspection.category|dictsort %}
@@ -370,7 +375,7 @@
 								</div>
 								{# Issue #}
 								<div class='form-group'>
-									<label for='issue'>Issue</label><br/>
+									<label for='issue'>DRP Issues</label><br/>
 									<select class="selectpicker issuesp" multiple id='drpissue' data-selected-text-format="count" title='Any' data-width='99%'>
                                         {% for catid, category in inspection.category|dictsort %}
                                         {% for issid,issue in category.issues|dictsort %}
@@ -389,7 +394,6 @@
 						
 						{# DAP QA Comment Row #}
 						{{ dapsearchrow(dapversions,form,inspection) }}
-						{#{{ dapqatest(dapversions,form,inspection) }}#}
 						
 						{# Form Submit Buttons #} 
 						<div class="row">
@@ -399,9 +403,16 @@
 							</div>
 						</div>
 					</form> {# end comment form #}
-					{% endif %}
+				</div> {# end comment tab #}
+				{% endif %}
+				
+				{% if dev is active_feature %}
+				{# Search by File Upload #}
+				<div class="tab-pane {{'active' if activeform == 'dofile'}}" id='byfile'>
+					{{ byfile(uploadtypes, form) }}					
 				</div>
-								
+				{% endif %}
+
 			</div> {# end tab content #}
 		  </div> {# end tabs #}
 	</div>  {# end outer row #}    
@@ -432,7 +443,7 @@
 		<div class='row'>
 			<div class='col-md-12'>
                 <div class='table-responsive' id='platetable'>
-                    {{sastable(cols, keys, cubetable, flags, stage='3d', type='data')}}
+                    {{sastable(cols, keys, cubetable, flags, stage='3d', type='data', toolbar='#toolbar')}}
                 </div>
 			</div>
 		</div>
@@ -440,7 +451,7 @@
 		</form>		
 	</div>
 {% else %}
-	{% if dosearch or dosql or docomm %}
+	{% if dosearch or dosql or docomm or dofile %}
 		<div class='well' id='results'>
 			<div class='row'>
 				<div class='col-md-12'>

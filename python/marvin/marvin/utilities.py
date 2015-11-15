@@ -224,7 +224,7 @@ def getImages(plate=None,version=None,ifuname=None):
     
     # filter by ifu name
     if ifuname:
-        images = [im for im in images if ifuname in im]
+        images = [im for im in images if ifuname+'.png' == os.path.basename(im)]
 
     return images
  
@@ -332,7 +332,7 @@ def configFeatures(app,mode):
 
     app.config['FEATURE_FLAGS']['collab'] = False if mode == 'dr13' else True
     app.config['FEATURE_FLAGS']['new'] = False if mode == 'dr13' else True
-    app.config['FEATURE_FLAGS']['unfinished'] = False if mode == 'dr13' else True
+    app.config['FEATURE_FLAGS']['dev'] = True if 'MANGA_LOCALHOST' in os.environ and os.environ['MANGA_LOCALHOST'] == '1' else False
 
 def setGlobalSession():
     ''' set default global session variables '''

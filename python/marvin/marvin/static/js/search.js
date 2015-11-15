@@ -23,6 +23,7 @@ Search = (function () {
         $('#radecmode a').on('click', this, this.toggleRADecMode);
         $('#nsaband a').on('click', this, this.showNsaMags);
         $('#nsainfo a').on('click', this, this.showNsaBands);
+        //$('#uploadtype').on('change',this,this.changeUploadFormat);
     }
     
     // initialize the object
@@ -31,6 +32,8 @@ Search = (function () {
         this.searchform = null;
         this.commentform = null;
         this.sqlform = null;
+        this.selectedUpload = null;
+        this.setFileFormat();
     };
     
     // test print
@@ -203,6 +206,23 @@ Search = (function () {
         } else {
             $(href).show();
         }
+    };
+
+    // Change the file upload type format
+    Search.prototype.changeUploadFormat = function(event) {
+        var _this = event.data;
+        console.log('changing upload type');
+        var id = $(this).find(':selected').attr('id');
+        _this.selectedUpload = id;
+        $('.uploadtype_format').hide();
+        $('#uploadtype_format_'+id).show();
+    };
+
+    // Set the File Format
+    Search.prototype.setFileFormat = function() {
+        var id = $('#uploadtype').find(':selected').attr('id');
+        this.selectedUpload = id;
+        $('#uploadtype_format_'+id).show();      
     };
 
     return Search;

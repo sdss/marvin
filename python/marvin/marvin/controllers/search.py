@@ -5,7 +5,7 @@ import os, re
 import flask, sqlalchemy, json, tempfile
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import text
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.sql.expression import func
 from flask import request, render_template, send_from_directory, current_app, jsonify, Response
 from flask import session as current_session
@@ -14,7 +14,7 @@ from manga_utils import generalUtils as gu
 from astropy.table import Table
 from astropy.io import fits
 from collections import defaultdict
-import numpy as np
+import numpy as np, tempfile
 
 from ..model.database import db
 from ..utilities import makeQualNames, processTableData,getMaskBitLabel, \
@@ -31,23 +31,98 @@ except ValueError:
     pass 
 
 
-def selectByMangaTarget(query,name,type):
+def parseFile(type, data):
+    ''' parse the file data '''
 
-    # look to see if the tables are already joined
-    try:
-        fitsheadin = 'fits_header' in str(query._from_obj[0])
-    except: 
-        fitsheadin = False
+    filedict = defaultdict(list)
+    if type == 'plateifu':
+        for line in data:
+            try: 
+                pi_split = re.split('[ ,-]',line)
+                plate,ifu = [t for t in pi_split if t]
+            except: plate,ifu = None,None
+            filedict['plate'].append(plate)
+            filedict['ifu'].append(ifu)
+    
+    if type == 'mangaid':
+        filedict['mangaid'] = data
 
-    # if not, make the join
-    if not fitsheadin: query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
+    if type == 'radec':
+        for line in data:
+            try:
+                radec_split = re.split('[ ,-]',line)
+                ra,dec = [t for t in radec_split if t]
+            except: ra,dec = None,None
+            filedict['ra'].append(ra)
+            filedict['dec'].append(dec)
+
+    return filedict
+
+def buildTableFromFile(session, type, data):
+    ''' build a cube table from uploaded file data '''
+
+    filedict = parseFile(type,data)
+    print('filedict',filedict)
+
+    query = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.PipelineVersion.version==current_session['currentver'])
+    if type == 'plateifu': 
+        query = query.join(datadb.IFUDesign)
+        plateifu_filter = or_(and_(datadb.Cube.plate==plate,datadb.IFUDesign.name==filedict['ifu'][i]) for i,plate in enumerate(filedict['plate']))
+        cubes = query.filter(plateifu_filter).all()
+
+    if type == 'mangaid':
+        query = query.filter(datadb.Cube.mangaid.in_(filedict[type]))
+        cubes = query.all()
+
+    if type == 'radec':
+        pass
+
+    print('cubes',cubes)
+
+    cubetable,displayCols = buildTable(cubes)
+
+    return {'cubes':cubes,'cubetable':cubetable,'cols':displayCols,'keys':cubetable.keys()}
+
+def selectByMangaTarget(target_filter,name, bit=None):
+
+    # bit to maskbit dictionary
+    if bit: maskbit = [str(1<<b) for b in bit] if type(bit) == list else str(1<<bit)
 
     # filter on criteria
-    if type == 'in':
-        query = query.filter(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value != '0')
-    elif type == 'out':
-        query = query.filter(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value == '0')
-    return query
+    if bit:
+        value_expr = datadb.FitsHeaderValue.value.in_(maskbit) if type(bit) == list else datadb.FitsHeaderValue.value == maskbit
+        if type(target_filter) == type(None):
+            target_filter = and_(datadb.FitsHeaderKeyword.label==name,value_expr)
+        else:
+            target_filter = or_(target_filter,and_(datadb.FitsHeaderKeyword.label==name,value_expr))
+    else:
+        if type(target_filter) == type(None):
+            target_filter = and_(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value != '0')
+        else:
+            target_filter = or_(target_filter,and_(datadb.FitsHeaderKeyword.label==name,datadb.FitsHeaderValue.value != '0'))
+
+    return target_filter
+
+def makeStringMangaTarget(target_filter,name,bit=None):
+    ''' make string version of manga target query '''
+
+    # bit to maskbit dictionary
+    if bit: maskbit = [str(1<<b) for b in bit] if type(bit) == list else str(1<<bit)
+
+    # filter on criteria
+    if bit:
+        value_expr = 'datadb.FitsHeaderValue.value.in_({0})'.format(maskbit) if type(bit) == list else 'datadb.FitsHeaderValue.value == {0}'.format(maskbit)
+        if type(target_filter) == type(None):
+            target_filter = 'and_(datadb.FitsHeaderKeyword.label=={1},{0})'.format(value_expr,name)
+        else:
+            target_filter += 'or_(target_filter,and_(datadb.FitsHeaderKeyword.label=={1},{0}))'.format(value_expr,name)
+    else:
+        if type(target_filter) == type(None):
+            target_filter = "and_(datadb.FitsHeaderKeyword.label=={0},datadb.FitsHeaderValue.value != '0')".format(name)
+        else:
+            target_filter += "or_(target_filter,and_(datadb.FitsHeaderKeyword.label=={0},datadb.FitsHeaderValue.value != '0'))".format(name)
+
+    return target_filter
 
 def makeNSAList():
     ''' Make the initial NSA list '''
@@ -146,7 +221,7 @@ def buildTable(cubes):
 
     # combine
     cols.extend(sampcols)
-    displayCols=['plate','ifudesign','harname','mangaid','drp3qual','versdrp3','verscore','mjdmax','objra', 'objdec','bluesn2','redsn2','nexp','exptime']
+    displayCols=['plate','ifudesign','mangaid','drp3qual','versdrp3','verscore','objra', 'objdec','bluesn2','redsn2','nexp','exptime', 'nsa_redshift']
     
     cubedict=defaultdict(list)
     for cube in cubes:
@@ -281,6 +356,24 @@ def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, manga
     if mangaid:
         query += ".filter(datadb.Cube.mangaid = {0})".format(mangaid)  
 
+    # Set Defaults
+    if defaultids != 'any':
+        ids = [int(d.split('def')[1]) for d in defaultids.split(',')]
+        num = len(ids)
+        # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
+        defaults = {int(key):val for key,val in current_session['defaultdict'].iteritems()}
+        query += ".join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)"
+        target_filter = None
+        for id in ids:
+            if 'Primary' in defaults[id]: 
+                if id == 1: target_filter = makeStringMangaTarget(target_filter,'MNGTRG1', 10)
+                if id == 2: target_filter = makeStringMangaTarget(target_filter,'MNGTRG1', 12)
+            if id == 3: target_filter = makeStringMangaTarget(target_filter,'MNGTRG1', 11)                
+            if id == 4: target_filter = makeStringMangaTarget(target_filter,'MNGTRG3')                
+            if id == 5: target_filter = makeStringMangaTarget(target_filter, 'MNGTRG2', [2,3,4,5])
+            if id == 6: target_filter = makeStringMangaTarget(target_filter, 'MNGTRG2', [20,21,22,23,24,25])
+        query += ".filter({0})".format(target_filter)
+
     return query
     
 def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=None, mangaid=None,
@@ -385,30 +478,29 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
         query = query.filter(datadb.Cube.mangaid == mangaid)
 
     # Set Defaults
-    #print('defaults',defaultids)
-    #if defaultids != 'any':
-    #    ids = [int(d.split('def')[1]) for d in defaultids.split(',')]
-    #    num = len(ids)
-    #    # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
-    #    defaults = flask.g.get('defaults',None)
-    #    query = selectByMangaTarget(query,'MNGTRG1','in') if 1 and 2 and 3 in ids else selectByMangaTarget(query,'MNGTRG1','out')
-    #    query = selectByMangaTarget(query,'MNGTRG3','in') if 4 in ids else selectByMangaTarget(query,'MNGTRG3','out')
-    #    query = selectByMangaTarget(query,'MNGTRG2','in') if 5 in ids else selectByMangaTarget(query,'MNGTRG2','out')
-    #    if 6 in ids: query = query.join(datadb.IFUDesign,datadb.Fibers,datadb.TargetType).filter(datadb.TargetType.label == 'standard')
-    #    else: query = query.join(datadb.IFUDesign,datadb.Fibers,datadb.TargetType).filter(datadb.TargetType.label != 'standard')
-            
+    if defaultids != 'any':
+        ids = [int(d.split('def')[1]) for d in defaultids.split(',')]
+        num = len(ids)
+        # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
+        defaults = {int(key):val for key,val in current_session['defaultdict'].iteritems()}
+        query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
+        target_filter = None
+        for id in ids:
+            if 'Primary' in defaults[id]: 
+                if id == 1: target_filter = selectByMangaTarget(target_filter,'MNGTRG1', 10)
+                if id == 2: target_filter = selectByMangaTarget(target_filter,'MNGTRG1', 12)
+            if id == 3: target_filter = selectByMangaTarget(target_filter,'MNGTRG1', 11)                
+            if id == 4: target_filter = selectByMangaTarget(target_filter,'MNGTRG3')                
+            if id == 5: target_filter = selectByMangaTarget(target_filter, 'MNGTRG2', [2,3,4,5])
+            if id == 6: target_filter = selectByMangaTarget(target_filter, 'MNGTRG2', [20,21,22,23,24,25])
+        query = query.filter(target_filter)
+
     return query
 
 def getFormParams():
     ''' Get the form parameters '''
 
     form = processRequest(request=request)
-    if 'tagids' in form:
-        print('form tags', form['tagids'])
-    if 'issues' in form:
-        print('form issues', form['issues'])
-    if 'dapissues' in form:
-        print('form dapissues', form['dapissues'])
 
     if 'defaultids' in form:
         if form['defaultids'] != 'any':
@@ -494,18 +586,24 @@ def search():
 
     # set default search options
     search['defaults'] = {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
-    flask.g.defaults = search['defaults']
+    current_session['defaultdict'] = search['defaults']
     current_session['defaults'] = [1,2,3,4] if 'defaults' not in current_session else current_session['defaults']
 
     # set default cubes to None
     dosearch = valueFromRequest(key='search_form',request=request, default=None)
     dosql = valueFromRequest(key='directsql_form',request=request, default=None)
     docomm = valueFromRequest(key='comment_form',request=request, default=None)
+    dofile = valueFromRequest(key='uploadfile_form',request=request, default=None)
+
     if not dosearch: search['cubes'] = None
     search['dosearch'] = dosearch
     search['dosql'] = dosql
     search['docomm'] = docomm
+    search['dofile'] = dofile
+    search['activeform'] = 'dosearch' if dosearch else 'dosql' if dosql else 'docomm' if docomm else 'dofile' if dofile else 'dosearch'
     search['form'] = None
+
+    print ('do"s search, sql, comm, file',dosearch, dosql, docomm, dofile, search['activeform'])
         
     # lists
     search['ifulist'] = [127, 91, 61, 37, 19, 7]
@@ -520,6 +618,7 @@ def search():
     search['nsalist'] = nsalist
     search['nsamagids'] = nsamagids
     search['nsamap'] = []
+    search['uploadtypes'] = {'plateifu':'Format: 7443-9101','mangaid':'Format: 12-84660', 'radec':'Format: 176.123, 42.123'}
 
     # pipeline versions
     search['versions'] = getDRPVersion() 
@@ -527,7 +626,7 @@ def search():
     search['current'] = version
     
     # get form params
-    if dosearch or dosql or docomm:
+    if dosearch or dosql or docomm or dofile:
         form = getFormParams()
         search['form'] = form
     
@@ -575,6 +674,19 @@ def search():
         result = inspection.result()
         if inspection.status: current_app.logger.warning('Inspection> GET searchcomments: {0}'.format(result))
         else: current_app.logger.warning('Inspection> GET searchcomments: No Results')
+
+    # handle file uploads
+    if dofile:
+        print('uploading file of format',form['uploadtype'] )
+        file = request.files['filelist']
+        data = []
+        for line in file.read().splitlines():
+            data.append(line)
+        file.close()
+        print('file',data)
+
+        cubedict = buildTableFromFile(session, form['uploadtype'],data)
+        search.update(cubedict)
 
     return render_template("search.html", **search)
 

@@ -42,6 +42,14 @@
                             </div>
                         </div>
                     </div>
+
+                    
+                    <div class='row'>
+                        <div class='col-md-12'>
+                            <div id='aladin-lite-div' style='width:100%;height:100%;background-color: pink;'></div>
+                        </div>
+                    </div>
+
                 </div>
 
                 {#{% if inspection.cubetags[cube.ifu.name] %}
@@ -68,7 +76,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for key,val in ifuinfo|dictsort %}
+                                    {% for key,val in ifuinfo['sample']|dictsort %}
                                         <tr>
                                             <th>{{key}}</th>
                                             {% if key != 'image' %} <td>{{val}}</td> {% else %} <td><a target='_blank' href='{{val}}'>{{val}}</a></td> {% endif %}

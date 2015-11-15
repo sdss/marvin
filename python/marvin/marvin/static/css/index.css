@@ -100,3 +100,32 @@ width:70%;
 #verstable #head th {
   background-color:#D5D5D5;
 }
+
+.uploadtype_format { display:none;}
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+.btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  background: red;
+  cursor: inherit;
+  display: block;
+}
+input[readonly] {
+  background-color: white !important;
+  cursor: text !important;
+}
+
+.toolbars {display:none;}
+
+#obstable {background-color: rgb(207, 219, 225);}
