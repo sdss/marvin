@@ -203,8 +203,8 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
                 raise RuntimeError('Error populating sample parameters for ifu {0}: '.format(ifuid),type,val,trace)
 
             # add hex bundle info
-            ra = hdr['IFURA'] if current_session['currentver'] > 'v1_5_0' else hdr['OBJRA']
-            dec = hdr['IFUDEC'] if current_session['currentver'] > 'v1_5_0' else hdr['OBJDEC']
+            ra = hdr['IFURA'] if version > 'v1_5_0' else hdr['OBJRA']
+            dec = hdr['IFUDEC'] if version > 'v1_5_0' else hdr['OBJDEC']
             ifudict[cube.ifu.name]['target'] = '{0}, {1}'.format(ra,dec)
             ifudict[cube.ifu.name]['coords'] = getBundle(ra,dec,int(cube.ifu.name[:-2]))
             print('ifudict',ifudict[cube.ifu.name]['coords'])

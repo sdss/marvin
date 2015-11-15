@@ -108,6 +108,7 @@ python/marvin/marvin/templates/commentform.html -text
 python/marvin/marvin/templates/current.html -text
 python/marvin/marvin/templates/dapmacros.html -text
 python/marvin/marvin/templates/dapqapanel.html -text
+python/marvin/marvin/templates/documentation.html -text
 python/marvin/marvin/templates/errors/bad_db_access.html -text
 python/marvin/marvin/templates/errors/bad_request.html -text
 python/marvin/marvin/templates/errors/internal_server_error.html -text
