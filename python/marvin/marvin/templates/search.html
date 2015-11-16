@@ -22,7 +22,6 @@
 		utils.enableSelectPicker();
 		// instantiate search object
 		search = new Search({{nsamagids|tojson|safe}});
-		console.log('search',search);
 	});
 </script>
 {% endblock code %}
@@ -308,7 +307,7 @@
 							<span><h3> Search Comments: </h3></span>
 						</div>
 					</div>
-					<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post' id='comment_form'>
+					<form class='form' role='form' action="{{url_for('search_page.search')}}" method='post' id='commentform'>
 						<div class='row'>
 							{# Column 1 #}
 							<div class='col-md-2 col-md-offset-3 comment' id='commentcol1'>
