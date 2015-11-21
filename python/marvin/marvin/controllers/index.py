@@ -8,7 +8,7 @@ from manga_utils import generalUtils as gu
 from collections import OrderedDict
 
 from ..model.database import db
-from ..utilities import getImages, testDBConnection, configFeatures, setGlobalSession
+from ..utilities import getImages, testDBConnection, configFeatures, setGlobalSession, updateGlobalSession
 from ..jinja_filters import getMPL
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
@@ -85,6 +85,9 @@ def setmode():
     else:
         result['status'] = -1
         result['msg'] = 'Error setting mode: marvinmode is not expected value'
+
+    # update global session
+    updateGlobalSession(mode=marvinmode)
 
     # configure the feature tags
     configFeatures(current_app, marvinmode)

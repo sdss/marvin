@@ -1,7 +1,7 @@
 
 
 
-{% macro byfile(types,form) %}
+{% macro byfile(types,form, status, message) %}
     <div class='row'>
         <div class='col-md-4 col-md-offset-3' style='text-align: center;'>
             <span><h3> Upload a File: </h3><span>
@@ -18,23 +18,25 @@
                                 List Of <span class="caret"></span></button>
                             <ul class="dropdown-menu" id='filelist_ul' role="menu" id='uploadtype'>
                                 {% for type,format in types.iteritems() %}
-                                    <li><a id="{{type}}" onclick='search.changeUploadFormat({{type}})'>{{type|uploadType()}}</a></li>
+                                    <li data-toggle="tooltip" data-placement="left" title="{{format}}" data-container='body'><a id="li_{{type}}" onclick='window.search.changeUploadFormat(li_{{type}})'>{{type|uploadType()}}</a></li>
                                 {% endfor %}   
-                            </ul>
+                            </ul>                         
                         </div>  
-                        <input type='text' class='form-control' id='uploadtype_text' readonly>
+                        <input type='text' class='form-control' id='uploadtype_text' name='uploadtype_text' readonly>
                         <span class="input-group-btn">
                             <span class="btn btn-primary btn-file">
                                 Browse&hellip; <input type="file" name='filelist'>
                             </span>
                         </span>
-                        <input type="text" class="form-control" readonly>
+                        <input type="text" class="form-control" id='upload_filename' name='upload_filename' readonly>
                         <div class='input-group-btn'>
                             <input type="submit" name="uploadfile_form" value="Submit" class="btn btn-danger"/>
-                            <button type='button' name='clear' class='btn btn-success' onclick=''>Clear</button>
+                            <button type='button' name='clear' class='btn btn-success' onclick='search.clearFiles()'>Clear</button>
                         </div>   
                     </div>             
                 </div>
+                <span class='help-block' id='upload_filealert'></span>
+                {% if status == -1 %} <div class='alert alert-danger'>{{message}}</div>{% endif %}
             </div>
 
             {#<div class='col-md-1 col-md-offset-4'>

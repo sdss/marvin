@@ -351,6 +351,14 @@ def setGlobalSession():
         try: current_session['http_authorization'] = request.environ['HTTP_AUTHORIZATION']
         except: pass
 
+def updateGlobalSession(mode=None):
+    ''' update the global session '''
+
+    pass
+    #if mode=='dr13':
+    #    current_session['currentver'] = 'v1_5_2'
+    #    current_session['currentdapver'] = 'NA'
+
 def buildCodeVersions():
     ''' Build a dictionary of the versions of code used in Marvin '''
 
