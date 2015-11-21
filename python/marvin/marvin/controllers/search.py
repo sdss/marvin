@@ -9,6 +9,7 @@ from sqlalchemy import or_, and_
 from sqlalchemy.sql.expression import func
 from flask import request, render_template, send_from_directory, current_app, jsonify, Response
 from flask import session as current_session
+from werkzeug import secure_filename
 from operator import le,ge,gt,lt,eq,ne
 from manga_utils import generalUtils as gu
 from astropy.table import Table
@@ -30,6 +31,8 @@ try:
 except ValueError:
     pass 
 
+def allowed_filename(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
 
 def parseFile(type, data):
     ''' parse the file data '''
@@ -64,24 +67,33 @@ def buildTableFromFile(session, type, data):
     filedict = parseFile(type,data)
     print('filedict',filedict)
 
-    query = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.PipelineVersion.version==current_session['currentver'])
-    if type == 'plateifu': 
-        query = query.join(datadb.IFUDesign)
-        plateifu_filter = or_(and_(datadb.Cube.plate==plate,datadb.IFUDesign.name==filedict['ifu'][i]) for i,plate in enumerate(filedict['plate']))
-        cubes = query.filter(plateifu_filter).all()
+    if filedict:
+        query = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.PipelineVersion.version==current_session['currentver'])
+        if type == 'plateifu': 
+            query = query.join(datadb.IFUDesign)
+            plateifu_filter = or_(and_(datadb.Cube.plate==plate,datadb.IFUDesign.name==filedict['ifu'][i]) for i,plate in enumerate(filedict['plate']))
+            cubes = query.filter(plateifu_filter).all()
 
-    if type == 'mangaid':
-        query = query.filter(datadb.Cube.mangaid.in_(filedict[type]))
-        cubes = query.all()
+        if type == 'mangaid':
+            query = query.filter(datadb.Cube.mangaid.in_(filedict[type]))
+            cubes = query.all()
 
-    if type == 'radec':
-        pass
+        if type == 'radec':
+            #for i,ra in enumerate(filedict['ra']):
+            #    if i==0: radecfilter = and_(datadb.Cube.ra==ra,datadb.Cube.dec==filedict['dec'][i])
+            #    else: radecfilter = or_(radecfilter, and_(datadb.Cube.ra==ra,datadb.Cube.dec==filedict['dec'][i]))
+            #query = query.filter(radecfilter)
+            query = query.filter(datadb.Cube.ra.in_(filedict['ra']),datadb.Cube.dec.in_(filedict['dec']))
+            cubes = query.all()
+    else: 
+        cubes = None
 
-    print('cubes',cubes)
+    if cubes:
+        cubetable,displayCols = buildTable(cubes)
+    else:
+        cubetable,displayCols = (None, None)
 
-    cubetable,displayCols = buildTable(cubes)
-
-    return {'cubes':cubes,'cubetable':cubetable,'cols':displayCols,'keys':cubetable.keys()}
+    return {'cubes':cubes,'cubetable':cubetable,'cols':displayCols,'keys':cubetable.keys() if cubes else None}
 
 def selectByMangaTarget(target_filter,name, bit=None):
 
@@ -602,6 +614,7 @@ def search():
     search['dofile'] = dofile
     search['activeform'] = 'dosearch' if dosearch else 'dosql' if dosql else 'docomm' if docomm else 'dofile' if dofile else 'dosearch'
     search['form'] = None
+    search['upfile_status'] = search['upfile_message'] = 0
 
     print ('do"s search, sql, comm, file',dosearch, dosql, docomm, dofile, search['activeform'])
         
@@ -677,16 +690,26 @@ def search():
 
     # handle file uploads
     if dofile:
-        print('uploading file of format',form['uploadtype'] )
+        print('uploading file of format',form['upload_filename'] )
         file = request.files['filelist']
-        data = []
-        for line in file.read().splitlines():
-            data.append(line)
-        file.close()
-        print('file',data)
+        print('filename',file, file.filename, allowed_filename(file.filename))
+        if file and allowed_filename(file.filename):
+            filename = secure_filename(file.filename)
+            print('secure filename',filename)
+            search['upfile_status'] = 1
+            type = form['uploadtype_text'].lower()
+            data = []
+            for line in file.read().splitlines():
+                data.append(line)
+            file.close()
+            print('file',data)
 
-        cubedict = buildTableFromFile(session, form['uploadtype'],data)
-        search.update(cubedict)
+            cubedict = buildTableFromFile(session,type,data)
+            search.update(cubedict)
+        else:
+            search['upfile_status'] = -1
+            search['upfile_message'] = 'Uploaded file not of allowed type.  Only files of type {0} are allowed.'.format(current_app.config['ALLOWED_EXTENSIONS'])
+
 
     return render_template("search.html", **search)
 

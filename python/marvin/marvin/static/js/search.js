@@ -5,6 +5,8 @@ var Search,
 
 Search = (function () {
 
+    marvin.Search = Search;
+
     function Search(nsamagids) {
 
         // in case constructor called without new
@@ -23,7 +25,8 @@ Search = (function () {
         $('#radecmode a').on('click', this, this.toggleRADecMode);
         $('#nsaband a').on('click', this, this.showNsaMags);
         $('#nsainfo a').on('click', this, this.showNsaBands);
-        //$('#uploadtype').on('change',this,this.changeUploadFormat);
+        $('.btn-file :file').on('change',this,this.showFiles);
+        $('#file_form').on('submit',this,this.submitFile);
     }
     
     // initialize the object
@@ -210,13 +213,16 @@ Search = (function () {
     };
 
     // Change the file upload type format
-    Search.prototype.changeUploadFormat = function(event) {
-        var _this = event.data;
-        console.log('changing upload type');
-        var id = $(this).find(':selected').attr('id');
-        _this.selectedUpload = id;
-        $('.uploadtype_format').hide();
-        $('#uploadtype_format_'+id).show();
+    Search.prototype.changeUploadFormat = function(type) {
+        var id = $(type).attr('id');
+        var name = (id.split('_')[1]);
+        $('#uploadtype_text').val(name.toUpperCase());
+        //$('#uploadtype_text').attr('name',name);
+
+        //var id = $(this).find(':selected').attr('id');
+        //_this.selectedUpload = id;
+        //$('.uploadtype_format').hide();
+        //$('#uploadtype_format_'+id).show();
     };
 
     // Set the File Format
@@ -224,6 +230,40 @@ Search = (function () {
         var id = $('#uploadtype').find(':selected').attr('id');
         this.selectedUpload = id;
         $('#uploadtype_format_'+id).show();      
+    };
+
+    // Clear the Files
+    Search.prototype.clearFiles = function() {
+        //$('#uploadtype_text').val('');
+        $('#file_form').trigger('reset');
+        $('#upload_filealert').html('');
+    };
+
+    // Show the Files
+    Search.prototype.showFiles = function(event) {
+        var _this = event.data;
+        var filename = $(this).val();
+        $('#upload_filename').val(filename);
+    };
+
+    // Submit the File form
+    Search.prototype.submitFile = function(event) {
+        var _this = event.data;
+        var listtype = $('#uploadtype_text').val();
+        var filename = $('#upload_filename').val();
+        var html = '';
+
+        // if list not selected
+        if (listtype == '') {
+            html = '<div class="alert alert-danger" role="alert"> Must specify a type of file list. </div>';
+            event.preventDefault();
+        }
+        // if no file selected
+        if (filename == '') {
+            html = '<div class="alert alert-danger" role="alert"> Must select a file. </div>';
+            event.preventDefault();
+        }
+        $('#upload_filealert').html(html);  
     };
 
     return Search;

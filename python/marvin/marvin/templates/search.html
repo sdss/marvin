@@ -21,7 +21,7 @@
 		utils.initDateTimePicker();
 		utils.enableSelectPicker();
 		// instantiate search object
-		search = new Search({{nsamagids|tojson|safe}});
+		search = new marvin.Search({{nsamagids|tojson|safe}});
 	});
 </script>
 {% endblock code %}
@@ -405,12 +405,10 @@
 				</div> {# end comment tab #}
 				{% endif %}
 				
-				{% if dev is active_feature %}
 				{# Search by File Upload #}
 				<div class="tab-pane {{'active' if activeform == 'dofile'}}" id='byfile'>
-					{{ byfile(uploadtypes, form) }}					
+					{{ byfile(uploadtypes, form, upfile_status, upfile_message) }}					
 				</div>
-				{% endif %}
 
 			</div> {# end tab content #}
 		  </div> {# end tabs #}
