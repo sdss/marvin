@@ -77,7 +77,7 @@ def create_app(debug=False):
     # Add global SAS Redux path
     os.environ['SAS_REDUX'] = 'sas/mangawork/manga/spectro/redux'
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
-    
+
     # Find which connection to make
     try: machine = os.environ['HOSTNAME']
     except: machine = None
@@ -158,6 +158,9 @@ def create_app(debug=False):
     # Initialize feature flags
     feature_flags = FeatureFlag(app)
     #configFeatures(debug=app.debug)
+
+    # Update any config parameters
+    app.config["UPLOAD_FOLDER"] = os.getenv("MARVIN_DATA_DIR")
 
     # -------------
 
