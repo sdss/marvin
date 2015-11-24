@@ -517,7 +517,7 @@ def getFormParams():
     if 'defaultids' in form:
         if form['defaultids'] != 'any':
             ids = [int(d.split('def')[1]) for d in form['defaultids'].split(',')]
-            if ids and current_session['defaults'] != ids:
+            if (ids and 'defaults' not in current_session) or (ids and current_session['defaults'] != ids):
                 current_session['defaults'] = ids
         else:
             current_session['defaults'] = ['any']
@@ -692,20 +692,32 @@ def search():
     if dofile:
         print('uploading file of format',form['upload_filename'] )
         file = request.files['filelist']
-        print('filename',file, file.filename, allowed_filename(file.filename))
         if file and allowed_filename(file.filename):
             filename = secure_filename(file.filename)
-            print('secure filename',filename)
-            search['upfile_status'] = 1
-            type = form['uploadtype_text'].lower()
-            data = []
-            for line in file.read().splitlines():
-                data.append(line)
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
             file.close()
-            print('file',data)
 
-            cubedict = buildTableFromFile(session,type,data)
-            search.update(cubedict)
+            # try to open the file
+            try:
+                f = open(filepath,'r')
+            except Exception as e:
+                f = None
+
+            if f:
+                type = form['uploadtype_text'].lower()
+                data = []
+                for line in f.read().splitlines():
+                    data.append(line)
+                f.close()
+                os.remove(filepath)
+
+                search['upfile_status'] = 1
+                cubedict = buildTableFromFile(session,type,data)
+                search.update(cubedict)                
+            else:
+                search['upfile_status'] = -1
+                search['upfile_message'] = 'Could not open specified file {0}'.format(filepath) 
         else:
             search['upfile_status'] = -1
             search['upfile_message'] = 'Uploaded file not of allowed type.  Only files of type {0} are allowed.'.format(current_app.config['ALLOWED_EXTENSIONS'])
