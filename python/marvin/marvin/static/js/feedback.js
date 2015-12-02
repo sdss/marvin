@@ -18,7 +18,7 @@ Feedback = (function () {
         // Event Handlers
         
         // capture the row id
-        $(document).on('click', '#table_feedback tr', this, this.getRowId);
+        $(document).on('click', '#table_feedback tbody tr', this, this.getRowId);
         // send state changes on statuses and votes
         $(document).on('click', '.increment', this, this.changeState);
         $(document).on('change', '.feedback_status', this, this.changeState);
@@ -55,7 +55,7 @@ Feedback = (function () {
         _this.dataindex = this.rowIndex;
         var children = $(this).children('td');
         if (children.length > 0) {
-            _this.rowid = parseInt($(this).children('td')[1].textContent);
+            _this.rowid = parseInt(children[1].textContent);
             _this.tableindex = _this.rowid - 1;
         }
     };
@@ -68,7 +68,11 @@ Feedback = (function () {
         var count = (status) ? null : $("~ .count", this).text();
         var type = (status) ? 'status' : 'vote';
 
-        console.log('changing state', _this.rowid, status, vote, count, type);
+        // if rowid does not exist yet then grab it from this id
+        if (_this.rowid == null) {
+            var id = $(this).attr('id');
+            _this.rowid = parseInt(id.split('_').pop());
+        }
 
         var form = {'id':_this.rowid, 'status':status, 'vote':vote, 'type':type};
 
