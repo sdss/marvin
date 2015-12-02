@@ -73,11 +73,9 @@ python/marvin/marvin/static/js/bootstrap/bootstrap.min.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap3-typeahead.js -text
 python/marvin/marvin/static/js/bootstrap/bootstrap3-typeahead.min.js -text
 python/marvin/marvin/static/js/comments.js -text
-python/marvin/marvin/static/js/comments_old.js -text
 python/marvin/marvin/static/js/d3/d3.js -text
 python/marvin/marvin/static/js/d3/d3.min.js -text
 python/marvin/marvin/static/js/dapqa.js -text
-python/marvin/marvin/static/js/dapqa_old.js -text
 python/marvin/marvin/static/js/feedback.js -text
 python/marvin/marvin/static/js/header.js -text
 python/marvin/marvin/static/js/ifu.js -text
