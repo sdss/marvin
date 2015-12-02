@@ -53,8 +53,11 @@ Feedback = (function () {
     Feedback.prototype.getRowId = function(event) {
         var _this = event.data;
         _this.dataindex = this.rowIndex;
-        _this.rowid = parseInt($(this).children('td')[1].textContent);
-        _this.tableindex = _this.rowid - 1;
+        var children = $(this).children('td');
+        if (children.length > 0) {
+            _this.rowid = parseInt($(this).children('td')[1].textContent);
+            _this.tableindex = _this.rowid - 1;
+        }
     };
 
     // Send vote and status changes to server with Ajax
@@ -74,6 +77,7 @@ Feedback = (function () {
     Feedback.prototype.sendAjax = function(form, div) {
         var url = '/feedback/'+form.type+'/update';
         var _this = this;
+        console.log('sending ajax',$SCRIPT_ROOT + url);
         $.post($SCRIPT_ROOT + url, form, 'json')
             .done(function(data) {
                 if (data.result['status'] == 1) {
@@ -95,6 +99,7 @@ Feedback = (function () {
     Feedback.prototype.promoteTracTicket = function(id) {
         var _this = this;
         $('#promotemessage').html('Promoting your ticket. Please wait...');
+        console.log('promoting trac',$SCRIPT_ROOT + '/feedback/tracticket/promote');
         $.post($SCRIPT_ROOT + '/feedback/tracticket/promote', {'id':id}, 'json')
             .done(function(data){
                 if (data.result['status'] == 1) {

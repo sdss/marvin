@@ -698,6 +698,11 @@ def search():
             file.save(filepath)
             file.close()
 
+            #try:
+            #    readUploadFile(filepath)
+            #except RuntimeError as error:
+            #    pass
+
             # try to open the file
             try:
                 f = open(filepath,'r')

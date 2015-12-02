@@ -33,7 +33,7 @@
 								</div>
 							</div>
 							<table class='table table-condensed'>
-								<thead><tr><th>Plate Label</th><th>Number</th></tr></thead>
+								<thead><tr><th>Plate Label</th><th>Number of Plates</th></tr></thead>
 								<tbody>
 									{% for label in labels %}
 										<tr><th>{{label|replace(None,'Other')}}</th><td>{{types.count(label)}}</td></tr>
