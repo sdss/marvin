@@ -55,7 +55,7 @@ QUnit v1.19.0
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-html.min.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-assert-classes.js')}}"></script>
 	<script type="text/javascript" src="{{url_for('static',filename='js/qunit/qunit-once.js')}}"></script>
-	<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+	<script type="text/javascript">var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
 
 	{# setup Raven javascript exception handling #}
 	<script type='text/javascript'>
