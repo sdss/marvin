@@ -142,8 +142,6 @@ def setversion():
 
 @index_page.route('/', methods=['GET'])
 @index_page.route('/index/', methods=['GET'])
-@index_page.route('/marvin/index/', methods=['GET'])
-@index_page.route('/marvin/', methods=['GET'])
 def index():
     ''' Documentation here. '''
     
