@@ -61,6 +61,7 @@ def feedback():
     return render_template('feedback.html',**feedback)
 
 @feedback_page.route('/feedback/tracticket/promote', methods=['GET','POST'])
+@feedback_page.route('/marivn/feedback/tracticket/promote', methods=['GET','POST'])
 def promotetracticket():
     ''' User feedback function to promote tracticket '''
     
@@ -84,6 +85,7 @@ def promotetracticket():
     return jsonify(result=result)
 
 @feedback_page.route('/feedback/status/update', methods=['GET','POST'])
+@feedback_page.route('/marvin/feedback/status/update', methods=['GET','POST'])
 def updatefeedbackstatus():
     ''' User feedback function to update status '''
     
@@ -108,6 +110,7 @@ def updatefeedbackstatus():
     return jsonify(result=result)
 
 @feedback_page.route('/feedback/vote/update', methods=['GET','POST'])
+@feedback_page.route('/marvin/feedback/vote/update', methods=['GET','POST'])
 def updatefeedbackvote():
     ''' User feedback function to upvote/novote/downvote '''
     
