@@ -114,6 +114,8 @@ def updatefeedbackstatus():
 def updatefeedbackvote():
     ''' User feedback function to upvote/novote/downvote '''
     
+    status = message = 0
+    
     # get inspection
     inspection = Inspection(current_session)
 
@@ -122,12 +124,20 @@ def updatefeedbackvote():
         id = valueFromRequest(key='id',request=request, default=None)
         vote = valueFromRequest(key='vote',request=request, default=None)
     
+        current_app.logger.info('voting {0},{1}'.format(id,vote))
+
         # add feedback to db
         if id and vote:
             inspection.set_feedback(id=id)
             inspection.vote_feedback(vote=vote)
+        else:
+            status = -1
+            if not id: message = 'Did not run inspection voting. No id specified: id {0}, vote {1}'.format(id,vote)
+            if not vote: message = 'Did not run inspection voting. No vote specified: id {0}, vote {1}'.format(id,vote)
 
     result = inspection.result()
+    if status == -1:
+        result['message'] = message
     
     if inspection.ready: current_app.logger.warning('Inspection> Feedback Vote {0}'.format(result))
     else: current_app.logger.warning('Inspection> FAILED FEEDBACK VOTE {0}'.format(result))
