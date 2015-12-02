@@ -68,6 +68,8 @@ Feedback = (function () {
         var count = (status) ? null : $("~ .count", this).text();
         var type = (status) ? 'status' : 'vote';
 
+        console.log('changing state', _this.rowid, status, vote, count, type);
+
         var form = {'id':_this.rowid, 'status':status, 'vote':vote, 'type':type};
 
         _this.sendAjax(form, $(this));
