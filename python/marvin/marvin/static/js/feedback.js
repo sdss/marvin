@@ -75,7 +75,7 @@ Feedback = (function () {
 
     // Send feedback Ajax request
     Feedback.prototype.sendAjax = function(form, div) {
-        var url = '/feedback/'+form.type+'/update';
+        var url = '/marvin/feedback/'+form.type+'/update';
         var _this = this;
         console.log('sending ajax',$SCRIPT_ROOT + url);
         $.post($SCRIPT_ROOT + url, form, 'json')
@@ -99,8 +99,8 @@ Feedback = (function () {
     Feedback.prototype.promoteTracTicket = function(id) {
         var _this = this;
         $('#promotemessage').html('Promoting your ticket. Please wait...');
-        console.log('promoting trac',$SCRIPT_ROOT + '/feedback/tracticket/promote');
-        $.post($SCRIPT_ROOT + '/feedback/tracticket/promote', {'id':id}, 'json')
+        console.log('promoting trac',$SCRIPT_ROOT + '/marvin/feedback/tracticket/promote');
+        $.post($SCRIPT_ROOT + '/marvin/feedback/tracticket/promote', {'id':id}, 'json')
             .done(function(data){
                 if (data.result['status'] == 1) {
                   _this.reloadPage();
