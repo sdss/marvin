@@ -138,5 +138,7 @@ python/marvin/marvin/tests/test_index.py -text
 python/marvin/marvin/utilities.py -text
 python/marvin/profile_marvin.py -text
 python/marvin/run_marvin.py -text
+python/marvin/uwsgi_conf_files/uwsgi_marvin_dr13.ini -text
 python/marvin/uwsgi_conf_files/uwsgi_marvin_local.ini -text
+python/marvin/uwsgi_conf_files/uwsgi_marvin_mangawork.ini -text
 python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini -text
