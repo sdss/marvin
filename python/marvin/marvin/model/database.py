@@ -9,6 +9,7 @@ from __future__ import division
 
 from sdss.internal.database.DatabaseConnection import DatabaseConnection
 from flask import current_app as app
+from pgpasslib import getpass
 
 # default values here
 db_info = {"port" : 5432}
@@ -20,8 +21,8 @@ try:
     db_info["host"] = app.config["DB_HOST"]
     db_info["database"] = app.config["DB_DATABASE"]
     db_info["user"] = app.config["DB_USER"]
-    db_info["password"] = app.config["DB_PASSWORD"]
     db_info["port"] = app.config["DB_PORT"]
+    db_info["password"] = getpass(db_info["host"], db_info["port"], db_info["database"], db_info["user"])
 except KeyError:
     current_app.logger.debug("ERROR: an expected key in the server configuration "
     "file was not found.")
