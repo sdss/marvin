@@ -79,7 +79,6 @@ module load inspection/$inspection_version
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
 setenv SAS_URL                                  https://sas.sdss.org
 setenv TRAC_URL                                 https://trac.sdss.org
-set-alias startmarvin "profile_marvin &> /home/www/sas.sdss.org/marvin/log/marvin_$version.log"
 
 
 
