@@ -165,7 +165,7 @@ def index():
     redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version)
     good = os.path.isdir(redux)
     index['good'] = good
-    images = getImages(version=version)   
+    images = getImages(version=version) 
     
     if any(images):        
         # randomize the images

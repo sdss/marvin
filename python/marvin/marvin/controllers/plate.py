@@ -11,6 +11,7 @@ from ..utilities import processTableData, getImages, setGlobalSession, parseErro
 from comments import getComment
 from astropy.table import Table
 from sdss.manga import bundle
+from flask_restful import Resource, reqparse, fields, marshal_with, abort 
 
 import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
 
@@ -142,6 +143,12 @@ def getBundle(ra, dec, size):
 
     return coords
 
+def getDefaultMapsFile(plate,ifu):
+    ''' temporary function to get the default Maps file, until DAP DB is in place '''
+
+    mapsfile = os.path.join(os.getenv('SAS_URL'),'sas/mangawork/manga/sandbox/mangadap/MPL-4/default',str(plate),'mangadap-{0}-{1}-default.fits.gz'.format(plate,ifu))
+    return mapsfile
+
 def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None):
     ''' get an ifu from the plate page '''
 
@@ -177,6 +184,7 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
         ifudict[cube.ifu.name]=OrderedDict()
         ifudict[cube.ifu.name]['image']=images[0] if images else None
         ifudict[cube.ifu.name]['sample']=OrderedDict()
+        ifudict[cube.ifu.name]['mapsfile'] = getDefaultMapsFile(plateid, ifuid)
         hdr = json.loads(cube.hdr[0].header)         
         if cube.sample:
             try:
@@ -334,11 +342,19 @@ def plate(plateid=None, plver=None, ifuid=None):
 def singleifu(mangaid=None, getver=None):
     ''' '''
 
-    session = db.Session()
-    ifu={}
+    ifu = get_mangaid(mangaid=mangaid,getver=getver, web=True)
+
+    if type(ifu) != dict:
+        return ifu
+
+    return render_template('singleifu.html', **ifu)
+
+def get_mangaid(mangaid=None,getver=None, ifu=None, web=None):
+
+    if not ifu: ifu={}
     ifu['title'] = "Marvin | ID"
     ifu['mangaid'] = mangaid
-    
+
     # set global session variables
     setGlobalSession()
     version = current_session['currentver']
@@ -357,9 +373,16 @@ def singleifu(mangaid=None, getver=None):
             cube, ifudict, inspection = getifu(mangaid=mangaid,version=version, dapversion=dapversion)
         except RuntimeError as error:
             ifu['error'] = error
-            return render_template('errors/no_mangaid.html', **ifu)
+            if web:
+                return render_template('errors/no_mangaid.html', **ifu)
+            else:
+                ifu['status'] = -1
+                ifu['message'] = 'Could not complete request for mangaid {0}, due to indicated error.'.format(mangaid)
     else:
-        return render_template('errors/no_mangaid.html', **ifu)
+        if web: return render_template('errors/no_mangaid.html', **ifu)
+        else:
+            ifu['status'] = -1
+            ifu['message'] = 'No mangaid specified'
 
     # push parameters to dict.
     if cube:
@@ -371,7 +394,61 @@ def singleifu(mangaid=None, getver=None):
     ifu['inspection'] = inspection 
     ifu['ifudict'] = ifudict
 
-    return render_template('singleifu.html', **ifu)
+    return ifu
 
+plates={}
+class TestPlate(Resource):
+    def get(self,plateid):
+        if plateid in plates:
+            return {plateid:plates[plateid]}
+        else:
+            return {plateid:'No plate found'}
+    def post(self,plateid):
+        plates[plateid] = request.form['data']
+        return {plateid:plates[plateid]}
 
+mangaids={'12-84660':'','12-98126':''}
+ifu={}
+resource_fields = {
+    'task':fields.String,
+    'mangaid':fields.Nested(ifu)
+    }
+
+def abort_if_todo_doesnt_exist(todo_id):
+    if todo_id not in mangaids:
+        abort(404, message="MangaID {} doesn't exist".format(todo_id))
+
+class MangaIDList(Resource):
+    def get(self):
+        session=db.Session()
+        mangaids = session.query(datadb.Cube.mangaid).all()
+        mangaids = sorted(list(set([m[0] for m in mangaids])))
+        return {'mangaids':mangaids}
+
+class MangaID(Resource):
+    #@marshal_with(resource_fields)
+    def get(self,mangaid=None):
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('mangaid', type=str, help='unique manga-id to retrieve')
+        parser.add_argument('getver', type=str, help='version to retrieve')
+        args = parser.parse_args(strict=True)
+        print('args',args)
+
+        abort_if_todo_doesnt_exist(mangaid)
+
+        ifu = get_mangaid(mangaid=mangaid,getver=args.getver)
+
+        if ifu['cube']:
+            cols = ifu['cube'].cols
+            ifu['cube'] = {col:ifu['cube'].__getattribute__(col) for col in cols}
+
+        if ifu['inspection']:
+            ifu['inspection'] = ifu['inspection'].result()
+
+        return {'task':'hello',mangaid:ifu}       
+
+    def post(self,mangaid):
+        mangaids[mangaid] = request.form['data']
+        return {mangaid:mangaids[mangaid]}        
 

@@ -266,6 +266,11 @@ Search = (function () {
         $('#upload_filealert').html(html);  
     };
 
+    Search.prototype.testMe = function() {
+        console.log('I just clicked the explore button');
+        this.submitTableForm();
+    };
+
     return Search;
 
 })();

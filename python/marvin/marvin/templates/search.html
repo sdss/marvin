@@ -433,6 +433,7 @@
 			<button id="delete" class="btn btn-danger" type='button' onclick='tm.deleteRows()'>Delete Rows</button>
 			<button class='btn btn-primary' type='button' data-toggle='modal' data-target='#fitsform'>Write FITS</button>		
 			{{dropdownload('platedl', 'rsynclink')}}
+			{% if 'dev' is active_feature %} <a class='btn btn-primary btn-success' href='{{url_for("explore_page.results")}}' type='button'>Explore</a>{% endif %}
 		</div>
         {{rsyncmodal()}}
 

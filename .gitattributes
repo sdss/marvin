@@ -7,6 +7,8 @@ etc/config.ini -text
 etc/marvin.module -text
 python/marvin/app.config -text
 python/marvin/marvin/__init__.py -text
+python/marvin/marvin/api/__init__.py -text
+python/marvin/marvin/api/api.py -text
 python/marvin/marvin/config.py -text
 python/marvin/marvin/configuration_files/localhost.cfg -text
 python/marvin/marvin/configuration_files/utah.cfg -text
@@ -134,7 +136,9 @@ python/marvin/marvin/tests/__init__.py -text
 python/marvin/marvin/tests/data/crashform_1.txt -text
 python/marvin/marvin/tests/marvinTester.py -text
 python/marvin/marvin/tests/test_comments.py -text
+python/marvin/marvin/tests/test_feedback.py -text
 python/marvin/marvin/tests/test_index.py -text
+python/marvin/marvin/tests/test_plates.py -text
 python/marvin/marvin/utilities.py -text
 python/marvin/profile_marvin.py -text
 python/marvin/run_marvin.py -text
