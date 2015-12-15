@@ -9,12 +9,15 @@ from os.path import join
 from inspect import getmembers, isfunction
 from raven.contrib.flask import Sentry
 from flask_featureflags import FeatureFlag
+from flask_restful import Api
 
 import flask
 import jinja_filters
 
 def create_app(debug=False):
     app = flask.Flask(__name__, static_url_path='/marvin/static')
+    api_bp = flask.Blueprint('api', __name__)
+    api = Api(api_bp)
 
     app.debug = debug
     print("{0}App '{1}' created.{2}".format('\033[92m', __name__, '\033[0m')) # to remove later
@@ -77,6 +80,7 @@ def create_app(debug=False):
     # Add global SAS Redux path
     os.environ['SAS_REDUX'] = 'sas/mangawork/manga/spectro/redux'
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
+    os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
 
     # Find which connection to make
     try: machine = os.environ['HOSTNAME']
@@ -170,7 +174,7 @@ def create_app(debug=False):
     from .controllers.index import index_page
     from .controllers.search import search_page
     from .controllers.current import current_page
-    from .controllers.plate import plate_page
+    from .controllers.plate import plate_page, TestPlate, MangaID, MangaIDList
     from .controllers.images import image_page
     from .controllers.comments import comment_page
     from .controllers.feedback import feedback_page
@@ -178,8 +182,19 @@ def create_app(debug=False):
     from .controllers.documentation import doc_page
     from .controllers.tests import test_page
     
-    url_prefix = '' if localhost else '/marvin'
+    try: release = os.environ['MARVIN_RELEASE'] 
+    except: release = 'mangawork'
 
+    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr13/marvin'
+    url_prefix = '' if localhost else '/{0}'.format(os.environ['SAS_PREFIX']) 
+
+    # register API hooks
+    api.add_resource(TestPlate, '/testplates/<string:plateid>', endpoint='testplate')
+    api.add_resource(MangaIDList, '/api/mangaids/', endpoint='mangaids')
+    api.add_resource(MangaID, '/api/mangaids/<string:mangaid>/', endpoint='mangaid')
+
+    # Register Flask App pages
+    app.register_blueprint(api_bp)
     app.register_blueprint(index_page, url_prefix=url_prefix)
     app.register_blueprint(search_page, url_prefix=url_prefix)
     app.register_blueprint(current_page, url_prefix=url_prefix)

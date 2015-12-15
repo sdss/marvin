@@ -220,7 +220,7 @@ def getImages(plate=None,version=None,ifuname=None):
     if plate:
         images = [os.path.join(sasurl,sasredux,'stack/images',i.split('/')[-1]) for i in images]
     else:
-        images = [os.path.join(sasurl,sasredux,i.rsplit('/',4)[1],'stack/images',i.split('/')[-1]) for i in images]
+        images = [os.path.join(sasurl,sasredux,i.rsplit('/',4)[1],'stack/images',i.split('/')[-1]) for i in images if i.rsplit('/',4)[1].isdigit()]
     
     # filter by ifu name
     if ifuname:

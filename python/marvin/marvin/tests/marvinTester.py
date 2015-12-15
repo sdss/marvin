@@ -13,3 +13,13 @@ class MarvinTester(object):
         # self.app = app.test_client()
         self.session = db.Session()
         self.longMessage=True
+
+
+    def _loadPage(self, type, page, params=None):
+        if type == 'get':
+            self.result = self.app.get(page)
+        elif type == 'post':
+            self.result = self.app.post(page,data=params)
+        self.data = json.loads(self.result.data)
+
+    
