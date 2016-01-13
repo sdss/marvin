@@ -52,7 +52,7 @@
 			<div class='row'>
 				<div class='col-md-10 col-md-offset-1 col-sm-12' id='ifucar'>     
 					<div id="ifuCarousel" class="carousel slide">
-					{% set modnum = 6 %}
+					{% set modnum = 4 %}
 			 
 					<ol class="carousel-indicators">
 						{% for i in range(((imdict|count)/modnum)|round(0,'ceil')|int) %}
@@ -66,7 +66,7 @@
 						{% if loop.index0 % modnum == 0 %}
 							<div class="item {{'active' if loop.index0==0}}" >
 							<div class='row-fluid'>
-							<div class='col-md-10 col-md-offset-1'>
+							<div class='col-md-10 col-md-offset-2'>
 						{% endif %}
 							<div class='col-sm-2 col-md-2'><a href="{{url_for('plate_page.plate',plateid=(key|split('-'))[0],ifuid=(key|split('-'))[1])}}" class='thumbnail'><img src="{{val}}" alt="Image" style="max-width:100%;"></a></div>
 						{% if loop.index0 % modnum == modnum-1 or loop.last %}
