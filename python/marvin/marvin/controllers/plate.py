@@ -7,7 +7,7 @@ from flask import request, redirect,render_template, send_from_directory, curren
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
 from ..model.database import db
-from ..utilities import processTableData, getImages, setGlobalSession, parseError
+from ..utilities import processTableData, getImages, setGlobalSession, parseError, getPlate3dDir
 from comments import getComment
 from astropy.table import Table
 from sdss.manga import bundle
@@ -57,9 +57,41 @@ def navidselect():
         current_session['searchmode']='mangaid'
         return redirect(url_for('plate_page.singleifu',mangaid=mangaid)) #if sasvm else redirect(url_for('plate_page.singleifu',mangaid=mangaid,_external=True,_scheme='https'))
 
+
+def getMapsFiles(plate=None,version=None, table=None):
+    ''' get the MAPS fits files for specified IFUs '''
+
     
-@plate_page.route('/downloadFiles', methods=['POST'])
-@plate_page.route('/marvin/downloadFiles', methods=['POST'])
+    #mapsfile = os.path.join(os.getenv('SAS_URL'),'sas/mangawork/manga/sandbox/mangadap/MPL-4/default',str(plate),'mangadap-{0}-{1}-default.fits.gz'.format(plate,ifu))
+
+    print('getmaps',plate,version,table)
+
+    if not table and not all([plate,version]):
+        raise RuntimeError('Plate and/or version not specified: {0},{1}'.format(plate,version))
+
+    if plate and version:
+        mapsdir = os.path.join(os.getenv('MANGA_SANDBOX'),'mangadap',version)
+        if not os.path.isdir(mapsdir):
+            raise RuntimeError('No MaNGA sandbox directory for {0}'.format(mapsdir))
+        else:
+            indirs = os.listdir(mapsdir)
+            if len(indirs) > 1 or len(indirs) == 0:
+                raise RuntimeError('Incorrect directories inside {0}: {1}'.format(mapsdir,indirs))
+            else:  
+                mapsdir = os.path.join(mapsdir,indirs[0],'default',str(plate))
+                if not os.path.isdir(mapsdir):
+                    raise RuntimeError('No MaNGA sandbox directory for {0}'.format(mapsdir))
+                else:
+                    mapsdir = os.path.join(mapsdir,'mangadap-{0}-*.fits*'.format(plate))
+
+    # replace local sandbox with sas sandbox
+    mapsplit = mapsdir.split('mangadap/',1)
+    mapsdir = os.path.join('sas/mangawork/manga/sandbox','mangadap',mapsplit[1])
+
+    return mapsdir
+    
+@plate_page.route('/downloadFiles', methods=['GET','POST'])
+@plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
 def downloadFiles():
     ''' Builds an rsync command to download all specified files '''
     
@@ -69,6 +101,7 @@ def downloadFiles():
     version = valueFromRequest(key='version',request=request, default=None)
     if not version: version = current_session['currentver']
     result = {'message':None}
+    print('stuff',plate,id,version)
     
     if table != 'null':
         try:
@@ -91,16 +124,61 @@ def downloadFiles():
     if not newtable:
         # No table data, just do it for a given plate
         
+        if not plate:
+            result['status'] = -1
+            result['message'] = 'No plate passed to Flask: {0}'.format(plate)
+            return jsonify(result=result)
+
         # Grab all files and replace with SAS paths
         redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plate))
         sasredux = os.path.join(os.getenv('SAS_REDUX'),version,str(plate))    
     
-        # Build the rsync path with the source and local paths
-        dirpath = os.path.join(rsyncpath,sasredux,'stack')
-        direxists = os.path.isdir(redux)
-        result['message'] = 'Directory path {0} does not exist'.format(sasredux) if not direxists else None
-        rsync_command = 'rsync -avz --progress --include "*{0}*fits*" {1} {2}'.format(id.upper(), dirpath, localpath)
-        result['command'] = rsync_command if rsync_command else None
+        # Get MAPS or Cubes/RSS
+        if id == 'maps':
+            try: 
+                mapfiles = getMapsFiles(plate,version=version)
+            except RuntimeError as e:
+                result['message'] = 'Error in getMapsFiles for {0},{1}: {2}'.format(plate,version,e)
+                result['status'] = -1
+                return jsonify(result=result) 
+
+            # Make command
+            dirpath = os.path.join(rsyncpath,mapfiles)
+            rsync_command = 'rsync -avz --progress {0} {1}'.format(dirpath,localpath)
+            result['command'] = rsync_command if rsync_command else None
+            result['status'] = 1 if rsync_command else -1
+            result['message'] = 'Success'
+        else:
+            # Build the rsync path with the source and local paths
+            try: stagedir = getPlate3dDir(plate,version=version)
+            except NameError as e:
+                result['status'] = -1
+                result['message'] = 'NameError in getPlate3dDir for {0}: {1}'.format(plate,e)
+                return jsonify(result=result)
+            except OSError as e:
+                result['status'] = -1
+                result['message'] = 'OSError in getPlate3dDir for {0}: {1}'.format(plate,e)
+                return jsonify(result=result)            
+
+            if stagedir:
+                dirpath = os.path.join(rsyncpath,sasredux,stagedir)
+                direxists = os.path.isdir(redux)
+                if direxists:
+                    if 'stack' in stagedir:
+                        rsync_command = 'rsync -avz --progress --include "*{0}*fits*" {1} {2}'.format(id.upper(), dirpath, localpath)
+                    elif 'mastar' in stagedir:
+                        rsync_command = 'rsync -avz --progress --include "mastar*fits*" {0} {1}'.format(dirpath, localpath)
+                    else:
+                        rsync_command = None 
+                    result['command'] = rsync_command if rsync_command else None
+                    result['status'] = 1 if rsync_command else -1
+                    result['message'] = 'mastar or stack not in output directory for {0}'.format(plate) if result['status'] == -1 else 'Success'
+                else:
+                    result['message'] = 'Directory path {0} does not exist'.format(sasredux) if not direxists else None
+                    result['status'] = -1
+            else:
+                result['message'] = 'No 3d directory found for plate {0}'.format(plate)
+                result['status'] = -1
     else:
         # table data from the search
         
@@ -110,27 +188,34 @@ def downloadFiles():
             tablevers = [v.split(' ')[0] if 'trunk' in v else v for v in tablevers]
         except KeyError as e:
             tablevers = None
-            result['message'] = 'KeyError {0}'.format(e)
+            result['message'] = 'Problem grabbing versions from table: KeyError {0}'.format(e)
+            result['status'] = -1
+            return jsonify(result=result)
 
+        # Only grab 1 version
         if tablevers and len(set(tablevers)) == 1: version = tablevers[0]
 
         print('tablevers',tablevers)
         print('ver',version)  
 
         if tablevers:
-            sasredux = os.path.join(os.getenv('SAS_REDUX'),version,'*')
-            dirpath = os.path.join(rsyncpath,sasredux,'stack/')
-        
-            # handle individual files from table
-            files = ['manga-{0}-{1}-LOG{2}.fits.gz'.format(row['plate'], row['ifudesign'],id.upper()) for row in newtable]
-            includelist = [" --include='*{0}'".format(file) for file in files]
-            includestring = ''.join(includelist)
-        
-            # build the string
-            rsync_command = 'rsync -avz --prune-empty-dirs --progress'
-            rsync_command += includestring 
-            rsync_command += " --exclude='*' {0} {1}".format(dirpath,localpath)
-            result['command'] = rsync_command if rsync_command else None
+            if id == 'maps':
+                result['status']=-1
+                result['message']='Feature not yet available'
+            else:
+                sasredux = os.path.join(os.getenv('SAS_REDUX'),version,'*')
+                dirpath = os.path.join(rsyncpath,sasredux,'stack/')
+            
+                # handle individual files from table
+                files = ['manga-{0}-{1}-LOG{2}.fits.gz'.format(row['plate'], row['ifudesign'],id.upper()) for row in newtable]
+                includelist = [" --include='*{0}'".format(file) for file in files]
+                includestring = ''.join(includelist)
+            
+                # build the string
+                rsync_command = 'rsync -avz --prune-empty-dirs --progress'
+                rsync_command += includestring 
+                rsync_command += " --exclude='*' {0} {1}".format(dirpath,localpath)
+                result['command'] = rsync_command if rsync_command else None
 
     return jsonify(result=result)
 

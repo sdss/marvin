@@ -3,38 +3,31 @@
 import os, flask, json
 import unittest, warnings
 import marvinTester
+from flask import url_for
 
-class TestFeedbackPage(marvinTester.MarvinTester, unittest.TestCase):
+class TestFeedbackPage(marvinTester.MarvinTester):
 
     def setUp(self):
         marvinTester.MarvinTester.setUp(self)
-        self.ifuid = u'9101'
-        self.plate = u'7443'
-        self.cubepk = u'10'
-        self.drpver = u'v1_2_0'
-        self.dapver = u'v1_0_0'
-        self.key = u'maps'
-        self.mapid = u'kin'
-        self.qatype = u'cube-none2'
-        self.specpanel = u'single'
-        self.issues = u'"any"'
-        self.tags = []
-        self.oldkey = u'maps'
-        self.oldmapid = u'kin'
-        self.oldqatype = u'cube-none2'
-        self._buildform()
-
 
     def tearDown(self):
         pass
 
-    def _feedback_status_codes(self, page, type, params=None):
-        self._loadPage(type,page, params=params)
-        self.assertEqual(self.result.status_code,200, msg='Marvin"s {0} page should return a good status of 200'.format(page))
+    def test_feedback_loads(self):
+        with self.app.app_context():
+            self._loadPage('get', url_for('feedback_page.feedback'))
+            self.assertStatus(self.response, 200, 'Marvin"s feedback page should return a good status of 200')
 
-    def test_comment_addcomment_loads(self):
-        self._feedback_status_codes('marvin/addcomment', 'get')
-    
+    def _promotetracticket(self, msg=None):
+        with self.app.app_context():
+            self._loadPage('post', url_for('feedback_page.promotetracticket'), params={'id':1})
+            self.assertEqual(self.results['status'], self.data['result']['status'],msg=msg)
+
+    def test_promotetracticket_success(self):
+        self.results['status'] = 1
+        msg = 'status should be good (1)'
+        self._promotetracticket(msg=msg)
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

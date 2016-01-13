@@ -387,4 +387,28 @@ def parseError(error):
 
     return type, val, trace
 
+def getPlate3dDir(plate,version=None):
+    ''' gets the output 3d stage directory for a specified plate '''
+
+    # set version if not passed 
+    if not version:
+        try: version = current_session['currentver']
+        except: 
+            setGlobalVersion()
+            version = current_session['currentver']
+            
+    redux = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),version,str(plate))
+    if not os.path.isdir(redux):
+        return None
+
+    outdir = [d for d in os.listdir(redux) if not d.isdigit()]
+    if len(outdir) > 1:
+        hasfiles = [len(glob.glob(os.path.join(redux,d,'*fits*'))) > 1 for d in outdir]
+        if any(hasfiles):
+            return outdir[hasfiles.index(True)]
+        else:
+            return None
+    else:
+        return outdir[0] if len(outdir) == 1 else None
+
     

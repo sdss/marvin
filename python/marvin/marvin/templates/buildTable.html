@@ -48,6 +48,8 @@
     					<td><a target='_blank' href="{{url_for('plate_page.plate',plateid=row[col],ifuid=(row[vername]|split())[0]|filterVersion())}}">{{row[col]}}</a></td>
     				{% elif col == 'ifuname' or col == 'ifudesign' or col == 'ifudsgn' %}
                         <td><a target='_blank' href="{{url_for('plate_page.plate',plateid=row['plate'],plver=(row[vername]|split())[0]|filterVersion(),ifuid=row[col])}}">{{row[col]}}</a></td>
+                    {% elif 'versdrp' in col %}
+                        <td>{{row[col]|filterVersion()}}</td>
                     {% elif col == 'mangaid' %}
                         <td><a target='_blank' href="{{url_for('plate_page.singleifu',mangaid=row['mangaid'],getver=(row[vername]|split())[0]|filterVersion())}}">{{row[col]}}</a></td>
     				{% elif col == 'tracticket' %}
