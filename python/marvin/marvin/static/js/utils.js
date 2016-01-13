@@ -35,16 +35,44 @@ Utils = (function() {
 
     // Grab a GET parameter from the URL
     Utils.prototype.GetURLParameter = function(sParam) {
-		var sPageURL = window.location.search.substring(1);
-		var sURLVariables = sPageURL.split('&');
-		
-		for (var i = 0; i < sURLVariables.length; i++){
-			 var sParameterName = sURLVariables[i].split('=');
-			 if (sParameterName[0] == sParam){
-			 	return sParameterName[1];
-			 }
-		}
+
+        var path = window.location.pathname;
+        var params = path.split('/').filter(function(v){return v!==''});
+        if (sParam == 'plateid') {
+            return params[1];
+        }
+        if (sParam == 'version') {
+            var inver = null;
+            $.each(params,function(index,value) {
+                if (value.search('v') != -1) {
+                    inver = params[index];
+                }
+            });
+            return inver;
+        }
     };
+
+    // Build form
+    Utils.prototype.buildForm = function() {
+        var _len=arguments.length; args = new Array(_len); for(var $_i = 0; $_i < _len; ++$_i) {args[$_i] = arguments[$_i];}
+        var names = args[0];
+        var form = {};
+        $.each(args.slice(1),function(index,value) {
+            form[names[index]] = value;
+        });
+        return form;
+    }
+
+    // Get PlateVer
+    Utils.prototype.getPlateVer = function() {
+        try {
+            var platever = $('.plateinfo').attr('id').split('+');
+        } catch (error) {
+            Raven.captureException('Error getting plate,version from id for rsync: '+error);
+            var platever = null;
+        }
+        return platever;
+    }
 
     // Return rsync command to download all cubes or rss files for a plate
     Utils.prototype.rsyncFiles = function() {
@@ -52,12 +80,17 @@ Utils = (function() {
 		$('.dropdown-menu').on('click','li a', function(){
 						
 			var id = $(this).attr('id');
-			var plate = _this.GetURLParameter('plateid');
-			var version = _this.GetURLParameter('version');
+			//var plate = _this.GetURLParameter('plateid');
+			//var version = _this.GetURLParameter('version');
+            var platever = _this.getPlateVer();
+            var plate = (platever) ? platever[0] : null;
+            var version = (platever) ? platever[1] : null;
 			var table = ($('#platetable .sastable').length == 0) ? null : $('#platetable .sastable').bootstrapTable('getData');
+            var rsyncform = _this.buildForm(['id','plate','version','table'],id,plate,version,JSON.stringify(table));
 
+            console.log('script root', $SCRIPT_ROOT);
 			// JSON request
-			$.post($SCRIPT_ROOT + '/marvin/downloadFiles', {'id':id, 'plate':plate, 'version':version, 'table':JSON.stringify(table)},'json')
+			$.post($SCRIPT_ROOT + '/marvin/downloadFiles', rsyncform,'json')
 			.done(function(data){
 				if (data.result.status == -1) {
 					$('#rsyncbox').val('Error Message: '+data.result.message);

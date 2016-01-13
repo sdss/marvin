@@ -1,25 +1,45 @@
 
+import json, flask
 from marvin import create_app
-app = create_app(debug=True)
-app.config['TESTING'] = True
-app.config['WTF_CSRF_ENABLED'] = False
+from flask.ext.testing import TestCase
 
-from marvin.model.database import db
+try: from inspection.marvin import Inspection
+except: from marvin.inspection import Inspection
 
-class MarvinTester(object):
-    """subclass (MarvinTester.MarvinTester, unittest.TestCase), in that order."""
+class MarvinTester(TestCase):
+    ''' subclass (MarvinTester.MarvinTester, TestCase), in that order '''
+
+    def create_app(self):
+        app = create_app(debug=True)
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+        from marvin.model.database import db
+        self.db = db
+        return app
+
     def setUp(self):
-        self.app = app.test_client()
-        # self.app = app.test_client()
-        self.session = db.Session()
-        self.longMessage=True
+        self.session = self.db.Session()
+        self.longMessage = True
+        self.response = None
+        self.data = None
+        self.insp_session = {}
+        self.inspection = Inspection(self.insp_session)
+        self.results = self.inspection.result()
 
-
+    def tearDown(self):
+        pass
+        
     def _loadPage(self, type, page, params=None):
         if type == 'get':
-            self.result = self.app.get(page)
+            self.response = self.client.get(page)
         elif type == 'post':
-            self.result = self.app.post(page,data=params)
-        self.data = json.loads(self.result.data)
+            self.response = self.client.post(page,data=params)
+
+        try:
+            self.data = self.response.json
+        except ValueError as e:
+            print('Could not decode JSON: {0}'.format(e))
+            self.data = None
 
     

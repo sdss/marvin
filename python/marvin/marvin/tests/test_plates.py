@@ -3,38 +3,60 @@
 import os, flask, json
 import unittest, warnings
 import marvinTester
+from flask import url_for
 
-class TestPlatesPage(marvinTester.MarvinTester, unittest.TestCase):
+class TestPlatesPage(marvinTester.MarvinTester):
 
     def setUp(self):
-        marvinTester.MarvinTester.setUp(self)
-        self.ifuid = u'9101'
-        self.plate = u'7443'
-        self.cubepk = u'10'
-        self.drpver = u'v1_2_0'
-        self.dapver = u'v1_0_0'
-        self.key = u'maps'
-        self.mapid = u'kin'
-        self.qatype = u'cube-none2'
-        self.specpanel = u'single'
-        self.issues = u'"any"'
-        self.tags = []
-        self.oldkey = u'maps'
-        self.oldmapid = u'kin'
-        self.oldqatype = u'cube-none2'
-        self._buildform()
-
+        self.plate = 7443
+        self.version = 'v1_3_3'
+        self.outdir = 'stack'
 
     def tearDown(self):
         pass
 
-    def _plates_status_codes(self, page, type, params=None):
-        self._loadPage(type,page, params=params)
-        self.assertEqual(self.result.status_code,200, msg='Marvin"s {0} page should return a good status of 200'.format(page))
+    def test_plate_loads(self):
+        with self.app.app_context():
+            self._loadPage('get', url_for('plate_page.plate'))
+            self.assertStatus(self.response, 200, 'Marvin"s plate page should return a good status of 200')
 
-    def test_comment_addcomment_loads(self):
-        self._feedback_status_codes('marvin/addcomment', 'get')
+    # Tests for download files via rsync
+    def _downloadFiles(self, params):
+        with self.app.app_context():
+            self._loadPage('post', url_for('plate_page.downloadFiles'), params=params)
     
+    def _downloadFiles_plate(self, mode, outdir):
+        params = {'id':mode, 'plate':self.plate, 'version':self.version, 'table':'null'}
+        self._downloadFiles(params)
+        self.assertEqual(self.data['result']['status'],1)
+        self.assertEqual(self.data['result']['message'],'Success')
+        if outdir == 'stack':
+            self.assertIn('rsync -avz --progress --include "*{0}*fits*"'.format(mode.upper()),self.data['result']['command'])
+        elif outdir =='mastar':
+            self.assertIn('rsync -avz --progress --include "mastar*fits*"'.format(mode.upper()),self.data['result']['command'])
+
+    def test_plate_cube_stack(self):
+        self._downloadFiles_plate('cube', self.outdir)
+
+    def test_plate_rss_stack(self):
+        self._downloadFiles_plate('rss', self.outdir)
+
+    def _downloadFiles_plate_fail(self, mode, outdir, msg):
+        params = {'id':mode, 'plate':self.plate, 'version':self.version, 'table':'null'}
+        self._downloadFiles(params)
+        self.assertEqual(self.data['result']['status'],-1)
+        self.assertIn(msg, self.data['result']['message'])
+
+    def test_plate_cube_mastar_nofile(self):
+        self.plate = 7999
+        self.outdir = 'mastar'
+        self._downloadFiles_plate_fail('cube', self.outdir, 'No such file or directory')
+        
+    def test_plate_cube_mastar_success(self):
+        self.plate = 7999
+        self.outdir = 'mastar'
+        self.version='trunk'
+        self._downloadFiles_plate('cube', self.outdir)
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

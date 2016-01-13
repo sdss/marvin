@@ -140,8 +140,8 @@ def splitQAType(qatype):
 
 
 # DAP Plot Panel Retrieval    
-@comment_page.route('/marvin/getdappanel', methods=['POST'])
-@comment_page.route('/getdappanel', methods=['POST'])
+@comment_page.route('/marvin/getdappanel', methods=['POST'])   
+@comment_page.route('/getdappanel', methods=['POST'])   
 def getdappanel():
     ''' Retrieve a DAP QA panel of plots based on form data'''
 
@@ -338,7 +338,7 @@ def setSessionDAPComments(form):
             inspection.set_session_tags(tags=form['tags'])
         except Exception as error:
             result['status'] = -1
-            result['message'] = 'Error setting session comments for inspection: {0}, {1}'.format(str(type(error)),error)
+            result['message'] = 'Error setting session comments for inspection: {0}, {1}'.format(type(error),error)
             raise RuntimeError(result['message'])   
 
         try:

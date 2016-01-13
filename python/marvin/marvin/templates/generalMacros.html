@@ -12,6 +12,9 @@
 	<ul class="dropdown-menu" id='{{id}}' role="menu" >
 	  <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>Cubes</a></li>
 	  <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>RSS</a></li>
+	  {% if session['currentver'] >= 'v1_5_0' %} 
+	  		<li><a id='maps'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>MAPS</a></li>
+	  {% endif %}
 	</ul>
   </div>	
 				  
