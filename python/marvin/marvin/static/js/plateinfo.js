@@ -5,6 +5,8 @@ var Plateinfo,
 
 Plateinfo = (function () {
 
+    marvin.Plateinfo = Plateinfo;
+
     function Plateinfo(plateid,imagediv, allcubetags) {
 
         // in case constructor called without new

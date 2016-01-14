@@ -5,6 +5,8 @@ var Comment,
 
 Comment = (function () {
 
+    marvin.Comment = Comment;
+
     function Comment(ifu) {
 
         // in case constructor called without new
