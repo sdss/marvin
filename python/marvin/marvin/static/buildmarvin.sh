@@ -13,12 +13,13 @@
 
 uglifyjs="/usr/local/bin/uglifyjs"
 lessc="/usr/local/bin/lessc"
+cleancss="/usr/local/bin/cleancss"
 
 #scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 scriptdir=$(pwd)
 echo $scriptdir
 jssrcdir=${scriptdir}/js
-#csssrcdir=${scriptdir}/css
+csssrcdir=${scriptdir}/css
 
 distribfile=${scriptdir}/marvin.js
 distribfileminified=${scriptdir}/marvin.min.js
@@ -26,9 +27,18 @@ distribfileminified=${scriptdir}/marvin.min.js
 sourcemap=${scriptdir}/marvin.map
 
 # css
-#csssrcfile=${srcdir}/css/marvin.css
-#cssfiles=('index.css','tabs.css','verticals.css','vote.css', 'qunit-1.19.0.css')
-#cssfileminified=${scriptdir}/marvin.min.css
+csssrcfile=${scriptdir}/marvin.css
+cssfileminified=${scriptdir}/marvin.min.css
+
+cssfiles=('css/bootstrap/bootstrap.min.css' 'css/bootstrap/bootstrap-select.css' 'css/bootstrap/bootstrap-table.css' 
+    'css/bootstrap/bootstrap-datetimepicker.min.css' 'css/bootstrap/bootstrap-tags.css' 'css/index.css' 'css/verticals.css' 
+    'css/vote.css' 'css/tabs.css' 'css/qunit-1.19.0.css' 'css/aladin.min.css')
+cssfilelist=${cssfiles[@]}
+
+# single css file
+cat $cssfilelist > $csssrcfile
+# minified css
+cleancss -o $cssfileminified $csssrcfile 
 
 # js
 
@@ -50,20 +60,8 @@ jsfiles=('js/jquery/jquery-1.11.2.min.js' 'js/jquery/jquery.actual.min.js' 'js/b
 #'js/dapqa.js' 'js/comments.js' 'js/ifu.js' 'js/plateinfo.js')
 
 # non-minified version 
-#cmd1="${cmd}  > ${distribfile}"
-#eval ${cmd1}
-
+cat $filelist > $distribfile
 # minified version
 filelist=${jsfiles[@]}
 uglifyjs $filelist --comments -c -o $distribfileminified
-#fileList=""
-#for t in "${jsfiles[@]}"
-#do
-#    fileList="${fileList} ${srcdir}/js/$t"
-#done
-#cmd2="${uglifyjs} ${fileList} --comments -c -m > ${distribfileminified}"
-#eval ${cmd2}
-
-# traitement des CSS
-#${lessc} ${csssrcfile} ${cssfileminified}
 
