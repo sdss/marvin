@@ -170,7 +170,7 @@ def index():
     
     if any(images):        
         # randomize the images
-        imgcount = 6
+        imgcount = 4
         if len(images) < imgcount: biglist = [random.choice(images) for i in xrange(imgcount)]
         else: biglist = random.sample(images,imgcount)
         images = biglist
@@ -211,5 +211,6 @@ def index():
     index['plates'] = platecount
     index['types'] = types
     index['labels'] = ['Galaxy', 'Stellar', 'Ancillary', None]
+    index['modnum'] = imgcount
     
     return render_template("index.html", **index)
