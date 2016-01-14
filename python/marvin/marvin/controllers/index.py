@@ -170,7 +170,7 @@ def index():
     
     if any(images):        
         # randomize the images
-        imgcount = 4
+        imgcount = 6
         if len(images) < imgcount: biglist = [random.choice(images) for i in xrange(imgcount)]
         else: biglist = random.sample(images,imgcount)
         images = biglist
