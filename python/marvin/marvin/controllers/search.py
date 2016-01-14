@@ -691,17 +691,17 @@ def search():
     # handle file uploads
     if dofile:
         print('uploading file of format',form['upload_filename'] )
+
+        # update UPLOAD_FOLDER to MARVIN_DATA_DIR
+        if 'MARVIN_DATA_DIR' in os.environ:
+            current_app.config['UPLOAD_FOLDER'] = os.getenv('MARVIN_DATA_DIR')
+
         file = request.files['filelist']
         if file and allowed_filename(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             file.close()
-
-            #try:
-            #    readUploadFile(filepath)
-            #except RuntimeError as error:
-            #    pass
 
             # try to open the file
             try:
