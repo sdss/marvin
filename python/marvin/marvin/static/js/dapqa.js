@@ -6,6 +6,8 @@ var Dapqa,
 
 Dapqa = (function() {
 
+    marvin.Dapqa = Dapqa;
+
     // Constructor
     function Dapqa(ifu) {
 
@@ -328,7 +330,7 @@ Dapqa = (function() {
 
     // Validate issues
     Dapqa.prototype.validateIssues = function(issues) {
-        var _this = this;
+        //var _this = this;
         // issues is not an array or a string value of 'any'
         if (typeof issues !== Array && typeof issues !== 'object' && issues !== 'any') {
             throw new Error('Error validating issues: '+issues+' is not an array or any');
@@ -471,7 +473,7 @@ Dapqa = (function() {
         var _this = this;
         $('.dapqapanel', this.mainpanel).hide();
         this.specpaneltype = $('#specpanel', this.mainform).val();
-        var visiblechildren  = this.getVisibleChildren(this.ifupanel);
+        //var visiblechildren  = this.getVisibleChildren(this.ifupanel);
         
         // grab tags
         this.grabTags();

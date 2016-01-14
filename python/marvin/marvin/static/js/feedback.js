@@ -5,6 +5,8 @@ var Feedback,
 
 Feedback = (function () {
 
+    marvin.Feedback = Feedback;
+
     function Feedback() {
 
         // in case constructor called without new

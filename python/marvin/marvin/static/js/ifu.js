@@ -5,6 +5,8 @@ var Ifu,
 
 Ifu = (function () {
 
+    marvin.Ifu = Ifu;
+
     function Ifu(ifu) {
 
         // in case constructor called without new

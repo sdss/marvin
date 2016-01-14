@@ -185,11 +185,7 @@ def index():
         index['imdict'] = imdict
     else: index['imdict'] = None
     
-    # get all galaxy cubes from latest tag
-    #cubequery = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion,datadb.IFUDesign)\
-    #    .filter(datadb.PipelineVersion.version==version,datadb.IFUDesign.nfiber != 7)
-    #cubecount = cubequery.count()      
-
+    # get all galaxy cubes from latest tag; get cube counts by plate
     cubequery = session.query(func.count(datadb.Cube.pk),datadb.Cube.plate).join(datadb.PipelineInfo,datadb.PipelineVersion,datadb.IFUDesign)\
         .filter(datadb.PipelineVersion.version==version,datadb.IFUDesign.nfiber != 7).group_by(datadb.Cube.plate)
     cubelist = cubequery.all()
@@ -200,12 +196,6 @@ def index():
     galcubequery = cubequery.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG1',datadb.FitsHeaderValue.value != '0')
     starcubequery = cubequery.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG2',datadb.FitsHeaderValue.value != '0')
     anccubequery = cubequery.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG3',datadb.FitsHeaderValue.value != '0')   
-    #galcubes = galcubequery.count()
-    #starcubes = starcubequery.count()
-    #anccubes = anccubequery.count()
-    #galplates = galcubequery.distinct(datadb.Cube.plate).count()
-    #starplates = starcubequery.distinct(datadb.Cube.plate).count()
-    #ancplates = anccubequery.distinct(datadb.Cube.plate).count()
     
     gallist = galcubequery.all()
     starlist = starcubequery.all()
@@ -215,16 +205,7 @@ def index():
     ancplates = len(anclist)
     galcubes = sum([cube[0] for cube in gallist])
 
-    #unigals = list(set([cube.plate for cube in galcubes]))
-    #unistars = list(set([cube.plate for cube in starcubes]))
-    #uniancs = list(set([cube.plate for cube in anccubes]))
-    
-    #plates = list(set([cube.plate for cube in cubes]))
-    #platecount = cubequery.distinct(datadb.Cube.plate).count() 
-    #types = ['Stellar' if plate in unistars else 'Galaxy' if plate in unigals else 'Ancillary' if plate in uniancs else None for plate in plates]
-    types = {'Stellar':starplates, 'Galaxy': galplates, 'Ancillary':ancplates}    
-    #plclass = {cube.plate:cube.plateclass for cube in cubes}
-    #types = [val.type for key,val in plclass.iteritems()]
+    types = {'Stellar':starplates, 'Galaxy': galplates, 'Ancillary':ancplates}
 
     index['cubes'] = galcubes
     index['plates'] = platecount
