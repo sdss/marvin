@@ -28,7 +28,6 @@ python/marvin/marvin/inspection.py -text
 python/marvin/marvin/jinja_filters.py -text
 python/marvin/marvin/model/__init__.py -text
 python/marvin/marvin/model/database.py -text
-python/marvin/marvin/static/buildmarvin.sh -text
 python/marvin/marvin/static/css/aladin.min.css -text
 python/marvin/marvin/static/css/bootstrap/bootstrap-datetimepicker.min.css -text
 python/marvin/marvin/static/css/bootstrap/bootstrap-magnify.css -text
