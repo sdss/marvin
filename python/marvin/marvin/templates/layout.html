@@ -26,13 +26,14 @@ QUnit v1.19.0
 	<meta charset="UTF-8">
 	<title>{{title}}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="{{url_for('static',filename='css/bootstrap/bootstrap.min.css')}}" rel="stylesheet">
+	{#<link href="{{url_for('static',filename='css/bootstrap/bootstrap.min.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-select.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-table.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-datetimepicker.min.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/bootstrap/bootstrap-tags.css')}}" rel="stylesheet">
 	<link href="{{url_for('static',filename='css/qunit-1.19.0.css')}}" rel="stylesheet">
-	<link href="{{url_for('static',filename='css/aladin.min.css')}}" rel="stylesheet">
+	<link href="{{url_for('static',filename='css/aladin.min.css')}}" rel="stylesheet">#}
+	<link href="{{url_for('static',filename='marvin.min.css')}}" rel="stylesheet">
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	{% block head %}{% endblock head %}
 	
