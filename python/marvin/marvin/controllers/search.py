@@ -95,6 +95,19 @@ def buildTableFromFile(session, type, data):
 
     return {'cubes':cubes,'cubetable':cubetable,'cols':displayCols,'keys':cubetable.keys() if cubes else None}
 
+def tableInQuery(query, name):
+    ''' check if a given table is already in the SQL query '''
+    try:
+        isin = name in str(query._from_obj[0])
+    except IndexError as e:
+        isin = False
+    except AttributeError as e:
+        if type(query) == str:
+            isin = name in query
+        else:
+            isin = False
+    return isin
+
 def selectByMangaTarget(target_filter,name, bit=None):
 
     # bit to maskbit dictionary
@@ -216,24 +229,40 @@ def buildSQLTable(cubes):
     
     return cubetable, displayCols
 
-def buildTable(cubes):
+def checkNSAcols(cols, query):
+    ''' check the query for NSA parameters in the where clause '''
+
+    whereclause = str(query.whereclause)
+    clausesplit = whereclause.split('mangadatadb.sample.')
+
+    if len(clausesplit) > 1:
+        nsaparams = [row.split(' ')[0] for row in clausesplit[1:]]
+        if nsaparams: cols.extend(nsaparams)
+        return cols
+    else:
+        return cols
+
+def buildTable(cubes, query=None):
     ''' Build the data table as a dictionary '''
     
     # build table column list
 
     # from header
-    cols = ['plate','ifudesign','mangaid','versdrp2','versdrp3','verscore','versutil','platetyp','srvymode',
-    'objra','objdec','ifuglon','ifuglat','ebvgal','nexp','exptime','drp3qual','bluesn2','redsn2','harname','frlplug',
-    'cartid','designid','cenra','cendec','airmsmin','airmsmed','airmsmax','seemin','seemed','seemax','transmin',
+    cols = ['plate','ifudesign','mangaid','versdrp2','versdrp3',
+    'objra','objdec','ifuglon','ifuglat','ebvgal','drp3qual','bluesn2','redsn2','harname',
+    'cartid','cenra','cendec','airmsmin','airmsmed','airmsmax','seemin','seemed','seemax','transmin',
     'transmed','transmax','mjdmin','mjdmed','mjdmax','gfwhm','rfwhm','ifwhm','zfwhm','mngtarg1','mngtarg2',
-    'mngtarg3','catidnum','plttarg']
+    'mngtarg3']
     
     # sample db cols
     sampcols = [s for s in datadb.Sample().cols if 'nsa' in s]
 
     # combine
     cols.extend(sampcols)
-    displayCols=['plate','ifudesign','mangaid','drp3qual','versdrp3','verscore','objra', 'objdec','bluesn2','redsn2','nexp','exptime', 'nsa_redshift']
+    displayCols=['plate','ifudesign','mangaid','drp3qual','objra', 'objdec','bluesn2','redsn2','nsa_redshift']
+
+    # check query for NSA to update displayCols
+    if query: displayCols = checkNSAcols(displayCols, query)
     
     cubedict=defaultdict(list)
     for cube in cubes:
@@ -247,7 +276,11 @@ def buildTable(cubes):
             elif col=='ifudesign': cubedict['ifudesign'].append(cube.ifu.name)
             elif 'mngtarg' in col: 
                 try: cubedict[col].append(hdr[''.join(col.split('a')).upper()])
-                except: cubedict[col].append(None) 
+                except: cubedict[col].append(None)
+            elif 'mstar' in col:
+                newcol = 'nsa_logmstar_el' if 'el' in col else 'nsa_logmstar'
+                try: cubedict[col].append(cube.sample[0].__getattribute__(newcol))
+                except: cubedict[col].append(None)
             else: 
                 if col.upper() in hdr:
                     # grab from header
@@ -287,17 +320,14 @@ def buildSQLString(minplate=None, maxplate=None, minmjd=None, maxmjd=None, manga
     	datadb.FitsHeaderKeyword.label=='MJDMAX'), datadb.FitsHeaderValue.value >= {0},datadb.FitsHeaderValue.value <= {1})".format(minmjd,maxmjd)        
     
     # Plate Type
+    typelabel = {'galaxy':'MNGTRG1', 'anc':'MNGTRG3', 'stellar':'MNGTRG2', 'sky':'MNGTRG2'}
     if type != 'any':
-        if type == 'galaxy':
-            query += ".join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG1',\
-                datadb.FitsHeaderValue.value != '0')"
-        elif type =='anc':
-            query += ".join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG3',\
-                datadb.FitsHeaderValue.value != '0')"
-        elif (type=='sky' or type=='stellar'):
-            query += ".join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG2',\
-                datadb.FitsHeaderValue.value != '0')" 
-                
+        if not tableInQuery(query, 'fits_header'): 
+            query += ".join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=={0},\
+                datadb.FitsHeaderValue.value != '0')".format(typelabel[type])
+        else:
+            query += ".filter(datadb.FitsHeaderKeyword.label=={0},datadb.FitsHeaderValue.value != '0')".format(typelabel[type])
+                    
     # IFU
     if ifu != 'Any':
         if ifu == '7':
@@ -409,16 +439,13 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
     	datadb.FitsHeaderKeyword.label=='MJDMAX'), datadb.FitsHeaderValue.value >= str(minmjd),datadb.FitsHeaderValue.value <= str(maxmjd))    
     
     # Plate Type
+    typelabel = {'galaxy':'MNGTRG1', 'anc':'MNGTRG3', 'stellar':'MNGTRG2', 'sky':'MNGTRG2'}
     if type != 'any':
-        if type == 'galaxy':
-            query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG1',
+        if not tableInQuery(query, 'fits_header'): 
+            query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label==typelabel[type],
                 datadb.FitsHeaderValue.value != '0')
-        elif type =='anc':
-            query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG3',
-                datadb.FitsHeaderValue.value != '0')
-        elif (type=='sky' or type=='stellar'):
-            query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword).filter(datadb.FitsHeaderKeyword.label=='MNGTRG2',
-                datadb.FitsHeaderValue.value != '0')                  
+        else:
+            query = query.filter(datadb.FitsHeaderKeyword.label==typelabel[type],datadb.FitsHeaderValue.value != '0')
     
     # IFU
     if ifu != 'Any':
@@ -451,40 +478,51 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
             query = query.filter(func.q3c_radial_query(datadb.Cube.ra,datadb.Cube.dec,ra,dec,radius))             
     
     # NSA
+    print('nsapars', parseNSA(nsatext))
     if any(nsatext):
-	    nsapars = parseNSA(nsatext)
-	    cols = datadb.Sample().cols
-	    opdict = {'<=':le,'>=':ge,'>':gt,'<':lt,'!=':ne,'=':eq}
-	    query = query.join(datadb.Sample)
-	    # loop over params and build query
-	    for key,value in nsapars.iteritems():
-	        iscompare = any([s in value for s in opdict.keys()])
+        nsapars = parseNSA(nsatext)
+        cols = datadb.Sample().cols
+        opdict = {'<=':le,'>=':ge,'>':gt,'<':lt,'!=':ne,'=':eq}
+        query = query.join(datadb.Sample)
+        # loop over params and build query
+        for key,value in nsapars.iteritems():
+            iscompare = any([s in value for s in opdict.keys()])
 
-	        # do operator query or do range query
-	        if iscompare:
-	            # separate operator and value
-	            value.strip()
-	            try: ops,number = value.split()
-	            except ValueError: 
-	                match = re.match(r"([<>=!]+)([0-9.]+)", value, re.I)
-	                if match:
-	                    ops = match.groups()[0]
-	                    number = match.groups()[1]    
-	            op = opdict[ops]
-	            	            
-	            # build query
-	            query = query.filter(op(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]),number))
-	        else:
-	            # try splits on dash, comma, or space
-	            try: low,up = value.split('-')
-	            except ValueError:
-	               try: low,up = value.split(',')
-	               except ValueError:
-	                   try: low,up = value.split()
-	                   except ValueError: low,up = [None,None]
-	            # build query
-	            if low:       
-	                query = query.filter(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) >= low, datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) <= up)
+            # do operator query or do range query
+            if iscompare:
+                # separate operator and value
+                value.strip()
+                try: ops,number = value.split()
+                except ValueError: 
+                    match = re.match(r"([<>=!]+)([0-9.]+)", value, re.I)
+                    if match:
+                        ops = match.groups()[0]
+                        number = match.groups()[1]    
+                op = opdict[ops]
+
+                # log mstar
+                if 'mstar' in key: number = str(np.power(10,float(number)))
+
+                # build query
+                query = query.filter(op(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]),number))
+            else:
+                # try splits on dash, comma, or space
+                try: low,up = value.split('-')
+                except ValueError:
+                   try: low,up = value.split(',')
+                   except ValueError:
+                       try: low,up = value.split()
+                       except ValueError: low,up = [None,None]
+
+                # log mstar
+                if 'mstar' in key: 
+                    if low: low = str(np.power(10,float(low)))
+                    if up: up = str(np.power(10,float(up)))
+
+                # build query
+                if low:       
+                    query = query.filter(datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) >= low, datadb.Sample.__table__.columns.__getitem__(cols[cols.index(key)]) <= up)
+
 	# MaNGA-ID
     if mangaid:
         query = query.filter(datadb.Cube.mangaid == mangaid)
@@ -495,7 +533,7 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
         num = len(ids)
         # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
         defaults = {int(key):val for key,val in current_session['defaultdict'].iteritems()}
-        query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
+        if not tableInQuery(query, 'fits_header'): query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
         target_filter = None
         for id in ids:
             if 'Primary' in defaults[id]: 
@@ -574,8 +612,9 @@ def getSQL():
     ''' Get the sql with the current form data '''
     
     session=db.Session
-    nsalist = makeNSAList()
+    nsalist,nsamagids = makeNSAList()
     flask.g.nsalist = nsalist
+    flask.g.nsamagids = nsamagids
     form = getFormParams()
     query = buildQuery(session,**form)
     sql = buildSQLString(**form)
@@ -670,7 +709,7 @@ def search():
         if cubes: 
             search['cubes'] = cubes 
             # build table needs
-            cubetable,displayCols = buildTable(cubes)
+            cubetable,displayCols = buildTable(cubes, query=query)
             search['cubetable'] = cubetable
             search['cols'] = displayCols
             search['keys'] = cubetable.keys()
