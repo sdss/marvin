@@ -142,7 +142,7 @@ def getDAPVersion():
     # DAP versions
     session = db.Session()    
     vers = session.query(datadb.PipelineVersion).join(datadb.PipelineInfo,datadb.PipelineName).\
-    filter(datadb.PipelineName.label=='DAP',datadb.PipelineVersion.version.like('%v%')).\
+    filter(datadb.PipelineName.label=='DAP',~datadb.PipelineVersion.version.like('%trunk%')).\
     order_by(datadb.PipelineVersion.version.desc()).all()
     versions = [v.version for v in vers]
     
@@ -240,6 +240,8 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, spe
     dapplotver = os.getenv('MANGADAPPLOT_VER') if 'MANGADAPPLOT_VER' in os.environ else dapver
 
     # build path
+    print('session versions', current_session['currentver'], current_session['currentdapver'])
+    print('form versions', drpver, dapver)
     print('dapplot', dapplotdir, dapverplotmode, dapplotver)
     redux = os.path.join(dapplotdir,dapverplotmode,dapplotver,str(plate),ifu,'plots')
     catdict = inspection.dapqaoptions['subfolder']
