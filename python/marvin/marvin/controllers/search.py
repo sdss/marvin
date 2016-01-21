@@ -531,7 +531,9 @@ def buildQuery(session=None, minplate=None, maxplate=None, minmjd=None, maxmjd=N
     if defaultids != 'any':
         ids = [int(d.split('def')[1]) for d in defaultids.split(',')]
         num = len(ids)
-        # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
+        # {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'} 
+        if 'defaultdict' not in current_session:
+            current_session['defaultdict'] = {1:'Primary',2:'Primary,color-enhanced',3:'Secondary',4:'Ancillary',5:'Stellar Library',6:'Flux Standard Stars'}
         defaults = {int(key):val for key,val in current_session['defaultdict'].iteritems()}
         if not tableInQuery(query, 'fits_header'): query = query.join(datadb.FitsHeaderValue,datadb.FitsHeaderKeyword)
         target_filter = None
