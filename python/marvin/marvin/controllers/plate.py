@@ -94,13 +94,20 @@ def getMapsFiles(plate=None,version=None, table=None):
 @plate_page.route('/marvin/downloadFiles', methods=['GET','POST'])
 def downloadFiles():
     ''' Builds an rsync command to download all specified files '''
-    
+
+    result = {'message':None}    
     plate = valueFromRequest(key='plate',request=request, default=None)
     id = valueFromRequest(key='id',request=request, default=None)
     table = valueFromRequest(key='table',request=request, default=None)
     version = valueFromRequest(key='version',request=request, default=None)
-    if not version: version = current_session['currentver']
-    result = {'message':None}
+    if not version:
+        try: 
+            version = current_session['currentver']
+        except KeyError as e:
+            result['message'] = 'KeyError getting rsync: {0}. Try refreshing your browser session'.format(e)
+            result['status'] = -1
+            return jsonify(result=result)
+
     print('stuff',plate,id,version)
     
     if table != 'null':
