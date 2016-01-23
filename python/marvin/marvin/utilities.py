@@ -228,7 +228,7 @@ def getImages(plate=None,version=None,ifuname=None):
 
     return images
  
-def getDAPPlotDir(drpver=None, dapver=None):
+def getDAPPlotDir(drpver=None, dapver=None, mode=True):
     ''' Returns the DAP map plot dir '''
 
     if not drpver: drpver = current_session['currentver']
@@ -239,10 +239,14 @@ def getDAPPlotDir(drpver=None, dapver=None):
     dapplotdir = os.getenv('MANGADAPPLOT_DIR') if 'MANGADAPPLOT_DIR' in os.environ else os.getenv('MANGA_SPECTRO_ANALYSIS')
     dapplotmode = os.getenv('MANGADAPPLOT_MODE') if 'MANGADAPPLOT_MODE' in os.environ else None
     dapverplotmode = '_'.join([drpver,dapplotmode]) if dapplotmode else drpver
-    
     dapplotver = os.getenv('MANGADAPPLOT_VER') if 'MANGADAPPLOT_VER' in os.environ else dapver
+
+    if not mode:
+        dapverplotmode = drpver
+        dapplotver = dapver
+        
     dapredux = os.path.join(dapplotdir,dapverplotmode,dapplotver)
-    
+
     return dapredux
 
 def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, specpaneltype,inspection, filter=True):
