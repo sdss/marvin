@@ -7,7 +7,7 @@ from flask import request, redirect,render_template, send_from_directory, curren
 from manga_utils import generalUtils as gu
 from collections import OrderedDict
 from ..model.database import db
-from ..utilities import processTableData, getImages, setGlobalSession, parseError, getPlate3dDir
+from ..utilities import processTableData, getImages, setGlobalSession, parseError, getPlate3dDir, getDAPPlotDir
 from comments import getComment
 from astropy.table import Table
 from sdss.manga import bundle
@@ -241,6 +241,17 @@ def getDefaultMapsFile(plate,ifu):
     mapsfile = os.path.join(os.getenv('SAS_URL'),'sas/mangawork/manga/sandbox/mangadap/MPL-4/default',str(plate),'mangadap-{0}-{1}-default.fits.gz'.format(plate,ifu))
     return mapsfile
 
+def getDAPMapLink(plate,ifu):
+    ''' temporary function to get the default DAP Maps Quick look html link '''
+
+    dapredux = getDAPPlotDir()
+    dappiece = dapredux.split('analysis/')[1] 
+    dapsas = os.path.join(os.getenv('SAS_URL'),os.getenv('SAS_ANALYSIS'),dappiece)
+    pltgrp = '{0}00'.format(str(plate)[:-2])
+    page = 'specind_{0}.html#{1}-{2}'.format(pltgrp,plate,ifu)
+    daplink = os.path.join(dapsas,'full/html',page)
+    return daplink
+
 def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None):
     ''' get an ifu from the plate page '''
 
@@ -277,6 +288,7 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
         ifudict[cube.ifu.name]['image']=images[0] if images else None
         ifudict[cube.ifu.name]['sample']=OrderedDict()
         ifudict[cube.ifu.name]['mapsfile'] = getDefaultMapsFile(plateid, ifuid)
+        ifudict[cube.ifu.name]['mapslink'] = getDAPMapLink(plateid, ifuid)
         hdr = json.loads(cube.hdr[0].header)         
         if cube.sample:
             try:
