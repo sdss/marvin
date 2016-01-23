@@ -228,9 +228,12 @@ def getImages(plate=None,version=None,ifuname=None):
 
     return images
  
-def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, specpaneltype,inspection, filter=True):
-    ''' grab all the DAP PNG analysis plots '''
-    
+def getDAPPlotDir(drpver=None, dapver=None):
+    ''' Returns the DAP map plot dir '''
+
+    if not drpver: drpver = current_session['currentver']
+    if not dapver: dapver = current_session['currentdapver']
+
     # module mangadapplot (if loaded) allows for DAP QA plots outside of MANGA_SPECTRO_ANALYSIS/drpver/dapver
     # Divert away from MANGA_SPECTRO_ANALYSIS and dapver if mangadapplot loaded
     dapplotdir = os.getenv('MANGADAPPLOT_DIR') if 'MANGADAPPLOT_DIR' in os.environ else os.getenv('MANGA_SPECTRO_ANALYSIS')
@@ -238,12 +241,19 @@ def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, spe
     dapverplotmode = '_'.join([drpver,dapplotmode]) if dapplotmode else drpver
     
     dapplotver = os.getenv('MANGADAPPLOT_VER') if 'MANGADAPPLOT_VER' in os.environ else dapver
+    dapredux = os.path.join(dapplotdir,dapverplotmode,dapplotver)
+    
+    return dapredux
 
+def getDAPImages(plate, ifu, drpver, dapver, catkey, mode, bintype, maptype, specpaneltype,inspection, filter=True):
+    ''' grab all the DAP PNG analysis plots '''
+    
     # build path
-    print('session versions', current_session['currentver'], current_session['currentdapver'])
-    print('form versions', drpver, dapver)
-    print('dapplot', dapplotdir, dapverplotmode, dapplotver)
-    redux = os.path.join(dapplotdir,dapverplotmode,dapplotver,str(plate),ifu,'plots')
+    dapredux = getDAPPlotDir(drpver=drpver,dapver=dapver)
+    #print('session versions', current_session['currentver'], current_session['currentdapver'])
+    #print('form versions', drpver, dapver)
+    #print('dapplot', dapplotdir, dapverplotmode, dapplotver)
+    redux = os.path.join(dapredux,str(plate),ifu,'plots')
     catdict = inspection.dapqaoptions['subfolder']
 
     # build sas path
