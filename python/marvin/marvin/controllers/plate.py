@@ -244,7 +244,7 @@ def getDefaultMapsFile(plate,ifu):
 def getDAPMapLink(plate,ifu):
     ''' temporary function to get the default DAP Maps Quick look html link '''
 
-    dapredux = getDAPPlotDir()
+    dapredux = getDAPPlotDir(mode=False)
     dappiece = dapredux.split('analysis/')[1] 
     dapsas = os.path.join(os.getenv('SAS_URL'),os.getenv('SAS_ANALYSIS'),dappiece)
     pltgrp = '{0}00'.format(str(plate)[:-2])
