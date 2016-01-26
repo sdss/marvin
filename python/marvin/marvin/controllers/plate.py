@@ -168,13 +168,13 @@ def downloadFiles():
                 return jsonify(result=result)            
 
             if stagedir:
-                dirpath = os.path.join(rsyncpath,sasredux,stagedir)
+                dirpath = os.path.join(rsyncpath,sasredux,stagedir,'')
                 direxists = os.path.isdir(redux)
                 if direxists:
                     if 'stack' in stagedir:
-                        rsync_command = 'rsync -avz --progress --include "*{0}*fits*" {1} {2}'.format(id.upper(), dirpath, localpath)
+                        rsync_command = 'rsync -avz --progress --include "*LOG{0}*fits*" --exclude "*" {1} {2}'.format(id.upper(), dirpath, localpath)
                     elif 'mastar' in stagedir:
-                        rsync_command = 'rsync -avz --progress --include "mastar*fits*" {0} {1}'.format(dirpath, localpath)
+                        rsync_command = 'rsync -avz --progress --include "mastar*fits*" --exclude "*" {0} {1}'.format(dirpath, localpath)
                     else:
                         rsync_command = None 
                     result['command'] = rsync_command if rsync_command else None
@@ -308,6 +308,9 @@ def getifu(plateid=None, ifuid=None, mangaid=None, version=None, dapversion=None
                         if cube.sample[0].__getattribute__(col): ifudict[cube.ifu.name]['sample'][col] = cube.sample[0].__getattribute__(col)
                         else:
                             ifudict[cube.ifu.name]['sample'][col] = hdr[''.join(col.upper().split('_'))]
+                    elif 'mstar' in col:
+                        newcol = 'nsa_logmstar_el' if 'el' in col else 'nsa_logmstar'
+                        ifudict[cube.ifu.name]['sample'][newcol] = cube.sample[0].__getattribute__(newcol)
                     else:                         
                         ifudict[cube.ifu.name]['sample'][col] = cube.sample[0].__getattribute__(col)
             except:
