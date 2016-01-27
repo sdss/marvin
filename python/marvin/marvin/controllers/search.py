@@ -758,9 +758,13 @@ def search():
                 f.close()
                 os.remove(filepath)
 
-                search['upfile_status'] = 1
-                cubedict = buildTableFromFile(session,type,data)
-                search.update(cubedict)                
+                if len(data) == 1:
+                    search['upfile_status'] = -1
+                    search['upfile_message'] = 'Input is on single line. Please put 1 entry per line in file.'
+                else:    
+                    search['upfile_status'] = 1
+                    cubedict = buildTableFromFile(session,type,data)
+                    search.update(cubedict)                
             else:
                 search['upfile_status'] = -1
                 search['upfile_message'] = 'Could not open specified file {0}'.format(filepath) 
