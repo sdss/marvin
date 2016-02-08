@@ -1,3 +1,0 @@
-
-QUnit.module('Explore Module');
-
