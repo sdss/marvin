@@ -1,1 +1,4 @@
 * text=auto !eol
+python/marvin/__init__.py -text
+python/marvin/api/__init__.py -text
+python/marvin/tools/__init__.py -text
