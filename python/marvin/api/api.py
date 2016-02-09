@@ -22,7 +22,7 @@ class API(object):
             self.results = {'http status code':response.status_code,'message':errmsg}
     
     def getCube(self,mangaid=None):
-        self.url = 'http://localhost:5000/api/cubes/{0}/'.format(mangaid) if mangaid else None
+        self.url = 'http://5aafb8e.ngrok.com/api/cubes/{0}/'.format(mangaid) if mangaid else None
         #self.url = os.path.join(self.sasurl, 'api/mangaids/{0}'.format(mangaid)) if mangaid else None
         #self.params = {'getver':version} if version else None
 

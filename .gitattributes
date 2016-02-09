@@ -3,6 +3,7 @@ bin/run_marvin -text
 python/marvin/__init__.py -text
 python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
+python/marvin/api/cube.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/tools/__init__.py -text
