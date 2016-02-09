@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% set active_page = active_page|default("index") %}
+
+
+<html lang="en">
+
+<head>
+	{# include css files #}
+	<meta charset="UTF-8">
+	<title>{{title}}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+	{% block head %}{% endblock head %}
+	
+	{# include js files #}
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.17/jquery.actual.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+	{% block code %}{% endblock code %}	
+</head>
+
+<body>
+
+
+<div class="container-fluid" id="content">
+	{% block body %}{% endblock body %}
+</div>
+
+
+</body>
+</html>
+
