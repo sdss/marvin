@@ -11,7 +11,7 @@ class CubeView(FlaskView):
         cube = Cube(mangaid=mangaid)
         return 'cube-mangaid: {0},{1},{2}'.format(mangaid,cube.ra,cube.dec)
 
-    @route('/<mangaid>/spectra/x=<x>/y=<y>/')
+    @route('/<mangaid>/spectra/x=<x>/y=<y>/',endpoint='getspectra')
     def getSpectra(self,mangaid=None,x=None,y=None):
         cube = Cube(mangaid=mangaid)
         spectrum = cube.getSpectrum(15,15)
