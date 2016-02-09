@@ -25,4 +25,3 @@ class Marvin(FlaskView):
 
 Marvin.register(index_page)
 
-
