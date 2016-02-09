@@ -10,7 +10,9 @@ class Marvin(FlaskView):
         index = {}
         index['title'] = 'Marvin'
         index['intro'] = 'Welcome to Marvin'
-        index['cube'] = Cube(mangaid='12-84660')
+        cube = Cube(mangaid='12-193534')
+        index['cube'] = cube
+        index['spectra'] = cube.getSpectrum(1,2)
         return render_template("index.html", **index)
 
     def quote(self):
