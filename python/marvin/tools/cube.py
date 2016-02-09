@@ -1,5 +1,5 @@
 
-import requests
+import requests,json
 from marvin import config
 
 class Cube(object):
@@ -41,7 +41,7 @@ class Cube(object):
         else:
             ''' local (client) has nothing '''
             response = requests.get('http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y))
-            return response.text
+            return json.load(response.json())
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
