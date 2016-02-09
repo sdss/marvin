@@ -33,7 +33,7 @@ class Cube(Resource):
         shape = self.flux.shape
         assert len(shape)==3, 'Dimensions of flux not = 3'
         assert x < shape[2] and y < shape[1], 'Input x,y coordinates greater than flux dimensions'
-        return spectrum.flux[:,y,x]
+        return self.flux[:,y,x]
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
