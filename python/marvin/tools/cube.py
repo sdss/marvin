@@ -18,6 +18,7 @@ class Cube(object):
             self.hdu = None
         # Get by mangaid
         if self.mangaid:
+            # fix this
             try:
                 config.mode='db'
                 self._getCubeFromMangaID()
@@ -39,9 +40,7 @@ class Cube(object):
             return self._cube.spaxels[0].flux
         else:
             ''' local (client) has nothing '''
-            response = requests.get(
-                'http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'
-                .format(self.mangaid, x, y))
+            response = requests.get('http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y))
             return response.text
 
     def _openFile(self):
