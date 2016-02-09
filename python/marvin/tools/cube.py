@@ -27,13 +27,13 @@ class Cube(Resource):
         pass
 
     def getSpectrum(self, x, y):
-        #spectrum = Spectrum(x,y)
         ''' currently: x,y array indices 
         ideally: x,y in arcsecond relative to cube center '''
+        #spectrum = Spectrum(x,y)
         shape = self.flux.shape
         assert len(shape)==3, 'Dimensions of flux not = 3'
         assert x < shape[2] and y < shape[1], 'Input x,y coordinates greater than flux dimensions'
-        return self.flux[:,y,x]
+        return spectrum.flux[:,y,x]
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
@@ -50,10 +50,16 @@ class Cube(Resource):
 
 #@api.resource('cube/<mangaid>/spectrum/<specid>')
 class Spectrum(Resource):
-    def get:
+    def __init__(self, x=None,y=None):
         pass
-    def post:
+
+    def get(self):
         pass
+
+    def post(self):
+        pass
+
+
 
 
 
