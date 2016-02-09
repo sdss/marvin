@@ -1,4 +1,7 @@
 * text=auto !eol
 python/marvin/__init__.py -text
 python/marvin/api/__init__.py -text
+python/marvin/db/__init__.py -text
 python/marvin/tools/__init__.py -text
+python/marvin/tools/cube.py -text
+python/marvin/tools/tests/test_Cube.py -text
