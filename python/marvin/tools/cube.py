@@ -33,7 +33,7 @@ class Cube(Resource):
         pass
 
     def getSpectrum(self, x, y):
-        ''' currently: x,y array indices 
+        ''' currently: x,y array indices
         ideally: x,y in arcsecond relative to cube center '''
         #spectrum = Spectrum(x,y)
         shape = self.flux.shape
@@ -63,6 +63,8 @@ class Cube(Resource):
 """
 
 
+import requests
+
 class Cube(object):
 
     def __init__(self,filename=None,mangaid=None,plateifu=None):
@@ -83,7 +85,7 @@ class Cube(object):
             self._getCubeFromMangaID()
 
     def getSpectrum(self, x, y):
-        ''' currently: x,y array indices 
+        ''' currently: x,y array indices
         ideally: x,y in arcsecond relative to cube center '''
         #spectrum = Spectrum(x,y)
         if self.mode == 'file':
@@ -94,7 +96,9 @@ class Cube(object):
         elif self.mode == 'db':
             return self._cube.spaxels[0].flux
         else:
-            pass
+            return requests.get(
+                'http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}'
+                .format(self.mangaid, x, y))
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
@@ -117,6 +121,3 @@ class Cube(object):
         self.ra = self._cube.ra
         self.dec = self._cube.dec
         self.plate = self._cube.plate
-
-
-

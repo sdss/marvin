@@ -1,5 +1,5 @@
 from flask.ext.classy import FlaskView, route
-from marvin.tools.cube import Cube 
+from marvin.tools.cube import Cube
 
 class CubeView(FlaskView):
     route_base='/cubes/'
