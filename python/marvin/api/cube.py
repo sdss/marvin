@@ -15,4 +15,5 @@ class CubeView(FlaskView):
     def getSpectra(self,mangaid=None,x=None,y=None):
         cube = Cube(mangaid=mangaid)
         spectrum = cube.getSpectrum(15,15)
-        return 'spectrum: {0},{1} for mangaid {2},{3}'.format(x,y,mangaid,spectrum)
+        return {'spectrum': 'spectrum: {0},{1} for mangaid {2},{3}'
+                .format(x, y, mangaid, spectrum)}

@@ -81,8 +81,11 @@ class Cube(object):
             self.hdu = None
         # Get by mangaid
         if self.mangaid:
-            self.mode='db'
-            self._getCubeFromMangaID()
+            try:
+                self.mode='db'
+                self._getCubeFromMangaID()
+            except:
+                self.mode = None
 
     def getSpectrum(self, x, y):
         ''' currently: x,y array indices
@@ -96,9 +99,10 @@ class Cube(object):
         elif self.mode == 'db':
             return self._cube.spaxels[0].flux
         else:
-            return requests.get(
-                'http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}'
+            response = requests.get(
+                'http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'
                 .format(self.mangaid, x, y))
+            return response.text
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
