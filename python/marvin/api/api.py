@@ -1,5 +1,5 @@
 from __future__ import print_function
-import requests,os, psutil, json
+import requests, os, psutil, json
 from marvin import config
 
 class Interaction(object):
@@ -19,8 +19,6 @@ class Interaction(object):
             except Exception as e:
                 self.results = response.text
                 raise('Response not in JSON format. {0} {1}'.format(e, self.results))
-            else:
-                self.results = json.load(self.results)
         else:
             errmsg = 'Error accessing {0}: {1}'.format(response.url, self.statuscodes[response.status_code])
             self.results = {'http status code':response.status_code,'message':errmsg}
