@@ -1,6 +1,7 @@
 
 import requests,json
 from marvin import config
+from marvin.api.api import Interaction
 
 class Cube(object):
 
@@ -40,8 +41,11 @@ class Cube(object):
             return self._cube.spaxels[0].flux
         else:
             ''' local (client) has nothing '''
-            response = requests.get('http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y))
-            return json.load(response.json())
+            route = 'cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y)
+            results = Interaction(route, request_type='get')
+            return results.getData(astype=np.array)
+            # response = requests.get('http://5aafb8e.ngrok.com/cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y))
+            # return json.load(response.json())
 
     def _openFile(self):
         self.hdu = fits.open(self.filename)
