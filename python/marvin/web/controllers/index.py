@@ -5,7 +5,7 @@ from marvin.tools.cube import Cube
 index = Blueprint("index_page", __name__)
 
 class Marvin(FlaskView):
-
+    
     def index(self):
         index = {}
         index['title'] = 'Marvin'
