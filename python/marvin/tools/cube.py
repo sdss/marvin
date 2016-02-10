@@ -1,4 +1,3 @@
-
 import requests,json
 from marvin import config
 from marvin.api.api import Interaction
@@ -19,11 +18,12 @@ class Cube(object):
             self.hdu = None
         # Get by mangaid
         if self.mangaid:
-            # fix this
+            # FIX THIS
             try:
                 config.mode='db'
                 self._getCubeFromMangaID()
             except:
+                # api?
                 config.mode = None
 
     def getSpectrum(self, x, y):
