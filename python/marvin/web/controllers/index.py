@@ -2,7 +2,7 @@ from flask import current_app, Blueprint, render_template
 from flask.ext.classy import FlaskView, route
 from marvin.tools.cube import Cube
 
-index_page = Blueprint("index_page", __name__)
+index = Blueprint("index_page", __name__)
 
 class Marvin(FlaskView):
 
@@ -25,5 +25,5 @@ class Marvin(FlaskView):
     def test(self):
         return 'new test'
 
-Marvin.register(index_page)
+Marvin.register(index)
 
