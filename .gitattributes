@@ -10,7 +10,7 @@ python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
-python/marvin/tools/tests/test_Cube.py -text
+python/marvin/tools/tests/test_cube.py -text
 python/marvin/web/__init__.py -text
 python/marvin/web/controllers/__init__.py -text
 python/marvin/web/controllers/index.py -text
