@@ -5,7 +5,7 @@ import json
 
 ''' stuff that runs server-side '''
 
-api = Blueprint("api", __name__, url_prefix='/apitest/')
+api = Blueprint("api", __name__)
 
 
 class CubeView(FlaskView):
