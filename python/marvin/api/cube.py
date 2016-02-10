@@ -3,24 +3,25 @@ from flask import Blueprint
 from marvin.tools.cube import Cube
 import json
 
-''' stuff that runs server-side ''' 
+''' stuff that runs server-side '''
 
-api = Blueprint("api", __name__,url_prefix='/apitest/')
+api = Blueprint("api", __name__, url_prefix='/apitest/')
+
 
 class CubeView(FlaskView):
-    route_base='/cubes/'
+    route_base = '/cubes/'
 
     def index(self):
         return 'cube'
 
-    def get(self,mangaid):
+    def get(self, mangaid):
         cube = Cube(mangaid=mangaid)
-        return json.dumps({mangaid: '{0},{1},{2}'.format(mangaid,cube.ra,cube.dec)})
+        return json.dumps({mangaid: '{0},{1},{2}'.format(mangaid, cube.ra, cube.dec)})
 
     @route('/<mangaid>/spectra/x=<x>/y=<y>/')
-    def getSpectra(self,mangaid=None,x=None,y=None):
+    def getSpectra(self, mangaid=None, x=None, y=None):
         cube = Cube(mangaid=mangaid)
-        spectrum = cube.getSpectrum(15,15)
-        return json.dumps({'data':spectrum})
+        spectrum = cube.getSpectrum(15, 15)
+        return json.dumps({'data': spectrum})
 
 CubeView.register(api)
