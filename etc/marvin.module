@@ -1,0 +1,85 @@
+#%Module1.0
+# The first line of this file tells Modules that this is a module file.
+# DO NOT ALTER IT!
+#
+# ABOUT THIS FILE
+#
+# This file is designed to be processed by Python.  Specifically, this file
+# will be read into a string, and the .format() method will be applied to it.
+# This file is not a valid module file on its own.
+#
+# METADATA AND DOCUMENTATION SECTION
+#
+# This function is part of the Modules help system.  You can modify
+# the second line if needed, but most products should
+# leave this alone.
+#
+proc ModulesHelp {{ }} {{
+    global product version
+    puts stderr "This module adds $product/$version to your environment."
+}}
+#
+# These variables are used below.  The product variable should be set to
+# the name of the product and never changed.  The version variable will
+# be set at install time, so it should be left alone.  The conflict line
+# prevents multiple versions from being loaded simultaneously.  Do not
+# change it.
+#
+set product {name}
+set version {version}
+set inspection_version trunk
+# conflict $product
+#
+# The line below is another part of the Modules help system.  You can
+# modify the part in quotes if you really need to, but most products should
+# leave this alone.
+#
+module-whatis "Sets up $product/$version in your environment."
+#
+# DEPENDENCIES SECTION
+#
+# If your product requires other software to function, that should be declared
+# here.  There are two types of dependencies: mandatory and optional.
+# A mandatory dependency is a module load command followed by a prereq
+# command.  An optional dependency is not followed by a prereq statement.
+#
+#module load sdss4tools
+#prereq sdss4tools
+#
+# ENVIRONMENT SECTION
+#
+# The PRODUCT_ROOT and PRODUCT_DIR variables are used to set other
+# environment variables, exported to the actual environment, by sdss4install
+#
+set PRODUCT_ROOT {root}
+set PRODUCT_DIR $PRODUCT_ROOT/$product/$version
+#
+# This line creates an environment variable pointing to the install
+# directory of your product.
+#
+setenv [string toupper $product]_DIR $PRODUCT_DIR
+#
+# The lines below set various other environment variables.  They assume the
+# template product layout.  These will be set or commented as needed by the
+# sdss4install script.
+#
+{needs_bin}prepend-path PATH $PRODUCT_DIR/bin
+{needs_python}prepend-path PYTHONPATH $PRODUCT_DIR/lib/{pyversion}/site-packages
+{needs_trunk_python}prepend-path PYTHONPATH $PRODUCT_DIR/python/$product
+{needs_ld_lib}prepend-path LD_LIBRARY_PATH $PRODUCT_DIR/lib
+{needs_idl}prepend-path IDL_PATH +$PRODUCT_DIR/pro
+#
+# Add any non-standard Module code below this point.
+#
+module unload sdss_python_module
+module load sdss_python_module/briandev
+prereq sdss_python_module/briandev
+module load inspection/$inspection_version
+
+setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
+setenv SAS_URL                                  https://sas.sdss.org
+setenv TRAC_URL                                 https://trac.sdss.org
+
+
+
+
