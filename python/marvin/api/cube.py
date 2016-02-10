@@ -1,8 +1,11 @@
 from flask.ext.classy import FlaskView, route
+from flask import Blueprint
 from marvin.tools.cube import Cube
 import json
 
 ''' stuff that runs server-side ''' 
+
+api = Blueprint("api", __name__,url_prefix='/apitest/')
 
 class CubeView(FlaskView):
     route_base='/cubes/'
@@ -19,3 +22,5 @@ class CubeView(FlaskView):
         cube = Cube(mangaid=mangaid)
         spectrum = cube.getSpectrum(15,15)
         return json.dumps({'data':spectrum})
+
+CubeView.register(api)
