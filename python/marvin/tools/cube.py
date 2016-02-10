@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from astropy.io import fits
 from marvin import config
@@ -8,7 +9,6 @@ class Cube(object):
 
     def __init__(self, filename=None, mangaid=None, plateifu=None):
         assert filename is not None or mangaid is not None or plateifu is not None, 'Either filename, mangaid, or plateifu is required!'
-        print('init', mangaid)
         config.mode = None
         self.filename = filename
         self.mangaid = mangaid
