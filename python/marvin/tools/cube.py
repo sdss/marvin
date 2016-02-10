@@ -1,19 +1,20 @@
 import numpy as np
-import requests, json
+from astropy.io import fits
 from marvin import config
 from marvin.api.api import Interaction
 
+
 class Cube(object):
 
-    def __init__(self,filename=None,mangaid=None,plateifu=None):
+    def __init__(self, filename=None, mangaid=None, plateifu=None):
         assert filename is not None or mangaid is not None or plateifu is not None, 'Either filename, mangaid, or plateifu is required!'
-        print('init',mangaid)
+        print('init', mangaid)
         config.mode = None
         self.filename = filename
         self.mangaid = mangaid
         # Get by filename
         if self.filename:
-            config.mode='file'
+            config.mode = 'file'
             self._openFile()
         else:
             self.hdu = None
@@ -21,7 +22,7 @@ class Cube(object):
         if self.mangaid:
             # FIX THIS
             try:
-                config.mode='db'
+                config.mode = 'db'
                 self._getCubeFromMangaID()
             except:
                 # api?
@@ -30,13 +31,13 @@ class Cube(object):
     def getSpectrum(self, x, y):
         ''' currently: x,y array indices
         ideally: x,y in arcsecond relative to cube center '''
-        #spectrum = Spectrum(x,y)
+        # spectrum = Spectrum(x,y)
         if config.mode == 'file':
             ''' local (client has a file) '''
             shape = self.flux.shape
-            assert len(shape)==3, 'Dimensions of flux not = 3'
+            assert len(shape) == 3, 'Dimensions of flux not = 3'
             assert x < shape[2] and y < shape[1], 'Input x,y coordinates greater than flux dimensions'
-            return self.flux[:,y,x]
+            return self.flux[:, y, x]
         elif config.mode == 'db':
             ''' db means local (client) has db '''
             return self._cube.spaxels[0].flux
@@ -51,9 +52,9 @@ class Cube(object):
 
     @property
     def flux(self):
-        if config.mode=='file':
+        if config.mode == 'file':
             return self.hdu['FLUX'].data
-        if config.mode=='db':
+        if config.mode == 'db':
             return None
 
     def _getCubeFromMangaID(self):
@@ -61,8 +62,8 @@ class Cube(object):
         from ..db.database import db
         import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
         session = db.Session()
-        self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo,datadb.PipelineVersion).filter(datadb.PipelineVersion.version=='trunk',datadb.Cube.mangaid==self.mangaid).first()
-        print('cube',self._cube, len(self._cube.spaxels))
+        self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == 'trunk', datadb.Cube.mangaid == self.mangaid).first()
+        print('cube', self._cube, len(self._cube.spaxels))
         self.ifu = self._cube.ifu.name
         self.ra = self._cube.ra
         self.dec = self._cube.dec
