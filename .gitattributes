@@ -1,5 +1,7 @@
 * text=auto !eol
 bin/run_marvin -text
+etc/config.ini -text
+etc/marvin.module -text
 python/marvin/__init__.py -text
 python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
