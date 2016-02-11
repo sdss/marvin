@@ -35,12 +35,12 @@ class TestCube(unittest.TestCase):
 
     def test_local_cube_load_by_filename_fail(self):
         self.filename = 'not_a_filename.fits'
-        # errMsg = Exception('{0} does not exist. Please provide full file path.'.format(self.filename))
-        with self.assertRaises(AssertionError) as cm:
-            cube = Cube(filename=self.filename)
-        print('here')
-        print(cm.exception)
-        self.assertEqual(FileNotFoundError, cm.exception)
+        # try to catch FileNotFoundError instead of Exception
+        self.assertRaises(Exception, lambda: Cube(filename=self.filename))
+        errMsg = '{0} does not exist. Please provide full file path.'.format(self.filename)
+        with self.assertRaises(Exception) as cm:
+            Cube(filename=self.filename)
+        self.assertEqual(errMsg, str(cm.exception))
 
 
 
