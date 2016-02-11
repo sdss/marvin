@@ -11,7 +11,11 @@ class TestCube(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.outver = 'v1_5_1'
-        cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), cls.outver, '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+        cls.filename = os.path.join(
+            os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
+            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+
+        cls.cubeFromFile = Cube(filename=cls.filename)
 
     @classmethod
     def tearDownClass(cls):
@@ -42,8 +46,56 @@ class TestCube(unittest.TestCase):
             Cube(filename=self.filename)
         self.assertEqual(errMsg, str(cm.exception))
 
+    def _test_getSpectrum(self, cube, idx, expect, **kwargs):
 
+        spectrum = cube.getSpectrum(**kwargs)
+        self.assertAlmostEqual(spectrum[idx], expect, places=5)
 
+    def _test_getSpectrum_raise_exception(self, message,
+                                          excType=AssertionError, **kwargs):
+
+        with self.assertRaises(excType) as ee:
+            self.cubeFromFile.getSpectrum(**kwargs)
+
+        self.assertIn(message, str(ee.exception))
+
+    def test_getSpectrum_inputs(self):
+
+        self._test_getSpectrum_raise_exception(
+            'Either use (x, y) or (ra, dec)', x=1, ra=1)
+
+        self._test_getSpectrum_raise_exception(
+            'Either use (x, y) or (ra, dec)', x=1, dec=1, ra=1)
+
+        self._test_getSpectrum_raise_exception('Specify both x and y', x=1)
+
+        self._test_getSpectrum_raise_exception('Specify both ra and dec', ra=1)
+
+        self._test_getSpectrum_raise_exception(
+            'You need to specify either (x, y) or (ra, dec)',
+            excType=ValueError)
+
+    def test_getSpectrum_outside_cube(self):
+
+        for xTest, yTest in [(-50, 1), (50, 1), (1, -50), (1, 50)]:
+            self._test_getSpectrum_raise_exception(
+                'pixel coordinates outside cube', x=xTest, y=yTest)
+
+        for raTest, decTest in [(1., 1.), (100, 60),
+                                (232.546383, 1.), (1., 48.6883954)]:
+            self._test_getSpectrum_raise_exception(
+                'pixel coordinates outside cube', ra=raTest, dec=decTest)
+
+    def test_getSpectrum_file_flux_x_y(self):
+        # TODO: check that the expected value is correct.
+        expect = -0.10531016
+        self._test_getSpectrum(self.cubeFromFile, 10, expect, x=10, y=5)
+
+    def test_getSpectrum_file_flux_ra_dec(self):
+        # TODO: check that the expected value is correct.
+        expect = 0.017929086
+        self._test_getSpectrum(self.cubeFromFile, 3000, expect,
+                               ra=232.546383, dec=48.6883954)
 
     # def _getSpectrum_fail(self, x, y, errMsg):
     #     cube = Cube(filename=self.filename)
