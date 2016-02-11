@@ -128,7 +128,6 @@ class Cube(object):
         #     return results.getData(astype=np.array)
 
     def _openFile(self):
-<<<<<<< HEAD
 
         if not os.path.exists(self.filename):
             raise ValueError('filename {0} cannot be found'
@@ -136,12 +135,6 @@ class Cube(object):
 
         self._hdu = fits.open(self.filename)
         self.useDB = False
-=======
-        try:
-            self.hdu = fits.open(self.filename)
-        except FileNotFoundError as e:
-            raise Exception('{0} does not exist. Please provide full file path.'.format(self.filename)) from e
->>>>>>> 82d26d21c873b476e37be7ff65d61a256a835278
 
     @property
     def flux(self):
