@@ -1,5 +1,6 @@
 from __future__ import print_function
 import numpy as np
+import os
 from astropy.io import fits
 from astropy import wcs
 from marvin import config
@@ -45,7 +46,7 @@ class Cube(object):
                             # self._openFile()
                             pass
                         else:
-                            raise Exception('File does not exist locally') from e
+                            raise Exception('File does not exist locally')
         elif config.mode == 'remote':
             if self.filename:
                 raise FileNotFoundError('Cannot open file remotely.')
@@ -101,7 +102,7 @@ class Cube(object):
 
             cubeShape = cubeExt.shape
 
-            yMid, xMid = cubeShape[1:] / 2.
+            yMid, xMid = np.array(cubeShape[1:]) / 2.
             xCube = int(xMid + x)
             yCube = int(yMid - y)
 
