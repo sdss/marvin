@@ -1,6 +1,7 @@
 from __future__ import print_function
 import numpy as np
 from astropy.io import fits
+from astropy import wcs
 from marvin import config
 from marvin.api.api import Interaction
 
@@ -16,6 +17,8 @@ class Cube(object):
         self.filename = filename
         self.mangaid = mangaid
         self.plateifu = plateifu
+
+        self.useDB = None
 
         # convert from mangaid to plateifu
         # print warning if multiple plateifus correspond to one mangaid
@@ -50,36 +53,94 @@ class Cube(object):
                 # use API
                 pass
 
-    def getSpectrum(self, x, y):
-        ''' currently: x,y array indices
-        ideally: x,y in arcsecond relative to cube center '''
-        # spectrum = Spectrum(x,y)
-        if config.mode == 'file':
-            ''' local (client has a file) '''
-            shape = self.flux.shape
-            assert len(shape) == 3, 'Dimensions of flux not = 3'
-            assert x < shape[2] and y < shape[1], 'Input x,y coordinates greater than flux dimensions'
-            return self.flux[:, y, x]
-        elif config.mode == 'db':
-            ''' db means local (client) has db '''
-            return self._cube.spaxels[0].flux
+    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
+        """Returns the flux spectrum for an spaxel.
+
+        Parameters
+        ----------
+        x, y : int
+            The spaxel coordinates relative to the centre of the cube.
+
+        ra, dec : float
+            The coordinates of the spaxel to return. The closest spaxel to
+            those coordinates will be returned.
+
+        ext : str
+            The extension of the cube to use, either `'flux'`, `'ivar'`, or
+            `'mask'`.
+
+        Returns
+        -------
+        result : np.array
+            An array with the spectrum for the input coordinates.
+
+        """
+
+        # Checks that we have the correct set of inputs.
+        if x or y:
+            assert not ra and not dec, 'Either use (x, y) or (ra, dec)'
+            assert x and y, 'Specify both x and y'
+            inputMode = 'pix'
+        elif ra or dec:
+            assert not x and not y, 'Either use (x, y) or (ra, dec)'
+            assert ra and dec, 'Specify both ra and dec'
+            inputMode = 'sky'
         else:
-            ''' local (client) has nothing '''
-            route = 'cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y)
-            results = Interaction(route, request_type='get')
-            return results.getData(astype=np.array)
+            raise ValueError('You need to specify (x, y) or (ra, dec)')
+
+        assert isinstance(ext, basestring)
+        ext = ext.lower()
+        assert ext in ['flux', 'ivar', 'mask'], \
+            'ext needs to be either \'flux\', \'ivar\', or \'mask\''
+
+        if not self.useDB:
+            cubeExt = self._hdu[ext.upper()]
+            if inputMode == 'sky':
+                cubeWCS = wcs.WCS(cubeExt.header)
+                x, y = cubeWCS.wcs_sky2pix([ra, dec], 1)
+
+            cubeShape = cubeExt.shape
+            # TODO: assert that pix coordinates are in cube
+            yMid, xMid = cubeShape[1:] / 2.
+            return cubeExt.data[:, yMid - y, xMid + x]
+
+        else:
+
+            raise NotImplementedError(
+                'getSpectrum from DB not yet implemented')
+
+        # ''' currently: x,y array indices
+        # ideally: x,y in arcsecond relative to cube center '''
+        # # spectrum = Spectrum(x,y)
+        # if config.mode == 'file':
+        #     ''' local (client has a file) '''
+        #     shape = self.flux.shape
+        #     assert len(shape) == 3, 'Dimensions of flux not = 3'
+        #     assert x < shape[2] and y < shape[1], 'Input x,y coordinates greater than flux dimensions'
+        #     return self.flux[:, y, x]
+        # elif config.mode == 'db':
+        #     ''' db means local (client) has db '''
+        #     return self._cube.spaxels[0].flux
+        # else:
+        #     ''' local (client) has nothing '''
+        #     route = 'cubes/{0}/spectra/x={1}/y={2}/'.format(self.mangaid, x, y)
+        #     results = Interaction(route, request_type='get')
+        #     return results.getData(astype=np.array)
 
     def _openFile(self):
-        try:
-            self.hdu = fits.open(self.filename)
-        except FileNotFoundError as e:
-            raise # Exception('{0} does not exist. Please provide full file path.'.format(self.filename)) from e
+
+        if not os.path.exists(self.filename):
+            raise ValueError('filename {0} cannot be found'
+                             .format(self.filename))
+
+        self._hdu = fits.open(self.filename)
+        self.useDB = False
 
     @property
     def flux(self):
-        if config.mode == 'file':
-            return self.hdu['FLUX'].data
-        if config.mode == 'db':
+        if not self.useDB:
+            return self._hdu['FLUX'].data
+        else:
             return None
 
     # Switch to _getCubeFromPlateIFU
