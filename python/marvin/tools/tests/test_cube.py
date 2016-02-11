@@ -14,6 +14,7 @@ class TestCube(unittest.TestCase):
         cls.filename = os.path.join(
             os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
             '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+        cls.mangaid = '1-209232'
 
         cls.cubeFromFile = Cube(filename=cls.filename)
 
@@ -29,22 +30,30 @@ class TestCube(unittest.TestCase):
 
     def test_cube_loadfail(self):
         with self.assertRaises(AssertionError) as cm:
-            cube = Cube()
+            Cube()
         self.assertIn('Enter filename, plateifu, or mangaid!', str(cm.exception))
 
-    def test_local_cube_load_by_filename_success(self):
+    def test_cube_load_from_local_file_by_filename_success(self):
         cube = Cube(filename=self.filename)
         self.assertIsNotNone(cube)
         self.assertEqual(self.filename, cube.filename)
 
-    def test_local_cube_load_by_filename_fail(self):
+    def test_cube_load_from_local_file_by_filename_fail(self):
         self.filename = 'not_a_filename.fits'
-        # try to catch FileNotFoundError instead of Exception
-        self.assertRaises(Exception, lambda: Cube(filename=self.filename))
-        errMsg = '{0} does not exist. Please provide full file path.'.format(self.filename)
-        with self.assertRaises(Exception) as cm:
-            Cube(filename=self.filename)
-        self.assertEqual(errMsg, str(cm.exception))
+        self.assertRaises(FileNotFoundError, lambda: Cube(filename=self.filename))
+        # errMsg = '{0} does not exist. Please provide full file path.'.format(self.filename)
+        # with self.assertRaises(FileNotFoundError) as cm:
+        #     Cube(filename=self.filename)
+        # self.assertIn(errMsg, cm.exception.args)
+
+    def test_cube_load_from_local_database_success(self):
+        """does not work yet"""
+        cube = Cube(mangaid=self.mangaid)
+        self.assertIsNotNone(cube)
+        self.assertEqual(self.mangaid, cube.mangaid)
+
+        spectrum = cube.getSpectrum(**kwargs)
+        self.assertAlmostEqual(spectrum[idx], expect, places=5)
 
     def _test_getSpectrum(self, cube, idx, expect, **kwargs):
 
@@ -97,23 +106,23 @@ class TestCube(unittest.TestCase):
         self._test_getSpectrum(self.cubeFromFile, 3000, expect,
                                ra=232.546383, dec=48.6883954)
 
-    # def _getSpectrum_fail(self, x, y, errMsg):
-    #     cube = Cube(filename=self.filename)
-    #     with self.assertRaises(AssertionError) as cm:
-    #         spectrum = cube.getSpectrum(x, y)
-    #     self.assertIn(errMsg, str(cm.exception))
+    def _getSpectrum_fail(self, x, y, errMsg):
+        cube = Cube(filename=self.filename)
+        with self.assertRaises(AssertionError) as cm:
+            spectrum = cube.getSpectrum(x, y)
+        self.assertIn(errMsg, str(cm.exception))
 
-    # def test_getSpectrum_fail_toolargeinput(self):
-    #     self._getSpectrum_fail(100000, 100000, 'Input x,y coordinates greater than flux dimensions')
+    def test_getSpectrum_fail_toolargeinput(self):
+        self._getSpectrum_fail(100000, 100000, 'Input x,y coordinates greater than flux dimensions')
 
-    # def test_getSpectrum_success(self):
-    #     cube = Cube(filename=self.filename)
-    #     spectrum = cube.getSpectrum(0, 0)
-    #     self.assertIsNotNone(spectrum)
-    #     self.assertEqual(np.sum(spectrum), 0)
-    #     spectrum = cube.getSpectrum(15, 15)
-    #     self.assertIsNotNone(spectrum)
-    #     self.assertNotEqual(np.sum(spectrum), 0)
+    def test_getSpectrum_success(self):
+        cube = Cube(filename=self.filename)
+        spectrum = cube.getSpectrum(0, 0)
+        self.assertIsNotNone(spectrum)
+        self.assertEqual(np.sum(spectrum), 0)
+        spectrum = cube.getSpectrum(15, 15)
+        self.assertIsNotNone(spectrum)
+        self.assertNotEqual(np.sum(spectrum), 0)
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

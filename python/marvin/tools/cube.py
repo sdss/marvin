@@ -7,7 +7,6 @@ from marvin import config
 from marvin.api.api import Interaction
 from marvin.somewhere import db
 
-
 class Cube(object):
 
     def __init__(self, filename=None, plateifu=None, mangaid=None):
@@ -35,22 +34,27 @@ class Cube(object):
             else:
                 try:
                     # self._getCubeFromPlateIFU()
-                    self._getCubeFromMangaID()
+                    # self._getCubeFromMangaID()
+                    raise RuntimeError('Failed to connect to database.')
                 except RuntimeError:
                     # convert from plateifu to filename (sdss_access)
-                    self.filename = plateifu_to_filename(self.plateifu)
+                    # self.filename = plateifu_to_filename(self.plateifu)
+                    plateifu_to_filename = {'8485-1901': 'test.fits'}
+                    self.filename = plateifu_to_filename[self.plateifu]
                     try:
                         self._openFile()
-                    except IOError as e:
+                    except FileNotFoundError:
                         if config.download:
                             # download file via sdsssync
                             # self._openFile()
                             pass
                         else:
-                            raise Exception('File does not exist locally')
+                            fnferr_msg = ('Failed to find file locally. '
+                                          'Try downloading file.')
+                            raise FileNotFoundError(fnferr_msg)
         elif config.mode == 'remote':
             if self.filename:
-                raise FileNotFoundError('Cannot open file remotely.')
+                raise FileNotFoundError('Cannot open {} remotely.'.format(self.filename))
             else:
                 # use API
                 pass
