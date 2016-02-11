@@ -73,7 +73,7 @@ class Cube(object):
         try:
             self.hdu = fits.open(self.filename)
         except FileNotFoundError as e:
-            raise # Exception('{0} does not exist. Please provide full file path.'.format(self.filename)) from e
+            raise Exception('{0} does not exist. Please provide full file path.'.format(self.filename)) from e
 
     @property
     def flux(self):
