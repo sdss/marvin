@@ -19,7 +19,7 @@ class Cube(object):
         self.mangaid = mangaid
         self.plateifu = plateifu
 
-        self.useDB = None
+        self._useDB = None
 
         # convert from mangaid to plateifu
         # print warning if multiple plateifus correspond to one mangaid
@@ -94,13 +94,13 @@ class Cube(object):
         assert ext in ['flux', 'ivar', 'mask'], \
             'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
-        if not self.useDB:
+        if not self._useDB:
             cubeExt = self._hdu[ext.upper()]
             if inputMode == 'sky':
                 cubeWCS = wcs.WCS(cubeExt.header)
                 x, y = cubeWCS.wcs_sky2pix([ra, dec], 1)
 
-            cubeShape = cubeExt.shape
+            cubeShape = cubeExt.data.shape
 
             yMid, xMid = np.array(cubeShape[1:]) / 2.
             xCube = int(xMid + x)
@@ -142,11 +142,11 @@ class Cube(object):
                              .format(self.filename))
 
         self._hdu = fits.open(self.filename)
-        self.useDB = False
+        self._useDB = False
 
     @property
     def flux(self):
-        if not self.useDB:
+        if not self._useDB:
             return self._hdu['FLUX'].data
         else:
             return None
