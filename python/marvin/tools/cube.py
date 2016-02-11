@@ -55,7 +55,7 @@ class Cube(object):
                 pass
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
-        """Returns the flux spectrum for an spaxel.
+        """Returns the appropriate spectrum for a certain spaxel.
 
         Parameters
         ----------
@@ -87,7 +87,7 @@ class Cube(object):
             assert ra and dec, 'Specify both ra and dec'
             inputMode = 'sky'
         else:
-            raise ValueError('You need to specify (x, y) or (ra, dec)')
+            raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
         assert isinstance(ext, basestring)
         ext = ext.lower()
@@ -95,22 +95,23 @@ class Cube(object):
             'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
         if not self._useDB:
-            cubeExt = self._hdu[ext.upper()]
-            if inputMode == 'sky':
-                cubeWCS = wcs.WCS(cubeExt.header)
-                x, y = cubeWCS.wcs_sky2pix([ra, dec], 1)
 
+            cubeExt = self._hdu[ext.upper()]
             cubeShape = cubeExt.data.shape
 
-            yMid, xMid = np.array(cubeShape[1:]) / 2.
-            xCube = int(xMid + x)
-            yCube = int(yMid - y)
+            if inputMode == 'sky':
+                cubeWCS = wcs.WCS(cubeExt.header)
+                xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
+            else:
+                yMid, xMid = np.array(cubeShape[1:]) / 2.
+                xCube = int(xMid + x)
+                yCube = int(yMid - y)
 
             assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
             assert (xCube < cubeShape[2] - 1 and
                     yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
 
-            return cubeExt.data[:, yCube, xCube]
+            return cubeExt.data[:, np.round(yCube), np.round(xCube)]
 
         else:
 
