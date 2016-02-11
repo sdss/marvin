@@ -100,9 +100,16 @@ class Cube(object):
                 x, y = cubeWCS.wcs_sky2pix([ra, dec], 1)
 
             cubeShape = cubeExt.shape
-            # TODO: assert that pix coordinates are in cube
+
             yMid, xMid = cubeShape[1:] / 2.
-            return cubeExt.data[:, yMid - y, xMid + x]
+            xCube = int(xMid + x)
+            yCube = int(yMid - y)
+
+            assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
+            assert (xCube < cubeShape[2] - 1 and
+                    yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
+
+            return cubeExt.data[:, yCube, xCube]
 
         else:
 
