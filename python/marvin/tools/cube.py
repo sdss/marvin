@@ -188,7 +188,7 @@ class Cube(object):
                 session = config.session
                 self._cube = None
                 try:
-                    self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.Cube.ifu.name=ifu).one()
+                    self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.Cube.ifu.name == ifu).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as e:
                     raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
                 except sqlalchemy.orm.exc.NoResultFound as e:
