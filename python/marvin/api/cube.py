@@ -20,8 +20,9 @@ class CubeView(FlaskView):
 
     @route('/<mangaid>/spectra/x=<x>/y=<y>/')
     def getSpectra(self, mangaid=None, x=None, y=None):
+        # Add ability to grab spectra from fits files
         cube = Cube(mangaid=mangaid)
-        spectrum = cube.getSpectrum(15, 15)
+        spectrum = cube.getSpectrum(x, y)
         return json.dumps({'data': spectrum})
 
 CubeView.register(api)

@@ -26,30 +26,42 @@ class TestCube(unittest.TestCase):
     def test_cube_loadfail(self):
         with self.assertRaises(AssertionError) as cm:
             cube = Cube()
-        self.assertIn('Either filename, mangaid, or plateifu is required!', cm.exception.message)
+        self.assertIn('Enter filename, plateifu, or mangaid!', str(cm.exception))
 
-    def test_cube_loadsuccess(self):
+    def test_local_cube_load_by_filename_success(self):
         cube = Cube(filename=self.filename)
         self.assertIsNotNone(cube)
         self.assertEqual(self.filename, cube.filename)
 
-    def _getSpectrum_fail(self, x, y, errMsg):
-        cube = Cube(filename=self.filename)
+    def test_local_cube_load_by_filename_fail(self):
+        self.filename = 'not_a_filename.fits'
+        # errMsg = Exception('{0} does not exist. Please provide full file path.'.format(self.filename))
         with self.assertRaises(AssertionError) as cm:
-            spectrum = cube.getSpectrum(x, y)
-        self.assertIn(errMsg, cm.exception.message)
+            cube = Cube(filename=self.filename)
+        print('here')
+        print(cm.exception)
+        self.assertEqual(FileNotFoundError, cm.exception)
 
-    def test_getSpectrum_fail_toolargeinput(self):
-        self._getSpectrum_fail(1000, 1000, 'Input x,y coordinates greater than flux dimensions')
 
-    def test_getSpectrum_success(self):
-        cube = Cube(filename=self.filename)
-        spectrum = cube.getSpectrum(0, 0)
-        self.assertIsNotNone(spectrum)
-        self.assertEqual(np.sum(spectrum), 0)
-        spectrum = cube.getSpectrum(15, 15)
-        self.assertIsNotNone(spectrum)
-        self.assertNotEqual(np.sum(spectrum), 0)
+
+
+    # def _getSpectrum_fail(self, x, y, errMsg):
+    #     cube = Cube(filename=self.filename)
+    #     with self.assertRaises(AssertionError) as cm:
+    #         spectrum = cube.getSpectrum(x, y)
+    #     self.assertIn(errMsg, str(cm.exception))
+
+    # def test_getSpectrum_fail_toolargeinput(self):
+    #     self._getSpectrum_fail(100000, 100000, 'Input x,y coordinates greater than flux dimensions')
+
+    # def test_getSpectrum_success(self):
+    #     cube = Cube(filename=self.filename)
+    #     spectrum = cube.getSpectrum(0, 0)
+    #     self.assertIsNotNone(spectrum)
+    #     self.assertEqual(np.sum(spectrum), 0)
+    #     spectrum = cube.getSpectrum(15, 15)
+    #     self.assertIsNotNone(spectrum)
+    #     self.assertNotEqual(np.sum(spectrum), 0)
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
