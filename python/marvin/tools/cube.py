@@ -94,29 +94,39 @@ class Cube(object):
         assert ext in ['flux', 'ivar', 'mask'], \
             'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
-        if not self._useDB:
+        if config.mode == 'local':
 
-            cubeExt = self._hdu[ext.upper()]
-            cubeShape = cubeExt.data.shape
+            if not self._useDB:
 
-            if inputMode == 'sky':
-                cubeWCS = wcs.WCS(cubeExt.header)
-                xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
+                cubeExt = self._hdu[ext.upper()]
+                cubeShape = cubeExt.data.shape
+
+                if inputMode == 'sky':
+                    cubeWCS = wcs.WCS(cubeExt.header)
+                    xCube, yCube, __ = cubeWCS.wcs_world2pix(
+                        [[ra, dec, 1.]], 1)[0]
+                else:
+                    yMid, xMid = np.array(cubeShape[1:]) / 2.
+                    xCube = int(xMid + x)
+                    yCube = int(yMid - y)
+
+                assert xCube > 0 and yCube > 0, \
+                    'pixel coordinates outside cube'
+                assert (xCube < cubeShape[2] - 1 and
+                        yCube < cubeShape[1] - 1), \
+                    'pixel coordinates outside cube'
+
+                return cubeExt.data[:, np.round(yCube), np.round(xCube)]
+
             else:
-                yMid, xMid = np.array(cubeShape[1:]) / 2.
-                xCube = int(xMid + x)
-                yCube = int(yMid - y)
 
-            assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
-            assert (xCube < cubeShape[2] - 1 and
-                    yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
-
-            return cubeExt.data[:, np.round(yCube), np.round(xCube)]
+                raise NotImplementedError(
+                    'getSpectrum from DB not yet implemented')
 
         else:
 
             raise NotImplementedError(
-                'getSpectrum from DB not yet implemented')
+                'getSpectrum over API not yet implemented')
 
         # ''' currently: x,y array indices
         # ideally: x,y in arcsecond relative to cube center '''
