@@ -11,9 +11,7 @@ class TestCube(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.outver = 'v1_5_1'
-        cls.filename = os.path.join(
-            os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
-            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+        cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), cls.outver, '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
         cls.mangaid = '1-209232'
 
         cls.cubeFromFile = Cube(filename=cls.filename)
