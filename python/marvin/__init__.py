@@ -71,6 +71,8 @@ if config.db:
             import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
         except RuntimeError as e:
             print('RuntimeError raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
+        except OperationalError as e:
+            print('Operational Error: {0}'.format(e))
         else:
             config.session = db.Session()
             config.datadb = datadb
