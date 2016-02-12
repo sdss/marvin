@@ -27,12 +27,15 @@ def testDbConnection(session=None):
     if not session:
         session = config.session
 
-    error = None
+    res = {'good': None, 'error': None}
     try:
         tmp = session.query(config.datadb.PipelineVersion).first()
+        res['good'] = True
     except Exception as e:
         error1 = 'Error connecting to manga database: {0}'.format(str(e))
         tb = get_traceback(asstring=True)
         error2 = 'Full traceback: {0}'.format(tb)
         error = ' '.join([error1, error2])
-    return error
+        res['error'] = error
+
+    return res
