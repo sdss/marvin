@@ -8,7 +8,6 @@ from __future__ import print_function
 from __future__ import division
 
 from sdss.internal.database.DatabaseConnection import DatabaseConnection
-from flask import current_app as app
 from pgpasslib import getpass
 from marvin import config
 import yaml
@@ -27,6 +26,11 @@ dbdict = yaml.load(rawfile)
 # select the appropriate configuration from config
 if config.db:
     db_info = dbdict[config.db]
+    try:
+        if db_info['password'] is None:
+            db_info['password'] = getpass(db_info['host'], db_info['port'], db_info['database'], db_info['user'])
+    except KeyError:
+        raise RuntimeError('ERROR: invalid server configuration')
 else:
     raise RuntimeError('Error: could not determine db to connect to: {0}'.format(config.db))
 
