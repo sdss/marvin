@@ -32,10 +32,8 @@ class Cube(object):
                 self._openFile()
             else:
                 try:
-                    # self._getCubeFromPlateIFU()
-                    # self._getCubeFromMangaID()
-                    raise RuntimeError('Failed to connect to database.')
-                except RuntimeError:
+                    self._getCubeFromDB()
+                except RuntimeError as rterr:
                     # convert from plateifu to filename (sdss_access)
                     # self.filename = plateifu_to_filename(self.plateifu)
                     plateifu_to_filename = {'8485-1901': 'test.fits'}
@@ -48,8 +46,9 @@ class Cube(object):
                             # self._openFile()
                             pass
                         else:
-                            fnferr_msg = ('Failed to find file locally. Try downloading file.')
-                            raise IOError(fnferr_msg)
+                            fnferr_msg = ('Failed to find file locally. '
+                                          'Try downloading file.')
+                            raise IOError(' '.join([str(rterr), fnferr_msg]))
         elif config.mode == 'remote':
             if self.filename:
                 raise IOError('Cannot open {} remotely.'.format(self.filename))
