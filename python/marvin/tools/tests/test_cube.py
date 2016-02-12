@@ -29,7 +29,8 @@ class TestCube(unittest.TestCase):
     def test_cube_loadfail(self):
         with self.assertRaises(AssertionError) as cm:
             Cube()
-        self.assertIn('Enter filename, plateifu, or mangaid!', str(cm.exception))
+        self.assertIn('Enter filename, plateifu, or mangaid!',
+                      str(cm.exception))
 
     def test_cube_load_from_local_file_by_filename_success(self):
         cube = Cube(filename=self.filename)
