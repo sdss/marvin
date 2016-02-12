@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-import os
 from astropy.io import fits
 from astropy import wcs
 from marvin import config
