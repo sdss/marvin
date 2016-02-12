@@ -1,0 +1,16 @@
+/__pycache__
+bin/__pycache__
+etc/__pycache__
+python/__pycache__
+python/marvin/__pycache__
+python/marvin/api/__pycache__
+python/marvin/db/__pycache__
+python/marvin/tools/__pycache__
+python/marvin/tools/tests/__pycache__
+python/marvin/utils/__pycache__
+python/marvin/utils/db/__pycache__
+python/marvin/utils/general/__pycache__
+python/marvin/web/__pycache__
+python/marvin/web/controllers/__pycache__
+python/marvin/web/static/__pycache__
+python/marvin/web/templates/__pycache__
