@@ -2,7 +2,6 @@
 
 import os
 import unittest
-import numpy as np
 from marvin.tools.cube import Cube
 
 
