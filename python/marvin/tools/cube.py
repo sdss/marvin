@@ -43,17 +43,17 @@ class Cube(object):
                     self.filename = plateifu_to_filename[self.plateifu]
                     try:
                         self._openFile()
-                    except FileNotFoundError:
+                    except IOError:
                         if config.download:
                             # download file via sdsssync
                             # self._openFile()
                             pass
                         else:
                             fnferr_msg = ('Failed to find file locally. Try downloading file.')
-                            raise FileNotFoundError(fnferr_msg)
+                            raise IOError(fnferr_msg)
         elif config.mode == 'remote':
             if self.filename:
-                raise FileNotFoundError('Cannot open {} remotely.'.format(self.filename))
+                raise IOError('Cannot open {} remotely.'.format(self.filename))
             else:
                 # use API
                 pass
@@ -135,7 +135,7 @@ class Cube(object):
 
         try:
             self._hdu = fits.open(self.filename)
-        except IOError as e:
+        except IOError as err:
             if not err.args:
                 err.args = ('',)
             err.args = err.args + ('filename {0} cannot be found'
