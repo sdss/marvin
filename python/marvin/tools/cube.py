@@ -170,12 +170,12 @@ class Cube(object):
         else:
             from marvin.utils.db.dbutils import testDbConnection
             import sqlalchemy
-            if testDbConnection(config.session):
+            if testDbConnection(config.session)['good']:
                 datadb = config.datadb
                 session = config.session
                 self._cube = None
                 try:
-                    self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.Cube.ifu.name == ifu).one()
+                    self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.IFUDesign.name == ifu).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as e:
                     raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
                 except sqlalchemy.orm.exc.NoResultFound as e:
@@ -184,6 +184,7 @@ class Cube(object):
                     raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Unknown exception: {1}'.format(self.plateifu, e))
 
                 if self._cube:
+                    self._useDB = True
                     self.ifu = self._cube.ifu.name
                     self.ra = self._cube.ra
                     self.dec = self._cube.dec
