@@ -51,11 +51,13 @@ class TestCube(unittest.TestCase):
         self.assertEqual(self.mangaid, cube.mangaid)
 
     def _test_getSpectrum(self, cube, idx, expect, **kwargs):
+        """Convenience method to test getSpectrum."""
 
         spectrum = cube.getSpectrum(**kwargs)
         self.assertAlmostEqual(spectrum[idx], expect, places=5)
 
     def _test_getSpectrum_raise_exception(self, message, excType=AssertionError, **kwargs):
+        """Convenience method to test exceptions raised by getSpectrum."""
 
         with self.assertRaises(excType) as ee:
             self.cubeFromFile.getSpectrum(**kwargs)
@@ -63,6 +65,7 @@ class TestCube(unittest.TestCase):
         self.assertIn(message, str(ee.exception))
 
     def test_getSpectrum_inputs(self):
+        """Tests exceptions when getSpectrum gets inappropriate inputs."""
 
         self._test_getSpectrum_raise_exception(
             'Either use (x, y) or (ra, dec)', x=1, ra=1)
@@ -79,6 +82,7 @@ class TestCube(unittest.TestCase):
             excType=ValueError)
 
     def test_getSpectrum_outside_cube(self):
+        """Tests getSpectrum when the input coords are outside the cube."""
 
         for xTest, yTest in [(-50, 1), (50, 1), (1, -50), (1, 50)]:
             self._test_getSpectrum_raise_exception(
@@ -90,12 +94,16 @@ class TestCube(unittest.TestCase):
                 'pixel coordinates outside cube', ra=raTest, dec=decTest)
 
     def test_getSpectrum_file_flux_x_y(self):
+        """Tests getSpectrum from a file cube with x, y inputs."""
         # TODO: check that the expected value is correct.
+
         expect = -0.10531016
         self._test_getSpectrum(self.cubeFromFile, 10, expect, x=10, y=5)
 
     def test_getSpectrum_file_flux_ra_dec(self):
+        """Tests getSpectrum from a file cube with ra, dec inputs."""
         # TODO: check that the expected value is correct.
+
         expect = 0.017929086
         self._test_getSpectrum(self.cubeFromFile, 3000, expect,
                                ra=232.546383, dec=48.6883954)
