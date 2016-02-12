@@ -133,8 +133,14 @@ class Cube(object):
 
     def _openFile(self):
 
-        if not os.path.exists(self.filename):
-            raise ValueError('filename {0} cannot be found'.format(self.filename))
+        try:
+            self._hdu = fits.open(self.filename)
+        except IOError as e:
+            if not err.args:
+                err.args = ('',)
+            err.args = err.args + ('filename {0} cannot be found'
+                                   .format(self.filename),)
+            raise
 
         self._useDB = False
 
