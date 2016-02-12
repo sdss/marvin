@@ -23,7 +23,7 @@ class Cube(object):
         # convert from mangaid to plateifu
         # print warning if multiple plateifus correspond to one mangaid
         # FIX
-        mangaid_to_plateifu = {'1-209232': '8485-1901'}
+        mangaid_to_plateifu = {'1-209232': '8485-1901', '12-193534': '7443-3701'}
         if self.mangaid:
             self.plateifu = mangaid_to_plateifu[self.mangaid]
 
