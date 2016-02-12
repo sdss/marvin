@@ -55,8 +55,7 @@ class TestCube(unittest.TestCase):
         spectrum = cube.getSpectrum(**kwargs)
         self.assertAlmostEqual(spectrum[idx], expect, places=5)
 
-    def _test_getSpectrum_raise_exception(self, message,
-                                          excType=AssertionError, **kwargs):
+    def _test_getSpectrum_raise_exception(self, message, excType=AssertionError, **kwargs):
 
         with self.assertRaises(excType) as ee:
             self.cubeFromFile.getSpectrum(**kwargs)
