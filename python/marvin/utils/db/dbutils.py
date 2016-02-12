@@ -5,6 +5,11 @@ import sys
 datadb = config.datadb
 
 
+# This line makes sure that "from marvin.utils.db.dbutils import *"
+# will only import the functions in the list.
+__all__ = ['get_traceback', 'testDbConnection']
+
+
 def get_traceback(asstring=None):
     ''' Returns the traceback from an exception, a list
 
