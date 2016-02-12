@@ -9,6 +9,8 @@ python/marvin/api/cube.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/db/dbconfig.ini -text
+python/marvin/db/sql/mangadapdb.sql -text
+python/marvin/db/sql/utah_mangadb.sql -text
 python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
 python/marvin/tools/tests/test_cube.py -text
