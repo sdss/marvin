@@ -50,9 +50,6 @@ class TestCube(unittest.TestCase):
         self.assertIsNotNone(cube)
         self.assertEqual(self.mangaid, cube.mangaid)
 
-        spectrum = cube.getSpectrum(**kwargs)
-        self.assertAlmostEqual(spectrum[idx], expect, places=5)
-
     def _test_getSpectrum(self, cube, idx, expect, **kwargs):
 
         spectrum = cube.getSpectrum(**kwargs)
