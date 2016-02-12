@@ -49,8 +49,7 @@ class Cube(object):
                             # self._openFile()
                             pass
                         else:
-                            fnferr_msg = ('Failed to find file locally. '
-                                          'Try downloading file.')
+                            fnferr_msg = ('Failed to find file locally. Try downloading file.')
                             raise FileNotFoundError(fnferr_msg)
         elif config.mode == 'remote':
             if self.filename:
@@ -96,8 +95,7 @@ class Cube(object):
 
         assert isinstance(ext, basestring)
         ext = ext.lower()
-        assert ext in ['flux', 'ivar', 'mask'], \
-            'ext needs to be either \'flux\', \'ivar\', or \'mask\''
+        assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
         if config.mode == 'local':
 
@@ -108,30 +106,24 @@ class Cube(object):
 
                 if inputMode == 'sky':
                     cubeWCS = wcs.WCS(cubeExt.header)
-                    xCube, yCube, __ = cubeWCS.wcs_world2pix(
-                        [[ra, dec, 1.]], 1)[0]
+                    xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
                 else:
                     yMid, xMid = np.array(cubeShape[1:]) / 2.
                     xCube = int(xMid + x)
                     yCube = int(yMid - y)
 
-                assert xCube > 0 and yCube > 0, \
-                    'pixel coordinates outside cube'
-                assert (xCube < cubeShape[2] - 1 and
-                        yCube < cubeShape[1] - 1), \
-                    'pixel coordinates outside cube'
+                assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
+                assert (xCube < cubeShape[2] - 1 and yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
 
                 return cubeExt.data[:, np.round(yCube), np.round(xCube)]
 
             else:
 
-                raise NotImplementedError(
-                    'getSpectrum from DB not yet implemented')
+                raise NotImplementedError('getSpectrum from DB not yet implemented')
 
         else:
 
-            raise NotImplementedError(
-                'getSpectrum over API not yet implemented')
+            raise NotImplementedError('getSpectrum over API not yet implemented')
 
         # ''' currently: x,y array indices
         # ideally: x,y in arcsecond relative to cube center '''
@@ -153,14 +145,8 @@ class Cube(object):
 
     def _openFile(self):
 
-        try:
-            self._hdu = fits.open(self.filename)
-        except (OSError, IOError) as err:
-            if not err.args:
-                err.args = ('',)
-            err.args = err.args + ('filename {0} cannot be found'
-                                   .format(self.filename),)
-            raise
+        if not os.path.exists(self.filename):
+            raise ValueError('filename {0} cannot be found'.format(self.filename))
 
         self._useDB = False
 
