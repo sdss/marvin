@@ -5,7 +5,7 @@ from astropy.io import fits
 from astropy import wcs
 from marvin import config
 from marvin.api.api import Interaction
-from marvin.somewhere import db
+
 
 class Cube(object):
 
