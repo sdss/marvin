@@ -143,12 +143,17 @@ class Cube(object):
 
         self._useDB = False
 
-    @property
-    def flux(self):
+    def _getExtensionData(self, extName):
+        """Returns the data from an extension."""
+
         if not self._useDB:
-            return self._hdu['FLUX'].data
+            return self._hdu[extName.upper()].data
         else:
             return None
+
+    flux = property(lambda self: self._getExtensionData('FLUX'))
+    ivar = property(lambda self: self._getExtensionData('IVAR'))
+    mask = property(lambda self: self._getExtensionData('MASK'))
 
     def _getCubeFromDB(self):
         ''' server-side code '''
