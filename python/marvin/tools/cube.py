@@ -59,7 +59,13 @@ class Cube(object):
                 pass
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
-        """Returns the appropriate spectrum for a certain spaxel.
+        """Returns the appropriate spectrum for a certain spaxel in the cube.
+
+        The type of the spectrum returned depends on the `ext` keyword, and
+        may be either `'flux'`, `'ivar'`, or `'mask'`. The coordinates of the
+        spectrum to return can be input as `x, y` pixels relative the centre
+        of the cube (bottom-left origin is assumed), or as `ra, dec` celestial
+        coordinates.
 
         Parameters
         ----------
@@ -77,7 +83,7 @@ class Cube(object):
         Returns
         -------
         result : np.array
-            An array with the spectrum for the input coordinates.
+            A Numpy array with the spectrum for the input coordinates.
 
         """
 
