@@ -27,7 +27,7 @@ dbdict = yaml.load(rawfile)
 if config.db:
     db_info = dbdict[config.db]
     try:
-        if 'password' not in db_info['password']:
+        if 'password' not in db_info:
             db_info['password'] = getpass(db_info['host'], db_info['port'], db_info['database'], db_info['user'])
     except KeyError:
         raise RuntimeError('ERROR: invalid server configuration')
