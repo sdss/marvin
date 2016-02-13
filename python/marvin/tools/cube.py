@@ -10,30 +10,17 @@ from marvin.tools.core import MarvinToolsClass
 class Cube(MarvinToolsClass):
 
     def _getFullPath(self, **kwargs):
+        """Returns the full path of the file in the tree."""
 
-        """
-        customised stuff to get the full path for this type of data based
-        on input plateifu (and maybe other data in kwargs).
+        plate, ifu = self.plateifu.split('-')
 
-        super(Cube, self)._getFullPath()
-        we do stuff with self._Path
-        return fullpath
-        """
-
-        super(Cube, self)._getFullPath()
-
-        plateifu = kwargs['plateifu']
-        plate, ifu = plateifu.split('-')
-
-        return self._Path().full('mangacube', ifu=ifu,
-                                 drpver=config.drpver, plate=plate)
+        return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
+                                              drpver=config.drpver,
+                                              plate=plate)
 
     def __init__(self, *args, **kwargs):
 
-        self.mode = kwargs.get('mode', None)
-        self.filename = kwargs.get('filename', None)
-        self.mangaid = kwargs.get('mangaid', None)
-        self.plateifu = kwargs.get('plateifu', None)
+        super(Cube, self).__init__(*args, **kwargs)
 
         if self.mode == 'local':
             if self.filename:
@@ -41,7 +28,9 @@ class Cube(MarvinToolsClass):
             else:
                 self._getCubeFromDB()
         else:
-            self.testAPI = Interaction('cubes/', request_type='get').getData()
+            # Placeholder for potentially request something from the DB to
+            # initialise the cube.
+            pass
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
