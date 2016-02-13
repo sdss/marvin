@@ -14,7 +14,7 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from marvin import config
+from marvin import config, session, datadb
 from marvin.tools.core import MarvinUserWarning, MarvinError
 from marvin.utils.db import testDbConnection
 import warnings
@@ -88,7 +88,8 @@ class MarvinToolsClass(object):
 
         elif self.plateifu:
 
-            dbStatus = testDbConnection(config.session)
+            dbStatus = testDbConnection(session)
+            print(dbStatus)
 
             if dbStatus['good']:
                 self.mode = 'local'

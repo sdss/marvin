@@ -6,6 +6,7 @@ index = Blueprint("index_page", __name__)
 
 
 class Marvin(FlaskView):
+    route_base = '/'
 
     def index(self):
         index = {}

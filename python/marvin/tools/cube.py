@@ -2,9 +2,9 @@ from __future__ import print_function
 import numpy as np
 from astropy.io import fits
 from astropy import wcs
-from marvin import config
+from marvin import config, session, datadb
 from marvin.api.api import Interaction
-from marvin.tools.core import MarvinToolsClass
+from marvin.tools.core import MarvinToolsClass, MarvinError
 
 
 class Cube(MarvinToolsClass):
@@ -27,9 +27,15 @@ class Cube(MarvinToolsClass):
 
         if self.mode == 'local':
             if self.filename:
-                self._openFile()
+                try:
+                    self._openFile()
+                except IOError as e:
+                    raise MarvinError('Could not initialize via filename: {0}'.format(e))
             else:
-                self._getCubeFromDB()
+                try:
+                    self._getCubeFromDB()
+                except RuntimeError as e:
+                    raise MarvinError('Could not initialize via db: {0}'.format(e))
         else:
             # Placeholder for potentially request something from the DB to
             # initialise the cube.
@@ -114,16 +120,11 @@ class Cube(MarvinToolsClass):
 
     def _openFile(self):
 
+        self._useDB = False
         try:
             self._hdu = fits.open(self.filename)
         except IOError as err:
-            if not err.args:
-                err.args = ('',)
-            err.args = err.args + ('filename {0} cannot be found'
-                                   .format(self.filename),)
-            raise
-
-        self._useDB = False
+            raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
     def _getExtensionData(self, extName):
         """Returns the data from an extension."""
@@ -151,24 +152,20 @@ class Cube(MarvinToolsClass):
         if not config.db:
             raise RuntimeError('No db connected')
         else:
-            from marvin.utils.db.dbutils import testDbConnection
             import sqlalchemy
-            if testDbConnection(config.session)['good']:
-                datadb = config.datadb
-                session = config.session
-                self._cube = None
-                try:
-                    self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.IFUDesign.name == ifu).one()
-                except sqlalchemy.orm.exc.MultipleResultsFound as e:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
-                except sqlalchemy.orm.exc.NoResultFound as e:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: No Results Found: {1}'.format(self.plateifu, e))
-                except Exception as e:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Unknown exception: {1}'.format(self.plateifu, e))
+            self._cube = None
+            try:
+                self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.IFUDesign.name == ifu).one()
+            except sqlalchemy.orm.exc.MultipleResultsFound as e:
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
+            except sqlalchemy.orm.exc.NoResultFound as e:
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: No Results Found: {1}'.format(self.plateifu, e))
+            except Exception as e:
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Unknown exception: {1}'.format(self.plateifu, e))
 
-                if self._cube:
-                    self._useDB = True
-                    self.ifu = self._cube.ifu.name
-                    self.ra = self._cube.ra
-                    self.dec = self._cube.dec
-                    self.plate = self._cube.plate
+            if self._cube:
+                self._useDB = True
+                self.ifu = self._cube.ifu.name
+                self.ra = self._cube.ra
+                self.dec = self._cube.dec
+                self.plate = self._cube.plate
