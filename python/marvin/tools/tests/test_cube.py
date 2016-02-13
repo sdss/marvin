@@ -4,6 +4,7 @@ import os
 import unittest
 from marvin.tools.cube import Cube
 from marvin.tools.core import MarvinError
+from marvin import config
 
 
 class TestCube(unittest.TestCase):
@@ -13,6 +14,11 @@ class TestCube(unittest.TestCase):
         cls.outver = 'v1_5_1'
         cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), cls.outver, '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
         cls.mangaid = '1-209232'
+        cls.plate = 8485
+        cls.plateifu = '8485-1901'
+        cls.ra = 232.544703894
+        cls.dec = 48.6902009334
+        config.drpver = cls.outver
 
         cls.cubeFromFile = Cube(filename=cls.filename)
 
@@ -50,6 +56,9 @@ class TestCube(unittest.TestCase):
         cube = Cube(mangaid=self.mangaid)
         self.assertIsNotNone(cube)
         self.assertEqual(self.mangaid, cube.mangaid)
+        self.assertEqual(self.plate, cube.plate)
+        self.assertEqual(self.dec, cube.dec)
+        self.assertEqual(self.ra, cube.ra)
 
     def _test_getSpectrum(self, cube, idx, expect, **kwargs):
         """Convenience method to test getSpectrum."""
