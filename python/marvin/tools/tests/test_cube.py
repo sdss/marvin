@@ -3,6 +3,7 @@
 import os
 import unittest
 from marvin.tools.cube import Cube
+from marvin.tools.core import MarvinError
 
 
 class TestCube(unittest.TestCase):
@@ -38,7 +39,7 @@ class TestCube(unittest.TestCase):
 
     def test_cube_load_from_local_file_by_filename_fail(self):
         self.filename = 'not_a_filename.fits'
-        self.assertRaises(IOError, lambda: Cube(filename=self.filename))
+        self.assertRaises(MarvinError, lambda: Cube(filename=self.filename))
         # errMsg = '{0} does not exist. Please provide full file path.'.format(self.filename)
         # with self.assertRaises(FileNotFoundError) as cm:
         #     Cube(filename=self.filename)
