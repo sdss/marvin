@@ -1,9 +1,7 @@
 
-from marvin import config
+from marvin import datadb, config
 import traceback
 import sys
-datadb = config.datadb
-
 
 # This line makes sure that "from marvin.utils.db.dbutils import *"
 # will only import the functions in the list.
@@ -24,12 +22,17 @@ def get_traceback(asstring=None):
 def testDbConnection(session=None):
     ''' Test the DB connection to '''
 
-    if not session:
-        session = config.session
-
     res = {'good': None, 'error': None}
+
+    if not config.db:
+        res['error'] = 'No database found!'
+        return res
+
+    if not session:
+        from marvin import session
+
     try:
-        tmp = session.query(config.datadb.PipelineVersion).first()
+        tmp = session.query(datadb.PipelineVersion).first()
         res['good'] = True
     except Exception as e:
         error1 = 'Error connecting to manga database: {0}'.format(str(e))

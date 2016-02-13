@@ -1,5 +1,6 @@
 import os
 
+
 class Config(object):
     def __init__(self):
         self._mode = 'auto'
@@ -8,8 +9,6 @@ class Config(object):
         self.mplver = None
         self.vermode = None
         self.download = False
-        self.session = None
-        self.datadb = None
         self.sasurl = os.getenv('SAS_URL') if 'SAS_URL' in os.environ else 'https://sas.sdss.org/'
         self._setDbConfig()
 
@@ -60,6 +59,9 @@ class Config(object):
 
 config = Config()
 
+# Inits the Database session and ModelClasses
+session = None
+datadb = None
 if config.db:
     try:
         from marvin.db.database import db
@@ -71,8 +73,8 @@ if config.db:
         except Exception as e:
             print('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
         else:
-            config.session = db.Session()
-            config.datadb = datadb
+            session = db.Session()
+            datadb = datadb
 
 # Inits the log
 from marvin.tools.core.logger import initLog
