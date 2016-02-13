@@ -12,6 +12,9 @@ class Cube(MarvinToolsClass):
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
 
+        if not self.plateifu:
+            return None
+
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,

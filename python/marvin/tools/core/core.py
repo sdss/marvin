@@ -134,4 +134,5 @@ class MarvinToolsClass(object):
                     'the file. Error message is: {0}'.format(str(ee)),
                     MarvinUserWarning)
                 fullpath = None
+
         return fullpath
