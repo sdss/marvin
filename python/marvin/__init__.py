@@ -3,7 +3,7 @@ import os
 
 class Config(object):
     def __init__(self):
-        self._mode = 'local'
+        self._mode = 'auto'
         self.drpver = None
         self.dapver = None
         self.mplver = None
@@ -20,7 +20,7 @@ class Config(object):
 
     @mode.setter
     def mode(self, value):
-        if value in ['local', 'remote']:
+        if value in ['local', 'remote', 'auto']:
             self._mode = value
         else:
             raise ValueError('config.mode must be "local" or "remote".')

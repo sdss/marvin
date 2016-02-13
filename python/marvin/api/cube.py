@@ -29,11 +29,7 @@ class CubeView(FlaskView):
     # decorators = [parseRoutePath]
 
     def index(self):
-        return 'cube'
-
-    def get(self, mangaid):
-        cube = Cube(mangaid=mangaid)
-        return json.dumps({mangaid: '{0},{1},{2}'.format(mangaid, cube.ra, cube.dec)})
+        return json.dumps({'data': 'this is a cube!'})
 
     @route('/<mangaid>/spectra', defaults={'path': None})
     @route('/<mangaid>/spectra/<path:path>')

@@ -4,57 +4,46 @@ from astropy.io import fits
 from astropy import wcs
 from marvin import config
 from marvin.api.api import Interaction
+from marvin.tools.core import MarvinToolsClass
 
 
-class Cube(object):
+class Cube(MarvinToolsClass):
 
-    def __init__(self, filename=None, plateifu=None, mangaid=None):
-        args = [filename, plateifu, mangaid]
-        errmsg = 'Enter filename, plateifu, or mangaid!'
-        assert any(args), errmsg
-        assert sum([bool(arg) for arg in args]) == 1, errmsg
+    def _getFullPath(self, **kwargs):
 
-        self.filename = filename
-        self.mangaid = mangaid
-        self.plateifu = plateifu
+        """
+        customised stuff to get the full path for this type of data based
+        on input plateifu (and maybe other data in kwargs).
 
-        self._useDB = None
+        super(Cube, self)._getFullPath()
+        we do stuff with self._Path
+        return fullpath
+        """
 
-        # convert from mangaid to plateifu
-        # print warning if multiple plateifus correspond to one mangaid
-        # FIX
-        mangaid_to_plateifu = {'1-209232': '8485-1901', '12-193534': '7443-3701'}
-        if self.mangaid:
-            self.plateifu = mangaid_to_plateifu[self.mangaid]
+        super(Cube, self)._getFullPath()
 
-        if config.mode == 'local':
+        plateifu = kwargs['plateifu']
+        plate, ifu = plateifu.split('-')
+
+        return self._Path().full('mangacube', ifu=ifu,
+                                 drpver=config.drpver, plate=plate)
+
+    def __init__(self, *args, **kwargs):
+
+        myKwargs = self._kwargs
+
+        self.mode = myKwargs.get('mode', None)
+        self.filename = myKwargs.get('filename', None)
+        self.mangaid = myKwargs.get('mangaid', None)
+        self.plateifu = myKwargs.get('plateifu', None)
+
+        if self.mode == 'local':
             if self.filename:
                 self._openFile()
             else:
-                try:
-                    self._getCubeFromDB()
-                except RuntimeError as rterr:
-                    # convert from plateifu to filename (sdss_access)
-                    # self.filename = plateifu_to_filename(self.plateifu)
-                    plateifu_to_filename = {'8485-1901': 'test.fits'}
-                    self.filename = plateifu_to_filename[self.plateifu]
-                    try:
-                        self._openFile()
-                    except IOError:
-                        if config.download:
-                            # download file via sdsssync
-                            # self._openFile()
-                            pass
-                        else:
-                            fnferr_msg = ('Failed to find file locally. '
-                                          'Try downloading file.')
-                            raise IOError(' '.join([str(rterr), fnferr_msg]))
-        elif config.mode == 'remote':
-            if self.filename:
-                raise IOError('Cannot open {} remotely.'.format(self.filename))
-            else:
-                # use API
-                pass
+                self._getCubeFromDB()
+        else:
+            self.testAPI = Interaction('cubes/', request_type='get').getData()
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
@@ -127,7 +116,7 @@ class Cube(object):
 
         else:
 
-            raise NotImplementedError('getSpectrum over API not yet implemented')
+            response = Interaction('/cubes/{0}/spectra'.format(self.mangaid))
 
     def _openFile(self):
 
