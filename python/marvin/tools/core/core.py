@@ -15,6 +15,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 from marvin import config
+from marvin.tools.core import MarvinUserWarning, MarvinError
 from marvin.utils.db import testDbConnection
 import warnings
 import os
@@ -29,20 +30,6 @@ __all__ = ['MarvinToolsClass']
 
 
 mangaid_to_plateifu = {'1-209232': '8485-1901', '12-193534': '7443-3701'}
-
-
-class MarvinError(Exception):
-    pass
-
-
-class MarvinWarning(Warning):
-    """Base warning for Marvin."""
-    pass
-
-
-class MarvinUserWarning(UserWarning, MarvinWarning):
-    """The primary warning class."""
-    pass
 
 
 class MarvinToolsClass(object):

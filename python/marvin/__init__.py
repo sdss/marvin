@@ -1,6 +1,5 @@
 import os
 
-
 class Config(object):
     def __init__(self):
         self._mode = 'auto'
@@ -74,3 +73,7 @@ if config.db:
         else:
             config.session = db.Session()
             config.datadb = datadb
+
+# Inits the log
+from marvin.tools.core.logger import initLog
+log = initLog()
