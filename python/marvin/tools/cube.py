@@ -30,12 +30,10 @@ class Cube(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
 
-        myKwargs = self._kwargs
-
-        self.mode = myKwargs.get('mode', None)
-        self.filename = myKwargs.get('filename', None)
-        self.mangaid = myKwargs.get('mangaid', None)
-        self.plateifu = myKwargs.get('plateifu', None)
+        self.mode = kwargs.get('mode', None)
+        self.filename = kwargs.get('filename', None)
+        self.mangaid = kwargs.get('mangaid', None)
+        self.plateifu = kwargs.get('plateifu', None)
 
         if self.mode == 'local':
             if self.filename:

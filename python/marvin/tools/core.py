@@ -106,7 +106,7 @@ class MarvinToolsClass(object):
 
         me = object.__new__(cls, *args, **kwargs)
 
-        me._kwargs = kwargs
+        # me._kwargs = kwargs
 
         filename = kwargs.get('filename', None)
         mangaid = kwargs.get('mangaid', None)
@@ -115,7 +115,7 @@ class MarvinToolsClass(object):
 
         if mode is None:
             mode = config.mode
-        me._kwargs['mode'] = mode
+        kwargs['mode'] = mode
 
         args = [filename, plateifu, mangaid]
         errmsg = 'Enter filename, plateifu, or mangaid!'
@@ -124,23 +124,27 @@ class MarvinToolsClass(object):
 
         if mangaid:
             if mangaid in mangaid_to_plateifu:
-                me._kwargs['plateifu'] = mangaid_to_plateifu[mangaid]
-                me._kwargs['mangaid'] = None
+                kwargs['plateifu'] = mangaid_to_plateifu[mangaid]
+                kwargs['mangaid'] = None
             else:
                 raise MarvinError('mangaid={0} not found in the dictionary'
                                   .format(mangaid))
 
         if mode == 'local':
-            me._kwargs = _doLocal(me, **kwargs)
+            kwargs = _doLocal(me, **kwargs)
         elif mode == 'remote':
-            me._kwargs = _doRemote(**kwargs)
+            kwargs = _doRemote(**kwargs)
         elif mode == 'auto':
             try:
-                me._kwargs = _doLocal(me, **kwargs)
+                kwargs = _doLocal(me, **kwargs)
             except:
                 warnings.warn('local mode failed. Trying remote now.',
                               MarvinUserWarning)
-                me._kwargs = _doRemote(**kwargs)
+                kwargs = _doRemote(**kwargs)
+
+        # This updates the internal dictionary of the instance so that
+        # __init__ knows the arguments to initialise the object.
+        me.__dict__.update(kwargs)
 
         return me
 
