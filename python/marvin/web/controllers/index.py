@@ -15,7 +15,12 @@ class Marvin(FlaskView):
         config.drpver = 'v1_5_1'
         cube = Cube(mangaid='1-209232')
         index['cube'] = cube
-        index['spectra'] = cube.getSpectrum(x=1, y=2)
+        try:
+            spectrum = cube.getSpectrum(x=1, y=2)
+        except Exception as e:
+            spectrum = 'Could not get spectrum: {0}'.format(e)
+
+        index['spectra'] = spectrum
         return render_template("index.html", **index)
 
     def quote(self):
