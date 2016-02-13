@@ -88,7 +88,7 @@ class Cube(MarvinToolsClass):
         ext = ext.lower()
         assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
-        if config.mode == 'local':
+        if self.mode == 'local':
 
             if not self._useDB:
 
@@ -118,7 +118,7 @@ class Cube(MarvinToolsClass):
 
         else:
 
-            response = Interaction('/cubes/{0}/spectra'.format(self.mangaid))
+            response = Interaction('cubes/{0}/spectra'.format(self.mangaid))
 
     def _openFile(self):
 
