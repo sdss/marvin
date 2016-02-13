@@ -21,7 +21,7 @@ class Interaction(object):
                 self.results = response.json()
             except Exception as e:
                 self.results = response.text
-                raise('Response not in JSON format. {0} {1}'.format(e, self.results))
+                raise RuntimeError('Response not in JSON format. {0} {1}'.format(e, self.results))
         else:
             errmsg = 'Error accessing {0}: {1}'.format(response.url, self.statuscodes[response.status_code])
             self.results = {'http status code': response.status_code, 'message': errmsg}
