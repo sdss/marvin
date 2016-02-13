@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import copy
 import unittest
 from marvin.tools.cube import Cube
 from marvin.tools.core import MarvinError
-from marvin import config
+from marvin import config, session, datadb
 
 
 class TestCube(unittest.TestCase):
@@ -16,9 +17,11 @@ class TestCube(unittest.TestCase):
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
+        cls.cubepk = 10179
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
-        config.drpver = cls.outver
+        cls.initconfig = copy.deepcopy(config)
+        cls.session = session
 
         cls.cubeFromFile = Cube(filename=cls.filename)
 
@@ -27,16 +30,21 @@ class TestCube(unittest.TestCase):
         pass
 
     def setUp(self):
-        pass
+        # reset config variables
+        cvars = ['mode', 'drpver', 'dapver', 'db']
+        for var in cvars:
+            config.__setattr__(var, self.initconfig.__getattribute__(var))
+        config.drpver = self.outver
+        session = self.session
 
     def tearDown(self):
-        pass
+        self.session.close()
 
+    # Tests for Cube Load by File
     def test_cube_loadfail(self):
         with self.assertRaises(AssertionError) as cm:
-            Cube()
-        self.assertIn('Enter filename, plateifu, or mangaid!',
-                      str(cm.exception))
+            cube = Cube()
+        self.assertIn('Enter filename, plateifu, or mangaid!', str(cm.exception))
 
     def test_cube_load_from_local_file_by_filename_success(self):
         cube = Cube(filename=self.filename)
@@ -51,8 +59,8 @@ class TestCube(unittest.TestCase):
         #     Cube(filename=self.filename)
         # self.assertIn(errMsg, cm.exception.args)
 
+    # Tests for Cube Load by Database
     def test_cube_load_from_local_database_success(self):
-        """does not work yet"""
         cube = Cube(mangaid=self.mangaid)
         self.assertIsNotNone(cube)
         self.assertEqual(self.mangaid, cube.mangaid)
@@ -60,6 +68,50 @@ class TestCube(unittest.TestCase):
         self.assertEqual(self.dec, cube.dec)
         self.assertEqual(self.ra, cube.ra)
 
+    def _load_from_db_fail(self, params, errMsg):
+        errMsg = 'Could not initialize via db: {0}'.format(errMsg)
+        with self.assertRaises(MarvinError) as cm:
+            cube = Cube(**params)
+        self.assertIn(errMsg, str(cm.exception))
+
+    def test_cube_load_from_local_database_nodrpver(self):
+        config.drpver = None
+        params = {'mangaid': self.mangaid}
+        errMsg = 'drpver not set in config'
+        self._load_from_db_fail(params, errMsg)
+
+    def test_cube_load_from_local_database_nodbconnected(self):
+        config.db = None
+        params = {'mangaid': self.mangaid}
+        errMsg = 'No db connected'
+        self._load_from_db_fail(params, errMsg)
+
+    def test_cube_load_from_local_database_noresultsfound(self):
+        params = {'plateifu': '8485-0923'}
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(params['plateifu'])
+        self._load_from_db_fail(params, errMsg)
+
+    def test_cube_load_from_local_database_otherexception(self):
+        params = {'plateifu': '84.85-1901'}
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(params['plateifu'])
+        self._load_from_db_fail(params, errMsg)
+
+    def test_cube_load_from_local_database_multipleresultsfound(self):
+        params = {'plateifu': self.plateifu}
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(params['plateifu'])
+        newrow = {'plate': '8485', 'mangaid': self.mangaid, 'ifudesign_pk': 12, 'pipeline_info_pk': 21}
+        self._addToDB(datadb.Cube, newrow)
+        self._load_from_db_fail(params, errMsg)
+
+    def _addToDB(self, table, colvaldict):
+        self.session.begin()
+        param = table()
+        for column, value in colvaldict.iteritems():
+            param.__setattr__(column, value)
+        self.session.add(param)
+        self.session.flush()
+
+    #  Tests for getSpectrum
     def _test_getSpectrum(self, cube, idx, expect, **kwargs):
         """Convenience method to test getSpectrum."""
 
