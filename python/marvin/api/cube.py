@@ -67,7 +67,7 @@ class CubeView(FlaskView):
 
         cube = _getCube(name)
         if cube:
-            result['data'] = {name: '{0},{1},{2}'.format(name, cube.plate)}
+            result['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
         return json.dumps(result)
 
     @route('/<name>/spectra', defaults={'path': None})
@@ -87,7 +87,7 @@ class CubeView(FlaskView):
             result['status'] = 1
         except Exception as e:
             result['error'] = 'getSpectra: Failed to get spectrum: {0}'.format(str(e))
-            result['stuff'] = (name, x, y, ra, dec, ext, plateifu, mangaid)
+            result['stuff'] = (name, x, y, ra, dec, ext)
 
         return json.dumps(result)
 

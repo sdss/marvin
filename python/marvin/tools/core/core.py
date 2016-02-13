@@ -89,7 +89,7 @@ class MarvinToolsClass(object):
         elif self.plateifu:
 
             dbStatus = testDbConnection(session)
-            print(dbStatus)
+            print('db status', dbStatus)
 
             if dbStatus['good']:
                 self.mode = 'local'
@@ -98,20 +98,20 @@ class MarvinToolsClass(object):
                     'DB connection failed with error: {0}.'
                     .format(dbStatus['error']), MarvinUserWarning)
 
-            fullpath = self._getFullPath()
+                fullpath = self._getFullPath()
 
-            if fullpath and os.path.exists(fullpath):
-                self.mode = 'local'
-                self.filename = fullpath
-            else:
-                if config.download:
-                    raise NotImplementedError('sdsssync not yet implemented')
-                    # When implemented, this should download the data and
-                    # then kwargs['filename'] = downloaded_path and
-                    # kwargs['mode'] = local
+                if fullpath and os.path.exists(fullpath):
+                    self.mode = 'local'
+                    self.filename = fullpath
                 else:
-                    raise MarvinError('this is the end of the road. Try '
-                                      'using some reasonable inputs.')
+                    if config.download:
+                        raise NotImplementedError('sdsssync not yet implemented')
+                        # When implemented, this should download the data and
+                        # then kwargs['filename'] = downloaded_path and
+                        # kwargs['mode'] = local
+                    else:
+                        raise MarvinError('this is the end of the road. Try '
+                                          'using some reasonable inputs.')
 
     def _doRemote(self):
         """Tests if remote connection is possible."""
