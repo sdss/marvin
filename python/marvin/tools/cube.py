@@ -96,9 +96,13 @@ class Cube(MarvinToolsClass):
                 cubeShape = cubeExt.data.shape
 
                 if inputMode == 'sky':
+                    ra = float(ra)
+                    dec = float(dec)
                     cubeWCS = wcs.WCS(cubeExt.header)
                     xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
                 else:
+                    x = float(x)
+                    y = float(y)
                     yMid, xMid = np.array(cubeShape[1:]) / 2.
                     xCube = int(xMid + x)
                     yCube = int(yMid - y)
