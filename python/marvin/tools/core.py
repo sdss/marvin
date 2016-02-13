@@ -45,38 +45,76 @@ class MarvinUserWarning(UserWarning, MarvinWarning):
     pass
 
 
-def _doLocal(instance, **kwargs):
-    """Does local things."""
+class MarvinToolsClass(object):
 
-    filename = kwargs.get('filename', None)
-    plateifu = kwargs.get('plateifu', None)
+    def __init__(self, *args, **kwargs):
+        """Marvin tools main super class.
 
-    if filename:
+        This super class implements the decision tree for using local files,
+        database, or remote connection when initialising a Marvin tools
+        object.
 
-        if os.path.exists(filename):
-            kwargs['mode'] = 'local'
-            return kwargs
-        else:
-            raise MarvinError('input file {0} not found'.format(filename))
+        """
 
-    elif plateifu:
+        self.filename = kwargs.get('filename', None)
+        self.mangaid = kwargs.get('mangaid', None)
+        self.plateifu = kwargs.get('plateifu', None)
+        self.mode = kwargs.get('mode', None)
 
-        dbStatus = testDbConnection(config.session)
+        if self.mode is None:
+            self.mode = config.mode
 
-        if dbStatus['good']:
-            kwargs['mode'] = 'local'
-            return kwargs
-        else:
-            warnings.warn(
-                'DB connection failed with error: {0}.'
-                .format(dbStatus['error']), MarvinUserWarning)
+        args = [self.filename, self.plateifu, self.mangaid]
+        errmsg = 'Enter filename, plateifu, or mangaid!'
+        assert any(args), errmsg
+        assert sum([bool(arg) for arg in args]) == 1, errmsg
 
-            fullpath = instance._getFullPath(**kwargs)
+        if self.mangaid:
+            if self.mangaid in mangaid_to_plateifu:
+                self.plateifu = mangaid_to_plateifu[self.mangaid]
+            else:
+                raise MarvinError('mangaid={0} not found in the dictionary'
+                                  .format(self.mangaid))
 
-            if os.path.exists(fullpath):
-                kwargs['mode'] = 'local'
-                kwargs['filename'] = fullpath
-                return kwargs
+        if self.mode == 'local':
+            self._doLocal()
+        elif self.mode == 'remote':
+            self._doRemote()
+        elif self.mode == 'auto':
+            try:
+                self._doLocal()
+            except:
+                warnings.warn('local mode failed. Trying remote now.',
+                              MarvinUserWarning)
+                self._doRemote()
+
+    def _doLocal(self):
+        """Tests if it's possible to load the data locally."""
+
+        if self.filename:
+
+            if os.path.exists(self.filename):
+                self.mode = 'local'
+            else:
+                raise MarvinError('input file {0} not found'
+                                  .format(self.filename))
+
+        elif self.plateifu:
+
+            dbStatus = testDbConnection(config.session)
+
+            if dbStatus['good']:
+                self.mode = 'local'
+            else:
+                warnings.warn(
+                    'DB connection failed with error: {0}.'
+                    .format(dbStatus['error']), MarvinUserWarning)
+
+            fullpath = self._getFullPath()
+
+            if fullpath and os.path.exists(fullpath):
+                self.mode = 'local'
+                self.filename = fullpath
             else:
                 if config.download:
                     raise NotImplementedError('sdsssync not yet implemented')
@@ -87,128 +125,26 @@ def _doLocal(instance, **kwargs):
                     raise MarvinError('this is the end of the road. Try '
                                       'using some reasonable inputs.')
 
+    def _doRemote(self):
+        """Tests if remote connection is possible."""
 
-def _doRemote(**kwargs):
-    """Do remote things."""
+        if self.filename:
+            raise MarvinError('filename not allowed in remote mode.')
+        else:
+            self.mode = 'remote'
 
-    filename = kwargs.get('filename', None)
-
-    if filename:
-        raise MarvinError('filename not allowed in remote mode.')
-    else:
-        kwargs['mode'] = 'remote'
-        return kwargs
-
-
-class MarvinToolsClass(object):
-
-    def __new__(cls, *args, **kwargs):
-
-        me = object.__new__(cls, *args, **kwargs)
-
-        # me._kwargs = kwargs
-
-        filename = kwargs.get('filename', None)
-        mangaid = kwargs.get('mangaid', None)
-        plateifu = kwargs.get('plateifu', None)
-        mode = kwargs.get('mode', None)
-
-        if mode is None:
-            mode = config.mode
-        kwargs['mode'] = mode
-
-        args = [filename, plateifu, mangaid]
-        errmsg = 'Enter filename, plateifu, or mangaid!'
-        assert any(args), errmsg
-        assert sum([bool(arg) for arg in args]) == 1, errmsg
-
-        if mangaid:
-            if mangaid in mangaid_to_plateifu:
-                kwargs['plateifu'] = mangaid_to_plateifu[mangaid]
-                kwargs['mangaid'] = None
-            else:
-                raise MarvinError('mangaid={0} not found in the dictionary'
-                                  .format(mangaid))
-
-        if mode == 'local':
-            kwargs = _doLocal(me, **kwargs)
-        elif mode == 'remote':
-            kwargs = _doRemote(**kwargs)
-        elif mode == 'auto':
-            try:
-                kwargs = _doLocal(me, **kwargs)
-            except:
-                warnings.warn('local mode failed. Trying remote now.',
-                              MarvinUserWarning)
-                kwargs = _doRemote(**kwargs)
-
-        # This updates the internal dictionary of the instance so that
-        # __init__ knows the arguments to initialise the object.
-        me.__dict__.update(kwargs)
-
-        return me
-
-    def _getFullPath(self, **kwargs):
+    def _getFullPath(self, pathType, **pathParams):
+        """Returns the full path of the file in the tree."""
 
         if not Path:
             raise MarvinError('sdss_access is not installed')
         else:
-            self._Path = Path
-
-        # - check only one mangaid, filename, or plateifu
-        # - if mangaid
-        # -     if key exists in mangaid_to_plateifu
-        # -         plateifu=mangaid_to_plateifu[mangaid]
-        # -     else
-        # -         FAILS
-        #
-        # if local
-        #     if filename
-        #         if exists
-        #             mode=local+filename
-        #         else
-        #             FAILS
-        #     else (plateifu)
-        #         if DB:
-        #             mode=local+plateifu
-        #         else
-        #             if file exists in tree
-        #                 mode=local+full file path
-        #             else:
-        #                 if download_all
-        #                     sdsssync
-        #                     mode=local+full file path
-        #                 else
-        #                     FAILS
-        # elif remote
-        #     if filename
-        #         FAILS
-        #     else (plateifu)
-        #         mode=remote+plate_ifu
-        # elif auto
-        #     try:
-        #         local
-        #     except:
-        #         remote
-
-        # if mode == 'local':
-        #     if filename:
-        #         kwargs['mode'] = 'local'
-        #         if os.path.exists(filename):
-        #             pass
-        #         else:
-        #             if not mangaid and not plateifu:
-        #                 raise MarvinError('you did not provide any input!')
-        #             elif mangaid and plateifu:
-        #                 raise MarvinError('provide mangaid or plateifu')
-        #             elif mangaid:
-        #                 try:
-        #                     plateifu = mangaid_to_plateifu[mangaid]
-        #                     kwargs['mangaid'] = None
-        #                     kwargs['plateifu'] = plateifu
-        #                 except KeyError:
-        #                     raise MarvinError(
-        #                         'mangaid={0} not found in the dictionary'
-        #                         .format(mangaid))
-        #
-        #         return me(*args, **kwargs)
+            try:
+                fullpath = Path().full(pathType, **pathParams)
+            except Exception as ee:
+                warnings.warn(
+                    'sdss_access was not able to retrieve the full path of '
+                    'the file. Error message is: {0}'.format(str(ee)),
+                    MarvinUserWarning)
+                fullpath = None
+        return fullpath
