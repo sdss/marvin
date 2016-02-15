@@ -12,7 +12,7 @@ create schema mangadapdb;
 
 set search_path to mangadapdb;
 
-create table dap (pk serial primary key not null, cube_pk integer);
+create table dap (pk serial primary key not null, cube_pk integer, pipeline_info_pk integer);
 
 create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, dap_pk integer, structure_pk integer);
 
@@ -78,6 +78,11 @@ insert into mangadapdb.bintype values (0,'none'),(1,'ston');
 ALTER TABLE ONLY mangadapdb.dap
     ADD CONSTRAINT cube_fk
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.dap
+    ADD CONSTRAINT pipeline_info_fk
+    FOREIGN KEY (pipeline_info_pk) REFERENCES mangadatadb.pipeline_info(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY mangadapdb.file
