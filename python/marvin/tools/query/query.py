@@ -11,3 +11,15 @@ class Query(MarvinToolsClass):
         super(Query, self).__init__(*args, **kwargs)
 
         # handle different modes
+    
+    def set_params():
+        """Set parameters."""
+        pass
+
+    def add_condition():
+        """Add a condition."""
+        pass
+
+    def run():
+        """Get data from API."""
+        pass

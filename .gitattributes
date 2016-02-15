@@ -15,6 +15,7 @@ python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
 python/marvin/tools/query/__init__.py -text
 python/marvin/tools/query/query.py -text
+python/marvin/tools/query/results.py -text
 python/marvin/tools/tests/test_cube.py -text
 python/marvin/utils/__init__.py -text
 python/marvin/utils/db/__init__.py -text
