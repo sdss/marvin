@@ -113,6 +113,9 @@ class Cube(MarvinToolsClass):
             else:
 
                 raise NotImplementedError('getSpectrum from DB not yet implemented')
+                #spaxel = session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                #data = spaxel.__getattribute__(ext)
+                #return data
 
         else:
 

@@ -14,7 +14,7 @@ set search_path to mangadapdb;
 
 create table dap (pk serial primary key not null, cube_pk integer);
 
-create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, dap_pk integer);
+create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, dap_pk integer, structure_pk integer);
 
 create table filetype (pk serial primary key not null, value text);
 
@@ -36,7 +36,7 @@ create table hdu_to_extcol (pk serial primary key not null, hdu_pk integer, extc
 
 create table extcol (pk serial primary key not null, name text);
 
-create table structure (pk serial primary key not null, binmode_pk integer, bintype_pk integer, template_kin_pk integer, template_pop_pk integer, executionplan_pk integer, file_pk integer);
+create table structure (pk serial primary key not null, binmode_pk integer, bintype_pk integer, template_kin_pk integer, template_pop_pk integer, executionplan_pk integer);
 
 create table binid (pk serial primary key not null, index integer[][], structure_pk integer);
 
@@ -83,6 +83,11 @@ ALTER TABLE ONLY mangadapdb.dap
 ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT dap_fk
     FOREIGN KEY (dap_pk) REFERENCES mangadapdb.dap(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.file
+    ADD CONSTRAINT filetype_fk
+    FOREIGN KEY (filetype_pk) REFERENCES mangadapdb.filetype(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY mangadapdb.current_default
@@ -155,9 +160,14 @@ ALTER TABLE ONLY mangadapdb.structure
     FOREIGN KEY (executionplan_pk) REFERENCES mangadapdb.executionplan(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE ONLY mangadapdb.structure
-    ADD CONSTRAINT file_fk
-    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+ALTER TABLE ONLY mangadapdb.binid
+    ADD CONSTRAINT structure_fk
+    FOREIGN KEY (structure_pk) REFERENCES mangadapdb.structure(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.file
+    ADD CONSTRAINT structure_fk
+    FOREIGN KEY (structure_pk) REFERENCES mangadapdb.structure(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY mangadapdb.emline
