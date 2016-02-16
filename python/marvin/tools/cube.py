@@ -113,8 +113,15 @@ class Cube(MarvinToolsClass):
                     shape = (size, size)
                     xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix')
 
-                # raise NotImplementedError('getSpectrum from DB not yet implemented')
-                spaxel = session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                import sqlalchemy
+                inputs = [ra, dec] if inputMode == 'sky' else [x, y]
+                try:
+                    spaxel = session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                except sqlalchemy.orm.exc.NoResultFound as e:
+                    raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
+                except Exception as e:
+                    raise MarvinError('Could not retrieve cube for plate-ifu {0} at position {1},{2}: Unknown exception: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
+
                 data = spaxel.__getattribute__(ext)
                 return data
 
