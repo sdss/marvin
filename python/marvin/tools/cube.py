@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 from astropy.io import fits
-from marvin import config, session, datadb
+import marvin
 from marvin.api.api import Interaction
 from marvin.tools.core import MarvinToolsClass, MarvinError
 from marvin.utils.general import convertCoords
@@ -18,7 +18,7 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=config.drpver,
+                                              drpver=marvin.config.drpver,
                                               plate=plate)
 
     def __init__(self, *args, **kwargs):
@@ -153,20 +153,22 @@ class Cube(MarvinToolsClass):
         ''' server-side code '''
 
         # look for drpver
-        if not config.drpver:
+        if not marvin.config.drpver:
             raise RuntimeError('drpver not set in config!')
 
         # parse the plate-ifu
         if self.plateifu:
             plate, ifu = self.plateifu.split('-')
 
-        if not config.db:
+        if not marvin.config.db:
             raise RuntimeError('No db connected')
         else:
             import sqlalchemy
             self._cube = None
             try:
-                self._cube = session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(datadb.PipelineVersion.version == config.drpver, datadb.Cube.plate == plate, datadb.IFUDesign.name == ifu).one()
+                self._cube = marvin.session.query(marvin.datadb.Cube).join(marvin.datadb.PipelineInfo, marvin.datadb.PipelineVersion, marvin.datadb.IFUDesign).\
+                    filter(marvin.datadb.PipelineVersion.version == marvin.config.drpver, marvin.datadb.Cube.plate == plate,
+                           marvin.datadb.IFUDesign.name == ifu).one()
             except sqlalchemy.orm.exc.MultipleResultsFound as e:
                 raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
             except sqlalchemy.orm.exc.NoResultFound as e:

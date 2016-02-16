@@ -1,5 +1,5 @@
 
-from marvin import datadb, config
+import marvin
 import traceback
 import sys
 
@@ -28,7 +28,7 @@ def testDbConnection(session=None):
         from marvin import session
 
     try:
-        tmp = session.query(datadb.PipelineVersion).first()
+        tmp = session.query(marvin.datadb.PipelineVersion).first()
         res['good'] = True
     except Exception as e:
         error1 = 'Error connecting to manga database: {0}'.format(str(e))
