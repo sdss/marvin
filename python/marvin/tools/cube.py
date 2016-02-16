@@ -1,10 +1,10 @@
 from __future__ import print_function
 import numpy as np
 from astropy.io import fits
-from astropy import wcs
 from marvin import config, session, datadb
 from marvin.api.api import Interaction
 from marvin.tools.core import MarvinToolsClass, MarvinError
+from marvin.utils.general import convertCoords
 
 
 class Cube(MarvinToolsClass):
@@ -94,16 +94,9 @@ class Cube(MarvinToolsClass):
                 cubeShape = cubeExt.data.shape
 
                 if inputMode == 'sky':
-                    ra = float(ra)
-                    dec = float(dec)
-                    cubeWCS = wcs.WCS(cubeExt.header)
-                    xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
+                    xCube, yCube = convertCoords(ra=ra, dec=dec, hdr=cubeExt.header, mode='sky')
                 else:
-                    x = float(x)
-                    y = float(y)
-                    yMid, xMid = np.array(cubeShape[1:]) / 2.
-                    xCube = int(xMid + x)
-                    yCube = int(yMid - y)
+                    xCube, yCube = convertCoords(x=x, y=y, shape=cubeShape[1:], mode='pix')
 
                 assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
                 assert (xCube < cubeShape[2] - 1 and yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
@@ -112,10 +105,18 @@ class Cube(MarvinToolsClass):
 
             else:
 
-                raise NotImplementedError('getSpectrum from DB not yet implemented')
-                #spaxel = session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
-                #data = spaxel.__getattribute__(ext)
-                #return data
+                if inputMode == 'sky':
+                    cubehdr = self._cube.wcs.makeHeader()
+                    xCube, yCube = convertCoords(ra=ra, dec=dec, hdr=cubehdr, mode='sky')
+                else:
+                    size = int(np.sqrt(len(self._cube.spaxels)))
+                    shape = (size, size)
+                    xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix')
+
+                # raise NotImplementedError('getSpectrum from DB not yet implemented')
+                spaxel = session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                data = spaxel.__getattribute__(ext)
+                return data
 
         else:
 

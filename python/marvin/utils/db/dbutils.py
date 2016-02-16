@@ -24,10 +24,6 @@ def testDbConnection(session=None):
 
     res = {'good': None, 'error': None}
 
-    #if not config.db:
-    #    res['error'] = 'No database found!'
-    #    return res
-
     if not session:
         from marvin import session
 

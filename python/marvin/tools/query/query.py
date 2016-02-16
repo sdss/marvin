@@ -4,6 +4,7 @@ from marvin.tools.core import MarvinToolsClass, MarvinError
 
 __all__ = ['Query']
 
+
 class Query(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
@@ -11,7 +12,7 @@ class Query(MarvinToolsClass):
         super(Query, self).__init__(*args, **kwargs)
 
         # handle different modes
-    
+
     def set_params():
         """Set parameters."""
         pass
