@@ -48,25 +48,25 @@ create table binmode (pk serial primary key not null, name text);
 
 create table bintype (pk serial primary key not null, name text);
 
-create table emline (pk serial primary key not null, value real[][], ivar real[][], mask integer[][], emline_parameter_pk integer, emline_type_pk integer, structure_pk integer);
+create table emline (pk serial primary key not null, value numeric[][], ivar numeric[][], mask integer[][], emline_parameter_pk integer, emline_type_pk integer, structure_pk integer);
 
-create table emline_type (pk serial primary key not null, name text, rest_wavelength real, channel integer);
+create table emline_type (pk serial primary key not null, name text, rest_wavelength numeric, channel integer);
 
 create table emline_parameter (pk serial primary key not null, name text, unit text);
 
-create table stellar_kin (pk serial primary key not null, value real[][], ivar real[][], mask integer[][], stellar_kin_parameter_pk integer, stellar_kin_type_pk integer, structure_pk integer);
+create table stellar_kin (pk serial primary key not null, value numeric[][], ivar numeric[][], mask integer[][], stellar_kin_parameter_pk integer, stellar_kin_type_pk integer, structure_pk integer);
 
 create table stellar_kin_type (pk serial primary key not null, name text, channel integer);
 
 create table stellar_kin_parameter (pk serial primary key not null, name text, unit text);
 
-create table stellar_pop (pk serial primary key not null, value real[][], ivar real[][], mask integer[][], stellar_pop_parameter_pk integer, stellar_pop_type_pk integer, structure_pk integer);
+create table stellar_pop (pk serial primary key not null, value numeric[][], ivar numeric[][], mask integer[][], stellar_pop_parameter_pk integer, stellar_pop_type_pk integer, structure_pk integer);
 
 create table stellar_pop_type (pk serial primary key not null, name text, channel integer);
 
 create table stellar_pop_parameter (pk serial primary key not null, name text, unit text);
 
-create table specindex (pk serial primary key not null, value real[][], ivar real[][], mask integer[][], specindex_type_pk integer, structure_pk integer);
+create table specindex (pk serial primary key not null, value numeric[][], ivar numeric[][], mask integer[][], specindex_type_pk integer, structure_pk integer);
 
 create table specindex_type (pk serial primary key not null, name text, channel integer, unit text);
 
