@@ -3,11 +3,13 @@ import os
 import requests
 from marvin import config
 
+configkeys = ['mode', 'mplver', 'drpver', 'dapver']
+
 
 class Interaction(object):
     ''' This class defines convenience wrappers for the Marvin RESTful API '''
 
-    def __init__(self, route, params=None, request_type='post'):
+    def __init__(self, route, params=None, request_type='get'):
         self.results = None
         self.route = route
         self.url = os.path.join(config.sasurl, route)
@@ -34,6 +36,7 @@ class Interaction(object):
             r = requests.post(self.url, data=self.params)
 
         self._checkResponse(r)
+        self._preloadResults()
 
     def getData(self, astype=None):
         data = self.results['data'] if 'data' in self.results else None
@@ -45,3 +48,10 @@ class Interaction(object):
                 raise Exception('Failed: {0}, {1}'.format(e, data))
         else:
             return data
+
+    def _preloadResults(self):
+        for key in configkeys:
+            self.results[key] = config.__getattribute__(key)
+
+    def checkConfig(self):
+        return {k: self.results[k] for k in configkeys}
