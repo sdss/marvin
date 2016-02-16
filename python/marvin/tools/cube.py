@@ -116,7 +116,7 @@ class Cube(MarvinToolsClass):
                 import sqlalchemy
                 inputs = [ra, dec] if inputMode == 'sky' else [x, y]
                 try:
-                    spaxel = marvin.session.query(datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                    spaxel = marvin.session.query(marvin.datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
                 except sqlalchemy.orm.exc.NoResultFound as e:
                     raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
                 except Exception as e:
