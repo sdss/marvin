@@ -14,7 +14,7 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from marvin import config, session, datadb
+import marvin
 from marvin.tools.core import MarvinUserWarning, MarvinError
 from marvin.utils.db import testDbConnection
 import warnings
@@ -49,7 +49,7 @@ class MarvinToolsClass(object):
         self.mode = kwargs.get('mode', None)
 
         if self.mode is None:
-            self.mode = config.mode
+            self.mode = marvin.config.mode
 
         args = [self.filename, self.plateifu, self.mangaid]
         errmsg = 'Enter filename, plateifu, or mangaid!'
@@ -88,7 +88,7 @@ class MarvinToolsClass(object):
 
         elif self.plateifu:
 
-            dbStatus = testDbConnection(session)
+            dbStatus = testDbConnection(marvin.session)
             print('db status', dbStatus)
 
             if dbStatus['good']:
@@ -104,7 +104,7 @@ class MarvinToolsClass(object):
                     self.mode = 'local'
                     self.filename = fullpath
                 else:
-                    if config.download:
+                    if marvin.config.download:
                         raise NotImplementedError('sdsssync not yet implemented')
                         # When implemented, this should download the data and
                         # then kwargs['filename'] = downloaded_path and

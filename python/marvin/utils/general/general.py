@@ -54,7 +54,7 @@ def lookUpVersions(mplver):
     try:
         drpver, dapver = mpldict[mplver]
     except KeyError as e:
-        raise MarvinError('MPL version {0} not found in lookup table. Should it be added?  Check for typos..: {1}'.format(mplver, e))
+        raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
 
     return drpver, dapver
 
@@ -68,7 +68,7 @@ def lookUpMpl(drpver):
     try:
         mplver = verdict[drpver]
     except KeyError as e:
-        raise MarvinError('DRP version {0} not found in lookup table. Should it be added?  Check for typos..: {1}'.format(drpver, e))
+        raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
 
     return mplver
 

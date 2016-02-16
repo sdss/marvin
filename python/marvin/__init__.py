@@ -68,22 +68,22 @@ class Config(object):
             self.mplver = mplver
             self.drpver, self.dapver = lookUpVersions(mplver)
 
-    def setVersion(self, drpver=None, dapver=None):
+    def setVersions(self, drpver=None, dapver=None):
         ''' Set the data version by DRPVER and DAPVER '''
 
         if drpver:
             assert type(drpver) == str, 'drpver needs to be a string'
             drpre = re.search('v([0-9][_]([0-9])[_]([0-9]))', drpver)
-            assert drpre is not None, 'DRP version must be of form "v_[X]_[X]_[X]"'
+            assert drpre is not None, 'DRP version must be of form "v[X]_[X]_[X]"'
             if drpre:
                 self.drpver = drpver
-                self.mplver = lookUpMPL(drpver)
+                self.mplver = lookUpMpl(drpver)
 
         if dapver:
             assert type(dapver) == str, 'dapver needs to be a string'
             dapre1 = re.search('v([0-9][_]([0-9])[_]([0-9]))', dapver)
             dapre2 = re.search('([0-9][.]([0-9])[.]([0-9]))', dapver)
-            assert (dapre1 or dapre2) is not None, 'DAP version must be of form "v_[X]_[X]_[X]", or [X].[X].[X]'
+            assert (dapre1 or dapre2) is not None, 'DAP version must be of form "v[X]_[X]_[X]", or [X].[X].[X]'
             if any([dapre1, dapre2]):
                 self.dapver = dapver
 
