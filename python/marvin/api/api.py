@@ -57,6 +57,7 @@ class Interaction(object):
         else:
             return data
 
+    # This should probably get moved into the server side code
     def _preloadResults(self):
         for key in configkeys:
             self.results[key] = config.__getattribute__(key)
