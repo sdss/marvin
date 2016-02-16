@@ -2,6 +2,7 @@
 from functools import wraps
 
 # General Decorators
+__all__ = ['parseRoutePath']
 
 
 def parseRoutePath(f):

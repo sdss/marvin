@@ -170,6 +170,15 @@ class TestCube(unittest.TestCase):
         self._test_getSpectrum(self.cubeFromFile, 3000, expect,
                                ra=232.546383, dec=48.6883954)
 
+    def test_getSpectrum_db_flux_ra_dec(self):
+        expect = 0.017929086
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
+
+    def test_getSpectrum_db_flux_x_y(self):
+        expect = -0.10531016
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 10, expect, x=10, y=5)
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

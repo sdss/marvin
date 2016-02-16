@@ -4,6 +4,7 @@ from marvin.tools.query import Query
 
 __all__ = ['Results']
 
+
 class Results(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
