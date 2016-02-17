@@ -82,7 +82,7 @@ class Cube(MarvinToolsClass):
         else:
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
-        assert isinstance(ext, basestring)
+        assert isinstance(ext, str)
         ext = ext.lower()
         assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
