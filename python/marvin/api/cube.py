@@ -1,6 +1,7 @@
-from flask.ext.classy import FlaskView, route
+from flask.ext.classy import route
 from flask import Blueprint, url_for, current_app
 from marvin.tools.cube import Cube
+from marvin.api.base import BaseView
 import json
 import urllib
 from marvin import config
@@ -13,47 +14,42 @@ config.drpver = 'v1_5_1'  # FIX THIS
 api = Blueprint("api", __name__)
 
 
-class Results(object):
-    '''Container of results to return from API as JSON.'''
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.output = {'data': None, 'status': -1, 'error': None}
-
-
 def _getCube(name):
     ''' Retrieve a cube using marvin tools '''
 
     cube = None
-    results = Results()
+    results = {}
 
     # parse name into either mangaid or plateifu
     try:
         mangaid, plateifu = parseName(name)
     except Exception as e:
-        results.output['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
+        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
         return cube, results
 
     try:
         cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local')
-        results.output['status'] = 1
+        results['status'] = 1
     except Exception as e:
-        results.output['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
+        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
 
     return cube, results
 
 
-class CubeView(FlaskView):
+class CubeView(BaseView):
     ''' Class describing API calls related to MaNGA Cubes '''
 
     route_base = '/cubes/'
     # decorators = [parseRoutePath]
 
+    def after_request(self, name, response):
+        ''' This performs a reset of the results dict after every request method runs.  See Flask-Classy for more info on after_request '''
+        self.reset_results()
+        return response
+
     def index(self):
-        results = Results()
-        return json.dumps({'data': 'this is a cube!'})
+        self.results['data'] = 'this is a cube!'
+        return json.dumps(self.results)
         '''
         func_list = {}
         output = []
@@ -75,37 +71,33 @@ class CubeView(FlaskView):
         '''
 
     def get(self, name):
-        results = Results()
+        ''' This method performs a get request at the url route /cubes/<id> '''
         cube, res = _getCube(name)
+        self.update_results(res)
         if cube:
-            results.output['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
-        out = json.dumps(results.output)
-        results.reset()
-        return out
+            self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
+        return json.dumps(self.results)
 
     @route('/<name>/spectra', defaults={'path': None})
     @route('/<name>/spectra/<path:path>', endpoint='getspectra')
     @parseRoutePath
     def getSpectra(self, name=None, x=None, y=None, ra=None, dec=None, ext=None):
         # Add ability to grab spectra from fits files
-        cube, results = _getCube(name)
+        cube, res = _getCube(name)
+        self.update_results(res)
         if not cube:
-            results = Results()
-            results.output['error'] = 'getSpectra: No cube: {0}'.format(result['error'])
-            out = json.dumps(results.output)
-            results.reset()
-            return out
+            self.results['error'] = 'getSpectra: No cube: {0}'.format(result['error'])
+            return json.dumps(self.results)
 
         try:
             spectrum = cube.getSpectrum(x=x, y=y, ra=ra, dec=dec, ext=ext)
-            results.output['data'] = spectrum
-            results.output['status'] = 1
+            self.results['data'] = spectrum
+            self.results['status'] = 1
         except Exception as e:
-            results.output['error'] = 'getSpectra: Failed to get spectrum: {0}'.format(str(e))
-            results.output['stuff'] = (name, x, y, ra, dec, ext)
+            self.results['status'] = -1
+            self.results['error'] = 'getSpectra: Failed to get spectrum: {0}'.format(str(e))
+            self.results['stuff'] = (name, x, y, ra, dec, ext)
 
-        out = json.dumps(results.output)
-        results.reset()
-        return out
+        return json.dumps(self.results)
 
 CubeView.register(api)
