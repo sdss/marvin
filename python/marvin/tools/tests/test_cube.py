@@ -38,7 +38,8 @@ class TestCube(unittest.TestCase):
         session = self.session
 
     def tearDown(self):
-        self.session.close()
+        if self.session:
+            self.session.close()
 
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
