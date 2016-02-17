@@ -13,14 +13,14 @@ config.drpver = 'v1_5_1'  # FIX THIS
 api = Blueprint("api", __name__)
 
 # JSON results to return from API
-result = {'data': None, 'status': -1, 'error': None}
+# result = {'data': None, 'status': -1, 'error': None}
 
 
 def _getCube(name):
     ''' Retrieve a cube using marvin tools '''
 
     cube = None
-
+    result = {'data': None, 'status': -1, 'error': None}
     # parse name into either mangaid or plateifu
     try:
         mangaid, plateifu = parseName(name)
@@ -34,7 +34,7 @@ def _getCube(name):
     except Exception as e:
         result['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
 
-    return cube
+    return cube, result
 
 
 class CubeView(FlaskView):
@@ -44,7 +44,9 @@ class CubeView(FlaskView):
     # decorators = [parseRoutePath]
 
     def index(self):
-        # return json.dumps({'data': 'this is a cube!'})
+        result = {'data': None, 'status': -1, 'error': None}
+        return json.dumps({'data': 'this is a cube!'})
+        '''
         func_list = {}
         output = []
         for rule in current_app.url_map.iter_rules():
@@ -62,10 +64,11 @@ class CubeView(FlaskView):
             res['data'].append(line)
 
         return json.dumps(res)
+        '''
 
     def get(self, name):
-
-        cube = _getCube(name)
+        result = {'data': None, 'status': -1, 'error': None}
+        cube, res = _getCube(name)
         if cube:
             result['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
         return json.dumps(result)
@@ -75,8 +78,8 @@ class CubeView(FlaskView):
     @parseRoutePath
     def getSpectra(self, name=None, x=None, y=None, ra=None, dec=None, ext=None):
         # Add ability to grab spectra from fits files
-
-        cube = _getCube(name)
+        result = {'data': None, 'status': -1, 'error': None}
+        cube, res = _getCube(name)
         if not cube:
             result['error'] = 'getSpectra: No cube: {0}'.format(result['error'])
             return json.dumps(result)
