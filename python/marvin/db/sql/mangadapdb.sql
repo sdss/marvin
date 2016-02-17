@@ -12,9 +12,9 @@ create schema mangadapdb;
 
 set search_path to mangadapdb;
 
-create table dap (pk serial primary key not null, cube_pk integer, pipeline_info_pk integer);
-
-create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, dap_pk integer, structure_pk integer);
+/*create table dap (pk serial primary key not null, cube_pk integer, pipeline_info_pk integer);
+*/
+create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, structure_pk integer, cube_pk integer, pipeline_info_pk integer);
 
 create table filetype (pk serial primary key not null, value text);
 
@@ -24,7 +24,7 @@ create table hdu (pk serial primary key not null, extname_pk integer, exttype_pk
 
 create table hdu_to_header_value (pk serial primary key not null, hdu_pk integer, header_value_pk integer);
 
-create table header_value (pk serial primary key not null, value text, index integer, comment text, header_keyword_pk integer, hdu_pk integer);
+create table header_value (pk serial primary key not null, value text, index integer, comment text, header_keyword_pk integer);
 
 create table header_keyword (pk serial primary key not null, name text);
 
@@ -42,7 +42,7 @@ create table binid (pk serial primary key not null, index integer[][], structure
 
 create table executionplan (pk serial primary key not null, id integer, comments text);
 
-create table template (pk serial primary key not null, name text);
+create table template (pk serial primary key not null, name text, id integer);
 
 create table binmode (pk serial primary key not null, name text);
 
@@ -75,6 +75,7 @@ insert into mangadapdb.binmode values (0,'cube'),(1,'rss');
 insert into mangadapdb.bintype values (0,'none'),(1,'ston');
 */
 
+/*
 ALTER TABLE ONLY mangadapdb.dap
     ADD CONSTRAINT cube_fk
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
@@ -84,12 +85,23 @@ ALTER TABLE ONLY mangadapdb.dap
     ADD CONSTRAINT pipeline_info_fk
     FOREIGN KEY (pipeline_info_pk) REFERENCES mangadatadb.pipeline_info(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
+*/
 
 ALTER TABLE ONLY mangadapdb.file
+    ADD CONSTRAINT cube_fk
+    FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.file
+    ADD CONSTRAINT pipeline_info_fk
+    FOREIGN KEY (pipeline_info_pk) REFERENCES mangadatadb.pipeline_info(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+/*ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT dap_fk
     FOREIGN KEY (dap_pk) REFERENCES mangadapdb.dap(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
-
+*/
 ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT filetype_fk
     FOREIGN KEY (filetype_pk) REFERENCES mangadapdb.filetype(pk)
