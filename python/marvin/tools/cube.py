@@ -41,7 +41,7 @@ class Cube(MarvinToolsClass):
             # initialise the cube.
             pass
 
-    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext='flux'):
+    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
 
         The type of the spectrum returned depends on the `ext` keyword, and
@@ -61,7 +61,7 @@ class Cube(MarvinToolsClass):
 
         ext : str
             The extension of the cube to use, either `'flux'`, `'ivar'`, or
-            `'mask'`.
+            `'mask'`. Defaults to `'flux'`.
 
         Returns
         -------
@@ -81,6 +81,9 @@ class Cube(MarvinToolsClass):
             inputMode = 'sky'
         else:
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
+
+        if not ext:
+            ext = 'flux'
 
         assert isinstance(ext, str)
         ext = ext.lower()
