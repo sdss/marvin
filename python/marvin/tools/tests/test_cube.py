@@ -6,9 +6,10 @@ import unittest
 from marvin.tools.cube import Cube
 from marvin.tools.core import MarvinError
 from marvin import config, session, datadb
+from marvin.tools.tests import MarvinTest, skipIfNoDB
 
 
-class TestCube(unittest.TestCase):
+class TestCube(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
@@ -61,6 +62,7 @@ class TestCube(unittest.TestCase):
         # self.assertIn(errMsg, cm.exception.args)
 
     # Tests for Cube Load by Database
+    @skipIfNoDB
     def test_cube_load_from_local_database_success(self):
         cube = Cube(mangaid=self.mangaid)
         self.assertIsNotNone(cube)
@@ -75,28 +77,33 @@ class TestCube(unittest.TestCase):
             cube = Cube(**params)
         self.assertIn(errMsg, str(cm.exception))
 
+    @skipIfNoDB
     def test_cube_load_from_local_database_nodrpver(self):
         config.drpver = None
         params = {'mangaid': self.mangaid}
         errMsg = 'drpver not set in config'
         self._load_from_db_fail(params, errMsg)
 
+    @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
         config.db = None
         params = {'mangaid': self.mangaid}
         errMsg = 'No db connected'
         self._load_from_db_fail(params, errMsg)
 
+    @skipIfNoDB
     def test_cube_load_from_local_database_noresultsfound(self):
         params = {'plateifu': '8485-0923'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
+    @skipIfNoDB
     def test_cube_load_from_local_database_otherexception(self):
         params = {'plateifu': '84.85-1901'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
+    @skipIfNoDB
     def test_cube_load_from_local_database_multipleresultsfound(self):
         params = {'plateifu': self.plateifu}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(params['plateifu'])
@@ -171,15 +178,18 @@ class TestCube(unittest.TestCase):
         self._test_getSpectrum(self.cubeFromFile, 3000, expect,
                                ra=232.546383, dec=48.6883954)
 
+    @skipIfNoDB
     def test_getSpectrum_db_flux_ra_dec(self):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
 
+    @skipIfNoDB
     def test_getSpectrum_db_flux_x_y(self):
         expect = -0.10531016
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 10, expect, x=10, y=5)
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
