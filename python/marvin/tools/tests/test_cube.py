@@ -170,26 +170,54 @@ class TestCube(MarvinTest):
         expect = -0.10531016
         self._test_getSpectrum(self.cubeFromFile, 10, expect, x=10, y=5)
 
-    def test_getSpectrum_file_flux_ra_dec(self):
+    def _getSpectrum_file_flux_ra_dec(self, ra, dec):
         """Tests getSpectrum from a file cube with ra, dec inputs."""
         # TODO: check that the expected value is correct.
-
         expect = 0.017929086
-        self._test_getSpectrum(self.cubeFromFile, 3000, expect,
-                               ra=232.546383, dec=48.6883954)
+        self._test_getSpectrum(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
 
-    @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec(self):
+    def test_getSpectrum_file_flux_ra_dec_full(self):
+        self._getSpectrum_file_flux_ra_dec(ra=232.546383, dec=48.6883954)
+
+    def test_getSpectrum_file_flux_ra_dec_parital(self):
+        self._getSpectrum_file_flux_ra_dec(ra=232.546, dec=48.6883)
+
+    def test_getSpectrum_file_flux_ra_dec_twosigfig(self):
+        self._getSpectrum_file_flux_ra_dec(ra=232.55, dec=48.69)
+
+    def test_getSpectrum_file_flux_ra_dec_int(self):
+        self._getSpectrum_file_flux_ra_dec(ra=232, dec=48)
+
+    def _getSpectrum_db_flux_ra_dec(self, ra, dec):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
+        self._test_getSpectrum(cube, 3000, expect, ra=ra, dec=dec)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_ra_dec_full(self):
+        self._getSpectrum_db_flux_ra_dec(ra=232.546383, dec=48.6883954)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_ra_dec_partial(self):
+        self._getSpectrum_db_flux_ra_dec(ra=232.546, dec=48.6883)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_ra_dec_twosigfig(self):
+        self._getSpectrum_db_flux_ra_dec(ra=232.55, dec=48.69)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_ra_dec_twosigfig2(self):
+        self._getSpectrum_db_flux_ra_dec(ra=232.54, dec=48.68)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_ra_dec_int(self):
+        self._getSpectrum_db_flux_ra_dec(ra=232, dec=48)
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_x_y(self):
         expect = -0.10531016
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 10, expect, x=10, y=5)
-
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
