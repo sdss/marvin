@@ -16,7 +16,7 @@ api = Blueprint("api", __name__)
 class Results(object):
     '''Container of results to return from API as JSON.'''
 
-    def __init__:
+    def __init__(self):
         self.reset()
 
     def reset(self):
