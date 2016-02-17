@@ -85,7 +85,13 @@ class Cube(MarvinToolsClass):
         if not ext:
             ext = 'flux'
 
-        assert isinstance(ext, str)
+        try:
+           isExtString = isinstance(ext, basestring)
+        except NameError:
+           isExtString = isinstance(ext, str)
+
+        assert isExtString
+
         ext = ext.lower()
         assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
