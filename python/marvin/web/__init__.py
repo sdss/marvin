@@ -10,7 +10,7 @@ def create_app(debug=False):
     from marvin.web.controllers.index import index
 
     app = Flask(__name__)
-    api = Blueprint("api", __name__)
+    api = Blueprint("api", __name__, url_prefix='/api')
 
     # API route registration
     CubeView.register(api)
