@@ -1,10 +1,15 @@
-from marvin.tools.core.exceptions import MarvinError
+from marvin.tools.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
+from astropy import table
+import warnings
 
 # General utilities
 
-__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions']
+__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions',
+           'mangaid2plateifu']
+
+drpTable = None
 
 
 def parseName(name):
@@ -72,3 +77,120 @@ def lookUpMpl(drpver):
 
     return mplver
 
+
+def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
+    """Returns the plate-ifu for a certain mangaid.
+
+    Uses either the DB or the drpall file to determine the plate-ifu for
+    a mangaid. If more than one plate-ifu are available for a certain ifu,
+    and `mode='drpall'`, the one with the higher SN2 (calculated as the sum of
+    redSN2 and blueSN2) will be used. If `mode='db'`, the most recent one will
+    be used.
+
+    Parameters
+    ----------
+    mangaid : str
+        The mangaid for which the plate-ifu will be returned.
+    mode : str
+        Either `'auto'`, `'drpall'`, `'db'`, or `'remote'`. If `'drpall'` or
+        `'db'`, the  drpall file or the local database, respectively, will be
+        used. If `'remote'`, a request to the API will be issued. If `'auto'`,
+        the local modes will be tried before the remote mode.
+    drpall : str or None
+        The path to the drpall file to use. If None, the file in
+        `config.drpall` will be used.
+    drpver : str or None
+        The DRP version to use. If None, the one in `config.drpver` will be
+        used. If `drpall` is defined, this value is ignored.
+
+    Returns
+    -------
+    plateifu : str
+        The plate-ifu string for the input `mangaid`.
+
+    """
+
+    global drpTable
+    from marvin import config
+    from marvin import datadb, session
+    from marvin.api.api import Interaction
+
+    # The modes and order over which the auto mode will loop.
+    autoModes = ['db', 'drpall', 'remote']
+
+    assert mode in autoModes + ['auto'], 'mode={0} is not valid'.format(mode)
+
+    if not drpall:
+        drpall = config._getDrpAllPath(drpver=drpver)
+
+    if mode == 'drpall':
+
+        if not drpall:
+            raise ValueError('no drpall file can be found.')
+
+        # Loads the drpall table if it was not cached from a previos session.
+        if not drpTable:
+            drpTable = table.Table.read(drpall)
+
+        mangaids = np.array([mm.strip() for mm in drpTable['mangaid']])
+
+        plateifus = drpTable[np.where(mangaids == mangaid)]
+
+        if len(plateifus) > 1:
+            warnings.warn('more than one plate-ifu found for mangaid={0}. '
+                          'Using the one with the highest SN2.'
+                          .format(mangaid), MarvinUserWarning)
+            plateifus = plateifus[
+                [np.argmax(plateifus['bluesn2'] + plateifus['redsn2'])]]
+
+        if len(plateifus) == 0:
+            raise ValueError('no plate-ifus found for mangaid={0}'
+                             .format(mangaid))
+
+        return plateifus['plateifu'][0]
+
+    elif mode == 'db':
+
+        if not session or not datadb:
+            raise MarvinError('no DB connection found')
+
+        cubes = session.query(datadb.Cube).filter(
+            datadb.Cube.mangaid == mangaid).all()
+
+        if len(cubes) == 0:
+            raise ValueError('no plate-ifus found for mangaid={0}'
+                             .format(mangaid))
+        elif len(cubes) > 1:
+            cube = cubes[-1]
+        else:
+            cube = cubes[0]
+
+        return '{0}-{1}'.format(cube.plate, cube.ifu.name)
+
+    elif mode == 'remote':
+
+        response = Interaction(
+            'api/general/mangaid2plateifu/{0}/'.format(mangaid))
+        plateifu = response.getData(astype=str)
+
+        if not plateifu:
+            if 'error' in response.results and response.results['error']:
+                raise MarvinError(response.results['error'])
+            else:
+                raise MarvinError('API call to mangaid2plateifu '
+                                  'failed with error unknown.')
+
+        return plateifu
+
+    elif mode == 'auto':
+
+        for mm in autoModes:
+            try:
+                plateifu = mangaid2plateifu(mangaid, mode=mm)
+                return plateifu
+            except:
+                continue
+
+        raise MarvinError(
+            'mangaid2plateifu was not able to find a plate-ifu for '
+            'mangaid={0} either local or remotely.'.format(mangaid))
