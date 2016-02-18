@@ -1,13 +1,10 @@
 from flask.ext.classy import route
-from flask import Blueprint, url_for, current_app
+from flask import Blueprint, url_for, current_app, request
 from marvin.tools.cube import Cube
 from marvin.api.base import BaseView
 import json
 import urllib
-from marvin import config
 from marvin.utils.general import parseRoutePath, parseName
-
-config.drpver = 'v1_5_1'  # FIX THIS
 
 ''' stuff that runs server-side '''
 
@@ -42,11 +39,6 @@ class CubeView(BaseView):
     route_base = '/cubes/'
     # decorators = [parseRoutePath]
 
-    def after_request(self, name, response):
-        ''' This performs a reset of the results dict after every request method runs.  See Flask-Classy for more info on after_request '''
-        self.reset_results()
-        return response
-
     def index(self):
         self.results['data'] = 'this is a cube!'
         return json.dumps(self.results)
@@ -78,15 +70,15 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
         return json.dumps(self.results)
 
-    @route('/<name>/spectra', defaults={'path': None})
-    @route('/<name>/spectra/<path:path>', endpoint='getspectra')
+    @route('/<name>/spectra', defaults={'path': None}, methods=['GET', 'POST'])
+    @route('/<name>/spectra/<path:path>', endpoint='getspectra', methods=['GET', 'POST'])
     @parseRoutePath
     def getSpectra(self, name=None, x=None, y=None, ra=None, dec=None, ext=None):
         # Add ability to grab spectra from fits files
         cube, res = _getCube(name)
         self.update_results(res)
         if not cube:
-            self.results['error'] = 'getSpectra: No cube: {0}'.format(result['error'])
+            self.results['error'] = 'getSpectra: No cube: {0}'.format(res['error'])
             return json.dumps(self.results)
 
         try:

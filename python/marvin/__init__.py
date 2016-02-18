@@ -23,6 +23,7 @@ class Config(object):
         self.download = False
         self.sasurl = os.getenv('SAS_URL') if 'SAS_URL' in os.environ else 'https://sas.sdss.org/'
         self._setDbConfig()
+        self._checkConfig()
 
         self.setDefaultDrpAll()
 
@@ -101,6 +102,12 @@ class Config(object):
             self.db = 'utah'
         else:
             self.db = None
+
+    def _checkConfig(self):
+        ''' Check the config '''
+        if not self.mplver or not (self.drpver and self.dapver):
+            warnings.warn('No MPL or DRP/DAP version set. Setting default to MPL-4', MarvinUserWarning)
+            self.setMPL('MPL-4')
 
     def setMPL(self, mplver):
         ''' Set the data version by MPL '''
