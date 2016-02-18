@@ -159,3 +159,11 @@ if config.db:
         else:
             session = db.Session()
             datadb = datadb
+
+# Inits the URL Route Map
+from marvin.api.api import Interaction
+config.sasurl = 'http://5aafb8e.ngrok.com'  # this is a temporary measure REMOVE THIS
+response = Interaction('api/general/getroutemap', request_type='get')
+config.urlmap = response.getRouteMap()
+
+

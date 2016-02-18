@@ -137,11 +137,22 @@ class Cube(MarvinToolsClass):
                 return data
 
         else:
+            # Fail if no route map initialized
+            if not marvin.config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
 
+            # Parse the variables into right frame
+            path = 'x={0}/y={1}/ext={2}'.format(x, y, ext) if (x or y) else 'ra={0}/dec={1}/ext={2}'.format(ra, dec, ext)
+            routeparams = {'name': self.mangaid, 'path': path}
+
+            # Get the getSpectrum Route
+            url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
+
+            # Make the API call
             if x or y:
-                response = Interaction('cubes/{0}/spectra/x={1}/y={2}/ext={3}'.format(self.mangaid, x, y, ext))
+                response = Interaction(url)
             elif ra or dec:
-                response = Interaction('cubes/{0}/spectra/ra={1}/dec={2}/ext={3}'.format(self.mangaid, ra, dec, ext))
+                response = Interaction(url)
 
             if response.status_code == 200:
                 if response.results['status'] == 1:

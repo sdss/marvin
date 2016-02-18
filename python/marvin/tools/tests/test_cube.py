@@ -32,10 +32,11 @@ class TestCube(MarvinTest):
 
     def setUp(self):
         # reset config variables
-        cvars = ['mode', 'drpver', 'dapver', 'db']
+        cvars = ['mode', 'drpver', 'dapver', 'db', 'sasurl', 'urlmap']
         for var in cvars:
             config.__setattr__(var, self.initconfig.__getattribute__(var))
         config.drpver = self.outver
+        self.assertIsNotNone(config.urlmap)
         session = self.session
 
     def tearDown(self):
@@ -259,6 +260,12 @@ class TestCube(MarvinTest):
             flux = cube.getSpectrum(ra=ra, dec=dec)
         self.assertIn(errMsg1, str(cm.exception))
         self.assertIn(errMsg2, str(cm.exception))
+
+    def test_getSpectrum_remote_fail_nourlmap(self):
+        config.sasurl = 'http://5aafb8e.ngrok.com'
+        config.mode = 'remote'
+        config.urlmap = None
+        self._getSpectrum_remote_fail(self.ra, self.dec, 'No URL Map found', 'Cannot make remote call')
 
     def test_getSpectrum_remote_fail_badresponse(self):
         config.sasurl = 'http://wrong.url.com'
