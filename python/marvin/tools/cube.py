@@ -86,9 +86,9 @@ class Cube(MarvinToolsClass):
             ext = 'flux'
 
         try:
-           isExtString = isinstance(ext, basestring)
+            isExtString = isinstance(ext, basestring)
         except NameError:
-           isExtString = isinstance(ext, str)
+            isExtString = isinstance(ext, str)
 
         assert isExtString
 
