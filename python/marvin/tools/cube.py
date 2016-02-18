@@ -122,6 +122,8 @@ class Cube(MarvinToolsClass):
                     shape = (size, size)
                     xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix')
 
+                assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
+
                 import sqlalchemy
                 inputs = [ra, dec] if inputMode == 'sky' else [x, y]
                 try:
@@ -136,7 +138,18 @@ class Cube(MarvinToolsClass):
 
         else:
 
-            response = Interaction('cubes/{0}/spectra'.format(self.mangaid))
+            if x or y:
+                response = Interaction('cubes/{0}/spectra/x={1}/y={2}/ext={3}'.format(self.mangaid, x, y, ext))
+            elif ra or dec:
+                response = Interaction('cubes/{0}/spectra/ra={1}/dec={2}/ext={3}'.format(self.mangaid, ra, dec, ext))
+
+            if response.status_code == 200:
+                if response.results['status'] == 1:
+                    return response.getData()
+                else:
+                    raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
+            else:
+                raise MarvinError('Error retrieving response: Http status code {0}: {1}'.format(response.status_code, response.results['message']))
 
     def _openFile(self):
 
