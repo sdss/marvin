@@ -8,7 +8,7 @@ from marvin.utils.general import parseRoutePath, parseName
 
 ''' stuff that runs server-side '''
 
-api = Blueprint("api", __name__)
+#api = Blueprint("api", __name__)
 
 
 def _getCube(name):
@@ -42,25 +42,6 @@ class CubeView(BaseView):
     def index(self):
         self.results['data'] = 'this is a cube!'
         return json.dumps(self.results)
-        '''
-        func_list = {}
-        output = []
-        for rule in current_app.url_map.iter_rules():
-            options = {}
-            for arg in rule.arguments:
-                options[arg] = "[{0}]".format(arg)
-
-            methods = ','.join(rule.methods)
-            url = url_for(rule.endpoint, **options)
-            line = urllib.unquote("{:50s} {:20s} {}".format(rule.endpoint, methods, url))
-            output.append(line)
-
-        res = {'data': []}
-        for line in sorted(output):
-            res['data'].append(line)
-
-        return json.dumps(res)
-        '''
 
     def get(self, name):
         ''' This method performs a get request at the url route /cubes/<id> '''
@@ -92,4 +73,25 @@ class CubeView(BaseView):
 
         return json.dumps(self.results)
 
-CubeView.register(api)
+
+#CubeView.register(api)
+
+'''
+func_list = {}
+output = []
+for rule in current_app.url_map.iter_rules():
+    options = {}
+    for arg in rule.arguments:
+        options[arg] = "[{0}]".format(arg)
+
+    methods = ','.join(rule.methods)
+    url = url_for(rule.endpoint, **options)
+    line = urllib.unquote("{:50s} {:20s} {}".format(rule.endpoint, methods, url))
+    output.append(line)
+
+res = {'data': []}
+for line in sorted(output):
+    res['data'].append(line)
+
+return json.dumps(res)
+'''

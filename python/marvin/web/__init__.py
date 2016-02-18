@@ -5,18 +5,19 @@ from flask_restful import Api
 
 def create_app(debug=False):
 
-    from marvin.api.cube import api
-    from marvin.api.general import apiGeneral
+    from marvin.api.cube import CubeView
+    from marvin.api.general import GeneralRequestsView
     from marvin.web.controllers.index import index
 
     app = Flask(__name__)
-    # api_bp = Blueprint('api', __name__)
-    # api = Api(api_bp)
+    api = Blueprint("api", __name__)
 
-    # api.add_resource(Cube, '/api/cubes/<string:mangaid>/',endpoint='mangaid')
-    # api.add_resource(Cube.getSpectrum, '/api/cubes/<string:mangaid>/spectrum/',endpoint='spectrum')
+    # API route registration
+    CubeView.register(api)
+    GeneralRequestsView.register(api)
     app.register_blueprint(api)
-    app.register_blueprint(apiGeneral)
+
+    # Web route registration
     app.register_blueprint(index)
 
     return app

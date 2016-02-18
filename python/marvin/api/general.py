@@ -17,12 +17,12 @@ from __future__ import print_function
 from flask.ext.classy import route
 from marvin.api.base import BaseView
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
-from marvin.api.cube import api
+#from marvin.api.cube import api
 from flask import Blueprint
 import json
 
 
-apiGeneral = Blueprint("apiGeneral", __name__)
+#apiGeneral = Blueprint("apiGeneral", __name__)
 
 
 class GeneralRequestsView(BaseView):
@@ -30,21 +30,20 @@ class GeneralRequestsView(BaseView):
 
     route_base = '/api/general/'
 
-    @route('/mangaid2plateifu/<mangaid>/')
+    @route('/mangaid2plateifu/<mangaid>')
     def mangaid2plateifu(self, mangaid):
 
-        results = {'data': None, 'error': None, 'status': None}
+        #results = {'data': None, 'error': None, 'status': None}
 
         try:
             plateifu = mangaid2plateifu(mangaid, mode='db')
-            results['data'] = plateifu
-            results['status'] = 1
+            self.results['data'] = plateifu
+            self.results['status'] = 1
         except Exception as ee:
-            results['status'] = -1
-            results['error'] = ('manga2plateifu failed with error: {0}'
-                                .format(str(ee)))
+            self.results['status'] = -1
+            self.results['error'] = ('manga2plateifu failed with error: {0}'.format(str(ee)))
 
-        return json.dumps(results)
+        return json.dumps(self.results)
 
 
-GeneralRequestsView.register(api)
+#GeneralRequestsView.register(apiGeneral)

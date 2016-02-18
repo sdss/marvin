@@ -12,8 +12,10 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask.ext.classy import FlaskView
-from flask import request
+from flask import request, Blueprint
 from marvin import config
+
+api = Blueprint("api", __name__)
 
 
 def processRequest(request=None):
