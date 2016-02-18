@@ -76,3 +76,7 @@ class Interaction(object):
         else:
             self.params = {k: config.__getattribute__(k) for k in configkeys}
 
+    def getRouteMap(self):
+        ''' Retrieve the URL routing map if it exists '''
+        return self.results.get('urlmap', None)
+
