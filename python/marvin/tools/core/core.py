@@ -16,6 +16,7 @@ from __future__ import division
 from __future__ import print_function
 import marvin
 from marvin.tools.core import MarvinUserWarning, MarvinError
+from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
 import warnings
 import os
@@ -27,9 +28,6 @@ except ImportError:
 
 
 __all__ = ['MarvinToolsClass']
-
-
-mangaid_to_plateifu = {'1-209232': '8485-1901', '12-193534': '7443-3701'}
 
 
 class MarvinToolsClass(object):
@@ -58,11 +56,7 @@ class MarvinToolsClass(object):
         assert sum([bool(arg) for arg in args]) == 1, errmsg
 
         if self.mangaid:
-            if self.mangaid in mangaid_to_plateifu:
-                self.plateifu = mangaid_to_plateifu[self.mangaid]
-            else:
-                raise MarvinError('mangaid={0} not found in the dictionary'
-                                  .format(self.mangaid))
+            self.plateifu = mangaid2plateifu(self.mangaid)
 
         if self.mode == 'local':
             self._doLocal()
