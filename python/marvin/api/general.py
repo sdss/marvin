@@ -77,7 +77,7 @@ class GeneralRequestsView(BaseView):
             output[grp][endpoint]['methods'] = methods
             # build url
             rawurl = url_for(fullendpoint, **options)
-            url = urllib.unquote(rawurl).replace('[', '{').replace(']', '}')
+            url = urllib.unquote(rawurl).replace('[', '{').replace(']', '}').strip('/')
             output[grp][endpoint]['url'] = url
 
         res = {'urlmap': output}
