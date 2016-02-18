@@ -166,6 +166,9 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
             raise ValueError('no plate-ifus found for mangaid={0}'
                              .format(mangaid))
         elif len(cubes) > 1:
+            warnings.warn('more than one plate-ifu found for mangaid={0}. '
+                          'Using a random one.'
+                          .format(mangaid), MarvinUserWarning)
             cube = cubes[-1]
         else:
             cube = cubes[0]
