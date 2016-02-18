@@ -45,7 +45,8 @@ class MarvinToolsClass(object):
         self.mangaid = kwargs.get('mangaid', None)
         self.plateifu = kwargs.get('plateifu', None)
         self.mode = kwargs.get('mode', None)
-        self.drpall = kwargs.get('drpall', None)
+        self._drpall = kwargs.get('drpall', None)
+        self._drpver = kwargs.get('drpver', None)
 
         if self.mode is None:
             self.mode = marvin.config.mode
@@ -56,7 +57,8 @@ class MarvinToolsClass(object):
         assert sum([bool(arg) for arg in args]) == 1, errmsg
 
         if self.mangaid:
-            self.plateifu = mangaid2plateifu(self.mangaid)
+            self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall,
+                                             drpver=self._drpver)
 
         if self.mode == 'local':
             self._doLocal()
