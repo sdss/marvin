@@ -120,8 +120,8 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     assert mode in autoModes + ['auto'], 'mode={0} is not valid'.format(mode)
 
-    if not drpall:
-        drpall = config._getDrpAllPath(drpver=drpver)
+    drpver = drpver if drpver else config.drpver
+    drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
 
     if mode == 'drpall':
 
@@ -154,8 +154,13 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
         if not session or not datadb:
             raise MarvinError('no DB connection found')
 
-        cubes = session.query(datadb.Cube).filter(
-            datadb.Cube.mangaid == mangaid).all()
+        if not drpver:
+            raise MarvinError('drpver not set.')
+
+        cubes = session.query(datadb.Cube).join(
+            datadb.PipelineInfo, datadb.PipelineVersion).filter(
+                datadb.Cube.mangaid == mangaid,
+                datadb.PipelineVersion.version == drpver).all()
 
         if len(cubes) == 0:
             raise ValueError('no plate-ifus found for mangaid={0}'
@@ -186,7 +191,8 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
         for mm in autoModes:
             try:
-                plateifu = mangaid2plateifu(mangaid, mode=mm)
+                plateifu = mangaid2plateifu(mangaid, mode=mm,
+                                            drpver=drpver, drpall=drpall)
                 return plateifu
             except:
                 continue
