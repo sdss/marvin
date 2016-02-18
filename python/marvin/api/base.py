@@ -62,6 +62,7 @@ class BaseView(FlaskView):
         self.results['inconfig'] = form
         for key, val in form.items():
             config.__setattr__(key, val)
+        # adds the out going config info into the results (placed here since didn't work in after_request; obstensibly the in and out configs should match)
         self.add_config()
 
     def after_request(self, name, response):

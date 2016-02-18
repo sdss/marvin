@@ -24,14 +24,16 @@ class Interaction(object):
 
     def _checkResponse(self, response):
         if response.status_code == 200:
+            self.status_code = 200
             try:
                 self.results = response.json()
             except ValueError as e:
                 self.results = response.text
                 raise RuntimeError('Response not in JSON format. {0} {1}'.format(e, self.results))
         else:
+            self.status_code = response.status_code
             errmsg = 'Error accessing {0}: {1}'.format(response.url, self.statuscodes[response.status_code])
-            self.results = {'http status code': response.status_code, 'message': errmsg}
+            self.results = {'http_status_code': response.status_code, 'message': errmsg}
 
     def _sendRequest(self, request_type):
 

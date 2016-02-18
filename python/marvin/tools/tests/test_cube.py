@@ -163,6 +163,7 @@ class TestCube(MarvinTest):
             self._test_getSpectrum_raise_exception(
                 'pixel coordinates outside cube', ra=raTest, dec=decTest)
 
+    # Tests for getSpectrum from file
     def test_getSpectrum_file_flux_x_y(self):
         """Tests getSpectrum from a file cube with x, y inputs."""
         # TODO: check that the expected value is correct.
@@ -176,22 +177,38 @@ class TestCube(MarvinTest):
         expect = 0.017929086
         self._test_getSpectrum(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
 
+    def _getSpectrum_file_fail(self, ra, dec, errMsg):
+        expect = 0.017929086
+        with self.assertRaises(AssertionError) as cm:
+            self._test_getSpectrum(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
+        self.assertIn(errMsg, str(cm.exception))
+
     def test_getSpectrum_file_flux_ra_dec_full(self):
         self._getSpectrum_file_flux_ra_dec(ra=232.546383, dec=48.6883954)
 
     def test_getSpectrum_file_flux_ra_dec_parital(self):
-        self._getSpectrum_file_flux_ra_dec(ra=232.546, dec=48.6883)
+        self._getSpectrum_file_flux_ra_dec(ra=232.5464, dec=48.6884)
 
     def test_getSpectrum_file_flux_ra_dec_twosigfig(self):
-        self._getSpectrum_file_flux_ra_dec(ra=232.55, dec=48.69)
+        errMsg = 'pixel coordinates outside cube'
+        self._getSpectrum_file_fail(ra=232.55, dec=48.69, errMsg=errMsg)
 
     def test_getSpectrum_file_flux_ra_dec_int(self):
-        self._getSpectrum_file_flux_ra_dec(ra=232, dec=48)
+        errMsg = 'pixel coordinates outside cube'
+        self._getSpectrum_file_fail(ra=232, dec=48, errMsg=errMsg)
 
+    # Tests for getSpectrum from DB
     def _getSpectrum_db_flux_ra_dec(self, ra, dec):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 3000, expect, ra=ra, dec=dec)
+
+    def _getSpectrum_db_fail(self, ra, dec, errMsg):
+        expect = 0.017929086
+        cube = Cube(mangaid=self.mangaid)
+        with self.assertRaises(AssertionError) as cm:
+            self._test_getSpectrum(cube, 3000, expect, ra=ra, dec=dec)
+        self.assertIn(errMsg, str(cm.exception))
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_ra_dec_full(self):
@@ -199,25 +216,59 @@ class TestCube(MarvinTest):
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_ra_dec_partial(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232.546, dec=48.6883)
+        self._getSpectrum_db_flux_ra_dec(ra=232.5464, dec=48.6884)
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_ra_dec_twosigfig(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232.55, dec=48.69)
-
-    @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec_twosigfig2(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232.54, dec=48.68)
+        errMsg = 'pixel coordinates outside cube'
+        self._getSpectrum_db_fail(ra=232.55, dec=48.69, errMsg=errMsg)
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_ra_dec_int(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232, dec=48)
+        errMsg = 'pixel coordinates outside cube'
+        self._getSpectrum_db_fail(ra=232, dec=48, errMsg=errMsg)
 
     @skipIfNoDB
     def test_getSpectrum_db_flux_x_y(self):
         expect = -0.10531016
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 10, expect, x=10, y=5)
+
+    # Tests for getSpectrum remotely
+    def _getSpectrum_remote(self, **kwargs):
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 10, expect, x=10, y=5)
+
+    def test_getSpectrum_remote_x_y_success(self):
+        config.sasurl = 'http://5aafb8e.ngrok.com'
+        config.mode = 'remote'
+        expect = -0.10531016
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 10, expect, x=10, y=5)
+
+    def test_getSpectrum_remote_ra_dec_success(self):
+        config.sasurl = 'http://5aafb8e.ngrok.com'
+        config.mode = 'remote'
+        expect = 0.017929086
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
+
+    def _getSpectrum_remote_fail(self, ra, dec, errMsg1, errMsg2):
+        cube = Cube(mangaid=self.mangaid)
+        with self.assertRaises(MarvinError) as cm:
+            flux = cube.getSpectrum(ra=ra, dec=dec)
+        self.assertIn(errMsg1, str(cm.exception))
+        self.assertIn(errMsg2, str(cm.exception))
+
+    def test_getSpectrum_remote_fail_badresponse(self):
+        config.sasurl = 'http://wrong.url.com'
+        config.mode = 'remote'
+        self._getSpectrum_remote_fail(self.ra, self.dec, 'Error retrieving response', 'Http status code 404')
+
+    def test_getSpectrum_remote_fail_badpixcoords(self):
+        config.sasurl = 'http://5aafb8e.ngrok.com'
+        config.mode = 'remote'
+        self._getSpectrum_remote_fail(232, 48, 'Could not retrieve spaxels remotely', 'pixel coordinates outside cube')
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
