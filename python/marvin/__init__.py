@@ -2,6 +2,7 @@ import os
 import re
 import warnings
 from marvin.tools.core.exceptions import MarvinUserWarning
+from marvin.utils.general.general import getDbMachine
 
 # Inits the log
 from marvin.tools.core.logger import initLog
@@ -71,37 +72,7 @@ class Config(object):
 
     def _setDbConfig(self):
         ''' Set the db configuration '''
-        # Get machine
-        try:
-            machine = os.environ['HOSTNAME']
-        except:
-            machine = None
-
-        # Check if localhost or not
-        try:
-            localhost = bool(os.environ['MANGA_LOCALHOST'])
-        except:
-            localhost = machine == 'manga'
-
-        # Check if Utah or not
-        try:
-            utah = os.environ['UUFSCELL'] == 'kingspeak.peaks'
-        except:
-            utah = None
-
-        # Check if sas-vm or not
-        try:
-            sasvm = 'sas-vm' in os.environ['HOSTNAME']
-        except:
-            sasvm = None
-
-        # Set the dbconfig variable
-        if localhost:
-            self.db = 'local'
-        elif utah or sasvm:
-            self.db = 'utah'
-        else:
-            self.db = None
+        self.db = getDbMachine()
 
     def _checkConfig(self):
         ''' Check the config '''

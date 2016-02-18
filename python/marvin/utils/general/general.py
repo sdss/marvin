@@ -3,6 +3,7 @@ from astropy import wcs
 import numpy as np
 from astropy import table
 import warnings
+import os
 
 # General utilities
 
@@ -196,3 +197,31 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
         raise MarvinError(
             'mangaid2plateifu was not able to find a plate-ifu for '
             'mangaid={0} either local or remotely.'.format(mangaid))
+
+
+def getDbMachine():
+    ''' Get the machine that the app is running on.  This determines correct database and app configuration '''
+    # Get machine
+    machine = os.environ.get('HOSTNAME', None)
+
+    # Check if localhost or not
+    try:
+        localhost = bool(os.environ['MANGA_LOCALHOST'])
+    except:
+        localhost = machine == 'manga'
+
+    # Check if Utah or not
+    try:
+        utah = os.environ['UUFSCELL'] == 'kingspeak.peaks'
+    except:
+        utah = None
+    # Check if sas-vm or not
+    sasvm = 'sas-vm' in machine if machine else None
+
+    # Set the dbconfig variable
+    if localhost:
+        return 'local'
+    elif utah or sasvm:
+        return 'utah'
+    else:
+        return None
