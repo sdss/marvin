@@ -138,14 +138,12 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
         if len(plateifus) > 1:
             warnings.warn('more than one plate-ifu found for mangaid={0}. '
-                          'Using the one with the highest SN2.'
-                          .format(mangaid), MarvinUserWarning)
+                          'Using the one with the highest SN2.'.format(mangaid), MarvinUserWarning)
             plateifus = plateifus[
                 [np.argmax(plateifus['bluesn2'] + plateifus['redsn2'])]]
 
         if len(plateifus) == 0:
-            raise ValueError('no plate-ifus found for mangaid={0}'
-                             .format(mangaid))
+            raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
 
         return plateifus['plateifu'][0]
 
@@ -163,13 +161,11 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
                 datadb.PipelineVersion.version == drpver).all()
 
         if len(cubes) == 0:
-            raise ValueError('no plate-ifus found for mangaid={0}'
-                             .format(mangaid))
+            raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
         elif len(cubes) > 1:
-            warnings.warn('more than one plate-ifu found for mangaid={0}. '
-                          'Using a random one.'
-                          .format(mangaid), MarvinUserWarning)
-            cube = cubes[-1]
+            warnings.warn('more than one plate-ifu found for mangaid={0}. Using a the one with the higest SN2'.format(mangaid), MarvinUserWarning)
+            total_sn2 = [float(cube.header['BLUESN2'])+float(cube.header['REDSN2']) for cube in cubes]
+            cube = cubes[np.argmax(total_sn2)]
         else:
             cube = cubes[0]
 
@@ -177,16 +173,14 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     elif mode == 'remote':
 
-        response = Interaction(
-            'api/general/mangaid2plateifu/{0}/'.format(mangaid))
+        response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
         plateifu = response.getData(astype=str)
 
         if not plateifu:
             if 'error' in response.results and response.results['error']:
                 raise MarvinError(response.results['error'])
             else:
-                raise MarvinError('API call to mangaid2plateifu '
-                                  'failed with error unknown.')
+                raise MarvinError('API call to mangaid2plateifu failed with error unknown.')
 
         return plateifu
 
@@ -194,8 +188,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
         for mm in autoModes:
             try:
-                plateifu = mangaid2plateifu(mangaid, mode=mm,
-                                            drpver=drpver, drpall=drpall)
+                plateifu = mangaid2plateifu(mangaid, mode=mm, drpver=drpver, drpall=drpall)
                 return plateifu
             except:
                 continue
