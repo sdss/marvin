@@ -1,11 +1,22 @@
 import os
 import re
+import warnings
 from marvin.utils.general import lookUpMpl, lookUpVersions
+from marvin.tools.core.exceptions import MarvinUserWarning
+
+# Inits the log
+from marvin.tools.core.logger import initLog
+log = initLog()
+
+warnings.simplefilter('once')
 
 
 class Config(object):
     def __init__(self):
+
         self._mode = 'auto'
+        self._drpall = None
+
         self.drpver = None
         self.dapver = None
         self.mplver = None
@@ -13,6 +24,27 @@ class Config(object):
         self.download = False
         self.sasurl = os.getenv('SAS_URL') if 'SAS_URL' in os.environ else 'https://sas.sdss.org/'
         self._setDbConfig()
+
+        self.setDefaultDrpAll()
+
+    def setDefaultDrpAll(self, drpver=None):
+        """Tries to set the default location of drpall."""
+
+        if not drpver and not self.drpver:
+            return
+
+        self.drpall = self._getDrpAllPath(drpver=drpver)
+
+    def _getDrpAllPath(self, drpver=None):
+        """Returns the default path for drpall, give a certain `drpver`."""
+
+        drpver = drpver if drpver else self.drpver
+
+        if 'MANGA_SPECTRO_REDUX' in os.environ and drpver:
+            return os.path.join(os.environ['MANGA_SPECTRO_REDUX'], str(drpver),
+                                'drpall-{0}.fits'.format(drpver))
+        else:
+            return None
 
     @property
     def mode(self):
@@ -24,6 +56,18 @@ class Config(object):
             self._mode = value
         else:
             raise ValueError('config.mode must be "local" or "remote".')
+
+    @property
+    def drpall(self):
+        return self._drpall
+
+    @drpall.setter
+    def drpall(self, value):
+        if os.path.exists(value):
+            self._drpall = value
+        else:
+            warnings.warn('path {0} cannot be found. Setting drpall to None.'
+                          .format(value), MarvinUserWarning)
 
     def _setDbConfig(self):
         ''' Set the db configuration '''
@@ -105,7 +149,3 @@ if config.db:
         else:
             session = db.Session()
             datadb = datadb
-
-# Inits the log
-from marvin.tools.core.logger import initLog
-log = initLog()

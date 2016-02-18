@@ -47,6 +47,7 @@ class MarvinToolsClass(object):
         self.mangaid = kwargs.get('mangaid', None)
         self.plateifu = kwargs.get('plateifu', None)
         self.mode = kwargs.get('mode', None)
+        self.drpall = kwargs.get('drpall', None)
 
         if self.mode is None:
             self.mode = marvin.config.mode
