@@ -15,8 +15,6 @@ from flask.ext.classy import FlaskView
 from flask import request, Blueprint
 from marvin import config
 
-api = Blueprint("api", __name__)
-
 
 def processRequest(request=None):
     ''' Function to generally process the request for POST or GET, and build a form dict '''
