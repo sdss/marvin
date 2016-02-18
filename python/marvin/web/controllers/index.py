@@ -1,7 +1,7 @@
 from flask import current_app, Blueprint, render_template, session as current_session
 from flask.ext.classy import FlaskView, route
 from marvin.tools.cube import Cube
-from marvin import config
+from marvin import config, session, datadb
 index = Blueprint("index_page", __name__)
 
 
@@ -32,5 +32,10 @@ class Marvin(FlaskView):
     @route('/test/')
     def test(self):
         return 'new test'
+
+    def database(self):
+        onecube = session.query(datadb.Cube).first()
+        return str(onecube.plate)
+
 
 Marvin.register(index)
