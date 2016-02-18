@@ -1,5 +1,7 @@
 * text=auto !eol
 bin/run_marvin -text
+docs/Mode_Decision_Tree.graffle -text
+docs/Mode_Decision_Tree.pdf -text
 etc/config.ini -text
 etc/marvin.module -text
 python/marvin/__init__.py -text
