@@ -1,7 +1,6 @@
 import os
 import re
 import warnings
-from marvin.utils.general import lookUpMpl, lookUpVersions
 from marvin.tools.core.exceptions import MarvinUserWarning
 
 # Inits the log
@@ -106,6 +105,8 @@ class Config(object):
     def setMPL(self, mplver):
         ''' Set the data version by MPL '''
 
+        from marvin.utils.general import lookUpVersions
+
         m = re.search('MPL-([0-9])', mplver)
         assert m is not None, 'MPL version must be of form "MPL-[X]"'
         if m:
@@ -114,6 +115,8 @@ class Config(object):
 
     def setVersions(self, drpver=None, dapver=None):
         ''' Set the data version by DRPVER and DAPVER '''
+
+        from marvin.utils.general import lookUpMpl
 
         if drpver:
             assert type(drpver) == str, 'drpver needs to be a string'
