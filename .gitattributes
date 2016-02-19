@@ -9,6 +9,8 @@ python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
 python/marvin/api/base.py -text
 python/marvin/api/cube.py -text
+python/marvin/api/tests/__init__.py -text
+python/marvin/api/tests/test_base.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/db/dbconfig.ini -text

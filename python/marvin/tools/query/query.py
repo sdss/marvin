@@ -1,4 +1,5 @@
 from __future__ import print_function
+from wtforms import Form, StringField, validators
 from marvin.tools.core import MarvinToolsClass, MarvinError
 
 
@@ -19,6 +20,8 @@ class Query(MarvinToolsClass):
 
     def add_condition():
         """Add a condition."""
+        # if self.mode == 'remote':
+        # elif self.mode == 'api':
         pass
 
     def run():
