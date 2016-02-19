@@ -36,7 +36,6 @@ class TestCube(MarvinTest):
         for var in cvars:
             config.__setattr__(var, self.initconfig.__getattribute__(var))
         config.drpver = self.outver
-        self.assertIsNotNone(config.urlmap)
         session = self.session
 
     def tearDown(self):
@@ -264,17 +263,20 @@ class TestCube(MarvinTest):
     def test_getSpectrum_remote_fail_nourlmap(self):
         config.sasurl = 'http://5aafb8e.ngrok.com'
         config.mode = 'remote'
+        self.assertIsNotNone(config.urlmap)
         config.urlmap = None
         self._getSpectrum_remote_fail(self.ra, self.dec, 'No URL Map found', 'Cannot make remote call')
 
     def test_getSpectrum_remote_fail_badresponse(self):
         config.sasurl = 'http://wrong.url.com'
         config.mode = 'remote'
+        self.assertIsNotNone(config.urlmap)
         self._getSpectrum_remote_fail(self.ra, self.dec, 'Error retrieving response', 'Http status code 404')
 
     def test_getSpectrum_remote_fail_badpixcoords(self):
         config.sasurl = 'http://5aafb8e.ngrok.com'
         config.mode = 'remote'
+        self.assertIsNotNone(config.urlmap)
         self._getSpectrum_remote_fail(232, 48, 'Could not retrieve spaxels remotely', 'pixel coordinates outside cube')
 
 if __name__ == '__main__':

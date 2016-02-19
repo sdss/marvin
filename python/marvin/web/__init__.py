@@ -4,11 +4,12 @@ from __future__ import print_function
 from flask import Flask, Blueprint
 from flask_restful import Api
 from inspect import getmembers, isfunction
-import sys
-import os
 from marvin.utils.general.general import getDbMachine
 from flask_featureflags import FeatureFlag
+from raven.contrib.flask import Sentry
 import jinja_filters
+import sys
+import os
 
 
 def create_app(debug=False):
@@ -32,14 +33,32 @@ def create_app(debug=False):
     # ----------------------------------
     # Initialize logging + Sentry + UWSGI config for Production Marvin
     if app.debug is False:
-        pass
+        ''' set up logging here, or try to use the tools logger '''
+
+        # ----------------------------------------------------------
+        # Set up getsentry.com logging - only use when in production
+        # dsn = 'https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254'
+        # app.config['SENTRY_DSN'] = dsn
+        # sentry = Sentry(app, logging=True, level=logging.ERROR)
+
+        # --------------------------------------
+        # Configuration when running under uWSGI
+        try:
+            import uwsgi
+            app.use_x_sendfile = True
+        except ImportError:
+            pass
 
     # Change the implementation of "decimal" to a C-based version (much! faster)
-    try:
-        import cdecimal
-        sys.modules["decimal"] = cdecimal
-    except ImportError:
-        pass  # no available
+    #
+    # This is producing this error [ Illegal value: Decimal('3621.59598486') ]on some of the remote API tests with getSpectrum
+    # Turning this off for now
+    #
+    # try:
+    #    import cdecimal
+    #    sys.modules["decimal"] = cdecimal
+    # except ImportError:
+    #    pass  # no available
 
     # Find which connection to make
     connection = getDbMachine()
