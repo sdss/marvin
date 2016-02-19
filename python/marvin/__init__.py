@@ -113,6 +113,7 @@ class Config(object):
                 self.dapver = dapver
 
 config = Config()
+config._checkConfig()
 
 # Inits the Database session and ModelClasses
 session = None
