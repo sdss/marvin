@@ -225,3 +225,19 @@ def getDbMachine():
         return 'utah'
     else:
         return None
+
+
+def convertIvarToErr(ivar):
+    ''' Converts a list of inverse variance into an a list of standard errors '''
+
+    assert type(ivar) == list or type(ivar) == np.ndarray, 'Input ivar is not of type list or an Numpy ndarray'
+
+    if type(ivar) == list:
+        ivar = np.array(ivar)
+
+    error = np.zeros(ivar.shape)
+    notnull = ivar != 0.0
+    error[notnull] = 1/np.sqrt(ivar[notnull])
+    error = list(error)
+    return error
+
