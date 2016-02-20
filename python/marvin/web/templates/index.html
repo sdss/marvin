@@ -5,6 +5,20 @@
 
 {% block body %}
 
+{% block code %}
+<script type='text/javascript'>
+$(function() {
+    new Dygraph(document.getElementById("graphdiv"),
+              {{spectra}},
+              //[[1,[1,0.1],[3,0]],[2,[2,0.5],[2,0]],[3,[3,1],[1,0]]],
+              {
+                labels: ['x','Flux'],
+                errorBars: true
+              });
+});
+</script>
+{% endblock code %}
+
 <div class='well'>
 	<div class='row'>
 		<h4>{{intro}}</h4>
@@ -13,8 +27,10 @@
 		<h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plate}}</h5>
 	</div>
 	<div class='row'>
-		<h5>Here's a spectrum: {{spectra}}</h5>
+		<h5>Here's a spectrum: {{specmsg}}</h5>
 	</div>
+    <div id='graphdiv' style="width:100%;">
+    </div>
 </div>
 
 {% endblock body %}

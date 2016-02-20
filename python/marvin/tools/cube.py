@@ -182,6 +182,20 @@ class Cube(MarvinToolsClass):
     ivar = property(lambda self: self._getExtensionData('IVAR'))
     mask = property(lambda self: self._getExtensionData('MASK'))
 
+    def getWavelength(self):
+        ''' Retrieve the wavelength array for the Cube '''
+        if self._useDB:
+            if self._cube:
+                wavelength = self._cube.wavelength.wavelength
+            else:
+                raise MarvinError('Cannot retrieve wavelength.  No DB cube entry found!')
+        else:
+            if self._hdu:
+                wavelength = self._hdu['WAVE'].data
+            else:
+                raise MarvinError('Cannot retrieve wavelength.  No HDU found!')
+        return wavelength
+
     def _getCubeFromDB(self):
         ''' server-side code '''
 
@@ -211,6 +225,8 @@ class Cube(MarvinToolsClass):
 
             if self._cube:
                 self._useDB = True
+                self.hdr = self._cube.header
+                self.wcs = self._cube.wcs.makeHeader()
                 self.ifu = self._cube.ifu.name
                 self.ra = self._cube.ra
                 self.dec = self._cube.dec
