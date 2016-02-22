@@ -253,7 +253,7 @@ class TestCube(MarvinTest):
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
 
-    def _getSpectrum_remote_fail(self, ra, dec, errMsg1, errMsg2):
+    def _getSpectrum_remote_fail(self, ra, sdec, errMsg1, errMsg2):
         cube = Cube(mangaid=self.mangaid)
         with self.assertRaises(MarvinError) as cm:
             flux = cube.getSpectrum(ra=ra, dec=dec)

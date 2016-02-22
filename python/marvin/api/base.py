@@ -12,12 +12,12 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask.ext.classy import FlaskView
-from flask import request, Blueprint
+from flask import request
 from marvin import config
 
 
 def processRequest(request=None):
-    ''' Function to generally process the request for POST or GET, and build a form dict '''
+    '''Generally process the request for POST or GET, and build a form dict'''
 
     # get form data
     if request.method == 'POST':
@@ -34,7 +34,7 @@ def processRequest(request=None):
 
 
 class BaseView(FlaskView):
-    ''' Super Clase for all API Views to handle all global API things of interest '''
+    '''Super Class for all API Views to handle all global API items of interest'''
 
     def __init__(self):
         self.reset_results()
@@ -59,6 +59,7 @@ class BaseView(FlaskView):
     def before_request(self, *args, **kwargs):
         ''' '''
         form = processRequest(request=request)
+        print(form)
         self.results['inconfig'] = form
         for key, val in form.items():
             config.__setattr__(key, val)
@@ -69,6 +70,3 @@ class BaseView(FlaskView):
         ''' This performs a reset of the results dict after every request method runs.  See Flask-Classy for more info on after_request '''
         self.reset_results()
         return response
-
-
-
