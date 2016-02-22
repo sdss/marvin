@@ -7,7 +7,7 @@ from marvin.utils.general import parseRoutePath, parseName
 
 ''' stuff that runs server-side '''
 
-#api = Blueprint("api", __name__)
+# api = Blueprint("api", __name__)
 
 
 def _getCube(name):
@@ -79,5 +79,4 @@ class CubeView(BaseView):
         return json.dumps(self.results)
 
 
-#CubeView.register(api)
-
+# CubeView.register(api)
