@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+'''
+
+This script is used to profile the marvin web-app.  It runs the app in debug mode,
+on default port 5000.
+
+Type ./profile_marvin.py
+
+Navigate the site as usual.  All requests get profiled and output in the terminal screen, and log file.
+
+'''
+
+from flask import Flask
+from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
+from marvin.web import create_app
+import os
+import sys
+import argparse
+
+# --------------------------
+# Parse command line options
+# --------------------------
+parser = argparse.ArgumentParser(description='Script to start the SDSS API.')
+parser.add_argument('-p', '--port', help='Port to use in debug mode.', default=5000, type=int, required=False)
+args = parser.parse_args()
+
+
+# Start app
+
+app = create_app(debug=True)
+
+# Make file stream
+try:
+    saslogs = os.getenv('MARVIN_LOGS_DIR')
+except:
+    saslogs = None
+if saslogs:
+    logpath = os.path.join(saslogs, 'profile.log')
+    file = open(logpath, 'w')
+    stream = MergeStream(sys.stdout, file)
+else:
+    stream = None
+
+app.config['PROFILE'] = True
+app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30], stream=stream)
+app.run(debug=True, port=args.port)
+
+
