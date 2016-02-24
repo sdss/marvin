@@ -40,7 +40,7 @@ class Query(object):
         ''' Maybe need super MarvinForm class that can contain all parameters, mapped to their invididual forms???.  for now, example it with SampleForm only'''
 
         f = self.build_filter()
-        if not self._tableInQuery(self.samplform.Meta.model.__tablename__):
+        if not self._tableInQuery(self.sampform.Meta.model.__tablename__):
             self.query = self.query.join(self.sampform.Meta.model)
 
         self.query = self.query.filter(f)
