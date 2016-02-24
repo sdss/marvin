@@ -38,3 +38,4 @@ python/marvin/web/controllers/index.py -text
 python/marvin/web/jinja_filters.py -text
 python/marvin/web/templates/index.html -text
 python/marvin/web/templates/layout.html -text
+python/marvin/web/templates/test.html -text
