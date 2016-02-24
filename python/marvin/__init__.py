@@ -16,6 +16,7 @@ class Config(object):
 
         self._mode = 'auto'
         self._drpall = None
+        self._inapp = False
 
         self.drpver = None
         self.dapver = None
@@ -134,6 +135,6 @@ if config.db:
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-config.sasurl = 'http://5aafb8e.ngrok.com'  # this is a temporary measure REMOVE THIS
+#config.sasurl = 'http://5aafb8e.ngrok.com'  # this is a temporary measure REMOVE THIS
 response = Interaction('api/general/getroutemap', request_type='get')
 config.urlmap = response.getRouteMap()

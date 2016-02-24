@@ -2,10 +2,11 @@
 import marvin
 import traceback
 import sys
+import inspect
 
 # This line makes sure that "from marvin.utils.db.dbutils import *"
 # will only import the functions in the list.
-__all__ = ['get_traceback', 'testDbConnection']
+__all__ = ['get_traceback', 'testDbConnection', 'generateClassDict']
 
 
 def get_traceback(asstring=None):
@@ -38,3 +39,20 @@ def testDbConnection(session=None):
         res['error'] = error
 
     return res
+
+
+def generateClassDict(modelclasses, lower=None, filterby=None):
+    ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
+        lower = True makes class name key all lowercase
+        filterby = string variable to filter on list of classes
+    '''
+
+    classdict = {}
+    for model in inspect.getmembers(modelclasses, inspect.isclass):
+        keyname = model[0].lower() if lower else model[0]
+        if filterby:
+            if filterby in str(model[1]):
+                classdict[keyname] = model[1]
+        else:
+            classdict[keyname] = model[1]
+    return classdict

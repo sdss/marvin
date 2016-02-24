@@ -21,6 +21,7 @@ python/marvin/db/sql/utah_mangadb.sql -text
 python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
 python/marvin/tools/query/__init__.py -text
+python/marvin/tools/query/forms.py -text
 python/marvin/tools/query/query.py -text
 python/marvin/tools/query/results.py -text
 python/marvin/tools/tests/test_cube.py -text
