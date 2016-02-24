@@ -39,7 +39,7 @@ class Cube(MarvinToolsClass):
         else:
             # Placeholder for potentially request something from the DB to
             # initialise the cube.
-            pass
+            raise MarvinError("Should remotely grab the cube to initialize, but I won't")
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None):
         """Returns the appropriate spectrum for a certain spaxel in the cube.

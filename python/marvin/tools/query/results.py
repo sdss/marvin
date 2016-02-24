@@ -1,15 +1,15 @@
 from __future__ import print_function
 from marvin.tools.core import MarvinToolsClass, MarvinError
-from marvin.tools.query import Query
 
 __all__ = ['Results']
 
 
-class Results(MarvinToolsClass):
+class Results(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, results=None):
 
-        super(Results, self).__init__(*args, **kwargs)
+        #super(Results, self).__init__(*args, **kwargs)
+        self.results = results
 
     def download():
         """Download data via sdsssync"""

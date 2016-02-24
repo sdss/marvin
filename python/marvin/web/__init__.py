@@ -5,6 +5,7 @@ from flask import Flask, Blueprint
 from flask_restful import Api
 from inspect import getmembers, isfunction
 from marvin.utils.general.general import getDbMachine
+from marvin import config
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
 import jinja_filters
@@ -66,6 +67,7 @@ def create_app(debug=False):
 
     # ----------------------------------
     # Set some environment variables
+    config._inapp = True
     os.environ['SAS_REDUX'] = 'sas/mangawork/manga/spectro/redux'
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
