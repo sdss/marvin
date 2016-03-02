@@ -1,17 +1,30 @@
 from __future__ import print_function
 from marvin.tools.core import MarvinToolsClass, MarvinError
 from flask.ext.sqlalchemy import BaseQuery
-from marvin import session, datadb
+from marvin import config, session, datadb
 from marvin.tools.query.results import Results
-from marvin.tools.query.forms import SampleForm, MarvinForm
-from sqlalchemy import or_, and_
+from marvin.tools.query.forms import MarvinForm
+from sqlalchemy import or_, and_, bindparam
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import re
+from sqlalchemy.dialects import postgresql
+from functools import wraps
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
 # opdict = {'le': le, 'ge': ge, 'gt': gt, 'lt': lt, 'ne': ne, 'eq': eq}
+
+
+# decorator
+def updateConfig(f):
+    ''' Decorator that updates the query object with new config info '''
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if self.query:
+            self.query = self.query.params({'drpver': config.drpver})
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
 class Query(object):
@@ -26,7 +39,8 @@ class Query(object):
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
-        # handle different modes
+        #self.drpver = config.drpver
+        #self.dapver = config.dapver
 
     def set_params(self, params=None):
         """Set parameters."""
@@ -97,7 +111,7 @@ class Query(object):
                         number = vals[0]
                         if 'IFU' in str(form.Meta.model):
                             # Make the filter
-                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).like('%{0}%'.format(number))
+                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).startswith('{0}'.format(number))
                         else:
                             # Make the filter
                             myfilter = form.Meta.model.__table__.columns.__getitem__(key) == number
@@ -113,6 +127,7 @@ class Query(object):
                 else:
                     self.filter = and_(self.filter, myfilter)
 
+    @updateConfig
     def run(self, qmode='all'):
         """ Run the query and return an instance of Marvin Results class to deal with results????
 
@@ -120,7 +135,6 @@ class Query(object):
         Or does the entire query get built on server-side during API call, and only input form data is pushed to server - maybe this is better?
 
         """
-        self.myforms = None
         if qmode == 'all':
             res = self.query.all()
         elif qmode == 'one':
@@ -131,13 +145,16 @@ class Query(object):
             res = self.query.count()
         return Results(results=res)
 
+    @updateConfig
     def show(self, prop=None):
         ''' Prints info '''
         assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
-        if not prop:
-            print(self.query)
+        if not prop or 'query' in prop:
+            print(self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
         elif prop == 'tables':
             print(self.joins)
+        elif prop == 'filter':
+            print(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
         else:
             print(self.__getattribute__(prop))
 
@@ -149,10 +166,12 @@ class Query(object):
         self.params = None
         self.joins = None
 
+    @updateConfig
     def _createBaseQuery(self, param=None):
         ''' create the base query session object '''
         if not param:
-            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == 'v1_5_1')
+            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver')).\
+                params({'drpver': config.drpver})
         else:
             self.query = self.session.query(param)
 
