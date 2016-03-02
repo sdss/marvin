@@ -45,10 +45,8 @@ $(function() {
 <div class='well'>
     <div class='row'>
         <form method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
-        {#{% for field in sampleform %}
-            <div> {{field.label}}: {{field}}</div>
-        {% endfor %}#}
-        <div>{{sampleform.nsa_redshift.label}}: {{sampleform.nsa_redshift()}}</div>
+        <div>{{ifuform.name.label}}: {{ifuform.name()}}</div>
+        <div>{{sampleform.nsa_redshift.label}}: {{sampleform.operator}}{{sampleform.nsa_redshift()}}</div>
         </form>
     </div>
 </div>

@@ -126,9 +126,11 @@ if config.db:
         print('RuntimeError raised: Problem importing db: {0}'.format(e))
     else:
         try:
+            import sdss.internal.database.utah.mangadb.DataModelClasses as sampledb
             import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
+            import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
         except Exception as e:
-            print('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
+            print('Exception raised: Problem importing mangadb ModelClasses: {0}'.format(e))
         else:
             session = db.Session()
             datadb = datadb
