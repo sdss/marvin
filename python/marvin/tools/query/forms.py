@@ -21,6 +21,7 @@ else:
     from wtforms import Form
 
 from wtforms import StringField, validators, SelectField
+from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 
 __all__ = ['TestForm', 'SampleForm']
@@ -46,7 +47,14 @@ class TestForm(Form):
 
 ''' builds a dict. for modelclasses with key ClassName and value SQLalchemy model class ; '''
 drpclasses = generateClassDict(datadb, filterby='DataModelClasses')
-drpclasses.pop('ArrayOps')
+out = ['ArrayOps', 'Plate']
+tmp = [drpclasses.pop(o) for o in out]
+# import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
+# sampclasses = generateClassDict(sampledb, filterby='SampleModelClasses')
+# out = ['Character']
+# tmp = [sampclasses.pop(o) for o in out]
+# import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
+# dapclasses = generateClassDict(dapdb, filterby='DapModelClasses')
 
 
 def formClassFactory(name, model, baseclass):
@@ -55,18 +63,42 @@ def formClassFactory(name, model, baseclass):
     newclass = type(name, (baseclass,), {'Meta': Meta})
     return newclass
 
-''' Build all the forms, currently this breaks due to WTForms-Alchemy not understanding ARRAY column types, can explicitly exclude those columns '''
-# for key, val in drpclasses.items():
-#     print(key, '-----')
-#     classname = '{0}Form'.format(key)
-#     newclass = formClassFactory(classname, val, ModelForm)
-#     locals()[classname] = newclass
-
-''' do we need an uber MarvinForm to combine all of these separate forms for easy reference? '''
+opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
+ops = [(key, val) for key, val in opdict.items()]
+# operator = SelectField(u'Operator', choices=ops)
 
 
 class SampleForm(ModelForm):
     ''' test WTForm-Alchemy; WTForm based on SQLalchemy ModelClass '''
     class Meta:
         model = datadb.Sample
+    operator = SelectField(u'Operator', choices=ops)
+
+
+class MarvinForm(object):
+
+    def __init__(self):
+        self._param_form_lookup = {}
+        self._generateFormClasses(drpclasses)
+        # self._generateFormClasses(sampclasses)
+        # self._generateFormClasses(dapclasses)
+
+    def _generateFormClasses(self, classes):
+        for key, val in classes.items():
+            print(key, val, '----')
+            classname = '{0}Form'.format(key)
+            newclass = formClassFactory(classname, val, ModelForm)
+            # newclass.operator = operator
+            self.__setattr__(classname, newclass)
+            self._loadParams(classname, newclass)
+
+    def _loadParams(self, classname, newclass):
+        for key in newclass.__dict__.keys():
+            if key[:1] != '_' and 'Meta' not in key:
+                self._param_form_lookup[key] = newclass
+
+    def callInstance(self, form, params=None):
+        ''' create an instance of a specified WTForm '''
+        return form(**params) if params else form()
+
 

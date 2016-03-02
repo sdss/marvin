@@ -3,10 +3,15 @@ from marvin.tools.core import MarvinToolsClass, MarvinError
 from flask.ext.sqlalchemy import BaseQuery
 from marvin import session, datadb
 from marvin.tools.query.results import Results
-from marvin.tools.query.forms import SampleForm
+from marvin.tools.query.forms import SampleForm, MarvinForm
 from sqlalchemy import or_, and_
+from operator import le, ge, gt, lt, eq, ne
+from collections import defaultdict
+import re
 
 __all__ = ['Query']
+opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
+# opdict = {'le': le, 'ge': ge, 'gt': gt, 'lt': lt, 'ne': ne, 'eq': eq}
 
 
 class Query(object):
@@ -18,6 +23,9 @@ class Query(object):
         self.query = None
         self.params = None
         self.session = session
+        self.filter = None
+        self.joins = []
+        self.myforms = defaultdict(str)
         # handle different modes
 
     def set_params(self, params=None):
@@ -30,8 +38,13 @@ class Query(object):
         if not params:
             params = {'nsa_redshift': 0.012}
         self.params = params
+        print('query params', self.params)
         ''' example wtform for sample table only; this input ideally should be a multidict , then web/api+local versions can be same '''
-        self.sampform = SampleForm(**self.params)
+        # self.sampform = SampleForm(**self.params)
+
+        self.marvinform = MarvinForm()
+        for key in self.params.keys():
+            self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
 
     def add_condition(self):
         """ Add a condition based on input form data. """
@@ -39,22 +52,66 @@ class Query(object):
         # elif self.mode == 'api':
         ''' Maybe need super MarvinForm class that can contain all parameters, mapped to their invididual forms???.  for now, example it with SampleForm only'''
 
-        f = self.build_filter()
-        if not self._tableInQuery(self.sampform.Meta.model.__tablename__):
-            self.query = self.query.join(self.sampform.Meta.model)
+        for form in self.myforms.values():
+            if not self._tableInQuery(form.Meta.model.__tablename__):
+                self.joins.append(form.Meta.model.__tablename__)
+                self.query = self.query.join(form.Meta.model)
 
-        self.query = self.query.filter(f)
+            # build the filter
+            self.build_filter(form)
 
-    def build_filter(self):
+        # add the filter to the query
+        if not isinstance(self.filter, type(None)):
+            self.query = self.query.filter(self.filter)
+
+    def build_filter(self, form):
         ''' build a set of filter conditions to load into sqlalchemy filter ; needs to be generalized '''
-        f = None
-        for key, val in self.sampform.data.items():
-            if val:
-                if not f:
-                    f = and_(self.sampform.Meta.model.__table__.columns.__getitem__(key) < val)
+
+        for key, value in form.data.items():
+            # Only do if a value is present
+            if value:
+                # check for comparative operator
+                iscompare = any([s in value for s in opdict.keys()])
+
+                if iscompare:
+                    # do operator comparison
+
+                    # separate operator and value
+                    value.strip()
+                    try:
+                        ops, number = value.split()
+                    except ValueError:
+                        match = re.match(r"([<>=!]+)([0-9.]+)", value, re.I)
+                        if match:
+                            ops = match.groups()[0]
+                            number = match.groups()[1]
+                    op = opdict[ops]
+
+                    # Make the filter
+                    myfilter = op(form.Meta.model.__table__.columns.__getitem__(key), number)
                 else:
-                    f = and_(f, self.sampform.Meta.model.__table__.columns.__getitem__(key) < val)
-        return f
+                    # do range or equality comparison
+                    vals = re.split('[-,]', value.strip())
+                    if len(vals) == 1:
+                        # do straight equality comparison
+                        number = vals[0]
+                        if 'IFU' in str(form.Meta.model):
+                            # Make the filter
+                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).like('%{0}%'.format(number))
+                        else:
+                            # Make the filter
+                            myfilter = form.Meta.model.__table__.columns.__getitem__(key) == number
+                    else:
+                        # do range comparison
+                        low, up = vals
+                        # Make the filter
+                        myfilter = and_(form.Meta.model.__table__.columns.__getitem__(key) >= low, form.Meta.model.__table__.columns.__getitem__(key) <= up)
+
+                # Add to filter
+                if isinstance(self.filter, type(None)):
+                    self.filter = and_(myfilter)
+                else:
+                    self.filter = and_(self.filter, myfilter)
 
     def run(self, qmode='all'):
         """ Run the query and return an instance of Marvin Results class to deal with results????
@@ -63,7 +120,7 @@ class Query(object):
         Or does the entire query get built on server-side during API call, and only input form data is pushed to server - maybe this is better?
 
         """
-
+        self.myforms = None
         if qmode == 'all':
             res = self.query.all()
         elif qmode == 'one':
@@ -74,10 +131,28 @@ class Query(object):
             res = self.query.count()
         return Results(results=res)
 
+    def show(self, prop=None):
+        ''' Prints info '''
+        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
+        if not prop:
+            print(self.query)
+        elif prop == 'tables':
+            print(self.joins)
+        else:
+            print(self.__getattribute__(prop))
+
+    def reset(self):
+        ''' Resets the query '''
+        self.filter = None
+        self.myforms = None
+        self.query = None
+        self.params = None
+        self.joins = None
+
     def _createBaseQuery(self, param=None):
         ''' create the base query session object '''
         if not param:
-            self.query = self.session.query(datadb.Cube)
+            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == 'v1_5_1')
         else:
             self.query = self.session.query(param)
 
