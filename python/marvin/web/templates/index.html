@@ -35,15 +35,6 @@ $(function() {
 
 <div class='well'>
     <div class='row'>
-        {#<form method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
-            <div> {{testform.redshift.label}}: {{testform.redshift()}}</div>
-            <div> {{testform.ifu.label}}: {{testform.ifu()}}</div>
-        </form>#}
-    </div>
-</div>
-
-<div class='well'>
-    <div class='row'>
         <form method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
         <div>{{ifuform.name.label}}: {{ifuform.name()}}</div>
         <div>{{sampleform.nsa_redshift.label}}: {{sampleform.operator}}{{sampleform.nsa_redshift()}}</div>

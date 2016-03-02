@@ -8,7 +8,7 @@ class Results(object):
 
     def __init__(self, results=None):
 
-        #super(Results, self).__init__(*args, **kwargs)
+        # super(Results, self).__init__(*args, **kwargs)
         self.results = results
 
     def download():
