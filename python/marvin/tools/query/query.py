@@ -17,7 +17,7 @@ from flask.ext.sqlalchemy import BaseQuery
 from marvin import config, session, datadb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
-from sqlalchemy import or_, and_, bindparam
+from sqlalchemy import or_, and_, bindparam, between
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import re
@@ -27,6 +27,11 @@ from functools import wraps
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
 # opdict = {'le': le, 'ge': ge, 'gt': gt, 'lt': lt, 'ne': ne, 'eq': eq}
+
+
+# Boom. Tree dictionary.
+def tree():
+    return defaultdict(tree)
 
 
 # decorator
@@ -48,7 +53,8 @@ class Query(object):
 
         # super(Query, self).__init__(*args, **kwargs) # potentially if we subclass query
         self.query = None
-        self.params = None
+        self.params = {}
+        self.paramtree = tree()
         self.session = session
         self.filter = None
         self.joins = []
@@ -66,7 +72,7 @@ class Query(object):
         '''
 
         if params:
-            self.params = params
+            self.params.update(params)  # update the params here or overwrite?
 
             print('query params', self.params)
             ''' params input should ideally be a multidict , then web/api+local versions can be same '''
@@ -103,7 +109,7 @@ class Query(object):
 
         for key, value in form.data.items():
             # Only do if a value is present
-            if value:
+            if value and not self._alreadyInFilter(key):
                 # check for comparative operator
                 iscompare = any([s in value for s in opdict.keys()])
 
@@ -122,30 +128,61 @@ class Query(object):
                     op = opdict[ops]
 
                     # Make the filter
-                    myfilter = op(form.Meta.model.__table__.columns.__getitem__(key), number)
+                    myfilter = op(form.Meta.model.__table__.columns.__getitem__(key), bindparam(key, number))
                 else:
                     # do range or equality comparison
-                    vals = re.split('[-,]', value.strip())
+                    vals = re.split('[-,]', value.strip()) if 'mangaid' not in key else [value.strip()]
                     if len(vals) == 1:
                         # do straight equality comparison
                         number = vals[0]
                         if 'IFU' in str(form.Meta.model):
                             # Make the filter
-                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).startswith('{0}'.format(number))
+                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).startswith(bindparam(key, number))
                         else:
                             # Make the filter
-                            myfilter = form.Meta.model.__table__.columns.__getitem__(key) == number
+                            myfilter = form.Meta.model.__table__.columns.__getitem__(key) == bindparam(key, number)
                     else:
                         # do range comparison
                         low, up = vals
                         # Make the filter
-                        myfilter = and_(form.Meta.model.__table__.columns.__getitem__(key) >= low, form.Meta.model.__table__.columns.__getitem__(key) <= up)
+                        myfilter = and_(between(form.Meta.model.__table__.columns.__getitem__(key), bindparam(key+'_1', low), bindparam(key+'_2', up)))
 
                 # Add new filter to the main filter
                 if isinstance(self.filter, type(None)):
                     self.filter = and_(myfilter)
                 else:
                     self.filter = and_(self.filter, myfilter)
+
+    def update_params(self, param):
+        ''' Update any input parameters that have been bound already.  Input is a dictionary of key, value pairs representing
+            parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
+            e.g.
+            original input parameters {'nsa_redshift': '< 0.012'}
+            newparams = {'nsa_redshift': '0.2'}
+            update_params(newparams)
+            new condition will be nsa_redshift < 0.2
+        '''
+        param = {key: unicode(val) for key, val in param.items() if key in self.params.keys()}
+        self.query = self.query.params(**param)
+
+    def _alreadyInFilter(self, name):
+        ''' Checks if the parameter name already added into the filter '''
+
+        '''
+        # my attempt at filtering on both parameter name and value; failed
+        infilter = False
+        if not isinstance(self.filter, type(None)):
+            s = str(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+            splitfilter = s.split(name)
+            if len(splitfilter) > 1:
+                infilter = value in splitfilter[1]
+        '''
+        infilter = False
+        if not isinstance(self.filter, type(None)):
+            s = str(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+            infilter = name in s
+
+        return infilter
 
     @updateConfig
     def run(self, qmode='all'):
@@ -182,18 +219,14 @@ class Query(object):
         elif prop == 'tables':
             print(self.joins)
         elif prop == 'filter':
-            print(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+            '''oddly this does not update when bound parameters change, but the statement above does '''
+            print(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
         else:
             print(self.__getattribute__(prop))
 
     def reset(self):
         ''' Resets all query attributes '''
-
-        self.filter = None
-        self.myforms = None
-        self.query = None
-        self.params = None
-        self.joins = None
+        self.__init__()
 
     @updateConfig
     def _createBaseQuery(self, param=None):
@@ -202,8 +235,7 @@ class Query(object):
         '''
 
         if not param:
-            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver')).\
-                params({'drpver': config.drpver})
+            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
         else:
             self.query = self.session.query(param)
 
