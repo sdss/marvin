@@ -12,7 +12,7 @@ Revision History:
 '''
 
 from __future__ import print_function
-from marvin.tools.core import MarvinToolsClass, MarvinError
+from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 from flask.ext.sqlalchemy import BaseQuery
 from marvin import config, session, datadb
 from marvin.tools.query.results import Results
@@ -21,12 +21,18 @@ from sqlalchemy import or_, and_, bindparam, between
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import re
+import warnings
 from sqlalchemy.dialects import postgresql
 from functools import wraps
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
 # opdict = {'le': le, 'ge': ge, 'gt': gt, 'lt': lt, 'ne': ne, 'eq': eq}
+
+
+# config.db = None
+# session = None
+# datadb = None
 
 
 # Boom. Tree dictionary.
@@ -59,6 +65,36 @@ class Query(object):
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
+        self.mode = kwargs.get('mode', None)
+
+        if self.mode is None:
+            self.mode = config.mode
+
+        if self.mode == 'local':
+            self._doLocal()
+        if self.mode == 'remote':
+            self._doRemote()
+        if self.mode == 'auto':
+            self._doLocal()
+            if self.mode == 'remote':
+                self._doRemote()
+
+    def _doLocal(self):
+        ''' Tests if it is possible to perform queries locally. '''
+
+        if not config.db or not self.session:
+            warnings.warn('No local database found. Setting mode to remote', MarvinUserWarning)
+            self.mode = 'remote'
+        else:
+            self.mode = 'local'
+
+    def _doRemote(self):
+        ''' Sets up to perform queries remotely. '''
+
+        if not config.urlmap:
+            raise MarvinError('No URL Map found.  Cannot make remote calls!')
+        else:
+            self.mode = 'remote'
 
     def set_params(self, params=None):
         ''' Set parameters searched on into the query.  This updates a dictionary myforms with the appropriate form to
@@ -77,9 +113,12 @@ class Query(object):
             print('query params', self.params)
             ''' params input should ideally be a multidict , then web/api+local versions can be same '''
 
-            self.marvinform = MarvinForm()
-            for key in self.params.keys():
-                self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
+            if self.mode == 'local':
+                self.marvinform = MarvinForm()
+                for key in self.params.keys():
+                    self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
+            elif self.mode == 'remote':
+                print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
 
     def add_condition(self):
         ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
@@ -156,6 +195,7 @@ class Query(object):
     def update_params(self, param):
         ''' Update any input parameters that have been bound already.  Input is a dictionary of key, value pairs representing
             parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
+            Does not update self.params
             e.g.
             original input parameters {'nsa_redshift': '< 0.012'}
             newparams = {'nsa_redshift': '0.2'}
@@ -197,6 +237,12 @@ class Query(object):
             - Do they set only the parameters and send those to the API?
         '''
 
+        # get total count, and if more than 150 results, paginate and only return the first 10
+        count = self.query.count()
+        if count > 150:
+            self.query = self.query.slice(0, 10)
+            warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+
         if qmode == 'all':
             res = self.query.all()
         elif qmode == 'one':
@@ -206,7 +252,7 @@ class Query(object):
         elif qmode == 'count':
             res = self.query.count()
 
-        return Results(results=res)
+        return Results(results=res, query=self.query, count=count)
 
     @updateConfig
     def show(self, prop=None):
@@ -237,7 +283,7 @@ class Query(object):
         if not param:
             self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
         else:
-            self.query = self.session.query(param)
+            self.query = self.session.query(param).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
 
     def _tableInQuery(self, name):
         ''' Checks if a given SQL table is already in the SQL query '''
