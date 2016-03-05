@@ -60,7 +60,8 @@ class Query(object):
         # super(Query, self).__init__(*args, **kwargs) # potentially if we subclass query
         self.query = None
         self.params = {}
-        self.paramtree = tree()
+        self.myparamtree = tree()
+        self._paramtree = None
         self.session = session
         self.filter = None
         self.joins = []
@@ -115,8 +116,10 @@ class Query(object):
 
             if self.mode == 'local':
                 self.marvinform = MarvinForm()
+                self._paramtree = self.marvinform._paramtree
                 for key in self.params.keys():
                     self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
+                    self.myparamtree[self.myforms[key].Meta.model.__name__][key]
             elif self.mode == 'remote':
                 print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
 

@@ -41,18 +41,15 @@ def testDbConnection(session=None):
     return res
 
 
-def generateClassDict(modelclasses, lower=None, filterby=None):
+def generateClassDict(modelclasses, lower=None):
     ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
+        Selects only those classes in the module with attribute __tablename__
         lower = True makes class name key all lowercase
-        filterby = string variable to filter on list of classes
     '''
 
     classdict = {}
     for model in inspect.getmembers(modelclasses, inspect.isclass):
         keyname = model[0].lower() if lower else model[0]
-        if filterby:
-            if filterby in str(model[1]):
-                classdict[keyname] = model[1]
-        else:
+        if hasattr(model[1], '__tablename__'):
             classdict[keyname] = model[1]
     return classdict
