@@ -8,7 +8,7 @@ from marvin.tools.query.forms import TestForm, SampleForm, MarvinForm
 from marvin.api.base import processRequest
 from sqlalchemy import or_, and_
 from marvin.tools.query import Query
-from wtforms import SelectField
+from wtforms import SelectField, validators
 
 index = Blueprint("index_page", __name__)
 
@@ -58,7 +58,7 @@ class Marvin(FlaskView):
         #m._param_form_lookup['nsa_redshift'].operator = operator
         # generate ifu and sample form fields
         ifuform = m.callInstance(m._param_form_lookup['name'])
-        sampform = m.callInstance(m._param_form_lookup['nsa_redshift'])
+        sampform = m.callInstance(m._param_form_lookup['nsa_redshift'], validators=[validators.regexp('([0-9])+')])
         # pass into template dictionary
         index['ifuform'] = ifuform
         index['sampleform'] = sampform

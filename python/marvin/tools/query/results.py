@@ -27,6 +27,9 @@ class Results(object):
     def toTable(self):
         pass
 
+    def toJson(self):
+        pass
+
     def getNext(self, chunk=None):
         ''' Get the next set of results from the query, from start to end in units of chunk '''
 

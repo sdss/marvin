@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from marvin import session, datadb, config
 from marvin.utils.db import generateClassDict
+from collections import defaultdict
 
 # flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT; need some kind of toggle for web version and not???
 if config._inapp:
@@ -26,6 +27,11 @@ from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 
 __all__ = ['TestForm', 'SampleForm', 'MarvinForm']
+
+
+def tree():
+    return defaultdict(tree)
+
 
 # Base form class
 BaseModelForm = model_form_factory(Form)
@@ -47,15 +53,15 @@ class TestForm(Form):
 
 
 ''' Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class ; '''
-drpclasses = generateClassDict(datadb, filterby='DataModelClasses')
+drpclasses = generateClassDict(datadb)
 out = ['ArrayOps', 'Plate']  # these break the wtform build
 tmp = [drpclasses.pop(o) for o in out]
 # import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
-# sampclasses = generateClassDict(sampledb, filterby='SampleModelClasses')
+# sampclasses = generateClassDict(sampledb)
 # out = ['Character']
 # tmp = [sampclasses.pop(o) for o in out]
 # import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
-# dapclasses = generateClassDict(dapdb, filterby='DapModelClasses')
+# dapclasses = generateClassDict(dapdb)
 
 
 # class factory
@@ -99,6 +105,7 @@ class MarvinForm(object):
         '''
 
         self._param_form_lookup = {}
+        self._paramtree = tree()
         self._generateFormClasses(drpclasses)
         # self._generateFormClasses(sampclasses)
         # self._generateFormClasses(dapclasses)
@@ -126,9 +133,10 @@ class MarvinForm(object):
         for key in newclass.__dict__.keys():
             if key[:1] != '_' and 'Meta' not in key:
                 self._param_form_lookup[key] = newclass
+                self._paramtree[newclass.Meta.model.__name__][key]
 
-    def callInstance(self, form, params=None):
+    def callInstance(self, form, params=None, **kwargs):
         ''' Creates an instance of a specified WTForm.  '''
-        return form(**params) if params else form()
+        return form(**params) if params else form(**kwargs)
 
 
