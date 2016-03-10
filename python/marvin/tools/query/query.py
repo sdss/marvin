@@ -12,6 +12,7 @@ Revision History:
 '''
 
 from __future__ import print_function
+from __future__ import division
 from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 from flask.ext.sqlalchemy import BaseQuery
 from marvin import config, session, datadb
@@ -24,6 +25,7 @@ import re
 import warnings
 from sqlalchemy.dialects import postgresql
 from functools import wraps
+from sqlalchemy_boolean_search import parse_boolean_search
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
@@ -109,6 +111,11 @@ class Query(object):
         '''
 
         if params:
+
+            # if params is a string, then parse and filter
+            #if type(params) == str:
+            #    parsed = parse_boolean_search(params)
+
             self.params.update(params)  # update the params here or overwrite?
 
             print('query params', self.params)
