@@ -9,6 +9,7 @@ Revision History:
     2016-02-23 - Modified to test a programmatic query using a test sample form - B. Cherinka
     2016-03-02 - Generalized to many parameters and many forms - B. Cherinka
                - Added config drpver info
+    2016-03-12 - Changed parameter input to be a natural language string
 '''
 
 from __future__ import print_function
@@ -25,11 +26,10 @@ import re
 import warnings
 from sqlalchemy.dialects import postgresql
 from functools import wraps
-from sqlalchemy_boolean_search import parse_boolean_search
+from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
-# opdict = {'le': le, 'ge': ge, 'gt': gt, 'lt': lt, 'ne': ne, 'eq': eq}
 
 
 # config.db = None
@@ -54,6 +54,18 @@ def updateConfig(f):
     return wrapper
 
 
+# decorator
+def makeBaseQuery(f):
+    ''' Decorator that makes the base query if it does not already exist '''
+
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not self.query:
+            self._createBaseQuery()
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
 class Query(object):
     ''' Core Marvin Query object.  can this be subclassed from sqlalchemy query? should it? '''
 
@@ -68,7 +80,9 @@ class Query(object):
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
+        self.quiet = None
         self.mode = kwargs.get('mode', None)
+        self._errors = []
 
         if self.mode is None:
             self.mode = config.mode
@@ -99,29 +113,37 @@ class Query(object):
         else:
             self.mode = 'remote'
 
-    def set_params(self, params=None):
-        ''' Set parameters searched on into the query.  This updates a dictionary myforms with the appropriate form to
+    def set_filter(self, params=None):
+        ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms with the appropriate form to
         modify/update based on the input parameters.  One-to-one mapping between parameter and form/modelclass/sqltable
 
-        params = input dictonary of form {'parameter_name': parameter_value}
-        e.g. params = {'nsa_redshift': u'< 0.012', 'name': u'19'}
-
-        TODO: allow params to be a direct verbatim sql string, that should be parsed (into the above form?)
-
+        Params is a string input of a boolean filter condition in SQL syntax
+        e.g., params = " nsa_redshift < 0.012 and name = 19* "
         '''
 
         if params:
-
             # if params is a string, then parse and filter
-            #if type(params) == str:
-            #    parsed = parse_boolean_search(params)
+            if type(params) == str:
+                try:
+                    parsed = parse_boolean_search(params)
+                except BooleanSearchException as e:
+                    raise MarvinError('Your boolean expression contained a syntax error: {0}'.format(e))
+            else:
+                raise MarvinError('Input parameters must be a natural language string!')
 
-            self.params.update(params)  # update the params here or overwrite?
+            # update the parameters dictionary
+            self._parsed = parsed
+            self.strfilter = str(parsed)
+            self.params.update(parsed.params)
 
-            print('query params', self.params)
-            ''' params input should ideally be a multidict , then web/api+local versions can be same '''
+            # print filter
+            if not self.quiet:
+                print('Your parsed filter is: ')
+                print(parsed)
 
+            # Perform local vs remote modes
             if self.mode == 'local':
+                # Pass into Marvin Forms
                 self.marvinform = MarvinForm()
                 self._paramtree = self.marvinform._paramtree
                 for key in self.params.keys():
@@ -130,8 +152,21 @@ class Query(object):
             elif self.mode == 'remote':
                 print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
 
+    def _validateForms(self):
+        ''' Validate all the data in the forms '''
+
+        formkeys = self.myforms.keys()
+        isgood = [form.validate() for form in self.myforms.values()]
+        if not all(isgood):
+            inds = np.where(np.invert(isgood))[0]
+            for index in inds:
+                self._errors.append(self.myforms.values()[index].errors)
+            raise MarvinError('Parameters failed to validate: {0}'.format(self._errors))
+
     def add_condition(self):
         ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
+
+        self._validateForms()
 
         for form in self.myforms.values():
             # check if the SQL table already in the query, if not add it
@@ -139,13 +174,18 @@ class Query(object):
                 self.joins.append(form.Meta.model.__tablename__)
                 self.query = self.query.join(form.Meta.model)
 
-            # build the actual filter
-            self.build_filter(form)
+        # build the actual filter
+        self.build_filter()
 
         # add the filter to the query
         if not isinstance(self.filter, type(None)):
             self.query = self.query.filter(self.filter)
 
+    def build_filter(self):
+        ''' Builds a filter condition to load into sqlalchemy filter. '''
+        self.filter = self._parsed.filter(datadb)
+
+    """
     def build_filter(self, form):
         ''' Builds a set of filter conditions to load into sqlalchemy filter.  Parameter data can take on form of
 
@@ -201,6 +241,7 @@ class Query(object):
                     self.filter = and_(myfilter)
                 else:
                     self.filter = and_(self.filter, myfilter)
+    """
 
     def update_params(self, param):
         ''' Update any input parameters that have been bound already.  Input is a dictionary of key, value pairs representing
@@ -234,6 +275,7 @@ class Query(object):
 
         return infilter
 
+    @makeBaseQuery
     @updateConfig
     def run(self, qmode='all'):
         ''' Run the query and return an instance of Marvin Results class to deal with results.  Input qmode allows to perform
@@ -246,6 +288,10 @@ class Query(object):
                 package stuff installed.
             - Do they set only the parameters and send those to the API?
         '''
+
+        # Check if params are set and there is a query
+        if self.params and not self.query.whereclause:
+            self.add_condition()
 
         # get total count, and if more than 150 results, paginate and only return the first 10
         count = self.query.count()
@@ -295,12 +341,9 @@ class Query(object):
         else:
             self.query = self.session.query(param).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
 
+    @makeBaseQuery
     def _tableInQuery(self, name):
         ''' Checks if a given SQL table is already in the SQL query '''
-
-        # check if a base query exists, this should probably be a decorator
-        if not self.query:
-            self._createBaseQuery()
 
         # do the check
         try:
