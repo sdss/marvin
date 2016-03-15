@@ -39,23 +39,12 @@ $(function() {
           <div class='row'>
             <div class='col-md-1'>
               <div>{{ifuform.name.label}}: {{ifuform.name(class_='form-control')}}</div>
-              <div>{{sampleform.nsa_redshift.label}}: {{sampleform.operator}}{{sampleform.nsa_redshift(class_='form-control')}}</div>
+              <div>{{sampleform.nsa_redshift.label}}: {{sampleform.nsa_redshift(class_='form-control')}}</div>
             </div>
           </div>
         </form>
     </div>
 </div>
 
-<div class='well'>
-{% if sampleform.errors %}
-    <ul class="errors">
-        {% for field_name, field_errors in sampleform.errors|dictsort if field_errors %}
-            {% for error in field_errors %}
-                <li>{{ sampleform[field_name].label }}: {{ error }}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-{% endif %}
-</div>
 
 {% endblock body %}

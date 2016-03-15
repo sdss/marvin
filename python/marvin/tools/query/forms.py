@@ -15,16 +15,15 @@ from __future__ import division
 from marvin import session, datadb, config
 from marvin.utils.db import generateClassDict
 from collections import defaultdict
+from wtforms import StringField, validators, SelectField, IntegerField
+from wtforms.widgets import Select
+from wtforms_alchemy import model_form_factory
 
 # flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT; need some kind of toggle for web version and not???
 if config._inapp:
     from flask_wtf import Form
 else:
     from wtforms import Form
-
-from wtforms import StringField, validators, SelectField
-from wtforms.widgets import Select
-from wtforms_alchemy import model_form_factory
 
 __all__ = ['TestForm', 'SampleForm', 'MarvinForm']
 
@@ -47,6 +46,7 @@ class ModelForm(BaseModelForm):
 class TestForm(Form):
     ''' test WTF-Form ; allows for manip. of validation, custom rendering, widget, etc '''
     redshift = StringField('NSA Redshift', [validators.Length(min=4, max=25)])
+    plate = IntegerField('Plate', [validators.Length(min=4)])
     _ifus = sorted(list(set([i.name[:-2] for i in session.query(datadb.IFUDesign).all()])), key=lambda t: int(t))
     _ifufields = [('ifu{0}'.format(_i), _i) for _i in _ifus]
     ifu = SelectField('IFU Design', choices=_ifufields)
@@ -119,7 +119,7 @@ class MarvinForm(object):
         '''
 
         for key, val in classes.items():
-            print(key, val, '----')
+            # print(key, val, '----')
             classname = '{0}Form'.format(key)
             newclass = formClassFactory(classname, val, ModelForm)
             # newclass.operator = operator

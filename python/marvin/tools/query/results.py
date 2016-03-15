@@ -1,6 +1,7 @@
 from __future__ import print_function
 from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 import warnings
+import json
 
 __all__ = ['Results']
 
