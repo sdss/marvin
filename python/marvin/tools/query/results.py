@@ -24,6 +24,7 @@ class Results(object):
         pass
 
     def sort(self):
+        """WTForms Table? Bootstrap Table? dictionary?"""
         pass
 
     def toTable(self, columns=None):
