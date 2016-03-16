@@ -2,6 +2,7 @@ from __future__ import print_function
 from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 import warnings
 import json
+from astropy.table import Table, Column
 
 __all__ = ['Results']
 
@@ -25,11 +26,21 @@ class Results(object):
     def sort(self):
         pass
 
-    def toTable(self):
-        pass
+    def toTable(self, columns=None):
+        ''' Output the results as an astropy Table '''
+        try:
+            tabres = Table([self.results])
+        except ValueError as e:
+            raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
+        return tabres
 
     def toJson(self):
-        pass
+        ''' Output the results as a JSON object '''
+        try:
+            jsonres = json.dumps(self.results)
+        except TypeError as e:
+            raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
+        return jsonres
 
     def getNext(self, chunk=None):
         ''' Get the next set of results from the query, from start to end in units of chunk '''
@@ -68,4 +79,5 @@ class Results(object):
         return self.results
 
     def getAll(self):
+        ''' Retrieve all of the results '''
         self.results = self.query.all()

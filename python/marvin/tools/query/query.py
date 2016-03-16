@@ -144,13 +144,17 @@ class Query(object):
             # Perform local vs remote modes
             if self.mode == 'local':
                 # Pass into Marvin Forms
-                self.marvinform = MarvinForm()
-                self._paramtree = self.marvinform._paramtree
-                for key in self.params.keys():
-                    self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
-                    self.myparamtree[self.myforms[key].Meta.model.__name__][key]
+                self._setForms()
             elif self.mode == 'remote':
                 print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
+
+    def _setForms(self):
+        ''' Set the appropriate WTForms in myforms and set the parameters '''
+        self.marvinform = MarvinForm()
+        self._paramtree = self.marvinform._paramtree
+        for key in self.params.keys():
+            self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
+            self.myparamtree[self.myforms[key].Meta.model.__name__][key]
 
     def _validateForms(self):
         ''' Validate all the data in the forms '''
@@ -244,6 +248,14 @@ class Query(object):
     """
 
     def update_params(self, param):
+        ''' Update the input parameters '''
+        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.params.keys()}
+        self.params.update(param)
+        self._setForms()
+
+    def _update_params(self, param):
+        ''' this is now broken, this should update the boolean params in the filter condition '''
+
         ''' Update any input parameters that have been bound already.  Input is a dictionary of key, value pairs representing
             parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
             Does not update self.params
@@ -253,8 +265,8 @@ class Query(object):
             update_params(newparams)
             new condition will be nsa_redshift < 0.2
         '''
-        param = {key: unicode(val) for key, val in param.items() if key in self.params.keys()}
-        self.query = self.query.params(**param)
+        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.params.keys()}
+        self.query = self.query.params(param)
 
     def _alreadyInFilter(self, name):
         ''' Checks if the parameter name already added into the filter '''
@@ -316,15 +328,18 @@ class Query(object):
 
         assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
 
-        if not prop or 'query' in prop:
-            print(self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
-        elif prop == 'tables':
-            print(self.joins)
-        elif prop == 'filter':
-            '''oddly this does not update when bound parameters change, but the statement above does '''
-            print(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
-        else:
-            print(self.__getattribute__(prop))
+        if self.mode == 'local':
+            if not prop or 'query' in prop:
+                print(self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+            elif prop == 'tables':
+                print(self.joins)
+            elif prop == 'filter':
+                '''oddly this does not update when bound parameters change, but the statement above does '''
+                print(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+            else:
+                print(self.__getattribute__(prop))
+        elif self.mode == 'remote':
+            print('Cannot show full SQL query in remote mode, use the API')
 
     def reset(self):
         ''' Resets all query attributes '''
