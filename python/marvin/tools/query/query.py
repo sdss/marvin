@@ -302,7 +302,7 @@ class Query(object):
         '''
 
         # Check if params are set and there is a query
-        if self.params and not self.query.whereclause:
+        if self.params and isinstance(self.query.whereclause, type(None)):
             self.add_condition()
 
         # get total count, and if more than 150 results, paginate and only return the first 10
