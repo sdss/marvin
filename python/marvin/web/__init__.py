@@ -8,7 +8,7 @@ from marvin.utils.general.general import getDbMachine
 from marvin import config
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
-import jinja_filters
+import marvin.web.jinja_filters
 import sys
 import os
 
@@ -18,6 +18,7 @@ def create_app(debug=False):
     from marvin.api.cube import CubeView
     from marvin.api.general import GeneralRequestsView
     from marvin.web.controllers.index import index
+    from marvin.api.query import QueryView
 
     # ----------------------------------
     # Create App
@@ -110,6 +111,7 @@ def create_app(debug=False):
     # API route registration
     CubeView.register(api)
     GeneralRequestsView.register(api)
+    QueryView.register(api)
     app.register_blueprint(api)
 
     # Web route registration
