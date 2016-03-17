@@ -12,10 +12,13 @@ class QueryView(BaseView):
         self.results['data'] = 'this is a query!'
         return json.dumps(self.results)
 
-    # def get(self, name):
-    #     ''' This method performs a get request at the url route /cubes/<id> '''
+    # @route('/plateifus/')
+    # def get_plateifus(self, name):
+    #     """This method performs a get request at the url route /queries/<id>"""
     #     cube, res = _getCube(name)
     #     self.update_results(res)
     #     if cube:
-    #         self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate, cube.ra, cube.dec)}
+    #         self.results['data'] = {name: '{0},{1},{2},{3}'.format(
+    #                                     name, cube.plate, cube.ra, cube.dec)}
     #     return json.dumps(self.results)
+
