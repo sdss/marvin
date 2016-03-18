@@ -124,9 +124,9 @@ class MarvinForm(object):
             newclass = formClassFactory(classname, val, ModelForm)
             # newclass.operator = operator
             self.__setattr__(classname, newclass)
-            self._loadParams(classname, newclass)
+            self._loadParams(newclass)
 
-    def _loadParams(self, classname, newclass):
+    def _loadParams(self, newclass):
         ''' Loads all parameters from wtforms into a dictionary with
             key, value = {'parameter_name': 'parent WTForm name'}.  Ignores hidden attributes and the Meta class
         '''
@@ -138,5 +138,3 @@ class MarvinForm(object):
     def callInstance(self, form, params=None, **kwargs):
         ''' Creates an instance of a specified WTForm.  '''
         return form(**params) if params else form(**kwargs)
-
-
