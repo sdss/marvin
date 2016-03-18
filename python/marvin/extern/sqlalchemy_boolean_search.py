@@ -67,9 +67,12 @@ def get_field(DataModelClass, field_name):
     """
     # Handle hierarchical field names such as 'parent.name'
     if '.' in field_name:
-        relationship_name, field_name = field_name.split('.', 1)
-        relationship = getattr(DataModelClass, relationship_name)
-        return get_field(relationship.property.mapper.entity, field_name)
+        table_name, field_name = field_name.split('.', 1)
+        if table_name == DataModelClass.__tablename__:
+            return get_field(DataModelClass, field_name)
+        elif hasattr(DataModelClass, table_name):
+            relationship = getattr(DataModelClass, table_name)
+            return get_field(relationship.property.mapper.entity, field_name)
 
     # Handle flat field names such as 'name'
     return getattr(DataModelClass, field_name, None)
@@ -294,4 +297,3 @@ def parse_boolean_search(boolean_search):
         return expression
     except ParseException as e:
         raise BooleanSearchException("Syntax error at offset %(offset)s." % dict(offset=e.col))
-

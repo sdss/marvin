@@ -372,6 +372,3 @@ class Query(object):
             else:
                 isin = False
         return isin
-
-
-
