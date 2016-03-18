@@ -26,7 +26,8 @@ import re
 import warnings
 from sqlalchemy.dialects import postgresql
 from functools import wraps
-from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
+from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search,
+                                                     BooleanSearchException)
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
@@ -371,6 +372,3 @@ class Query(object):
             else:
                 isin = False
         return isin
-
-
-
