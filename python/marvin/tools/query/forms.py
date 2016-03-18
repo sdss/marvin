@@ -25,7 +25,7 @@ if config._inapp:
 else:
     from wtforms import Form
 
-__all__ = ['TestForm', 'SampleForm', 'MarvinForm']
+__all__ = ['SampleForm', 'MarvinForm']
 
 
 def tree():
