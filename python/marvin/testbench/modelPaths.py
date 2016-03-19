@@ -22,6 +22,16 @@ import numpy as np
 import networkx as nx
 
 
+def isModel(model):
+    """Return True if the input is a Model Class."""
+
+    if (isinstance(model, DeclarativeMeta) and hasattr(model, '__table__') and
+            model.__table__.name):
+        return True
+    else:
+        False
+
+
 def getModels(module):
     """Returns a list with all the ModelClasses for a module.
 
@@ -37,8 +47,7 @@ def getModels(module):
     # model classes.
     for attr in attrs:
         testModel = getattr(module, attr)
-        if (isinstance(testModel, DeclarativeMeta) and
-                hasattr(testModel, '__table__') and testModel.__table__.name):
+        if isModel(testModel):
             models.append(getattr(module, attr))
 
     return models
@@ -138,7 +147,7 @@ class ModelGraph(object):
                     parent = self.getTablePath(model)
                     self.graph.add_edge(parent, childFullPath)
 
-    def getJoins(self, models, format_in='tables', format_out='tables'):
+    def getJoins(self, models, format_out='tables'):
         """Returns a list all model classes needed to perform a join.
 
         Given a list of `models`, finds the shortest join paths between any two
@@ -149,12 +158,13 @@ class ModelGraph(object):
         ----------
         models : list of model classes or tablenames
             A list of the tables or model classes to join. If tablenames,
-            the full path, `schema.table` must be provided.
-        format_in, format_out : string
-            `format_in` defines the type of input in `models`, and can be
-            either `'models'` for model classes, or `'tables'` for tablenames.
-            `format_out`, which accepts the same values, determines the type
-            of the elements in the returned list.
+            the full path, `schema.table` must be provided. The format of the
+            input is determined automatically from the type of the first
+            element.
+        format_out : string
+            Defines the type of elements in the returned list. If `'models'`,
+            the returned elements will be model classes, if `'tables'` they
+            will be the corresponding table paths (schema.table).
 
         Returns
         -------
@@ -166,15 +176,23 @@ class ModelGraph(object):
         """
 
         models = np.atleast_1d(models)
-        format_in = format_in.lower()
         format_out = format_out.lower()
-
-        assert format_in in ['models', 'tables'], \
-            'format_in must be either \'models\' or \'tables\'.'
 
         assert format_out in ['models', 'tables'], \
             'format_out must be either \'models\' or \'tables\'.'
 
+        # Determines the type of input
+        if isModel(models[0]):
+            format_in = 'models'
+        elif isinstance(models[0], str):
+            format_in = 'tables'
+        else:
+            raise ValueError('the format of the input list '
+                             'cannot be understood.')
+
+        # We create a list of the table paths for each input. We'll use
+        # this list internally, and later format the output depending on
+        # format_out.
         if format_in == 'models':
             tables = [self.getTablePath(model) for model in models]
         else:
@@ -198,7 +216,7 @@ class ModelGraph(object):
         else:
             # We get all possible combinations of two elements in the input
             # list of models, and find the shortest path between them.
-            joins = []
+            joins = set()
             for tableA, tableB in itertools.combinations(tables, r=2):
                 try:
                     path = nx.shortest_path(self.graph, tableA, tableB)
@@ -207,13 +225,12 @@ class ModelGraph(object):
                         'it is not possible to join tables {0} and {1}. '
                         'Please, review your query.'.format(tableA, tableB))
 
-                for table in path:
-                    if format_out == 'tables':
-                        newJoin = table
-                    else:
-                        newJoin = self.graph.node[table]['model']
+                if format_out == 'tables':
+                    newJoins = set(path)
+                else:
+                    newJoins = set([self.graph.node[table]['model']
+                                    for table in path])
 
-                    if newJoin not in joins:
-                        joins.append(newJoin)
+                joins = joins | newJoins
 
             return joins
