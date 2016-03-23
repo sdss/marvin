@@ -28,7 +28,10 @@ def processRequest(request=None):
         return None
 
     # build form dictionary
-    form = {key: val if len(val) > 1 else val[0] for key, val in data.iterlists()}
+    try:
+        form = {key: val if len(val) > 1 else val[0] for key, val in data.iterlists()}
+    except AttributeError:
+        form = {key: val if len(val) > 1 else val[0] for key, val in data.lists()}
 
     return form
 
