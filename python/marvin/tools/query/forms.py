@@ -111,7 +111,9 @@ class ParamFormLookupDict(dict):
 
 class MainForm(Form):
     ''' Main Level WTForm for Marvin '''
-    searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'), validators.DataRequired(message='Input filter string required')])
+    searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'),
+                            validators.DataRequired(message='Input filter string required'),
+                            validators.AnyOf(opdict.values(), message='Input must contain a valid operand')])
 
 
 class MarvinForm(object):
