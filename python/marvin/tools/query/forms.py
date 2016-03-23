@@ -88,13 +88,6 @@ ops = [(key, val) for key, val in opdict.items()]
 # operator = SelectField(u'Operator', choices=ops)
 
 
-class SampleForm(ModelForm):
-    ''' test WTForm-Alchemy; WTForm based on SQLalchemy ModelClass '''
-    class Meta:
-        model = datadb.Sample
-    operator = SelectField(u'Operator', choices=ops)
-
-
 class ParamFormLookupDict(dict):
 
     _tableShortcuts = {'ifu': 'ifudesign'}
@@ -126,6 +119,11 @@ class ParamFormLookupDict(dict):
                 .format(key, ', '.join(matches)))
 
 
+class MainForm(Form):
+    ''' Main Level WTForm for Marvin '''
+    searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'), validators.DataRequired(message='Input filter string required')])
+
+
 class MarvinForm(object):
     ''' Core Marvin Form object. '''
 
@@ -140,6 +138,7 @@ class MarvinForm(object):
         self._generateFormClasses(drpclasses)
         # self._generateFormClasses(sampclasses)
         # self._generateFormClasses(dapclasses)
+        self.MainForm = MainForm
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.

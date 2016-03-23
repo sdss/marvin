@@ -8,10 +8,24 @@
 <div class='well'>
     <div class='row'>
         <div class='col-md-10'>
-            <h4>Search results: </h4>
+            <h3>Search results</h3>
+            <h4>Using filter: {{filter}}</h4>
             <h5>{{results if results else 'No results found'}}</h5>
         </div>
     </div>
 </div>
+
+{% if mainform.errors %}
+<div class='formerrors well alert-danger'>
+    <h3>Form Validation Errors: Please try again!</h3>
+    <ul class="errors">
+        {% for field_name, field_errors in mainform.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+                <li>{{ mainform[field_name].label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
 
 {% endblock body %}

@@ -34,12 +34,22 @@ $(function() {
 </div>
 
 <div class='well'>
-    <div class='row'>
+    {#<div class='row'>
         <form class='form' method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
           <div class='row'>
             <div class='col-md-1'>
               <div>{{ifuform.name.label}}: {{ifuform.name(class_='form-control')}}</div>
               <div>{{sampleform.nsa_redshift.label}}: {{sampleform.nsa_redshift(class_='form-control')}}</div>
+            </div>
+          </div>
+        </form>
+    </div>#}
+    {# Single Text Box #}
+    <div class='row'>
+        <form class='form' method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
+          <div class='row'>
+            <div class='col-md-6'>
+              <div>{{mainform.searchbox.label}}: {{mainform.searchbox(class_='form-control')}}</div>
             </div>
           </div>
         </form>

@@ -19,6 +19,7 @@ from flask.ext.sqlalchemy import BaseQuery
 from marvin import config, session, datadb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
+from marvin.tools.query.modelGraph import ModelGraph
 from sqlalchemy import or_, and_, bindparam, between
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
@@ -124,7 +125,7 @@ class Query(object):
 
         if params:
             # if params is a string, then parse and filter
-            if type(params) == str:
+            if type(params) == str or type(params) == unicode:
                 try:
                     parsed = parse_boolean_search(params)
                 except BooleanSearchException as e:
