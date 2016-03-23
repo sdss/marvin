@@ -15,20 +15,20 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
-from flask.ext.sqlalchemy import BaseQuery
+from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search, BooleanSearchException)
 from marvin import config, session, datadb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
 from marvin.tools.query.modelGraph import ModelGraph
 from sqlalchemy import or_, and_, bindparam, between
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import re
 import warnings
-from sqlalchemy.dialects import postgresql
 from functools import wraps
-from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search,
-                                                     BooleanSearchException)
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
@@ -85,6 +85,8 @@ class Query(object):
         self.quiet = None
         self.mode = kwargs.get('mode', None)
         self._errors = []
+        self._basetable = None
+        self._modelgraph = ModelGraph(datadb)
 
         if self.mode is None:
             self.mode = config.mode
@@ -146,7 +148,11 @@ class Query(object):
             # Perform local vs remote modes
             if self.mode == 'local':
                 # Pass into Marvin Forms
-                self._setForms()
+                try:
+                    self._setForms()
+                except KeyError as e:
+                    self.params = {}
+                    raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
                 print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
 
@@ -172,13 +178,11 @@ class Query(object):
     def add_condition(self):
         ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
 
+        # validate the forms
         self._validateForms()
 
-        for form in self.myforms.values():
-            # check if the SQL table already in the query, if not add it
-            if not self._tableInQuery(form.Meta.model.__tablename__):
-                self.joins.append(form.Meta.model.__tablename__)
-                self.query = self.query.join(form.Meta.model)
+        # join tables
+        self._join_tables()
 
         # build the actual filter
         self.build_filter()
@@ -186,6 +190,18 @@ class Query(object):
         # add the filter to the query
         if not isinstance(self.filter, type(None)):
             self.query = self.query.filter(self.filter)
+
+    def _join_tables(self):
+        ''' Build the join statement from the input tables '''
+        mymodellist = [form.Meta.model for form in self.myforms.values()]
+        modellist = self._modelgraph.getJoins(mymodellist, format_out='models')
+        # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
+        # self.joins.extend([model.__tablename__ for model in sublist])
+        # self.query = self.query.join(*sublist)
+        for model in modellist:
+            if not self._tableInQuery(model.__tablename__):
+                self.joins.append(model.__tablename__)
+                self.query = self.query.join(model)
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
@@ -354,9 +370,23 @@ class Query(object):
         '''
 
         if not param:
+            param = datadb.Cube
+            self._basetable = self._buildBaseTable(param)
             self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
         else:
+            self._basetable = self._buildBaseTable(param)
             self.query = self.session.query(param).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+
+    def _buildBaseTable(self, param):
+        ''' Builds the base name for a input parameter: either schema.table or schema.table.column'''
+        if isinstance(param, DeclarativeMeta) and hasattr(param, '__table__'):
+            basename = '{0}.{1}'.format(param.__table__.schema, param.__table__.name)
+        elif isinstance(param, InstrumentedAttribute):
+            basename = str(param.compile())
+            basename = basename.rsplit('.', 1)[0]
+        else:
+            basename = None
+        return basename
 
     @makeBaseQuery
     def _tableInQuery(self, name):

@@ -25,7 +25,7 @@ if config._inapp:
 else:
     from wtforms import Form
 
-__all__ = ['SampleForm', 'MarvinForm']
+__all__ = ['MarvinForm']
 
 
 def tree():
@@ -41,16 +41,6 @@ class ModelForm(BaseModelForm):
     @classmethod
     def get_session(self):
         return session
-
-
-class TestForm(Form):
-    ''' test WTF-Form ; allows for manip. of validation, custom rendering, widget, etc '''
-    redshift = StringField('NSA Redshift', [validators.Length(min=4, max=25)])
-    plate = IntegerField('Plate', [validators.Length(min=4)])
-    _ifus = sorted(list(set([i.name[:-2] for i in session.query(datadb.IFUDesign).all()])), key=lambda t: int(t))
-    _ifufields = [('ifu{0}'.format(_i), _i) for _i in _ifus]
-    ifu = SelectField('IFU Design', choices=_ifufields)
-
 
 ''' Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class ; '''
 drpclasses = generateClassDict(datadb)

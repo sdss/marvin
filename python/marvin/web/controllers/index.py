@@ -96,6 +96,7 @@ class Marvin(FlaskView):
             res = q.run()
 
             test['filter'] = q.strfilter
+            test['count'] = res.count
             test['results'] = len(res.results)
 
         return render_template('test.html', **test)
