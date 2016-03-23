@@ -25,7 +25,8 @@ class Table(FlaskView):
         print('inside get data')
         f = processRequest(request=request)
         print('getdata form', f)
-        searchvalue = 'nsa_redshift < 0.012 and name=19*'
+        print('current_session', current_session['searchvalue'])
+        searchvalue = current_session['searchvalue']
         limit = f['limit']
         offset = f['offset']
         q, res = doQuery(searchvalue, limit=limit)
@@ -115,6 +116,7 @@ class Marvin(FlaskView):
         mainform = m.MainForm(**f)
         test['mainform'] = mainform
         searchvalue = f['searchbox']
+        current_session.update({'searchvalue': searchvalue})
         if mainform.validate():
             print('form validated, doing query')
             # testing the rough query version of the above
