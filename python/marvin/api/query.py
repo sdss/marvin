@@ -2,13 +2,18 @@ import json
 from flask import request
 from flask.ext.classy import route
 from marvin.api.base import BaseView
+from marvin.tools.query import Query
 
 
 def _getCubes(query):
     """Run query locally at Utah."""
-    # results = do_query(query)
-    results = {'data': 'jackpot!'}
-    return results
+    q = Query()
+    q.set_filter(params=query)
+    q.add_condition()
+    r = q.run()
+    output = {'data': ['-'.join((str(it.plate), it.ifu.name))
+                       for it in r.results]}
+    return output
 
 
 class QueryView(BaseView):
@@ -22,7 +27,7 @@ class QueryView(BaseView):
         return json.dumps(self.results)
 
     """example query post:
-    curl -i -H "Content-Type: application/json" -X POST -d '{"query":"nsa_redshift=0.01-0.015"}' http://localhost:5000/api/query/cubes/
+    curl -i -H "Content-Type: application/json" -X POST -d '{"query":"nsa_redshift<0.1"}' http://localhost:5000/api/query/cubes/
     """
 
     @route('/cubes/', methods=['POST'])
