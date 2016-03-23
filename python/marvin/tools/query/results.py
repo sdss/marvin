@@ -79,6 +79,20 @@ class Results(object):
 
         return self.results
 
+    def getSubset(self, start, limit=10):
+        ''' Gets a slice of set of results '''
+        start = 0 if start < 0 else int(start)
+        end = start + int(limit)
+        # if end > self.count:
+        #     end = self.count
+        #     start = end - int(limit)
+        self.start = start
+        self.end = end
+        self.chunk = limit
+        self.results = self.query.slice(start, end).all()
+        return self.results
+
     def getAll(self):
         ''' Retrieve all of the results '''
         self.results = self.query.all()
+        return self.results

@@ -87,6 +87,7 @@ class Query(object):
         self._errors = []
         self._basetable = None
         self._modelgraph = ModelGraph(datadb)
+        self.limit = int(kwargs.get('limit', 10))
 
         if self.mode is None:
             self.mode = config.mode
@@ -151,7 +152,7 @@ class Query(object):
                 try:
                     self._setForms()
                 except KeyError as e:
-                    self.params = {}
+                    self.reset()
                     raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
                 print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
@@ -207,64 +208,6 @@ class Query(object):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
         self.filter = self._parsed.filter(datadb)
 
-    """
-    def build_filter(self, form):
-        ''' Builds a set of filter conditions to load into sqlalchemy filter.  Parameter data can take on form of
-
-        'parameter_name': number            = assumes straight equality (e.g. 1.0 = redshift = 1.0)
-        'parameter_name': operand number    = comparison operator and number (e.g. < 1.0 = redshift < 1.0)
-        'parameter_name': number - number   = number range / between (e.g. 1-2 = redshifts >= 1 and <= 2)
-        'parameter_name': number, number    = same as number range but comma separated
-
-        '''
-
-        for key, value in form.data.items():
-            # Only do if a value is present
-            if value and not self._alreadyInFilter(key):
-                # check for comparative operator
-                iscompare = any([s in value for s in opdict.keys()])
-
-                if iscompare:
-                    # do operator comparison
-
-                    # separate operator and value
-                    value.strip()
-                    try:
-                        ops, number = value.split()
-                    except ValueError:
-                        match = re.match(r"([<>=!]+)([0-9.]+)", value, re.I)
-                        if match:
-                            ops = match.groups()[0]
-                            number = match.groups()[1]
-                    op = opdict[ops]
-
-                    # Make the filter
-                    myfilter = op(form.Meta.model.__table__.columns.__getitem__(key), bindparam(key, number))
-                else:
-                    # do range or equality comparison
-                    vals = re.split('[-,]', value.strip()) if 'mangaid' not in key else [value.strip()]
-                    if len(vals) == 1:
-                        # do straight equality comparison
-                        number = vals[0]
-                        if 'IFU' in str(form.Meta.model):
-                            # Make the filter
-                            myfilter = form.Meta.model.__table__.columns.__getitem__(key).startswith(bindparam(key, number))
-                        else:
-                            # Make the filter
-                            myfilter = form.Meta.model.__table__.columns.__getitem__(key) == bindparam(key, number)
-                    else:
-                        # do range comparison
-                        low, up = vals
-                        # Make the filter
-                        myfilter = and_(between(form.Meta.model.__table__.columns.__getitem__(key), bindparam(key+'_1', low), bindparam(key+'_2', up)))
-
-                # Add new filter to the main filter
-                if isinstance(self.filter, type(None)):
-                    self.filter = and_(myfilter)
-                else:
-                    self.filter = and_(self.filter, myfilter)
-    """
-
     def update_params(self, param):
         ''' Update the input parameters '''
         param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.params.keys()}
@@ -312,13 +255,6 @@ class Query(object):
             different sqlalchemy queries
         '''
 
-        '''
-        For remote mode, when and where does the API call occur?
-            - Do they build the query here and send the query to the API?  If so, then they will need all sqlalchemy, and wtform, related
-                package stuff installed.
-            - Do they set only the parameters and send those to the API?
-        '''
-
         # Check if params are set and there is a query
         if self.params and isinstance(self.query.whereclause, type(None)):
             self.add_condition()
@@ -326,7 +262,7 @@ class Query(object):
         # get total count, and if more than 150 results, paginate and only return the first 10
         count = self.query.count()
         if count > 150:
-            self.query = self.query.slice(0, 10)
+            self.query = self.query.slice(0, self.limit)
             warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
 
         if qmode == 'all':
