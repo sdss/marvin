@@ -262,7 +262,7 @@ class ModelGraph(object):
             if table not in listA:
                 listA.append(table)
 
-        return list
+        return listA
 
     def _getShortestPath(self, tableA, tableB, format_out='tables',
                          removeA=False):
