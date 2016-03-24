@@ -15,9 +15,10 @@ from __future__ import division
 from marvin import session, datadb, config
 from marvin.utils.db import generateClassDict
 from collections import defaultdict
-from wtforms import StringField, validators, SelectField, IntegerField
+from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
+import re
 
 # flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT; need some kind of toggle for web version and not???
 if config._inapp:
@@ -109,11 +110,25 @@ class ParamFormLookupDict(dict):
                 .format(key, ', '.join(matches)))
 
 
+# Custom validator for MainForm
+class ValidOperand(object):
+    def __init__(self, opstring='[<>=]', message=None):
+        self.opstring = opstring
+        if not message:
+            message = u'Field must contain at least a valid operand of {0}.'.format(self.opstring)
+        self.message = message
+
+    def __call__(self, form, field):
+        infield = re.search(self.opstring, field.data)
+        if not infield:
+            raise ValidationError(self.message)
+
+
 class MainForm(Form):
     ''' Main Level WTForm for Marvin '''
     searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'),
-                            validators.DataRequired(message='Input filter string required')])
-                            #validators.Regexp('(=|<[>=]?|>=?)\s\d+', message='Input must contain a valid operand')])
+                            validators.DataRequired(message='Input filter string required'),
+                            ValidOperand('[<>=]', message='Input must contain a valid operand.')])
 
 
 class MarvinForm(object):
