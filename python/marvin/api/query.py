@@ -10,6 +10,7 @@ def _getCubes(query):
     q.set_filter(params=query)
     q.add_condition()
     r = q.run()
+    res = r.getAll()
     output = {'data': [it.plateifu for it in r.results]}
     return output
 
