@@ -23,7 +23,6 @@ class QueryView(BaseView):
     """Class describing API calls related to queries."""
 
     route_base = '/query/'
-    # config.mode = 'remote'
 
     def index(self):
         self.results['data'] = 'this is a query!'

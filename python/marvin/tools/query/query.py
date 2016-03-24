@@ -202,20 +202,19 @@ class Query(object):
         # the order of the joins is the correct one.
         # TODO: at some point, all the queries should be generalised so that
         # we don't assume that we are querying a cube.
-        modellist = self._modelgraph.getJoins(mymodellist, format_out='models',
-                                              nexus=datadb.Cube)
+        self._modellist = self._modelgraph.getJoins(mymodellist, format_out='models', nexus=datadb.Cube)
 
         # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
         # self.joins.extend([model.__tablename__ for model in sublist])
         # self.query = self.query.join(*sublist)
-        for model in modellist:
+        for model in self._modellist:
             if not self._tableInQuery(model.__tablename__):
                 self.joins.append(model.__tablename__)
                 self.query = self.query.join(model)
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
-        self.filter = self._parsed.filter(datadb)
+        self.filter = self._parsed.filter(self._modellist)
 
     def update_params(self, param):
         ''' Update the input parameters '''

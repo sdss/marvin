@@ -68,8 +68,9 @@ def get_field(DataModelClass, field_name):
     # Handle hierarchical field names such as 'parent.name'
     if '.' in field_name:
         relationship_name, field_name = field_name.split('.', 1)
-        relationship = getattr(DataModelClass, relationship_name)
-        return get_field(relationship.property.mapper.entity, field_name)
+        return getattr(DataModelClass, field_name, None)
+        #relationship = getattr(DataModelClass, relationship_name)
+        #return get_field(relationship.property.mapper.entity, field_name)
 
     # Handle flat field names such as 'name'
     return getattr(DataModelClass, field_name, None)
