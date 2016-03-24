@@ -44,7 +44,7 @@ Revision History
 2016-03-5: Modified to allow for a list of ModelClasses as input - Brian Cherinka
 2016-03-11: Modified to output a dictionary of parameters: values - B. Cherinka
 2016-03-16: Changed sqlalchemy values in conditions to bindparam for post-replacement - B. Cherinka
-
+2016-03-24: Allowed for = to mean equality for non string fields and LIKE for strings - B. Cherinka
 """
 
 from __future__ import print_function
@@ -67,12 +67,9 @@ def get_field(DataModelClass, field_name):
     """
     # Handle hierarchical field names such as 'parent.name'
     if '.' in field_name:
-        table_name, field_name = field_name.split('.', 1)
-        if table_name == DataModelClass.__tablename__:
-            return get_field(DataModelClass, field_name)
-        elif hasattr(DataModelClass, table_name):
-            relationship = getattr(DataModelClass, table_name)
-            return get_field(relationship.property.mapper.entity, field_name)
+        relationship_name, field_name = field_name.split('.', 1)
+        relationship = getattr(DataModelClass, relationship_name)
+        return get_field(relationship.property.mapper.entity, field_name)
 
     # Handle flat field names such as 'name'
     return getattr(DataModelClass, field_name, None)
@@ -184,16 +181,20 @@ class Condition(object):
             elif self.op == '!=':
                 condition = lower_field.__ne__(bindparam(self.name, lower_value))
             elif self.op == '=':
-                # this operator maps to LIKE
-                # x=5 -> x LIKE '%5%' (x contains 5)
-                # x=5* -> x LIKE '5%' (x starts with 5)
-                field = getattr(DataModelClass, self.name)
-                value = self.value
-                if value.find('*') >= 0:
-                    value = value.replace('*', '%')
-                    condition = field.ilike(bindparam(self.name, value))
+                if isinstance(field.type, sqltypes.TEXT) or isinstance(field.type, sqltypes.VARCHAR):
+                    # this operator maps to LIKE
+                    # x=5 -> x LIKE '%5%' (x contains 5)
+                    # x=5* -> x LIKE '5%' (x starts with 5)
+                    field = getattr(DataModelClass, self.name)
+                    value = self.value
+                    if value.find('*') >= 0:
+                        value = value.replace('*', '%')
+                        condition = field.ilike(bindparam(self.name, value))
+                    else:
+                        condition = field.ilike('%'+bindparam(self.name, value)+'%')
                 else:
-                    condition = field.ilike('%'+bindparam(self.name, value)+'%')
+                    # if not a text column, then use "=" as a straight equals
+                    condition = lower_field.__eq__(bindparam(self.name, lower_value))
 
         return condition
 
@@ -297,3 +298,4 @@ def parse_boolean_search(boolean_search):
         return expression
     except ParseException as e:
         raise BooleanSearchException("Syntax error at offset %(offset)s." % dict(offset=e.col))
+

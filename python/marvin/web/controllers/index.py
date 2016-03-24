@@ -8,6 +8,7 @@ from marvin.tools.query.forms import MarvinForm
 from marvin.api.base import processRequest
 from sqlalchemy import or_, and_
 from marvin.tools.query import Query
+from marvin.tools.core import MarvinError
 from wtforms import SelectField, validators
 import json
 
@@ -110,7 +111,7 @@ class Marvin(FlaskView):
         f = processRequest(request=request)
         print('params', f)
         print('form', request.form)
-        test = {'results': None}
+        test = {'results': None, 'errmsg': None}
 
         m = MarvinForm()
         mainform = m.MainForm(**f)
@@ -120,11 +121,14 @@ class Marvin(FlaskView):
         if mainform.validate():
             print('form validated, doing query')
             # testing the rough query version of the above
-            q, res = doQuery(searchvalue)
-
-            test['filter'] = q.strfilter
-            test['count'] = res.count
-            test['results'] = len(res.results)
+            try:
+                q, res = doQuery(searchvalue)
+            except MarvinError as e:
+                test['errmsg'] = 'Could not perform query: {0}'.format(e)
+            else:
+                test['filter'] = q.strfilter
+                test['count'] = res.count
+                test['results'] = len(res.results)
 
         return render_template('test.html', **test)
 
