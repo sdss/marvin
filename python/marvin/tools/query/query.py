@@ -23,6 +23,7 @@ from marvin.tools.query.modelGraph import ModelGraph
 from sqlalchemy import or_, and_, bindparam, between
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
@@ -73,7 +74,6 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
-        # super(Query, self).__init__(*args, **kwargs) # potentially if we subclass query
         self.query = None
         self.params = {}
         self.myparamtree = tree()
@@ -83,11 +83,13 @@ class Query(object):
         self.joins = []
         self.myforms = defaultdict(str)
         self.quiet = None
-        self.mode = kwargs.get('mode', None)
         self._errors = []
         self._basetable = None
         self._modelgraph = ModelGraph(datadb)
+        self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 10))
+        self.sort = kwargs.get('sort', None)
+        self.order = kwargs.get('order', 'asc')
 
         if self.mode is None:
             self.mode = config.mode
@@ -266,22 +268,36 @@ class Query(object):
         if self.params and isinstance(self.query.whereclause, type(None)):
             self.add_condition()
 
+        # Check for adding a sort
+        # self._sortQuery()
+
         # get total count, and if more than 150 results, paginate and only return the first 10
         count = self.query.count()
         if count > 150:
-            self.query = self.query.slice(0, self.limit)
+            query = self.query.slice(0, self.limit)
             warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+        else:
+            query = self.query
 
         if qmode == 'all':
-            res = self.query.all()
+            res = query.all()
         elif qmode == 'one':
-            res = self.query.one()
+            res = query.one()
         elif qmode == 'first':
-            res = self.query.first()
+            res = query.first()
         elif qmode == 'count':
-            res = self.query.count()
+            res = query.count()
 
         return Results(results=res, query=self.query, count=count)
+
+    def _sortQuery(self):
+        if not isinstance(self.sort, type(None)):
+            if self.order:
+                assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
+                if 'desc' in self.order:
+                    self.query = self.query.order_by(desc(self.sort))
+                else:
+                    self.query = self.query.order_by(self.sort)
 
     @updateConfig
     def show(self, prop=None):

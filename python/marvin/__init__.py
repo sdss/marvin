@@ -137,6 +137,6 @@ if config.db:
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-# config.sasurl = 'http://519f4f12.ngrok.io/marvin'  # this is a temporary measure REMOVE THIS
+# config.sasurl = 'http://cdcfe1db.ngrok.io/marvin'  # this is a temporary measure REMOVE THIS
 response = Interaction('api/general/getroutemap', request_type='get')
 config.urlmap = response.getRouteMap()

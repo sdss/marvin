@@ -1,5 +1,4 @@
 import json
-from flask import request
 from flask.ext.classy import route
 from marvin.api.base import BaseView
 from marvin.tools.query import Query
@@ -11,9 +10,13 @@ def _getCubes(query):
     q.set_filter(params=query)
     q.add_condition()
     r = q.run()
-    output = {'data': ['-'.join((str(it.plate), it.ifu.name))
-                       for it in r.results]}
+    res = r.getAll()
+    output = {'data': [it.plateifu for it in r.results]}
     return output
+
+# expose aspects of query object or results object
+# e.g., SQL query string (r.query)
+# q.strfilter  # natural language
 
 
 class QueryView(BaseView):
@@ -27,12 +30,12 @@ class QueryView(BaseView):
         return json.dumps(self.results)
 
     """example query post:
-    curl -i -H "Content-Type: application/json" -X POST -d '{"query":"nsa_redshift<0.1"}' http://localhost:5000/api/query/cubes/
+    curl -X POST --data "query=nsa_redshift<0.1" http://519f4f12.ngrok.io/api/query/cubes/
     """
 
-    @route('/cubes/', methods=['POST'])
+    @route('/cubes/', methods=['GET', 'POST'])
     def cube_query(self):
-        self.results['query'] = request.json['query']
-        res = _getCubes(self.results['query'])
+        query = self.results['inconfig']['query']
+        res = _getCubes(query)
         self.update_results(res)
         return json.dumps(self.results)

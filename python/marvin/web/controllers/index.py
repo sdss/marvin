@@ -30,7 +30,13 @@ class Table(FlaskView):
         searchvalue = current_session['searchvalue']
         limit = f['limit']
         offset = f['offset']
+        order = f['order']
         q, res = doQuery(searchvalue, limit=limit)
+        # sort
+        #revorder = 'desc' in order
+        #print('reverse', revorder, order)
+        #res.results = sorted(res.results, key=lambda x: x.plateifu, reverse=revorder)
+        # get subset on a given page
         results = res.getSubset(offset, limit=limit)
         rows = [{'plateifu': r.plateifu} for r in results]
         stuff = {'total': res.count, 'rows': rows}
