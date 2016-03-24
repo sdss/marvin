@@ -27,12 +27,12 @@ class QueryView(BaseView):
         return json.dumps(self.results)
 
     """example query post:
-    curl -i -H "Content-Type: application/json" -X POST -d '{"query":"nsa_redshift<0.1"}' http://localhost:5000/api/query/cubes/
+    curl -X POST --data "query=nsa_redshift<0.1" http://519f4f12.ngrok.io/api/query/cubes/
     """
 
-    @route('/cubes/', methods=['POST'])
+    @route('/cubes/', methods=['GET', 'POST'])
     def cube_query(self):
-        self.results['query'] = request.json['query']
-        res = _getCubes(self.results['query'])
+        query = self.results['inconfig']['query']
+        res = _getCubes(query)
         self.update_results(res)
         return json.dumps(self.results)
