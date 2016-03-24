@@ -230,7 +230,7 @@ class ModelGraph(object):
                 path = self.getJoins(models=[nexus, tables[0]], nexus=None,
                                      format_out=format_out)
                 # Removes the nexus
-                return set(list(path)[1:])
+                return path[1:]
 
         else:
             # We get all possible combinations of two elements in the input
@@ -238,21 +238,31 @@ class ModelGraph(object):
             # If nexus is defined, we get the joins between nexus and each item
             # in tables.
 
-            joins = set()
+            joins = []
 
             if not nexus:
                 for tableA, tableB in itertools.combinations(tables, r=2):
                     newJoins = self._getShortestPath(tableA, tableB,
                                                      format_out=format_out)
-                    joins = joins | newJoins
+                    self._joinList(joins, newJoins)
+
             else:
                 for tableB in tables:
                     newJoins = self._getShortestPath(nexus, tableB,
                                                      format_out=format_out,
                                                      removeA=True)
-                    joins = joins | newJoins
+                    self._joinList(joins, newJoins)
 
             return joins
+
+    def _joinList(self, listA, listB):
+        """Joins two lists excluding duplicates. Join is made in place."""
+
+        for table in listB:
+            if table not in listA:
+                listA.append(table)
+
+        return list
 
     def _getShortestPath(self, tableA, tableB, format_out='tables',
                          removeA=False):
@@ -269,9 +279,8 @@ class ModelGraph(object):
             path.remove(tableA)
 
         if format_out == 'tables':
-            pathSet = set(path)
+            pathSet = path
         else:
-            pathSet = set([self.graph.node[table]['model']
-                           for table in path])
+            pathSet = [self.graph.node[table]['model'] for table in path]
 
         return pathSet
