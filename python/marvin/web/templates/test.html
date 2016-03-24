@@ -39,6 +39,21 @@
         </table>
     </div>
 </div>
+{% else %}
+    {% if errmsg %}
+        <div class='well'>
+            <div class='row'>
+                <h3>Search Error</h3>
+                <h4>{{errmsg}}
+            </div>
+        </div>
+    {% else %}
+        <div class='well'>
+            <div class='row'>
+                <h3>No results found</h3>
+            </div>
+        </div>
+    {% endif %}
 {% endif %}
 
 {% endblock body %}
