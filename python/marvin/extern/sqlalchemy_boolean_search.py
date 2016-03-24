@@ -174,6 +174,7 @@ class Condition(object):
                         "Field '%(name)s' expects an integer value. Received value '%(value)s' instead."
                         % dict(name=self.name, value=self.value))
 
+            print('outside all ops', field, lower_field, value, lower_value, self.name, self.fullname)
             # Return SQLAlchemy condition based on operator value
             # self.name is parameter name, lower_field is Table.parameterName
             if self.op == '==':
@@ -195,6 +196,7 @@ class Condition(object):
                     # x=5* -> x LIKE '5%' (x starts with 5)
                     field = getattr(DataModelClass, self.name)
                     value = self.value
+                    print('string here', field, value, self.name, self.fullname)
                     if value.find('*') >= 0:
                         value = value.replace('*', '%')
                         condition = field.ilike(bindparam(self.fullname, value))
@@ -207,7 +209,7 @@ class Condition(object):
         return condition
 
     def __repr__(self):
-        return self.name + self.op + self.value
+        return self.fullname + self.op + self.value
 
 
 class BoolNot(object):
