@@ -147,7 +147,7 @@ class ModelGraph(object):
                     parent = self.getTablePath(model)
                     self.graph.add_edge(parent, childFullPath)
 
-    def getJoins(self, models, format_out='tables'):
+    def getJoins(self, models, format_out='tables', nexus=None):
         """Returns a list all model classes needed to perform a join.
 
         Given a list of `models`, finds the shortest join paths between any two
@@ -165,6 +165,12 @@ class ModelGraph(object):
             Defines the type of elements in the returned list. If `'models'`,
             the returned elements will be model classes, if `'tables'` they
             will be the corresponding table paths (schema.table).
+        nexus : string, model class, or None
+            If None, the method will find the paths between each combination of
+            two elements in the input `model` list. If a table is provided
+            (either as a table path or as a model class), the returned list
+            will be the shorted path between `nexus` and each on of the tables
+            in `models`. The `nexus` table won't be included in the output.
 
         Returns
         -------
@@ -184,7 +190,7 @@ class ModelGraph(object):
         # Determines the type of input
         if isModel(models[0]):
             format_in = 'models'
-        elif isinstance(models[0], str):
+        elif isinstance(models[0], (str, np.unicode_)):
             format_in = 'tables'
         else:
             raise ValueError('the format of the input list '
@@ -198,6 +204,11 @@ class ModelGraph(object):
         else:
             tables = models
 
+        if nexus and isModel(nexus):
+            nexus = self.getTablePath(nexus)
+            assert nexus in self.graph.nodes(), \
+                'nexus {0} is not a node in the model graph.'.format(nexus)
+
         for table in tables:
             assert table in self.graph.nodes(), \
                 'table {0} is not a node in the model graph.'.format(table)
@@ -208,29 +219,59 @@ class ModelGraph(object):
         elif len(models) == 1:
             # Simple case in which we only have one table to join. We just
             # return the same table / model, depending on format_out
-            if format_out == 'tables':
-                return tables
+            # If nexus is defined, we recursively call getJoins().
+
+            if not nexus:
+                if format_out == 'tables':
+                    return tables
+                else:
+                    return [self.graph.node[tables[0]]['model']]
             else:
-                return [self.graph.node[tables[0]]['model']]
+                path = self.getJoins(models=[nexus, tables[0]], nexus=None,
+                                     format_out=format_out)
+                # Removes the nexus
+                return set(list(path)[1:])
 
         else:
             # We get all possible combinations of two elements in the input
             # list of models, and find the shortest path between them.
+            # If nexus is defined, we get the joins between nexus and each item
+            # in tables.
+
             joins = set()
-            for tableA, tableB in itertools.combinations(tables, r=2):
-                try:
-                    path = nx.shortest_path(self.graph, tableA, tableB)
-                except nx.NetworkXNoPath:
-                    raise nx.NetworkXNoPath(
-                        'it is not possible to join tables {0} and {1}. '
-                        'Please, review your query.'.format(tableA, tableB))
 
-                if format_out == 'tables':
-                    newJoins = set(path)
-                else:
-                    newJoins = set([self.graph.node[table]['model']
-                                    for table in path])
-
-                joins = joins | newJoins
+            if not nexus:
+                for tableA, tableB in itertools.combinations(tables, r=2):
+                    newJoins = self._getShortestPath(tableA, tableB,
+                                                     format_out=format_out)
+                    joins = joins | newJoins
+            else:
+                for tableB in tables:
+                    newJoins = self._getShortestPath(nexus, tableB,
+                                                     format_out=format_out,
+                                                     removeA=True)
+                    joins = joins | newJoins
 
             return joins
+
+    def _getShortestPath(self, tableA, tableB, format_out='tables',
+                         removeA=False):
+        """Gets the shortest path between two nodes."""
+
+        try:
+            path = nx.shortest_path(self.graph, tableA, tableB)
+        except nx.NetworkXNoPath:
+            raise nx.NetworkXNoPath(
+                'it is not possible to join tables {0} and {1}. '
+                'Please, review your query.'.format(tableA, tableB))
+
+        if removeA:
+            path.remove(tableA)
+
+        if format_out == 'tables':
+            pathSet = set(path)
+        else:
+            pathSet = set([self.graph.node[table]['model']
+                           for table in path])
+
+        return pathSet
