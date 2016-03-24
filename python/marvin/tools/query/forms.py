@@ -99,7 +99,7 @@ class ParamFormLookupDict(dict):
 
         if len(matches) == 0:
             # No matches. This returns the standards KeyError from dict
-            return dict.__getitem__(self, key)
+            raise KeyError('{0} does not match any column.'.format(key))
         elif len(matches) == 1:
             # One match: returns the form.
             return dict.__getitem__(self, matches[0])
