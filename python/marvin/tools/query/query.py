@@ -195,7 +195,14 @@ class Query(object):
     def _join_tables(self):
         ''' Build the join statement from the input tables '''
         mymodellist = [form.Meta.model for form in self.myforms.values()]
-        modellist = self._modelgraph.getJoins(mymodellist, format_out='models')
+
+        # Gets the list of joins from ModelGraph. Uses Cube as nexus, so that
+        # the order of the joins is the correct one.
+        # TODO: at some point, all the queries should be generalised so that
+        # we don't assume that we are querying a cube.
+        modellist = self._modelgraph.getJoins(mymodellist, format_out='models',
+                                              nexus=datadb.Cube)
+
         # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
         # self.joins.extend([model.__tablename__ for model in sublist])
         # self.query = self.query.join(*sublist)
