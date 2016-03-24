@@ -45,6 +45,7 @@ Revision History
 2016-03-11: Modified to output a dictionary of parameters: values - B. Cherinka
 2016-03-16: Changed sqlalchemy values in conditions to bindparam for post-replacement - B. Cherinka
 2016-03-24: Allowed for = to mean equality for non string fields and LIKE for strings - B. Cherinka
+          : Changed the dot relationship in get_field to filter on the relationship_name first - B. Cherinka
 """
 
 from __future__ import print_function
@@ -61,14 +62,16 @@ class BooleanSearchException(Exception):
 
 
 # ***** Utility functions *****
-def get_field(DataModelClass, field_name):
+def get_field(DataModelClass, field_name, base_name=None):
     """ Returns a SQLAlchemy Field from a field name such as 'name' or 'parent.name'.
         Returns None if no field exists by that field name.
     """
     # Handle hierarchical field names such as 'parent.name'
-    if '.' in field_name:
-        relationship_name, field_name = field_name.split('.', 1)
-        return getattr(DataModelClass, field_name, None)
+    if base_name:
+        if base_name in DataModelClass.__tablename__:
+            return getattr(DataModelClass, field_name, None)
+        else:
+            return None
         #relationship = getattr(DataModelClass, relationship_name)
         #return get_field(relationship.property.mapper.entity, field_name)
 
@@ -83,12 +86,16 @@ class Condition(object):
         where operand can be one of: '<', '<=', '=', '==', '!=', '>=', '>'.
     """
     def __init__(self, data):
-        self.name = data[0][0]
+        self.fullname = data[0][0]
+        if '.' in self.fullname:
+            self.basename, self.name = self.fullname.split('.', 1)
+        else:
+            self.basename = None
+            self.name = self.fullname
         self.op = data[0][1]
         self.value = data[0][2]
         if self.name not in params:
-            #params.append(self.name)
-            params.update({self.name: self.value})
+            params.update({self.fullname: self.value})
 
     def filter(self, DataModelClass):
         ''' Return the condition as an SQLalchemy query condition '''
@@ -108,7 +115,7 @@ class Condition(object):
             index = None
             for i, model in enumerate(models):
 
-                field = get_field(model, self.name)
+                field = get_field(model, self.name, base_name=self.basename)
                 try:
                     ptype = field.type
                     ilike = field.ilike
@@ -170,17 +177,17 @@ class Condition(object):
             # Return SQLAlchemy condition based on operator value
             # self.name is parameter name, lower_field is Table.parameterName
             if self.op == '==':
-                condition = lower_field.__eq__(bindparam(self.name, lower_value))
+                condition = lower_field.__eq__(bindparam(self.fullname, lower_value))
             elif self.op == '<':
-                condition = lower_field.__lt__(bindparam(self.name, lower_value))
+                condition = lower_field.__lt__(bindparam(self.fullname, lower_value))
             elif self.op == '<=':
-                condition = lower_field.__le__(bindparam(self.name, lower_value))
+                condition = lower_field.__le__(bindparam(self.fullname, lower_value))
             elif self.op == '>':
-                condition = lower_field.__gt__(bindparam(self.name, lower_value))
+                condition = lower_field.__gt__(bindparam(self.fullname, lower_value))
             elif self.op == '>=':
-                condition = lower_field.__ge__(bindparam(self.name, lower_value))
+                condition = lower_field.__ge__(bindparam(self.fullname, lower_value))
             elif self.op == '!=':
-                condition = lower_field.__ne__(bindparam(self.name, lower_value))
+                condition = lower_field.__ne__(bindparam(self.fullname, lower_value))
             elif self.op == '=':
                 if isinstance(field.type, sqltypes.TEXT) or isinstance(field.type, sqltypes.VARCHAR):
                     # this operator maps to LIKE
@@ -190,12 +197,12 @@ class Condition(object):
                     value = self.value
                     if value.find('*') >= 0:
                         value = value.replace('*', '%')
-                        condition = field.ilike(bindparam(self.name, value))
+                        condition = field.ilike(bindparam(self.fullname, value))
                     else:
-                        condition = field.ilike('%'+bindparam(self.name, value)+'%')
+                        condition = field.ilike('%'+bindparam(self.fullname, value)+'%')
                 else:
                     # if not a text column, then use "=" as a straight equals
-                    condition = lower_field.__eq__(bindparam(self.name, lower_value))
+                    condition = lower_field.__eq__(bindparam(self.fullname, lower_value))
 
         return condition
 
@@ -210,7 +217,7 @@ class BoolNot(object):
         self.condition = data[0][1]
         if isinstance(self.condition, Condition) and self.condition.name not in params:
             #params.append(self.condition.name)
-            params.update({self.condition.name: self.condition.value})
+            params.update({self.condition.fullname: self.condition.value})
 
     def filter(self, DataModelClass):
         """ Return the operator as a SQLAlchemy not_() condition
@@ -232,7 +239,7 @@ class BoolAnd(object):
                 self.conditions.append(condition)
                 if isinstance(condition, Condition) and condition.name not in params:
                     #params.append(condition.name)
-                    params.update({condition.name: condition.value})
+                    params.update({condition.fullname: condition.value})
 
     def filter(self, DataModelClass):
         """ Return the operator as a SQLAlchemy and_() condition
@@ -255,7 +262,7 @@ class BoolOr(object):
                 self.conditions.append(condition)
                 if isinstance(condition, Condition) and condition.name not in params:
                     #params.append(condition.name)
-                    params.update({condition.name: condition.value})
+                    params.update({condition.fullname: condition.value})
 
     def filter(self, DataModelClass):
         """ Return the operator as a SQLAlchemy or_() condition
