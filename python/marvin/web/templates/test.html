@@ -31,10 +31,10 @@
 {% if results %}
 <div class='well'>
     <div class='table-responsive' id='testtable'>
-        <table id='table' data-toggle="table" data-url="{{url_for('index_page.getdata')}}" data-pagination="true"
-           data-page-size="10" data-page-list="[5, 10, 20]" data-side-pagination="server">
+        <table id='table' data-toggle="table" data-classes='table table-condensed table-bordered' data-url="{{url_for('index_page.getdata')}}" data-pagination="true"
+           data-page-size="10" data-page-list="[5, 10, 20]" data-side-pagination="server" data-search='true'>
            <thead>
-            <tr><th data-field='plateifu'>Plate-IFU</th></tr>
+            <tr><th data-field='plateifu' data-sortable='true'>Plate-IFU</th></tr>
            </thead>
         </table>
     </div>
