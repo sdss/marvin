@@ -1,5 +1,4 @@
 import json
-from flask import request
 from flask.ext.classy import route
 from marvin.api.base import BaseView
 from marvin.tools.query import Query
@@ -11,9 +10,12 @@ def _getCubes(query):
     q.set_filter(params=query)
     q.add_condition()
     r = q.run()
-    output = {'data': ['-'.join((str(it.plate), it.ifu.name))
-                       for it in r.results]}
+    output = {'data': [it.plateifu for it in r.results]}
     return output
+
+# expose aspects of query object or results object
+# e.g., SQL query string (r.query)
+# q.strfilter  # natural language
 
 
 class QueryView(BaseView):
