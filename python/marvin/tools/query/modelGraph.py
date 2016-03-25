@@ -105,6 +105,16 @@ class ModelGraph(object):
         for schema in self.schemas:
             self._createEdges(schema)
 
+    @property
+    def nodes(self):
+        """Shortcut to self.graph.nodes()."""
+        return self.graph.nodes()
+
+    @property
+    def edges(self):
+        """Shortcut to self.graph.edges()."""
+        return self.graph.edges()
+
     @staticmethod
     def getTablePath(model):
         """From a model, returns the table path in the form schema.table."""
