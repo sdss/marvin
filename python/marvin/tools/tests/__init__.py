@@ -8,7 +8,6 @@ from functools import wraps
 def skipIfNoDB(test):
     @wraps(test)
     def wrapper(self, *args, **kwargs):
-        print(self.session)
         if not self.session:
             return self.skipTest(test)
         else:
