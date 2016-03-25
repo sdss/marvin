@@ -197,6 +197,9 @@ class ModelGraph(object):
         assert format_out in ['models', 'tables'], \
             'format_out must be either \'models\' or \'tables\'.'
 
+        if len(models) == 0:
+            raise ValueError('input list of models/tables to join is empty.')
+
         # Determines the type of input
         if isModel(models[0]):
             format_in = 'models'
@@ -223,10 +226,7 @@ class ModelGraph(object):
             assert table in self.graph.nodes(), \
                 'table {0} is not a node in the model graph.'.format(table)
 
-        if len(models) == 0:
-            raise ValueError('input list of models/tables to join is empty.')
-
-        elif len(models) == 1:
+        if len(models) == 1:
             # Simple case in which we only have one table to join. We just
             # return the same table / model, depending on format_out
             # If nexus is defined, we recursively call getJoins().
