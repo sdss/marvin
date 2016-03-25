@@ -200,6 +200,11 @@ class ModelGraph(object):
         if len(models) == 0:
             raise ValueError('input list of models/tables to join is empty.')
 
+        # Removes duplicates in input list.
+        seen = set()
+        seen_add = seen.add
+        models = [xx for xx in models if not (xx in seen or seen_add(xx))]
+
         # Determines the type of input
         if isModel(models[0]):
             format_in = 'models'
