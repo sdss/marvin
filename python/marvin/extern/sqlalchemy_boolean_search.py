@@ -72,8 +72,6 @@ def get_field(DataModelClass, field_name, base_name=None):
             return getattr(DataModelClass, field_name, None)
         else:
             return None
-        #relationship = getattr(DataModelClass, relationship_name)
-        #return get_field(relationship.property.mapper.entity, field_name)
 
     # Handle flat field names such as 'name'
     return getattr(DataModelClass, field_name, None)
@@ -146,48 +144,58 @@ class Condition(object):
 
         return condition
 
+    def bindAndLowerValue(self, field):
+        '''Bind and lower the value based on field type '''
+
+        # get python field type
+        fieldtype = field.type.python_type
+
+        if fieldtype == float:
+            try:
+                value = float(self.value)
+                lower_field = field
+            except:
+                raise BooleanSearchException(
+                    "Field {0} expects a float value. Received value {1} instead.".format(self.name, self.value))
+        elif fieldtype == int:
+            try:
+                value = int(self.value)
+                lower_field = field
+            except:
+                raise BooleanSearchException(
+                    "Field {0} expects an integer value. Received value {1} instead.".format(self.name, self.value))
+        else:
+            lower_field = func.lower(field)
+            value = self.value
+
+        # Bind the parameter value to the parameter name
+        boundvalue = bindparam(self.fullname, value)
+        lower_value = func.lower(boundvalue) if fieldtype not in [float, int] else boundvalue
+
+        return lower_field, lower_value
+
     def filter_one(self, DataModelClass, field=None, condition=None):
         """ Return the condition as a SQLAlchemy query condition
         """
         if field:
             # Prepare field and value
-            lower_field = func.lower(field)
-            value = self.value
-            lower_value = value.lower() if hasattr(value, 'lower') else value
+            lower_field, lower_value = self.bindAndLowerValue(field)
 
-            if field.type.python_type == float:
-                try:
-                    value = float(value)
-                    lower_field = field
-                    lower_value = value
-                except:
-                    raise BooleanSearchException(
-                        "Field '%(name)s' expects a float value. Received value '%(value)s' instead."
-                        % dict(name=self.name, value=self.value))
-            elif field.type.python_type == int:
-                try:
-                    value = int(value)
-                    lower_field = field
-                    lower_value = value
-                except:
-                    raise BooleanSearchException(
-                        "Field '%(name)s' expects an integer value. Received value '%(value)s' instead."
-                        % dict(name=self.name, value=self.value))
-
+            print('outside all ops', field, lower_field, self.value, lower_value, self.name, self.fullname)
             # Return SQLAlchemy condition based on operator value
             # self.name is parameter name, lower_field is Table.parameterName
             if self.op == '==':
-                condition = lower_field.__eq__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__eq__(lower_value)
             elif self.op == '<':
-                condition = lower_field.__lt__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__lt__(lower_value)
             elif self.op == '<=':
-                condition = lower_field.__le__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__le__(lower_value)
             elif self.op == '>':
-                condition = lower_field.__gt__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__gt__(lower_value)
             elif self.op == '>=':
-                condition = lower_field.__ge__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__ge__(lower_value)
             elif self.op == '!=':
-                condition = lower_field.__ne__(bindparam(self.fullname, lower_value))
+                condition = lower_field.__ne__(lower_value)
             elif self.op == '=':
                 if isinstance(field.type, sqltypes.TEXT) or isinstance(field.type, sqltypes.VARCHAR):
                     # this operator maps to LIKE
@@ -195,6 +203,7 @@ class Condition(object):
                     # x=5* -> x LIKE '5%' (x starts with 5)
                     field = getattr(DataModelClass, self.name)
                     value = self.value
+                    print('string here', field, value, self.name, self.fullname)
                     if value.find('*') >= 0:
                         value = value.replace('*', '%')
                         condition = field.ilike(bindparam(self.fullname, value))
@@ -202,7 +211,7 @@ class Condition(object):
                         condition = field.ilike('%'+bindparam(self.fullname, value)+'%')
                 else:
                     # if not a text column, then use "=" as a straight equals
-                    condition = lower_field.__eq__(bindparam(self.fullname, lower_value))
+                    condition = lower_field.__eq__(boundvalue)
 
         return condition
 
@@ -306,3 +315,4 @@ def parse_boolean_search(boolean_search):
         return expression
     except ParseException as e:
         raise BooleanSearchException("Syntax error at offset %(offset)s." % dict(offset=e.col))
+
