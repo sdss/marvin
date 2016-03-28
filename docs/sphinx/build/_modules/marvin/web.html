@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>marvin.web &mdash; Marvin 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Marvin 2.0.0 documentation" href="../../index.html" />
+    <link rel="up" title="marvin" href="../marvin.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Marvin 2.0.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../marvin.html" accesskey="U">marvin</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for marvin.web</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">Blueprint</span>
+<span class="kn">from</span> <span class="nn">flask_restful</span> <span class="kn">import</span> <span class="n">Api</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span><span class="p">,</span> <span class="n">isfunction</span>
+<span class="kn">from</span> <span class="nn">marvin.utils.general.general</span> <span class="kn">import</span> <span class="n">getDbMachine</span>
+<span class="kn">from</span> <span class="nn">flask_featureflags</span> <span class="kn">import</span> <span class="n">FeatureFlag</span>
+<span class="kn">from</span> <span class="nn">raven.contrib.flask</span> <span class="kn">import</span> <span class="n">Sentry</span>
+<span class="kn">import</span> <span class="nn">jinja_filters</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="create_app"><a class="viewcode-back" href="../../marvin.web.html#marvin.web.create_app">[docs]</a><span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="kn">from</span> <span class="nn">marvin.api.cube</span> <span class="kn">import</span> <span class="n">CubeView</span>
+    <span class="kn">from</span> <span class="nn">marvin.api.general</span> <span class="kn">import</span> <span class="n">GeneralRequestsView</span>
+    <span class="kn">from</span> <span class="nn">marvin.web.controllers.index</span> <span class="kn">import</span> <span class="n">index</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Create App</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">static_url_path</span><span class="o">=</span><span class="s">&#39;/marvin/static&#39;</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s">&quot;api&quot;</span><span class="p">,</span> <span class="n">__name__</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s">&#39;/api&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+
+    <span class="c"># Define custom filters into the Jinja2 environment.</span>
+    <span class="c"># Any filters defined in the jinja_env submodule are made available.</span>
+    <span class="c"># See: http://stackoverflow.com/questions/12288454/how-to-import-custom-jinja2-filters-from-another-file-and-using-flask</span>
+    <span class="n">custom_filters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">function</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">function</span> <span class="ow">in</span> <span class="n">getmembers</span><span class="p">(</span><span class="n">jinja_filters</span><span class="p">)</span> <span class="k">if</span> <span class="n">isfunction</span><span class="p">(</span><span class="n">function</span><span class="p">)}</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">custom_filters</span><span class="p">)</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Initialize logging + Sentry + UWSGI config for Production Marvin</span>
+    <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">debug</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="sd">&#39;&#39;&#39; set up logging here, or try to use the tools logger &#39;&#39;&#39;</span>
+
+        <span class="c"># ----------------------------------------------------------</span>
+        <span class="c"># Set up getsentry.com logging - only use when in production</span>
+        <span class="c"># dsn = &#39;https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254&#39;</span>
+        <span class="c"># app.config[&#39;SENTRY_DSN&#39;] = dsn</span>
+        <span class="c"># sentry = Sentry(app, logging=True, level=logging.ERROR)</span>
+
+        <span class="c"># --------------------------------------</span>
+        <span class="c"># Configuration when running under uWSGI</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">uwsgi</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">use_x_sendfile</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="c"># Change the implementation of &quot;decimal&quot; to a C-based version (much! faster)</span>
+    <span class="c">#</span>
+    <span class="c"># This is producing this error [ Illegal value: Decimal(&#39;3621.59598486&#39;) ]on some of the remote API tests with getSpectrum</span>
+    <span class="c"># Turning this off for now</span>
+    <span class="c">#</span>
+    <span class="c"># try:</span>
+    <span class="c">#    import cdecimal</span>
+    <span class="c">#    sys.modules[&quot;decimal&quot;] = cdecimal</span>
+    <span class="c"># except ImportError:</span>
+    <span class="c">#    pass  # no available</span>
+
+    <span class="c"># Find which connection to make</span>
+    <span class="n">connection</span> <span class="o">=</span> <span class="n">getDbMachine</span><span class="p">()</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">connection</span> <span class="o">==</span> <span class="s">&#39;local&#39;</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Set some environment variables</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;SAS_REDUX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sas/mangawork/manga/spectro/redux&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;SAS_ANALYSIS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sas/mangawork/manga/spectro/analysis&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;SAS_SANDBOX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sas/mangawork/manga/sandbox&#39;</span>
+    <span class="n">release</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;MARVIN_RELEASE&#39;</span><span class="p">,</span> <span class="s">&#39;mangawork&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;SAS_PREFIX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;marvin&#39;</span> <span class="k">if</span> <span class="n">release</span> <span class="o">==</span> <span class="s">&#39;mangawork&#39;</span> <span class="k">else</span> <span class="s">&#39;dr13/marvin&#39;</span>
+    <span class="n">url_prefix</span> <span class="o">=</span> <span class="s">&#39;/marvin&#39;</span> <span class="k">if</span> <span class="n">local</span> <span class="k">else</span> <span class="s">&#39;/{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;SAS_PREFIX&#39;</span><span class="p">])</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Load the appropriate Flask configuration file for debug or production</span>
+    <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+            <span class="n">server_config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s">&#39;configuration&#39;</span><span class="p">,</span> <span class="s">&#39;localhost.cfg&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">connection</span> <span class="o">==</span> <span class="s">&#39;utah&#39;</span><span class="p">:</span>
+            <span class="n">server_config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s">&#39;configuration&#39;</span><span class="p">,</span> <span class="s">&#39;utah.cfg&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Trying to run in debug mode, but not running on a development machine that has database access.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">uwsgi</span>
+            <span class="n">server_config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s">&#39;configuration&#39;</span><span class="p">,</span> <span class="n">uwsgi</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s">&#39;flask-config-file&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Trying to run in production mode, but not running under uWSGI. You might try running again with the &#39;--debug&#39; flag.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Loading config file: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">server_config_file</span><span class="p">))</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_pyfile</span><span class="p">(</span><span class="n">server_config_file</span><span class="p">)</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Initialize feature flags</span>
+    <span class="n">feature_flags</span> <span class="o">=</span> <span class="n">FeatureFlag</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="c"># configFeatures(debug=app.debug)</span>
+
+    <span class="c"># Update any config parameters</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&quot;UPLOAD_FOLDER&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;MARVIN_DATA_DIR&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="c"># ----------------------------------</span>
+    <span class="c"># Registration</span>
+    <span class="c">#</span>
+    <span class="c"># API route registration</span>
+    <span class="n">CubeView</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">GeneralRequestsView</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">api</span><span class="p">)</span>
+
+    <span class="c"># Web route registration</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="n">url_prefix</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">app</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Brian Cherinka, Brett Andrews, José Sanchez-Gallego.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>marvin.api.general module &mdash; Marvin 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Marvin 2.0.0 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Marvin 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-marvin.api.general">
+<span id="marvin-api-general-module"></span><h1>marvin.api.general module<a class="headerlink" href="#module-marvin.api.general" title="Permalink to this headline">¶</a></h1>
+<p>general.py</p>
+<p>Licensed under a 3-clause BSD license.</p>
+<dl class="docutils">
+<dt>Revision history:</dt>
+<dd><dl class="first last docutils">
+<dt>17 Feb 2016 J. Sánchez-Gallego</dt>
+<dd>Initial version</dd>
+<dt>18 Feb 2016 B. Cherinka</dt>
+<dd>Added buildRouteMap API call</dd>
+</dl>
+</dd>
+</dl>
+<dl class="class">
+<dt id="marvin.api.general.GeneralRequestsView">
+<em class="property">class </em><code class="descclassname">marvin.api.general.</code><code class="descname">GeneralRequestsView</code><a class="reference internal" href="_modules/marvin/api/general.html#GeneralRequestsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.api.general.GeneralRequestsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="marvin.api.base.html#marvin.api.base.BaseView" title="marvin.api.base.BaseView"><code class="xref py py-class docutils literal"><span class="pre">marvin.api.base.BaseView</span></code></a></p>
+<p>A collection of requests for generic purposes.</p>
+<dl class="method">
+<dt id="marvin.api.general.GeneralRequestsView.buildRouteMap">
+<code class="descname">buildRouteMap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/api/general.html#GeneralRequestsView.buildRouteMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.api.general.GeneralRequestsView.buildRouteMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the URL route map for all routes in the Flask app.</p>
+<p>Returns in self.results a key &#8216;urlmap&#8217; of dictionary of routes.
+Syntax:  {blueprint: {endpoint: {&#8216;methods&#8217;:x, &#8216;url&#8217;:x} }
+E.g. getSpectrum method
+urlmap = {&#8216;api&#8217;: {&#8216;getspectra&#8217;: {&#8216;methods&#8217;:[&#8216;GET&#8217;,&#8217;POST&#8217;], &#8216;url&#8217;: &#8216;/api/cubes/{name}/spectra/{path}&#8217;} } }</p>
+<p>urls can now easily handle variable replacement in real code; MUST use keyword substitution
+E.g.
+print urlmap[&#8216;api&#8217;][&#8216;getspectra&#8217;][&#8216;url&#8217;].format(name=&#8216;1-209232&#8217;,path=&#8217;x=10/y=5&#8217;)
+returns &#8216;/api/cubes/1-209232/spectra/x=10/y=5&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="marvin.api.general.GeneralRequestsView.mangaid2plateifu">
+<code class="descname">mangaid2plateifu</code><span class="sig-paren">(</span><em>mangaid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/api/general.html#GeneralRequestsView.mangaid2plateifu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.api.general.GeneralRequestsView.mangaid2plateifu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="marvin.api.general.GeneralRequestsView.route_base">
+<code class="descname">route_base</code><em class="property"> = '/general/'</em><a class="headerlink" href="#marvin.api.general.GeneralRequestsView.route_base" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/marvin.api.general.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Brian Cherinka, Brett Andrews, José Sanchez-Gallego.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      
+      |
+      <a href="_sources/marvin.api.general.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

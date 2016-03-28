@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>marvin &mdash; Marvin 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Marvin 2.0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Marvin 2.0.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for marvin</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">marvin.tools.core.exceptions</span> <span class="kn">import</span> <span class="n">MarvinUserWarning</span>
+<span class="kn">from</span> <span class="nn">marvin.utils.general.general</span> <span class="kn">import</span> <span class="n">getDbMachine</span>
+
+<span class="c"># Inits the log</span>
+<span class="kn">from</span> <span class="nn">marvin.tools.core.logger</span> <span class="kn">import</span> <span class="n">initLog</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">initLog</span><span class="p">()</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;once&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Config"><a class="viewcode-back" href="../marvin.html#marvin.Config">[docs]</a><span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="s">&#39;auto&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drpall</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drpver</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dapver</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mplver</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vermode</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sasurl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;SAS_URL&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="s">&#39;SAS_URL&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">else</span> <span class="s">&#39;https://sas.sdss.org/&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setDbConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkConfig</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDefaultDrpAll</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Config.setDefaultDrpAll"><a class="viewcode-back" href="../marvin.html#marvin.Config.setDefaultDrpAll">[docs]</a>    <span class="k">def</span> <span class="nf">setDefaultDrpAll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">drpver</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tries to set the default location of drpall.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">drpver</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">drpver</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drpall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getDrpAllPath</span><span class="p">(</span><span class="n">drpver</span><span class="o">=</span><span class="n">drpver</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config._getDrpAllPath"><a class="viewcode-back" href="../marvin.html#marvin.Config._getDrpAllPath">[docs]</a>    <span class="k">def</span> <span class="nf">_getDrpAllPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">drpver</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the default path for drpall, give a certain `drpver`.&quot;&quot;&quot;</span>
+
+        <span class="n">drpver</span> <span class="o">=</span> <span class="n">drpver</span> <span class="k">if</span> <span class="n">drpver</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">drpver</span>
+
+        <span class="k">if</span> <span class="s">&#39;MANGA_SPECTRO_REDUX&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="ow">and</span> <span class="n">drpver</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;MANGA_SPECTRO_REDUX&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">drpver</span><span class="p">),</span>
+                                <span class="s">&#39;drpall-{0}.fits&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drpver</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
+
+    <span class="nd">@mode.setter</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;local&#39;</span><span class="p">,</span> <span class="s">&#39;remote&#39;</span><span class="p">,</span> <span class="s">&#39;auto&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;config.mode must be &quot;local&quot; or &quot;remote&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">drpall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drpall</span>
+
+    <span class="nd">@drpall.setter</span>
+    <span class="k">def</span> <span class="nf">drpall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drpall</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;path {0} cannot be found. Setting drpall to None.&#39;</span>
+                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">MarvinUserWarning</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Config._setDbConfig"><a class="viewcode-back" href="../marvin.html#marvin.Config._setDbConfig">[docs]</a>    <span class="k">def</span> <span class="nf">_setDbConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Set the db configuration &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">getDbMachine</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Config._checkConfig"><a class="viewcode-back" href="../marvin.html#marvin.Config._checkConfig">[docs]</a>    <span class="k">def</span> <span class="nf">_checkConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Check the config &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mplver</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drpver</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dapver</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;No MPL or DRP/DAP version set. Setting default to MPL-4&#39;</span><span class="p">,</span> <span class="n">MarvinUserWarning</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setMPL</span><span class="p">(</span><span class="s">&#39;MPL-4&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config.setMPL"><a class="viewcode-back" href="../marvin.html#marvin.Config.setMPL">[docs]</a>    <span class="k">def</span> <span class="nf">setMPL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mplver</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Set the data version by MPL &#39;&#39;&#39;</span>
+
+        <span class="kn">from</span> <span class="nn">marvin.utils.general</span> <span class="kn">import</span> <span class="n">lookUpVersions</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;MPL-([0-9])&#39;</span><span class="p">,</span> <span class="n">mplver</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;MPL version must be of form &quot;MPL-[X]&quot;&#39;</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mplver</span> <span class="o">=</span> <span class="n">mplver</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drpver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dapver</span> <span class="o">=</span> <span class="n">lookUpVersions</span><span class="p">(</span><span class="n">mplver</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Config.setVersions"><a class="viewcode-back" href="../marvin.html#marvin.Config.setVersions">[docs]</a>    <span class="k">def</span> <span class="nf">setVersions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">drpver</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dapver</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Set the data version by DRPVER and DAPVER &#39;&#39;&#39;</span>
+
+        <span class="kn">from</span> <span class="nn">marvin.utils.general</span> <span class="kn">import</span> <span class="n">lookUpMpl</span>
+
+        <span class="k">if</span> <span class="n">drpver</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">drpver</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">,</span> <span class="s">&#39;drpver needs to be a string&#39;</span>
+            <span class="n">drpre</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;v([0-9][_]([0-9])[_]([0-9]))&#39;</span><span class="p">,</span> <span class="n">drpver</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">drpre</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;DRP version must be of form &quot;v[X]_[X]_[X]&quot;&#39;</span>
+            <span class="k">if</span> <span class="n">drpre</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drpver</span> <span class="o">=</span> <span class="n">drpver</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mplver</span> <span class="o">=</span> <span class="n">lookUpMpl</span><span class="p">(</span><span class="n">drpver</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dapver</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">dapver</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">,</span> <span class="s">&#39;dapver needs to be a string&#39;</span>
+            <span class="n">dapre1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;v([0-9][_]([0-9])[_]([0-9]))&#39;</span><span class="p">,</span> <span class="n">dapver</span><span class="p">)</span>
+            <span class="n">dapre2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;([0-9][.]([0-9])[.]([0-9]))&#39;</span><span class="p">,</span> <span class="n">dapver</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">dapre1</span> <span class="ow">or</span> <span class="n">dapre2</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;DAP version must be of form &quot;v[X]_[X]_[X]&quot;, or [X].[X].[X]&#39;</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">dapre1</span><span class="p">,</span> <span class="n">dapre2</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dapver</span> <span class="o">=</span> <span class="n">dapver</span>
+</div></div>
+<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+<span class="n">config</span><span class="o">.</span><span class="n">_checkConfig</span><span class="p">()</span>
+
+<span class="c"># Inits the Database session and ModelClasses</span>
+<span class="n">session</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">datadb</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">marvin.db.database</span> <span class="kn">import</span> <span class="n">db</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;RuntimeError raised: Problem importing db: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">sdss.internal.database.utah.mangadb.DataModelClasses</span> <span class="kn">as</span> <span class="nn">datadb</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;Exception raised: Problem importing mangadb DataModelClasses: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+            <span class="n">datadb</span> <span class="o">=</span> <span class="n">datadb</span>
+
+<span class="c"># Inits the URL Route Map</span>
+<span class="kn">from</span> <span class="nn">marvin.api.api</span> <span class="kn">import</span> <span class="n">Interaction</span>
+<span class="n">config</span><span class="o">.</span><span class="n">sasurl</span> <span class="o">=</span> <span class="s">&#39;http://5aafb8e.ngrok.com&#39;</span>  <span class="c"># this is a temporary measure REMOVE THIS</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">Interaction</span><span class="p">(</span><span class="s">&#39;api/general/getroutemap&#39;</span><span class="p">,</span> <span class="n">request_type</span><span class="o">=</span><span class="s">&#39;get&#39;</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">urlmap</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">getRouteMap</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Brian Cherinka, Brett Andrews, José Sanchez-Gallego.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

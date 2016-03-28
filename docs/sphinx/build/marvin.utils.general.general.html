@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>marvin.utils.general.general module &mdash; Marvin 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="Marvin 2.0.0 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Marvin 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-marvin.utils.general.general">
+<span id="marvin-utils-general-general-module"></span><h1>marvin.utils.general.general module<a class="headerlink" href="#module-marvin.utils.general.general" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="marvin.utils.general.general.parseName">
+<code class="descclassname">marvin.utils.general.general.</code><code class="descname">parseName</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/utils/general/general.html#parseName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.utils.general.general.parseName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a string name of either manga-id or plate-ifu</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="marvin.utils.general.general.convertCoords">
+<code class="descclassname">marvin.utils.general.general.</code><code class="descname">convertCoords</code><span class="sig-paren">(</span><em>x=None</em>, <em>y=None</em>, <em>ra=None</em>, <em>dec=None</em>, <em>shape=None</em>, <em>hdr=None</em>, <em>mode='sky'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/utils/general/general.html#convertCoords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.utils.general.general.convertCoords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert input coordinates in x,y (relative to galaxy center) or RA, Dec coordinates to
+array indices x, y for spaxel extraction. Returns as xCube, yCube</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="marvin.utils.general.general.lookUpMpl">
+<code class="descclassname">marvin.utils.general.general.</code><code class="descname">lookUpMpl</code><span class="sig-paren">(</span><em>drpver</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/utils/general/general.html#lookUpMpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.utils.general.general.lookUpMpl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the MPL version for a given DRP version</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="marvin.utils.general.general.lookUpVersions">
+<code class="descclassname">marvin.utils.general.general.</code><code class="descname">lookUpVersions</code><span class="sig-paren">(</span><em>mplver</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/utils/general/general.html#lookUpVersions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.utils.general.general.lookUpVersions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the DRP and DAP versions that make up an MPL</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="marvin.utils.general.general.mangaid2plateifu">
+<code class="descclassname">marvin.utils.general.general.</code><code class="descname">mangaid2plateifu</code><span class="sig-paren">(</span><em>mangaid</em>, <em>mode='auto'</em>, <em>drpall=None</em>, <em>drpver=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/marvin/utils/general/general.html#mangaid2plateifu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#marvin.utils.general.general.mangaid2plateifu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the plate-ifu for a certain mangaid.</p>
+<p>Uses either the DB or the drpall file to determine the plate-ifu for
+a mangaid. If more than one plate-ifu are available for a certain ifu,
+and <cite>mode=&#8217;drpall&#8217;</cite>, the one with the higher SN2 (calculated as the sum of
+redSN2 and blueSN2) will be used. If <cite>mode=&#8217;db&#8217;</cite>, the most recent one will
+be used.</p>
+<dl class="docutils">
+<dt>mangaid <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The mangaid for which the plate-ifu will be returned.</dd>
+<dt>mode <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Either <cite>&#8216;auto&#8217;</cite>, <cite>&#8216;drpall&#8217;</cite>, <cite>&#8216;db&#8217;</cite>, or <cite>&#8216;remote&#8217;</cite>. If <cite>&#8216;drpall&#8217;</cite> or
+<cite>&#8216;db&#8217;</cite>, the  drpall file or the local database, respectively, will be
+used. If <cite>&#8216;remote&#8217;</cite>, a request to the API will be issued. If <cite>&#8216;auto&#8217;</cite>,
+the local modes will be tried before the remote mode.</dd>
+<dt>drpall <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd>The path to the drpall file to use. If None, the file in
+<cite>config.drpall</cite> will be used.</dd>
+<dt>drpver <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd>The DRP version to use. If None, the one in <cite>config.drpver</cite> will be
+used. If <cite>drpall</cite> is defined, this value is ignored.</dd>
+</dl>
+<dl class="docutils">
+<dt>plateifu <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The plate-ifu string for the input <cite>mangaid</cite>.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/marvin.utils.general.general.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Brian Cherinka, Brett Andrews, José Sanchez-Gallego.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
+      
+      |
+      <a href="_sources/marvin.utils.general.general.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
