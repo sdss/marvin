@@ -13,12 +13,13 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from marvin import marvindb, config
-from marvin.utils.db import generateClassDict
+from marvin.tools.core import MarvinError, MarvinUserWarning
 from collections import defaultdict
 from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 import re
+import warnings
 
 # flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT; need some kind of toggle for web version and not???
 if config._inapp:
@@ -44,15 +45,7 @@ class ModelForm(BaseModelForm):
         return marvindb.session
 
 ''' Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class ; '''
-drpclasses = generateClassDict(marvindb.datadb)
-out = ['ArrayOps', 'Plate']  # these break the wtform build
-tmp = [drpclasses.pop(o) for o in out]
-# import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
-# sampclasses = generateClassDict(sampledb)
-# out = ['Character']
-# tmp = [sampclasses.pop(o) for o in out]
-# import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
-# dapclasses = generateClassDict(dapdb)
+modelclasses = marvindb.buildUberClassDict()
 
 
 # class factory
@@ -142,7 +135,7 @@ class MarvinForm(object):
 
         self._param_form_lookup = ParamFormLookupDict()
         self._paramtree = tree()
-        self._generateFormClasses(drpclasses)
+        self._generateFormClasses(modelclasses)
         # self._generateFormClasses(sampclasses)
         # self._generateFormClasses(dapclasses)
         self.MainForm = MainForm
@@ -158,10 +151,13 @@ class MarvinForm(object):
         for key, val in classes.items():
             # print(key, val, '----')
             classname = '{0}Form'.format(key)
-            newclass = formClassFactory(classname, val, ModelForm)
-            # newclass.operator = operator
-            self.__setattr__(classname, newclass)
-            self._loadParams(newclass)
+            try:
+                newclass = formClassFactory(classname, val, ModelForm)
+            except Exception as e:
+                warnings.warn('class {0} not Formable'.format(key), MarvinUserWarning)
+            else:
+                self.__setattr__(classname, newclass)
+                self._loadParams(newclass)
 
     def _loadParams(self, newclass):
         ''' Loads all parameters from wtforms into a dictionary with
