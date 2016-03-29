@@ -60,23 +60,30 @@ class Marvin(FlaskView):
         index['title'] = 'Marvin'
         index['intro'] = 'Welcome to Marvin'
         config.drpver = 'v1_5_1'
-        cube = Cube(mangaid='1-209232')
+        mangaid = '1-209232'
+        try:
+            cube = Cube(mangaid=mangaid)
+        except MarvinError as e:
+            cube = None
         index['cube'] = cube
+        index['mangaid'] = mangaid
         x = 1
         y = 2
-        try:
-            spectrum = cube.getSpectrum(x=x, y=y)
-        except Exception as e:
-            spectrum = 'Could not get spectrum: {0}'.format(e)
-        # get error and wavelength
-        ivar = cube.getSpectrum(x=x, y=y, ext='ivar')
-        error = convertIvarToErr(ivar)
-        wave = cube.getWavelength()
-        # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum)]
+        if cube:
+            try:
+                spectrum = cube.getSpectrum(x=x, y=y)
+            except Exception as e:
+                spectrum = 'Could not get spectrum: {0}'.format(e)
+            else:
+                # get error and wavelength
+                ivar = cube.getSpectrum(x=x, y=y, ext='ivar')
+                error = convertIvarToErr(ivar)
+                wave = cube.getWavelength()
+                # make input array for Dygraph
+                webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum)]
 
-        index['specmsg'] = "for x = {0}, y={1}".format(x, y)
-        index['spectra'] = webspec
+                index['specmsg'] = "for x = {0}, y={1}".format(x, y)
+                index['spectra'] = webspec
 
         # general marvin form
         m = MarvinForm()

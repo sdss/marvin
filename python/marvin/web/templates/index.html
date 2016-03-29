@@ -23,14 +23,18 @@ $(function() {
 	<div class='row'>
 		<h4>{{intro}}</h4>
 	</div>
-	<div class='row'>
-		<h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plate}}</h5>
-	</div>
-	<div class='row'>
-		<h5>Here's a spectrum: {{specmsg}}</h5>
-	</div>
-    <div id='graphdiv' style="width:100%;">
-    </div>
+  {% if cube %}
+  	<div class='row'>
+  		<h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plate}}</h5>
+  	</div>
+  	<div class='row'>
+  		<h5>Here's a spectrum: {{specmsg}}</h5>
+  	</div>
+      <div id='graphdiv' style="width:100%;">
+      </div>
+  {% else %}
+    <div><h4>No cube found for mangaid {{mangaid}}</h4></div>
+  {% endif %}
 </div>
 
 <div class='well'>
