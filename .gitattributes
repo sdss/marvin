@@ -226,6 +226,7 @@ python/marvin/api/tests/test_base.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/db/dbconfig.ini -text
+python/marvin/db/marvindb.py -text
 python/marvin/db/sql/mangadapdb.sql -text
 python/marvin/db/sql/mangadatadb.sql -text
 python/marvin/db/sql/utah_mangadb.sql -text
