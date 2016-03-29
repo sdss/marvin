@@ -26,10 +26,10 @@ def testDbConnection(session=None):
     res = {'good': None, 'error': None}
 
     if not session:
-        from marvin import session
+        session = marvin.marvindb.session
 
     try:
-        tmp = session.query(marvin.datadb.PipelineVersion).first()
+        tmp = session.query(marvin.marvindb.datadb.PipelineVersion).first()
         res['good'] = True
     except Exception as e:
         error1 = 'Error connecting to manga database: {0}'.format(str(e))

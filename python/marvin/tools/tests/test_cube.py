@@ -5,7 +5,7 @@ import copy
 import unittest
 from marvin.tools.cube import Cube
 from marvin.tools.core import MarvinError
-from marvin import config, session, datadb
+from marvin import config, marvindb
 from marvin.tools.tests import MarvinTest, skipIfNoDB
 
 
@@ -22,7 +22,7 @@ class TestCube(MarvinTest):
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
         cls.initconfig = copy.deepcopy(config)
-        cls.session = session
+        cls.session = marvindb.session
 
         cls.cubeFromFile = Cube(filename=cls.filename)
 
@@ -108,7 +108,7 @@ class TestCube(MarvinTest):
         params = {'plateifu': self.plateifu}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(params['plateifu'])
         newrow = {'plate': '8485', 'mangaid': self.mangaid, 'ifudesign_pk': 12, 'pipeline_info_pk': 21}
-        self._addToDB(datadb.Cube, newrow)
+        self._addToDB(marvindb.datadb.Cube, newrow)
         self._load_from_db_fail(params, errMsg)
 
     def _addToDB(self, table, colvaldict):

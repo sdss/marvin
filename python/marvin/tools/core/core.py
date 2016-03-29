@@ -85,7 +85,7 @@ class MarvinToolsClass(object):
 
         elif self.plateifu:
 
-            dbStatus = testDbConnection(marvin.session)
+            dbStatus = testDbConnection(marvin.marvindb.session)
             print('db status', dbStatus)
 
             if dbStatus['good']:

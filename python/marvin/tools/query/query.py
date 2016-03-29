@@ -16,10 +16,9 @@ from __future__ import print_function
 from __future__ import division
 from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search, BooleanSearchException)
-from marvin import config, session, datadb
+from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
-from marvin.tools.query.modelGraph import ModelGraph
 from sqlalchemy import or_, and_, bindparam, between
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
@@ -33,11 +32,6 @@ from functools import wraps
 
 __all__ = ['Query']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
-
-
-# config.db = None
-# session = None
-# datadb = None
 
 
 # Boom. Tree dictionary.
@@ -78,14 +72,14 @@ class Query(object):
         self.params = {}
         self.myparamtree = tree()
         self._paramtree = None
-        self.session = session
+        self.session = marvindb.session
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
         self.quiet = None
         self._errors = []
         self._basetable = None
-        self._modelgraph = ModelGraph(datadb)
+        self._modelgraph = marvindb.modelgraph
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
@@ -202,7 +196,7 @@ class Query(object):
         # the order of the joins is the correct one.
         # TODO: at some point, all the queries should be generalised so that
         # we don't assume that we are querying a cube.
-        self._modellist = self._modelgraph.getJoins(mymodellist, format_out='models', nexus=datadb.Cube)
+        self._modellist = self._modelgraph.getJoins(mymodellist, format_out='models', nexus=marvindb.datadb.Cube)
 
         # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
         # self.joins.extend([model.__tablename__ for model in sublist])
@@ -328,12 +322,12 @@ class Query(object):
         '''
 
         if not param:
-            param = datadb.Cube
+            param = marvindb.datadb.Cube
             self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(datadb.Cube).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+            self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
         else:
             self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(param).join(datadb.PipelineInfo, datadb.PipelineVersion).filter(datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+            self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
 
     def _buildBaseTable(self, param):
         ''' Builds the base name for a input parameter: either schema.table or schema.table.column'''

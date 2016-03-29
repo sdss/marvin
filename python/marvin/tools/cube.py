@@ -126,8 +126,9 @@ class Cube(MarvinToolsClass):
 
                 import sqlalchemy
                 inputs = [ra, dec] if inputMode == 'sky' else [x, y]
+                mdb = marvin.marvindb
                 try:
-                    spaxel = marvin.session.query(marvin.datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
+                    spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
                 except sqlalchemy.orm.exc.NoResultFound as e:
                     raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
                 except Exception as e:
@@ -199,6 +200,8 @@ class Cube(MarvinToolsClass):
     def _getCubeFromDB(self):
         ''' server-side code '''
 
+        mdb = marvin.marvindb
+
         # look for drpver
         if not marvin.config.drpver:
             raise RuntimeError('drpver not set in config!')
@@ -207,15 +210,15 @@ class Cube(MarvinToolsClass):
         if self.plateifu:
             plate, ifu = self.plateifu.split('-')
 
-        if not marvin.config.db:
+        if not mdb.isdbconnected:
             raise RuntimeError('No db connected')
         else:
             import sqlalchemy
             self._cube = None
             try:
-                self._cube = marvin.session.query(marvin.datadb.Cube).join(marvin.datadb.PipelineInfo, marvin.datadb.PipelineVersion, marvin.datadb.IFUDesign).\
-                    filter(marvin.datadb.PipelineVersion.version == marvin.config.drpver, marvin.datadb.Cube.plate == plate,
-                           marvin.datadb.IFUDesign.name == ifu).one()
+                self._cube = mdb.session.query(mdb.datadb.Cube).join(mdb.datadb.PipelineInfo, mdb.datadb.PipelineVersion, mdb.datadb.IFUDesign).\
+                    filter(mdb.datadb.PipelineVersion.version == marvin.config.drpver, mdb.datadb.Cube.plate == plate,
+                           mdb.datadb.IFUDesign.name == ifu).one()
             except sqlalchemy.orm.exc.MultipleResultsFound as e:
                 raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
             except sqlalchemy.orm.exc.NoResultFound as e:

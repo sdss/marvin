@@ -10,6 +10,7 @@ Licensed under a 3-clause BSD license.
 Revision history:
     18 Mar 2016 J. Sánchez-Gallego
       Initial version
+    29 Mar 2016 - Removed default datadb dependency - B. Cherinka
 
 """
 
@@ -17,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 from sqlalchemy.ext.declarative import DeclarativeMeta
 import itertools
-from marvin import datadb
 import numpy as np
 import networkx as nx
 
@@ -55,7 +55,7 @@ def getModels(module):
 
 class ModelGraph(object):
 
-    def __init__(self, modelSchemas=datadb):
+    def __init__(self, modelSchemas):
         """Creates a `networkx` graph between the model classes.
 
         This class creates a graph in which each table in the input

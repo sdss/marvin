@@ -15,20 +15,20 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from marvin.tools.query.modelGraph import ModelGraph, nx
-from marvin import sampledb, datadb, session
+from marvin.db.modelGraph import ModelGraph, nx
+from marvin import marvindb
 from marvin.tools.tests import MarvinTest
 from unittest import skipIf
 
 
-@skipIf(not session, 'no DB is available')
+@skipIf(not marvindb.session, 'no DB is available')
 class TestModelGraph(MarvinTest):
 
     @classmethod
     def setupClass(cls):
         """Setups the test class."""
 
-        cls.modelGraph = ModelGraph([datadb, sampledb])
+        cls.modelGraph = ModelGraph([marvindb.datadb, marvindb.sampledb])
 
     def testInitialitation(self):
         """Basic initialisation test."""
@@ -39,7 +39,7 @@ class TestModelGraph(MarvinTest):
         self.assertGreater(len(modelGraphData.edges), 0)
 
         # Initialises ModelGraph with datadb and sampledb
-        modelGraphAll = ModelGraph([datadb, sampledb])
+        modelGraphAll = ModelGraph([marvindb.datadb, marvindb.sampledb])
         self.assertGreater(len(modelGraphAll.nodes), len(modelGraphData.nodes))
         self.assertGreater(len(modelGraphAll.edges), len(modelGraphData.edges))
 
@@ -60,25 +60,25 @@ class TestModelGraph(MarvinTest):
     def testGetJoins_oneModel(self):
         """Tests getJoins() with a single input model."""
 
-        self._testGetJoins(datadb.Cube, [datadb.Cube])
-        self._testGetJoins(datadb.Cube, ['mangadatadb.cube'],
+        self._testGetJoins(marvindb.datadb.Cube, [marvindb.datadb.Cube])
+        self._testGetJoins(marvindb.datadb.Cube, ['mangadatadb.cube'],
                            format_out='tables')
-        self._testGetJoins('mangadatadb.cube', [datadb.Cube])
+        self._testGetJoins('mangadatadb.cube', [marvindb.datadb.Cube])
 
     def testGetJoins_oneModel_nexus(self):
         """Tests getJoins() with a single input model and a nexus."""
 
-        self._testGetJoins(datadb.Cube, [], nexus=datadb.Cube)
-        self._testGetJoins(datadb.IFUDesign, [datadb.IFUDesign],
-                           nexus=datadb.Cube)
-        self._testGetJoins(datadb.Fibers, [datadb.IFUDesign, datadb.Fibers],
-                           nexus=datadb.Cube)
+        self._testGetJoins(marvindb.datadb.Cube, [], nexus=marvindb.datadb.Cube)
+        self._testGetJoins(marvindb.datadb.IFUDesign, [marvindb.datadb.IFUDesign],
+                           nexus=marvindb.datadb.Cube)
+        self._testGetJoins(marvindb.datadb.Fibers, [marvindb.datadb.IFUDesign, marvindb.datadb.Fibers],
+                           nexus=marvindb.datadb.Cube)
 
     def testGetJoins_noPath(self):
         """Tests getJoins() when there is no path between two tables."""
 
         with self.assertRaises(nx.NetworkXNoPath):
-            self._testGetJoins([datadb.Cube, datadb.MaskBit], [])
+            self._testGetJoins([marvindb.datadb.Cube, marvindb.datadb.MaskBit], [])
 
     def testGetJoin_fails(self):
         """Tests getJoins when input are wrong."""
@@ -90,31 +90,31 @@ class TestModelGraph(MarvinTest):
             self._testGetJoins([], [])
 
         with self.assertRaises(AssertionError):
-            self._testGetJoins([datadb.Cube], [], format_out='bad_value')
+            self._testGetJoins([marvindb.datadb.Cube], [], format_out='bad_value')
 
         with self.assertRaises(AssertionError) as cm:
-            self._testGetJoins([datadb.Cube], [], nexus='bad_nexus')
+            self._testGetJoins([marvindb.datadb.Cube], [], nexus='bad_nexus')
             self.assertEqual(
                 str(cm), 'nexus bad_nexus is not a node in the model graph')
 
     def testGetJoins_Models(self):
         """Tests getJoins() using a list of model classes."""
 
-        models = [datadb.Cube, datadb.Fibers]
-        expected = [datadb.Cube, datadb.IFUDesign, datadb.Fibers]
+        models = [marvindb.datadb.Cube, marvindb.datadb.Fibers]
+        expected = [marvindb.datadb.Cube, marvindb.datadb.IFUDesign, marvindb.datadb.Fibers]
         self._testGetJoins(models, expected)
 
-        models = [datadb.Cube, datadb.Fibers, datadb.FitsHeaderKeyword]
-        expected = [datadb.Cube, datadb.IFUDesign, datadb.Fibers,
-                    datadb.FitsHeaderValue, datadb.FitsHeaderKeyword]
+        models = [marvindb.datadb.Cube, marvindb.datadb.Fibers, marvindb.datadb.FitsHeaderKeyword]
+        expected = [marvindb.datadb.Cube, marvindb.datadb.IFUDesign, marvindb.datadb.Fibers,
+                    marvindb.datadb.FitsHeaderValue, marvindb.datadb.FitsHeaderKeyword]
         self._testGetJoins(models, expected)
 
-        models = [datadb.Fibers, sampledb.MangaTarget]
+        models = [marvindb.datadb.Fibers, marvindb.sampledb.MangaTarget]
         expected = ['mangadatadb.fibers', 'mangadatadb.ifudesign',
                     'mangadatadb.cube', 'mangasampledb.manga_target']
         self._testGetJoins(models, expected, format_out='tables')
 
-        models = [datadb.Cube, datadb.Fibers, datadb.Cube]
+        models = [marvindb.datadb.Cube, marvindb.datadb.Fibers, marvindb.datadb.Cube]
         expected = [u'mangadatadb.cube', u'mangadatadb.ifudesign',
                     u'mangadatadb.fibers']
         self._testGetJoins(models, expected, format_out='tables')
@@ -122,10 +122,10 @@ class TestModelGraph(MarvinTest):
     def testGetJoins_Models_nexus(self):
         """Tests getJoins() using a list of model classes and a nexus."""
 
-        nexus = datadb.Cube
-        models = [datadb.Cube, datadb.Fibers, datadb.FitsHeaderKeyword]
-        expected = [datadb.IFUDesign, datadb.Fibers, datadb.FitsHeaderValue,
-                    datadb.FitsHeaderKeyword]
+        nexus = marvindb.datadb.Cube
+        models = [marvindb.datadb.Cube, marvindb.datadb.Fibers, marvindb.datadb.FitsHeaderKeyword]
+        expected = [marvindb.datadb.IFUDesign, marvindb.datadb.Fibers, marvindb.datadb.FitsHeaderValue,
+                    marvindb.datadb.FitsHeaderKeyword]
         expected_tables = ['mangadatadb.ifudesign', 'mangadatadb.fibers',
                            'mangadatadb.fits_header_value',
                            'mangadatadb.fits_header_keyword']

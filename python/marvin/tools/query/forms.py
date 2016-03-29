@@ -12,7 +12,7 @@ Revision History:
 
 from __future__ import print_function
 from __future__ import division
-from marvin import session, datadb, config
+from marvin import marvindb, config
 from marvin.utils.db import generateClassDict
 from collections import defaultdict
 from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
@@ -41,10 +41,10 @@ class ModelForm(BaseModelForm):
     ''' sub class a new ModelForm so it works with Flask-WTF in APP mode;  for auto CSRF tokens...who knows...'''
     @classmethod
     def get_session(self):
-        return session
+        return marvindb.session
 
 ''' Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class ; '''
-drpclasses = generateClassDict(datadb)
+drpclasses = generateClassDict(marvindb.datadb)
 out = ['ArrayOps', 'Plate']  # these break the wtform build
 tmp = [drpclasses.pop(o) for o in out]
 # import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
