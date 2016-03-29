@@ -7,7 +7,7 @@ import numpy as np
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.base import processRequest
 from sqlalchemy import or_, and_
-from marvin.tools.query import Query
+from marvin.tools.query import Query, doQuery
 from marvin.tools.core import MarvinError
 from wtforms import SelectField, validators
 import json
@@ -16,40 +16,6 @@ index = Blueprint("index_page", __name__)
 
 opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
 ops = [(key, val) for key, val in opdict.items()]
-
-
-class Table(FlaskView):
-    route_base = 'tables'
-
-    @route('/getdata', methods=['GET', 'POST'], endpoint='getdata')
-    def getData(self):
-        print('inside get data')
-        f = processRequest(request=request)
-        print('getdata form', f)
-        print('current_session', current_session['searchvalue'])
-        searchvalue = current_session['searchvalue']
-        limit = f['limit']
-        offset = f['offset']
-        order = f['order']
-        q, res = doQuery(searchvalue, limit=limit)
-        # sort
-        #revorder = 'desc' in order
-        #print('reverse', revorder, order)
-        #res.results = sorted(res.results, key=lambda x: x.plateifu, reverse=revorder)
-        # get subset on a given page
-        results = res.getSubset(offset, limit=limit)
-        rows = [{'plateifu': r.plateifu} for r in results]
-        stuff = {'total': res.count, 'rows': rows}
-        stuff = json.dumps(stuff)
-        return stuff
-
-
-def doQuery(searchvalue, limit=10):
-    q = Query(limit=limit)
-    q.set_filter(params=searchvalue)
-    q.add_condition()
-    res = q.run()
-    return q, res
 
 
 class Marvin(FlaskView):
@@ -146,5 +112,4 @@ class Marvin(FlaskView):
         return render_template('test.html', **test)
 
 Marvin.register(index)
-Table.register(index)
 

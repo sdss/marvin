@@ -30,13 +30,22 @@ import re
 import warnings
 from functools import wraps
 
-__all__ = ['Query']
+__all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
 
 
 # Boom. Tree dictionary.
 def tree():
     return defaultdict(tree)
+
+
+# Do A Query
+def doQuery(searchfilter, limit=10, sort=None, order=None):
+    q = Query(limit=limit, sort=sort, order=order)
+    q.set_filter(params=searchfilter)
+    q.add_condition()
+    res = q.run()
+    return q, res
 
 
 # decorator
@@ -262,7 +271,7 @@ class Query(object):
             self.add_condition()
 
         # Check for adding a sort
-        # self._sortQuery()
+        self._sortQuery()
 
         # get total count, and if more than 150 results, paginate and only return the first 10
         count = self.query.count()
@@ -284,13 +293,27 @@ class Query(object):
         return Results(results=res, query=self.query, count=count)
 
     def _sortQuery(self):
+        ''' Sort the query by a given parameter '''
         if not isinstance(self.sort, type(None)):
+            # set the sort variable ModelClass parameter ; make this as plateifu right now
+            # TODO - generalize this to any parameter
+            if self.sort == 'plateifu':
+                sortparam = marvindb.datadb.Cube.plateifu
+                if not self._tableInQuery('ifudesign'):
+                    self.query = self.query.join(marvindb.datadb.IFUDesign)
+
+            # If order is specified, then do the sort
             if self.order:
                 assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
+
+                # Check if order by already applied
+                if 'ORDER' in str(self.query.statement):
+                    self.query = self.query.order_by(None)
+                # Do the sorting
                 if 'desc' in self.order:
-                    self.query = self.query.order_by(desc(self.sort))
+                    self.query = self.query.order_by(desc(sortparam))
                 else:
-                    self.query = self.query.order_by(self.sort)
+                    self.query = self.query.order_by(sortparam)
 
     @updateConfig
     def show(self, prop=None):
@@ -324,10 +347,12 @@ class Query(object):
         if not param:
             param = marvindb.datadb.Cube
             self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+            self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
+                .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
         else:
             self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+            self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
+                .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
 
     def _buildBaseTable(self, param):
         ''' Builds the base name for a input parameter: either schema.table or schema.table.column'''

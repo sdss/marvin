@@ -62,7 +62,7 @@ class BaseView(FlaskView):
     def before_request(self, *args, **kwargs):
         ''' '''
         form = processRequest(request=request)
-        print(form)
+        print('my form', form)
         self.results['inconfig'] = form
         for key, val in form.items():
             config.__setattr__(key, val)
