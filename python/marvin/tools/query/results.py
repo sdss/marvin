@@ -1,5 +1,5 @@
 from __future__ import print_function
-from marvin.tools.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.tools.core import MarvinError, MarvinUserWarning
 import warnings
 import json
 from astropy.table import Table, Column
@@ -42,6 +42,43 @@ class Results(object):
         except TypeError as e:
             raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
         return jsonres
+
+    def getListOf(self, name='plateifu', to_json=False):
+        ''' Get a list of plate-IFUs or MaNGA IDs from results '''
+
+        output = None
+        try:
+            output = [r.__getattribute__(name) for r in self.results]
+        except AttributeError as e:
+            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(name, e))
+
+        if to_json:
+            output = json.dumps(output) if output else None
+
+        return output
+
+    def getDictOf(self, name='plateifu', format_type='listdict', to_json=False):
+        ''' Get a dictionary of specified parameter '''
+
+        # Test name in results
+        output = None
+        try:
+            output = self.results[0].__getattribute__(name)
+        except AttributeError as e:
+            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(name, e))
+
+        # Format results
+        if format_type == 'listdict':
+            output = [{name: r.__getattribute__(name)} for r in self.results]
+        elif format_type == 'dictlist':
+            output = {name: [r.__getattribute__(name)for r in self.results]}
+        else:
+            output = None
+
+        if to_json:
+            output = json.dumps(output) if output else None
+
+        return output
 
     def getNext(self, chunk=None):
         ''' Get the next set of results from the query, from start to end in units of chunk '''

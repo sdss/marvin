@@ -16,9 +16,9 @@ import os
 def create_app(debug=False):
 
     from marvin.api.cube import CubeView
+    from marvin.api.query import QueryView
     from marvin.api.general import GeneralRequestsView
     from marvin.web.controllers.index import index
-    from marvin.api.query import QueryView
 
     # ----------------------------------
     # Create App

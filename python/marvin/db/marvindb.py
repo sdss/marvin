@@ -19,7 +19,7 @@ __author__ = 'Brian Cherinka'
 
 
 class MarvinDB(object):
-    ''' class designed to handle database related things with Marvin '''
+    ''' Class designed to handle database related things with Marvin '''
 
     def __init__(self, *args, **kwargs):
         self.dbtype = kwargs.get('dbtype', None)
@@ -38,7 +38,7 @@ class MarvinDB(object):
         self._setModelGraph()
 
     def _setupDB(self):
-        ''' try to import the database '''
+        ''' Try to import the database '''
         try:
             from marvin.db.database import db
         except RuntimeError as e:
@@ -48,7 +48,7 @@ class MarvinDB(object):
             self.db = db
 
     def _importModels(self):
-        ''' try to import the sql alchemy model classes '''
+        ''' Try to import the sql alchemy model classes '''
 
         try:
             import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
@@ -75,6 +75,7 @@ class MarvinDB(object):
             self.dapdb = dapdb
 
     def _setSession(self):
+        ''' Sets the database session '''
         self.session = self.db.Session() if self.db else None
 
     def testDbConnection(self):
@@ -106,7 +107,7 @@ class MarvinDB(object):
         return classdict
 
     def buildUberClassDict(self):
-        ''' builds an uber class dictionary from all modelclasses '''
+        ''' Builds an uber class dictionary from all modelclasses '''
         classdict = {}
         models = [self.datadb, self.sampledb, self.dapdb]
         for model in models:
@@ -116,6 +117,7 @@ class MarvinDB(object):
         return classdict
 
     def _setModelGraph(self):
+        ''' Initiates the ModelGraph using all available ModelClasses '''
         models = filter(None, [self.datadb, self.sampledb, self.dapdb])
         if models:
             self.modelgraph = ModelGraph(models)
