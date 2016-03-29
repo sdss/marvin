@@ -117,23 +117,8 @@ config = Config()
 config._checkConfig()
 
 # Inits the Database session and ModelClasses
-session = None
-datadb = None
-if config.db:
-    try:
-        from marvin.db.database import db
-    except RuntimeError as e:
-        print('RuntimeError raised: Problem importing db: {0}'.format(e))
-    else:
-        try:
-            import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
-            import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
-            import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
-        except Exception as e:
-            print('Exception raised: Problem importing mangadb ModelClasses: {0}'.format(e))
-        else:
-            session = db.Session()
-            datadb = datadb
+from marvin.db.marvindb import MarvinDB
+marvindb = MarvinDB(dbtype=config.db)
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction

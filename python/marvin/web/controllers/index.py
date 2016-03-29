@@ -1,7 +1,7 @@
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for
 from flask.ext.classy import FlaskView, route
 from marvin.tools.cube import Cube
-from marvin import config, session, datadb
+from marvin import config, marvindb
 from marvin.utils.general.general import convertIvarToErr
 import numpy as np
 from marvin.tools.query.forms import MarvinForm
@@ -88,7 +88,7 @@ class Marvin(FlaskView):
         # general marvin form
         m = MarvinForm()
         # build new ifu select and add it to the IFUDesignForm
-        _ifus = sorted(list(set([i.name[:-2] for i in session.query(datadb.IFUDesign).all()])), key=lambda t: int(t))
+        _ifus = sorted(list(set([i.name[:-2] for i in marvindb.session.query(marvindb.datadb.IFUDesign).all()])), key=lambda t: int(t))
         _ifufields = [('{0}'.format(_i), _i) for _i in _ifus]
         ifu = SelectField('IFU Design', choices=_ifufields)
         m._param_form_lookup['name'].name = ifu
@@ -115,7 +115,7 @@ class Marvin(FlaskView):
         return 'new test'
 
     def database(self):
-        onecube = session.query(datadb.Cube).first()
+        onecube = marvindb.session.query(datadb.Cube).first()
         return str(onecube.plate)
 
     @route('/search', methods=['POST'])

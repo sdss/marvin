@@ -112,8 +112,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
     """
 
     global drpTable
-    from marvin import config
-    from marvin import datadb, session
+    from marvin import config, marvindb
     from marvin.api.api import Interaction
 
     # The modes and order over which the auto mode will loop.
@@ -150,16 +149,16 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     elif mode == 'db':
 
-        if not session or not datadb:
+        if not marvindb.isdbconnected:
             raise MarvinError('no DB connection found')
 
         if not drpver:
             raise MarvinError('drpver not set.')
 
-        cubes = session.query(datadb.Cube).join(
-            datadb.PipelineInfo, datadb.PipelineVersion).filter(
-                datadb.Cube.mangaid == mangaid,
-                datadb.PipelineVersion.version == drpver).all()
+        cubes = marvindb.session.query(marvindb.datadb.Cube).join(
+            marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(
+                marvindb.datadb.Cube.mangaid == mangaid,
+                marvindb.datadb.PipelineVersion.version == drpver).all()
 
         if len(cubes) == 0:
             raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
