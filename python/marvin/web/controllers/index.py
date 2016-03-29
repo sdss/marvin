@@ -91,10 +91,10 @@ class Marvin(FlaskView):
         _ifus = sorted(list(set([i.name[:-2] for i in marvindb.session.query(marvindb.datadb.IFUDesign).all()])), key=lambda t: int(t))
         _ifufields = [('{0}'.format(_i), _i) for _i in _ifus]
         ifu = SelectField('IFU Design', choices=_ifufields)
-        m._param_form_lookup['name'].name = ifu
+        m._param_form_lookup['ifu.name'].name = ifu
 
         # generate ifu and sample form fields
-        ifuform = m.callInstance(m._param_form_lookup['name'])
+        ifuform = m.callInstance(m._param_form_lookup['ifu.name'])
         sampform = m.callInstance(m._param_form_lookup['nsa_redshift'], validators=[validators.regexp('([0-9])+')])
         mainform = m.MainForm()
 

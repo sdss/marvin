@@ -105,6 +105,16 @@ class MarvinDB(object):
                 classdict[keyname] = model[1]
         return classdict
 
+    def buildUberClassDict(self):
+        ''' builds an uber class dictionary from all modelclasses '''
+        classdict = {}
+        models = [self.datadb, self.sampledb, self.dapdb]
+        for model in models:
+            if model:
+                modelclasses = self.generateClassDict(module=model)
+                classdict.update(modelclasses)
+        return classdict
+
     def _setModelGraph(self):
         models = filter(None, [self.datadb, self.sampledb, self.dapdb])
         if models:
