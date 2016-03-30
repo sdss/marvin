@@ -80,3 +80,7 @@ class Interaction(object):
         ''' Retrieve the URL routing map if it exists '''
         return self.results.get('urlmap', None)
 
+    def getQuery(self):
+        '''Print SQL query.'''
+        pass
+
