@@ -3,18 +3,21 @@ from flask.ext.classy import route
 from flask import session as current_session
 from marvin.api.base import BaseView
 from marvin.tools.query import Query, doQuery
+from marvin.tools.core import MarvinError
 
 
-def _getCubes(query):
+def _getCubes(strfilter):
     """Run query locally at Utah."""
-    q, r = doQuery(query)
-    res = r.getAll()
-    output = {'data': r.getListOf('plateifu')}
+    q, r = doQuery(strfilter)
+    r.getAll()
+    output = {'data': r.getListOf('plateifu'), 'query': str(r.query),
+              'filter': strfilter}
     return output
 
-# expose aspects of query object or results object
-# e.g., SQL query string (r.query)
-# q.strfilter  # natural language
+# write tests for API: if it fails, then it returns some status with a -1 and
+# an error message in the JSON
+
+# fill in line 159 of tools/query
 
 
 class QueryView(BaseView):
@@ -27,14 +30,19 @@ class QueryView(BaseView):
         return json.dumps(self.results)
 
     """example query post:
-    curl -X POST --data "query=nsa_redshift<0.1" http://519f4f12.ngrok.io/api/query/cubes/
+    curl -X POST --data "strfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
     """
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='cubes')
     def cube_query(self):
-        query = self.results['inconfig']['query']
-        res = _getCubes(query)
-        self.update_results(res)
+        strfilter = self.results['inconfig']['strfilter']
+        try:
+            res = _getCubes(strfilter)
+        except MarvinError as e:
+            self.results['error'] = e # NOT WORKING YET
+        else:
+            self.update_results(res)
+
         return json.dumps(self.results)
 
     @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
