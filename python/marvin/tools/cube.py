@@ -41,7 +41,7 @@ class Cube(MarvinToolsClass):
             # initialise the cube.
             raise MarvinError("Should remotely grab the cube to initialize, but I won't")
 
-    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None):
+    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None, xyorig=None):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
 
         The type of the spectrum returned depends on the `ext` keyword, and
@@ -85,6 +85,9 @@ class Cube(MarvinToolsClass):
         if not ext:
             ext = 'flux'
 
+        if not xyorig:
+            xyorig = 'relative'
+
         try:
             isExtString = isinstance(ext, basestring)
         except NameError:
@@ -105,7 +108,7 @@ class Cube(MarvinToolsClass):
                 if inputMode == 'sky':
                     xCube, yCube = convertCoords(ra=ra, dec=dec, hdr=cubeExt.header, mode='sky')
                 else:
-                    xCube, yCube = convertCoords(x=x, y=y, shape=cubeShape[1:], mode='pix')
+                    xCube, yCube = convertCoords(x=x, y=y, shape=cubeShape[1:], mode='pix', xyorig=xyorig)
 
                 assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
                 assert (xCube < cubeShape[2] - 1 and yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
@@ -120,7 +123,7 @@ class Cube(MarvinToolsClass):
                 else:
                     size = int(np.sqrt(len(self._cube.spaxels)))
                     shape = (size, size)
-                    xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix')
+                    xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix', xyorig=xyorig)
 
                 assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
 
