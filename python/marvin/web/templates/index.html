@@ -7,8 +7,9 @@
 
 {% block code %}
 <script type='text/javascript'>
+var webspec = null;
 $(function() {
-    new Dygraph(document.getElementById("graphdiv"),
+    webspec = new Dygraph(document.getElementById("graphdiv"),
               {{spectra}},
               //[[1,[1,0.1],[3,0]],[2,[2,0.5],[2,0]],[3,[3,1],[1,0]]],
               {
@@ -17,6 +18,7 @@ $(function() {
               });
 });
 </script>
+
 {% endblock code %}
 
 <div class='well'>
@@ -27,38 +29,165 @@ $(function() {
   	<div class='row'>
   		<h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plate}}</h5>
   	</div>
-  	<div class='row'>
-  		<h5>Here's a spectrum: {{specmsg}}</h5>
-  	</div>
-      <div id='graphdiv' style="width:100%;">
+
+    <div class='row'>
+      <div class='col-md-12'>
+        <h5 id='specmsg'>Here's a spectrum: {{specmsg}}</h5>
+        <h4>Assuming image size exactly matches array size</h4>
+        <div id="mouse-position"></div>
+        <div id='mouse-output'></div>
       </div>
+    </div>
+    <div class='row'>
+      <div class='col-md-3'>
+        <div id='map' class='map' style='width:100%; height:400px;'></div>
+      </div>
+      <div class='col-md-9'>
+        <div id='graphdiv' style="width:100%;"></div>
+      </div>
+    </div>
+
   {% else %}
     <div><h4>No cube found for mangaid {{mangaid}}</h4></div>
   {% endif %}
 </div>
 
+{# Single Text Box #}
 <div class='well'>
-    {#<div class='row'>
-        <form class='form' method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
-          <div class='row'>
-            <div class='col-md-1'>
-              <div>{{ifuform.name.label}}: {{ifuform.name(class_='form-control')}}</div>
-              <div>{{sampleform.nsa_redshift.label}}: {{sampleform.nsa_redshift(class_='form-control')}}</div>
-            </div>
-          </div>
-        </form>
-    </div>#}
-    {# Single Text Box #}
     <div class='row'>
         <form class='form' method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
           <div class='row'>
+            <div class='col-md-2'>
+              {#<div class='form-group'>
+                <label for='#multiple-datasets'>Parameters</label>
+                <div id='multiple-datasets'><input class='typeahead form-control' type='text' placeholder='Searchable Parameters'></div>
+              </div>#}
+            </div>
             <div class='col-md-6'>
-              <div>{{mainform.searchbox.label}}: {{mainform.searchbox(class_='form-control')}}</div>
+              <div class='form-group'>
+                <div>{{mainform.searchbox.label}}: {{mainform.searchbox(class_='form-control', placeholder='ooooh type in me hard')}}</div>
+              </div>
             </div>
           </div>
         </form>
     </div>
 </div>
 
+<script type='text/javascript'>
+$(function() {
+      var mousePositionControl = new ol.control.MousePosition({
+        coordinateFormat: ol.coordinate.createStringXY(4),
+        projection: 'EPSG:4326',
+        // comment the following two lines to have the mouse position
+        // be placed within the map.
+        className: 'custom-mouse-position',
+        target: document.getElementById('mouse-position'),
+        undefinedHTML: '&nbsp;'
+      });
 
+      var extent = [0, 0, 252, 252];
+      var projection = new ol.proj.Projection({
+        code: 'ifu',
+        units: 'pixels',
+        extent: extent
+      });
+
+      var lastFeature;
+      var source = new ol.source.Vector({wrapX: false});
+
+      var vector = new ol.layer.Vector({
+        source: source,
+        style: new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+
+      var map = new ol.Map({
+        controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+            collapsible: false
+          })
+        }).extend([mousePositionControl]),
+        layers: [
+          new ol.layer.Image({
+            source: new ol.source.ImageStatic({
+              attributions: [
+                new ol.Attribution({
+                  html: '&copy; <a href="http://xkcd.com/license.html">xkcd</a>'
+                })
+              ],
+              url: 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1901.png',
+              projection: projection,
+              imageExtent: extent
+            })
+          })
+        , vector],
+        target: 'map',
+        view: new ol.View({
+          projection: projection,
+          center: ol.extent.getCenter(extent),
+          zoom: 0,
+          maxZoom: 8
+        })
+      });
+
+      var draw;
+      function addInteraction() {
+        var value = 'Point';
+        var geometryFunction, maxPoints;
+        draw = new ol.interaction.Draw({
+          source: source,
+          type: /** @type {ol.geom.GeometryType} */ (value),
+          geometryFunction: geometryFunction,
+          maxPoints: maxPoints
+        });
+
+        draw.on('drawend', function(e) {
+          if (lastFeature) {
+            source.removeFeature(lastFeature);
+          }
+          lastFeature = e.feature;
+        });
+
+        map.addInteraction(draw);
+      };
+
+      function showMouse(evnt) {
+        var map = evnt.map;
+
+        var mousepos = {'mousecoords': evnt.coordinate, 'plateifu': '8485-1901'};
+        $.post(Flask.url_for('index_page.getspaxel'), mousepos,'json')
+            .done(function(data){
+              $('#mouse-output').empty()
+              var myhtml = "<h5>My mouse coords "+evnt.coordinate+", message: "+data.result.message+"</h5>"
+              $('#mouse-output').html(myhtml);
+              $('#specmsg').empty();
+              $('#specmsg').html("Here's a spectrum: "+data.result.specmsg);
+              webspec.updateOptions({'file': data.result.spectra});
+            })
+            .fail(function(data){
+              $('#mouse-output').empty()
+              var myhtml = "<h5>Error message: "+data.result.message+"</h5>"
+              $('#mouse-output').html(myhtml);
+            });
+
+      };
+
+      map.on('click', showMouse);
+      addInteraction();
+
+});
+</script>
 {% endblock body %}

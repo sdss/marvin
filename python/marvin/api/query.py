@@ -39,31 +39,28 @@ class QueryView(BaseView):
         try:
             res = _getCubes(strfilter)
         except MarvinError as e:
-            self.results['error'] = e # NOT WORKING YET
+            self.results['error'] = e  # NOT WORKING YET
         else:
             self.update_results(res)
 
         return json.dumps(self.results)
 
-    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
+    @route('/webtable/', methods=['POST'], endpoint='webtable')
     def webtable(self):
-        ''' Do a query for the Bootstrap Table in Marvin web '''
+        ''' Do a query for Bootstrap Table interaction in Marvin web '''
 
+        # set parameters
         searchvalue = current_session['searchvalue']
         limit = self.results['inconfig'].get('limit', None)
         offset = self.results['inconfig'].get('offset', None)
         order = self.results['inconfig'].get('order', None)
         sort = self.results['inconfig'].get('sort', None)
         search = self.results['inconfig'].get('search', None)
+        # do query
         q, res = doQuery(searchvalue, limit=limit, order=order, sort=sort)
-        print('stuff', sort, order, limit, offset, search)
-        print(res.results[0])
-        # sort
-        #revorder = 'desc' in order
-        #print('reverse', revorder, order)
-        #res.results = sorted(res.results, key=lambda x: x.plateifu, reverse=revorder)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)
+        # create output
         rows = res.getDictOf('plateifu', format_type='listdict')
         output = {'total': res.count, 'rows': rows}
         output = json.dumps(output)

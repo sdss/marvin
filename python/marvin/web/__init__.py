@@ -3,6 +3,7 @@
 from __future__ import print_function
 from flask import Flask, Blueprint
 from flask_restful import Api
+from flask_jsglue import JSGlue
 from inspect import getmembers, isfunction
 from marvin.utils.general.general import getDbMachine
 from marvin import config
@@ -25,6 +26,7 @@ def create_app(debug=False):
     app = Flask(__name__, static_url_path='/marvin/static')
     api = Blueprint("api", __name__, url_prefix='/api')
     app.debug = debug
+    jsglue = JSGlue(app)
 
     # Define custom filters into the Jinja2 environment.
     # Any filters defined in the jinja_env submodule are made available.

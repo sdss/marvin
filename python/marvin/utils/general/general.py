@@ -2,13 +2,14 @@ from marvin.tools.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
 from astropy import table
+from scipy.interpolate import griddata
 import warnings
 import os
 
 # General utilities
 
 __all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions',
-           'mangaid2plateifu']
+           'mangaid2plateifu', 'findClosestVector']
 
 drpTable = None
 
@@ -33,7 +34,7 @@ def parseName(name):
     return mangaid, plateifu
 
 
-def convertCoords(x=None, y=None, ra=None, dec=None, shape=None, hdr=None, mode='sky'):
+def convertCoords(x=None, y=None, ra=None, dec=None, shape=None, hdr=None, mode='sky', xyorig=None):
     ''' Convert input coordinates in x,y (relative to galaxy center) or RA, Dec coordinates to
         array indices x, y for spaxel extraction. Returns as xCube, yCube '''
 
@@ -41,13 +42,17 @@ def convertCoords(x=None, y=None, ra=None, dec=None, shape=None, hdr=None, mode=
         ra = float(ra)
         dec = float(dec)
         cubeWCS = wcs.WCS(hdr)
-        xCube, yCube, __ = cubeWCS.wcs_world2pix([[ra, dec, 1.]], 1)[0]
+        xCube, yCube, __ = cubeWCS.all_world2pix([[ra, dec, 1.]], 1)[0]
     else:
-        x = float(x)
-        y = float(y)
-        yMid, xMid = np.array(shape) / 2.
-        xCube = int(xMid + x)
-        yCube = int(yMid - y)
+        if xyorig == 'relative':
+            x = float(x)
+            y = float(y)
+            yMid, xMid = np.array(shape) / 2.
+            xCube = int(xMid + x)
+            yCube = int(yMid - y)
+        else:
+            xCube = int(x)
+            yCube = int(y)
 
     return xCube, yCube
 
@@ -239,4 +244,68 @@ def convertIvarToErr(ivar):
     error[notnull] = 1/np.sqrt(ivar[notnull])
     error = list(error)
     return error
+
+
+def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
+    '''
+    Finds the closest vector of array coordinates (x, y) from an input vector of pixel coordinates (x, y).
+
+    Parameters:
+    ----------
+    point : tuple
+        Original point of interest in pixel units, order of (x,y)
+    arr_shape : tuple
+        Shape of data array in (x,y) order
+    pixel_shape : tuple
+        Shape of image in pixels in (x,y) order
+    xyorig : str
+        Indicates the origin point of coordinates.  Set to "relative" switches to an array coordinate
+        system relative to galaxy center.  Default is absolute array coordinates (x=0, y=0) = upper left corner
+
+    Returns:
+    --------
+    minind : tuple
+        A tuple of array coordinates in x, y order
+    '''
+
+    # set as numpy arrays
+    arr_shape = np.array(arr_shape, dtype=int)
+    pixel_shape = np.array(pixel_shape, dtype=int)
+
+    # compute midpoints
+    xmid, ymid = arr_shape/2
+    xpixmid, ypixmid = pixel_shape/2
+
+    # default absolute array coordinates
+    xcoords = np.array([0, arr_shape[0]], dtype=int)
+    ycoords = np.array([0, arr_shape[1]], dtype=int)
+
+    # split x,y coords and pixel coords
+    x1, x2 = xcoords
+    y1, y2 = ycoords
+    xpix, ypix = pixel_shape
+
+    # build interpolates between array coordinates and pixel coordinates
+    points = [[x1, y1], [x1, y2], [xmid, ymid], [x2, y1], [x2, y2]]
+    values = [[0, ypix], [0, 0], [xpixmid, ypixmid], [xpix, ypix], [xpix, 0]]
+
+    # make 2d array of array indices in absolute or (our) relative coordindates
+    arrinds = np.mgrid[x1:x2, y1:y2].swapaxes(0, 2).swapaxes(0, 1)
+    # interpolate a new 2d pixel coordinate array
+    final = griddata(points, values, arrinds)
+
+    # find minimum array vector closest to input coordinate point
+    diff = np.abs(point - final)
+    prod = diff[:, :, 0]*diff[:, :, 1]
+    minind = np.unravel_index(prod.argmin(), arr_shape)
+
+    # toggle relative array coordinates
+    if xyorig == 'relative':
+        minind = np.array(minind, dtype=int)
+        xmin = minind[0] - xmid
+        ymin = ymid - minind[1]
+        minind = (xmin, ymin)
+
+    return minind
+
 
