@@ -2,7 +2,7 @@ from flask import current_app, Blueprint, render_template, session as current_se
 from flask.ext.classy import FlaskView, route
 from marvin.tools.cube import Cube
 from marvin import config, marvindb
-from marvin.utils.general.general import convertIvarToErr, findClosestVector
+from marvin.utils.general.general import convertIvarToErr, findClosestVector, convertImgCoords
 import numpy as np
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.base import processRequest
@@ -18,16 +18,22 @@ opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
 ops = [(key, val) for key, val in opdict.items()]
 
 
-def getWebSpectrum(cube, x, y, xyorig=None):
+def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' get and format a spectrum for the web '''
     webspec = None
     try:
-        spectrum = cube.getSpectrum(x=x, y=y, xyorig=xyorig)
+        if byradec:
+            spectrum = cube.getSpectrum(ra=x, dec=y, xyorig=xyorig)
+        else:
+            spectrum = cube.getSpectrum(x=x, y=y, xyorig=xyorig)
     except Exception as e:
         specmsg = 'Could not get spectrum: {0}'.format(e)
     else:
         # get error and wavelength
-        ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
+        if byradec:
+            ivar = cube.getSpectrum(ra=x, dec=y, ext='ivar', xyorig=xyorig)
+        else:
+            ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
         error = convertIvarToErr(ivar)
         wave = cube.getWavelength()
         # make input array for Dygraph
@@ -52,6 +58,7 @@ class Marvin(FlaskView):
         except MarvinError as e:
             cube = None
         index['cube'] = cube
+        index['location'] = cube._cube.location
         index['mangaid'] = mangaid
         index['plateifu'] = cube.plateifu
         x = 1
@@ -133,16 +140,20 @@ class Marvin(FlaskView):
         if mousecoords:
             print('form', f, mousecoords)
             arrshape = (34, 34)
-            pixshape = (252, 252)
-            if (mousecoords[0] < 0 or mousecoords[0] > 252) or (mousecoords[1] < 0 or mousecoords[1] > 252):
+            pixshape = (562, 562)
+            if (mousecoords[0] < 0 or mousecoords[0] > 562) or (mousecoords[1] < 0 or mousecoords[1] > 562):
                 output = {'message': 'error: pixel coords outside range'}
             else:
                 xyorig = 'relative'
                 arrcoords = findClosestVector(mousecoords, arr_shape=arrshape, pixel_shape=pixshape, xyorig=xyorig)
+                oldarr = arrcoords
+                infile = '/Users/Brian/Work/Manga/redux/v1_5_1/8485/stack/images/test_wcs2.png'
+                arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
+                print('arrcoords', oldarr, arrcoords)
                 cube = Cube(plateifu=f['plateifu'])
-                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], xyorig=xyorig)
+                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], xyorig=xyorig, byradec=True)
                 print('specmsg', specmsg)
-                msg = 'gettin some spaxel with {0} array coords (x,y): {1}'.format(xyorig, arrcoords)
+                msg = 'gettin some spaxel with {0} array coords (x,y): {1} at RA/Dec {2}'.format(xyorig, oldarr, arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec}
         else:
             output = {'message': 'error getting mouse coords'}
