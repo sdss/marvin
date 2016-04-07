@@ -19,6 +19,7 @@ from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search, Boole
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
+from marvin.api.api import Interaction
 from sqlalchemy import or_, and_, bindparam, between
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
@@ -160,7 +161,15 @@ class Query(object):
                     self.reset()
                     raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
-                print('pass parameters to API here.  Need to figure out when and how to build a query remotely but still allow for user manipulation')
+                """Don't call _setForms() because it constructs paramtree (SQL
+                joins).
+
+                Probably just pass here (maybe do some checking/error handling)
+                """
+                print('pass parameters to API here.  Need to figure out when '
+                      'and how to build a query remotely but still allow for '
+                      'user manipulation')
+
 
     def _setForms(self):
         ''' Set the appropriate WTForms in myforms and set the parameters '''
@@ -266,31 +275,40 @@ class Query(object):
             different sqlalchemy queries
         '''
 
-        # Check if params are set and there is a query
-        if self.params and isinstance(self.query.whereclause, type(None)):
-            self.add_condition()
+        if self.mode == 'local':
 
-        # Check for adding a sort
-        self._sortQuery()
+            # Check if params are set and there is a query
+            if self.params and isinstance(self.query.whereclause, type(None)):
+                self.add_condition()
 
-        # get total count, and if more than 150 results, paginate and only return the first 10
-        count = self.query.count()
-        if count > 150:
-            query = self.query.slice(0, self.limit)
-            warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
-        else:
-            query = self.query
+            # Check for adding a sort
+            self._sortQuery()
 
-        if qmode == 'all':
-            res = query.all()
-        elif qmode == 'one':
-            res = query.one()
-        elif qmode == 'first':
-            res = query.first()
-        elif qmode == 'count':
-            res = query.count()
+            # get total count, and if more than 150 results, paginate and only return the first 10
+            count = self.query.count()
+            if count > 150:
+                query = self.query.slice(0, self.limit)
+                warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+            else:
+                query = self.query
 
-        return Results(results=res, query=self.query, count=count)
+            if qmode == 'all':
+                res = query.all()
+            elif qmode == 'one':
+                res = query.one()
+            elif qmode == 'first':
+                res = query.first()
+            elif qmode == 'count':
+                res = query.count()
+
+            return Results(results=res, query=self.query, count=count)
+
+        elif self.mode == 'remote':
+            route = 'api/query/cubes/'
+            params = {'query': self.strfilter}
+            ii = Interaction(route=route, params=params)
+            res = ii.results
+            return Results(results=res, query=self.query)  # , count=count)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

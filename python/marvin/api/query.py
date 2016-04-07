@@ -2,7 +2,7 @@ import json
 from flask.ext.classy import route
 from flask import session as current_session
 from marvin.api.base import BaseView
-from marvin.tools.query import Query, doQuery
+from marvin.tools.query import doQuery
 from marvin.tools.core import MarvinError
 
 
@@ -13,9 +13,6 @@ def _getCubes(strfilter):
     output = {'data': r.getListOf('plateifu'), 'query': str(r.query),
               'filter': strfilter}
     return output
-
-# write tests for API: if it fails, then it returns some status with a -1 and
-# an error message in the JSON
 
 # fill in line 159 of tools/query
 
@@ -39,7 +36,7 @@ class QueryView(BaseView):
         try:
             res = _getCubes(strfilter)
         except MarvinError as e:
-            self.results['error'] = e  # NOT WORKING YET
+            self.results['error'] = str(e)
         else:
             self.update_results(res)
 

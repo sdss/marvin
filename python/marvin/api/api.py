@@ -83,4 +83,3 @@ class Interaction(object):
     def getQuery(self):
         '''Print SQL query.'''
         pass
-
