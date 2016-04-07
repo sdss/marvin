@@ -5,11 +5,12 @@ from astropy import table
 from scipy.interpolate import griddata
 import warnings
 import os
+import PIL
 
 # General utilities
 
 __all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions',
-           'mangaid2plateifu', 'findClosestVector']
+           'mangaid2plateifu', 'findClosestVector', 'getWCSFromPng', 'convertImgCoords']
 
 drpTable = None
 
@@ -287,7 +288,9 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
     # build interpolates between array coordinates and pixel coordinates
     points = [[x1, y1], [x1, y2], [xmid, ymid], [x2, y1], [x2, y2]]
-    values = [[0, ypix], [0, 0], [xpixmid, ypixmid], [xpix, ypix], [xpix, 0]]
+    values = [[0, ypix], [0, 0], [xpixmid, ypixmid], [xpix, ypix], [xpix, 0]]  # full image
+    # values = [[xpixmid-xmid, ypixmid+ymid], [xpixmid-xmid, ypixmid-ymid], [xpixmid, ypixmid], [xpixmid+xmid, ypixmid+ymid], [xpixmid+xmid, ypixmid-ymid]]  # pixels based on arr_shape
+    #values = [[xpixmid-x2, ypixmid+y2], [xpixmid-x2, ypixmid-y2], [xpixmid, ypixmid], [xpixmid+x2, ypixmid+y2], [xpixmid+x2, ypixmid-y2]]  # pixels based on arr_shape
 
     # make 2d array of array indices in absolute or (our) relative coordindates
     arrinds = np.mgrid[x1:x2, y1:y2].swapaxes(0, 2).swapaxes(0, 1)
@@ -307,5 +310,57 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
         minind = (xmin, ymin)
 
     return minind
+
+
+def getWCSFromPng(image):
+    ''' Extracts any WCS info from the metadata of a PNG image '''
+
+    pngwcs = None
+    try:
+        image = PIL.Image.open(image)
+    except Exception as e:
+        raise MarvinError('Cannot open image {0}: {1}'.format(image, e))
+
+    # get metadata
+    meta = image.info if image else None
+
+    # parse the image metadata
+    mywcs = {}
+    if meta and 'WCSAXES' in meta.keys():
+        for key, val in meta.items():
+            try:
+                val = float(val)
+            except Exception as e:
+                pass
+            mywcs.update({key: val})
+
+        tmp = mywcs.pop('WCSAXES')
+
+    # Construct Astropy WCS
+    if mywcs:
+        pngwcs = wcs.WCS(mywcs)
+
+    return pngwcs
+
+
+def convertImgCoords(coords, image, to_pix=None, to_radec=None):
+    ''' Convert image pixel coordinates to RA/Dec based on PNG image metadata or vice_versa'''
+
+    try:
+        wcs = getWCSFromPng(image)
+    except Exception as e:
+        raise MarvinError('Cannot get wcs info from image {0}: {1}'.format(image, e))
+
+    if to_radec:
+        try:
+            newcoords = wcs.all_pix2world([coords], 1)[0]
+        except AttributeError as e:
+            raise MarvinError('Cannot convert coords to RA/Dec.  No wcs! {0}'.format(e))
+    if to_pix:
+        try:
+            newcoords = wcs.all_world2pix([coords], 1)[0]
+        except AttributeError as e:
+            raise MarvinError('Cannot convert coords to image pixels.  No wcs! {0}'.format(e))
+    return newcoords
 
 

@@ -122,7 +122,7 @@ marvindb = MarvinDB(dbtype=config.db)
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-config.sasurl = 'http://cd057661.ngrok.io/'  # this is a temporary measure REMOVE THIS
+#config.sasurl = 'http://cd057661.ngrok.io/'  # this is a temporary measure REMOVE THIS
 try:
     response = Interaction('api/general/getroutemap', request_type='get')
 except Exception as e:

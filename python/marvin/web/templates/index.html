@@ -33,7 +33,6 @@ $(function() {
     <div class='row'>
       <div class='col-md-12'>
         <h5 id='specmsg'>Here's a spectrum: {{specmsg}}</h5>
-        <h4>Assuming image size exactly matches array size</h4>
         <div id="mouse-position"></div>
         <div id='mouse-output'></div>
       </div>
@@ -85,7 +84,7 @@ $(function() {
         undefinedHTML: '&nbsp;'
       });
 
-      var extent = [0, 0, 252, 252];
+      var extent = [0, 0, 562, 562];
       var projection = new ol.proj.Projection({
         code: 'ifu',
         units: 'pixels',
@@ -106,7 +105,7 @@ $(function() {
             width: 2
           }),
           image: new ol.style.Circle({
-            radius: 7,
+            radius: 3,
             fill: new ol.style.Fill({
               color: '#ffcc33'
             })
@@ -128,7 +127,7 @@ $(function() {
                   html: '&copy; <a href="http://xkcd.com/license.html">xkcd</a>'
                 })
               ],
-              url: 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1901.png',
+              url: 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/test_wcs2.png',
               projection: projection,
               imageExtent: extent
             })
@@ -139,7 +138,8 @@ $(function() {
           projection: projection,
           center: ol.extent.getCenter(extent),
           zoom: 0,
-          maxZoom: 8
+          maxZoom: 8,
+          maxResolution: 1.4
         })
       });
 
@@ -185,7 +185,7 @@ $(function() {
 
       };
 
-      map.on('click', showMouse);
+      map.on('singleclick', showMouse);
       addInteraction();
 
 });
