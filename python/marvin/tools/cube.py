@@ -237,3 +237,4 @@ class Cube(MarvinToolsClass):
                 self.ra = self._cube.ra
                 self.dec = self._cube.dec
                 self.plate = self._cube.plate
+                self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this for the future to sampledb
