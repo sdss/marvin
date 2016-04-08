@@ -6,15 +6,12 @@ from marvin.tools.query import doQuery
 from marvin.tools.core import MarvinError
 
 
-def _getCubes(strfilter):
+def _getCubes(searchfilter):
     """Run query locally at Utah."""
-    q, r = doQuery(strfilter)
+    q, r = doQuery(searchfilter)
     r.getAll()
-    output = {'data': r.getListOf('plateifu'), 'query': str(r.query),
-              'filter': strfilter}
+    output = {'data': r.getListOf('plateifu'), 'query': r.showQuery(), 'filter': searchfilter}
     return output
-
-# fill in line 159 of tools/query
 
 
 class QueryView(BaseView):
@@ -30,11 +27,11 @@ class QueryView(BaseView):
     curl -X POST --data "strfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
     """
 
-    @route('/cubes/', methods=['GET', 'POST'], endpoint='cubes')
+    @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
-        strfilter = self.results['inconfig']['strfilter']
+        searchfilter = self.results['inconfig']['searchfilter']
         try:
-            res = _getCubes(strfilter)
+            res = _getCubes(searchfilter)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:

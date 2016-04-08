@@ -19,6 +19,9 @@ class Results(object):
         self.start = 0
         self.end = self.start + self.chunk
 
+    def showQuery(self):
+        return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
+
     def download(self):
         """Download data via sdsssync"""
         pass
