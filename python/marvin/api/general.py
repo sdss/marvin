@@ -67,6 +67,7 @@ class GeneralRequestsView(BaseView):
             options = {}
             for arg in rule.arguments:
                 options[arg] = '[{0}]'.format(arg)
+            options['_external'] = True
             # get endpoint
             fullendpoint = rule.endpoint
             esplit = fullendpoint.split('.')
@@ -77,7 +78,7 @@ class GeneralRequestsView(BaseView):
             output[grp][endpoint]['methods'] = methods
             # build url
             rawurl = url_for(fullendpoint, **options)
-            url = urllib.unquote(rawurl).replace('[', '{').replace(']', '}').strip('/')
+            url = urllib.unquote(rawurl).replace('[', '{').replace(']', '}')#.strip('/')
             output[grp][endpoint]['url'] = url
 
         res = {'urlmap': output}

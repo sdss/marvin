@@ -16,7 +16,11 @@ class Interaction(object):
         self.params = params
         self.statuscodes = {200: 'Ok', 401: 'Authentication Required', 404: 'URL Not Found', 500: 'Internal Server Error',
                             405: 'Method Not Allowed', 400: 'Bad Request', 502: 'Bad Gateway', 504: 'Gateway Timeout'}
-        self.url = os.path.join(config.sasurl, route) if self.route else None
+        #self.url = os.path.join(config.sasurl, route) if self.route else None
+        #self.url = self.route
+
+        self.url = self.route if config.sasurl in self.route else os.path.join(config.sasurl, route) if self.route else None
+
         if self.url:
             self._sendRequest(request_type)
         else:
