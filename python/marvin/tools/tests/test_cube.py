@@ -185,6 +185,15 @@ class TestGetSpectrum(TestCubeBase):
         self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=10, y=5,
                                xyorig='lower')
 
+    def test_getSpectrum_file_flux_x_0_y_0(self):
+        expect = 1.0493046
+        self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=0, y=0)
+
+    def test_getSpectrum_file_flux_x_0_y_0_lower(self):
+        expect = 0.0
+        self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=0, y=0,
+                               xyorig='lower')
+
     def _getSpectrum_file_flux_ra_dec(self, ra, dec):
         """Tests getSpectrum from a file cube with ra, dec inputs."""
 
@@ -253,6 +262,18 @@ class TestGetSpectrum(TestCubeBase):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 3000, expect, x=10, y=5, xyorig='lower')
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_x_0_y_0(self):
+        expect = 1.0493046
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 3000, expect, x=0, y=0)
+
+    @skipIfNoDB
+    def test_getSpectrum_db_flux_x_0_y_0_lower(self):
+        expect = 0.0
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum(cube, 3000, expect, x=0, y=0, xyorig='lower')
 
     # Tests for getSpectrum remotely
     # def _getSpectrum_remote(self, **kwargs):
