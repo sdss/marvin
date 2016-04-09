@@ -1,10 +1,10 @@
 from __future__ import print_function
 import numpy as np
 from astropy.io import fits
+from astropy.wcs import WCS
 import marvin
-from marvin.api.api import Interaction
 from marvin.tools.core import MarvinToolsClass, MarvinError
-from marvin.utils.general import convertCoords
+from marvin.utils.general import convertCoords, getSpaxelXY, getSpaxelAPI
 
 
 class Cube(MarvinToolsClass):
@@ -41,44 +41,67 @@ class Cube(MarvinToolsClass):
             # initialise the cube.
             raise MarvinError("Should remotely grab the cube to initialize, but I won't")
 
-    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None, xyorig=None):
+    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None,
+                    xyorig='center'):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
 
         The type of the spectrum returned depends on the `ext` keyword, and
         may be either `'flux'`, `'ivar'`, or `'mask'`. The coordinates of the
-        spectrum to return can be input as `x, y` pixels relative the centre
-        of the cube (bottom-left origin is assumed), or as `ra, dec` celestial
-        coordinates.
+        spectrum to return can be input as `x, y` pixels relative to `xyorig`
+        in the cube, or as `ra, dec` celestial coordinates.
 
         Parameters
         ----------
-        x, y : int
-            The spaxel coordinates relative to the centre of the cube.
+        x, y : int or Numpy array
+            The spaxel coordinates relative to `origin`.
+            If x is an array of coordinates, the size of x must much that of y.
 
-        ra, dec : float
+        ra, dec : float or Numpy array.
             The coordinates of the spaxel to return. The closest spaxel to
-            those coordinates will be returned.
+            those coordinates will be returned. If ra is an array of
+            coordinates, the size of ra must much that of dec.
 
         ext : str
             The extension of the cube to use, either `'flux'`, `'ivar'`, or
             `'mask'`. Defaults to `'flux'`.
 
+        xyorig : str
+            The reference point from which `x` and `y` are measured. Valid
+            values are `'center'`, for the centre of the spatial dimensions of
+            the cube, or `'lower'` for the lower-left corner. This keyword is
+            ignored if `ra` and `dec` are defined.
+
         Returns
         -------
         result : np.array
-            A Numpy array with the spectrum for the input coordinates.
+            A Numpy array with the spectrum for the input coordinates. If the
+            input coordinates are an array of N positions, the returned array
+            will have shape (N, M) where M is the number of spectral elements.
 
         """
 
+        # TBD: do we want to use x/y, ra/dec, or a single coords parameter (as
+        # an array of coordinates) and a mode keyword.
+
         # Checks that we have the correct set of inputs.
-        if x or y:
-            assert not ra and not dec, 'Either use (x, y) or (ra, dec)'
-            assert x and y, 'Specify both x and y'
+        if x is not None or y is not None:
+            assert ra is None and dec is None, 'Either use (x, y) or (ra, dec)'
+            assert x is not None and y is not None, 'Specify both x and y'
+
             inputMode = 'pix'
-        elif ra or dec:
-            assert not x and not y, 'Either use (x, y) or (ra, dec)'
-            assert ra and dec, 'Specify both ra and dec'
+            x = np.atleast_1d(x)
+            y = np.atleast_1d(y)
+            coords = np.array([x, y]).T
+
+        elif ra is not None or dec is not None:
+            assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
+            assert ra is not None and dec is not None, 'Specify both ra and dec'
+
             inputMode = 'sky'
+            ra = np.atleast_1d(ra)
+            dec = np.atleast_1d(dec)
+            coords = np.array([ra, dec]).T
+
         else:
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
@@ -86,7 +109,7 @@ class Cube(MarvinToolsClass):
             ext = 'flux'
 
         if not xyorig:
-            xyorig = 'relative'
+            xyorig = 'center'
 
         try:
             isExtString = isinstance(ext, basestring)
@@ -96,75 +119,74 @@ class Cube(MarvinToolsClass):
         assert isExtString
 
         ext = ext.lower()
-        assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
+        assert ext in ['flux', 'ivar', 'mask'], \
+            'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
         if self.mode == 'local':
 
+            # Local mode
+
             if not self._useDB:
 
+                # File mode
+
                 cubeExt = self._hdu[ext.upper()]
-                cubeShape = cubeExt.data.shape
+                cubeShape = cubeExt.data.shape[1:]
 
-                if inputMode == 'sky':
-                    xCube, yCube = convertCoords(ra=ra, dec=dec, hdr=cubeExt.header, mode='sky')
-                else:
-                    xCube, yCube = convertCoords(x=x, y=y, shape=cubeShape[1:], mode='pix', xyorig=xyorig)
+                ww = WCS(cubeExt.header) if inputMode == 'sky' else None
 
-                assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
-                assert (xCube < cubeShape[2] - 1 and yCube < cubeShape[1] - 1), 'pixel coordinates outside cube'
+                iCube, jCube = zip(convertCoords(
+                    coords, wcs=ww, shape=cubeShape, mode=inputMode,
+                    xyorig=xyorig).T)
 
-                return cubeExt.data[:, np.round(yCube), np.round(xCube)]
+                data = cubeExt.data[:, iCube[0], jCube[0]].T
 
             else:
+
+                # DB mode
+
+                size = int(np.sqrt(len(self._cube.spaxels)))
+                cubeShape = (size, size)
 
                 if inputMode == 'sky':
                     cubehdr = self._cube.wcs.makeHeader()
-                    xCube, yCube = convertCoords(ra=ra, dec=dec, hdr=cubehdr, mode='sky')
+                    ww = WCS(cubehdr)
                 else:
-                    size = int(np.sqrt(len(self._cube.spaxels)))
-                    shape = (size, size)
-                    xCube, yCube = convertCoords(x=x, y=y, shape=shape, mode='pix', xyorig=xyorig)
+                    ww = None
 
-                assert xCube > 0 and yCube > 0, 'pixel coordinates outside cube'
+                iCube, jCube = zip(convertCoords(coords, wcs=ww,
+                                                 shape=cubeShape,
+                                                 mode=inputMode,
+                                                 xyorig=xyorig).T)
 
-                import sqlalchemy
-                inputs = [ra, dec] if inputMode == 'sky' else [x, y]
-                mdb = marvin.marvindb
-                try:
-                    spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=self._cube, x=np.round(xCube), y=np.round(yCube)).one()
-                except sqlalchemy.orm.exc.NoResultFound as e:
-                    raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
-                except Exception as e:
-                    raise MarvinError('Could not retrieve cube for plate-ifu {0} at position {1},{2}: Unknown exception: {3}'.format(self.plateifu, inputs[0], inputs[1], e))
+                data = []
+                for ii in range(len(iCube[0])):
+                    spaxel = getSpaxelXY(self._cube, self.plateifu,
+                                         x=jCube[0][ii], y=iCube[0][ii])
+                    data.append(spaxel.__getattribute__(ext))
 
-                data = spaxel.__getattribute__(ext)
-                return data
+                data = np.array(data)
 
         else:
+
+            # API mode
+
             # Fail if no route map initialized
             if not marvin.config.urlmap:
-                raise MarvinError('No URL Map found.  Cannot make remote call')
+                raise MarvinError('No URL Map found. Cannot make remote call')
 
-            # Parse the variables into right frame
-            path = 'x={0}/y={1}/ext={2}'.format(x, y, ext) if (x or y) else 'ra={0}/dec={1}/ext={2}'.format(ra, dec, ext)
-            routeparams = {'name': self.mangaid, 'path': path}
+            data = []
+            for ii in range(coords.shape[0]):
+                spaxel = getSpaxelAPI(coords[ii][0], coords[ii][1],
+                                      self.mangaid, mode=inputMode, ext=ext)
+                data.append(spaxel)
 
-            # Get the getSpectrum Route
-            url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
+            data = np.array(data)
 
-            # Make the API call
-            if x or y:
-                response = Interaction(url)
-            elif ra or dec:
-                response = Interaction(url)
-
-            if response.status_code == 200:
-                if response.results['status'] == 1:
-                    return response.getData()
-                else:
-                    raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
-            else:
-                raise MarvinError('Error retrieving response: Http status code {0}: {1}'.format(response.status_code, response.results['message']))
+        if data.shape[0] == 1:
+            return data[0]
+        else:
+            return data
 
     def _openFile(self):
 

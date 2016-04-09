@@ -4,13 +4,15 @@ import numpy as np
 from astropy import table
 from scipy.interpolate import griddata
 import warnings
+import marvin
 import os
 import PIL
 
 # General utilities
 
 __all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions',
-           'mangaid2plateifu', 'findClosestVector', 'getWCSFromPng', 'convertImgCoords']
+           'mangaid2plateifu', 'findClosestVector', 'getWCSFromPng', 'convertImgCoords',
+           'getSpaxelXY', 'getSpaxelAPI']
 
 drpTable = None
 
@@ -35,27 +37,88 @@ def parseName(name):
     return mangaid, plateifu
 
 
-def convertCoords(x=None, y=None, ra=None, dec=None, shape=None, hdr=None, mode='sky', xyorig=None):
-    ''' Convert input coordinates in x,y (relative to galaxy center) or RA, Dec coordinates to
-        array indices x, y for spaxel extraction. Returns as xCube, yCube '''
+def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
+    """Converts input coordinates to array indices.
+
+    Converts input positions in x, y or RA, Dec coordinates to array indices
+    (in Numpy style) or spaxel extraction. In case of pixel coordinates, the
+    origin of reference (either the center of the cube or the lower left
+    corner) can be specified via `xyorig`.
+
+    If `shape` is defined (mandatory for `mode='pix'`, optional for
+    `mode='sky'`) and one or more of the resulting indices are outside the
+    size of the input shape, an error is raised.
+
+    This functions is mostly intended for internal use.
+
+    Parameters
+    ----------
+    coords : `np.array`
+        The input coordinates, as an array of shape Nx2.
+    mode : str
+        The type of input coordinates, either `'sky'` for celestial coordinates
+        (FK5), or `'pix'` for pixel coordinates.
+    wcs : None or `astropy.wcs.WCS` object
+        If `mode='sky'`, the WCS solution from which the cube coordinates can
+        be derived.
+    xyorig : str
+        If `mode='pix'`, the reference point from which the coordinates are
+        measured. Valid values are `'center'`, for the centre of the spatial
+        dimensions of the cube, or `'lower'` for the lower-left corner.
+    shape : None or `np.array`
+        If `mode='pix'`, the shape of the spatial dimensions of the cube,
+        so that the central position can be calculated.
+
+    Returns
+    -------
+    result : `np.array`
+        An array with the same shape as `coords`, containing the cube index
+        positions for the input coordinates, in Numpy style (i.e., the first
+        element being the row and the second the column).
+
+    """
+
+    coords = np.atleast_2d(coords)
+    assert coords.shape[1] == 2, 'coordinates must be an array Nx2'
 
     if mode == 'sky':
-        ra = float(ra)
-        dec = float(dec)
-        cubeWCS = wcs.WCS(hdr)
-        xCube, yCube, __ = cubeWCS.all_world2pix([[ra, dec, 1.]], 1)[0]
-    else:
-        if xyorig == 'relative':
-            x = float(x)
-            y = float(y)
-            yMid, xMid = np.array(shape) / 2.
-            xCube = int(xMid + x)
-            yCube = int(yMid - y)
-        else:
-            xCube = int(x)
-            yCube = int(y)
+        assert wcs, 'if mode==sky, wcs must be defined.'
+        coordsSpec = np.ones((coords.shape[0], 3), np.float32)
+        coordsSpec[:, :-1] = coords
+        cubeCoords = wcs.wcs_world2pix(coordsSpec, 0)
+        cubeCoords = np.fliplr(np.array(np.round(cubeCoords[:, :-1]), np.int))
 
-    return xCube, yCube
+    elif mode in ['pix', 'pixel']:
+        assert xyorig, 'if mode==pix, xyorig must be defined.'
+        x = coords[:, 0]
+        y = coords[:, 1]
+
+        assert shape, 'if mode==pix, shape must be defined.'
+        shape = np.atleast_1d(shape)
+
+        if xyorig == 'center':
+            yMid, xMid = shape / 2.
+            xCube = np.round(xMid + x)
+            yCube = np.round(yMid - y)
+        elif xyorig == 'lower':
+            xCube = np.round(x)
+            yCube = np.round(y)
+        else:
+            raise ValueError('xyorig must be center or lower.')
+
+        cubeCoords = np.array([yCube, xCube], np.int).T
+
+    else:
+        raise ValueError('mode must be pix or sky.')
+
+    if shape is not None:
+        if ((cubeCoords < 0).any() or
+                (cubeCoords[:, 0] > (shape[0] - 1)).any() or
+                (cubeCoords[:, 1] > (shape[1] - 1)).any()):
+            raise MarvinError('some indices are out of limits.')
+
+    return cubeCoords
+
 
 mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}
 
@@ -364,3 +427,54 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
     return newcoords
 
 
+def getSpaxelXY(cube, plateifu, x, y):
+
+    import sqlalchemy
+
+    mdb = marvin.marvindb
+
+    try:
+        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(
+            cube=cube, x=x, y=y).one()
+    except sqlalchemy.orm.exc.NoResultFound as e:
+        raise MarvinError(
+            'Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: '
+            'No Results Found: {3}'.format(plateifu, x, y, e))
+    except Exception as e:
+        raise MarvinError(
+            'Could not retrieve cube for plate-ifu {0} at position'
+            ' {1},{2}: Unknown exception: {3}'.format(plateifu, x, y, e))
+
+    return spaxel
+
+
+def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux'):
+
+    from marvin.api.api import Interaction
+
+    # Parse the variables into right frame
+
+    if mode == 'pix':
+        path = 'x={0}/y={1}/ext={2}'.format(coord1, coord2, ext)
+    else:
+        path = 'ra={0}/dec={1}/ext={2}'.format(coord1, coord2, ext)
+
+    routeparams = {'name': mangaid, 'path': path}
+
+    # Get the getSpectrum Route
+    url = marvin.config.urlmap['api']['getspectra']['url'].format(
+        **routeparams)
+
+    # Make the API call
+    response = Interaction(url)
+
+    if response.status_code == 200:
+        if response.results['status'] == 1:
+            return response.getData()
+        else:
+            raise MarvinError('Could not retrieve spaxels remotely: {0}'
+                              .format(response.results['error']))
+    else:
+        raise MarvinError(
+            'Error retrieving response: Http status code {0}: {1}'
+            .format(response.status_code, response.results['message']))
