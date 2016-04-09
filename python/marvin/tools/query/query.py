@@ -43,7 +43,7 @@ def tree():
 # Do A Query
 def doQuery(searchfilter, limit=10, sort=None, order=None):
     q = Query(limit=limit, sort=sort, order=order)
-    q.set_filter(params=searchfilter)
+    q.set_filter(searchfilter=searchfilter)
     q.add_condition()
     res = q.run()
     return q, res
@@ -124,7 +124,7 @@ class Query(object):
         else:
             self.mode = 'remote'
 
-    def set_filter(self, params=None):
+    def set_filter(self, searchfilter=None):
         ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms with the appropriate form to
         modify/update based on the input parameters.  One-to-one mapping between parameter and form/modelclass/sqltable
 
@@ -132,17 +132,18 @@ class Query(object):
         e.g., params = " nsa_redshift < 0.012 and name = 19* "
         '''
 
-        if params:
+        if searchfilter:
             # if params is a string, then parse and filter
-            if type(params) == str or type(params) == unicode:
+            if type(searchfilter) == str or type(searchfilter) == unicode:
                 try:
-                    parsed = parse_boolean_search(params)
+                    parsed = parse_boolean_search(searchfilter)
                 except BooleanSearchException as e:
                     raise MarvinError('Your boolean expression contained a syntax error: {0}'.format(e))
             else:
                 raise MarvinError('Input parameters must be a natural language string!')
 
             # update the parameters dictionary
+            self.searchfilter = searchfilter
             self._parsed = parsed
             self.strfilter = str(parsed)
             self.params.update(parsed.params)
@@ -169,7 +170,6 @@ class Query(object):
                 print('pass parameters to API here.  Need to figure out when '
                       'and how to build a query remotely but still allow for '
                       'user manipulation')
-
 
     def _setForms(self):
         ''' Set the appropriate WTForms in myforms and set the parameters '''
@@ -304,9 +304,15 @@ class Query(object):
             return Results(results=res, query=self.query, count=count)
 
         elif self.mode == 'remote':
-            route = 'api/query/cubes/'
-            params = {'query': self.strfilter}
-            ii = Interaction(route=route, params=params)
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['querycubes']['url']
+
+            params = {'searchfilter': self.searchfilter}
+            ii = Interaction(route=url, params=params)
             res = ii.results
             return Results(results=res, query=self.query)  # , count=count)
 
