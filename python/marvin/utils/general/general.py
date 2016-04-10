@@ -448,16 +448,16 @@ def getSpaxelXY(cube, plateifu, x, y):
     return spaxel
 
 
-def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux'):
+def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
+                 xyorig='center'):
 
     from marvin.api.api import Interaction
 
     # Parse the variables into right frame
 
-    if mode == 'pix':
-        path = 'x={0}/y={1}/ext={2}'.format(coord1, coord2, ext)
-    else:
-        path = 'ra={0}/dec={1}/ext={2}'.format(coord1, coord2, ext)
+    path = '{0}={1}/{2}={3}/ext={4}/xyorig={5}'.format(
+        'x' if mode == 'pix' else 'ra', coord1,
+        'y' if mode == 'pix' else 'dec', coord2, ext, xyorig)
 
     routeparams = {'name': mangaid, 'path': path}
 

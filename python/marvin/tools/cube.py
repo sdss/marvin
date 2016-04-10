@@ -39,7 +39,13 @@ class Cube(MarvinToolsClass):
         else:
             # Placeholder for potentially request something from the DB to
             # initialise the cube.
-            raise MarvinError("Should remotely grab the cube to initialize, but I won't")
+            # raise MarvinError('Should remotely grab the cube to initialize, '
+            #                   'but I won't')
+
+            # TBD: For now we just pass. In the future, it would be good to
+            # run a check with the API that the input parameters correspond to
+            # a cube.
+            pass
 
     def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None,
                     xyorig='center'):
@@ -91,7 +97,7 @@ class Cube(MarvinToolsClass):
             inputMode = 'pix'
             x = np.atleast_1d(x)
             y = np.atleast_1d(y)
-            coords = np.array([x, y]).T
+            coords = np.array([x, y], np.float).T
 
         elif ra is not None or dec is not None:
             assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
@@ -100,7 +106,7 @@ class Cube(MarvinToolsClass):
             inputMode = 'sky'
             ra = np.atleast_1d(ra)
             dec = np.atleast_1d(dec)
-            coords = np.array([ra, dec]).T
+            coords = np.array([ra, dec], np.float).T
 
         else:
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
@@ -178,7 +184,8 @@ class Cube(MarvinToolsClass):
             data = []
             for ii in range(coords.shape[0]):
                 spaxel = getSpaxelAPI(coords[ii][0], coords[ii][1],
-                                      self.mangaid, mode=inputMode, ext=ext)
+                                      self.mangaid, mode=inputMode, ext=ext,
+                                      xyorig=xyorig)
                 data.append(spaxel)
 
             data = np.array(data)
