@@ -56,33 +56,31 @@ class Cube(MarvinToolsClass):
         spectrum to return can be input as `x, y` pixels relative to `xyorig`
         in the cube, or as `ra, dec` celestial coordinates.
 
-        Parameters
-        ----------
-        x, y : int or Numpy array
-            The spaxel coordinates relative to `origin`.
-            If x is an array of coordinates, the size of x must much that of y.
+        Parameters:
+            x,y (int or array):
+                The spaxel coordinates relative to `xyorig`. If `x` is an array
+                of coordinates, the size of `x` must much that of `y`.
 
-        ra, dec : float or Numpy array.
-            The coordinates of the spaxel to return. The closest spaxel to
-            those coordinates will be returned. If ra is an array of
-            coordinates, the size of ra must much that of dec.
+            ra,dec (float or array):
+                The coordinates of the spaxel to return. The closest spaxel to
+                those coordinates will be returned. If `ra` is an array of
+                coordinates, the size of `ra` must much that of `dec`.
 
-        ext : str
-            The extension of the cube to use, either `'flux'`, `'ivar'`, or
-            `'mask'`. Defaults to `'flux'`.
+            ext ({'flux', 'ivar', 'flux'}):
+                The extension of the cube to use. Defaults to `'flux'`.
 
-        xyorig : str
-            The reference point from which `x` and `y` are measured. Valid
-            values are `'center'`, for the centre of the spatial dimensions of
-            the cube, or `'lower'` for the lower-left corner. This keyword is
-            ignored if `ra` and `dec` are defined.
+            xyorig ({'center', 'lower'}):
+                The reference point from which `x` and `y` are measured.
+                Valid values are `'center'` (default), for the centre of the
+                spatial dimensions of the cube, or `'lower'` for the lower-left
+                corner. This keyword is ignored if `ra` and `dec` are defined.
 
-        Returns
-        -------
-        result : np.array
-            A Numpy array with the spectrum for the input coordinates. If the
-            input coordinates are an array of N positions, the returned array
-            will have shape (N, M) where M is the number of spectral elements.
+        Returns:
+            spectra (Numpy array):
+                A Numpy array with the spectrum for the input coordinates.
+                If the input coordinates are an array of N positions, the
+                returned array will have shape (N, M) where M is the number of
+                spectral elements.
 
         """
 
