@@ -3,6 +3,7 @@ bin/profile_marvin -text
 bin/run_marvin -text
 docs/Mode_Decision_Tree.graffle -text
 docs/Mode_Decision_Tree.pdf -text
+docs/Mode_Decision_Tree.png -text
 docs/sphinx/Makefile -text
 docs/sphinx/_static/logo5_lores.jpg -text
 docs/sphinx/_static/marvin_favicon.ico -text
