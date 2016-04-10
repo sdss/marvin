@@ -14,3 +14,5 @@ python/marvin/web/__pycache__
 python/marvin/web/controllers/__pycache__
 python/marvin/web/static/__pycache__
 python/marvin/web/templates/__pycache__
+
+docs/sphinx/.doctrees/*
