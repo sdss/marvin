@@ -153,30 +153,28 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     Uses either the DB or the drpall file to determine the plate-ifu for
     a mangaid. If more than one plate-ifu are available for a certain ifu,
-    and `mode='drpall'`, the one with the higher SN2 (calculated as the sum of
-    redSN2 and blueSN2) will be used. If `mode='db'`, the most recent one will
-    be used.
+    and ``mode='drpall'``, the one with the higher SN2 (calculated as the sum
+    of redSN2 and blueSN2) will be used. If ``mode='db'``, the most recent one
+    will be used.
 
-    Parameters
-    ----------
-    mangaid : str
-        The mangaid for which the plate-ifu will be returned.
-    mode : str
-        Either `'auto'`, `'drpall'`, `'db'`, or `'remote'`. If `'drpall'` or
-        `'db'`, the  drpall file or the local database, respectively, will be
-        used. If `'remote'`, a request to the API will be issued. If `'auto'`,
-        the local modes will be tried before the remote mode.
-    drpall : str or None
-        The path to the drpall file to use. If None, the file in
-        `config.drpall` will be used.
-    drpver : str or None
-        The DRP version to use. If None, the one in `config.drpver` will be
-        used. If `drpall` is defined, this value is ignored.
+    Parameters:
+        mangaid (str):
+            The mangaid for which the plate-ifu will be returned.
+        mode ({'auto', 'drpall', 'db', 'remote'}):
+            If `'drpall'` or ``'db'``, the  drpall file or the local database,
+            respectively, will be used. If ``'remote'``, a request to the API
+            will be issued. If ``'auto'``, the local modes will be tried before
+            the remote mode.
+        drpall (str or None):
+            The path to the drpall file to use. If None, the file in
+            ``config.drpall`` will be used.
+        drpver (str or None):
+            The DRP version to use. If None, the one in ``config.drpver`` will
+            be used. If ``drpall`` is defined, this value is ignored.
 
-    Returns
-    -------
-    plateifu : str
-        The plate-ifu string for the input `mangaid`.
+    Returns:
+        plateifu (str):
+            The plate-ifu string for the input ``mangaid``.
 
     """
 
@@ -207,7 +205,8 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
         if len(plateifus) > 1:
             warnings.warn('more than one plate-ifu found for mangaid={0}. '
-                          'Using the one with the highest SN2.'.format(mangaid), MarvinUserWarning)
+                          'Using the one with the highest SN2.'.format(mangaid),
+                          MarvinUserWarning)
             plateifus = plateifus[
                 [np.argmax(plateifus['bluesn2'] + plateifus['redsn2'])]]
 
@@ -232,8 +231,11 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
         if len(cubes) == 0:
             raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
         elif len(cubes) > 1:
-            warnings.warn('more than one plate-ifu found for mangaid={0}. Using a the one with the higest SN2'.format(mangaid), MarvinUserWarning)
-            total_sn2 = [float(cube.header['BLUESN2'])+float(cube.header['REDSN2']) for cube in cubes]
+            warnings.warn('more than one plate-ifu found for mangaid={0}. '
+                          'Using a the one with the higest SN2'.format(mangaid),
+                          MarvinUserWarning)
+            total_sn2 = [float(cube.header['BLUESN2']) + float(cube.header['REDSN2'])
+                         for cube in cubes]
             cube = cubes[np.argmax(total_sn2)]
         else:
             cube = cubes[0]
