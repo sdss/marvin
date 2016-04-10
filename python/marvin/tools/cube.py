@@ -8,6 +8,33 @@ from marvin.utils.general import convertCoords, getSpaxelXY, getSpaxelAPI
 
 
 class Cube(MarvinToolsClass):
+    """A class to interface with MaNGA DRP data cubes.
+
+    This class represents a fully reduced DRP data cube, initialised either
+    from a file, a database, or remotely via the Marvin API.
+
+    Parameters:
+        filename (str):
+            The path of the file containing the data cube to load.
+        mangaid (str):
+            The mangaid of the data cube to load.
+        plateifu (str):
+            The plate-ifu of the data cube to load (either ``mangaid`` or
+            ``plateifu`` can be used, but not both).
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`.
+        drpall (str):
+            The path to the drpall file to use. Defaults to
+            ``marvin.config.drpall``.
+        drpver (str):
+            The DRP version to use. Defaults to ``marvin.config.drpver``.
+
+    Return:
+        cube:
+            An object representing the data cube.
+
+    """
 
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
@@ -52,28 +79,30 @@ class Cube(MarvinToolsClass):
         """Returns the appropriate spectrum for a certain spaxel in the cube.
 
         The type of the spectrum returned depends on the `ext` keyword, and
-        may be either `'flux'`, `'ivar'`, or `'mask'`. The coordinates of the
-        spectrum to return can be input as `x, y` pixels relative to `xyorig`
-        in the cube, or as `ra, dec` celestial coordinates.
+        may be either ``'flux'``, `'ivar'`, or ``'mask'``. The coordinates of
+        the spectrum to return can be input as ``x, y`` pixels relative to
+        ``xyorig`` in the cube, or as ``ra, dec`` celestial coordinates.
 
         Parameters:
             x,y (int or array):
-                The spaxel coordinates relative to `xyorig`. If `x` is an array
-                of coordinates, the size of `x` must much that of `y`.
+                The spaxel coordinates relative to ``xyorig``. If ``x`` is an
+                array of coordinates, the size of ``x`` must much that of
+                ``y``.
 
             ra,dec (float or array):
                 The coordinates of the spaxel to return. The closest spaxel to
-                those coordinates will be returned. If `ra` is an array of
-                coordinates, the size of `ra` must much that of `dec`.
+                those coordinates will be returned. If ``ra`` is an array of
+                coordinates, the size of ``ra`` must much that of ``dec``.
 
             ext ({'flux', 'ivar', 'flux'}):
-                The extension of the cube to use. Defaults to `'flux'`.
+                The extension of the cube to use. Defaults to ``'flux'``.
 
             xyorig ({'center', 'lower'}):
-                The reference point from which `x` and `y` are measured.
-                Valid values are `'center'` (default), for the centre of the
-                spatial dimensions of the cube, or `'lower'` for the lower-left
-                corner. This keyword is ignored if `ra` and `dec` are defined.
+                The reference point from which ``x`` and ``y`` are measured.
+                Valid values are ``'center'`` (default), for the centre of the
+                spatial dimensions of the cube, or ``'lower'`` for the
+                lower-left corner. This keyword is ignored if ``ra`` and
+                ``dec`` are defined.
 
         Returns:
             spectra (Numpy array):
