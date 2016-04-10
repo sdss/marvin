@@ -35,7 +35,7 @@ def isModel(model):
 def getModels(module):
     """Returns a list with all the ModelClasses for a module.
 
-    E.g., for `datadb` it returns PipelineCompletionStatus, PipelineInfo,
+    E.g., for ``datadb`` it returns PipelineCompletionStatus, PipelineInfo,
     IFUDesign, Cube, Sample, etc.
 
     """
@@ -54,41 +54,38 @@ def getModels(module):
 
 
 class ModelGraph(object):
+    """Creates a `networkx` graph between the model classes.
 
-    def __init__(self, modelSchemas):
-        """Creates a `networkx` graph between the model classes.
+    This class creates a graph in which each table in the input
+    ``modelSchemas`` is a node, and the foreign keys relating them act as
+    edges (links). The class includes some convenience methods to find the
+    shortest path between two or more tables/nodes.
 
-        This class creates a graph in which each table in the input
-        `modelSchemas` is a node, and the foreign keys relating them act as
-        edges (links). The class includes some convenience methods to find the
-        shortest path between two or more tables/nodes.
+    The main purpose of the class is to help finding the necessary tables
+    to join for a SQLalchemy query to work. For instance, one may want
+    to perform a query such as ``'ifu.nfiber == 127 and nsa.nsa_z > 0.1'``.
+    From that query only two model classes are retrieved:
+    ``mangadatadb.IFUDesign`` and ``mangasampledb.Nsa``, which don't have a
+    direct relationship. However, it is possible to perform this query if
+    we add the following models to the join: ``mangadatadb.Cube``,
+    ``mangasampledb.Target``. Creating a graph with all the nodes and
+    relationships in the database makes finding the shortest path between
+    two tables trivial.
 
-        The main purpose of the class is to help finding the necessary tables
-        to join for a SQLalchemy query to work. For instance, one may want
-        to perform a query such as `'ifu.nfiber == 127 and nsa.nsa_z > 0.1'`.
-        From that query only two model classes are retrieved:
-        `mangadatadb.IFUDesign` and `mangasampledb.Nsa`, which don't have a
-        direct relationship. However, it is possible to perform this query if
-        we add the following models to the join: `mangadatadb.Cube`,
-        `mangasampledb.Target`. Creating a graph with all the nodes and
-        relationships in the database makes finding the shortest path between
-        two tables trivial.
-
-        Parameters
-        ----------
-        modelSchemas : module or list of modules
-            A module or list of modules containing model classes. Each model
-            class will be considered a node in the graph, and their
+    Parameters:
+        modelSchemas (module or list of modules):
+            A module or list of modules containing model classes.
+            Each model class will be considered a node in the graph, and their
             relationships will define the edges between nodes.
 
-        Example
-        -------
-        An example of use ::
-          >> graph = ModelGraph([datadb, sampledb])
-          >> graph.join_models([IFUDesign, Nsa])
-          >> [IFUDesign, Cube, Target, Nsa]
+    Example:
+      >>> graph = ModelGraph([datadb, sampledb])
+      >>> graph.join_models([IFUDesign, Nsa])
+          [IFUDesign, Cube, Target, Nsa]
 
-        """
+    """
+
+    def __init__(self, modelSchemas):
 
         self.schemas = np.atleast_1d(modelSchemas)
         self.models = {}
@@ -160,34 +157,34 @@ class ModelGraph(object):
     def getJoins(self, models, format_out='tables', nexus=None):
         """Returns a list all model classes needed to perform a join.
 
-        Given a list of `models`, finds the shortest join paths between any two
-        elements in the list. Returns a list of all the tables or models that
-        need to be joined to perform a query on `models`.
+        Given a list of ``models``, finds the shortest join paths between any
+        two elements in the list. Returns a list of all the tables or models
+        that need to be joined to perform a query on ``models``.
 
         Parameters
         ----------
         models : list of model classes or tablenames
             A list of the tables or model classes to join. If tablenames,
-            the full path, `schema.table` must be provided. The format of the
+            the full path, ``schema.table`` must be provided. The format of the
             input is determined automatically from the type of the first
             element.
         format_out : string
-            Defines the type of elements in the returned list. If `'models'`,
-            the returned elements will be model classes, if `'tables'` they
+            Defines the type of elements in the returned list. If ``'models'``,
+            the returned elements will be model classes, if ``'tables'`` they
             will be the corresponding table paths (schema.table).
         nexus : string, model class, or None
             If None, the method will find the paths between each combination of
-            two elements in the input `model` list. If a table is provided
+            two elements in the input ``model`` list. If a table is provided
             (either as a table path or as a model class), the returned list
             will be the shorted path between `nexus` and each on of the tables
-            in `models`. The `nexus` table won't be included in the output.
+            in ``models``. The ``nexus`` table won't be included in the output.
 
         Returns
         -------
         join_list : list
             A list of all the model classes or tablenames (depending on the
-            value of `format_out`) needed to connect all the elements in
-            `models`. The original elements in `models` are also included.
+            value of ``format_out``) needed to connect all the elements in
+            ``models``. The original elements in `models` are also included.
 
         """
 
