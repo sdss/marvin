@@ -33,15 +33,8 @@ class TestModelGraph(MarvinTest):
     def testInitialitation(self):
         """Basic initialisation test."""
 
-        # Initialises ModelGraph without arguments.
-        modelGraphData = ModelGraph()
-        self.assertGreater(len(modelGraphData.nodes), 0)
-        self.assertGreater(len(modelGraphData.edges), 0)
-
         # Initialises ModelGraph with datadb and sampledb
         modelGraphAll = ModelGraph([marvindb.datadb, marvindb.sampledb])
-        self.assertGreater(len(modelGraphAll.nodes), len(modelGraphData.nodes))
-        self.assertGreater(len(modelGraphAll.edges), len(modelGraphData.edges))
 
         testTables = ['mangasampledb.manga_target', 'mangasampledb.character',
                       'mangadatadb.cube', 'mangadatadb.fibers']
