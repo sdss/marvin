@@ -43,38 +43,38 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
     Converts input positions in x, y or RA, Dec coordinates to array indices
     (in Numpy style) or spaxel extraction. In case of pixel coordinates, the
     origin of reference (either the center of the cube or the lower left
-    corner) can be specified via `xyorig`.
+    corner) can be specified via ``xyorig``.
 
-    If `shape` is defined (mandatory for `mode='pix'`, optional for
-    `mode='sky'`) and one or more of the resulting indices are outside the
+    If ``shape`` is defined (mandatory for ``mode='pix'``, optional for
+    ``mode='sky'``) and one or more of the resulting indices are outside the
     size of the input shape, an error is raised.
 
     This functions is mostly intended for internal use.
 
-    Parameters
-    ----------
-    coords : `np.array`
-        The input coordinates, as an array of shape Nx2.
-    mode : str
-        The type of input coordinates, either `'sky'` for celestial coordinates
-        (FK5), or `'pix'` for pixel coordinates.
-    wcs : None or `astropy.wcs.WCS` object
-        If `mode='sky'`, the WCS solution from which the cube coordinates can
-        be derived.
-    xyorig : str
-        If `mode='pix'`, the reference point from which the coordinates are
-        measured. Valid values are `'center'`, for the centre of the spatial
-        dimensions of the cube, or `'lower'` for the lower-left corner.
-    shape : None or `np.array`
-        If `mode='pix'`, the shape of the spatial dimensions of the cube,
-        so that the central position can be calculated.
+    Parameters:
+        coords (array):
+            The input coordinates, as an array of shape Nx2.
+        mode ({'sky', 'pix'}:
+            The type of input coordinates, either `'sky'` for celestial
+            coordinates (in the format defined in the WCS header information),
+            or `'pix'` for pixel coordinates.
+        wcs (None or ``astropy.wcs.WCS`` object):
+            If ``mode='sky'``, the WCS solution from which the cube coordinates
+            can be derived.
+        xyorig (str):
+            If ``mode='pix'``, the reference point from which the coordinates
+            are measured. Valid values are ``'center'``, for the centre of the
+            spatial dimensions of the cube, or ``'lower'`` for the lower-left
+            corner.
+        shape (None or array):
+            If ``mode='pix'``, the shape of the spatial dimensions of the cube,
+            so that the central position can be calculated.
 
-    Returns
-    -------
-    result : `np.array`
-        An array with the same shape as `coords`, containing the cube index
-        positions for the input coordinates, in Numpy style (i.e., the first
-        element being the row and the second the column).
+    Returns:
+        result (Numpy array):
+            An array with the same shape as ``coords``, containing the cube
+            index positions for the input coordinates, in Numpy style (i.e.,
+            the first element being the row and the second the column).
 
     """
 
@@ -430,6 +430,24 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
 
 
 def getSpaxelXY(cube, plateifu, x, y):
+    """Gets and spaxel from a cube in the DB.
+
+    This function is mostly intended for internal use.
+
+    Parameters:
+        cube (SQLAlchemy object):
+            The SQLAlchemy object representing the cube from which to extract
+            the spaxel.
+        plateifu (str):
+            The corresponding plateifu of ``cube``.
+        x,y (int):
+            The coordinates of the spaxel in the database.
+
+    Returns:
+        spaxel (SQLAlchemy object):
+            The SQLAlchemy spaxel with coordinates ``(x, y)``.
+
+    """
 
     import sqlalchemy
 
@@ -452,6 +470,33 @@ def getSpaxelXY(cube, plateifu, x, y):
 
 def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
                  xyorig='center'):
+    """Gets and spaxel from a cube using the API.
+
+    Parameters:
+        coord1,coord2 (int):
+            The coordinates (either ra/dec or x/y) of the spaxel to
+            retrieve.
+        mangaid (str):
+            The mangaid of the cube to use.
+        mode ({'pix', 'sky'}):
+            The coordinate mode to use, either ``'pix'`` (default) for x/y
+            coordinates with respect to ``xyorig``, or ``'sky'`` to use
+            celestial coordinates ra/dec.
+        ext ({'flux', 'ivar', 'mask'}):
+            The extension of the spaxel to retrieve.
+        xyorig (str):
+            If ``mode='pix'``, the reference point from which the coordinates
+            are measured. Valid values are ``'center'``, for the centre of the
+            spatial dimensions of the cube, or ``'lower'`` for the lower-left
+            corner.
+
+
+    Returns:
+        spaxel (array):
+            The spaxel with coordinates ``(coord1, coord2)`` in the cube
+            defined by ``mangaid``, extracted from the extension ``ext``.
+
+    """
 
     from marvin.api.api import Interaction
 
