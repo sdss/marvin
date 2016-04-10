@@ -209,9 +209,12 @@ class Cube(MarvinToolsClass):
         else:
             return None
 
-    flux = property(lambda self: self._getExtensionData('FLUX'))
-    ivar = property(lambda self: self._getExtensionData('IVAR'))
-    mask = property(lambda self: self._getExtensionData('MASK'))
+    flux = property(lambda self: self._getExtensionData('FLUX'),
+                    doc='Gets the `FLUX` data extension.')
+    ivar = property(lambda self: self._getExtensionData('IVAR'),
+                    doc='Gets the `IVAR` data extension.')
+    mask = property(lambda self: self._getExtensionData('MASK'),
+                    doc='Gets the `MASK` data extension.')
 
     def getWavelength(self):
         ''' Retrieve the wavelength array for the Cube '''
