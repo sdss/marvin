@@ -7,6 +7,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.core import MarvinError
 from marvin import config, marvindb
 from marvin.tools.tests import MarvinTest, skipIfNoDB
+from numpy.testing import assert_allclose
 
 
 class TestCubeBase(MarvinTest):
@@ -49,7 +50,7 @@ class TestCube(TestCubeBase):
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
         with self.assertRaises(AssertionError) as cm:
-            cube = Cube()
+            Cube()
         self.assertIn('Enter filename, plateifu, or mangaid!', str(cm.exception))
 
     def test_cube_load_from_local_file_by_filename_success(self):
@@ -60,14 +61,11 @@ class TestCube(TestCubeBase):
     def test_cube_load_from_local_file_by_filename_fail(self):
         self.filename = 'not_a_filename.fits'
         self.assertRaises(MarvinError, lambda: Cube(filename=self.filename))
-        # errMsg = '{0} does not exist. Please provide full file path.'.format(self.filename)
-        # with self.assertRaises(FileNotFoundError) as cm:
-        #     Cube(filename=self.filename)
-        # self.assertIn(errMsg, cm.exception.args)
 
-    # Tests for Cube Load by Database
     @skipIfNoDB
     def test_cube_load_from_local_database_success(self):
+        """Tests for Cube Load by Database."""
+
         cube = Cube(mangaid=self.mangaid)
         self.assertIsNotNone(cube)
         self.assertEqual(self.mangaid, cube.mangaid)
@@ -98,20 +96,24 @@ class TestCube(TestCubeBase):
     @skipIfNoDB
     def test_cube_load_from_local_database_noresultsfound(self):
         params = {'plateifu': '8485-0923'}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(params['plateifu'])
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
+            params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_otherexception(self):
         params = {'plateifu': '84.85-1901'}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(params['plateifu'])
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
+            params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_multipleresultsfound(self):
         params = {'plateifu': self.plateifu}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(params['plateifu'])
-        newrow = {'plate': '8485', 'mangaid': self.mangaid, 'ifudesign_pk': 12, 'pipeline_info_pk': 21}
+        errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(
+            params['plateifu'])
+        newrow = {'plate': '8485', 'mangaid': self.mangaid,
+                  'ifudesign_pk': 12, 'pipeline_info_pk': 21}
         self._addToDB(marvindb.datadb.Cube, newrow)
         self._load_from_db_fail(params, errMsg)
 
@@ -275,51 +277,125 @@ class TestGetSpectrum(TestCubeBase):
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpectrum(cube, 3000, expect, x=0, y=0, xyorig='lower')
 
-    # Tests for getSpectrum remotely
-    # def _getSpectrum_remote(self, **kwargs):
-    #     cube = Cube(mangaid=self.mangaid)
-    #     self._test_getSpectrum(cube, 10, expect, x=10, y=5)
-    #
-    # def test_getSpectrum_remote_x_y_success(self):
-    #     config.sasurl = 'http://5aafb8e.ngrok.com'
-    #     config.mode = 'remote'
-    #     expect = -0.10531016
-    #     cube = Cube(mangaid=self.mangaid)
-    #     self._test_getSpectrum(cube, 10, expect, x=10, y=5)
-    #
-    # def test_getSpectrum_remote_ra_dec_success(self):
-    #     config.sasurl = 'http://5aafb8e.ngrok.com'
-    #     config.mode = 'remote'
-    #     expect = 0.017929086
-    #     cube = Cube(mangaid=self.mangaid)
-    #     self._test_getSpectrum(cube, 3000, expect, ra=232.546383, dec=48.6883954)
-    #
-    # def _getSpectrum_remote_fail(self, ra, sdec, errMsg1, errMsg2):
-    #     cube = Cube(mangaid=self.mangaid)
-    #     with self.assertRaises(MarvinError) as cm:
-    #         flux = cube.getSpectrum(ra=ra, dec=dec)
-    #     self.assertIn(errMsg1, str(cm.exception))
-    #     self.assertIn(errMsg2, str(cm.exception))
-    #
-    # def test_getSpectrum_remote_fail_nourlmap(self):
-    #     config.sasurl = 'http://5aafb8e.ngrok.com'
-    #     config.mode = 'remote'
-    #     self.assertIsNotNone(config.urlmap)
-    #     config.urlmap = None
-    #     self._getSpectrum_remote_fail(self.ra, self.dec, 'No URL Map found', 'Cannot make remote call')
-    #
-    # def test_getSpectrum_remote_fail_badresponse(self):
-    #     config.sasurl = 'http://wrong.url.com'
-    #     config.mode = 'remote'
-    #     self.assertIsNotNone(config.urlmap)
-    #     self._getSpectrum_remote_fail(self.ra, self.dec, 'Error retrieving response', 'Http status code 404')
-    #
-    # def test_getSpectrum_remote_fail_badpixcoords(self):
-    #     config.sasurl = 'http://5aafb8e.ngrok.com'
-    #     config.mode = 'remote'
-    #     self.assertIsNotNone(config.urlmap)
-    #     self._getSpectrum_remote_fail(232, 48, 'Could not retrieve spaxels remotely', 'some indices are out of limits.')
+    def _test_getSpectrum_remote(self, specIndex, expect, **kwargs):
+        """Tests for getSpectrum remotely."""
 
+        cube = Cube(mangaid=self.mangaid, mode='remote')
+        self._test_getSpectrum(cube, specIndex, expect, **kwargs)
+
+    def test_getSpectrum_remote_x_y_success(self):
+
+        expect = -0.10531016
+        self._test_getSpectrum_remote(10, expect, x=10, y=5)
+
+    def test_getSpectrum_remote_ra_dec_success(self):
+
+        expect = 0.62007582
+        self._test_getSpectrum_remote(3000, expect,
+                                      ra=232.544279, dec=48.6899232)
+
+    def _getSpectrum_remote_fail(self, ra, dec, errMsg1, errMsg2):
+
+        cube = Cube(mangaid=self.mangaid, mode='remote')
+
+        with self.assertRaises(MarvinError) as cm:
+            cube.getSpectrum(ra=ra, dec=dec)
+
+        self.assertIn(errMsg1, str(cm.exception))
+        self.assertIn(errMsg2, str(cm.exception))
+
+    def test_getSpectrum_remote_fail_nourlmap(self):
+
+        self.assertIsNotNone(config.urlmap)
+        config.urlmap = None
+        self._getSpectrum_remote_fail(self.ra, self.dec, 'No URL Map found',
+                                      'Cannot make remote call')
+
+    def test_getSpectrum_remote_fail_badresponse(self):
+
+        config.sasurl = 'http://wrong.url.com'
+        self.assertIsNotNone(config.urlmap)
+        self._getSpectrum_remote_fail(self.ra, self.dec,
+                                      'Error retrieving response',
+                                      'Http status code 404')
+
+    def test_getSpectrum_remote_fail_badpixcoords(self):
+
+        self.assertIsNotNone(config.urlmap)
+        self._getSpectrum_remote_fail(232, 48,
+                                      'Could not retrieve spaxels remotely',
+                                      'some indices are out of limits.')
+
+    def _test_getSpectrum_array(self, cube, nCoords, specIndex, expected,
+                                **kwargs):
+        """Tests getSpectrum with array coordinates."""
+
+        spectra = cube.getSpectrum(**kwargs)
+
+        self.assertEqual(spectra.shape[0], nCoords)
+        self.assertGreater(spectra.shape[1], 1000)
+
+        assert_allclose(spectra[:, specIndex], expected, rtol=1e-6)
+
+    def test_getSpectrum_file_flux_x_y_lower_array(self):
+
+        x = [10, 0]
+        y = [5, 0]
+        expected = [0.017929086, 0.0]
+
+        cube = self.cubeFromFile
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     x=x, y=y, xyorig='lower')
+
+    def test_getSpectrum_db_flux_x_y_lower_array(self):
+
+        x = [10, 0]
+        y = [5, 0]
+        expected = [0.017929086, 0.0]
+
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     x=x, y=y, xyorig='lower')
+
+    def test_getSpectrum_remote_flux_x_y_lower_array(self):
+
+        x = [10, 0]
+        y = [5, 0]
+        expected = [0.017929086, 0.0]
+
+        cube = Cube(mangaid=self.mangaid, mode='remote')
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     x=x, y=y, xyorig='lower')
+
+    def test_getSpectrum_file_flux_ra_dec_lower_array(self):
+
+        ra = [232.546173, 232.548277]
+        dec = [48.6885343, 48.6878398]
+        expected = [0.017929086, 0.0]
+
+        cube = self.cubeFromFile
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     ra=ra, dec=dec, xyorig='lower')
+
+    def test_getSpectrum_db_flux_ra_dec_lower_array(self):
+
+        ra = [232.546173, 232.548277]
+        dec = [48.6885343, 48.6878398]
+        expected = [0.017929086, 0.0]
+
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     ra=ra, dec=dec, xyorig='lower')
+
+    def test_getSpectrum_remote_flux_ra_dec_lower_array(self):
+
+        ra = [232.546173, 232.548277]
+        dec = [48.6885343, 48.6878398]
+        expected = [0.017929086, 0.0]
+
+        cube = Cube(mangaid=self.mangaid, mode='remote')
+        self._test_getSpectrum_array(cube, 2, 3000, expected,
+                                     ra=ra, dec=dec, xyorig='lower')
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

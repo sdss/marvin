@@ -60,7 +60,10 @@ class CubeView(BaseView):
     # @route('/<name>/spectra/', defaults={'path': ''}, methods=['GET', 'POST'], endpoint='allspectra')
     @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
     @parseRoutePath
-    def getSpectra(self, name=None, x=None, y=None, ra=None, dec=None, ext=None):
+    def getSpectra(self, **kwargs):
+
+        name = kwargs.pop('name')
+
         # Add ability to grab spectra from fits files
         cube, res = _getCube(name)
         self.update_results(res)
@@ -69,8 +72,8 @@ class CubeView(BaseView):
             return json.dumps(self.results)
 
         try:
-            spectrum = cube.getSpectrum(x=x, y=y, ra=ra, dec=dec, ext=ext)
-            self.results['data'] = spectrum
+            spectrum = cube.getSpectrum(**kwargs)
+            self.results['data'] = spectrum.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1
