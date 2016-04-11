@@ -43,6 +43,9 @@ def initLog():
     else:
         logFilePath = os.path.realpath(defaultLogFilePath)
 
+    # Add filename
+    logFilePath = os.path.join(logFilePath, 'marvin.log')
+
     logging.setLoggerClass(MarvinLogger)
     log = logging.getLogger('Marvin')
     log._set_defaults(
