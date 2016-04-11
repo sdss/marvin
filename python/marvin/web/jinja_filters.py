@@ -18,3 +18,10 @@ This file contains all custom Jinja2 filters for Marvin web
 '''
 
 
+def filtergaltype(value):
+    ''' Parse plateifu or mangaid into better form '''
+    if value == 'plateifu':
+        return 'Plate-IFU'
+    elif value == 'mangaid':
+        return 'MaNGA-ID'
+

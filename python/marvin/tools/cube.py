@@ -152,8 +152,7 @@ class Cube(MarvinToolsClass):
         assert isExtString
 
         ext = ext.lower()
-        assert ext in ['flux', 'ivar', 'mask'], \
-            'ext needs to be either \'flux\', \'ivar\', or \'mask\''
+        assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
 
         if self.mode == 'local':
 
@@ -168,9 +167,7 @@ class Cube(MarvinToolsClass):
 
                 ww = WCS(cubeExt.header) if inputMode == 'sky' else None
 
-                iCube, jCube = zip(convertCoords(
-                    coords, wcs=ww, shape=cubeShape, mode=inputMode,
-                    xyorig=xyorig).T)
+                iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode, xyorig=xyorig).T)
 
                 data = cubeExt.data[:, iCube[0], jCube[0]].T
 
@@ -187,15 +184,11 @@ class Cube(MarvinToolsClass):
                 else:
                     ww = None
 
-                iCube, jCube = zip(convertCoords(coords, wcs=ww,
-                                                 shape=cubeShape,
-                                                 mode=inputMode,
-                                                 xyorig=xyorig).T)
+                iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode, xyorig=xyorig).T)
 
                 data = []
                 for ii in range(len(iCube[0])):
-                    spaxel = getSpaxelXY(self._cube, self.plateifu,
-                                         x=jCube[0][ii], y=iCube[0][ii])
+                    spaxel = getSpaxelXY(self._cube, self.plateifu, x=jCube[0][ii], y=iCube[0][ii])
                     data.append(spaxel.__getattribute__(ext))
 
                 data = np.array(data)
@@ -210,9 +203,7 @@ class Cube(MarvinToolsClass):
 
             data = []
             for ii in range(coords.shape[0]):
-                spaxel = getSpaxelAPI(coords[ii][0], coords[ii][1],
-                                      self.mangaid, mode=inputMode, ext=ext,
-                                      xyorig=xyorig)
+                spaxel = getSpaxelAPI(coords[ii][0], coords[ii][1], self.mangaid, mode=inputMode, ext=ext, xyorig=xyorig)
                 data.append(spaxel)
 
             data = np.array(data)
@@ -238,12 +229,9 @@ class Cube(MarvinToolsClass):
         else:
             return None
 
-    flux = property(lambda self: self._getExtensionData('FLUX'),
-                    doc='Gets the `FLUX` data extension.')
-    ivar = property(lambda self: self._getExtensionData('IVAR'),
-                    doc='Gets the `IVAR` data extension.')
-    mask = property(lambda self: self._getExtensionData('MASK'),
-                    doc='Gets the `MASK` data extension.')
+    flux = property(lambda self: self._getExtensionData('FLUX'), doc='Gets the `FLUX` data extension.')
+    ivar = property(lambda self: self._getExtensionData('IVAR'), doc='Gets the `IVAR` data extension.')
+    mask = property(lambda self: self._getExtensionData('MASK'), doc='Gets the `MASK` data extension.')
 
     def getWavelength(self):
         ''' Retrieve the wavelength array for the Cube '''
@@ -296,4 +284,5 @@ class Cube(MarvinToolsClass):
                 self.ra = self._cube.ra
                 self.dec = self._cube.dec
                 self.plate = self._cube.plate
+                self.mangaid = self._cube.mangaid
                 self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this for the future to sampledb

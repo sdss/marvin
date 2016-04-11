@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+    <link rel='preconnect stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.css'>
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+    <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
+    <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
+{% endblock jshead %}
+
+<!-- Single Galaxy Page -->
+{% block body %}
+
+<div class='well'>
+    <div class='row'>
+        <div class='col-md-12 galinfo' id='{{cube.plateifu}}'>
+            {% if not cube %}
+                <h4>{{error}}</h4>
+            {% else %}
+                <h4>{{idtype|filtergaltype}}: {{id}}</h4>
+                <h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plateifu, cube.plate}}</h5>
+
+                <div class='row'>
+                  <div class='col-md-12'>
+                    <h5 id='specmsg'>Here's a spectrum: {{specmsg}}</h5>
+                    <div id="mouse-position"></div>
+                    <div id='mouse-output'></div>
+                    <button class='btn btn-primary' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='Toggle Interaction Off'>Toggle Interaction On</button>
+                  </div>
+                </div>
+                <!-- static galaxy image -->
+                {# Initial Static Image Display #}
+                <div class='row' id='staticdiv'>
+                    <div class='col-md-3'>
+                        <img class='img-responsive' id='staticimage' src="{{image}}" alt="{{cube.plateifu}} Galaxy Image">
+                    </div>
+                </div>
+                <!-- dynamic image and spaxel -->
+                {# Dynamic Interaction #}
+                <div class='row' id='dynamicdiv'>
+                  <div class='col-md-3'>
+                    <div id='map' class='map' style='width:100%; height:400px;'></div>
+                  </div>
+                  <div class='col-md-9'>
+                    <div id='graphdiv' style="width:100%;"></div>
+                  </div>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script type="text/javascript" src="{{url_for('static',filename='js/galaxy.js')}}"></script>
+<script type='text/javascript'>
+    var galaxy = {};
+    $(function() {
+        galaxy = new Galaxy();
+        galaxy.print();
+
+        if (galaxy.specdiv !== undefined) {
+            var spaxel = {{spectra}};
+            galaxy.loadSpaxel(spaxel);
+        }
+
+        /*
+        $('#toggleinteract').on('click', function() {
+            if ($(this).hasClass('active')){
+                $('#toggleinteract').button('reset');
+                $('#dynamicdiv').hide();
+                $('#staticdiv').show();
+            } else {
+                $('#toggleinteract').button('complete');
+                $('#staticdiv').hide();
+                $('#dynamicdiv').show();
+            }
+        });*/
+    });
+</script>
+{% endblock code %}
