@@ -44,6 +44,8 @@
 	{% include 'footer.html' %}
 
 	<!-- Javascript Code Block -->
+	<script type="text/javascript" src="{{url_for('static',filename='js/utils.js')}}"></script>
+	<script type='text/javascript'>var utils = new marvin.Utils();</script>
 	{% block code %}{% endblock code %}
 	{{ JSGlue.include() }}
 </body>

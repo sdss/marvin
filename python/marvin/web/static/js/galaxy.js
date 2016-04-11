@@ -2,8 +2,12 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-10 11:42:17
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-11 10:12:24
+* @Last Modified time: 2016-04-11 16:04:40
 */
+
+//
+// Javascript Galaxy object handling JS things for a single galaxy
+//
 
 'use strict';
 
@@ -14,6 +18,7 @@ Galaxy = (function () {
 
     marvin.Galaxy = Galaxy;
 
+    // Constructor
     function Galaxy(plateifu) {
 
         // in case constructor called without new
@@ -27,26 +32,25 @@ Galaxy = (function () {
     }
 
     // initialize the object
-    Galaxy.prototype.init = function(plateifu) {
+    Galaxy.prototype.init = function init(plateifu) {
         this.setPlateIfu(plateifu);
         this.maindiv = $('#'+this.plateifu);
-        this.mapdiv = this.maindiv.find('#map')[0];
-        this.specdiv = this.maindiv.find('#graphdiv')[0];
-        this.specmsg = this.maindiv.find('#specmsg')[0];
+        this.mapdiv = this.maindiv.find('#map');
+        this.specdiv = this.maindiv.find('#graphdiv');
+        this.specmsg = this.maindiv.find('#specmsg');
         this.webspec = null;
-
-        //this.initOpenLayers();
-        this.initOpenLayers();
-
+        this.staticdiv = this.maindiv.find('#staticdiv');
+        this.dynamicdiv = this.maindiv.find('#dynamicdiv');
+        this.togglediv = $('#toggleinteract');
     };
 
     // test print
-    Galaxy.prototype.print = function() {
+    Galaxy.prototype.print = function print() {
         console.log('We are now printing galaxy', this.plateifu, this.plate, this.ifu);
     };
 
     // Determine and Set the plateifu from input
-    Galaxy.prototype.setPlateIfu = function(plateifu) {
+    Galaxy.prototype.setPlateIfu = function setPlateIfu(plateifu) {
         if (plateifu === undefined) {
             this.plateifu = $('.galinfo').attr('id');
         } else {
@@ -56,8 +60,8 @@ Galaxy = (function () {
     };
 
     // Initialize and Load a DyGraph spectrum
-    Galaxy.prototype.loadSpaxel = function(spaxel) {
-        this.webspec = new Dygraph(this.specdiv,
+    Galaxy.prototype.loadSpaxel = function loadSpaxel(spaxel) {
+        this.webspec = new Dygraph(this.specdiv[0],
                   spaxel,
                   {
                     labels: ['x','Flux'],
@@ -66,101 +70,69 @@ Galaxy = (function () {
     };
 
     // Update a DyGraph spectrum
-    Galaxy.prototype.updateSpaxel = function(spaxel, specmsg) {
+    Galaxy.prototype.updateSpaxel = function updateSpaxel(spaxel, specmsg) {
         var newmsg = "Here's a spectrum: "+specmsg;
+        this.specmsg.empty();
         this.specmsg.html(newmsg);
         this.webspec.updateOptions({'file': spaxel});
     };
 
     // Initialize OpenLayers Map
-    Galaxy.prototype.initOpenLayers = function() {
-      var mousePositionControl = new ol.control.MousePosition({
-        coordinateFormat: ol.coordinate.createStringXY(4),
-        projection: 'EPSG:4326',
-        // comment the following two lines to have the mouse position
-        // be placed within the map.
-        className: 'custom-mouse-position',
-        target: document.getElementById('mouse-position'),
-        undefinedHTML: '&nbsp;'
-      });
+    Galaxy.prototype.initOpenLayers = function initOpenLayers(image) {
+        this.image = image;
+        this.olmap = new OLMap(image);
+        // add click event handler on map to get spaxel
+        this.olmap.map.on('singleclick', this.getSpaxel, this);
+    };
 
-      var extent = [0, 0, 562, 562];
-      var projection = new ol.proj.Projection({
-        code: 'ifu',
-        units: 'pixels',
-        extent: extent
-      });
+    // Retrieves a new Spaxel from the server based on a given mouse position
+    Galaxy.prototype.getSpaxel = function getSpaxel(event) {
+        var map = event.map;
+        var mousecoords = event.coordinate;
+        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords'];
+        var form = utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords);
+        var _this = this;
 
-      var lastFeature;
-      var source = new ol.source.Vector({wrapX: false});
-
-      var vector = new ol.layer.Vector({
-        source: source,
-        style: new ol.style.Style({
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
-          }),
-          stroke: new ol.style.Stroke({
-            color: '#ffcc33',
-            width: 2
-          }),
-          image: new ol.style.Circle({
-            radius: 3,
-            fill: new ol.style.Fill({
-              color: '#ffcc33'
+        // send the form data
+        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
+            .done(function(data) {
+                $('#mouse-output').empty()
+                var myhtml = "<h5>My mouse coords "+mousecoords+", message: "+data.result.message+"</h5>"
+                $('#mouse-output').html(myhtml);
+                _this.updateSpaxel(data.result.spectra, data.result.specmsg);
             })
-          })
-        })
-      });
+            .fail(function(data) {
+                $('#mouse-output').empty()
+                var myhtml = "<h5>Error message: "+data.result.message+"</h5>"
+                $('#mouse-output').html(myhtml);
+            });
+    };
 
-      var map = new ol.Map({
-        controls: ol.control.defaults({
-          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-            collapsible: false
-          })
-        }).extend([mousePositionControl]),
-        layers: [
-          new ol.layer.Image({
-            source: new ol.source.ImageStatic({
-              url: 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/test_wcs2.png',
-              projection: projection,
-              imageExtent: extent
-            })
-          })
-        , vector],
-        target: 'map',
-        view: new ol.View({
-          projection: projection,
-          center: ol.extent.getCenter(extent),
-          zoom: 0,
-          maxZoom: 8,
-          maxResolution: 1.4
-        })
-      });
+    // Toggle the interactive OpenLayers map and Dygraph spectra
+    Galaxy.prototype.toggleInteract = function toggleInteract(spaxel, image) {
+        if (this.togglediv.hasClass('active')){
+            this.togglediv.button('reset');
+            this.dynamicdiv.hide();
+            this.staticdiv.show();
+        } else {
+            this.togglediv.button('complete');
+            this.staticdiv.hide();
+            this.dynamicdiv.show();
 
-      var draw;
-      function addInteraction() {
-        var value = 'Point';
-        var geometryFunction, maxPoints;
-        draw = new ol.interaction.Draw({
-          source: source,
-          type: /** @type {ol.geom.GeometryType} */ (value),
-          geometryFunction: geometryFunction,
-          maxPoints: maxPoints
-        });
+            // check for empty divs
+            var specempty = this.specdiv.is(':empty');
+            var mapempty = this.mapdiv.is(':empty');
+            // load the spaxel if the div is initially empty;
+            if (this.specdiv !== undefined && specempty) {
+                this.loadSpaxel(spaxel);
+            }
 
-        draw.on('drawend', function(e) {
-          if (lastFeature) {
-            source.removeFeature(lastFeature);
-          }
-          lastFeature = e.feature;
-        });
+            // load the map if div is empty
+            if (mapempty) {
+                this.initOpenLayers(image);
+            }
 
-        map.addInteraction(draw);
-      };
-
-      addInteraction();
-
+        }
     };
 
     return Galaxy;

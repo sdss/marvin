@@ -1,12 +1,8 @@
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask.ext.classy import FlaskView, route
-from marvin.tools.cube import Cube
 from marvin import config, marvindb
-from marvin.utils.general.general import convertIvarToErr, findClosestVector, convertImgCoords
-import numpy as np
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.base import processRequest
-from sqlalchemy import or_, and_
 from marvin.tools.query import Query, doQuery
 from marvin.tools.core import MarvinError
 from wtforms import SelectField, validators
@@ -18,32 +14,6 @@ opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
 ops = [(key, val) for key, val in opdict.items()]
 
 
-def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
-    ''' get and format a spectrum for the web '''
-    webspec = None
-    try:
-        if byradec:
-            spectrum = cube.getSpectrum(ra=x, dec=y, xyorig=xyorig)
-        else:
-            spectrum = cube.getSpectrum(x=x, y=y, xyorig=xyorig)
-    except Exception as e:
-        specmsg = 'Could not get spectrum: {0}'.format(e)
-    else:
-        # get error and wavelength
-        if byradec:
-            ivar = cube.getSpectrum(ra=x, dec=y, ext='ivar', xyorig=xyorig)
-        else:
-            ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
-        error = convertIvarToErr(ivar)
-        wave = cube.getWavelength()
-        # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum)]
-
-        specmsg = "for relative coords x = {0}, y={1}".format(x, y)
-
-    return webspec, specmsg
-
-
 class Marvin(FlaskView):
     route_base = '/'
 
@@ -53,20 +23,6 @@ class Marvin(FlaskView):
         index['intro'] = 'Welcome to Marvin'
         config.drpver = 'v1_5_1'
         mangaid = '1-209232'
-        try:
-            cube = Cube(mangaid=mangaid)
-        except MarvinError as e:
-            cube = None
-        index['cube'] = cube
-        index['location'] = cube._cube.location
-        index['mangaid'] = mangaid
-        index['plateifu'] = cube.plateifu
-        x = 1
-        y = 2
-        if cube:
-            webspec, specmsg = getWebSpectrum(cube, x, y)
-            index['spectra'] = webspec
-            index['specmsg'] = specmsg
 
         # general marvin form
         m = MarvinForm()
@@ -128,36 +84,6 @@ class Marvin(FlaskView):
 
         return render_template('test.html', **test)
 
-    @route('getspaxel', methods=['POST'], endpoint='getspaxel')
-    def getSpaxel(self):
-        f = processRequest(request=request)
-        print('req', request.form)
-        # for now, do this, but TODO - general processRequest to handle lists and not lists
-        try:
-            mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
-        except:
-            mousecoords = None
-        if mousecoords:
-            print('form', f, mousecoords)
-            arrshape = (34, 34)
-            pixshape = (562, 562)
-            if (mousecoords[0] < 0 or mousecoords[0] > 562) or (mousecoords[1] < 0 or mousecoords[1] > 562):
-                output = {'message': 'error: pixel coords outside range'}
-            else:
-                xyorig = 'relative'
-                arrcoords = findClosestVector(mousecoords, arr_shape=arrshape, pixel_shape=pixshape, xyorig=xyorig)
-                oldarr = arrcoords
-                infile = '/Users/Brian/Work/Manga/redux/v1_5_1/8485/stack/images/test_wcs2.png'
-                arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
-                print('arrcoords', oldarr, arrcoords)
-                cube = Cube(plateifu=f['plateifu'])
-                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], xyorig=xyorig, byradec=True)
-                print('specmsg', specmsg)
-                msg = 'gettin some spaxel with {0} array coords (x,y): {1} at RA/Dec {2}'.format(xyorig, oldarr, arrcoords)
-                output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec}
-        else:
-            output = {'message': 'error getting mouse coords'}
-        return jsonify(result=output)
 
 Marvin.register(index)
 
