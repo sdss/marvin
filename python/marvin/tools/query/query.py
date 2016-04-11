@@ -98,6 +98,7 @@ class Query(object):
         if self.mode is None:
             self.mode = config.mode
 
+        # TODO: This seems a bit too convoluted. Maybe we can simplify it.
         if self.mode == 'local':
             self._doLocal()
         if self.mode == 'remote':
