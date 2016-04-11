@@ -56,14 +56,10 @@
 
 <!-- JS Code -->
 {% block code %}
-<script type="text/javascript" src="{{url_for('static',filename='js/olmap.js')}}"></script>
-<script type="text/javascript" src="{{url_for('static',filename='js/galaxy.js')}}"></script>
 <script type='text/javascript'>
     var galaxy = {};
     $(function() {
         galaxy = new Galaxy();
-        galaxy.print();
-
         // toggle interaction on click
         var spaxel = {{spectra}};
         var galimage = {{image|tojson}};

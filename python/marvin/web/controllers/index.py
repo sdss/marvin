@@ -10,9 +10,6 @@ import json
 
 index = Blueprint("index_page", __name__)
 
-opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
-ops = [(key, val) for key, val in opdict.items()]
-
 
 class Marvin(FlaskView):
     route_base = '/'
