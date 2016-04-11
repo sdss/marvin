@@ -61,6 +61,8 @@ class Galaxy(FlaskView):
         ''' Do these things before a request to any route '''
         self.galaxy['error'] = None
         self.galaxy['cube'] = None
+        self.galaxy['image'] = ''
+        self.galaxy['spectra'] = 'null'
 
     def index(self):
         ''' Main galaxy page '''
