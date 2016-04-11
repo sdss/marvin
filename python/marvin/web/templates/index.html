@@ -1,8 +1,5 @@
 {% extends "layout.html" %}
 
-{% block head %}
-{% endblock head %}
-
 {% block body %}
 
 {% block code %}
@@ -74,6 +71,11 @@ $(function() {
 
 <script type='text/javascript'>
 $(function() {
+
+      var header = {'PC1_1': -2.47222222222e-05, 'CDELT1': 1.0, 'CDELT2': 1.0, 'CUNIT2': 'deg', 'height': 50.0, 'hghtpix': 562.0, 'CRVAL2': 48.690200933, 'LATPOLE': 48.6902009334, 'scale': 0.089, 'EQUINOX': 2000.0, 'CRPIX1': 281.0, 'CRPIX2': 281.0, 'CRVAL1': 232.544703894, 'PC2_2': 2.47222222222e-05, 'LONPOLE': 180.0, 'width': 50.0, 'CUNIT1': 'deg', 'ra': 232.544703894, 'CTYPE1': 'RA---TAN', 'WCSAXES': 2.0, 'wdthpix': 562.0, 'RADESYS': 'FK5', 'dec': 48.6902009334, 'opts': 'G', 'CTYPE2': 'DEC--TAN'};
+      var w = new wcs();
+      w.init(header);
+
       var mousePositionControl = new ol.control.MousePosition({
         coordinateFormat: ol.coordinate.createStringXY(4),
         projection: 'EPSG:4326',
@@ -171,6 +173,10 @@ $(function() {
         $.post(Flask.url_for('index_page.getspaxel'), mousepos,'json')
             .done(function(data){
               $('#mouse-output').empty()
+              x = Math.round(parseFloat(evnt.coordinate[0]));
+              y = Math.round(parseFloat(evnt.coordinate[1]));
+              console.log('mouse', evnt.coordinate, x, y, w.pix2sky(x,y));
+              console.log('other wcs', w.pix2sky(0,0), w.pix2sky(281.4,281.4), w.pix2sky(562,562), w.sky2pix(232.544703894, 48.6902009334));
               var myhtml = "<h5>My mouse coords "+evnt.coordinate+", message: "+data.result.message+"</h5>"
               $('#mouse-output').html(myhtml);
               $('#specmsg').empty();

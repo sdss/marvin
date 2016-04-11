@@ -10,7 +10,7 @@ import PIL
 
 # General utilities
 
-__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions',
+__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions', 'isPlateifuOrMangaid',
            'mangaid2plateifu', 'findClosestVector', 'getWCSFromPng', 'convertImgCoords',
            'getSpaxelXY', 'getSpaxelAPI']
 
@@ -429,6 +429,22 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
     return newcoords
 
 
+def isPlateifuOrMangaid(galid):
+    ''' Determines if a string input is a plateifu or manga-id '''
+
+    idtype = None
+    isvalid = '-' in galid
+
+    if isvalid:
+        galidsplit = galid.split('-')
+
+        if galidsplit[0] > '6500':
+            idtype = 'plateifu'
+        else:
+            idtype = 'mangaid'
+    return isvalid, idtype
+
+
 def getSpaxelXY(cube, plateifu, x, y):
     """Gets and spaxel from a cube in the DB.
 
@@ -454,22 +470,16 @@ def getSpaxelXY(cube, plateifu, x, y):
     mdb = marvin.marvindb
 
     try:
-        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(
-            cube=cube, x=x, y=y).one()
+        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=cube, x=x, y=y).one()
     except sqlalchemy.orm.exc.NoResultFound as e:
-        raise MarvinError(
-            'Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: '
-            'No Results Found: {3}'.format(plateifu, x, y, e))
+        raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(plateifu, x, y, e))
     except Exception as e:
-        raise MarvinError(
-            'Could not retrieve cube for plate-ifu {0} at position'
-            ' {1},{2}: Unknown exception: {3}'.format(plateifu, x, y, e))
+        raise MarvinError('Could not retrieve cube for plate-ifu {0} at position {1},{2}: Unknown exception: {3}'.format(plateifu, x, y, e))
 
     return spaxel
 
 
-def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
-                 xyorig='center'):
+def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center'):
     """Gets and spaxel from a cube using the API.
 
     Parameters:
@@ -490,7 +500,6 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
             spatial dimensions of the cube, or ``'lower'`` for the lower-left
             corner.
 
-
     Returns:
         spaxel (array):
             The spaxel with coordinates ``(coord1, coord2)`` in the cube
@@ -509,8 +518,7 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
     routeparams = {'name': mangaid, 'path': path}
 
     # Get the getSpectrum Route
-    url = marvin.config.urlmap['api']['getspectra']['url'].format(
-        **routeparams)
+    url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
 
     # Make the API call
     response = Interaction(url)
@@ -519,9 +527,7 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux',
         if response.results['status'] == 1:
             return response.getData()
         else:
-            raise MarvinError('Could not retrieve spaxels remotely: {0}'
-                              .format(response.results['error']))
+            raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
     else:
         raise MarvinError(
-            'Error retrieving response: Http status code {0}: {1}'
-            .format(response.status_code, response.results['message']))
+            'Error retrieving response: Http status code {0}: {1}'.format(response.status_code, response.results['message']))

@@ -247,8 +247,13 @@ python/marvin/web/__init__.py -text
 python/marvin/web/configuration/localhost.cfg -text
 python/marvin/web/configuration/utah.cfg -text
 python/marvin/web/controllers/__init__.py -text
+python/marvin/web/controllers/galaxy.py -text
 python/marvin/web/controllers/index.py -text
 python/marvin/web/jinja_filters.py -text
+python/marvin/web/static/js/galaxy.js -text
+python/marvin/web/templates/footer.html -text
+python/marvin/web/templates/galaxy.html -text
+python/marvin/web/templates/header.html -text
 python/marvin/web/templates/index.html -text
 python/marvin/web/templates/layout.html -text
 python/marvin/web/templates/test.html -text
