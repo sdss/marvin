@@ -1,7 +1,7 @@
 /__pycache__
 bin/__pycache__
 docs/sphinx/_build
-etc/__pycache__
+etc/node_modules
 python/__pycache__
 python/marvin/__pycache__
 python/marvin/api/__pycache__
