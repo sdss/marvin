@@ -213,8 +213,10 @@ docs/sphinx/source/marvin.web.controllers.rst -text
 docs/sphinx/source/marvin.web.jinja_filters.rst -text
 docs/sphinx/source/marvin.web.rst -text
 docs/sphinx/sphinx_warnings.out -text
+etc/Gruntfile.js -text
 etc/config.ini -text
 etc/marvin.module -text
+etc/package.json -text
 python/marvin/__init__.py -text
 python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
@@ -253,7 +255,9 @@ python/marvin/web/jinja_filters.py -text
 python/marvin/web/static/js/galaxy.js -text
 python/marvin/web/static/js/olmap.js -text
 python/marvin/web/static/js/utils.js -text
+python/marvin/web/static/marvin.css -text
 python/marvin/web/static/marvin.js -text
+python/marvin/web/static/marvin.min.css -text
 python/marvin/web/static/marvin.min.js -text
 python/marvin/web/templates/footer.html -text
 python/marvin/web/templates/galaxy.html -text
