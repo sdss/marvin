@@ -368,7 +368,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
     minind = np.unravel_index(prod.argmin(), arr_shape)
 
     # toggle relative array coordinates
-    if xyorig == 'relative':
+    if xyorig in ['relative', 'center']:
         minind = np.array(minind, dtype=int)
         xmin = minind[0] - xmid
         ymin = ymid - minind[1]

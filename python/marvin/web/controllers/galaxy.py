@@ -18,6 +18,7 @@ from marvin.api.base import processRequest
 from marvin.utils.general.general import convertIvarToErr, findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
 from marvin.tools.core import MarvinError
 from marvin.tools.cube import Cube
+import os
 
 galaxy = Blueprint("galaxy_page", __name__)
 
@@ -106,29 +107,22 @@ class Galaxy(FlaskView):
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         f = processRequest(request=request)
-        print('req', request.form)
         # for now, do this, but TODO - general processRequest to handle lists and not lists
         try:
             mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
         except:
             mousecoords = None
         if mousecoords:
-            print('form', f, mousecoords)
-            arrshape = (34, 34)
             pixshape = (int(f['imwidth']), int(f['imheight']))
             if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
                 output = {'message': 'error: pixel coords outside range'}
             else:
-                xyorig = 'relative'
-                arrcoords = findClosestVector(mousecoords, arr_shape=arrshape, pixel_shape=pixshape, xyorig=xyorig)
-                oldarr = arrcoords
-                infile = '/Users/Brian/Work/Manga/redux/v1_5_1/8485/stack/images/test_wcs2.png'
+                # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
+                infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
                 arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
-                print('arrcoords', oldarr, arrcoords)
                 cube = Cube(plateifu=f['plateifu'])
-                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], xyorig=xyorig, byradec=True)
-                print('specmsg', specmsg)
-                msg = 'gettin some spaxel with {0} array coords (x,y): {1} at RA/Dec {2}'.format(xyorig, oldarr, arrcoords)
+                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec}
         else:
             output = {'message': 'error getting mouse coords'}
