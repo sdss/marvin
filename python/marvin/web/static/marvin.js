@@ -1,64 +1,146 @@
 /*
 * @Author: Brian Cherinka
-* @Date:   2016-04-11 14:19:38
+* @Date:   2016-04-10 11:42:17
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-11 15:24:12
+* @Last Modified time: 2016-04-11 16:04:40
 */
+
+//
+// Javascript Galaxy object handling JS things for a single galaxy
+//
 
 'use strict';
 
-// Javascript code for general things
-
-var Utils,
+var Galaxy,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-Utils = (function() {
+Galaxy = (function () {
 
-    marvin.Utils = Utils;
+    marvin.Galaxy = Galaxy;
 
     // Constructor
-    function Utils() {
+    function Galaxy(plateifu) {
 
         // in case constructor called without new
-        if (false === (this instanceof Utils)) {
-            return new Utils();
+        if (false === (this instanceof Galaxy)) {
+            return new Galaxy();
         }
 
-        this.init();
+        this.init(plateifu);
 
-        // event handlers
-
+        // Event Handlers
     }
 
     // initialize the object
-    Utils.prototype.init = function init() {
-
+    Galaxy.prototype.init = function init(plateifu) {
+        this.setPlateIfu(plateifu);
+        this.maindiv = $('#'+this.plateifu);
+        this.mapdiv = this.maindiv.find('#map');
+        this.specdiv = this.maindiv.find('#graphdiv');
+        this.specmsg = this.maindiv.find('#specmsg');
+        this.webspec = null;
+        this.staticdiv = this.maindiv.find('#staticdiv');
+        this.dynamicdiv = this.maindiv.find('#dynamicdiv');
+        this.togglediv = $('#toggleinteract');
     };
 
-    // Build form
-    Utils.prototype.buildForm = function buildForm() {
-        var _len=arguments.length;
-        var args = new Array(_len); for(var $_i = 0; $_i < _len; ++$_i) {args[$_i] = arguments[$_i];}
-        var names = args[0];
-        var form = {};
-        $.each(args.slice(1),function(index,value) {
-            form[names[index]] = value;
-        });
-        return form;
-    }
-
-    // Return unique elements of an Array
-    Utils.prototype.unique = function unique(data) {
-        var result = [];
-        $.each(data, function(i, value) {
-            if ($.inArray(value, result) == -1) result.push(value);
-        });
-        return result;
+    // test print
+    Galaxy.prototype.print = function print() {
+        console.log('We are now printing galaxy', this.plateifu, this.plate, this.ifu);
     };
 
-    return Utils;
+    // Determine and Set the plateifu from input
+    Galaxy.prototype.setPlateIfu = function setPlateIfu(plateifu) {
+        if (plateifu === undefined) {
+            this.plateifu = $('.galinfo').attr('id');
+        } else {
+            this.plateifu = plateifu;
+        }
+        [this.plate, this.ifu] = this.plateifu.split('-');
+    };
+
+    // Initialize and Load a DyGraph spectrum
+    Galaxy.prototype.loadSpaxel = function loadSpaxel(spaxel) {
+        this.webspec = new Dygraph(this.specdiv[0],
+                  spaxel,
+                  {
+                    labels: ['x','Flux'],
+                    errorBars: true
+                  });
+    };
+
+    // Update a DyGraph spectrum
+    Galaxy.prototype.updateSpaxel = function updateSpaxel(spaxel, specmsg) {
+        var newmsg = "Here's a spectrum: "+specmsg;
+        this.specmsg.empty();
+        this.specmsg.html(newmsg);
+        this.webspec.updateOptions({'file': spaxel});
+    };
+
+    // Initialize OpenLayers Map
+    Galaxy.prototype.initOpenLayers = function initOpenLayers(image) {
+        this.image = image;
+        this.olmap = new OLMap(image);
+        // add click event handler on map to get spaxel
+        this.olmap.map.on('singleclick', this.getSpaxel, this);
+    };
+
+    // Retrieves a new Spaxel from the server based on a given mouse position
+    Galaxy.prototype.getSpaxel = function getSpaxel(event) {
+        var map = event.map;
+        var mousecoords = event.coordinate;
+        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords'];
+        var form = utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords);
+        var _this = this;
+
+        // send the form data
+        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
+            .done(function(data) {
+                $('#mouse-output').empty()
+                var myhtml = "<h5>My mouse coords "+mousecoords+", message: "+data.result.message+"</h5>"
+                $('#mouse-output').html(myhtml);
+                _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+            })
+            .fail(function(data) {
+                $('#mouse-output').empty()
+                var myhtml = "<h5>Error message: "+data.result.message+"</h5>"
+                $('#mouse-output').html(myhtml);
+            });
+    };
+
+    // Toggle the interactive OpenLayers map and Dygraph spectra
+    Galaxy.prototype.toggleInteract = function toggleInteract(spaxel, image) {
+        if (this.togglediv.hasClass('active')){
+            this.togglediv.button('reset');
+            this.dynamicdiv.hide();
+            this.staticdiv.show();
+        } else {
+            this.togglediv.button('complete');
+            this.staticdiv.hide();
+            this.dynamicdiv.show();
+
+            // check for empty divs
+            var specempty = this.specdiv.is(':empty');
+            var mapempty = this.mapdiv.is(':empty');
+            // load the spaxel if the div is initially empty;
+            if (this.specdiv !== undefined && specempty) {
+                this.loadSpaxel(spaxel);
+            }
+
+            // load the map if div is empty
+            if (mapempty) {
+                this.initOpenLayers(image);
+            }
+
+        }
+    };
+
+    return Galaxy;
+
 })();
-/*
+
+
+;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-11 10:38:25
 * @Last Modified by:   Brian
@@ -245,145 +327,63 @@ OLMap = (function () {
 })();
 
 
-/*
+;/*
 * @Author: Brian Cherinka
-* @Date:   2016-04-10 11:42:17
+* @Date:   2016-04-11 14:19:38
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-11 16:04:40
+* @Last Modified time: 2016-04-11 15:24:12
 */
-
-//
-// Javascript Galaxy object handling JS things for a single galaxy
-//
 
 'use strict';
 
-var Galaxy,
+// Javascript code for general things
+
+var Utils,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-Galaxy = (function () {
+Utils = (function() {
 
-    marvin.Galaxy = Galaxy;
+    marvin.Utils = Utils;
 
     // Constructor
-    function Galaxy(plateifu) {
+    function Utils() {
 
         // in case constructor called without new
-        if (false === (this instanceof Galaxy)) {
-            return new Galaxy();
+        if (false === (this instanceof Utils)) {
+            return new Utils();
         }
 
-        this.init(plateifu);
+        this.init();
 
-        // Event Handlers
+        // event handlers
+
     }
 
     // initialize the object
-    Galaxy.prototype.init = function init(plateifu) {
-        this.setPlateIfu(plateifu);
-        this.maindiv = $('#'+this.plateifu);
-        this.mapdiv = this.maindiv.find('#map');
-        this.specdiv = this.maindiv.find('#graphdiv');
-        this.specmsg = this.maindiv.find('#specmsg');
-        this.webspec = null;
-        this.staticdiv = this.maindiv.find('#staticdiv');
-        this.dynamicdiv = this.maindiv.find('#dynamicdiv');
-        this.togglediv = $('#toggleinteract');
+    Utils.prototype.init = function init() {
+
     };
 
-    // test print
-    Galaxy.prototype.print = function print() {
-        console.log('We are now printing galaxy', this.plateifu, this.plate, this.ifu);
+    // Build form
+    Utils.prototype.buildForm = function buildForm() {
+        var _len=arguments.length;
+        var args = new Array(_len); for(var $_i = 0; $_i < _len; ++$_i) {args[$_i] = arguments[$_i];}
+        var names = args[0];
+        var form = {};
+        $.each(args.slice(1),function(index,value) {
+            form[names[index]] = value;
+        });
+        return form;
+    }
+
+    // Return unique elements of an Array
+    Utils.prototype.unique = function unique(data) {
+        var result = [];
+        $.each(data, function(i, value) {
+            if ($.inArray(value, result) == -1) result.push(value);
+        });
+        return result;
     };
 
-    // Determine and Set the plateifu from input
-    Galaxy.prototype.setPlateIfu = function setPlateIfu(plateifu) {
-        if (plateifu === undefined) {
-            this.plateifu = $('.galinfo').attr('id');
-        } else {
-            this.plateifu = plateifu;
-        }
-        [this.plate, this.ifu] = this.plateifu.split('-');
-    };
-
-    // Initialize and Load a DyGraph spectrum
-    Galaxy.prototype.loadSpaxel = function loadSpaxel(spaxel) {
-        this.webspec = new Dygraph(this.specdiv[0],
-                  spaxel,
-                  {
-                    labels: ['x','Flux'],
-                    errorBars: true
-                  });
-    };
-
-    // Update a DyGraph spectrum
-    Galaxy.prototype.updateSpaxel = function updateSpaxel(spaxel, specmsg) {
-        var newmsg = "Here's a spectrum: "+specmsg;
-        this.specmsg.empty();
-        this.specmsg.html(newmsg);
-        this.webspec.updateOptions({'file': spaxel});
-    };
-
-    // Initialize OpenLayers Map
-    Galaxy.prototype.initOpenLayers = function initOpenLayers(image) {
-        this.image = image;
-        this.olmap = new OLMap(image);
-        // add click event handler on map to get spaxel
-        this.olmap.map.on('singleclick', this.getSpaxel, this);
-    };
-
-    // Retrieves a new Spaxel from the server based on a given mouse position
-    Galaxy.prototype.getSpaxel = function getSpaxel(event) {
-        var map = event.map;
-        var mousecoords = event.coordinate;
-        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords'];
-        var form = utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords);
-        var _this = this;
-
-        // send the form data
-        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
-            .done(function(data) {
-                $('#mouse-output').empty()
-                var myhtml = "<h5>My mouse coords "+mousecoords+", message: "+data.result.message+"</h5>"
-                $('#mouse-output').html(myhtml);
-                _this.updateSpaxel(data.result.spectra, data.result.specmsg);
-            })
-            .fail(function(data) {
-                $('#mouse-output').empty()
-                var myhtml = "<h5>Error message: "+data.result.message+"</h5>"
-                $('#mouse-output').html(myhtml);
-            });
-    };
-
-    // Toggle the interactive OpenLayers map and Dygraph spectra
-    Galaxy.prototype.toggleInteract = function toggleInteract(spaxel, image) {
-        if (this.togglediv.hasClass('active')){
-            this.togglediv.button('reset');
-            this.dynamicdiv.hide();
-            this.staticdiv.show();
-        } else {
-            this.togglediv.button('complete');
-            this.staticdiv.hide();
-            this.dynamicdiv.show();
-
-            // check for empty divs
-            var specempty = this.specdiv.is(':empty');
-            var mapempty = this.mapdiv.is(':empty');
-            // load the spaxel if the div is initially empty;
-            if (this.specdiv !== undefined && specempty) {
-                this.loadSpaxel(spaxel);
-            }
-
-            // load the map if div is empty
-            if (mapempty) {
-                this.initOpenLayers(image);
-            }
-
-        }
-    };
-
-    return Galaxy;
-
+    return Utils;
 })();
-
-
