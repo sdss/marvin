@@ -24,7 +24,7 @@ class QueryView(BaseView):
         return json.dumps(self.results)
 
     """example query post:
-    curl -X POST --data "strfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
+    curl -X POST --data "searchfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
     """
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
