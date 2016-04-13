@@ -94,6 +94,7 @@ class Galaxy(FlaskView):
             else:
                 self.galaxy['cube'] = cube
                 self.galaxy['image'] = cube._cube.image
+                print('image', cube._cube.image)
 
             # Get the initial spectrum
             if cube:
@@ -107,6 +108,7 @@ class Galaxy(FlaskView):
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         f = processRequest(request=request)
+        print(f)
         # for now, do this, but TODO - general processRequest to handle lists and not lists
         try:
             mousecoords = [float(v) for v in f.get('mousecoords[]', None)]

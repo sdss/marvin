@@ -11,8 +11,8 @@ python/marvin/utils/db/__pycache__
 python/marvin/utils/general/__pycache__
 python/marvin/web/__pycache__
 python/marvin/web/controllers/__pycache__
-python/marvin/web/static/__pycache__
 python/marvin/web/templates/__pycache__
 
 docs/sphinx/_build
 etc/node_modules
+python/marvin/web/static/node_modules
