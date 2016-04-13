@@ -1,60 +1,48 @@
 /*
 * @Author: Brian Cherinka
-* @Date:   2016-04-11 14:19:38
+* @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-11 15:24:12
+* @Last Modified time: 2016-04-13 18:07:00
 */
-
-'use strict';
 
 // Javascript code for general things
 
-var Utils,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+'use strict';
 
-Utils = (function() {
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-    marvin.Utils = Utils;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Utils = function () {
 
     // Constructor
-    function Utils() {
 
-        // in case constructor called without new
-        if (false === (this instanceof Utils)) {
-            return new Utils();
+    function Utils() {
+        _classCallCheck(this, Utils);
+    }
+
+    // Build a Form
+
+
+    _createClass(Utils, [{
+        key: 'buildForm',
+        value: function buildForm(keys) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            var form = {};
+            keys.forEach(function (key, index) {
+                form[key] = args[index];
+            });
+            return form;
         }
 
-        this.init();
+        // Unique values
 
-        // event handlers
-
-    }
-
-    // initialize the object
-    Utils.prototype.init = function init() {
-
-    };
-
-    // Build form
-    Utils.prototype.buildForm = function buildForm() {
-        var _len=arguments.length;
-        var args = new Array(_len); for(var $_i = 0; $_i < _len; ++$_i) {args[$_i] = arguments[$_i];}
-        var names = args[0];
-        var form = {};
-        $.each(args.slice(1),function(index,value) {
-            form[names[index]] = value;
-        });
-        return form;
-    }
-
-    // Return unique elements of an Array
-    Utils.prototype.unique = function unique(data) {
-        var result = [];
-        $.each(data, function(i, value) {
-            if ($.inArray(value, result) == -1) result.push(value);
-        });
-        return result;
-    };
+    }, {
+        key: 'unique',
+        value: function unique(data) {
+            return new Set(data);
+        }
+    }]);
 
     return Utils;
-})();
+}();

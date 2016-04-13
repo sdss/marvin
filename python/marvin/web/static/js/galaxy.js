@@ -11,10 +11,16 @@
 
 'use strict';
 
-var Galaxy,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-Galaxy = (function () {
+var Galaxy,
+    __bind = function __bind(fn, me) {
+    return function () {
+        return fn.apply(me, arguments);
+    };
+};
+
+Galaxy = function () {
 
     marvin.Galaxy = Galaxy;
 
@@ -22,7 +28,7 @@ Galaxy = (function () {
     function Galaxy(plateifu) {
 
         // in case constructor called without new
-        if (false === (this instanceof Galaxy)) {
+        if (false === this instanceof Galaxy) {
             return new Galaxy();
         }
 
@@ -34,7 +40,7 @@ Galaxy = (function () {
     // initialize the object
     Galaxy.prototype.init = function init(plateifu) {
         this.setPlateIfu(plateifu);
-        this.maindiv = $('#'+this.plateifu);
+        this.maindiv = $('#' + this.plateifu);
         this.mapdiv = this.maindiv.find('#map');
         this.specdiv = this.maindiv.find('#graphdiv');
         this.specmsg = this.maindiv.find('#specmsg');
@@ -56,25 +62,29 @@ Galaxy = (function () {
         } else {
             this.plateifu = plateifu;
         }
-        [this.plate, this.ifu] = this.plateifu.split('-');
+
+        var _plateifu$split = this.plateifu.split('-');
+
+        var _plateifu$split2 = _slicedToArray(_plateifu$split, 2);
+
+        this.plate = _plateifu$split2[0];
+        this.ifu = _plateifu$split2[1];
     };
 
     // Initialize and Load a DyGraph spectrum
     Galaxy.prototype.loadSpaxel = function loadSpaxel(spaxel) {
-        this.webspec = new Dygraph(this.specdiv[0],
-                  spaxel,
-                  {
-                    labels: ['x','Flux'],
-                    errorBars: true
-                  });
+        this.webspec = new Dygraph(this.specdiv[0], spaxel, {
+            labels: ['x', 'Flux'],
+            errorBars: true
+        });
     };
 
     // Update a DyGraph spectrum
     Galaxy.prototype.updateSpaxel = function updateSpaxel(spaxel, specmsg) {
-        var newmsg = "Here's a spectrum: "+specmsg;
+        var newmsg = "Here's a spectrum: " + specmsg;
         this.specmsg.empty();
         this.specmsg.html(newmsg);
-        this.webspec.updateOptions({'file': spaxel});
+        this.webspec.updateOptions({ 'file': spaxel });
     };
 
     // Initialize OpenLayers Map
@@ -94,23 +104,21 @@ Galaxy = (function () {
         var _this = this;
 
         // send the form data
-        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
-            .done(function(data) {
-                $('#mouse-output').empty()
-                var myhtml = "<h5>My mouse coords "+mousecoords+", message: "+data.result.message+"</h5>"
-                $('#mouse-output').html(myhtml);
-                _this.updateSpaxel(data.result.spectra, data.result.specmsg);
-            })
-            .fail(function(data) {
-                $('#mouse-output').empty()
-                var myhtml = "<h5>Error message: "+data.result.message+"</h5>"
-                $('#mouse-output').html(myhtml);
-            });
+        $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
+            $('#mouse-output').empty();
+            var myhtml = "<h5>My mouse coords " + mousecoords + ", message: " + data.result.message + "</h5>";
+            $('#mouse-output').html(myhtml);
+            _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+        }).fail(function (data) {
+            $('#mouse-output').empty();
+            var myhtml = "<h5>Error message: " + data.result.message + "</h5>";
+            $('#mouse-output').html(myhtml);
+        });
     };
 
     // Toggle the interactive OpenLayers map and Dygraph spectra
     Galaxy.prototype.toggleInteract = function toggleInteract(spaxel, image) {
-        if (this.togglediv.hasClass('active')){
+        if (this.togglediv.hasClass('active')) {
             this.togglediv.button('reset');
             this.dynamicdiv.hide();
             this.staticdiv.show();
@@ -131,12 +139,8 @@ Galaxy = (function () {
             if (mapempty) {
                 this.initOpenLayers(image);
             }
-
         }
     };
 
     return Galaxy;
-
-})();
-
-
+}();

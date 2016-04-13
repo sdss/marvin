@@ -59,12 +59,13 @@
 <script type='text/javascript'>
     var galaxy = {};
     $(function() {
-        galaxy = new Galaxy();
+        m.galaxy = new Galaxy();
+        m.galaxy.print();
         // toggle interaction on click
         var spaxel = {{spectra}};
         var galimage = {{image|tojson}};
-        $('#toggleinteract').on('click', galaxy, function() {
-            galaxy.toggleInteract(spaxel, galimage);
+        $('#toggleinteract').on('click', m.galaxy, function() {
+            m.galaxy.toggleInteract(spaxel, galimage);
         });
     });
 </script>
