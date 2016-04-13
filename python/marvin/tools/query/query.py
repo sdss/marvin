@@ -302,7 +302,8 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
-            return Results(results=res, query=self.query, count=count)
+            return Results(results=res, query=self.query, count=count,
+                           mode=self.mode)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -315,7 +316,7 @@ class Query(object):
             params = {'searchfilter': self.searchfilter}
             ii = Interaction(route=url, params=params)
             res = ii.results
-            return Results(results=res, query=self.query)  # , count=count)
+            return Results(results=res, query=self.query, mode=self.mode)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
