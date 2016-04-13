@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 01:41:18
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-12 11:33:28
+* @Last Modified time: 2016-04-12 21:17:23
 */
 
 module.exports = function(grunt) {
@@ -15,14 +15,17 @@ module.exports = function(grunt) {
     // Babel - transpiler from ES6 to ES5
     babel: {
         options: {
-            sourceMap: true,
-            presets: ['babel-preset-es2015']
+            sourceRoot: 'etc/',
+            sourceMap: false,
+            presets: ['es2015']
+            //plugins: ["transform-es2015-classes"]
         },
         dist: {
-            files: [{
-                expand: true,
-                '<%= pkg.name %>.js': '<%= pkg.name %>.js'
-            }]
+          files: [{
+            expand: true,
+            src: ['js/es6/*.js'],
+            ext: '.new.js'
+          }]
         }
     },
     // File Concatenation
@@ -31,10 +34,8 @@ module.exports = function(grunt) {
           options: {
               separator: ';'
           },
-          dist: {
-              src: ['js/*.js', '!js/test*.js', '!js/js9*.js', '!js/wcs*.js'],
-              dest: '<%= pkg.name %>.js'
-          }
+          src: ['js/*.js', '!js/{test,js9,wcs}*.js'],
+          dest: '<%= pkg.name %>.js'
         },
         css: {
           src: ['css/*.css', '!css/js9*.css'],
@@ -61,16 +62,13 @@ module.exports = function(grunt) {
     }
   });
 
-  // Load the plugins that provides the tasks
-  //grunt.loadNpmTasks('grunt-babel');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-cssmin');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  // Load individual plugins that provide the tasks.  Commented out but left as an example.
+  // Alternatively you can replace all tasks loads with the single line at the top require('load-grunt-tasks')(grunt);
+  //grunt.loadNpmTasks('grunt-contrib-uglify');
 
   // Set default file path
   grunt.file.setBase('../python/marvin/web/static/');
 
-  // Default task(s).
-  //grunt.registerTask('default', ['babel']);
-  grunt.registerTask('default', ['concat', 'cssmin', 'uglify']);
+  // Default task(s). New tasks go in a tasklist.  Tasks are run in that order.
+  grunt.registerTask('default', ['babel', 'concat', 'cssmin', 'uglify']);
 };
