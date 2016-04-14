@@ -9,7 +9,7 @@ __all__ = ['Results']
 
 
 def local_mode_only(func):
-    """Decorator that bypasses function if in remote mode."""
+    '''Decorator that bypasses function if in remote mode.'''
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -21,7 +21,7 @@ def local_mode_only(func):
 
 
 def remote_mode_only(func):
-    """Decorator that bypasses function if in local mode."""
+    '''Decorator that bypasses function if in local mode.'''
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -44,6 +44,10 @@ class Results(object):
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
+
+    def __repr__(self):
+        return ('Results(results={0},\nquery="{1}",\ncount={2},\nmode="{3}")'
+                ''.format(self.results, self.query, self.count, self.mode))
 
     def showQuery(self):
         return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))

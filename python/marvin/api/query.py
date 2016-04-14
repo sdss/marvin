@@ -30,6 +30,7 @@ class QueryView(BaseView):
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
         searchfilter = self.results['inconfig']['searchfilter']
+        # params_out = self.results['inconfig']['params_out']
         try:
             res = _getCubes(searchfilter)
         except MarvinError as e:
