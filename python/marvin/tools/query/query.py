@@ -109,10 +109,9 @@ class Query(object):
                 self._doRemote()
 
     def __repr__(self):
-        char = '"' if isinstance(self.order, basestring) else ''
-        order = char.join(('', '{}'.format(self.order), ''))
-        return ('Query(mode="{0}", limit={1}, sort={2}, order={3})'
-                .format(self.mode, self.limit, self.sort, order))
+        return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
+                .format(repr(self.mode), self.limit, self.sort,
+                        repr(self.order)))
 
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''

@@ -46,8 +46,9 @@ class Results(object):
         self.end = self.start + self.chunk
 
     def __repr__(self):
-        return ('Results(results={0},\nquery="{1}",\ncount={2},\nmode="{3}")'
-                ''.format(self.results, self.query, self.count, self.mode))
+        return ('Results(results={0},\nquery={1},\ncount={2},\nmode={3})'
+                .format(self.results, repr(self.query), self.count,
+                        repr(self.mode)))
 
     def showQuery(self):
         return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
