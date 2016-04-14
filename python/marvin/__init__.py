@@ -122,7 +122,7 @@ marvindb = MarvinDB(dbtype=config.db)
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-# config.sasurl = 'http://cd057661.ngrok.io/'  # this is a temporary measure REMOVE THIS
+config.sasurl = 'http://cd057661.ngrok.io/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://93f7a37b.ngrok.io'  # Jose's ngrok
 
 try:

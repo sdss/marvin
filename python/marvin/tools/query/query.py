@@ -108,6 +108,12 @@ class Query(object):
             if self.mode == 'remote':
                 self._doRemote()
 
+    def __repr__(self):
+        char = '"' if isinstance(self.order, basestring) else ''
+        order = char.join(('', '{}'.format(self.order), ''))
+        return ('Query(mode="{0}", limit={1}, sort={2}, order={3})'
+                .format(self.mode, self.limit, self.sort, order))
+
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''
 
@@ -163,14 +169,9 @@ class Query(object):
                     self.reset()
                     raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
-                """Don't call _setForms() because it constructs paramtree (SQL
-                joins).
-
-                Probably just pass here (maybe do some checking/error handling)
-                """
-                print('pass parameters to API here.  Need to figure out when '
-                      'and how to build a query remotely but still allow for '
-                      'user manipulation')
+                # Is it possible to build a query remotely but still allow for
+                # user manipulation?
+                pass
 
     def _setForms(self):
         ''' Set the appropriate WTForms in myforms and set the parameters '''
