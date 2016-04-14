@@ -14,6 +14,7 @@ class Interaction(object):
         self.results = None
         self.route = route
         self.params = params
+        self.request_type = request_type
         self.statuscodes = {200: 'Ok', 401: 'Authentication Required', 404: 'URL Not Found', 500: 'Internal Server Error',
                             405: 'Method Not Allowed', 400: 'Bad Request', 502: 'Bad Gateway', 504: 'Gateway Timeout'}
         # TODO - look into this url routing , slash either
@@ -26,8 +27,8 @@ class Interaction(object):
             raise MarvinError('No route and/or url specified {0}'.format(self.url))
 
     def __repr__(self):
-        return ('Interaction(route={0}, params={1}, request_type={2}'
-                .format(self.route, repr(self.params), self.))
+        return ('Interaction(route={0}, params={1}, request_type={2})'
+                .format(self.route, repr(self.params), self.request_type))
 
     def _checkResponse(self, response):
         if response.status_code == 200:
