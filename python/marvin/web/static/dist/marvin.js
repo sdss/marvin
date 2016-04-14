@@ -1,26 +1,5 @@
 /*
 * @Author: Brian Cherinka
-* @Date:   2016-04-13 11:24:07
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 18:08:48
-*/
-
-'use strict';
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Marvin = function Marvin(options) {
-    _classCallCheck(this, Marvin);
-
-    // set options
-    //_.defaults(options, {fruit: "strawberry"})
-    this.options = options;
-
-    // set up utility functions
-    this.utils = new Utils();
-};
-;/*
-* @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
 * @Last Modified time: 2016-04-13 17:45:08
@@ -173,6 +152,28 @@ var Galaxy = function () {
 
     return Galaxy;
 }();
+;/*
+* @Author: Brian Cherinka
+* @Date:   2016-04-13 11:24:07
+* @Last Modified by:   Brian
+* @Last Modified time: 2016-04-14 11:43:13
+*/
+
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Marvin = function Marvin(options) {
+    _classCallCheck(this, Marvin);
+
+    // set options
+    //_.defaults(options, {fruit: "strawberry"})
+    this.options = options;
+
+    // set up utility functions
+    this.utils = new Utils();
+    this.utils.print();
+};
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
@@ -377,7 +378,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 18:07:00
+* @Last Modified time: 2016-04-14 11:43:57
 */
 
 // Javascript code for general things
@@ -396,10 +397,18 @@ var Utils = function () {
         _classCallCheck(this, Utils);
     }
 
-    // Build a Form
+    // Print
 
 
     _createClass(Utils, [{
+        key: 'print',
+        value: function print() {
+            console.log('I am Utils!');
+        }
+
+        // Build a Form
+
+    }, {
         key: 'buildForm',
         value: function buildForm(keys) {
             var args = Array.prototype.slice.call(arguments, 1);

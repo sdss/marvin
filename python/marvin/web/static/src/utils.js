@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 18:07:00
+* @Last Modified time: 2016-04-14 11:43:57
 */
 
 // Javascript code for general things
@@ -13,6 +13,11 @@ class Utils {
 
     // Constructor
     constructor() {
+    }
+
+    // Print
+    print() {
+        console.log('I am Utils!');
     }
 
     // Build a Form
@@ -30,3 +35,4 @@ class Utils {
         return new Set(data);
     }
 }
+

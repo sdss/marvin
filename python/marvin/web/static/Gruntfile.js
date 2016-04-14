@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 01:41:18
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 18:11:42
+* @Last Modified time: 2016-04-14 11:44:28
 */
 
 module.exports = function(grunt) {
@@ -28,6 +28,16 @@ module.exports = function(grunt) {
           }]
         }
     },
+    // Bootstrap linter
+    bootlint: {
+      options: {
+        relaxerror: [],
+        showallerrors: false,
+        stoponerror: false,
+        stoponwarning: false
+      },
+      files: ['../templates/*.html']
+    } ,
     // File Concatenation
     concat: {
         js: {

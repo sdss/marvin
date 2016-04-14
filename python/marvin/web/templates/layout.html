@@ -10,9 +10,12 @@
 	<meta charset="UTF-8">
 	<title>{{title}}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="preconnect stylesheet" crossorigin="anonymous">
+	{#<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="preconnect stylesheet" crossorigin="anonymous">
+	<link rel="preconnect stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">#}
+	<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css" rel="preconnect stylesheet" crossorigin="anonymous">
 	<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 	<link rel='preconnect stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.css'>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
 	<link rel='stylesheet' href="{{url_for('static',filename='dist/marvin.min.css')}}"></script>
 	{% block csshead %}{% endblock csshead %}
 
@@ -20,7 +23,7 @@
 	{# include js files #}
 	<script rel='preconnect' type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.17/jquery.actual.min.js"></script>
-	<script rel='preconnect' src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+	<script rel='preconnect' src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js" async defer></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js" async defer></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/0.11.1/typeahead.bundle.min.js" async defer></script>
@@ -44,10 +47,7 @@
 	{% include 'footer.html' %}
 
 	<!-- Javascript Code Block -->
-	{#<script type='text/javascript'>var marvin=marvin||{};</script>#}
-	<script type="text/javascript" src="{{url_for('static',filename='dist/marvin.js')}}"></script>
-	{#<script type='text/javascript'>var marvin = new marvin.marvin();</script>#}
-	{#<script data-main="{{url_for('static',filename='js/main.js')}}" src="{{url_for('static',filename='js/require.js')}}"></script>#}
+	<script type='text/javascript' src="{{url_for('static',filename='dist/marvin.js')}}"></script>
 	<script type='text/javascript'>
 		var m = new Marvin();
 	</script>
