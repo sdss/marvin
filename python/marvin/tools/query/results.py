@@ -2,6 +2,8 @@ from __future__ import print_function
 from marvin.tools.core import MarvinError, MarvinUserWarning
 import warnings
 import json
+import copy
+from pprint import pformat
 from functools import wraps
 from astropy.table import Table, Column
 
@@ -39,15 +41,21 @@ class Results(object):
         # super(Results, self).__init__(*args, **kwargs)
         self.results = results
         self.query = query
-        self.count = count if count else len(results) if results else None
+        self.count = count if count else len(results['data']) if results else None
         self.mode = mode
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
 
     def __repr__(self):
+        results = copy.deepcopy(self.results)
+        if len(self.results['data']) > 5:
+            pretty_data = self.results['data'][:4]
+            pretty_data.append('...')
+            pretty_data.append(self.results['data'][-1])
+            results['data'] = pretty_data
         return ('Results(results={0},\nquery={1},\ncount={2},\nmode={3})'
-                .format(self.results, repr(self.query), self.count,
+                .format(pformat(results), repr(self.query), self.count,
                         repr(self.mode)))
 
     def showQuery(self):

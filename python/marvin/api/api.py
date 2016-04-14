@@ -25,6 +25,10 @@ class Interaction(object):
         else:
             raise MarvinError('No route and/or url specified {0}'.format(self.url))
 
+    def __repr__(self):
+        return ('Interaction(route={0}, params={1}, request_type={2}'
+                .format(self.route, repr(self.params), self.))
+
     def _checkResponse(self, response):
         if response.status_code == 200:
             self.status_code = 200
