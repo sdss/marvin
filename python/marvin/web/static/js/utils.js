@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 18:07:00
+* @Last Modified time: 2016-04-14 11:43:57
 */
 
 // Javascript code for general things
@@ -21,10 +21,18 @@ var Utils = function () {
         _classCallCheck(this, Utils);
     }
 
-    // Build a Form
+    // Print
 
 
     _createClass(Utils, [{
+        key: 'print',
+        value: function print() {
+            console.log('I am Utils!');
+        }
+
+        // Build a Form
+
+    }, {
         key: 'buildForm',
         value: function buildForm(keys) {
             var args = Array.prototype.slice.call(arguments, 1);
