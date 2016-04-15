@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
-"""
+#
+# rss.py
+#
+# Licensed under a 3-clause BSD license.
+#
+# Revision history:
+#     11 Apr 2016 J. Sánchez-Gallego
+#       Initial version
 
-rss.py
-
-Licensed under a 3-clause BSD license.
-
-Revision history:
-    11 Apr 2016 J. Sánchez-Gallego
-      Initial version
-
-"""
 
 from __future__ import division
 from __future__ import print_function
