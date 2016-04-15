@@ -35,6 +35,11 @@ class MarvinNotImplemented(MarvinError):
         super(MarvinNotImplemented, self).__init__(message)
 
 
+class MarvinMissingDependence(MarvinError):
+    """A custom exception for missing dependences."""
+    pass
+
+
 class MarvinWarning(Warning):
     """Base warning for Marvin."""
     pass
