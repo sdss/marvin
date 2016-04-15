@@ -48,14 +48,29 @@ class Results(object):
         self.end = self.start + self.chunk
 
     def __repr__(self):
-        results = copy.deepcopy(self.results)
-        if len(self.results['data']) > 5:
-            pretty_data = self.results['data'][:4]
-            pretty_data.append('...')
-            pretty_data.append(self.results['data'][-1])
-            results['data'] = pretty_data
+        # remote mode
+        if isinstance(self.results, list):
+            if len(self.results) > 5:
+                data = self.results[:4]
+                data.append('...')
+                data.append('data'[-1])
+                results = pformat(data)
+            else:
+                results = self.results
+        # local mode
+        else:
+            out = {}
+            for k in self.results:
+                if k == 'data' and len(self.results['data']) > 5:
+                    data = self.results['data'][:4]
+                    data.append('...')
+                    data.append(self.results['data'][-1])
+                    out[k] = data
+                else:
+                    out[k] = self.results[k]
+            results = pformat(out)
         return ('Results(results={0},\nquery={1},\ncount={2},\nmode={3})'
-                .format(pformat(results), repr(self.query), self.count,
+                .format(results, repr(self.query), self.count,
                         repr(self.mode)))
 
     def showQuery(self):
