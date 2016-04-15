@@ -23,11 +23,13 @@ from marvin.tools.spectrum import Spectrum
 import numpy as np
 
 
-class RSS(MarvinToolsClass):
+class RSS(MarvinToolsClass, list):
     """A class to interface with MaNGA RSS data.
 
     This class represents a fully reduced RSS file, initialised either
-    from a file, a database, or remotely via the Marvin API.
+    from a file, a database, or remotely via the Marvin API. The class
+    inherits from Python's list class, and is defined as a list of
+    RSSFiber objects.
 
     Parameters:
         filename (str):
@@ -51,7 +53,8 @@ class RSS(MarvinToolsClass):
 
     Return:
         rss:
-            An object representing the RSS entity.
+            An object representing the RSS entity. The object is a list of
+            RSSFiber objects, one for each fibre in the RSS entity.
 
     """
 
@@ -64,7 +67,7 @@ class RSS(MarvinToolsClass):
 
         skip_check = kwargs.get('skip_check', False)
 
-        super(RSS, self).__init__(*args, **kwargs)
+        MarvinToolsClass.__init__(self, *args, **kwargs)
 
         if self.mode == 'local':
             if self.filename:
@@ -75,6 +78,8 @@ class RSS(MarvinToolsClass):
             self.data_origin = 'api'
             if not skip_check:
                 self._getRSSFromAPI()
+
+        self._initFibers()
 
     def __repr__(self):
         """Representation for RSS."""
@@ -153,20 +158,16 @@ class RSS(MarvinToolsClass):
         # Make the API call
         api.Interaction(url)
 
-    @property
-    def fibers(self):
-        """Returns a list of all RSS fibers as :py:class:`RSSFiber` objects."""
-
-        if self._fibers is not None:
-            return self._fibers
+    def _initFibers(self):
+        """Initialises the object as a list of RSSFiber instances."""
 
         if self.data_origin == 'file':
-            self._fibers = [RSSFiber._initFromHDU(hdulist=self._hdu, index=ii)
-                            for ii in range(self._hdu[1].data.shape[0])]
+            _fibers = [RSSFiber._initFromHDU(hdulist=self._hdu, index=ii)
+                       for ii in range(self._hdu[1].data.shape[0])]
 
         elif self.data_origin == 'db':
-            self._fibers = [RSSFiber._initFromDB(rssfiber=rssfiber)
-                            for rssfiber in self._rss_db]
+            _fibers = [RSSFiber._initFromDB(rssfiber=rssfiber)
+                       for rssfiber in self._rss_db]
 
         else:
             # Makes a call to the API to retrieve all the arrays for all the fibres.
@@ -180,16 +181,16 @@ class RSS(MarvinToolsClass):
 
             wavelength = np.array(data['wavelength'], np.float)
 
-            self._fibers = []
+            _fibers = []
             for ii in range(len(data) - 1):
                 flux = np.array(data[str(ii)][0], np.float)
                 ivar = np.array(data[str(ii)][1], np.float)
                 mask = np.array(data[str(ii)][2], np.float)
-                self._fibers.append(
+                _fibers.append(
                     RSSFiber(flux, ivar=ivar, mask=mask, wavelength=wavelength,
                              mangaid=self.mangaid, plateifu=self.plateifu, data_origin='api'))
 
-        return self._fibers
+        list.__init__(self, _fibers)
 
 
 class RSSFiber(Spectrum):
@@ -197,7 +198,7 @@ class RSSFiber(Spectrum):
 
     This class is basically a subclass of |spectrum| with additional
     functionality. It is not intended to be initialised directly, but via
-    the :py:attr:`RSS.fibers` property.
+    the :py:meth:`RSS._initFibers` method.
 
     Parameters:
         args:
