@@ -13,6 +13,7 @@ python/marvin/utils/db/__pycache__
 python/marvin/utils/general/__pycache__
 python/marvin/web/__pycache__
 python/marvin/web/controllers/__pycache__
+python/marvin/web/lib/.sass-cache
 python/marvin/web/lib/node_modules
 python/marvin/web/static/node_modules
 python/marvin/web/templates/__pycache__

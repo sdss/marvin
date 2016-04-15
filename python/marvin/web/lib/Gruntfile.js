@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 01:41:18
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-14 11:44:28
+* @Last Modified time: 2016-04-15 13:51:12
 */
 
 module.exports = function(grunt) {
@@ -38,6 +38,18 @@ module.exports = function(grunt) {
       },
       files: ['../templates/*.html']
     } ,
+    // SASS to CSS
+    sass: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: 'scss',
+          src: ['**/*.scss'],
+          dest: 'css',
+          ext: '.css'
+        }]
+      }
+    },
     // File Concatenation
     concat: {
         js: {
@@ -80,5 +92,5 @@ module.exports = function(grunt) {
   //grunt.file.setBase('../python/marvin/web/static/');
 
   // Default task(s). New tasks go in a tasklist.  Tasks are run in that order.
-  grunt.registerTask('default', ['babel', 'concat', 'cssmin', 'uglify']);
+  grunt.registerTask('default', ['babel', 'sass', 'concat', 'cssmin', 'uglify']);
 };
