@@ -45,7 +45,7 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=marvin.config.drpver,
+                                              drpver=self._drpver,
                                               plate=plate)
 
     def __init__(self, *args, **kwargs):
