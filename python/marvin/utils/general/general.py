@@ -244,8 +244,12 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     elif mode == 'remote':
 
-        response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
-        plateifu = response.getData(astype=str)
+        try:
+            response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
+        except MarvinError as e:
+            raise MarvinError('API call to mangaid2plateifu failed: {0}'.format(e))
+        else:
+            plateifu = response.getData(astype=str)
 
         if not plateifu:
             if 'error' in response.results and response.results['error']:
@@ -521,13 +525,13 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center
     url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
 
     # Make the API call
-    response = Interaction(url)
-
-    if response.status_code == 200:
+    try:
+        response = Interaction(url)
+    except MarvinError as e:
+        raise MarvinError('Error retrieving response: {0}'.format(e))
+    else:
         if response.results['status'] == 1:
             return response.getData()
         else:
             raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
-    else:
-        raise MarvinError(
-            'Error retrieving response: Http status code {0}: {1}'.format(response.status_code, response.results['message']))
+

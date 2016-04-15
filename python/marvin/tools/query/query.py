@@ -314,8 +314,12 @@ class Query(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter}
-            ii = Interaction(route=url, params=params)
-            res = ii.results
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                res = ii.results
             return Results(results=res, query=self.query, mode=self.mode)
 
     def _sortQuery(self):
