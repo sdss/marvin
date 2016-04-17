@@ -29,6 +29,8 @@ class Spectrum(np.ndarray):
     Parameters:
         spectrum (array-like):
             The 1-D array contianing the spectrum.
+        spectrum_units (str, optional):
+            The units of the spectrum.
         ivar (array-like, optional):
             The inverse variance array for ``spectrum``. Must have the same
             number of elements.
@@ -38,6 +40,8 @@ class Spectrum(np.ndarray):
         wavelength (array-like, optional):
             The wavelength solution for ``spectrum``. Must have the same number
             of elements.
+        wavelength_unit (str, optional):
+            The units of the wavelength solution.
 
     """
 
@@ -56,12 +60,17 @@ class Spectrum(np.ndarray):
 
         return obj
 
-    def __init__(self, spectrum, ivar=None, mask=None, wavelength=None):
+    def __init__(self, spectrum, ivar=None, mask=None, wavelength=None,
+                 spectrum_units='1e-17 erg/s/cm^2/Ang/spaxel',
+                 wavelength_unit='Angstrom'):
 
         self.ivar = np.array(ivar) if ivar is not None else None
         self.mask = np.array(mask) if mask is not None else None
         self.wavelength = np.array(wavelength) \
             if wavelength is not None else None
+
+        self.spectrum_units = spectrum_units
+        self.wavelength_unit = wavelength_unit
 
         # Resizes the array to the size of the input spectrum.
         # refcheck circunvents a problem with:
@@ -94,8 +103,8 @@ class Spectrum(np.ndarray):
 
         return '<Marvin Spectrum ({0!s})'.format(self)
 
-    def plot(self, array='spectrum', xlim=None, ylim=None, mask_color=None, figure=None,
-             return_figure=False, **kwargs):
+    def plot(self, array='spectrum', xlim=None, ylim=None, mask_color=None,
+             xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
         """Plots and spectrum using matplotlib.
 
         Returns a |axes|_ object with a representation of this spectrum.
@@ -116,6 +125,12 @@ class Spectrum(np.ndarray):
                 automatically by matploltib. If ``Spectrum.wavelength`` is
                 defined, the range in the x-axis must be defined as a
                 wavelength range.
+            xlabel,ylabel (str or None):
+                The axis labels to be passed to the plot. If ``xlabel=None``
+                and ``Spectrum.wavelength_unit`` is defined, those units will
+                be used, after being properly formatted for Latex display.
+                If ``ylabel=None``, the y-axis label will be automatically
+                defined base on the type of input array.
             mask_color (matplotlib valid color or None):
                 If set and ``Spectrum.mask`` is defined, the elements of
                 ``array`` with ``mask>0`` will be coloured using that value.
@@ -189,6 +204,31 @@ class Spectrum(np.ndarray):
         if ylim is not None:
             assert len(ylim) == 2
             ax.set_ylim(*ylim)
+
+        if xlabel is None:
+            if self.wavelength is not None:
+                xlabel = 'Wavelength'
+                if self.wavelength_unit == 'Angstrom':
+                    xlabel += r' $[\rm\AA]$'
+                elif self.wavelength_unit is not None:
+                    xlabel += r' [{0}]'.format(self.wavelength_unit)
+            else:
+                xlabel = ''
+
+        if ylabel is None:
+            if array in ['spectrum', 'flux']:
+                ylabel = 'Flux'
+                if self.spectrum_units == '1e-17 erg/s/cm^2/Ang/spaxel':
+                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]'
+                elif self.spectrum_units is not None:
+                    ylabel += r' [{0}]'.format(self.spectrum_units)
+            elif array == 'ivar':
+                ylabel = 'Inverse variance'
+            else:
+                ylabel = ''
+
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
 
         if return_figure:
             return (ax, fig)
