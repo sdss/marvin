@@ -141,6 +141,7 @@ python/marvin/web/lib/src/galaxy.js -text
 python/marvin/web/lib/src/marvin.js -text
 python/marvin/web/lib/src/olmap.js -text
 python/marvin/web/lib/src/utils.js -text
+python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/templates/footer.html -text
 python/marvin/web/templates/galaxy.html -text
 python/marvin/web/templates/header.html -text

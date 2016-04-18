@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
 from flask_jsglue import JSGlue
 from inspect import getmembers, isfunction
@@ -107,6 +107,12 @@ def create_app(debug=False):
 
     # Update any config parameters
     app.config["UPLOAD_FOLDER"] = os.environ.get("MARVIN_DATA_DIR", None)
+    app.config["LIB_PATH"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib')
+
+    # Add lib directory as a new static path
+    @app.route('/marvin/lib/<path:filename>')
+    def lib(filename):
+        return send_from_directory(app.config["LIB_PATH"], filename)
 
     # ----------------------------------
     # Registration
