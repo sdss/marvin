@@ -46,8 +46,7 @@ class SpaxelView(BaseView):
 
     route_base = '/spaxels/'
 
-    @route('/<name>/<path:path>/', methods=['GET', 'POST'],
-           endpoint='getSpaxel')
+    @route('/<name>/<path:path>/', methods=['GET', 'POST'], endpoint='getSpaxel')
     @parseRoutePath
     def get(self, name, x=None, y=None):
         """Retrieves the spaxel at ``(x, y)`` and returns its arrays."""
