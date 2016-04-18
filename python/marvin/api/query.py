@@ -6,11 +6,14 @@ from marvin.tools.query import doQuery
 from marvin.tools.core import MarvinError
 
 
-def _getCubes(searchfilter):
+def _getCubes(searchfilter, params_out=['plateifu']):
     """Run query locally at Utah."""
     q, r = doQuery(searchfilter)
     r.getAll()
-    output = {'data': r.getListOf('plateifu'), 'query': r.showQuery(), 'filter': searchfilter}
+    # output = dict(data=r.getListOf('plateifu'),
+    #               query=r.showQuery(), filter=searchfilter)
+    output = dict(data={p: r.getListOf(p) for p in params_out},
+                  query=r.showQuery(), filter=searchfilter)
     return output
 
 
@@ -25,14 +28,17 @@ class QueryView(BaseView):
 
     """example query post:
     curl -X POST --data "searchfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
+
+    curl -X POST --data "searchfilter=nsa_redshift<0.1&params_out=mangaid" http://localhost:5000/api/query/cubes/
     """
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
         searchfilter = self.results['inconfig']['searchfilter']
-        # params_out = self.results['inconfig']['params_out']
+        params_tmp = self.results['inconfig']['params_out']
+        params_out = params_tmp.split(',')
         try:
-            res = _getCubes(searchfilter)
+            res = _getCubes(searchfilter, params_out)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:

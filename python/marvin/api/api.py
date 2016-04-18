@@ -37,11 +37,12 @@ class Interaction(object):
                 self.results = response.json()
             except ValueError as e:
                 self.results = response.text
-                raise RuntimeError('Response not in JSON format. {0} {1}'.format(e, self.results))
+                raise MarvinError('Response not in JSON format. {0} {1}'.format(e, self.results))
         else:
             self.status_code = response.status_code
-            errmsg = 'Error accessing {0}: {1}'.format(response.url, self.statuscodes[response.status_code])
+            errmsg = 'Error accessing {0}: {1}-{2}'.format(response.url, response.status_code, self.statuscodes[response.status_code])
             self.results = {'http_status_code': response.status_code, 'message': errmsg}
+            raise MarvinError('Response Error: {0}'.format(errmsg))
 
     def _sendRequest(self, request_type):
 
