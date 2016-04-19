@@ -42,7 +42,7 @@ class CubeView(BaseView):
         self.results['data'] = 'this is a cube!'
         return json.dumps(self.results)
 
-    @route('/<name>/', methods=['GET', 'POST'])
+    @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
         ''' This method performs a get request at the url route /cubes/<id> '''
         cube, res = _getCube(name)
