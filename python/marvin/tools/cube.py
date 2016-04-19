@@ -57,7 +57,6 @@ class Cube(MarvinToolsClass):
     def __init__(self, *args, **kwargs):
 
         self.filename = None
-        self.data_origin = None
         self._hdu = None
         self._cube = None
 
@@ -65,19 +64,17 @@ class Cube(MarvinToolsClass):
 
         super(Cube, self).__init__(*args, **kwargs)
 
-        if self.mode == 'local':
-            if self.filename:
-                try:
-                    self._openFile()
-                except IOError as e:
-                    raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            else:
-                try:
-                    self._getCubeFromDB()
-                except RuntimeError as e:
-                    raise MarvinError('Could not initialize via db: {0}'.format(e))
-        else:
-            self.data_origin = 'api'
+        if self.data_origin == 'file':
+            try:
+                self._openFile()
+            except IOError as e:
+                raise MarvinError('Could not initialize via filename: {0}'.format(e))
+        elif self.data_origin == 'db':
+            try:
+                self._getCubeFromDB()
+            except RuntimeError as e:
+                raise MarvinError('Could not initialize via db: {0}'.format(e))
+        elif self.data_origin == 'api':
             if not skip_check:
                 self._checkCubeRemote()
 
@@ -210,7 +207,6 @@ class Cube(MarvinToolsClass):
         """Initialises a cube from a file."""
 
         self._useDB = False
-        self.data_origin = 'file'
         try:
             self._hdu = fits.open(self.filename)
         except IOError as err:
@@ -222,7 +218,7 @@ class Cube(MarvinToolsClass):
     def _checkCubeRemote(self):
         """Calls the API to check that the cube exists."""
 
-        url = marvin.config.urlmap['api']['CubeView:get']['url']
+        url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
             response = Interaction(url.format(name=self.plateifu))
@@ -245,10 +241,12 @@ class Cube(MarvinToolsClass):
     def _getExtensionData(self, extName):
         """Returns the data from an extension."""
 
-        if not self._useDB:
+        if self.data_origin == 'file':
             return self._hdu[extName.upper()].data
-        else:
-            return None
+        elif self.data_origin == 'db':
+            return self._cube.get3dCube(extName.lower())
+        elif self.data_origin == 'api':
+            raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
 
     flux = property(lambda self: self._getExtensionData('FLUX'), doc='Gets the `FLUX` data extension.')
     ivar = property(lambda self: self._getExtensionData('IVAR'), doc='Gets the `IVAR` data extension.')
@@ -299,7 +297,6 @@ class Cube(MarvinToolsClass):
 
             if self._cube:
                 self._useDB = True
-                self.data_origin = 'db'
                 self.hdr = self._cube.header
                 self.wcs = self._cube.wcs.makeHeader()
                 self.ifu = self._cube.ifu.name
