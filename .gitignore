@@ -5,7 +5,6 @@ python/marvin/__pycache__
 python/marvin/api/__pycache__
 python/marvin/db/__pycache__
 python/marvin/tools/__pycache__
-python/marvin/tools/tests/__pycache__
 python/marvin/utils/__pycache__
 python/marvin/utils/db/__pycache__
 python/marvin/utils/general/__pycache__
