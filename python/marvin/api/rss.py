@@ -68,9 +68,9 @@ class RSSView(BaseView):
 
         if rss:
             self.results['data'] = {}
-            self.results['data']['wavelength'] = rss.fibers[0].wavelength.tolist()
+            self.results['data']['wavelength'] = rss[0].wavelength.tolist()
 
-            for ii, fiber in enumerate(rss.fibers):
+            for ii, fiber in enumerate(rss):
                 flux = fiber.tolist()
                 ivar = fiber.ivar.tolist()
                 mask = fiber.mask.tolist()
