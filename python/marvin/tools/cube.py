@@ -237,6 +237,11 @@ class Cube(MarvinToolsClass):
 
         return
 
+    def __getitem__(self, xy):
+        """Returns the spaxel for ``(x, y)``"""
+        x, y = xy
+        return self.getSpaxel(x=x, y=y, xyorig='lower')
+
     def _getExtensionData(self, extName):
         """Returns the data from an extension."""
 
