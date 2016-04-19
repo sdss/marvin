@@ -177,13 +177,13 @@ class RSS(MarvinToolsClass, list):
             response = api.Interaction(url)
             data = response.getData()
 
-            wavelength = np.array(data['wavelength'], np.float)
+            wavelength = np.array(data['wavelength'])
 
             _fibers = []
             for ii in range(len(data) - 1):
-                flux = np.array(data[str(ii)][0], np.float)
-                ivar = np.array(data[str(ii)][1], np.float)
-                mask = np.array(data[str(ii)][2], np.float)
+                flux = np.array(data[str(ii)][0])
+                ivar = np.array(data[str(ii)][1])
+                mask = np.array(data[str(ii)][2])
                 _fibers.append(
                     RSSFiber(flux, ivar=ivar, mask=mask, wavelength=wavelength,
                              mangaid=self.mangaid, plateifu=self.plateifu, data_origin='api'))
