@@ -27,13 +27,13 @@ developed and maintained by the MaNGA team.
    queries
 
 
-API
-===
+Documentation
+=============
 
 .. toctree::
    :maxdepth: 2
 
-   api/cube
+   api/tools
 
 
 

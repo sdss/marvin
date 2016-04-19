@@ -16,10 +16,27 @@ from __future__ import division
 from __future__ import print_function
 
 
-__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWargning']
+__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWargning',
+           'MarvinNotImplemented']
 
 
 class MarvinError(Exception):
+    pass
+
+
+class MarvinNotImplemented(MarvinError):
+    """A Marvin exception for not yet implemented features."""
+
+    def __init__(self, message=None):
+
+        message = 'This feature is not implemented yet.' \
+            if not message else message
+
+        super(MarvinNotImplemented, self).__init__(message)
+
+
+class MarvinMissingDependence(MarvinError):
+    """A custom exception for missing dependences."""
     pass
 
 
