@@ -14,6 +14,7 @@ class Interaction(object):
         self.results = None
         self.route = route
         self.params = params
+        self.request_type = request_type
         self.statuscodes = {200: 'Ok', 401: 'Authentication Required', 404: 'URL Not Found', 500: 'Internal Server Error',
                             405: 'Method Not Allowed', 400: 'Bad Request', 502: 'Bad Gateway', 504: 'Gateway Timeout'}
         # TODO - look into this url routing , slash either
@@ -25,6 +26,10 @@ class Interaction(object):
         else:
             raise MarvinError('No route and/or url specified {0}'.format(self.url))
 
+    def __repr__(self):
+        return ('Interaction(route={0}, params={1}, request_type={2})'
+                .format(self.route, repr(self.params), self.request_type))
+
     def _checkResponse(self, response):
         if response.status_code == 200:
             self.status_code = 200
@@ -32,11 +37,12 @@ class Interaction(object):
                 self.results = response.json()
             except ValueError as e:
                 self.results = response.text
-                raise RuntimeError('Response not in JSON format. {0} {1}'.format(e, self.results))
+                raise MarvinError('Response not in JSON format. {0} {1}'.format(e, self.results))
         else:
             self.status_code = response.status_code
-            errmsg = 'Error accessing {0}: {1}'.format(response.url, self.statuscodes[response.status_code])
+            errmsg = 'Error accessing {0}: {1}-{2}'.format(response.url, response.status_code, self.statuscodes[response.status_code])
             self.results = {'http_status_code': response.status_code, 'message': errmsg}
+            raise MarvinError('Response Error: {0}'.format(errmsg))
 
     def _sendRequest(self, request_type):
 

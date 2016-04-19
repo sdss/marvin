@@ -108,6 +108,11 @@ class Query(object):
             if self.mode == 'remote':
                 self._doRemote()
 
+    def __repr__(self):
+        return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
+                .format(repr(self.mode), self.limit, self.sort,
+                        repr(self.order)))
+
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''
 
@@ -163,14 +168,9 @@ class Query(object):
                     self.reset()
                     raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
-                """Don't call _setForms() because it constructs paramtree (SQL
-                joins).
-
-                Probably just pass here (maybe do some checking/error handling)
-                """
-                print('pass parameters to API here.  Need to figure out when '
-                      'and how to build a query remotely but still allow for '
-                      'user manipulation')
+                # Is it possible to build a query remotely but still allow for
+                # user manipulation?
+                pass
 
     def _setForms(self):
         ''' Set the appropriate WTForms in myforms and set the parameters '''
@@ -302,7 +302,8 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
-            return Results(results=res, query=self.query, count=count)
+            return Results(results=res, query=self.query, count=count,
+                           mode=self.mode)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -313,9 +314,13 @@ class Query(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter}
-            ii = Interaction(route=url, params=params)
-            res = ii.results
-            return Results(results=res, query=self.query)  # , count=count)
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                res = ii.results
+            return Results(results=res, query=self.query, mode=self.mode)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
