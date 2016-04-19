@@ -3,8 +3,11 @@ import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 import marvin
-from marvin.tools.core import MarvinToolsClass, MarvinError
-from marvin.utils.general import convertCoords, getSpaxelXY, getSpaxelAPI
+from marvin.tools.core import MarvinToolsClass
+from marvin.tools.core.exceptions import MarvinError
+from marvin.utils.general import convertCoords
+from marvin.tools.spaxel import Spaxel
+from marvin.api.api import Interaction
 
 
 class Cube(MarvinToolsClass):
@@ -24,6 +27,9 @@ class Cube(MarvinToolsClass):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
+        skip_check (bool):
+            If True, and ``mode='remote'``, skips the API call to check that
+            the cube exists.
         drpall (str):
             The path to the drpall file to use. Defaults to
             ``marvin.config.drpall``.
@@ -45,58 +51,56 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=marvin.config.drpver,
+                                              drpver=self._drpver,
                                               plate=plate)
 
     def __init__(self, *args, **kwargs):
 
+        self.filename = None
+        self._hdu = None
+        self._cube = None
+
+        skip_check = kwargs.get('skip_check', False)
+
         super(Cube, self).__init__(*args, **kwargs)
 
-        if self.mode == 'local':
-            if self.filename:
-                try:
-                    self._openFile()
-                except IOError as e:
-                    raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            else:
-                try:
-                    self._getCubeFromDB()
-                except RuntimeError as e:
-                    raise MarvinError('Could not initialize via db: {0}'.format(e))
-        else:
-            # Placeholder for potentially request something from the DB to
-            # initialise the cube.
-            # raise MarvinError('Should remotely grab the cube to initialize, '
-            #                   'but I won't')
+        if self.data_origin == 'file':
+            try:
+                self._openFile()
+            except IOError as e:
+                raise MarvinError('Could not initialize via filename: {0}'.format(e))
+        elif self.data_origin == 'db':
+            try:
+                self._getCubeFromDB()
+            except RuntimeError as e:
+                raise MarvinError('Could not initialize via db: {0}'.format(e))
+        elif self.data_origin == 'api':
+            if not skip_check:
+                self._checkCubeRemote()
 
-            # TBD: For now we just pass. In the future, it would be good to
-            # run a check with the API that the input parameters correspond to
-            # a cube.
-            pass
+    def __repr__(self):
+        """Representation for Cube."""
 
-    def getSpectrum(self, x=None, y=None, ra=None, dec=None, ext=None,
-                    xyorig='center'):
-        """Returns the appropriate spectrum for a certain spaxel in the cube.
+        return ('<Marvin Cube (plateifu={0}, mode={1}, data_origin={2})>'
+                .format(repr(self.plateifu), repr(self.mode),
+                        repr(self.data_origin)))
 
-        The type of the spectrum returned depends on the `ext` keyword, and
-        may be either ``'flux'``, `'ivar'`, or ``'mask'``. The coordinates of
-        the spectrum to return can be input as ``x, y`` pixels relative to
-        ``xyorig`` in the cube, or as ``ra, dec`` celestial coordinates.
+    def getSpaxel(self, x=None, y=None, ra=None, dec=None, xyorig='center'):
+        """Returns the |spaxel| matching certain coordinates.
+
+        The coordinates of the spaxel to return can be input as ``x, y`` pixels
+        relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
+        coordinates.
 
         Parameters:
             x,y (int or array):
                 The spaxel coordinates relative to ``xyorig``. If ``x`` is an
                 array of coordinates, the size of ``x`` must much that of
                 ``y``.
-
             ra,dec (float or array):
                 The coordinates of the spaxel to return. The closest spaxel to
                 those coordinates will be returned. If ``ra`` is an array of
                 coordinates, the size of ``ra`` must much that of ``dec``.
-
-            ext ({'flux', 'ivar', 'flux'}):
-                The extension of the cube to use. Defaults to ``'flux'``.
-
             xyorig ({'center', 'lower'}):
                 The reference point from which ``x`` and ``y`` are measured.
                 Valid values are ``'center'`` (default), for the centre of the
@@ -105,11 +109,12 @@ class Cube(MarvinToolsClass):
                 ``dec`` are defined.
 
         Returns:
-            spectra (Numpy array):
-                A Numpy array with the spectrum for the input coordinates.
-                If the input coordinates are an array of N positions, the
-                returned array will have shape (N, M) where M is the number of
-                spectral elements.
+            spaxels (list):
+                The |spaxel| objects for this cube corresponding to the input
+                coordinates. The length of the list is equal to the number
+                of input coordinates.
+
+        .. |spaxel| replace:: :class:`~marvin.tools.spaxel.Spaxel`
 
         """
 
@@ -138,82 +143,68 @@ class Cube(MarvinToolsClass):
         else:
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
-        if not ext:
-            ext = 'flux'
-
         if not xyorig:
             xyorig = 'center'
 
-        try:
-            isExtString = isinstance(ext, basestring)
-        except NameError:
-            isExtString = isinstance(ext, str)
+        if self.data_origin == 'file':
 
-        assert isExtString
+            # Uses the flux extension to get the WCS
+            cubeExt = self._hdu['FLUX']
+            cubeShape = cubeExt.data.shape[1:]
 
-        ext = ext.lower()
-        assert ext in ['flux', 'ivar', 'mask'], 'ext needs to be either \'flux\', \'ivar\', or \'mask\''
+            ww = WCS(cubeExt.header) if inputMode == 'sky' else None
 
-        if self.mode == 'local':
+            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
+                                             xyorig=xyorig).T)
 
-            # Local mode
+            _spaxels = []
+            for ii in range(len(iCube[0])):
+                _spaxels.append(
+                    Spaxel._initFromData(jCube[0][ii], iCube[0][ii], self._hdu))
 
-            if not self._useDB:
+        elif self.data_origin == 'db':
 
-                # File mode
+            size = int(np.sqrt(len(self._cube.spaxels)))
+            cubeShape = (size, size)
 
-                cubeExt = self._hdu[ext.upper()]
-                cubeShape = cubeExt.data.shape[1:]
-
-                ww = WCS(cubeExt.header) if inputMode == 'sky' else None
-
-                iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode, xyorig=xyorig).T)
-
-                data = cubeExt.data[:, iCube[0], jCube[0]].T
-
+            if inputMode == 'sky':
+                cubehdr = self._cube.wcs.makeHeader()
+                ww = WCS(cubehdr)
             else:
+                ww = None
 
-                # DB mode
+            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
+                                             xyorig=xyorig).T)
 
-                size = int(np.sqrt(len(self._cube.spaxels)))
-                cubeShape = (size, size)
+            _spaxels = []
+            for ii in range(len(iCube[0])):
+                _spaxels.append(Spaxel(jCube[0][ii], iCube[0][ii], plateifu=self.plateifu))
 
-                if inputMode == 'sky':
-                    cubehdr = self._cube.wcs.makeHeader()
-                    ww = WCS(cubehdr)
-                else:
-                    ww = None
+        elif self.data_origin == 'api':
 
-                iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode, xyorig=xyorig).T)
+            path = '{0}={1}/{2}={3}/xyorig={4}'.format(
+                'x' if inputMode == 'pix' else 'ra', coords[:, 0].tolist(),
+                'y' if inputMode == 'pix' else 'dec', coords[:, 1].tolist(), xyorig)
 
-                data = []
-                for ii in range(len(iCube[0])):
-                    spaxel = getSpaxelXY(self._cube, self.plateifu, x=jCube[0][ii], y=iCube[0][ii])
-                    data.append(spaxel.__getattribute__(ext))
+            routeparams = {'name': self.plateifu, 'path': path}
 
-                data = np.array(data)
+            # Get the getSpaxel route
+            url = marvin.config.urlmap['api']['getspaxels']['url'].format(**routeparams)
 
-        else:
+            response = Interaction(url)
+            data = response.getData()
 
-            # API mode
+            xx = data['x']
+            yy = data['y']
 
-            # Fail if no route map initialized
-            if not marvin.config.urlmap:
-                raise MarvinError('No URL Map found. Cannot make remote call')
+            _spaxels = []
+            for ii in range(len(xx)):
+                _spaxels.append(Spaxel(xx[ii], yy[ii], plateifu=self.plateifu, mode='remote'))
 
-            data = []
-            for ii in range(coords.shape[0]):
-                spaxel = getSpaxelAPI(coords[ii][0], coords[ii][1], self.mangaid, mode=inputMode, ext=ext, xyorig=xyorig)
-                data.append(spaxel)
-
-            data = np.array(data)
-
-        if data.shape[0] == 1:
-            return data[0]
-        else:
-            return data
+        return _spaxels
 
     def _openFile(self):
+        """Initialises a cube from a file."""
 
         self._useDB = False
         try:
@@ -221,13 +212,41 @@ class Cube(MarvinToolsClass):
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
+        self.mangaid = self._hdu[0].header['MANGAID'].strip()
+        self.plateifu = self._hdu[0].header['PLATEIFU'].strip()
+
+    def _checkCubeRemote(self):
+        """Calls the API to check that the cube exists."""
+
+        url = marvin.config.urlmap['api']['getCube']['url']
+
+        try:
+            response = Interaction(url.format(name=self.plateifu))
+        except Exception as ee:
+            raise MarvinError('found a problem when checking if remote cube '
+                              'exists: {0}'.format(str(ee)))
+
+        data = response.getData()
+
+        if self.plateifu not in data:
+            raise MarvinError('remote cube has a different plateifu!')
+
+        return
+
+    def __getitem__(self, xy):
+        """Returns the spaxel for ``(x, y)``"""
+        x, y = xy
+        return self.getSpaxel(x=x, y=y, xyorig='lower')
+
     def _getExtensionData(self, extName):
         """Returns the data from an extension."""
 
-        if not self._useDB:
+        if self.data_origin == 'file':
             return self._hdu[extName.upper()].data
-        else:
-            return None
+        elif self.data_origin == 'db':
+            return self._cube.get3dCube(extName.lower())
+        elif self.data_origin == 'api':
+            raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
 
     flux = property(lambda self: self._getExtensionData('FLUX'), doc='Gets the `FLUX` data extension.')
     ivar = property(lambda self: self._getExtensionData('IVAR'), doc='Gets the `IVAR` data extension.')

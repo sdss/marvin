@@ -45,8 +45,9 @@ class MarvinToolsClass(object):
         self.mangaid = kwargs.get('mangaid', None)
         self.plateifu = kwargs.get('plateifu', None)
         self.mode = kwargs.get('mode', None)
-        self._drpall = kwargs.get('drpall', None)
-        self._drpver = kwargs.get('drpver', None)
+        self._drpall = kwargs.get('drpall', marvin.config.drpall)
+        self._drpver = kwargs.get('drpver', marvin.config.drpver)
+        self.data_origin = None
 
         if self.mode is None:
             self.mode = marvin.config.mode
@@ -72,6 +73,9 @@ class MarvinToolsClass(object):
                               MarvinUserWarning)
                 self._doRemote()
 
+        # Sanity check to make sure data_origin has been properly set.
+        assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
+
     def _doLocal(self):
         """Tests if it's possible to load the data locally."""
 
@@ -79,6 +83,7 @@ class MarvinToolsClass(object):
 
             if os.path.exists(self.filename):
                 self.mode = 'local'
+                self.data_origin = 'file'
             else:
                 raise MarvinError('input file {0} not found'
                                   .format(self.filename))
@@ -90,6 +95,7 @@ class MarvinToolsClass(object):
 
             if dbStatus['good']:
                 self.mode = 'local'
+                self.data_origin = 'db'
             else:
                 warnings.warn(
                     'DB connection failed with error: {0}.'
@@ -100,9 +106,11 @@ class MarvinToolsClass(object):
                 if fullpath and os.path.exists(fullpath):
                     self.mode = 'local'
                     self.filename = fullpath
+                    self.data_origin = 'file'
                 else:
                     if marvin.config.download:
                         raise NotImplementedError('sdsssync not yet implemented')
+                        self.data_origin = 'file'
                         # When implemented, this should download the data and
                         # then kwargs['filename'] = downloaded_path and
                         # kwargs['mode'] = local
@@ -117,6 +125,7 @@ class MarvinToolsClass(object):
             raise MarvinError('filename not allowed in remote mode.')
         else:
             self.mode = 'remote'
+            self.data_origin = 'api'
 
     def _getFullPath(self, pathType, **pathParams):
         """Returns the full path of the file in the tree."""

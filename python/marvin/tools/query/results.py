@@ -2,26 +2,81 @@ from __future__ import print_function
 from marvin.tools.core import MarvinError, MarvinUserWarning
 import warnings
 import json
+import copy
+from pprint import pformat
+from functools import wraps
 from astropy.table import Table, Column
 
 __all__ = ['Results']
 
 
+def local_mode_only(func):
+    '''Decorator that bypasses function if in remote mode.'''
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.mode == 'remote':
+            print('{0} not available in remote mode'.format(func.__name__))
+        else:
+            return func(self, *args, **kwargs)
+    return wrapper
+
+
+def remote_mode_only(func):
+    '''Decorator that bypasses function if in local mode.'''
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.mode == 'local':
+            print('{0} not available in local mode'.format(func.__name__))
+        else:
+            return func(self, *args, **kwargs)
+    return wrapper
+
+
 class Results(object):
 
-    def __init__(self, results=None, query=None, count=None):
+    def __init__(self, results=None, query=None, count=None, mode=None):
 
         # super(Results, self).__init__(*args, **kwargs)
         self.results = results
         self.query = query
-        self.count = count if count else len(results) if results else None
+        self.count = count if count else len(results['data']) if results else None
+        self.mode = mode
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
 
+    def __repr__(self):
+        # remote mode
+        if isinstance(self.results, list):
+            if len(self.results) > 5:
+                data = self.results[:4]
+                data.append('...')
+                data.append('data'[-1])
+                results = pformat(data)
+            else:
+                results = self.results
+        # local mode
+        else:
+            out = {}
+            for k in self.results:
+                if k == 'data' and len(self.results['data']) > 5:
+                    data = self.results['data'][:4]
+                    data.append('...')
+                    data.append(self.results['data'][-1])
+                    out[k] = data
+                else:
+                    out[k] = self.results[k]
+            results = pformat(out)
+        return ('Results(results={0},\nquery={1},\ncount={2},\nmode={3})'
+                .format(results, repr(self.query), self.count,
+                        repr(self.mode)))
+
     def showQuery(self):
         return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
+    @local_mode_only
     def download(self):
         """Download data via sdsssync"""
         pass
@@ -38,6 +93,7 @@ class Results(object):
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
 
+    @remote_mode_only
     def toJson(self):
         ''' Output the results as a JSON object '''
         try:
@@ -46,6 +102,7 @@ class Results(object):
             raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
         return jsonres
 
+    @local_mode_only
     def getListOf(self, name='plateifu', to_json=False):
         ''' Get a list of plate-IFUs or MaNGA IDs from results '''
 
@@ -60,6 +117,7 @@ class Results(object):
 
         return output
 
+    @local_mode_only
     def getDictOf(self, name='plateifu', format_type='listdict', to_json=False):
         ''' Get a dictionary of specified parameter '''
 
@@ -83,6 +141,7 @@ class Results(object):
 
         return output
 
+    @local_mode_only
     def getNext(self, chunk=None):
         ''' Get the next set of results from the query, from start to end in units of chunk '''
 
@@ -101,6 +160,7 @@ class Results(object):
 
         return self.results
 
+    @local_mode_only
     def getPrevious(self, chunk=None):
         ''' Get the previous set of results from the query, from start to end in units of chunk '''
 
@@ -119,6 +179,7 @@ class Results(object):
 
         return self.results
 
+    @local_mode_only
     def getSubset(self, start, limit=10):
         ''' Gets a slice of set of results '''
         start = 0 if start < 0 else int(start)
@@ -132,6 +193,7 @@ class Results(object):
         self.results = self.query.slice(start, end).all()
         return self.results
 
+    @local_mode_only
     def getAll(self):
         ''' Retrieve all of the results '''
         self.results = self.query.all()

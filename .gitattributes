@@ -223,6 +223,7 @@ python/marvin/api/cube.py -text
 python/marvin/api/query.py -text
 python/marvin/api/tests/__init__.py -text
 python/marvin/api/tests/test_base.py -text
+python/marvin/api/tests/test_query.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
 python/marvin/db/dbconfig.ini -text
@@ -236,6 +237,9 @@ python/marvin/tools/query/__init__.py -text
 python/marvin/tools/query/forms.py -text
 python/marvin/tools/query/query.py -text
 python/marvin/tools/query/results.py -text
+python/marvin/tools/query/tests/__init__.py -text
+python/marvin/tools/query/tests/test_query.py -text
+python/marvin/tools/query/tests/test_results.py -text
 python/marvin/tools/tests/test_cube.py -text
 python/marvin/utils/__init__.py -text
 python/marvin/utils/db/__init__.py -text

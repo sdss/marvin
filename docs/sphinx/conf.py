@@ -358,3 +358,8 @@ autodoc_member_order = 'groupwise'
 modindex_common_prefix = ['marvin.']
 
 napoleon_use_rtype = False
+
+rst_epilog = """
+   .. |numpy_array| replace:: Numpy array
+   .. _numpy_array: http://example.com/
+"""

@@ -17,6 +17,8 @@ import os
 def create_app(debug=False):
 
     from marvin.api.cube import CubeView
+    from marvin.api.rss import RSSView
+    from marvin.api.spaxel import SpaxelView
     from marvin.api.query import QueryView
     from marvin.api.general import GeneralRequestsView
     from marvin.web.controllers.index import index
@@ -119,6 +121,8 @@ def create_app(debug=False):
     #
     # API route registration
     CubeView.register(api)
+    RSSView.register(api)
+    SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
     app.register_blueprint(api)
