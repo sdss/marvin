@@ -28,19 +28,19 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     webspec = None
     try:
         if byradec:
-            spectrum = cube.getSpectrum(ra=x, dec=y, xyorig=xyorig)
+            spectrum = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig)
         else:
-            spectrum = cube.getSpectrum(x=x, y=y, xyorig=xyorig)
+            spectrum = cube.getSpaxel(x=x, y=y, xyorig=xyorig)
     except Exception as e:
         specmsg = 'Could not get spectrum: {0}'.format(e)
     else:
         # get error and wavelength
-        if byradec:
-            ivar = cube.getSpectrum(ra=x, dec=y, ext='ivar', xyorig=xyorig)
-        else:
-            ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
-        error = convertIvarToErr(ivar)
-        wave = cube.getWavelength()
+        #if byradec:
+        #    ivar = cube.getSpectrum(ra=x, dec=y, ext='ivar', xyorig=xyorig)
+        #else:
+        #    ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
+        error = convertIvarToErr(spectrum.ivar)
+        wave = spectrum.wavelength
         # make input array for Dygraph
         webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum)]
 
