@@ -127,6 +127,7 @@ class Cube(MarvinToolsClass):
             assert x is not None and y is not None, 'Specify both x and y'
 
             inputMode = 'pix'
+            isScalar = np.isscalar(x)
             x = np.atleast_1d(x)
             y = np.atleast_1d(y)
             coords = np.array([x, y], np.float).T
@@ -136,6 +137,7 @@ class Cube(MarvinToolsClass):
             assert ra is not None and dec is not None, 'Specify both ra and dec'
 
             inputMode = 'sky'
+            isScalar = np.isscalar(ra)
             ra = np.atleast_1d(ra)
             dec = np.atleast_1d(dec)
             coords = np.array([ra, dec], np.float).T
@@ -201,7 +203,10 @@ class Cube(MarvinToolsClass):
             for ii in range(len(xx)):
                 _spaxels.append(Spaxel(xx[ii], yy[ii], plateifu=self.plateifu, mode='remote'))
 
-        return _spaxels
+        if len(_spaxels) == 1 and isScalar:
+            return _spaxels[0]
+        else:
+            return _spaxels
 
     def _openFile(self):
         """Initialises a cube from a file."""
