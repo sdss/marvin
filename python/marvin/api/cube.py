@@ -42,6 +42,7 @@ class CubeView(BaseView):
         self.results['data'] = 'this is a cube!'
         return json.dumps(self.results)
 
+    @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
         ''' This method performs a get request at the url route /cubes/<id> '''
         cube, res = _getCube(name)
@@ -55,6 +56,37 @@ class CubeView(BaseView):
         ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing '''
         self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
         return json.dumps(self.results)
+
+    @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'],
+           endpoint='getspaxels')
+    @parseRoutePath
+    def getSpaxels(self, **kwargs):
+
+        name = kwargs.pop('name')
+        for var in ['x', 'y', 'ra', 'dec']:
+            if var in kwargs:
+                kwargs[var] = eval(kwargs[var])
+
+        # Add ability to grab spectra from fits files
+        cube, res = _getCube(name)
+        self.update_results(res)
+        if not cube:
+            self.results['error'] = 'getSpaxels: No cube: {0}'.format(
+                res['error'])
+            return json.dumps(self.results)
+
+        try:
+            spaxels = cube.getSpaxel(**kwargs)
+            self.results['data'] = {}
+            self.results['data']['x'] = [spaxel.x for spaxel in spaxels]
+            self.results['data']['y'] = [spaxel.y for spaxel in spaxels]
+            self.results['status'] = 1
+        except Exception as e:
+            self.results['status'] = -1
+            self.results['error'] = 'getSpaxels: {0}'.format(str(e))
+
+        return json.dumps(self.results)
+
 
     # could not figure out this route, always get BuildError when trying to do a url_for('allspectra'), with the defaults path=''
     # @route('/<name>/spectra/', defaults={'path': ''}, methods=['GET', 'POST'], endpoint='allspectra')

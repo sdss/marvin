@@ -37,7 +37,7 @@ logging.Logger.important = important
 
 def initLog():
 
-    defaultLogFilePath = os.path.join(os.environ['HOME'], '.marvin/marvin.log')
+    defaultLogFilePath = os.path.join(os.environ['HOME'], '.marvin')
     if 'MARVIN_LOGS_DIR' in os.environ:
         logFilePath = os.path.realpath(os.environ['MARVIN_LOGS_DIR'])
     else:
