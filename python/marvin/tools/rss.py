@@ -60,20 +60,17 @@ class RSS(MarvinToolsClass, list):
 
         self._hdu = None
         self._rss_db = None
-        self.data_origin = None
         self._fibers = None
 
         skip_check = kwargs.get('skip_check', False)
 
         MarvinToolsClass.__init__(self, *args, **kwargs)
 
-        if self.mode == 'local':
-            if self.filename:
-                self._getRSSFromFile()
-            else:
-                self._getRSSFromDB()
-        else:
-            self.data_origin = 'api'
+        if self.data_origin == 'file':
+            self._getRSSFromFile()
+        elif self.data_origin == 'db':
+            self._getRSSFromDB()
+        elif self.data_origin == 'api':
             if not skip_check:
                 self._getRSSFromAPI()
 
@@ -104,7 +101,6 @@ class RSS(MarvinToolsClass, list):
             self.mangaid = self._hdu[0].header['MANGAID'].strip()
             self.plateifu = '{0}-{1}'.format(
                 self._hdu[0].header['PLATEID'], self._hdu[0].header['IFUDSGN'])
-            self.data_origin = 'file'
         except Exception as ee:
             raise MarvinError('Could not initialize via filename: {0}'
                               .format(ee))
@@ -144,8 +140,6 @@ class RSS(MarvinToolsClass, list):
             raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
                               'Unknown error.'.format(self.plateifu))
 
-        self.data_origin = 'db'
-
     def _getRSSFromAPI(self):
         """Initialises the RSS object using the remote API."""
 
@@ -167,7 +161,7 @@ class RSS(MarvinToolsClass, list):
             _fibers = [RSSFiber._initFromDB(rssfiber=rssfiber)
                        for rssfiber in self._rss_db]
 
-        else:
+        elif self.data_origin == 'api':
             # Makes a call to the API to retrieve all the arrays for all the fibres.
 
             routeparams = {'name': self.plateifu}
