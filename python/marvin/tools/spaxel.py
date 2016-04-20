@@ -101,24 +101,26 @@ class Spaxel(MarvinToolsClass, Spectrum):
         """Initialises the :class:`.Spectrum` object based on this Spaxel."""
 
         if self.data_origin == 'file':
-            data = self._hduList['FLUX'].data
+            flux = self._hduList['FLUX'].data
             ivar = self._hduList['IVAR'].data
             mask = self._hduList['MASK'].data
             wavelength = self._hduList['WAVE'].data
 
         elif self.data_origin == 'db':
-            data = self._spaxel_db.flux
+            flux = self._spaxel_db.flux
             ivar = self._spaxel_db.ivar
             mask = self._spaxel_db.mask
             wavelength = self._spaxel_db.cube.wavelength.wavelength
 
         elif self.data_origin == 'api':
-            data = np.array(self._arrays['data'])
+            flux = np.array(self._arrays['flux'])
             ivar = np.array(self._arrays['ivar'])
             mask = np.array(self._arrays['mask'])
             wavelength = np.array(self._arrays['wavelength'])
 
-        Spectrum.__init__(self, data, ivar=ivar, mask=mask, wavelength=wavelength)
+        Spectrum.__init__(self, flux, ivar=ivar, mask=mask, wavelength=wavelength,
+                          flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
+                          wavelength_unit='Angstrom')
 
     def _getSpaxelFromFile(self, cubeHDU=None):
         """Initialises the Spaxel object from a file data cube.

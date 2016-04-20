@@ -15,7 +15,7 @@ from __future__ import print_function
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from astropy.io import fits
-from marvin.api import api
+from brain.api import api
 import marvin
 from marvin.tools.spectrum import Spectrum
 import numpy as np
@@ -211,6 +211,11 @@ class RSSFiber(Spectrum):
         self.mangaid = kwargs.pop('mangaid', None)
         self.plateifu = kwargs.pop('plateifu', None)
         self.data_origin = kwargs.pop('data_origin', None)
+
+        flux_units = '1e-17 erg/s/cm^2/Ang/fiber'
+        wavelength_units = 'Angstrom'
+        kwargs['flux_units'] = flux_units
+        kwargs['wavelength_units'] = wavelength_units
 
         Spectrum.__init__(self, *args, **kwargs)
 

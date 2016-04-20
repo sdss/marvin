@@ -21,89 +21,65 @@ except:
     mpl = None
 
 
-class Spectrum(np.ndarray):
+class Spectrum(object):
     """A class representing an spectrum with extra functionality.
 
-    This class inherits from |numpy_array|_.
-
     Parameters:
-        spectrum (array-like):
+        flux (array-like):
             The 1-D array contianing the spectrum.
-        spectrum_units (str, optional):
+        flux_units (str, optional):
             The units of the spectrum.
+        wavelength (array-like, optional):
+            The wavelength solution for ``spectrum``. Must have the same number
+            of elements.
         ivar (array-like, optional):
             The inverse variance array for ``spectrum``. Must have the same
             number of elements.
         mask (array-like, optional):
             The mask array for ``spectrum``. Must have the same number of
             elements.
-        wavelength (array-like, optional):
-            The wavelength solution for ``spectrum``. Must have the same number
-            of elements.
         wavelength_unit (str, optional):
             The units of the wavelength solution.
 
     """
 
-    def __new__(cls, *args, **kwargs):
-        """Creates a new np.ndarray.
+    def __init__(self, flux, flux_units=None, wavelength_unit=None,
+                 ivar=None, mask=None, wavelength=None):
 
-        See http://docs.scipy.org/doc/numpy-1.10.1/user/basics.subclassing.html
-
-        """
-
-        # We create an empty array of size 1 that we'll later resize to the
-        # correct size of the array. This is so that Spectrum can be
-        # subclassed. The .copy() allows to circunvent some problems when
-        # trying to resize the array. There may be a better way of doing this.
-        obj = np.asarray([0.0]).view(cls).copy()
-
-        return obj
-
-    def __init__(self, spectrum, ivar=None, mask=None, wavelength=None,
-                 spectrum_units='1e-17 erg/s/cm^2/Ang/spaxel',
-                 wavelength_unit='Angstrom'):
-
+        self.flux = np.array(flux)
         self.ivar = np.array(ivar) if ivar is not None else None
         self.mask = np.array(mask) if mask is not None else None
         self.wavelength = np.array(wavelength) \
             if wavelength is not None else None
 
-        self.spectrum_units = spectrum_units
+        self.flux_units = flux_units
         self.wavelength_unit = wavelength_unit
-
-        # Resizes the array to the size of the input spectrum.
-        # refcheck circunvents a problem with:
-        # "cannot resize an array that references or is referenced
-        # by another array in this way."
-        self.resize(len(spectrum), refcheck=False)
-        self[:] = np.array(spectrum)
 
         # Performs some checks.
 
-        assert len(self.shape) == 1, 'spectrum must be 1-D'
+        assert len(self.flux.shape) == 1, 'spectrum must be 1-D'
 
         if self.ivar is not None:
             assert len(self.ivar.shape) == 1, 'ivar must be 1-D'
-            assert len(self) == len(self.ivar), \
+            assert len(self.flux) == len(self.ivar), \
                 'ivar must have the same lenght as the base spectrum'
 
         if self.mask is not None:
             assert len(self.mask.shape) == 1, 'mask must be 1-D'
-            assert len(self) == len(self.mask), \
+            assert len(self.flux) == len(self.mask), \
                 'mask must have the same lenght as the base spectrum'
 
         if self.wavelength is not None:
             assert len(self.wavelength.shape) == 1, 'wavelength must be 1-D'
-            assert len(self) == len(self.wavelength), \
+            assert len(self.flux) == len(self.wavelength), \
                 'wavelength must have the same lenght as the base spectrum'
 
     def __repr__(self):
         """Representation for Spectrum."""
 
-        return '<Marvin Spectrum ({0!s})'.format(self)
+        return '<Marvin Spectrum ({0!s})'.format(self.flux)
 
-    def plot(self, array='spectrum', xlim=None, ylim=None, mask_color=None,
+    def plot(self, array='flux', xlim=None, ylim=None, mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
         """Plots and spectrum using matplotlib.
 
@@ -115,7 +91,7 @@ class Spectrum(np.ndarray):
         the plot will be displayed interactivelly.
 
         Parameters:
-            array ({'spectrum', 'ivar', 'mask'}):
+            array ({'flux', 'ivar', 'mask'}):
                 The array to display, defaults to the internal spectrum with
                 which the object was initialised.
             xlim,ylim (tuple-like or None):
@@ -133,7 +109,7 @@ class Spectrum(np.ndarray):
                 defined base on the type of input array.
             mask_color (matplotlib valid color or None):
                 If set and ``Spectrum.mask`` is defined, the elements of
-                ``array`` with ``mask>0`` will be coloured using that value.
+                ``array`` with ``mask`` will be coloured using that value.
                 More information about `matplotlib colours
                 <http://matplotlib.org/api/colors_api.html>`_
             figure (matplotlib Figure object or None):
@@ -173,11 +149,11 @@ class Spectrum(np.ndarray):
             raise MarvinMissingDependence('matplotlib is not installed.')
 
         array = array.lower()
-        validSpectrum = ['spectrum', 'flux', 'ivar', 'mask']
+        validSpectrum = ['flux', 'ivar', 'mask']
         assert array in validSpectrum, 'array must be one of {0!r}'.format(validSpectrum)
 
-        if array in ['spectrum', 'flux']:
-            data = self
+        if array == 'flux':
+            data = self.flux
         elif array == 'ivar':
             data = self.ivar
         elif array == 'mask':
@@ -216,12 +192,12 @@ class Spectrum(np.ndarray):
                 xlabel = ''
 
         if ylabel is None:
-            if array in ['spectrum', 'flux']:
+            if array == 'flux':
                 ylabel = 'Flux'
-                if self.spectrum_units == '1e-17 erg/s/cm^2/Ang/spaxel':
+                if self.flux_units == '1e-17 erg/s/cm^2/Ang/spaxel':
                     ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]'
-                elif self.spectrum_units is not None:
-                    ylabel += r' [{0}]'.format(self.spectrum_units)
+                elif self.flux_units is not None:
+                    ylabel += r' [{0}]'.format(self.flux_units)
             elif array == 'ivar':
                 ylabel = 'Inverse variance'
             else:
