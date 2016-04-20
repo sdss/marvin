@@ -16,7 +16,7 @@ from flask import current_app, Blueprint, render_template, session as current_se
 from flask.ext.classy import FlaskView, route
 from marvin.api.base import processRequest
 from marvin.utils.general.general import convertIvarToErr, findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinError
 from marvin.tools.cube import Cube
 import os
 
