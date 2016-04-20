@@ -27,15 +27,14 @@ python/marvin/tests/__init__.py -text
 python/marvin/tests/api/test_base.py -text
 python/marvin/tests/api/test_query.py -text
 python/marvin/tests/tools/test_cube.py -text
+python/marvin/tests/tools/test_query.py -text
+python/marvin/tests/tools/test_results.py -text
 python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
 python/marvin/tools/query/__init__.py -text
 python/marvin/tools/query/forms.py -text
 python/marvin/tools/query/query.py -text
 python/marvin/tools/query/results.py -text
-python/marvin/tools/query/tests/__init__.py -text
-python/marvin/tools/query/tests/test_query.py -text
-python/marvin/tools/query/tests/test_results.py -text
 python/marvin/utils/__init__.py -text
 python/marvin/utils/db/__init__.py -text
 python/marvin/utils/db/dbutils.py -text

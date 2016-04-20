@@ -442,10 +442,15 @@ def isPlateifuOrMangaid(galid):
     if isvalid:
         galidsplit = galid.split('-')
 
+        # int this
         if galidsplit[0] > '6500':
             idtype = 'plateifu'
         else:
             idtype = 'mangaid'
+    else:
+        pass
+        # check for plate
+
     return isvalid, idtype
 
 
