@@ -1,13 +1,14 @@
 import json
 from flask.ext.classy import route
 from flask import session as current_session
-from marvin.api.base import BaseView
+from brain.api.query import BrainBaseView
 from marvin.tools.query import doQuery
 from marvin.tools.core import MarvinError
 
 
 def _getCubes(searchfilter, params_out=['plateifu']):
     """Run query locally at Utah."""
+
     q, r = doQuery(searchfilter)
     r.getAll()
     # output = dict(data=r.getListOf('plateifu'),
@@ -17,14 +18,8 @@ def _getCubes(searchfilter, params_out=['plateifu']):
     return output
 
 
-class QueryView(BaseView):
+class QueryView(BrainBaseView):
     """Class describing API calls related to queries."""
-
-    route_base = '/query/'
-
-    def index(self):
-        self.results['data'] = 'this is a query!'
-        return json.dumps(self.results)
 
     """example query post:
     curl -X POST --data "searchfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
