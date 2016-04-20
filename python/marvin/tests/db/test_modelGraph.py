@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 from marvin.db.modelGraph import ModelGraph, nx
 from marvin import marvindb
-from marvin.tools.tests import MarvinTest
+from marvin.tests import MarvinTest
 from unittest import skipIf
 
 
