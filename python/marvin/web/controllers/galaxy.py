@@ -14,7 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask.ext.classy import FlaskView, route
-from marvin.api.base import processRequest
+from brain.api.base import processRequest
 from marvin.utils.general.general import findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
