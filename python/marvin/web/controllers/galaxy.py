@@ -15,7 +15,8 @@ from __future__ import division
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask.ext.classy import FlaskView, route
 from marvin.api.base import processRequest
-from marvin.utils.general.general import convertIvarToErr, findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
+from marvin.utils.general.general import findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
+from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
 import os

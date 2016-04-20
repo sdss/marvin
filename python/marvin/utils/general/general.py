@@ -5,7 +5,6 @@ from astropy import table
 from scipy.interpolate import griddata
 import warnings
 import marvin
-import os
 import PIL
 
 # General utilities
@@ -273,49 +272,6 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
             'mangaid={0} either local or remotely.'.format(mangaid))
 
 
-def getDbMachine():
-    ''' Get the machine that the app is running on.  This determines correct database and app configuration '''
-    # Get machine
-    machine = os.environ.get('HOSTNAME', None)
-
-    # Check if localhost or not
-    try:
-        localhost = bool(os.environ['MANGA_LOCALHOST'])
-    except:
-        localhost = machine == 'manga'
-
-    # Check if Utah or not
-    try:
-        utah = os.environ['UUFSCELL'] == 'kingspeak.peaks'
-    except:
-        utah = None
-    # Check if sas-vm or not
-    sasvm = 'sas-vm' in machine if machine else None
-
-    # Set the dbconfig variable
-    if localhost:
-        return 'local'
-    elif utah or sasvm:
-        return 'utah'
-    else:
-        return None
-
-
-def convertIvarToErr(ivar):
-    ''' Converts a list of inverse variance into an a list of standard errors '''
-
-    assert type(ivar) == list or type(ivar) == np.ndarray, 'Input ivar is not of type list or an Numpy ndarray'
-
-    if type(ivar) == list:
-        ivar = np.array(ivar)
-
-    error = np.zeros(ivar.shape)
-    notnull = ivar != 0.0
-    error[notnull] = 1/np.sqrt(ivar[notnull])
-    error = list(error)
-    return error
-
-
 def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
     '''
     Finds the closest vector of array coordinates (x, y) from an input vector of pixel coordinates (x, y).
@@ -539,4 +495,3 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center
             return response.getData()
         else:
             raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
-

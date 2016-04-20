@@ -2,7 +2,7 @@ import os
 import re
 import warnings
 from marvin.core.exceptions import MarvinUserWarning
-from marvin.utils.general.general import getDbMachine
+from brain.utils.general.general import getDbMachine
 
 from brain import bconfig
 

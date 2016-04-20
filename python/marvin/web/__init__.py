@@ -5,7 +5,7 @@ from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
 from flask_jsglue import JSGlue
 from inspect import getmembers, isfunction
-from marvin.utils.general.general import getDbMachine
+from brain.utils.general.general import getDbMachine
 from marvin import config
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
