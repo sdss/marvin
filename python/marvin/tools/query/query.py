@@ -19,7 +19,7 @@ from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search, Boole
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
-from marvin.api.api import Interaction
+from brain.api.api import Interaction
 from sqlalchemy import or_, and_, bindparam, between
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
