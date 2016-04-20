@@ -1,5 +1,5 @@
 from __future__ import print_function
-from marvin.tools.core import MarvinError, MarvinUserWarning
+from marvin.core import MarvinError, MarvinUserWarning
 import warnings
 import json
 import copy

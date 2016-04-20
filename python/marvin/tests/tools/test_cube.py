@@ -4,7 +4,7 @@ import os
 import copy
 import unittest
 from marvin.tools.cube import Cube
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinError
 from marvin import config, marvindb
 from marvin.tools.tests import MarvinTest, skipIfNoDB
 from numpy.testing import assert_allclose

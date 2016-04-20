@@ -13,7 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from marvin import marvindb, config
-from marvin.tools.core import MarvinError, MarvinUserWarning
+from marvin.core import MarvinError, MarvinUserWarning
 from collections import defaultdict
 from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
 from wtforms.widgets import Select

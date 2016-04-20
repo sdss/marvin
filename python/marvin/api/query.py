@@ -3,7 +3,7 @@ from flask.ext.classy import route
 from flask import session as current_session
 from brain.api.query import BrainBaseView
 from marvin.tools.query import doQuery
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinError
 
 
 def _getCubes(searchfilter, params_out=['plateifu']):

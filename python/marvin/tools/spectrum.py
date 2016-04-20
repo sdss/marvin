@@ -13,7 +13,7 @@
 from __future__ import division
 from __future__ import print_function
 import numpy as np
-from marvin.tools.core.exceptions import MarvinMissingDependence
+from marvin.core.exceptions import MarvinMissingDependence
 
 try:
     import matplotlib as mpl

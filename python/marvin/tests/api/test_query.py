@@ -5,7 +5,7 @@ import copy
 import unittest
 from marvin import config
 from marvin.api.query import QueryView
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinError
 
 
 class TestQuery(unittest.TestCase):

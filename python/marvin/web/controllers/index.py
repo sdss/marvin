@@ -4,7 +4,7 @@ from marvin import config, marvindb
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.base import processRequest
 from marvin.tools.query import Query, doQuery
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinError
 from wtforms import SelectField, validators
 import json
 

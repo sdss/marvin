@@ -1,4 +1,4 @@
-from marvin.tools.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
 from astropy import table

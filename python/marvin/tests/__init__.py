@@ -3,7 +3,7 @@
 
 from unittest import TestCase
 import warnings
-from marvin.tools.core.exceptions import MarvinSkippedTestWargning
+from marvin.core.exceptions import MarvinSkippedTestWargning
 from functools import wraps
 
 

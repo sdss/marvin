@@ -12,8 +12,8 @@
 
 from __future__ import division
 from __future__ import print_function
-from marvin.tools.core import MarvinToolsClass
-from marvin.tools.core import MarvinError
+from marvin.core import MarvinToolsClass
+from marvin.core import MarvinError
 from astropy.io import fits
 from marvin.api import api
 import marvin

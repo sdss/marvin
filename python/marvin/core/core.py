@@ -15,7 +15,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 import marvin
-from marvin.tools.core import MarvinUserWarning, MarvinError
+from marvin.core import MarvinUserWarning, MarvinError
 from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
 import warnings

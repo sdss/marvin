@@ -1,2 +1,2 @@
-from marvin.tools.core.exceptions import *
-from marvin.tools.core.core import *
+from marvin.core.exceptions import *
+from marvin.core.core import *

@@ -3,8 +3,8 @@ import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 import marvin
-from marvin.tools.core import MarvinToolsClass
-from marvin.tools.core.exceptions import MarvinError
+from marvin.core import MarvinToolsClass
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords
 from marvin.tools.spaxel import Spaxel
 from marvin.api.api import Interaction

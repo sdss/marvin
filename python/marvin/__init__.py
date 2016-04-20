@@ -1,7 +1,7 @@
 import os
 import re
 import warnings
-from marvin.tools.core.exceptions import MarvinUserWarning
+from marvin.core.exceptions import MarvinUserWarning
 from marvin.utils.general.general import getDbMachine
 
 from brain import bconfig
@@ -143,7 +143,7 @@ from marvin.db.marvindb import MarvinDB
 marvindb = MarvinDB(dbtype=config.db)
 
 # Inits the URL Route Map
-from marvin.api.api import Interaction
+from brain.api.api import Interaction
 #config.sasurl = 'http://cd057661.ngrok.io/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://93f7a37b.ngrok.io'  # Jose's ngrok
 
