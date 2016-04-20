@@ -2,7 +2,7 @@ from flask import current_app, Blueprint, render_template, session as current_se
 from flask.ext.classy import FlaskView, route
 from marvin import config, marvindb
 from marvin.tools.query.forms import MarvinForm
-from marvin.api.base import processRequest
+from brain.api.base import processRequest
 from marvin.tools.query import Query, doQuery
 from marvin.core import MarvinError
 from wtforms import SelectField, validators
@@ -83,4 +83,3 @@ class Marvin(FlaskView):
 
 
 Marvin.register(index)
-
