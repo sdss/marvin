@@ -179,7 +179,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     global drpTable
     from marvin import config, marvindb
-    from marvin.api.api import Interaction
+    from brain.api.api import Interaction
 
     # The modes and order over which the auto mode will loop.
     autoModes = ['db', 'drpall', 'remote']
