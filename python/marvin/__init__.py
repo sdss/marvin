@@ -7,8 +7,15 @@ from marvin.utils.general.general import getDbMachine
 from brain import bconfig
 
 # Inits the log
-from marvin.tools.core.logger import initLog
-log = initLog()
+from brain.core.logger import initLog
+
+# Defines log dir.
+if 'MARVIN_LOGS_DIR' in os.environ:
+    logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
+else:
+    logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
+
+log = initLog(logFilePath)
 
 warnings.simplefilter('once')
 
