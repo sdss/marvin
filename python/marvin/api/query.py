@@ -1,7 +1,7 @@
 import json
 from flask.ext.classy import route
 from flask import session as current_session
-from brain.api.query import BrainBaseView
+from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery
 from marvin.core import MarvinError
 
@@ -18,7 +18,7 @@ def _getCubes(searchfilter, params_out=['plateifu']):
     return output
 
 
-class QueryView(BrainBaseView):
+class QueryView(BrainQueryView):
     """Class describing API calls related to queries."""
 
     """example query post:
