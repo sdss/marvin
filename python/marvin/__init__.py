@@ -4,6 +4,8 @@ import warnings
 from marvin.tools.core.exceptions import MarvinUserWarning
 from marvin.utils.general.general import getDbMachine
 
+from brain import bconfig
+
 # Inits the log
 from marvin.tools.core.logger import initLog
 log = initLog()
@@ -11,10 +13,10 @@ log = initLog()
 warnings.simplefilter('once')
 
 
-class Config(object):
+class MarvinConfig(object):
+
     def __init__(self):
 
-        self._mode = 'auto'
         self._drpall = None
         self._inapp = False
 
@@ -23,7 +25,6 @@ class Config(object):
         self.mplver = None
         self.vermode = None
         self.download = False
-        self.sasurl = os.getenv('SAS_URL') if 'SAS_URL' in os.environ else 'https://sas.sdss.org/'
         self._setDbConfig()
         self._checkConfig()
 
@@ -48,16 +49,28 @@ class Config(object):
         else:
             return None
 
+############ Brain Config overrides ############
+# These are configuration parameter defined in Brain.bconfig. We need
+# to be able to modify them during run time, so we define properties and
+# setters to do that from Marvin.config.
+
     @property
     def mode(self):
-        return self._mode
+        return bconfig.mode
 
     @mode.setter
     def mode(self, value):
-        if value in ['local', 'remote', 'auto']:
-            self._mode = value
-        else:
-            raise ValueError('config.mode must be "local" or "remote".')
+        bconfig.mode = value
+
+    @property
+    def sasurl(self):
+        return bconfig.sasurl
+
+    @sasurl.setter
+    def sasurl(self, value):
+        bconfig.sasurl = value
+
+#################################################
 
     @property
     def drpall(self):
@@ -78,7 +91,8 @@ class Config(object):
     def _checkConfig(self):
         ''' Check the config '''
         if not self.mplver or not (self.drpver and self.dapver):
-            warnings.warn('No MPL or DRP/DAP version set. Setting default to MPL-4', MarvinUserWarning)
+            warnings.warn('No MPL or DRP/DAP version set. Setting default to MPL-4',
+                          MarvinUserWarning)
             self.setMPL('MPL-4')
 
     def setMPL(self, mplver):
@@ -109,11 +123,12 @@ class Config(object):
             assert type(dapver) == str, 'dapver needs to be a string'
             dapre1 = re.search('v([0-9][_]([0-9])[_]([0-9]))', dapver)
             dapre2 = re.search('([0-9][.]([0-9])[.]([0-9]))', dapver)
-            assert (dapre1 or dapre2) is not None, 'DAP version must be of form "v[X]_[X]_[X]", or [X].[X].[X]'
+            assert (dapre1 or dapre2) is not None, \
+                'DAP version must be of form "v[X]_[X]_[X]", or [X].[X].[X]'
             if any([dapre1, dapre2]):
                 self.dapver = dapver
 
-config = Config()
+config = MarvinConfig()
 config._checkConfig()
 
 # Inits the Database session and ModelClasses
