@@ -22,7 +22,7 @@ from astropy.wcs import WCS
 import os
 import numpy as np
 from numpy.testing import assert_allclose
-from marvin.utils.tests import TemplateTestCase, Call, template
+from marvin.tests import TemplateTestCase, Call, template
 from marvin.core.exceptions import MarvinError
 
 
