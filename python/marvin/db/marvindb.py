@@ -12,7 +12,7 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from marvin.db.modelGraph import ModelGraph
+from brain.db.modelGraph import ModelGraph
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -123,4 +123,3 @@ class MarvinDB(object):
             self.modelgraph = ModelGraph(models)
         else:
             self.modelgraph = None
-
