@@ -11,10 +11,10 @@ def _getCubes(searchfilter, params_out=['plateifu']):
 
     q, r = doQuery(searchfilter)
     r.getAll()
-    # output = dict(data=r.getListOf('plateifu'),
-    #               query=r.showQuery(), filter=searchfilter)
-    output = dict(data={p: r.getListOf(p) for p in params_out},
+    output = dict(data=r.getListOf('plateifu'),
                   query=r.showQuery(), filter=searchfilter)
+    # output = dict(data={p: r.getListOf(p) for p in params_out},
+    #               query=r.showQuery(), filter=searchfilter)
     return output
 
 
@@ -30,10 +30,10 @@ class QueryView(BrainQueryView):
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
         searchfilter = self.results['inconfig']['searchfilter']
-        params_tmp = self.results['inconfig']['params_out']
-        params_out = params_tmp.split(',')
+        # params_tmp = self.results['inconfig']['params_out']
+        # params_out = params_tmp.split(',')
         try:
-            res = _getCubes(searchfilter, params_out)
+            res = _getCubes(searchfilter)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:
