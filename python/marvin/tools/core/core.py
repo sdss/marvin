@@ -58,8 +58,7 @@ class MarvinToolsClass(object):
         assert sum([bool(arg) for arg in args]) == 1, errmsg
 
         if self.mangaid:
-            self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall,
-                                             drpver=self._drpver)
+            self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall, drpver=self._drpver)
 
         if self.mode == 'local':
             self._doLocal()
@@ -69,8 +68,7 @@ class MarvinToolsClass(object):
             try:
                 self._doLocal()
             except:
-                warnings.warn('local mode failed. Trying remote now.',
-                              MarvinUserWarning)
+                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
                 self._doRemote()
 
         # Sanity check to make sure data_origin has been properly set.
@@ -85,8 +83,7 @@ class MarvinToolsClass(object):
                 self.mode = 'local'
                 self.data_origin = 'file'
             else:
-                raise MarvinError('input file {0} not found'
-                                  .format(self.filename))
+                raise MarvinError('input file {0} not found'.format(self.filename))
 
         elif self.plateifu:
 
@@ -97,9 +94,8 @@ class MarvinToolsClass(object):
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:
-                warnings.warn(
-                    'DB connection failed with error: {0}.'
-                    .format(dbStatus['error']), MarvinUserWarning)
+                warnings.warn('DB connection failed with error: {0}.'.format(dbStatus['error']),
+                              MarvinUserWarning)
 
                 fullpath = self._getFullPath()
 
@@ -115,8 +111,8 @@ class MarvinToolsClass(object):
                         # then kwargs['filename'] = downloaded_path and
                         # kwargs['mode'] = local
                     else:
-                        raise MarvinError('this is the end of the road. Try '
-                                          'using some reasonable inputs.')
+                        raise MarvinError('this is the end of the road. '
+                                          'Try using some reasonable inputs.')
 
     def _doRemote(self):
         """Tests if remote connection is possible."""
@@ -136,10 +132,8 @@ class MarvinToolsClass(object):
             try:
                 fullpath = Path().full(pathType, **pathParams)
             except Exception as ee:
-                warnings.warn(
-                    'sdss_access was not able to retrieve the full path of '
-                    'the file. Error message is: {0}'.format(str(ee)),
-                    MarvinUserWarning)
+                warnings.warn('sdss_access was not able to retrieve the full path of the file. '
+                              'Error message is: {0}'.format(str(ee)), MarvinUserWarning)
                 fullpath = None
 
         return fullpath
