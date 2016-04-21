@@ -76,8 +76,8 @@ class Galaxy(FlaskView):
 
         # determine type of galid
         self.galaxy['id'] = galid
-        isvalid, idtype = isPlateifuOrMangaid(galid)
-        if not isvalid:
+        idtype = isPlateifuOrMangaid(galid)
+        if not idtype:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
         else:

@@ -389,25 +389,30 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
     return newcoords
 
 
-def isPlateifuOrMangaid(galid):
-    ''' Determines if a string input is a plateifu or manga-id '''
+def parseIdentifier(galid):
+    ''' Determines if a string input is a plate, plateifu, or manga-id '''
 
-    idtype = None
-    isvalid = '-' in galid
+    galid = str(galid)
+    hasdash = '-' in galid
 
-    if isvalid:
+    if hasdash:
         galidsplit = galid.split('-')
 
-        # int this
-        if galidsplit[0] > '6500':
+        if int(galidsplit[0]) > 6500:
             idtype = 'plateifu'
         else:
             idtype = 'mangaid'
     else:
-        pass
         # check for plate
+        if galid.isdigit():
+            if len(galid) > 3:
+                idtype = 'plate'
+            else:
+                idtype = None
+        else:
+            idtype = None
 
-    return isvalid, idtype
+    return idtype
 
 
 def getSpaxelXY(cube, plateifu, x, y):
