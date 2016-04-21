@@ -95,10 +95,10 @@ class Query(object):
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
 
+        # set the mode
         if self.mode is None:
             self.mode = config.mode
 
-        # TODO: This seems a bit too convoluted. Maybe we can simplify it.
         if self.mode == 'local':
             self._doLocal()
         if self.mode == 'remote':
@@ -108,10 +108,14 @@ class Query(object):
             if self.mode == 'remote':
                 self._doRemote()
 
+        # if searchfilter is set then set the parameters
+        searchfilter = kwargs.get('searchfilter', None)
+        if searchfilter:
+            self.set_filter(searchfilter=searchfilter)
+
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
-                .format(repr(self.mode), self.limit, self.sort,
-                        repr(self.order)))
+                .format(repr(self.mode), self.limit, self.sort, repr(self.order)))
 
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''
@@ -131,8 +135,9 @@ class Query(object):
             self.mode = 'remote'
 
     def set_filter(self, searchfilter=None):
-        ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms with the appropriate form to
-        modify/update based on the input parameters.  One-to-one mapping between parameter and form/modelclass/sqltable
+        ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms
+        with the appropriate form to modify/update based on the input parameters.  One-to-one
+        mapping between parameter and form/modelclass/sqltable
 
         Params is a string input of a boolean filter condition in SQL syntax
         e.g., params = " nsa_redshift < 0.012 and name = 19* "
@@ -168,8 +173,7 @@ class Query(object):
                     self.reset()
                     raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
             elif self.mode == 'remote':
-                # Is it possible to build a query remotely but still allow for
-                # user manipulation?
+                # Is it possible to build a query remotely but still allow for user manipulation?
                 pass
 
     def _setForms(self):
@@ -302,8 +306,7 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
-            return Results(results=res, query=self.query, count=count,
-                           mode=self.mode)
+            return Results(results=res, query=self.query, count=count, mode=self.mode)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized

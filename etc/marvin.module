@@ -72,8 +72,7 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 # Add any non-standard Module code below this point.
 #
 module unload sdss_python_module
-module load sdss_python_module/briandev
-prereq sdss_python_module/briandev
+module load sdss_python_module
 module load inspection/$inspection_version
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
