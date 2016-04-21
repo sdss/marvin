@@ -102,6 +102,23 @@ class ParamFormLookupDict(dict):
                 '{0} matches multiple parameters in the lookup table: {1}'
                 .format(key, ', '.join(matches)))
 
+    def mapToColumn(self, keys):
+        """Returns the model class column in the WFTForm."""
+
+        if not isinstance(keys, (list, tuple)):
+            keys = [keys]
+
+        columns = []
+        for key in keys:
+            wtfForm = self[key]
+            column = key.split('.')[-1]
+            columns.append(getattr(wtfForm.Meta.model, column))
+
+        if len(columns) == 1:
+            return columns[0]
+        else:
+            return columns
+
 
 # Custom validator for MainForm
 class ValidOperand(object):
