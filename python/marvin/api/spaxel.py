@@ -17,7 +17,8 @@ from flask.ext.classy import route
 from marvin.tools.spaxel import Spaxel
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import parseIdentifier, parseRoutePath
+from marvin.utils.general import parseIdentifier
+from brain.utils.general import parseRoutePath
 
 
 def _getSpaxel(name, x, y):
