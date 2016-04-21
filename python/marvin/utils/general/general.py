@@ -10,7 +10,7 @@ import PIL
 # General utilities
 
 __all__ = ['convertCoords', 'lookUpMpl', 'lookUpVersions',  'mangaid2plateifu', 'findClosestVector',
-           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI']
+           'getWCSFromPng', 'convertImgCoords', 'parseIdentifier', 'getSpaxelXY', 'getSpaxelAPI']
 
 drpTable = None
 
