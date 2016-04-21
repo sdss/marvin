@@ -8,9 +8,8 @@ import marvin
 import PIL
 
 # General utilities
-
-__all__ = ['convertCoords', 'lookUpMpl', 'lookUpVersions',  'mangaid2plateifu', 'findClosestVector',
-           'getWCSFromPng', 'convertImgCoords', 'parseIdentifier', 'getSpaxelXY', 'getSpaxelAPI']
+__all__ = ['convertCoords', 'lookUpMpl', 'lookUpVersions', 'parseIdentifier', 'mangaid2plateifu',
+           'findClosestVector', 'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI']
 
 drpTable = None
 
