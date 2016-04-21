@@ -137,3 +137,26 @@ class MarvinToolsClass(object):
                 fullpath = None
 
         return fullpath
+
+
+class Dotable(dict):
+    """A custom dict class that allows dot access to nested dictionaries.
+
+    Copied from http://hayd.github.io/2013/dotable-dictionaries/. Note that
+    this allows you to use dots to get dictionary values, but not to set them.
+
+    """
+
+    __getattr__ = dict.__getitem__
+
+    def __init__(self, d):
+        self.update(**dict((k, self.parse(v)) for k, v in d.iteritems()))
+
+    @classmethod
+    def parse(cls, v):
+        if isinstance(v, dict):
+            return cls(v)
+        elif isinstance(v, list):
+            return [cls.parse(i) for i in v]
+        else:
+            return v
