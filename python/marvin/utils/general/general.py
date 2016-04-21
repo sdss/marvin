@@ -9,7 +9,7 @@ import PIL
 
 # General utilities
 
-__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions', 'isPlateifuOrMangaid',
+__all__ = ['parseName', 'convertCoords', 'lookUpMpl', 'lookUpVersions', 'parseIdentifier',
            'mangaid2plateifu', 'findClosestVector', 'getWCSFromPng', 'convertImgCoords',
            'getSpaxelXY', 'getSpaxelAPI']
 
