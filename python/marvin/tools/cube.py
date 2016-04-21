@@ -69,14 +69,26 @@ class Cube(MarvinToolsClass):
                 self._openFile()
             except IOError as e:
                 raise MarvinError('Could not initialize via filename: {0}'.format(e))
+            wcs_table = WCS(self.hdr)
+            self.plateifu = self.hdr['PLATEIFU'].strip()
+            self.wcs = wcs_table.to_header()
+            self.redshift = None
         elif self.data_origin == 'db':
             try:
                 self._getCubeFromDB()
             except RuntimeError as e:
                 raise MarvinError('Could not initialize via db: {0}'.format(e))
+            self.wcs = self._cube.wcs.makeHeader()
+            self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this to sampledb
         elif self.data_origin == 'api':
             if not skip_check:
                 self._checkCubeRemote()
+
+        self.ifu = self.hdr['IFUDSGN']
+        self.ra = self.hdr['OBJRA']  # self._cube.ra
+        self.dec = self.hdr['OBJDEC']  # self._cube.dec
+        self.plate = int(self.hdr['PLATEID'])  # self._cube.plate
+        self.mangaid = self.hdr['MANGAID']  # self._cube.mangaid
 
     def __repr__(self):
         """Representation for Cube."""
@@ -217,8 +229,7 @@ class Cube(MarvinToolsClass):
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
-        self.mangaid = self._hdu[0].header['MANGAID'].strip()
-        self.plateifu = self._hdu[0].header['PLATEIFU'].strip()
+        self.hdr = self._hdu[0].header
 
     def _checkCubeRemote(self):
         """Calls the API to check that the cube exists."""
@@ -303,10 +314,3 @@ class Cube(MarvinToolsClass):
             if self._cube:
                 self._useDB = True
                 self.hdr = self._cube.header
-                self.wcs = self._cube.wcs.makeHeader()
-                self.ifu = self._cube.ifu.name
-                self.ra = self._cube.ra
-                self.dec = self._cube.dec
-                self.plate = self._cube.plate
-                self.mangaid = self._cube.mangaid
-                self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this for the future to sampledb
