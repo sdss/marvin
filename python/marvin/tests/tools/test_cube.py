@@ -8,6 +8,9 @@ from marvin.core import MarvinError
 from marvin import config, marvindb
 from marvin.tests import MarvinTest, skipIfNoDB
 from numpy.testing import assert_allclose
+from brain.core.core import URLMapDict
+from brain.core.exceptions import BrainError
+import numpy as np
 
 
 class TestCubeBase(MarvinTest):
@@ -24,7 +27,12 @@ class TestCubeBase(MarvinTest):
         cls.cubepk = 10179
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
+
         cls.initconfig = copy.deepcopy(config)
+        cls.init_mode = config.mode
+        cls.init_sasurl = config.sasurl
+        cls.init_urlmap = config.urlmap
+
         cls.session = marvindb.session
 
         cls.cubeFromFile = Cube(filename=cls.filename)
@@ -35,10 +43,13 @@ class TestCubeBase(MarvinTest):
 
     def setUp(self):
         # reset config variables
-        cvars = ['mode', 'drpver', 'dapver', 'db', 'sasurl', 'urlmap']
+        cvars = ['drpver', 'dapver', 'db']
         for var in cvars:
             config.__setattr__(var, self.initconfig.__getattribute__(var))
         config.drpver = self.outver
+        config.sasurl = self.init_sasurl
+        config.mode = self.init_mode
+        config.urlmap = self.init_urlmap
 
     def tearDown(self):
         if self.session:
@@ -88,6 +99,9 @@ class TestCube(TestCubeBase):
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
+        # TODO: This tests fails because config.db = None does not disable the
+        # local DB, and there is currently no way of doing so.
+
         config.db = None
         params = {'mangaid': self.mangaid}
         errMsg = 'No db connected'
@@ -126,276 +140,279 @@ class TestCube(TestCubeBase):
         self.session.flush()
 
 
-class TestGetSpectrum(TestCubeBase):
+class TestGetSpaxel(TestCubeBase):
 
-    #  Tests for getSpectrum
-    def _test_getSpectrum(self, cube, idx, expect, **kwargs):
-        """Convenience method to test getSpectrum."""
+    #  Tests for getSpaxel
+    def _test_getSpaxel(self, cube, idx, expect, **kwargs):
+        """Convenience method to test getSpaxel."""
 
-        spectrum = cube.getSpectrum(**kwargs)
-        self.assertAlmostEqual(spectrum[idx], expect, places=5)
+        ext = kwargs.pop('ext', 'flux')
+        spectrum = cube.getSpaxel(**kwargs)
+        self.assertAlmostEqual(spectrum[ext][idx], expect, places=5)
 
-    def _test_getSpectrum_raise_exception(self, message, excType=AssertionError, **kwargs):
-        """Convenience method to test exceptions raised by getSpectrum."""
+    def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, **kwargs):
+        """Convenience method to test exceptions raised by getSpaxel."""
 
         with self.assertRaises(excType) as ee:
-            self.cubeFromFile.getSpectrum(**kwargs)
+            self.cubeFromFile.getSpaxel(**kwargs)
 
         self.assertIn(message, str(ee.exception))
 
-    def test_getSpectrum_inputs(self):
-        """Tests exceptions when getSpectrum gets inappropriate inputs."""
+    def test_getSpaxel_inputs(self):
+        """Tests exceptions when getSpaxel gets inappropriate inputs."""
 
-        self._test_getSpectrum_raise_exception(
+        self._test_getSpaxel_raise_exception(
             'Either use (x, y) or (ra, dec)', x=1, ra=1)
 
-        self._test_getSpectrum_raise_exception(
+        self._test_getSpaxel_raise_exception(
             'Either use (x, y) or (ra, dec)', x=1, dec=1, ra=1)
 
-        self._test_getSpectrum_raise_exception('Specify both x and y', x=1)
+        self._test_getSpaxel_raise_exception('Specify both x and y', x=1)
 
-        self._test_getSpectrum_raise_exception('Specify both ra and dec', ra=1)
+        self._test_getSpaxel_raise_exception('Specify both ra and dec', ra=1)
 
-        self._test_getSpectrum_raise_exception(
+        self._test_getSpaxel_raise_exception(
             'You need to specify either (x, y) or (ra, dec)',
             excType=ValueError)
 
-    def test_getSpectrum_outside_cube(self):
-        """Tests getSpectrum when the input coords are outside the cube."""
+    def test_getSpaxel_outside_cube(self):
+        """Tests getSpaxel when the input coords are outside the cube."""
 
         for xTest, yTest in [(-50, 1), (50, 1), (1, -50), (1, 50)]:
-            self._test_getSpectrum_raise_exception(
+            self._test_getSpaxel_raise_exception(
                 'some indices are out of limits.', x=xTest, y=yTest,
                 excType=MarvinError)
 
         for raTest, decTest in [(1., 1.), (100, 60),
                                 (232.546383, 1.), (1., 48.6883954)]:
-            self._test_getSpectrum_raise_exception(
+            self._test_getSpaxel_raise_exception(
                 'some indices are out of limits.', ra=raTest, dec=decTest,
                 excType=MarvinError)
 
-    def test_getSpectrum_file_flux_x_y(self):
-        """Tests getSpectrum from a file cube with x, y inputs."""
+    def test_getSpaxel_file_flux_x_y(self):
+        """Tests getSpaxel from a file cube with x, y inputs."""
 
         expect = -0.10531016
-        self._test_getSpectrum(self.cubeFromFile, 10, expect, x=10, y=5)
+        self._test_getSpaxel(self.cubeFromFile, 10, expect, x=10, y=5)
 
-    def test_getSpectrum_file_flux_x_y_lower(self):
-        """Tests getSpectrum from a file with x, y inputs, xyorig=lower."""
+    def test_getSpaxel_file_flux_x_y_lower(self):
+        """Tests getSpaxel from a file with x, y inputs, xyorig=lower."""
 
         expect = 0.017929086
-        self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=10, y=5,
-                               xyorig='lower')
+        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=10, y=5, xyorig='lower')
 
-    def test_getSpectrum_file_flux_x_0_y_0(self):
+    def test_getSpaxel_file_flux_x_0_y_0(self):
         expect = 1.0493046
-        self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=0, y=0)
+        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=0, y=0)
 
-    def test_getSpectrum_file_flux_x_0_y_0_lower(self):
+    def test_getSpaxel_file_flux_x_0_y_0_lower(self):
         expect = 0.0
-        self._test_getSpectrum(self.cubeFromFile, 3000, expect, x=0, y=0,
-                               xyorig='lower')
+        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=0, y=0, xyorig='lower')
 
-    def _getSpectrum_file_flux_ra_dec(self, ra, dec):
-        """Tests getSpectrum from a file cube with ra, dec inputs."""
+    def _getSpaxel_file_flux_ra_dec(self, ra, dec):
+        """Tests getSpaxel from a file cube with ra, dec inputs."""
 
         expect = 0.62007582
-        self._test_getSpectrum(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
+        self._test_getSpaxel(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
 
-    def _getSpectrum_file_fail(self, ra, dec, errMsg):
+    def _getSpaxel_file_fail(self, ra, dec, errMsg):
         expect = 0.62007582
         with self.assertRaises(MarvinError) as cm:
-            self._test_getSpectrum(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
+            self._test_getSpaxel(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
         self.assertIn(errMsg, str(cm.exception))
 
-    def test_getSpectrum_file_flux_ra_dec_full(self):
-        self._getSpectrum_file_flux_ra_dec(ra=232.544279, dec=48.6899232)
+    def test_getSpaxel_file_flux_ra_dec_full(self):
+        self._getSpaxel_file_flux_ra_dec(ra=232.544279, dec=48.6899232)
 
-    def test_getSpectrum_file_flux_ra_dec_parital(self):
-        self._getSpectrum_file_flux_ra_dec(ra=232.5443, dec=48.6899)
+    def test_getSpaxel_file_flux_ra_dec_parital(self):
+        self._getSpaxel_file_flux_ra_dec(ra=232.5443, dec=48.6899)
 
-    def test_getSpectrum_file_flux_ra_dec_twosigfig(self):
+    def test_getSpaxel_file_flux_ra_dec_twosigfig(self):
         errMsg = 'some indices are out of limits.'
-        self._getSpectrum_file_fail(ra=232.55, dec=48.69, errMsg=errMsg)
+        self._getSpaxel_file_fail(ra=232.55, dec=48.69, errMsg=errMsg)
 
-    def test_getSpectrum_file_flux_ra_dec_int(self):
+    def test_getSpaxel_file_flux_ra_dec_int(self):
         errMsg = 'some indices are out of limits'
-        self._getSpectrum_file_fail(ra=232, dec=48, errMsg=errMsg)
+        self._getSpaxel_file_fail(ra=232, dec=48, errMsg=errMsg)
 
-    # Tests for getSpectrum from DB
-    def _getSpectrum_db_flux_ra_dec(self, ra, dec):
+    # Tests for getSpaxel from DB
+    def _getSpaxel_db_flux_ra_dec(self, ra, dec):
         expect = 0.62007582
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 3000, expect, ra=ra, dec=dec)
+        self._test_getSpaxel(cube, 3000, expect, ra=ra, dec=dec)
 
-    def _getSpectrum_db_fail(self, ra, dec, errMsg):
+    def _getSpaxel_db_fail(self, ra, dec, errMsg):
         expect = 0.62007582
         cube = Cube(mangaid=self.mangaid)
         with self.assertRaises(MarvinError) as cm:
-            self._test_getSpectrum(cube, 3000, expect, ra=ra, dec=dec)
+            self._test_getSpaxel(cube, 3000, expect, ra=ra, dec=dec)
         self.assertIn(errMsg, str(cm.exception))
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec_full(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232.544279, dec=48.6899232)
+    def test_getSpaxel_db_flux_ra_dec_full(self):
+        self._getSpaxel_db_flux_ra_dec(ra=232.544279, dec=48.6899232)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec_partial(self):
-        self._getSpectrum_db_flux_ra_dec(ra=232.5443, dec=48.6899)
+    def test_getSpaxel_db_flux_ra_dec_partial(self):
+        self._getSpaxel_db_flux_ra_dec(ra=232.5443, dec=48.6899)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec_twosigfig(self):
+    def test_getSpaxel_db_flux_ra_dec_twosigfig(self):
         errMsg = 'some indices are out of limits.'
-        self._getSpectrum_db_fail(ra=232.55, dec=48.69, errMsg=errMsg)
+        self._getSpaxel_db_fail(ra=232.55, dec=48.69, errMsg=errMsg)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_ra_dec_int(self):
+    def test_getSpaxel_db_flux_ra_dec_int(self):
         errMsg = 'some indices are out of limits.'
-        self._getSpectrum_db_fail(ra=232, dec=48, errMsg=errMsg)
+        self._getSpaxel_db_fail(ra=232, dec=48, errMsg=errMsg)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_x_y(self):
+    def test_getSpaxel_db_flux_x_y(self):
         expect = -0.10531016
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 10, expect, x=10, y=5)
+        self._test_getSpaxel(cube, 10, expect, x=10, y=5)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_x_y_lower(self):
+    def test_getSpaxel_db_flux_x_y_lower(self):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 3000, expect, x=10, y=5, xyorig='lower')
+        self._test_getSpaxel(cube, 3000, expect, x=10, y=5, xyorig='lower')
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_x_0_y_0(self):
+    def test_getSpaxel_db_flux_x_0_y_0(self):
         expect = 1.0493046
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 3000, expect, x=0, y=0)
+        self._test_getSpaxel(cube, 3000, expect, x=0, y=0)
 
     @skipIfNoDB
-    def test_getSpectrum_db_flux_x_0_y_0_lower(self):
+    def test_getSpaxel_db_flux_x_0_y_0_lower(self):
         expect = 0.0
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum(cube, 3000, expect, x=0, y=0, xyorig='lower')
+        self._test_getSpaxel(cube, 3000, expect, x=0, y=0, xyorig='lower')
 
-    def _test_getSpectrum_remote(self, specIndex, expect, **kwargs):
-        """Tests for getSpectrum remotely."""
+    def _test_getSpaxel_remote(self, specIndex, expect, **kwargs):
+        """Tests for getSpaxel remotely."""
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpectrum(cube, specIndex, expect, **kwargs)
+        self._test_getSpaxel(cube, specIndex, expect, **kwargs)
 
-    def test_getSpectrum_remote_x_y_success(self):
+    def test_getSpaxel_remote_x_y_success(self):
 
         expect = -0.10531016
-        self._test_getSpectrum_remote(10, expect, x=10, y=5)
+        self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
-    def test_getSpectrum_remote_ra_dec_success(self):
+    def test_getSpaxel_remote_ra_dec_success(self):
 
         expect = 0.62007582
-        self._test_getSpectrum_remote(3000, expect,
-                                      ra=232.544279, dec=48.6899232)
+        self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
 
-    def _getSpectrum_remote_fail(self, ra, dec, errMsg1, errMsg2):
+    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2, excType=MarvinError):
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
 
-        with self.assertRaises(MarvinError) as cm:
-            cube.getSpectrum(ra=ra, dec=dec)
+        with self.assertRaises(excType) as cm:
+            cube.getSpaxel(ra=ra, dec=dec)
 
         self.assertIn(errMsg1, str(cm.exception))
         self.assertIn(errMsg2, str(cm.exception))
 
-    def test_getSpectrum_remote_fail_nourlmap(self):
+    def test_getSpaxel_remote_fail_nourlmap(self):
 
         self.assertIsNotNone(config.urlmap)
-        config.urlmap = None
-        self._getSpectrum_remote_fail(self.ra, self.dec, 'No URL Map found',
-                                      'Cannot make remote call')
+        config.urlmap = URLMapDict()
 
-    def test_getSpectrum_remote_fail_badresponse(self):
+        with self.assertRaises(BrainError) as cm:
+            Cube(mangaid=self.mangaid, mode='remote')
 
-        config.sasurl = 'http://wrong.url.com'
+        self.assertIn('No URL Map found', str(cm.exception))
+        self.assertIn('Cannot make remote call', str(cm.exception))
+
+    def test_getSpaxel_remote_fail_badresponse(self):
+
+        config.sasurl = 'http://www.averywrongurl.com'
         self.assertIsNotNone(config.urlmap)
-        self._getSpectrum_remote_fail(self.ra, self.dec,
-                                      'Error retrieving response',
-                                      'Http status code 404')
 
-    def test_getSpectrum_remote_fail_badpixcoords(self):
+        with self.assertRaises(MarvinError) as cm:
+            Cube(mangaid=self.mangaid, mode='remote')
+
+        self.assertIn('Connection aborted.', str(cm.exception))
+
+    def test_getSpaxel_remote_fail_badpixcoords(self):
 
         self.assertIsNotNone(config.urlmap)
-        self._getSpectrum_remote_fail(232, 48,
-                                      'Could not retrieve spaxels remotely',
-                                      'some indices are out of limits.')
+        self._getSpaxel_remote_fail(232, 48, 'Something went wrong with the interaction',
+                                    'some indices are out of limits.',
+                                    excType=BrainError)
 
-    def _test_getSpectrum_array(self, cube, nCoords, specIndex, expected,
-                                **kwargs):
-        """Tests getSpectrum with array coordinates."""
+    def _test_getSpaxel_array(self, cube, nCoords, specIndex, expected, **kwargs):
+        """Tests getSpaxel with array coordinates."""
 
-        spectra = cube.getSpectrum(**kwargs)
+        spaxels = cube.getSpaxel(**kwargs)
 
-        self.assertEqual(spectra.shape[0], nCoords)
-        self.assertGreater(spectra.shape[1], 1000)
+        self.assertEqual(len(spaxels), nCoords)
+        fluxes = np.array([spaxel.flux for spaxel in spaxels])
 
-        assert_allclose(spectra[:, specIndex], expected, rtol=1e-6)
+        assert_allclose(fluxes[:, specIndex], expected, rtol=1e-6)
 
-    def test_getSpectrum_file_flux_x_y_lower_array(self):
+    def test_getSpaxel_file_flux_x_y_lower_array(self):
 
         x = [10, 0]
         y = [5, 0]
         expected = [0.017929086, 0.0]
 
         cube = self.cubeFromFile
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     x=x, y=y, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   x=x, y=y, xyorig='lower')
 
-    def test_getSpectrum_db_flux_x_y_lower_array(self):
+    def test_getSpaxel_db_flux_x_y_lower_array(self):
 
         x = [10, 0]
         y = [5, 0]
         expected = [0.017929086, 0.0]
 
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     x=x, y=y, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   x=x, y=y, xyorig='lower')
 
-    def test_getSpectrum_remote_flux_x_y_lower_array(self):
+    def test_getSpaxel_remote_flux_x_y_lower_array(self):
 
         x = [10, 0]
         y = [5, 0]
         expected = [0.017929086, 0.0]
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     x=x, y=y, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   x=x, y=y, xyorig='lower')
 
-    def test_getSpectrum_file_flux_ra_dec_lower_array(self):
+    def test_getSpaxel_file_flux_ra_dec_lower_array(self):
 
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
         expected = [0.017929086, 0.0]
 
         cube = self.cubeFromFile
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     ra=ra, dec=dec, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   ra=ra, dec=dec, xyorig='lower')
 
-    def test_getSpectrum_db_flux_ra_dec_lower_array(self):
+    def test_getSpaxel_db_flux_ra_dec_lower_array(self):
 
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
         expected = [0.017929086, 0.0]
 
         cube = Cube(mangaid=self.mangaid)
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     ra=ra, dec=dec, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   ra=ra, dec=dec, xyorig='lower')
 
-    def test_getSpectrum_remote_flux_ra_dec_lower_array(self):
+    def test_getSpaxel_remote_flux_ra_dec_lower_array(self):
 
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
         expected = [0.017929086, 0.0]
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpectrum_array(cube, 2, 3000, expected,
-                                     ra=ra, dec=dec, xyorig='lower')
+        self._test_getSpaxel_array(cube, 2, 3000, expected,
+                                   ra=ra, dec=dec, xyorig='lower')
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
