@@ -73,13 +73,27 @@ def makeBaseQuery(f):
     return wrapper
 
 
+# decorator
+def checkCondition(f):
+    ''' Decorator that checks to ensure the filter is set in the property, if it does not already exist '''
+
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if self.filterparams and not self._alreadyInFilter(self.filterparams.keys()):
+            self.add_condition()
+        return f(self, *args, **kwargs)
+
+    return wrapper
+
+
 class Query(object):
     ''' Core Marvin Query object.  can this be subclassed from sqlalchemy query? should it? '''
 
     def __init__(self, *args, **kwargs):
 
         self.query = None
-        self.params = {}
+        self.params = []
+        self.filterparams = {}
         self.myparamtree = tree()
         self._paramtree = None
         self.session = marvindb.session
@@ -94,6 +108,7 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
+        self.marvinform = MarvinForm()
 
         # set the mode
         if self.mode is None:
@@ -108,10 +123,28 @@ class Query(object):
             if self.mode == 'remote':
                 self._doRemote()
 
+        # get return type
+        self.returntype = kwargs.get('returntype', None)
+
+        # get user-defined input parameters
+        inputparams = kwargs.get('inputparams', None)
+        if inputparams:
+            self.set_inputparams(inputparams)
+
         # if searchfilter is set then set the parameters
         searchfilter = kwargs.get('searchfilter', None)
         if searchfilter:
             self.set_filter(searchfilter=searchfilter)
+
+        # create query parameter ModelClasses
+        self._create_query_modelclasses()
+
+        # join tables
+        self._join_tables()
+
+        # add condition
+        if searchfilter:
+            self.add_condition()
 
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
@@ -133,6 +166,19 @@ class Query(object):
             raise MarvinError('No URL Map found.  Cannot make remote calls!')
         else:
             self.mode = 'remote'
+
+    def set_inputparams(self, inputparams):
+        ''' Loads the user input parameters into the query params limit '''
+        self.params.extend(inputparams)
+        self.params = list(set(self.params))
+
+    def set_defaultparams(self):
+        ''' Loads the default params for a given return type '''
+        pass
+
+    def _create_query_modelclasses(self):
+        ''' Creates a list of database ModelClasses from a list of parameter names '''
+        self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
 
     def set_filter(self, searchfilter=None):
         ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms
@@ -157,7 +203,8 @@ class Query(object):
             self.searchfilter = searchfilter
             self._parsed = parsed
             self.strfilter = str(parsed)
-            self.params.update(parsed.params)
+            self.filterparams.update(parsed.params)
+            self.params.extend(self.filterparams.keys())
 
             # print filter
             if not self.quiet:
@@ -178,10 +225,9 @@ class Query(object):
 
     def _setForms(self):
         ''' Set the appropriate WTForms in myforms and set the parameters '''
-        self.marvinform = MarvinForm()
         self._paramtree = self.marvinform._paramtree
-        for key in self.params.keys():
-            self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.params)
+        for key in self.filterparams.keys():
+            self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.filterparams)
             self.myparamtree[self.myforms[key].Meta.model.__name__][key]
 
     def _validateForms(self):
@@ -201,9 +247,6 @@ class Query(object):
         # validate the forms
         self._validateForms()
 
-        # join tables
-        self._join_tables()
-
         # build the actual filter
         self.build_filter()
 
@@ -211,9 +254,10 @@ class Query(object):
         if not isinstance(self.filter, type(None)):
             self.query = self.query.filter(self.filter)
 
+    @makeBaseQuery
     def _join_tables(self):
-        ''' Build the join statement from the input tables '''
-        mymodellist = [form.Meta.model for form in self.myforms.values()]
+        ''' Build the join statement from the input parameters '''
+        mymodellist = [param.class_ for param in self.queryparams]
 
         # Gets the list of joins from ModelGraph. Uses Cube as nexus, so that
         # the order of the joins is the correct one.
@@ -235,8 +279,8 @@ class Query(object):
 
     def update_params(self, param):
         ''' Update the input parameters '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.params.keys()}
-        self.params.update(param)
+        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        self.filterparams.update(param)
         self._setForms()
 
     def _update_params(self, param):
@@ -251,10 +295,10 @@ class Query(object):
             update_params(newparams)
             new condition will be nsa_redshift < 0.2
         '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.params.keys()}
+        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
         self.query = self.query.params(param)
 
-    def _alreadyInFilter(self, name):
+    def _alreadyInFilter(self, names):
         ''' Checks if the parameter name already added into the filter '''
 
         '''
@@ -266,14 +310,24 @@ class Query(object):
             if len(splitfilter) > 1:
                 infilter = value in splitfilter[1]
         '''
+        '''
         infilter = False
         if not isinstance(self.filter, type(None)):
             s = str(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
             infilter = name in s
+        '''
+
+        infilter = None
+        if names:
+            if not isinstance(self.query, type(None)):
+                if not isinstance(self.query.whereclause, type(None)):
+                    wc = str(self.query.whereclause)
+                    infilter = any([name in wc for name in names])
 
         return infilter
 
     @makeBaseQuery
+    @checkCondition
     @updateConfig
     def run(self, qmode='all'):
         ''' Run the query and return an instance of Marvin Results class to deal with results.  Input qmode allows to perform
@@ -282,9 +336,10 @@ class Query(object):
 
         if self.mode == 'local':
 
-            # Check if params are set and there is a query
-            if self.params and isinstance(self.query.whereclause, type(None)):
-                self.add_condition()
+            # Check if filter params are set and there is a query
+            # if self.filterparams and isinstance(self.query.whereclause, type(None)):
+            #     print('adding conditions')
+            #     self.add_condition()
 
             # Check for adding a sort
             self._sortQuery()
@@ -372,20 +427,22 @@ class Query(object):
         self.__init__()
 
     @updateConfig
-    def _createBaseQuery(self, param=None):
+    def _createBaseQuery(self):
         ''' Create the base query session object.  Default is to return a list of SQLalchemy Cube objects. Also default joins to the DRP pipeline
             version set from config.drpver
         '''
 
-        if not param:
-            param = marvindb.datadb.Cube
-            self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
-                .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
-        else:
-            self._basetable = self._buildBaseTable(param)
-            self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
-                .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+        # if not param:
+        #     param = marvindb.datadb.Cube
+        #     self._basetable = self._buildBaseTable(param)
+        #     self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
+        #         .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+        # else:
+        #     self._basetable = self._buildBaseTable(param)
+        #     self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
+        #         .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+        self.query = self.session.query(*self.queryparams).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
+            .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
 
     def _buildBaseTable(self, param):
         ''' Builds the base name for a input parameter: either schema.table or schema.table.column'''
