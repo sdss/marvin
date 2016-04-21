@@ -5,6 +5,7 @@ from marvin.tools.cube import Cube
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
+from brain.utils.general import parseRoutePath
 ''' stuff that runs server-side '''
 
 # api = Blueprint("api", __name__)
