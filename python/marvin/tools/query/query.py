@@ -15,7 +15,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
-from marvin.extern.sqlalchemy_boolean_search import (parse_boolean_search, BooleanSearchException)
+from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
