@@ -14,6 +14,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 from marvin.core.exceptions import MarvinMissingDependence
+from marvin.core.core import Dotable
 
 try:
     import matplotlib as mpl
@@ -21,7 +22,7 @@ except:
     mpl = None
 
 
-class Spectrum(object):
+class Spectrum(Dotable):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
@@ -46,14 +47,14 @@ class Spectrum(object):
     def __init__(self, flux, flux_units=None, wavelength_unit=None,
                  ivar=None, mask=None, wavelength=None):
 
-        self.flux = np.array(flux)
-        self.ivar = np.array(ivar) if ivar is not None else None
-        self.mask = np.array(mask) if mask is not None else None
-        self.wavelength = np.array(wavelength) \
+        self['flux'] = np.array(flux)
+        self['ivar'] = np.array(ivar) if ivar is not None else None
+        self['mask'] = np.array(mask) if mask is not None else None
+        self['wavelength'] = np.array(wavelength) \
             if wavelength is not None else None
 
-        self.flux_units = flux_units
-        self.wavelength_unit = wavelength_unit
+        self['flux_units'] = flux_units
+        self['wavelength_unit'] = wavelength_unit
 
         # Performs some checks.
 
