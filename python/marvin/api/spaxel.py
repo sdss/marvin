@@ -12,11 +12,13 @@
 
 from __future__ import division
 from __future__ import print_function
+import json
 from flask.ext.classy import route
 from marvin.tools.spaxel import Spaxel
 from marvin.api.base import BaseView
-import json
-from marvin.utils.general import parseName, parseRoutePath
+from marvin.core.exceptions import MarvinError
+from marvin.utils.general import parseIdentifier
+from brain.utils.general import parseRoutePath
 
 
 def _getSpaxel(name, x, y):
@@ -27,12 +29,21 @@ def _getSpaxel(name, x, y):
 
     # parse name into either mangaid or plateifu
     try:
-        mangaid, plateifu = parseName(name)
+        idtype = parseIdentifier(name)
     except Exception as e:
         results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
         return spaxel, results
 
     try:
+        if idtype == 'plateifu':
+            plateifu = name
+            mangaid = None
+        elif idtype == 'mangaid':
+            mangaid = name
+            plateifu = None
+        else:
+            raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+
         spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu, mode='local')
         results['status'] = 1
     except Exception as e:
