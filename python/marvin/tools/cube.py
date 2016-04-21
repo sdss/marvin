@@ -82,13 +82,13 @@ class Cube(MarvinToolsClass):
             self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this to sampledb
         elif self.data_origin == 'api':
             if not skip_check:
-                self._checkCubeRemote()
+                self._openCubeRemote()
 
-        self.ifu = self.hdr['IFUDSGN']
-        self.ra = self.hdr['OBJRA']  # self._cube.ra
-        self.dec = self.hdr['OBJDEC']  # self._cube.dec
-        self.plate = int(self.hdr['PLATEID'])  # self._cube.plate
-        self.mangaid = self.hdr['MANGAID']  # self._cube.mangaid
+        self.ifu = int(self.hdr['IFUDSGN'])
+        self.ra = float(self.hdr['OBJRA'])
+        self.dec = float(self.hdr['OBJDEC'])
+        self.plate = int(self.hdr['PLATEID'])
+        self.mangaid = self.hdr['MANGAID']
 
     def __repr__(self):
         """Representation for Cube."""
