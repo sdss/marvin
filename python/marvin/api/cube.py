@@ -1,10 +1,10 @@
+import json
 from flask.ext.classy import route
 from flask import Blueprint, redirect, url_for
 from marvin.tools.cube import Cube
 from marvin.api.base import BaseView
-import json
-from marvin.utils.general import parseRoutePath, parseName
-
+from marvin.core.exceptions import MarvinError
+from marvin.utils.general import parseIdentifier
 ''' stuff that runs server-side '''
 
 # api = Blueprint("api", __name__)
@@ -18,12 +18,21 @@ def _getCube(name):
 
     # parse name into either mangaid or plateifu
     try:
-        mangaid, plateifu = parseName(name)
+        idtype = parseIdentifier(name)
     except Exception as e:
         results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
         return cube, results
 
     try:
+        if idtype == 'plateifu':
+            plateifu = name
+            mangaid = None
+        elif idtype == 'mangaid':
+            mangaid = name
+            plateifu = None
+        else:
+            raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+
         cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local')
         results['status'] = 1
     except Exception as e:
