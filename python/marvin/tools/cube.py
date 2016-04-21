@@ -27,8 +27,6 @@ class Cube(MarvinToolsClass):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
-        skip_check (bool):
-            If True, and ``mode='remote'``, skips the API call to check that
             the cube exists.
         drpall (str):
             The path to the drpall file to use. Defaults to
@@ -231,8 +229,8 @@ class Cube(MarvinToolsClass):
 
         self.hdr = self._hdu[0].header
 
-    def _checkCubeRemote(self):
-        """Calls the API to check that the cube exists."""
+    def _openCubeRemote(self):
+        """Calls the API to check that the cube exists and gets the header."""
 
         url = marvin.config.urlmap['api']['getCube']['url']
 
@@ -243,6 +241,9 @@ class Cube(MarvinToolsClass):
                               'exists: {0}'.format(str(ee)))
 
         data = response.getData()
+
+        self.hdr = data['header']
+        self.redshift = float(data['redshift'])
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -264,9 +265,12 @@ class Cube(MarvinToolsClass):
         elif self.data_origin == 'api':
             raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
 
-    flux = property(lambda self: self._getExtensionData('FLUX'), doc='Gets the `FLUX` data extension.')
-    ivar = property(lambda self: self._getExtensionData('IVAR'), doc='Gets the `IVAR` data extension.')
-    mask = property(lambda self: self._getExtensionData('MASK'), doc='Gets the `MASK` data extension.')
+    flux = property(lambda self: self._getExtensionData('FLUX'),
+                    doc='Gets the `FLUX` data extension.')
+    ivar = property(lambda self: self._getExtensionData('IVAR'),
+                    doc='Gets the `IVAR` data extension.')
+    mask = property(lambda self: self._getExtensionData('MASK'),
+                    doc='Gets the `MASK` data extension.')
 
     def getWavelength(self):
         ''' Retrieve the wavelength array for the Cube '''
@@ -301,15 +305,21 @@ class Cube(MarvinToolsClass):
             import sqlalchemy
             self._cube = None
             try:
-                self._cube = mdb.session.query(mdb.datadb.Cube).join(mdb.datadb.PipelineInfo, mdb.datadb.PipelineVersion, mdb.datadb.IFUDesign).\
-                    filter(mdb.datadb.PipelineVersion.version == marvin.config.drpver, mdb.datadb.Cube.plate == plate,
+                self._cube = mdb.session.query(mdb.datadb.Cube).join(mdb.datadb.PipelineInfo,
+                                                                     mdb.datadb.PipelineVersion,
+                                                                     mdb.datadb.IFUDesign).\
+                    filter(mdb.datadb.PipelineVersion.version == marvin.config.drpver,
+                           mdb.datadb.Cube.plate == plate,
                            mdb.datadb.IFUDesign.name == ifu).one()
             except sqlalchemy.orm.exc.MultipleResultsFound as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Multiple Results Found: {1}'.format(self.plateifu, e))
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                   'Multiple Results Found: {1}'.format(self.plateifu, e))
             except sqlalchemy.orm.exc.NoResultFound as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: No Results Found: {1}'.format(self.plateifu, e))
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                   'No Results Found: {1}'.format(self.plateifu, e))
             except Exception as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: Unknown exception: {1}'.format(self.plateifu, e))
+                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                   'Unknown exception: {1}'.format(self.plateifu, e))
 
             if self._cube:
                 self._useDB = True
