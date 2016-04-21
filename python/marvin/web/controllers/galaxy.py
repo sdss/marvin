@@ -15,7 +15,7 @@ from __future__ import division
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask.ext.classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.utils.general.general import findClosestVector, convertImgCoords, isPlateifuOrMangaid as isPlateifuOrMangaid
+from marvin.utils.general.general import findClosestVector, convertImgCoords, parseIdentifier
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
@@ -76,11 +76,8 @@ class Galaxy(FlaskView):
 
         # determine type of galid
         self.galaxy['id'] = galid
-        idtype = isPlateifuOrMangaid(galid)
-        if not idtype:
-            self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
-            return render_template("galaxy.html", **self.galaxy)
-        else:
+        idtype = parseIdentifier(galid)
+        if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
             self.galaxy['idtype'] = idtype
             galaxyid = {self.galaxy['idtype']: galid}
@@ -103,6 +100,9 @@ class Galaxy(FlaskView):
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
                 print(specmsg)
+        else:
+            self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
+            return render_template("galaxy.html", **self.galaxy)
 
         return render_template("galaxy.html", **self.galaxy)
 
