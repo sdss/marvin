@@ -11,6 +11,7 @@ from numpy.testing import assert_allclose
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 import numpy as np
+from astropy.io import fits
 
 
 class TestCubeBase(MarvinTest):
@@ -138,6 +139,16 @@ class TestCube(TestCubeBase):
             param.__setattr__(column, value)
         self.session.add(param)
         self.session.flush()
+
+    def test_cube_flux_from_local_database(self):
+
+        cube = Cube(plateifu=self.plateifu, mode='local')
+        flux = cube.flux
+        self.assertEqual(cube.data_origin, 'db')
+
+        cubeFlux = fits.getdata(self.filename)
+
+        self.assertTrue(np.allclose(flux, cubeFlux))
 
 
 class TestGetSpaxel(TestCubeBase):

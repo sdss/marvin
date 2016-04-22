@@ -261,7 +261,7 @@ class Cube(MarvinToolsClass):
         if self.data_origin == 'file':
             return self._hdu[extName.upper()].data
         elif self.data_origin == 'db':
-            return self._cube.get3dCube(extName.lower())
+            return self._cube.get3DCube(extName.lower())
         elif self.data_origin == 'api':
             raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
 
