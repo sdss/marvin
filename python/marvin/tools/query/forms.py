@@ -18,6 +18,9 @@ from collections import defaultdict
 from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 import re
 import warnings
 
@@ -178,17 +181,26 @@ class MarvinForm(object):
 
     def _loadParams(self, newclass):
         ''' Loads all parameters from wtforms into a dictionary with
-            key, value = {'parameter_name': 'parent WTForm name'}.  Ignores hidden attributes and the Meta class
+            key, value = {'parameter_name': 'parent WTForm name'}.
+            Ignores hidden attributes and the Meta class
         '''
 
-        schema = newclass.Meta.model.__table__.schema
-        tablename = newclass.Meta.model.__table__.name
+        model = newclass.Meta.model
+        schema = model.__table__.schema
+        tablename = model.__table__.name
 
-        for key in newclass.__dict__.keys():
-            if key[:1] != '_' and 'Meta' not in key:
-                lookupKeyName = schema + '.' + tablename + '.' + key
-                self._param_form_lookup[lookupKeyName] = newclass
-                self._paramtree[newclass.Meta.model.__name__][key]
+        mapper = sa_inspect(model)
+        for item in mapper.all_orm_descriptors:
+            if type(item) == hybrid_property:
+                key = item.__name__
+            elif type(item) == InstrumentedAttribute:
+                key = item.key
+            else:
+                continue
+
+            lookupKeyName = schema + '.' + tablename + '.' + key
+            self._param_form_lookup[lookupKeyName] = newclass
+            self._paramtree[newclass.Meta.model.__name__][key]
 
     def callInstance(self, form, params=None, **kwargs):
         ''' Creates an instance of a specified WTForm.  '''
