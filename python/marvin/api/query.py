@@ -53,11 +53,11 @@ class QueryView(BrainQueryView):
         sort = self.results['inconfig'].get('sort', None)
         search = self.results['inconfig'].get('search', None)
         # do query
-        q, res = doQuery(searchvalue, limit=limit, order=order, sort=sort)
+        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)
         # create output
-        rows = res.getDictOf('plateifu', format_type='listdict')
+        rows = res.getDictOf('mangaid', format_type='listdict')
         output = {'total': res.count, 'rows': rows}
         output = json.dumps(output)
         return output

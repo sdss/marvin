@@ -41,10 +41,8 @@ def tree():
 
 
 # Do A Query
-def doQuery(searchfilter, limit=10, sort=None, order=None):
-    q = Query(limit=limit, sort=sort, order=order)
-    q.set_filter(searchfilter=searchfilter)
-    q.add_condition()
+def doQuery(returnparams=None, searchfilter=None, limit=10, sort=None, order=None, returntype=None):
+    q = Query(returnparams=returnparams, searchfilter=searchfilter, limit=limit, sort=sort, order=order, returntype=returntype)
     res = q.run()
     return q, res
 
@@ -127,9 +125,12 @@ class Query(object):
         self.returntype = kwargs.get('returntype', None)
 
         # get user-defined input parameters
-        inputparams = kwargs.get('inputparams', None)
-        if inputparams:
-            self.set_inputparams(inputparams)
+        returnparams = kwargs.get('returnparams', None)
+        if returnparams:
+            self.set_returnparams(returnparams)
+
+        # set default parameters
+        self.set_defaultparams()
 
         # if searchfilter is set then set the parameters
         searchfilter = kwargs.get('searchfilter', None)
@@ -167,18 +168,33 @@ class Query(object):
         else:
             self.mode = 'remote'
 
-    def set_inputparams(self, inputparams):
+    def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit '''
-        self.params.extend(inputparams)
-        self.params = list(set(self.params))
+        self.params.extend(returnparams)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type '''
-        pass
+        # TODO - change mangaid to plateifu once plateifu works in SQLalchemy_boolean_search
+        assert self.returntype in [None, 'cube', 'spaxel', 'map', 'rss'], 'Query returntype must be either cube, spaxel, map, rss'
+        self.defaultparams = ['cube.mangaid']
+        if self.returntype == 'spaxel':
+            self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+        elif self.returntype == 'rssfiber':
+            self.defaultparams.extend(['rssfiber.fiber.fiberid'])
+        elif self.returntype == 'map':
+            pass
+
+        # add to main set of params
+        self.params.extend(self.defaultparams)
 
     def _create_query_modelclasses(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
+        self.params = list(set(self.params))
+        print('my params', self.params)
         self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
+        self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
+        self.queryparams_order = [q.key for q in self.queryparams]
+        print('queryorder', self.queryparams_order)
 
     def set_filter(self, searchfilter=None):
         ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms
@@ -257,18 +273,18 @@ class Query(object):
     @makeBaseQuery
     def _join_tables(self):
         ''' Build the join statement from the input parameters '''
-        mymodellist = [param.class_ for param in self.queryparams]
+        self._modellist = [param.class_ for param in self.queryparams]
 
         # Gets the list of joins from ModelGraph. Uses Cube as nexus, so that
         # the order of the joins is the correct one.
         # TODO: at some point, all the queries should be generalised so that
         # we don't assume that we are querying a cube.
-        self._modellist = self._modelgraph.getJoins(mymodellist, format_out='models', nexus=marvindb.datadb.Cube)
+        joinmodellist = self._modelgraph.getJoins(self._modellist, format_out='models', nexus=marvindb.datadb.Cube)
 
         # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
         # self.joins.extend([model.__tablename__ for model in sublist])
         # self.query = self.query.join(*sublist)
-        for model in self._modellist:
+        for model in joinmodellist:
             if not self._tableInQuery(model.__tablename__):
                 self.joins.append(model.__tablename__)
                 self.query = self.query.join(model)
@@ -361,7 +377,7 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode)
+            return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype, queryobj=self)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -378,7 +394,7 @@ class Query(object):
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.results
-            return Results(results=res, query=self.query, mode=self.mode)
+            return Results(results=res, query=self.query, mode=self.mode, queryobj=self)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
