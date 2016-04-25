@@ -71,7 +71,7 @@ class Marvin(FlaskView):
             print('form validated, doing query')
             # testing the rough query version of the above
             try:
-                q, res = doQuery(searchvalue)
+                q, res = doQuery(searchfilter=searchvalue)
             except MarvinError as e:
                 test['errmsg'] = 'Could not perform query: {0}'.format(e)
             else:

@@ -36,13 +36,16 @@ def remote_mode_only(func):
 
 class Results(object):
 
-    def __init__(self, results=None, query=None, count=None, mode=None):
+    def __init__(self, *args, **kwargs):
 
         # super(Results, self).__init__(*args, **kwargs)
-        self.results = results
-        self.query = query
-        self.count = count if count else len(results['data']) if results else None
-        self.mode = mode
+        self.results = kwargs.get('results', None)
+        self._queryobj = kwargs.get('queryobj', None)
+        if self._queryobj:
+            self.query = self._queryobj.query
+        #self.count = count if count else len(results['data']) if results else None
+        self.count = kwargs.get('count', None)
+        self.mode = kwargs.get('mode', None)
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
