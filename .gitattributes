@@ -49,6 +49,11 @@ python/marvin/web/controllers/index.py -text
 python/marvin/web/controllers/search.py -text
 python/marvin/web/jinja_filters.py -text
 python/marvin/web/lib/Gruntfile.js -text
+python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.eot -text svneol=unset#application/vnd.ms-fontobject
+python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.svg -text svneol=unset#application/xml
+python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.ttf -text svneol=unset#application/x-font-ttf
+python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.woff -text
+python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.woff2 -text
 python/marvin/web/lib/css/marvin.css -text
 python/marvin/web/lib/css/marvin.css.map -text
 python/marvin/web/lib/dist/marvin.css -text

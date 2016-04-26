@@ -65,7 +65,14 @@ class Search(FlaskView):
                 else:
                     self.search['filter'] = q.strfilter
                     self.search['count'] = res.count
-                    self.search['results'] = len(res.results)
+                    if res.count > 0:
+                        cols = res.mapColumnsToParams()
+                        rows = res.getDictOf(format_type='listdict')
+                        output = {'total': res.count, 'rows': rows, 'columns': cols}
+                    else:
+                        output = None
+                    self.search['results'] = output
+                    self.search['reslen'] = len(res.results)
 
         return render_template('search.html', **self.search)
 

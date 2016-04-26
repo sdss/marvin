@@ -7,6 +7,7 @@ import copy
 from pprint import pformat
 from functools import wraps
 from astropy.table import Table, Column
+from collections import OrderedDict
 
 __all__ = ['Results']
 
@@ -48,6 +49,8 @@ class Results(object):
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
+        self.coltoparam = None
+        self.paramtocol = None
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -118,6 +121,20 @@ class Results(object):
             raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
         return self.columns
 
+    def mapColumnsToParams(self, col=None):
+        ''' Map the columns names from results to the original parameter names '''
+        columns = self.getColumns()
+        if not self.coltoparam:
+            self.coltoparam = OrderedDict(zip(columns, self._queryobj.params))
+        return self.coltoparam[col] if col else self.coltoparam.values()
+
+    def mapParamsToColumns(self, param=None):
+        ''' Map original parameter names to the column names '''
+        columns = self.getColumns()
+        if not self.paramtocol:
+            self.paramtocol = OrderedDict(zip(self._queryobj.params, columns))
+        return self.paramtocol[param] if param else self.paramtocol.values()
+
     @local_mode_only
     def getListOf(self, name='plateifu', to_json=False):
         ''' Get a list of plate-IFUs or MaNGA IDs from results '''
@@ -139,12 +156,13 @@ class Results(object):
 
         # Try to get the sqlalchemy results keys
         keys = self.getColumns()
+        tmp = self.mapColumnsToParams()
 
         # Format results
         if format_type == 'listdict':
-            output = [{k: res.__getattribute__(k) for k in keys} for res in self.results]
+            output = [{self.coltoparam[k]: res.__getattribute__(k) for k in keys} for res in self.results]
         elif format_type == 'dictlist':
-            output = {k: [res.__getattribute__(k) for res in self.results] for k in keys}
+            output = {self.coltoparam[k]: [res.__getattribute__(k) for res in self.results] for k in keys}
         else:
             raise MarvinError('No output.  Check your input format_type.')
 
