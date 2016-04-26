@@ -4,10 +4,11 @@ from __future__ import print_function, division, absolute_import
 import unittest
 import copy
 from marvin import config, marvindb
+from marvin.tests import MarvinTest, skipIfNoDB
 from marvin.tools.query import Query
 
 
-class TestQuery(unittest.TestCase):
+class TestQuery(MarvinTest):
 
     @classmethod
     def setUpClass(cls):

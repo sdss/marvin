@@ -7,7 +7,7 @@ from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords
 from marvin.tools.spaxel import Spaxel
-from brain.api.api import Interaction
+from marvin.api.api import Interaction
 
 
 class Cube(MarvinToolsClass):
