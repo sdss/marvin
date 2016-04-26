@@ -23,6 +23,7 @@ def create_app(debug=False):
     from marvin.api.general import GeneralRequestsView
     from marvin.web.controllers.index import index
     from marvin.web.controllers.galaxy import galaxy
+    from marvin.web.controllers.search import search
 
     # ----------------------------------
     # Create App
@@ -130,5 +131,6 @@ def create_app(debug=False):
     # Web route registration
     app.register_blueprint(index, url_prefix=url_prefix)
     app.register_blueprint(galaxy, url_prefix=url_prefix)
+    app.register_blueprint(search, url_prefix=url_prefix)
 
     return app

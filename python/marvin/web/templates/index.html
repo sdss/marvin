@@ -8,25 +8,4 @@
 	</div>
 </div>
 
-{# Single Text Box #}
-<div class='well'>
-    <div class='row'>
-        <form class='form' method='POST' role='form' action="{{url_for('index_page.Marvin:search')}}">
-          <div class='row'>
-            <div class='col-md-2'>
-              {#<div class='form-group'>
-                <label for='#multiple-datasets'>Parameters</label>
-                <div id='multiple-datasets'><input class='typeahead form-control' type='text' placeholder='Searchable Parameters'></div>
-              </div>#}
-            </div>
-            <div class='col-md-6'>
-              <div class='form-group'>
-                <div>{{mainform.searchbox.label}}: {{mainform.searchbox(class_='form-control', placeholder='ooooh type in me hard')}}</div>
-              </div>
-            </div>
-          </div>
-        </form>
-    </div>
-</div>
-
 {% endblock body %}
