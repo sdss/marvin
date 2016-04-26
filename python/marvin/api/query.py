@@ -57,7 +57,8 @@ class QueryView(BrainQueryView):
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)
         # create output
-        rows = res.getDictOf('mangaid', format_type='listdict')
-        output = {'total': res.count, 'rows': rows}
+        rows = res.getDictOf(format_type='listdict')
+        output = {'total': res.count, 'rows': rows, 'columns': ['mangaid', 'nsa_redshift']}
+        print('webtable output', output)
         output = json.dumps(output)
         return output
