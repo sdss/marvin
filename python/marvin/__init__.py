@@ -98,8 +98,7 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         if not self.mplver or not (self.drpver and self.dapver):
-            warnings.warn('No MPL or DRP/DAP version set. Setting default to MPL-4',
-                          MarvinUserWarning)
+            log.info('No MPL or DRP/DAP version set. Setting default to MPL-4')
             self.setMPL('MPL-4')
 
     def setMPL(self, mplver):

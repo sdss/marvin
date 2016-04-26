@@ -263,6 +263,7 @@ python/marvin/web/lib/dist/marvin.min.js -text
 python/marvin/web/lib/js/galaxy.js -text
 python/marvin/web/lib/js/marvin.js -text
 python/marvin/web/lib/js/olmap.js -text
+python/marvin/web/lib/js/table.js -text
 python/marvin/web/lib/js/utils.js -text
 python/marvin/web/lib/package.json -text
 python/marvin/web/lib/scss/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.eot -text svneol=unset#application/vnd.ms-fontobject
@@ -348,6 +349,7 @@ python/marvin/web/lib/scss/marvin.scss -text
 python/marvin/web/lib/src/galaxy.js -text
 python/marvin/web/lib/src/marvin.js -text
 python/marvin/web/lib/src/olmap.js -text
+python/marvin/web/lib/src/table.js -text
 python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/templates/footer.html -text

@@ -1,5 +1,6 @@
 from __future__ import print_function
 from marvin.core import MarvinError, MarvinUserWarning
+from marvin.tools.cube import Cube
 import warnings
 import json
 import copy
@@ -16,7 +17,7 @@ def local_mode_only(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'remote':
-            print('{0} not available in remote mode'.format(func.__name__))
+            raise MarvinError('{0} not available in remote mode'.format(func.__name__))
         else:
             return func(self, *args, **kwargs)
     return wrapper
@@ -28,7 +29,7 @@ def remote_mode_only(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'local':
-            print('{0} not available in local mode'.format(func.__name__))
+            raise MarvinError('{0} not available in local mode'.format(func.__name__))
         else:
             return func(self, *args, **kwargs)
     return wrapper
@@ -38,17 +39,19 @@ class Results(object):
 
     def __init__(self, *args, **kwargs):
 
-        # super(Results, self).__init__(*args, **kwargs)
         self.results = kwargs.get('results', None)
         self._queryobj = kwargs.get('queryobj', None)
-        if self._queryobj:
-            self.query = self._queryobj.query
-        #self.count = count if count else len(results['data']) if results else None
+        self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
+        self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.count = kwargs.get('count', None)
         self.mode = kwargs.get('mode', None)
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
+
+        # Auto convert to Marvin Object
+        if self.returntype:
+            self.convertToTool()
 
     def __repr__(self):
         # remote mode
@@ -77,6 +80,8 @@ class Results(object):
                         repr(self.mode)))
 
     def showQuery(self):
+        ''' Displays the literal SQL query used to generate the Results objects
+        '''
         return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
     @local_mode_only
@@ -105,6 +110,14 @@ class Results(object):
             raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
         return jsonres
 
+    def getColumns(self):
+        ''' Get the columns of the returned reults '''
+        try:
+            self.columns = self.results[0].keys() if self.results else None
+        except Exception as e:
+            raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
+        return self.columns
+
     @local_mode_only
     def getListOf(self, name='plateifu', to_json=False):
         ''' Get a list of plate-IFUs or MaNGA IDs from results '''
@@ -121,23 +134,34 @@ class Results(object):
         return output
 
     @local_mode_only
-    def getDictOf(self, name='plateifu', format_type='listdict', to_json=False):
+    def getDictOf(self, name=None, format_type='listdict', to_json=False):
         ''' Get a dictionary of specified parameter '''
 
-        # Test name in results
-        output = None
-        try:
-            output = self.results[0].__getattribute__(name)
-        except AttributeError as e:
-            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(name, e))
+        # Try to get the sqlalchemy results keys
+        keys = self.getColumns()
 
         # Format results
         if format_type == 'listdict':
-            output = [{name: r.__getattribute__(name)} for r in self.results]
+            output = [{k: res.__getattribute__(k) for k in keys} for res in self.results]
         elif format_type == 'dictlist':
-            output = {name: [r.__getattribute__(name)for r in self.results]}
+            output = {k: [res.__getattribute__(k) for res in self.results] for k in keys}
         else:
-            output = None
+            raise MarvinError('No output.  Check your input format_type.')
+
+        # Test if name is in results
+        if name:
+            nameinkeys = name in keys if keys and name else None
+
+            if nameinkeys:
+                # Format results
+                if format_type == 'listdict':
+                    output = [{name: i[name]} for i in output]
+                elif format_type == 'dictlist':
+                    output = output[name]
+                else:
+                    output = None
+            else:
+                raise MarvinError('Name {0} not a property in results.  Try another'.format(name))
 
         if to_json:
             output = json.dumps(output) if output else None
@@ -201,3 +225,9 @@ class Results(object):
         ''' Retrieve all of the results '''
         self.results = self.query.all()
         return self.results
+
+    def convertToTool(self):
+        ''' Converts the list of results into a Marvin Tool object '''
+        if self.returntype == 'cube':
+            self.objects = [Cube(mangaid=res.__getattribute__('mangaid'), mode=self.mode) for res in self.results]
+

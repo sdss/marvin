@@ -21,6 +21,7 @@ from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
 from brain.api.api import Interaction
 from sqlalchemy import or_, and_, bindparam, between
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
@@ -54,7 +55,7 @@ def updateConfig(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.query:
-            self.query = self.query.params({'drpver': config.drpver})
+            self.query = self.query.params({'drpver': config.drpver, 'dapver': config.dapver})
         return f(self, *args, **kwargs)
     return wrapper
 
@@ -137,15 +138,21 @@ class Query(object):
         if searchfilter:
             self.set_filter(searchfilter=searchfilter)
 
-        # create query parameter ModelClasses
-        self._create_query_modelclasses()
+        # Don't do anything if nothing specified
+        allnot = [not searchfilter, not returnparams]
+        if not all(allnot):
+            # create query parameter ModelClasses
+            self._create_query_modelclasses()
 
-        # join tables
-        self._join_tables()
+            # join tables
+            self._join_tables()
 
-        # add condition
-        if searchfilter:
-            self.add_condition()
+            # add condition
+            if searchfilter:
+                self.add_condition()
+
+            # add PipelineInfo
+            self._addPipeline()
 
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
@@ -189,7 +196,7 @@ class Query(object):
 
     def _create_query_modelclasses(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
-        self.params = list(set(self.params))
+        self.params = [item for item in self.params if item in set(self.params)]
         print('my params', self.params)
         self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
@@ -406,6 +413,9 @@ class Query(object):
                 if not self._tableInQuery('ifudesign'):
                     self.query = self.query.join(marvindb.datadb.IFUDesign)
 
+            if self.sort == 'mangaid':
+                sortparam = marvindb.datadb.Cube.mangaid
+
             # If order is specified, then do the sort
             if self.order:
                 assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
@@ -444,32 +454,56 @@ class Query(object):
 
     @updateConfig
     def _createBaseQuery(self):
-        ''' Create the base query session object.  Default is to return a list of SQLalchemy Cube objects. Also default joins to the DRP pipeline
-            version set from config.drpver
+        ''' Create the base query session object.  Passes in a list of parameters defined in
+            returnparams, filterparams, and defaultparams
         '''
+        self.query = self.session.query(*self.queryparams)
 
-        # if not param:
-        #     param = marvindb.datadb.Cube
-        #     self._basetable = self._buildBaseTable(param)
-        #     self.query = self.session.query(marvindb.datadb.Cube).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
-        #         .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
-        # else:
-        #     self._basetable = self._buildBaseTable(param)
-        #     self.query = self.session.query(param).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
-        #         .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
-        self.query = self.session.query(*self.queryparams).join(marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion)\
-            .filter(marvindb.datadb.PipelineVersion.version == bindparam('drpver', config.drpver))
+    def _getPipeInfo(self, pipename):
+        ''' Retrieve the pipeline Info for a given pipeline version name '''
 
-    def _buildBaseTable(self, param):
-        ''' Builds the base name for a input parameter: either schema.table or schema.table.column'''
-        if isinstance(param, DeclarativeMeta) and hasattr(param, '__table__'):
-            basename = '{0}.{1}'.format(param.__table__.schema, param.__table__.name)
-        elif isinstance(param, InstrumentedAttribute):
-            basename = str(param.compile())
-            basename = basename.rsplit('.', 1)[0]
+        assert pipename.lower() in ['drp', 'dap'], 'Pipeline Name must either be DRP or DAP'
+
+        # bindparam values
+        bindname = 'drpver' if pipename.lower() == 'drp' else 'dapver'
+        bindvalue = config.drpver if pipename.lower() == 'drp' else config.dapver
+
+        # class names
+        if pipename.lower() == 'drp':
+            inclasses = self._tableInQuery('cube') or 'cube' in str(self.query.statement.compile())
+        elif pipename.lower() == 'dap':
+            inclasses = self._tableInQuery('file') or 'file' in str(self.query.statement.compile())
+
+        # set alias
+        pipealias = self._drp_alias if pipename.lower() == 'drp' else self._dap_alias
+
+        # get the pipeinfo
+        if inclasses:
+            pipeinfo = marvindb.session.query(pipealias).\
+                join(marvindb.datadb.PipelineName, marvindb.datadb.PipelineVersion).\
+                filter(marvindb.datadb.PipelineName.label == pipename.upper(),
+                       marvindb.datadb.PipelineVersion.version == bindparam(bindname, bindvalue)).one()
         else:
-            basename = None
-        return basename
+            pipeinfo = None
+
+        return pipeinfo
+
+    def _addPipeline(self):
+        ''' Adds the DRP and DAP Pipeline Info into the Query '''
+
+        self._drp_alias = aliased(marvindb.datadb.PipelineInfo, name='drpalias')
+        self._dap_alias = aliased(marvindb.datadb.PipelineInfo, name='dapalias')
+
+        drppipe = self._getPipeInfo('drp')
+        dappipe = self._getPipeInfo('dap')
+
+        # Add DRP pipeline version
+        if drppipe:
+            self.query = self.query.join(self._drp_alias, marvindb.datadb.Cube.pipelineInfo).filter(self._drp_alias.pk == drppipe.pk)
+
+        # Add DAP pipeline version
+        if dappipe:
+            self.query = self.query.join(self._dap_alias, marvindb.dapdb.File.pipelineinfo).filter(self._dap_alias.pk == dappipe.pk)
 
     @makeBaseQuery
     def _tableInQuery(self, name):
