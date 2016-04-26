@@ -382,7 +382,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-25 14:22:27
+* @Last Modified time: 2016-04-26 00:26:56
 */
 
 'use strict';
@@ -409,12 +409,21 @@ var Table = function () {
         value: function print() {
             console.log('I am Table!');
         }
+
+        // Set the initial Table
+
     }, {
         key: 'setTable',
         value: function setTable() {
             console.log('setting the table');
             this.table = $('#table');
         }
+
+        // make the Table Columns
+
+    }, {
+        key: 'makeColumns',
+        value: function makeColumns(columns) {}
 
         // Handle the Bootstrap table JSON response
 
@@ -423,7 +432,7 @@ var Table = function () {
         value: function handleResponse(results) {
             console.log('table results', results);
             // load the bootstrap table div
-            console.log(this.table, this.table === null);
+            console.log(this.table, this.table === null, this);
             if (this.table === null) {
                 this.setTable();
             }
@@ -434,7 +443,7 @@ var Table = function () {
             console.log(cols);
 
             // Load new options
-            this.table.bootstrapTable('refreshOptions', { 'columns': cols });
+            //this.table.bootstrapTable('refreshOptions', {'columns': cols});
 
             return results;
         }

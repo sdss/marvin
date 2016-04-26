@@ -33,9 +33,9 @@
     <div class='table-responsive' id='testtable'>
         <table id='table' data-toggle="table" data-classes='table table-condensed table-bordered table-hover' data-url="{{url_for('api.webtable')}}" data-pagination="true" data-method='post' data-content-type="application/x-www-form-urlencoded"
            data-page-size="10" data-page-list="[5, 10, 20]" data-side-pagination="server" data-search='true' data-sort-name="mangaid" data-sort-order='asc' data-response-handler='m.table.handleResponse'>
-           {#<thead>
-            <tr><th data-field='mangaid' data-sortable='true'>MaNGA ID</th></tr>
-           </thead>#}
+           <thead>
+            {#<tr><th data-field='mangaid' data-sortable='true'>MaNGA ID</th></tr>#}
+           </thead>
         </table>
     </div>
 </div>
