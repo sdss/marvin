@@ -36,14 +36,10 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         specmsg = 'Could not get spectrum: {0}'.format(e)
     else:
         # get error and wavelength
-        #if byradec:
-        #    ivar = cube.getSpectrum(ra=x, dec=y, ext='ivar', xyorig=xyorig)
-        #else:
-        #    ivar = cube.getSpectrum(x=x, y=y, ext='ivar', xyorig=xyorig)
         error = convertIvarToErr(spectrum.ivar)
         wave = spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum)]
+        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.flux)]
 
         specmsg = "for relative coords x = {0}, y={1}".format(x, y)
 
