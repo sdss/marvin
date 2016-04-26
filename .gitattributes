@@ -46,6 +46,7 @@ python/marvin/web/configuration/utah.cfg -text
 python/marvin/web/controllers/__init__.py -text
 python/marvin/web/controllers/galaxy.py -text
 python/marvin/web/controllers/index.py -text
+python/marvin/web/controllers/search.py -text
 python/marvin/web/jinja_filters.py -text
 python/marvin/web/lib/Gruntfile.js -text
 python/marvin/web/lib/css/marvin.css -text
@@ -151,4 +152,5 @@ python/marvin/web/templates/galaxy.html -text
 python/marvin/web/templates/header.html -text
 python/marvin/web/templates/index.html -text
 python/marvin/web/templates/layout.html -text
+python/marvin/web/templates/search.html -text
 python/marvin/web/templates/test.html -text
