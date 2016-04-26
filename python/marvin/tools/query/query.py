@@ -499,11 +499,13 @@ class Query(object):
 
         # Add DRP pipeline version
         if drppipe:
-            self.query = self.query.join(self._drp_alias, marvindb.datadb.Cube.pipelineInfo).filter(self._drp_alias.pk == drppipe.pk)
+            self.query = self.query.join(self._drp_alias, marvindb.datadb.Cube.pipelineInfo).\
+                filter(self._drp_alias.pk == drppipe.pk)
 
         # Add DAP pipeline version
         if dappipe:
-            self.query = self.query.join(self._dap_alias, marvindb.dapdb.File.pipelineinfo).filter(self._dap_alias.pk == dappipe.pk)
+            self.query = self.query.join(self._dap_alias, marvindb.dapdb.File.pipelineinfo).\
+                filter(self._dap_alias.pk == dappipe.pk)
 
     @makeBaseQuery
     def _tableInQuery(self, name):
