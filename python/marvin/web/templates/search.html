@@ -40,7 +40,7 @@
                         <div class='col-md-10'>
                             <h3>Search results</h3>
                             <h4>Using filter: {{filter}}</h4>
-                            <h5>Total Count: {{count}}, Showing Results: {{results}}</h5>
+                            <h5>Total Count: {{count}}, Showing Results: {{reslen}}</h5>
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
         var url = Flask.url_for('api.webtable')
         console.log(url, res);
         if (res) {
-            m.table.initTable(url);
+            m.table.initTable(url, res);
         };
     });
 </script>

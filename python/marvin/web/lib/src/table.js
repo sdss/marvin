@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 15:59:14
+* @Last Modified time: 2016-04-26 17:32:16
 */
 
 'use strict';
@@ -32,8 +32,8 @@ class Table {
         this.url = url;
 
         // if data
-        if (data) {
-
+        if (data.columns !== null) {
+            var cols = this.makeColumns(data.columns);
         }
 
         // init the Bootstrap table
@@ -41,16 +41,18 @@ class Table {
             classes: 'table table-bordered table-condensed table-hover',
             toggle : 'table',
             pagination : true,
+            pageSize: 10,
             pageList : '[5, 10, 20]',
             sidePagination: 'server',
             method: 'post',
-            contentType: "application/json",
+            contentType: "application/x-www-form-urlencoded",
+            data: data.rows,
             columns: cols,
             url: url,
             search : true,
             showColumns : true,
             showToggle : true,
-            sortName: 'mangaid',
+            sortName: 'cube.mangaid',
             sortOrder: 'asc',
             formatNoMatches: function () {
                 return "This table is empty...";
@@ -60,12 +62,19 @@ class Table {
 
     // make the Table Columns
     makeColumns(columns) {
-
+        var cols = [];
+        columns.forEach(function (name, index) {
+            var colmap = {};
+            colmap['field'] = name;
+            colmap['title'] = name;
+            colmap['sortable'] = true;
+            cols.push(colmap);
+        });
+        return cols;
     }
 
     // Handle the Bootstrap table JSON response
     handleResponse(results) {
-        console.log('table results', results);
         // load the bootstrap table div
         //console.log(this.table, this.table===null, this);
         if (this.table === null) {
@@ -83,7 +92,6 @@ class Table {
             colmap['sortable'] = true;
             cols.push(colmap);
         });
-        console.log(cols);
 
         // Load new options
         this.table.bootstrapTable('refreshOptions', {'columns': cols});

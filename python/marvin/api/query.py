@@ -47,6 +47,7 @@ class QueryView(BrainQueryView):
 
         # set parameters
         searchvalue = current_session['searchvalue']
+        print('webtable', searchvalue, self.results['inconfig'])
         limit = self.results['inconfig'].get('limit', None)
         offset = self.results['inconfig'].get('offset', None)
         order = self.results['inconfig'].get('order', None)
@@ -56,9 +57,11 @@ class QueryView(BrainQueryView):
         q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)
+        # get keys
+        cols = res.mapColumnsToParams()
         # create output
         rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.count, 'rows': rows, 'columns': ['mangaid', 'nsa_redshift']}
+        output = {'total': res.count, 'rows': rows, 'columns': cols}
         print('webtable output', output)
         output = json.dumps(output)
         return output
