@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 17:40:53
+* @Last Modified time: 2016-04-26 18:12:18
 */
 
 //
@@ -83,7 +83,7 @@ class OLMap {
         this.view = new ol.View({
             projection: this.projection,
             center: ol.extent.getCenter(this.extent),
-            zoom: 0,
+            zoom: 1,
             maxZoom: 8,
             maxResolution: 1.4
         })
@@ -148,13 +148,13 @@ class OLMap {
                     color: 'rgba(255, 255, 255, 0.2)'
                 }),
                 stroke: new ol.style.Stroke({
-                    color: '#ffcc33',
+                    color: '#FF0808',
                     width: 2
                 }),
                 image: new ol.style.Circle({
                     radius: 3,
                     fill: new ol.style.Fill({
-                        color: '#ffcc33'
+                        color: '#FF0808'
                         })
                     })
             })

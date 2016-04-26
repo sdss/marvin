@@ -80,7 +80,6 @@
         m.table.print();
         var res = {{results|tojson}};
         var url = Flask.url_for('api.webtable')
-        console.log(url, res);
         if (res) {
             m.table.initTable(url, res);
         };
