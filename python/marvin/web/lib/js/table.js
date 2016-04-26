@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 10:02:21
+* @Last Modified time: 2016-04-26 14:30:37
 */
 
 'use strict';
@@ -15,10 +15,10 @@ var Table = function () {
 
     // Constructor
 
-    function Table() {
+    function Table(tablediv) {
         _classCallCheck(this, Table);
 
-        this.table = null;
+        this.setTable(tablediv);
     }
 
     // Print
@@ -34,9 +34,38 @@ var Table = function () {
 
     }, {
         key: 'setTable',
-        value: function setTable() {
-            console.log('setting the table');
-            this.table = $('#table');
+        value: function setTable(tablediv) {
+            if (tablediv !== undefined) {
+                console.log('setting the table');
+                this.table = tablediv;
+            }
+        }
+
+        // initialize a table
+
+    }, {
+        key: 'initTable',
+        value: function initTable(url) {
+            this.url = url;
+            this.table.bootstrapTable({
+                classes: 'table table-bordered table-condensed table-hover',
+                toggle: 'table',
+                pagination: true,
+                pageList: '[5, 10, 20]',
+                sidePagination: 'server',
+                method: 'post',
+                contentType: "application/json",
+                columns: cols,
+                url: url,
+                search: true,
+                showColumns: true,
+                showToggle: true,
+                sortName: 'mangaid',
+                sortOrder: 'asc',
+                formatNoMatches: function formatNoMatches() {
+                    return "This table is empty...";
+                }
+            });
         }
 
         // make the Table Columns

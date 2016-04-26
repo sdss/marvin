@@ -44,6 +44,11 @@
                         </div>
                     </div>
                 </div>
+                <!-- Table -->
+                {# Table #}
+                <div class='table-responsive' id='searchtablediv'>
+                    <table id='searchtable'></table>
+                </div>
             {% else %}
                 {% if errmsg %}
                     <div class='well'>
@@ -70,6 +75,15 @@
 <!-- JS Code -->
 {% block code %}
 <script type='text/javascript'>
-
+    $(function() {
+        m.table = new Table($('#searchtable'));
+        m.table.print();
+        var res = {{results|tojson}};
+        var url = Flask.url_for('api.webtable')
+        console.log(url, res);
+        if (res) {
+            m.table.initTable(url);
+        };
+    });
 </script>
 {% endblock code %}
