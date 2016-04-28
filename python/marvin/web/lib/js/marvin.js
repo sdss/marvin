@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 13:44:41
+* @Last Modified time: 2016-04-26 21:48:13
 */
 
 'use strict';
@@ -19,4 +19,8 @@ var Marvin = function Marvin(options) {
     // set up utility functions
     this.utils = new Utils();
     this.utils.print();
+
+    // load the header
+    this.header = new Header();
+    this.header.print();
 };

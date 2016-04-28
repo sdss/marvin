@@ -17,6 +17,14 @@
                 <li class="{{'active' if active_page=='search'}}"><a href="{{url_for('search_page.Search:index')}}">Search</a></li>
             </ul>
 
+            <!-- Galaxy ID Search Box-->
+            {# Marvin PlateId/MaNGAId Search #}
+            <form class="navbar-form navbar-left" role="form" id='headform' action="{{url_for('index_page.galidselect')}}" method="post">
+                <div class='form-group form-inline galids' id='scrollable-dropdown-menu'>
+                    <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid' val='' autocomplete='off' data-provide='typeahead'/>
+                </div>
+            </form>
+
         </div>
     </div>
 </nav>

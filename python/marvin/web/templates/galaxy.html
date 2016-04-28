@@ -62,7 +62,7 @@
         m.galaxy = new Galaxy();
         m.galaxy.print();
         // toggle interaction on click
-        var spaxel = {{spectra}};
+        var spaxel = {{spectra|tojson}};
         var galimage = {{image|tojson}};
         $('#toggleinteract').on('click', m.galaxy, function() {
             m.galaxy.toggleInteract(spaxel, galimage);
