@@ -13,7 +13,7 @@
 	<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 	<link rel='preconnect stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.css'>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
-	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.min.css')}}"></script>
+	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.css')}}"></script>
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	{% block csshead %}{% endblock csshead %}
 
@@ -24,10 +24,12 @@
 	<script rel='preconnect' src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js" async defer></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js" async defer></script>
-	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/0.11.1/typeahead.bundle.min.js" async defer></script>
+	{#<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/0.11.1/typeahead.bundle.min.js" async defer></script>#}
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
 	{#<script type="text/javascript" src="{{url_for('static',filename='js/wcs.js')}}"></script>#}
+	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/0.11.1/bloodhound.min.js"></script>
+	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js"></script>
 	{% block jshead %}{% endblock jshead %}
 </head>
 
@@ -45,12 +47,12 @@
 	{% include 'footer.html' %}
 
 	<!-- Javascript Code Block -->
+	{{ JSGlue.include() }}
 	<script type='text/javascript' src="{{url_for('lib',filename='dist/marvin.js')}}"></script>
 	<script type='text/javascript'>
 		var m = new Marvin();
 	</script>
 	{% block code %}{% endblock code %}
-	{{ JSGlue.include() }}
 </body>
 </html>
 
