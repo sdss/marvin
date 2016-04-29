@@ -16,7 +16,7 @@ class Marvin(FlaskView):
     def __init__(self):
         self.base = {}
         self.base['title'] = 'Marvin'
-        self.base['intro'] = 'Welcome to Marvin'
+        self.base['intro'] = 'Welcome to Marvin!'
 
     def index(self):
         config.drpver = 'v1_5_1'
@@ -46,7 +46,7 @@ class Marvin(FlaskView):
         if idtype == 'plateifu' or idtype == 'mangaid':
             return redirect(url_for('galaxy_page.Galaxy:get', galid=galid))
         elif idtype == 'plate':
-            return redirect(url_for('index_page.Marvin:index'))
+            return redirect(url_for('plate_page.Plate:get', plateid=galid))
         else:
             return redirect(url_for('index_page.Marvin:index'))
 

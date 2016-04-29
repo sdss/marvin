@@ -24,6 +24,7 @@ def create_app(debug=False):
     from marvin.web.controllers.index import index
     from marvin.web.controllers.galaxy import galaxy
     from marvin.web.controllers.search import search
+    from marvin.web.controllers.plate import plate
 
     # ----------------------------------
     # Create App
@@ -132,5 +133,6 @@ def create_app(debug=False):
     app.register_blueprint(index, url_prefix=url_prefix)
     app.register_blueprint(galaxy, url_prefix=url_prefix)
     app.register_blueprint(search, url_prefix=url_prefix)
+    app.register_blueprint(plate, url_prefix=url_prefix)
 
     return app

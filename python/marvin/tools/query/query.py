@@ -406,16 +406,7 @@ class Query(object):
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
         if not isinstance(self.sort, type(None)):
-            # set the sort variable ModelClass parameter ; make this as plateifu right now
-            # TODO - generalize this to any parameter
-            # if self.sort == 'plateifu':
-            #     sortparam = marvindb.datadb.Cube.plateifu
-            #     if not self._tableInQuery('ifudesign'):
-            #         self.query = self.query.join(marvindb.datadb.IFUDesign)
-
-            # if self.sort == 'mangaid':
-            #     sortparam = marvindb.datadb.Cube.mangaid
-
+            # set the sort variable ModelClass parameter
             sortparam = self.marvinform._param_form_lookup.mapToColumn(self.sort)
 
             # If order is specified, then do the sort
