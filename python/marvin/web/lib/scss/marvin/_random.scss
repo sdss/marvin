@@ -1,0 +1,28 @@
+/*
+* @Author: Brian Cherinka
+* @Date:   2016-04-29 10:40:57
+* @Last Modified by:   Brian
+* @Last Modified time: 2016-04-29 10:43:31
+*/
+
+
+#random_images {
+
+    .hide-bullets {
+        list-style:none;
+        margin-left: -40px;
+        margin-top:20px;
+    }
+
+    .thumbnail {
+        padding: 0;
+    }
+
+    .carousel-inner>.item>img, .carousel-inner>.item>a>img {
+        width: 100%;
+    }
+
+}
+
+
+

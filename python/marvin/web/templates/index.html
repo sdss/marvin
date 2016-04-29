@@ -18,7 +18,7 @@
                                 <a class="btn btn-default btn-lg" onclick='m.utils.scrollTo("#about")'><i class="fa fa-info fa-fw"></i> <span class="network-name">About</span></a>
                             </li>
                             <li>
-                                <a href="#" class="btn btn-default btn-lg"><i class="fa fa-camera-retro fa-fw"></i> <span class="network-name">Random Images</span></a>
+                                <a href="{{url_for('images_page.Random:index')}}" class="btn btn-default btn-lg"><i class="fa fa-camera-retro fa-fw"></i> <span class="network-name">Random Images</span></a>
                             </li>
                             <li>
                                 <a href="https://api.sdss.org/doc/manga/marvin/refactor/" target='_blank' class="btn btn-default btn-lg"><i class="fa fa-question-circle-o fa-fw"></i> <span class="network-name">Help</span></a>
@@ -101,7 +101,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="img/team/2.jpg" class="img-responsive img-circle" alt="">
+                        <img src="{{url_for('static', filename='images/marvin_favicon.ico')}}" class="img-responsive img-circle" alt="">
                         <h4>Brett Andrews</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
@@ -116,7 +116,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="img/team/3.jpg" class="img-responsive img-circle" alt="">
+                        <img src="{{url_for('static', filename='images/marvin_favicon.ico')}}" class="img-responsive img-circle" alt="">
                         <h4>José Sánchez-Gallego</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
@@ -131,7 +131,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="img/team/4.jpg" class="img-responsive img-circle" alt="">
+                        <img src="{{url_for('static', filename='images/marvin_favicon.ico')}}" class="img-responsive img-circle" alt="">
                         <h4>Joel Brownstein</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
