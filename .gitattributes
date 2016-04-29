@@ -265,8 +265,6 @@ python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.wof
 python/marvin/web/lib/bootstrap/fonts/bootstrap/glyphicons-halflings-regular.woff2 -text
 python/marvin/web/lib/css/marvin.css -text
 python/marvin/web/lib/css/marvin.css.map -text
-python/marvin/web/lib/css/marvin/footer.css -text
-python/marvin/web/lib/css/marvin/footer.css.map -text
 python/marvin/web/lib/dist/marvin.css -text
 python/marvin/web/lib/dist/marvin.js -text
 python/marvin/web/lib/dist/marvin.min.css -text
