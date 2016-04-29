@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-14 11:43:57
+* @Last Modified time: 2016-04-28 23:33:27
 */
 
 // Javascript code for general things
@@ -33,6 +33,17 @@ class Utils {
     // Unique values
     unique(data) {
         return new Set(data);
+    }
+
+    // Scroll to div
+    scrollTo(location) {
+        if (location !== undefined) {
+            var scrolldiv = $(location);
+            $('html,body').animate({scrollTop:scrolldiv.offset().top},1500, 'easeInOutExpo');
+        } else {
+            $('html,body').animate({scrollTop:0},1500, 'easeInOutExpo');
+        }
+
     }
 }
 

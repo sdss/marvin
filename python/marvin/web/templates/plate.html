@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+{% endblock jshead %}
+
+<!-- Single Galaxy Page -->
+{% block body %}
+
+{% if plateid %}
+    <div class='well'>
+        <div class='row'>
+            <h3>Plate ID: {{plateid}}</h3>
+        </div>
+    </div>
+{% else %}
+    <div class='well'>
+        <div class='row'>
+            <h3>Sigh...no plate specified!</h3>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+
+{% endblock code %}
