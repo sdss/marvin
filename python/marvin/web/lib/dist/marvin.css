@@ -6035,7 +6035,7 @@ a.list-group-item-danger.active:hover, a.list-group-item-danger.active:focus {
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 22:30:25
+* @Last Modified time: 2016-04-29 19:00:34
 */
 /*
 header {
@@ -6135,6 +6135,15 @@ header .intro-text .intro-heading {
 
   .intro-divider {
     width: 100%; } }
+.img-centered {
+  margin: 0 auto; }
+
+.bg-light-gray {
+  background-color: #f7f7f7; }
+
+.bg-darkest-gray {
+  background-color: #222222; }
+
 section {
   padding: 100px 0; }
 
@@ -6158,21 +6167,18 @@ section h3.section-subheading {
   margin: 15px 0;
   text-transform: none; }
 
-.team-member {
+#team .team-member {
   text-align: center;
   margin-bottom: 50px; }
-
-.team-member img {
-  margin: 0 auto;
-  border: 7px solid white; }
-
-.team-member h4 {
-  margin-top: 25px;
-  margin-bottom: 0;
-  text-transform: none; }
-
-.team-member p {
-  margin-top: 0; }
+  #team .team-member img {
+    margin: 0 auto;
+    border: 7px solid white; }
+  #team .team-member h4 {
+    margin-top: 25px;
+    margin-bottom: 0;
+    text-transform: none; }
+  #team .team-member p {
+    margin-top: 0; }
 
 .network-name {
   text-transform: uppercase;

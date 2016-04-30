@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 01:41:18
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 23:42:44
+* @Last Modified time: 2016-04-29 18:57:52
 */
 
 module.exports = function(grunt) {
@@ -103,5 +103,5 @@ module.exports = function(grunt) {
   //grunt.file.setBase('../python/marvin/web/static/');
 
   // Default task(s). New tasks go in a tasklist.  Tasks are run in that order.
-  grunt.registerTask('default', ['newer:babel', 'newer:sass', 'newer:concat', 'newer:imagemin', 'newer:cssmin', 'newer:uglify']);
+  grunt.registerTask('default', ['babel', 'sass', 'concat', 'newer:imagemin', 'newer:cssmin', 'newer:uglify']);
 };
