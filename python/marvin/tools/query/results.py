@@ -1,13 +1,14 @@
 from __future__ import print_function
 from marvin.core import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
+from marvin import config
 import warnings
 import json
 import copy
 from pprint import pformat
 from functools import wraps
 from astropy.table import Table, Column
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 __all__ = ['Results']
 
@@ -45,66 +46,64 @@ class Results(object):
         self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
         self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.count = kwargs.get('count', None)
-        self.mode = kwargs.get('mode', None)
+        self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
         self.chunk = 10
         self.start = 0
         self.end = self.start + self.chunk
         self.coltoparam = None
         self.paramtocol = None
 
+        # Convert remote results to NamedTuple
+        if self.mode == 'remote':
+            self._makeNamedTuple()
+
         # Auto convert to Marvin Object
         if self.returntype:
             self.convertToTool()
 
     def __repr__(self):
-        # remote mode
-        if isinstance(self.results, list):
-            if len(self.results) > 5:
-                data = self.results[:4]
-                data.append('...')
-                data.append('data'[-1])
-                results = pformat(data)
-            else:
-                results = self.results
-        # local mode
-        else:
-            out = {}
-            for k in self.results:
-                if k == 'data' and len(self.results['data']) > 5:
-                    data = self.results['data'][:4]
-                    data.append('...')
-                    data.append(self.results['data'][-1])
-                    out[k] = data
-                else:
-                    out[k] = self.results[k]
-            results = pformat(out)
-        return ('Results(results={0},\nquery={1},\ncount={2},\nmode={3})'
-                .format(results, repr(self.query), self.count,
-                        repr(self.mode)))
+        return ('Results(results={0}, \nquery={1}, \ncount={2}, \nmode={3}'.format(self.results[0:5], repr(self.query), self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
         '''
-        return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
+        if type(self.query) == unicode:
+            return self.query
+        else:
+            return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
-    @local_mode_only
     def download(self):
         """Download data via sdsssync"""
         pass
 
-    def sort(self):
-        """WTForms Table? Bootstrap Table? dictionary?"""
-        pass
+    def sort(self, name, order='asc'):
+        ''' Sort the set of results by column name
+        '''
 
-    def toTable(self, columns=None):
+        refname = self._getRefName(name, dir='partocol')
+        reverse = True if order == 'desc' else False
+        sortedres = sorted(self.results, key=lambda row: row.__getattribute__(refname), reverse=reverse)
+        self.results = sortedres
+        return sortedres
+
+    def toTable(self):
         ''' Output the results as an astropy Table '''
         try:
-            tabres = Table([self.results])
+            tabres = Table(rows=self.results, names=self.getColumns())
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
 
-    @remote_mode_only
+    def _makeNamedTuple(self):
+        ''' '''
+        nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+        qpo = self._queryobj.queryparams_order
+
+        def keys(self):
+            return qpo
+        nt.keys = keys
+        self.results = [nt(*r) for r in self.results]
+
     def toJson(self):
         ''' Output the results as a JSON object '''
         try:
@@ -135,28 +134,32 @@ class Results(object):
             self.paramtocol = OrderedDict(zip(self._queryobj.params, columns))
         return self.paramtocol[param] if param else self.paramtocol.values()
 
-    @local_mode_only
-    def getListOf(self, name='plateifu', to_json=False):
-        ''' Get a list of plate-IFUs or MaNGA IDs from results '''
+    def getListOf(self, name=None, to_json=False):
+        ''' Extract a list of a single column from results '''
+
+        assert name, 'Must specify a column name'
+
+        # get reference name
+        refname = self._getRefName(name, dir='partocol')
 
         output = None
         try:
-            output = [r.__getattribute__(name) for r in self.results]
+            output = [r.__getattribute__(refname) for r in self.results]
         except AttributeError as e:
-            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(name, e))
+            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(refname, e))
 
         if to_json:
             output = json.dumps(output) if output else None
 
         return output
 
-    @local_mode_only
     def getDictOf(self, name=None, format_type='listdict', to_json=False):
-        ''' Get a dictionary of specified parameter '''
+        ''' Get a dictionary of specified parameters '''
 
         # Try to get the sqlalchemy results keys
         keys = self.getColumns()
         tmp = self.mapColumnsToParams()
+        tmp = self.mapParamsToColumns()
 
         # Format results
         if format_type == 'listdict':
@@ -168,14 +171,14 @@ class Results(object):
 
         # Test if name is in results
         if name:
-            nameinkeys = name in keys if keys and name else None
+            refname = self._getRefName(name, dir='coltopar')
 
-            if nameinkeys:
+            if refname:
                 # Format results
                 if format_type == 'listdict':
-                    output = [{name: i[name]} for i in output]
+                    output = [{refname: i[refname]} for i in output]
                 elif format_type == 'dictlist':
-                    output = output[name]
+                    output = output[refname]
                 else:
                     output = None
             else:
@@ -185,6 +188,24 @@ class Results(object):
             output = json.dumps(output) if output else None
 
         return output
+
+    def _getRefName(self, name, dir='coltopar'):
+        ''' Get the appropriate reference column / parameter name '''
+        assert dir in ['coltopar', 'partocol'], 'Reference direction can only be coltopar or partocol'
+        keys = self.getColumns()
+        pars = self.mapColumnsToParams()
+        tmp = self.mapParamsToColumns()
+        nameinkeys = name in keys if keys and name else None
+        nameinpars = name in pars if pars and name else None
+
+        if dir == 'coltopar':
+            # coltopar - convert column names to parameter names
+            refname = self.coltoparam[name] if nameinkeys else name if nameinpars else None
+        elif dir == 'partocol':
+            # partocol - convert parameter names to column names
+            refname = name if nameinkeys else self.paramtocol[name] if nameinpars else None
+
+        return refname
 
     @local_mode_only
     def getNext(self, chunk=None):

@@ -42,8 +42,8 @@ def tree():
 
 
 # Do A Query
-def doQuery(returnparams=None, searchfilter=None, limit=10, sort=None, order=None, returntype=None):
-    q = Query(returnparams=returnparams, searchfilter=searchfilter, limit=limit, sort=sort, order=order, returntype=returntype)
+def doQuery(*args, **kwargs):
+    q = Query(*args, **kwargs)
     res = q.run()
     return q, res
 
@@ -54,7 +54,7 @@ def updateConfig(f):
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        if self.query:
+        if self.query and self.mode == 'local':
             self.query = self.query.params({'drpver': config.drpver, 'dapver': config.dapver})
         return f(self, *args, **kwargs)
     return wrapper
@@ -66,7 +66,7 @@ def makeBaseQuery(f):
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        if not self.query:
+        if not self.query and self.mode == 'local':
             self._createBaseQuery()
         return f(self, *args, **kwargs)
     return wrapper
@@ -78,7 +78,7 @@ def checkCondition(f):
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        if self.filterparams and not self._alreadyInFilter(self.filterparams.keys()):
+        if self.mode == 'local' and self.filterparams and not self._alreadyInFilter(self.filterparams.keys()):
             self.add_condition()
         return f(self, *args, **kwargs)
 
@@ -93,6 +93,7 @@ class Query(object):
         self.query = None
         self.params = []
         self.filterparams = {}
+        self.queryparams = None
         self.myparamtree = tree()
         self._paramtree = None
         self.session = marvindb.session
@@ -140,7 +141,8 @@ class Query(object):
 
         # Don't do anything if nothing specified
         allnot = [not searchfilter, not returnparams]
-        if not all(allnot):
+        print('inside query', allnot, not all(allnot), self.mode, not all(allnot) and self.mode == 'local')
+        if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
 
@@ -394,14 +396,16 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter}
+            params = {'searchfilter': self.searchfilter, 'params': self.params}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
-                res = ii.results
-            return Results(results=res, query=self.query, mode=self.mode, queryobj=self)
+                res = ii.getData()
+                self.queryparams_order = ii.results['queryparams_order']
+                self.query = ii.results['query']
+            return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=len(res), returntype=self.returntype)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

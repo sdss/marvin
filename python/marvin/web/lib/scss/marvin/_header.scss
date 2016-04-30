@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 22:30:25
+* @Last Modified time: 2016-04-29 19:00:34
 */
 
 /*
@@ -114,6 +114,17 @@ header .intro-text .intro-heading {
     }
 }
 
+// general
+.img-centered {
+  margin: 0 auto;
+}
+.bg-light-gray {
+  background-color: #f7f7f7;
+}
+.bg-darkest-gray {
+  background-color: #222222;
+}
+
 //about section
 
 section {
@@ -143,21 +154,27 @@ section h3.section-subheading {
 }
 
 // teams
-.team-member {
-  text-align: center;
-  margin-bottom: 50px;
-}
-.team-member img {
-  margin: 0 auto;
-  border: 7px solid white;
-}
-.team-member h4 {
-  margin-top: 25px;
-  margin-bottom: 0;
-  text-transform: none;
-}
-.team-member p {
-  margin-top: 0;
+#team {
+    //background-color: #f8f8f8;
+    .team-member {
+      text-align: center;
+      margin-bottom: 50px;
+
+      img {
+        margin: 0 auto;
+        border: 7px solid white;
+      }
+
+      h4 {
+        margin-top: 25px;
+        margin-bottom: 0;
+        text-transform: none;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
 }
 
 .network-name {

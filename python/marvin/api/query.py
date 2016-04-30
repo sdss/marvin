@@ -6,15 +6,16 @@ from marvin.tools.query import doQuery
 from marvin.core import MarvinError
 
 
-def _getCubes(searchfilter, params_out=['plateifu']):
+def _getCubes(searchfilter, params=None):
     """Run query locally at Utah."""
 
-    q, r = doQuery(searchfilter)
+    q, r = doQuery(searchfilter=searchfilter, returnparam=params, mode='local')
     r.getAll()
-    output = dict(data=r.getListOf('plateifu'),
-                  query=r.showQuery(), filter=searchfilter)
-    # output = dict(data={p: r.getListOf(p) for p in params_out},
-    #               query=r.showQuery(), filter=searchfilter)
+    print('query worked', r.results[0])
+    output = dict(data=r.results, query=r.showQuery(),
+                  filter=searchfilter, params=params,
+                  queryparams_order=q.queryparams_order)
+    print('query api', output)
     return output
 
 
@@ -29,15 +30,17 @@ class QueryView(BrainQueryView):
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
-        searchfilter = self.results['inconfig']['searchfilter']
-        # params_tmp = self.results['inconfig']['params_out']
-        # params_out = params_tmp.split(',')
+        searchfilter = self.results['inconfig'].get('searchfilter', None)
+        params = self.results['inconfig'].get('params', None)
+        print('cube_query', searchfilter, params)
         try:
-            res = _getCubes(searchfilter)
+            res = _getCubes(searchfilter, params=params)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:
+            self.results['status'] = 1
             self.update_results(res)
+        print('about to return', self.results)
 
         return json.dumps(self.results)
 
