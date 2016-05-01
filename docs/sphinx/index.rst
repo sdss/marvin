@@ -34,7 +34,7 @@ Documentation
    :maxdepth: 2
 
    api/tools
-
+   api/queries
 
 
 Indices and tables

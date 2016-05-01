@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-'''
-Licensed under a 3-clause BSD license.
+# Licensed under a 3-clause BSD license.
 
-Revision History:
-    Initial Version: 2016-02-17 14:13:28 by Brett Andrews
-    2016-02-23 - Modified to test a programmatic query using a test sample form - B. Cherinka
-    2016-03-02 - Generalized to many parameters and many forms - B. Cherinka
-               - Added config drpver info
-    2016-03-12 - Changed parameter input to be a natural language string
-'''
+# Revision History:
+#     Initial Version: 2016-02-17 14:13:28 by Brett Andrews
+#     2016-02-23 - Modified to test a programmatic query using a test sample form - B. Cherinka
+#     2016-03-02 - Generalized to many parameters and many forms - B. Cherinka
+#                - Added config drpver info
+#     2016-03-12 - Changed parameter input to be a natural language string
 
 from __future__ import print_function
 from __future__ import division
@@ -43,6 +41,19 @@ def tree():
 
 # Do A Query
 def doQuery(*args, **kwargs):
+    ''' Convenience function for Query+Results
+
+        A wrapper for performing a Query, running it, and retrieving
+        the Results.
+
+        Parameters:
+            see the Query class for a list of inputs
+
+        Returns:
+            query, results:
+                A tuple containing the built Query instance, and the results
+                instance
+    '''
     q = Query(*args, **kwargs)
     res = q.run()
     return q, res
@@ -86,7 +97,50 @@ def checkCondition(f):
 
 
 class Query(object):
-    ''' Core Marvin Query object.  can this be subclassed from sqlalchemy query? should it? '''
+    ''' A class to perform queries on the MaNGA dataset.
+
+    This class is the main way of performing a query.  A query works minimally
+    by specifying a list of desired parameters, along with a string filter
+    condition in a natural language SQL format.
+
+    A local mode query assumes a local database.  A remote mode query uses the
+    API to run a query on the Utah server, and return the results.
+
+    By default, the query returns a list of tupled parameters.  The parameters
+    are a combination of user-defined parameters, parameters used in the
+    filter condition, and a set of pre-defined default parameters.  The object
+    plate-IFU or mangaid is always returned by default.
+
+    Parameters:
+        returnparams (str list):
+            A list of string parameters names desired to be returned in the query
+        searchfilter (str):
+            A (natural language) string containing the filter conditions
+            in the query; written as you would say it.
+        returntype (str):
+            The requested Marvin Tool object that the results are converted into
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
+        sort (str):
+            The parameter name to sort the query on
+        order ({'asc', 'desc'}):
+            The sort order.  Can be either ascending or descending.
+        limit (int):
+            The number limit on the number of returned results
+
+    Returns:
+        results:
+            An instance of the Results class containing the results
+            of your Query.
+
+    Example:
+        >>> # filter of "NSA redshift less than 0.1 and IFU names starting with 19"
+        >>> searchfilter = 'nsa_redshift < 0.1 and ifu.name = 19*'
+        >>> returnparams = ['cube.ra', 'cube.dec']
+        >>> q = Query(searchfilter=searchfilter, returnparams=returnparams)
+        >>> results = q.run()
+
+    '''
 
     def __init__(self, *args, **kwargs):
 
@@ -178,12 +232,15 @@ class Query(object):
             self.mode = 'remote'
 
     def set_returnparams(self, returnparams):
-        ''' Loads the user input parameters into the query params limit '''
+        ''' Loads the user input parameters into the query params limit
+        '''
         self.params.extend(returnparams)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type '''
-        # TODO - change mangaid to plateifu once plateifu works in SQLalchemy_boolean_search
+        # TODO - change mangaid to plateifu once plateifu works in
+        # SQLalchemy_boolean_search and we can figure out how to grab the classes
+        # for hybrid properties
         assert self.returntype in [None, 'cube', 'spaxel', 'map', 'rss'], 'Query returntype must be either cube, spaxel, map, rss'
         self.defaultparams = ['cube.mangaid']
         if self.returntype == 'spaxel':
@@ -206,12 +263,62 @@ class Query(object):
         print('queryorder', self.queryparams_order)
 
     def set_filter(self, searchfilter=None):
-        ''' Sets filter parameters searched on into the query.  This updates a dictionary myforms
-        with the appropriate form to modify/update based on the input parameters.  One-to-one
-        mapping between parameter and form/modelclass/sqltable
+        ''' Parses a filter string and adds it into the query.
 
-        Params is a string input of a boolean filter condition in SQL syntax
-        e.g., params = " nsa_redshift < 0.012 and name = 19* "
+        Parses a natural language string filter into the appropriate SQL
+        filter syntax.  String is a boolean join of one or more conditons
+        of the form "PARAMETER_NAME OPERAND VALUE"
+
+        Parameter names must be uniquely specified. For example, nsa_redshift is
+        a unique parameter name in the database and can be specified thusly.
+        On the other hand, name is not a unique parameter name in the database,
+        and must be clarified with the desired table.
+
+        Parameter Naming Convention:
+            NSA redshift == nsa_redshift
+            IFU name == ifu.name
+            Pipeline name == pipeline_info.name
+
+        Allowed Joins:
+            AND | OR | NOT
+
+            In the absence of parantheses, the precedence of
+            joins follow: NOT > AND > OR
+
+        Allowed Operands:
+            == | != | <= | >= | < | > | =
+
+            Notes:
+                Operand == maps to a strict equality (x == 5 --> x is equal to 5)
+
+                Operand = maps to SQL LIKE
+
+                (x = 5 --> x contains the string 5; x = '%5%')
+
+                (x = 5* --> x starts with the string 5; x = '5%')
+
+                (x = *5 --> x ends with the string 5; x = '%5')
+
+        Parameters:
+            searchfilter (str):
+                A (natural language) string containing the filter conditions
+                in the query; written as you would say it.
+
+        Example:
+            >>> # Filter string
+            >>> filter = "nsa_redshift < 0.012 and ifu.name = 19*"
+            >>> # Converts to
+            >>> and_(nsa_redshift<0.012, ifu.name=19*)
+            >>> # SQL syntax
+            >>> mangadatadb.sample.nsa_redshift < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
+
+            >>> # Filter string
+            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa_redshift > 0.1 or not cube.ra > 225.)'
+            >>> # Converts to
+            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa_redshift>0.1, not_(cube.ra>225.))))
+            >>> # SQL syntax
+            >>> mangadatadb.cube.plate < 8000 AND lower(mangadatadb.ifudesign.name) LIKE lower(('%' || '19' || '%'))
+            >>> OR NOT (mangadatadb.sample.nsa_redshift > 0.1 OR mangadatadb.cube.ra <= 225.0)
         '''
 
         if searchfilter:
@@ -326,22 +433,6 @@ class Query(object):
     def _alreadyInFilter(self, names):
         ''' Checks if the parameter name already added into the filter '''
 
-        '''
-        # my attempt at filtering on both parameter name and value; failed
-        infilter = False
-        if not isinstance(self.filter, type(None)):
-            s = str(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
-            splitfilter = s.split(name)
-            if len(splitfilter) > 1:
-                infilter = value in splitfilter[1]
-        '''
-        '''
-        infilter = False
-        if not isinstance(self.filter, type(None)):
-            s = str(self.filter.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
-            infilter = name in s
-        '''
-
         infilter = None
         if names:
             if not isinstance(self.query, type(None)):
@@ -355,8 +446,21 @@ class Query(object):
     @checkCondition
     @updateConfig
     def run(self, qmode='all'):
-        ''' Run the query and return an instance of Marvin Results class to deal with results.  Input qmode allows to perform
+        ''' Runs a Marvin Query
+
+            Runs the query and return an instance of Marvin Results class
+            to deal with results.  Input qmode allows to perform
             different sqlalchemy queries
+
+            Parameters:
+                qmode ({'all', 'one', 'first', 'count'}):
+                    String indicating
+
+            Returns:
+                results (object):
+                    An instance of the Marvin Results class containing the
+                    results from the Query.
+
         '''
 
         if self.mode == 'local':
@@ -409,6 +513,7 @@ class Query(object):
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
+
         if not isinstance(self.sort, type(None)):
             # set the sort variable ModelClass parameter
             sortparam = self.marvinform._param_form_lookup.mapToColumn(self.sort)
@@ -443,7 +548,7 @@ class Query(object):
             else:
                 print(self.__getattribute__(prop))
         elif self.mode == 'remote':
-            print('Cannot show full SQL query in remote mode, use the API')
+            print('Cannot show full SQL query in remote mode, use the Results showQuery')
 
     def reset(self):
         ''' Resets all query attributes '''

@@ -37,6 +37,7 @@ docs/sphinx/.doctrees/marvin.web.controllers.index.doctree -text
 docs/sphinx/.doctrees/marvin.web.doctree -text
 docs/sphinx/.doctrees/marvin.web.jinja_filters.doctree -text
 docs/sphinx/Makefile -text
+docs/sphinx/api/queries.rst -text
 docs/sphinx/build/.buildinfo -text
 docs/sphinx/build/.doctrees/environment.pickle -text
 docs/sphinx/build/.doctrees/index.doctree -text
