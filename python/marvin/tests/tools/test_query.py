@@ -5,7 +5,8 @@ import unittest
 import copy
 from marvin import config, marvindb
 from marvin.tests import MarvinTest, skipIfNoDB
-from marvin.tools.query import Query
+from marvin.tools.query import Query, doQuery
+from marvin.api.api import Interaction
 
 
 class TestQuery(MarvinTest):
@@ -81,6 +82,19 @@ class TestQuery(MarvinTest):
         params = ['cube.mangaid', 'ifu.name', 'nsa_redshift']
         qps = ['mangaid', 'name', 'nsa_redshift']
         self._queryparams(p, params, qps)
+
+    def _setRemote(self):
+        config.sasurl = 'http://cd057661.ngrok.io'
+        response = Interaction('api/general/getroutemap', request_type='get')
+        config.urlmap = response.getRouteMap()
+
+    def test_Query_remote(self):
+        self._setRemote()
+        p = 'nsa_redshift < 0.012 and ifu.name = 19*'
+        q = Query(searchfilter=p, mode='remote')
+        r = q.run()
+        self.assertEqual([], q.joins)
+        self.assertEqual(64, r.count)
 
 
 if __name__ == '__main__':
