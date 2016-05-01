@@ -39,7 +39,6 @@ class Random(FlaskView):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
-        print('index params', form)
         self.random['imnumber'] = 16
 
         return render_template('random.html', **self.random)

@@ -21,6 +21,7 @@ class Marvin(FlaskView):
     def index(self):
         config.drpver = 'v1_5_1'
         mangaid = '1-209232'
+        current_app.logger.info('Welcome to Marvin Web!')
         return render_template("index.html", **self.base)
 
     def quote(self):
