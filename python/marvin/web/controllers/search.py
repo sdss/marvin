@@ -43,7 +43,6 @@ class Search(FlaskView):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
-        print('index params', form)
         self.search['formparams'] = form
 
         # set the marvin form

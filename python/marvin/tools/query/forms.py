@@ -156,8 +156,6 @@ class MarvinForm(object):
         self._param_form_lookup = ParamFormLookupDict()
         self._paramtree = tree()
         self._generateFormClasses(modelclasses)
-        # self._generateFormClasses(sampclasses)
-        # self._generateFormClasses(dapclasses)
         self.MainForm = MainForm
 
     def _generateFormClasses(self, classes):
@@ -169,7 +167,6 @@ class MarvinForm(object):
         '''
 
         for key, val in classes.items():
-            # print(key, val, '----')
             classname = '{0}Form'.format(key)
             try:
                 newclass = formClassFactory(classname, val, ModelForm)

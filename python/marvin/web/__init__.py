@@ -6,7 +6,7 @@ from flask_restful import Api
 from flask_jsglue import JSGlue
 from inspect import getmembers, isfunction
 from brain.utils.general.general import getDbMachine
-from marvin import config
+from marvin import config, log
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
 import marvin.web.jinja_filters
@@ -40,10 +40,12 @@ def create_app(debug=False):
     custom_filters = {name: function for name, function in getmembers(jinja_filters) if isfunction(function)}
     app.jinja_env.filters.update(custom_filters)
 
+    # Logger
+    app.logger.addHandler(log)
+
     # ----------------------------------
     # Initialize logging + Sentry + UWSGI config for Production Marvin
     if app.debug is False:
-        ''' set up logging here, or try to use the tools logger '''
 
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
@@ -92,17 +94,17 @@ def create_app(debug=False):
         elif connection == 'utah':
             server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configuration', 'utah.cfg')
         else:
-            print("Trying to run in debug mode, but not running on a development machine that has database access.")
+            app.logger.debug("Trying to run in debug mode, but not running on a development machine that has database access.")
             sys.exit(1)
     else:
         try:
             import uwsgi
             server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configuration', uwsgi.opt['flask-config-file'])
         except ImportError:
-            print("Trying to run in production mode, but not running under uWSGI. You might try running again with the '--debug' flag.")
+            app.logger.debug("Trying to run in production mode, but not running under uWSGI. You might try running again with the '--debug' flag.")
             sys.exit(1)
 
-    print('Loading config file: {0}'.format(server_config_file))
+    app.logger.info('Loading config file: {0}'.format(server_config_file))
     app.config.from_pyfile(server_config_file)
 
     # ----------------------------------

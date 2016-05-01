@@ -42,7 +42,6 @@ class Plate(FlaskView):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
-        print('index params', form)
 
         return render_template('plate.html', **self.plate)
 
