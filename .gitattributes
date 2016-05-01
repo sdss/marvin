@@ -8,6 +8,7 @@ docs/sphinx/Makefile -text
 docs/sphinx/_static/logo5_lores.jpg -text
 docs/sphinx/_static/marvin_favicon.ico -text
 docs/sphinx/_static/marvin_favicon.png -text
+docs/sphinx/api/queries.rst -text
 etc/config.ini -text
 etc/marvin.module -text
 python/marvin/__init__.py -text
