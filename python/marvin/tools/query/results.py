@@ -1,7 +1,7 @@
 from __future__ import print_function
 from marvin.core import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
-from marvin import config
+from marvin import config, log
 import warnings
 import json
 import copy
@@ -87,9 +87,9 @@ class Results(object):
         self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.count = kwargs.get('count', None)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = 10
-        self.start = 0
-        self.end = self.start + self.chunk
+        self.chunk = kwargs.get('chunk', 10)
+        self.start = kwargs.get('start', 0)
+        self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
         self.paramtocol = None
 
@@ -169,7 +169,30 @@ class Results(object):
         return sortedres
 
     def toTable(self):
-        ''' Output the results as an astropy Table '''
+        ''' Output the results as an Astropy Table
+
+            Uses the Python Astropy package
+
+            Parameters:
+                None
+
+            Returns:
+                tableres:
+                    Astropy Table
+
+            Example:
+                >>> r = q.run()
+                >>> r.toTable()
+                >>> <Table length=5>
+                >>> mangaid    name   nsa_redshift
+                >>> unicode6 unicode4   float64
+                >>> -------- -------- ------------
+                >>>   4-3602     1902      -9999.0
+                >>>   4-3862     1902      -9999.0
+                >>>   4-3293     1901      -9999.0
+                >>>   4-3988     1901      -9999.0
+                >>>   4-4602     1901      -9999.0
+        '''
         try:
             tabres = Table(rows=self.results, names=self.getColumns())
         except ValueError as e:
@@ -187,7 +210,23 @@ class Results(object):
         self.results = [nt(*r) for r in self.results]
 
     def toJson(self):
-        ''' Output the results as a JSON object '''
+        ''' Output the results as a JSON object
+
+            Uses Python json package to convert the results to JSON representation
+
+            Parameters:
+                None
+
+            Returns:
+                jsonres:
+                    JSONed results
+
+            Example:
+                >>> r = q.run()
+                >>> r.toJson()
+                >>> '[["4-3602", "1902", -9999.0], ["4-3862", "1902", -9999.0], ["4-3293", "1901", -9999.0],
+                >>>   ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
+        '''
         try:
             jsonres = json.dumps(self.results)
         except TypeError as e:
@@ -403,7 +442,7 @@ class Results(object):
             newend = self.count
             newstart = newend - self.chunk
 
-        print('Retrieving next {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
+        log.info('Retrieving next {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         self.results = self.query.slice(newstart, newend).all()
         self.start = newstart
         self.end = newend
@@ -448,7 +487,7 @@ class Results(object):
             newstart = 0
             newend = newstart + self.chunk
 
-        print('Retrieving previous {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
+        log.info('Retrieving previous {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         self.results = self.query.slice(newstart, newend).all()
         self.start = newstart
         self.end = newend
