@@ -18,9 +18,9 @@
             <div class="col-sm-6" id="slider-thumbs">
                 <!-- Bottom switcher of slider -->
                 <ul class="hide-bullets">
-                    {% for i in range(imnumber) %}
+                    {% for im in images %}
                         <li class="col-sm-3">
-                            <a class="thumbnail" id="carousel-selector-{{loop.index0}}"><img src="http://placehold.it/150x150&text={{loop.index0}}"></a>
+                            <a class="thumbnail" id="carousel-selector-{{loop.index0}}"><img src="{{im.thumb}}" alt="Image {{loop.index0}}"></a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -35,9 +35,9 @@
                             <div class="carousel slide" id="myCarousel">
                                 <!-- Carousel items -->
                                 <div class="carousel-inner">
-                                    {% for i in range(imnumber) %}
+                                    {% for im in images %}
                                         <div class="item {{'active' if loop.index0 == 0 else ''}}" data-slide-number="{{loop.index0}}">
-                                            <img src="http://placehold.it/470x480&text={{loop.index0}}">
+                                            <a href="{{url_for('galaxy_page.Galaxy:get',galid=im.name)}}" target='_blank'><img src="{{im.image}}" alt="Image {{loop.index0}}"></a>
                                         </div>
                                     {% endfor %}
                                 </div>
