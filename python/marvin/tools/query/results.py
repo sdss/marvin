@@ -38,6 +38,46 @@ def remote_mode_only(func):
 
 
 class Results(object):
+    ''' A class to handle results from queries on the MaNGA dataset
+
+        Parameters:
+            results (list):
+                List of results satisfying the input Query
+            query (object / str):
+                The query used to produce these results. In local mode, the query is an
+                SQLalchemy object that can be used to redo the query, or extract subsets
+                of results from the query. In remote more, the query is a literal string
+                representation of the SQL query.
+            returntype (str):
+                The MarvinTools object to convert the results into.  If initially set, the results
+                are automaticaly converted into the specified Marvin Tool Object on initialization
+            objects (list):
+                The list of Marvin Tools objects created by returntype
+            count (int):
+                The total number of objects in the results
+            mode ({'auto', 'local', 'remote'}):
+                The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
+            chunk (int):
+                For paginated results, the number of results to return.  Defaults to 10.
+            start (int):
+                For paginated results, the starting index value of the results.  Defaults to 0.
+            end (int):
+                For paginated results, the ending index value of the resutls.  Defaults to start+chunk.
+
+        Returns:
+            results: An object representing the Results entity
+
+        Example:
+            >>> f = 'nsa_redshift < 0.012 and ifu.name = 19*'
+            >>> q = Query(searchfilter=f)
+            >>> r = q.run()
+            >>> print(r)
+            >>> Results(results=[(u'4-3602', u'1902', -9999.0), (u'4-3862', u'1902', -9999.0), (u'4-3293', u'1901', -9999.0), (u'4-3988', u'1901', -9999.0), (u'4-4602', u'1901', -9999.0)],
+            >>>         query=<sqlalchemy.orm.query.Query object at 0x115217090>,
+            >>>         count=64,
+            >>>         mode=local)
+
+    '''
 
     def __init__(self, *args, **kwargs):
 
@@ -66,6 +106,10 @@ class Results(object):
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
+
+            Returns:
+                querystring (str):
+                    A string representation of the SQL query
         '''
         if type(self.query) == unicode:
             return self.query
@@ -73,11 +117,49 @@ class Results(object):
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
     def download(self):
-        """Download data via sdsssync"""
+        ''' Download data via sdsssync '''
         pass
 
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
+
+            Sorts the results by a given parameter / column name.  Sets
+            the results to the new sorted results.
+
+            Parameters:
+                name (str):
+                order ({'asc', 'desc'}):
+
+            Returns:
+                sortedres (list):
+                    The listed of sorted results.
+
+            Example:
+                >>> r = q.run()
+                >>> r.getColumns()
+                >>> [u'mangaid', u'name', u'nsa_redshift']
+                >>> r.results
+                >>> [(u'4-3988', u'1901', -9999.0),
+                >>>  (u'4-3862', u'1902', -9999.0),
+                >>>  (u'4-3293', u'1901', -9999.0),
+                >>>  (u'4-3602', u'1902', -9999.0),
+                >>>  (u'4-4602', u'1901', -9999.0)]
+
+                >>> # Sort the results by mangaid
+                >>> r.sort('mangaid')
+                >>> [(u'4-3293', u'1901', -9999.0),
+                >>>  (u'4-3602', u'1902', -9999.0),
+                >>>  (u'4-3862', u'1902', -9999.0),
+                >>>  (u'4-3988', u'1901', -9999.0),
+                >>>  (u'4-4602', u'1901', -9999.0)]
+
+                >>> # Sort the results by IFU name in descending order
+                >>> r.sort('ifu.name', order='desc')
+                >>> [(u'4-3602', u'1902', -9999.0),
+                >>>  (u'4-3862', u'1902', -9999.0),
+                >>>  (u'4-3293', u'1901', -9999.0),
+                >>>  (u'4-3988', u'1901', -9999.0),
+                >>>  (u'4-4602', u'1901', -9999.0)]
         '''
 
         refname = self._getRefName(name, dir='partocol')
@@ -113,7 +195,21 @@ class Results(object):
         return jsonres
 
     def getColumns(self):
-        ''' Get the columns of the returned reults '''
+        ''' Get the column names of the returned reults
+
+            Parameters:
+                None
+
+            Returns:
+                columns (list):
+                    A list of column names from the results
+
+            Example:
+                >>> r = q.run()
+                >>> cols = r.getColumns()
+                >>> print(cols)
+                >>> [u'mangaid', u'name', u'nsa_redshift']
+        '''
         try:
             self.columns = self.results[0].keys() if self.results else None
         except Exception as e:
@@ -135,7 +231,28 @@ class Results(object):
         return self.paramtocol[param] if param else self.paramtocol.values()
 
     def getListOf(self, name=None, to_json=False):
-        ''' Extract a list of a single column from results '''
+        ''' Extract a list of a single parameter from results
+
+            Parameters:
+                name (str):
+                    Name of the parameter name to return.  If not specified,
+                    it returns all parameters.
+                to_json (bool):
+                    True/False boolean to convert the output into a JSON format
+
+            Returns:
+                output (list):
+                    A list of results for one parameter
+
+            Example:
+                >>> r = q.run()
+                >>> r.getListOf('mangaid')
+                >>> [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602']
+
+            Raises:
+                AssertionError:
+                    Raised when no name is specified.
+        '''
 
         assert name, 'Must specify a column name'
 
@@ -154,7 +271,48 @@ class Results(object):
         return output
 
     def getDictOf(self, name=None, format_type='listdict', to_json=False):
-        ''' Get a dictionary of specified parameters '''
+        ''' Get a dictionary of specified parameters
+
+            Parameters:
+                name (str):
+                    Name of the parameter name to return.  If not specified,
+                    it returns all parameters.
+                format_type ({'listdict', 'dictlist'}):
+                    The format of the results. Listdict is a list of dictionaries.
+                    Dictlist is a dictionary of lists. Default is listdict.
+                to_json (bool):
+                    True/False boolean to convert the output into a JSON format
+
+            Returns:
+                output (list, dict):
+                    Can be either a list of dictionaries, or a dictionary of lists
+
+            Example:
+                >>> # get some results
+                >>> r = q.run()
+                >>> # Get a list of dictionaries
+                >>> r.getDictOf(format_type='listdict')
+                >>> [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa_redshift': -9999.0},
+                >>>  {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa_redshift': -9999.0},
+                >>>  {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa_redshift': -9999.0},
+                >>>  {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa_redshift': -9999.0},
+                >>>  {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa_redshift': -9999.0}]
+
+                >>> # Get a dictionary of lists
+                >>> r.getDictOf(format_type='dictlist')
+                >>> {'cube.mangaid': [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602'],
+                >>>  'ifu.name': [u'1901', u'1902', u'1901', u'1902', u'1901'],
+                >>>  'nsa_redshift': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
+
+                >>> # Get a dictionary of only one parameter
+                >>> r.getDictOf('mangaid')
+                >>> [{'cube.mangaid': u'4-3988'},
+                >>>  {'cube.mangaid': u'4-3862'},
+                >>>  {'cube.mangaid': u'4-3293'},
+                >>>  {'cube.mangaid': u'4-3602'},
+                >>>  {'cube.mangaid': u'4-4602'}]
+
+        '''
 
         # Try to get the sqlalchemy results keys
         keys = self.getColumns()
@@ -209,7 +367,33 @@ class Results(object):
 
     @local_mode_only
     def getNext(self, chunk=None):
-        ''' Get the next set of results from the query, from start to end in units of chunk '''
+        ''' Retrieve the next chunk of results
+
+            Returns the next chunk of results from the query.
+            from start to end in units of chunk.  Used with getPrevious
+            to paginate through a long list of results
+
+            Can only be run in local mode.
+
+            Parameters:
+                chunk (int):
+                    The number of objects to return
+
+            Returns:
+                results (list):
+                    A list of query results
+
+            Example:
+                >>> r = q.run()
+                >>> r.getNext(5)
+                >>> Retrieving next 5, from 35 to 40
+                >>> [(u'4-4231', u'1902', -9999.0),
+                >>>  (u'4-14340', u'1901', -9999.0),
+                >>>  (u'4-14510', u'1902', -9999.0),
+                >>>  (u'4-13634', u'1901', -9999.0),
+                >>>  (u'4-13538', u'1902', -9999.0)]
+
+        '''
 
         newstart = self.end
         self.chunk = chunk if chunk else self.chunk
@@ -228,7 +412,33 @@ class Results(object):
 
     @local_mode_only
     def getPrevious(self, chunk=None):
-        ''' Get the previous set of results from the query, from start to end in units of chunk '''
+        ''' Retrieve the previous chunk of results.
+
+            Returns a previous chunk of results from the query.
+            from start to end in units of chunk.  Used with getNext
+            to paginate through a long list of results
+
+            Can only be run in local mode.
+
+            Parameters:
+                chunk (int):
+                    The number of objects to return
+
+            Returns:
+                results (list):
+                    A list of query results
+
+            Example:
+                >>> r = q.run()
+                >>> r.getPrevious(5)
+                >>> Retrieving previous 5, from 30 to 35
+                >>> [(u'4-3988', u'1901', -9999.0),
+                >>>  (u'4-3862', u'1902', -9999.0),
+                >>>  (u'4-3293', u'1901', -9999.0),
+                >>>  (u'4-3602', u'1902', -9999.0),
+                >>>  (u'4-4602', u'1901', -9999.0)]
+
+         '''
 
         newend = self.start
         self.chunk = chunk if chunk else self.chunk
@@ -247,7 +457,34 @@ class Results(object):
 
     @local_mode_only
     def getSubset(self, start, limit=10):
-        ''' Gets a slice of set of results '''
+        ''' Extracts a subset of results
+
+            Can only be run in local mode.
+
+            Parameters:
+                start (int):
+                    The starting index of your subset extraction
+                limit (int):
+                    The limiting number of results to return.
+
+            Returns:
+                results (list):
+                    A list of query results
+
+            Example:
+                >>> r = q.run()
+                >>> r.getSubset(0, 10)
+                >>> [(u'14-12', u'1901', -9999.0),
+                >>> (u'14-13', u'1902', -9999.0),
+                >>> (u'27-134', u'1901', -9999.0),
+                >>> (u'27-100', u'1902', -9999.0),
+                >>> (u'27-762', u'1901', -9999.0),
+                >>> (u'27-759', u'1902', -9999.0),
+                >>> (u'27-827', u'1901', -9999.0),
+                >>> (u'27-828', u'1902', -9999.0),
+                >>> (u'27-1170', u'1901', -9999.0),
+                >>> (u'27-1167', u'1902', -9999.0)]
+        '''
         start = 0 if start < 0 else int(start)
         end = start + int(limit)
         # if end > self.count:
@@ -261,12 +498,58 @@ class Results(object):
 
     @local_mode_only
     def getAll(self):
-        ''' Retrieve all of the results '''
+        ''' Retrieve all of the results of a query
+
+            Parameters:
+                None
+
+            Returns:
+                results (list):
+                    A list of query results.
+        '''
         self.results = self.query.all()
         return self.results
 
-    def convertToTool(self):
-        ''' Converts the list of results into a Marvin Tool object '''
-        if self.returntype == 'cube':
+    def convertToTool(self, tooltype=None):
+        ''' Converts the list of results into Marvin Tool objects
+
+            Creates a list of Marvin Tool objects from a set of query results.
+            The new list is stored in the Results.objects property.
+            If the Query.returntype parameter is specified, then the Results object
+            will automatically convert the results to the desired Tool on initialization.
+
+            Parameters:
+                tooltype (str):
+                    The requested Marvin Tool object that the results are converted into.
+                    Overrides the returntype parameter.  If not set, defaults
+                    to the returntype parameter.
+
+            Example:
+                >>> # Get the results from some query
+                >>> r = q.run()
+                >>> r.results
+                >>> [NamedTuple(mangaid=u'14-12', name=u'1901', nsa_redshift=-9999.0),
+                >>>  NamedTuple(mangaid=u'14-13', name=u'1902', nsa_redshift=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-134', name=u'1901', nsa_redshift=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-100', name=u'1902', nsa_redshift=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-762', name=u'1901', nsa_redshift=-9999.0)]
+
+                >>> # convert results to Marvin Cube tools
+                >>> r.convertToTool('cube')
+                >>> r.objects
+                >>> [<Marvin Cube (plateifu='7444-1901', mode='remote', data_origin='api')>,
+                >>>  <Marvin Cube (plateifu='7444-1902', mode='remote', data_origin='api')>,
+                >>>  <Marvin Cube (plateifu='7995-1901', mode='remote', data_origin='api')>,
+                >>>  <Marvin Cube (plateifu='7995-1902', mode='remote', data_origin='api')>,
+                >>>  <Marvin Cube (plateifu='8000-1901', mode='remote', data_origin='api')>]
+
+        '''
+
+        # set the desired tool type
+        toollist = ['cube', 'spaxel', 'map']
+        tooltype = tooltype if tooltype else self.returntype
+        assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
+
+        if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__('mangaid'), mode=self.mode) for res in self.results]
 
