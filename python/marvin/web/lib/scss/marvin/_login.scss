@@ -1,0 +1,53 @@
+/*
+* @Author: Brian Cherinka
+* @Date:   2016-05-06 14:56:06
+* @Last Modified by:   Brian
+* @Last Modified time: 2016-05-06 15:46:23
+*/
+
+
+#login-dp{
+    min-width: 250px;
+    padding: 14px 14px 0;
+    overflow:hidden;
+    background-color:rgba(255,255,255,.8);
+
+    .help-block{
+        font-size:12px
+    }
+
+    .bottom{
+        background-color:rgba(255,255,255,.8);
+        border-top:1px solid #ddd;
+        clear:both;
+        padding:14px;
+    }
+
+    .social-buttons{
+        margin:12px 0
+    }
+
+    .social-buttons a{
+        width: 49%;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+}
+
+@media(max-width:768px){
+    #login-dp{
+        background-color: inherit;
+        color: #fff;
+    }
+    #login-dp .bottom{
+        background-color: inherit;
+        border-top:0 none;
+    }
+}
+
+#login-modal .modal-dialog {
+    width: 350px;
+}

@@ -242,7 +242,7 @@ class Query(object):
         # SQLalchemy_boolean_search and we can figure out how to grab the classes
         # for hybrid properties
         assert self.returntype in [None, 'cube', 'spaxel', 'map', 'rss'], 'Query returntype must be either cube, spaxel, map, rss'
-        self.defaultparams = ['cube.mangaid']
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']  # cube.plate,ifu.name temp until cube.plateifu works
         if self.returntype == 'spaxel':
             self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
         elif self.returntype == 'rssfiber':

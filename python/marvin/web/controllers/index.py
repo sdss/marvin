@@ -17,11 +17,22 @@ class Marvin(FlaskView):
         self.base = {}
         self.base['title'] = 'Marvin'
         self.base['intro'] = 'Welcome to Marvin!'
+        self.base['page'] = 'marvin-main'
 
     def index(self):
         config.drpver = 'v1_5_1'
         mangaid = '1-209232'
         current_app.logger.info('Welcome to Marvin Web!')
+
+        # get all MPLs
+        mpls = config._mpldict.keys()
+        versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
+        current_session['versions'] = versions
+
+        # set default - TODO replace with setGlobalSession
+        if 'currentmpl' not in current_session:
+            current_session['currentmpl'] = config.mplver
+
         return render_template("index.html", **self.base)
 
     def quote(self):
@@ -63,6 +74,24 @@ class Marvin(FlaskView):
         out = list(set(out))
         out.sort()
         return json.dumps(out)
+
+    @route('/selectmpl/', methods=['GET', 'POST'], endpoint='selectmpl')
+    def selectmpl(self):
+        ''' Global selection of the MPL/DR versions '''
+        f = processRequest(request=request)
+        out = {'status': 1, 'msg': 'Success'}
+        version = f['mplselect']
+        print('setting new mpl', version)
+        current_session['currentmpl'] = version
+        if 'MPL' in version:
+            config.setMPL(version)
+        elif 'DR' in version:
+            config.setDR(version)
+        else:
+            out['status'] = -1
+            out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
+
+        return jsonify(result=out)
 
 
 Marvin.register(index)

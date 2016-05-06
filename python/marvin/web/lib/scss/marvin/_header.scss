@@ -2,70 +2,33 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 19:00:34
+* @Last Modified time: 2016-05-05 13:56:45
 */
 
-/*
-header {
-  background-image: url('../../static/images/sdss_marvin.png');
-  background-repeat: none;
-  background-attachment: scroll;
-  background-position: center center;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  background-size: cover;
-  -o-background-size: cover;
-  text-align: center;
-  color: white;
+.marvin-main {
+    nav.navbar-default {
+        margin-bottom: 0px;
+        padding-left: 15px;
+    }
+
+    div.container-fluid {
+        padding: 0px;
+    }
+
+    .maingaliddiv {
+      padding-left: 75px;
+    }
+
 }
-header .intro-text {
-  padding-top: 100px;
-  padding-bottom: 50px;
-}
-header .intro-text .intro-lead-in {
-  font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-style: italic;
-  font-size: 22px;
-  line-height: 22px;
-  margin-bottom: 25px;
-}
-header .intro-text .intro-heading {
-  font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-transform: lowercase;
-  font-weight: 700;
-  font-size: 40px;
-  line-height: 40px;
-  margin-bottom: 25px;
-}
-@media (min-width: 900px) {
-  header .intro-text {
-    padding-top: 300px;
-    padding-bottom: 200px;
-  }
-  header .intro-text .intro-lead-in {
-    font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-style: italic;
-    font-size: 40px;
-    line-height: 40px;
-    margin-bottom: 25px;
-  }
-  header .intro-text .intro-heading {
-    font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 75px;
-    line-height: 75px;
-    margin-bottom: 50px;
-  }
-}
-*/
+
 .intro-header {
     padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
-    padding-bottom: 50px;
+    padding-bottom: 200px;
     text-align: center;
     color: #f8f8f8;
     background: url('../../static/images/sdss_marvin.png') no-repeat center center;
     background-size: cover;
+    background-position: right bottom;
 }
 
 .intro-message {
@@ -112,6 +75,11 @@ header .intro-text .intro-heading {
     .intro-divider {
         width: 100%;
     }
+
+    .marvin-main .maingaliddiv {
+      padding-left: 0px;
+    }
+
 }
 
 // general

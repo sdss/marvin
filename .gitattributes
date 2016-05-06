@@ -271,6 +271,7 @@ python/marvin/web/lib/dist/marvin.js -text
 python/marvin/web/lib/dist/marvin.min.css -text
 python/marvin/web/lib/dist/marvin.min.js -text
 python/marvin/web/lib/images/brian.jpg -text svneol=unset#image/jpeg
+python/marvin/web/lib/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/web/lib/images/marvin_favicon.ico -text
 python/marvin/web/lib/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/lib/js/carousel.js -text
@@ -363,6 +364,7 @@ python/marvin/web/lib/scss/flatly/_variables.scss -text
 python/marvin/web/lib/scss/marvin.scss -text
 python/marvin/web/lib/scss/marvin/_footer.scss -text
 python/marvin/web/lib/scss/marvin/_header.scss -text
+python/marvin/web/lib/scss/marvin/_login.scss -text
 python/marvin/web/lib/scss/marvin/_random.scss -text
 python/marvin/web/lib/src/carousel.js -text
 python/marvin/web/lib/src/galaxy.js -text
@@ -372,6 +374,7 @@ python/marvin/web/lib/src/olmap.js -text
 python/marvin/web/lib/src/table.js -text
 python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/brian.jpg -text svneol=unset#image/jpeg
+python/marvin/web/static/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/static/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/templates/footer.html -text
@@ -379,7 +382,9 @@ python/marvin/web/templates/galaxy.html -text
 python/marvin/web/templates/header.html -text
 python/marvin/web/templates/index.html -text
 python/marvin/web/templates/layout.html -text
+python/marvin/web/templates/macros.html -text
 python/marvin/web/templates/plate.html -text
 python/marvin/web/templates/random.html -text
 python/marvin/web/templates/search.html -text
 python/marvin/web/templates/test.html -text
+python/marvin/web/web_utils.py -text

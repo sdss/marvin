@@ -18,8 +18,16 @@ from marvin.core import MarvinError
 from marvin.tools.query import doQuery
 from marvin.tools.query.forms import MarvinForm
 import os
+import random
 
 search = Blueprint("search_page", __name__)
+
+
+def getRandomQuery():
+    ''' Return a random query from this list '''
+    samples = ['nsa_redshift < 0.1 and ifu.name = 19*', 'cube.plate < 8000']
+    q = random.choice(samples)
+    return q
 
 
 class Search(FlaskView):
@@ -29,6 +37,7 @@ class Search(FlaskView):
         ''' Initialize the route '''
         self.search = {}
         self.search['title'] = 'Marvin | Search'
+        self.search['page'] = 'marvin-search'
         self.search['error'] = None
         self.mf = MarvinForm()
 
@@ -48,6 +57,7 @@ class Search(FlaskView):
         # set the marvin form
         mainform = self.mf.MainForm(**form)
         self.search['searchform'] = mainform
+        self.search['placeholder'] = getRandomQuery()
 
         # If form parameters then try to search
         if form:

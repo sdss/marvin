@@ -1,9 +1,9 @@
 import os
 import re
 import warnings
-from marvin.core.exceptions import MarvinUserWarning
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
-
+from collections import OrderedDict
 from brain import bconfig
 
 # Inits the log
@@ -29,6 +29,7 @@ class MarvinConfig(object):
 
         self.drpver = None
         self.dapver = None
+        self.drver = None
         self.mplver = None
         self.vermode = None
         self.download = False
@@ -97,6 +98,13 @@ class MarvinConfig(object):
 
     def _checkConfig(self):
         ''' Check the config '''
+        # set and sort the base MPL dictionary
+        mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None),
+                   'MPL-1': ('v1_0_0', None), 'DR13': ('v1_5_4', None)}
+        mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
+        self._mpldict = OrderedDict(mplsorted)
+
+        # Check the versioning config
         if not self.mplver or not (self.drpver and self.dapver):
             log.info('No MPL or DRP/DAP version set. Setting default to MPL-4')
             self.setMPL('MPL-4')
@@ -104,18 +112,22 @@ class MarvinConfig(object):
     def setMPL(self, mplver):
         ''' Set the data version by MPL '''
 
-        from marvin.utils.general import lookUpVersions
-
         m = re.search('MPL-([0-9])', mplver)
         assert m is not None, 'MPL version must be of form "MPL-[X]"'
         if m:
             self.mplver = mplver
-            self.drpver, self.dapver = lookUpVersions(mplver)
+            self.drpver, self.dapver = self.lookUpVersions(mplver)
+
+    def setDR(self, drver):
+        ''' Set the data version by Data Release '''
+        m = re.search('DR1([3-9])', drver)
+        assert m is not None, 'DR version must be of form "DR[XX]"'
+        if m:
+            self.drver = drver
+            self.drpver, self.dapver = self.lookUpVersions(drver)
 
     def setVersions(self, drpver=None, dapver=None):
         ''' Set the data version by DRPVER and DAPVER '''
-
-        from marvin.utils.general import lookUpMpl
 
         if drpver:
             assert type(drpver) == str, 'drpver needs to be a string'
@@ -123,7 +135,7 @@ class MarvinConfig(object):
             assert drpre is not None, 'DRP version must be of form "v[X]_[X]_[X]"'
             if drpre:
                 self.drpver = drpver
-                self.mplver = lookUpMpl(drpver)
+                self.mplver = self.lookUpMpl(drpver)
 
         if dapver:
             assert type(dapver) == str, 'dapver needs to be a string'
@@ -133,6 +145,29 @@ class MarvinConfig(object):
                 'DAP version must be of form "v[X]_[X]_[X]", or [X].[X].[X]'
             if any([dapre1, dapre2]):
                 self.dapver = dapver
+
+    def lookUpVersions(self, mplver):
+        ''' Retrieve the DRP and DAP versions that make up an MPL '''
+
+        try:
+            drpver, dapver = self._mpldict[mplver]
+        except KeyError as e:
+            raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
+
+        return drpver, dapver
+
+    def lookUpMpl(self, drpver):
+        ''' Retrieve the MPL version for a given DRP version'''
+
+        # Flip the mpldict
+        verdict = {val[0]: key for key, val in self._mpldict.items()}
+
+        try:
+            mplver = verdict[drpver]
+        except KeyError as e:
+            raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
+
+        return mplver
 
 config = MarvinConfig()
 config._checkConfig()
