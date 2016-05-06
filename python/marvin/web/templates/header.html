@@ -1,4 +1,6 @@
 
+{% from 'macros.html' import galidsearch, login %}
+
 <nav class="navbar navbar-default">
     <div class="container-fluid">
 
@@ -19,12 +21,58 @@
 
             <!-- Galaxy ID Search Box-->
             {# Marvin PlateId/MaNGAId Search #}
-            <form class="navbar-form navbar-left" role="form" id='headform' action="{{url_for('index_page.galidselect')}}" method="post">
-                <div class='form-group form-inline galids' id='scrollable-dropdown-menu'>
-                    <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid' val='' autocomplete='off' data-provide='typeahead'/>
+            {{galidsearch('headform')}}
+
+            <!-- MPL Version Selection -->
+            {# MPL Version Selection #}
+            <form class='navbar-form navbar-left navbar-input-group' id='mplform' role='form' method="post">
+                <div id='marvinmpl' class='form-group'>
+                    <select class='form-control selectpicker input-sm show-tick' id='mplselect' name='mplselect' title='Choose an MPL/DR' >
+                        {% for ver in session.versions %}
+                            {% if ver.name == session.currentmpl %}
+                                <option data-subtext='{{ver.subtext}}' id='{{ver.name}}' value='{{ver.name}}' selected>{{ver.name}}</option>
+                            {% else %}
+                                <option data-subtext='{{ver.subtext}}' id='{{ver.name}}' value='{{ver.name}}'>{{ver.name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
             </form>
+
+            <!-- Login / User Prefs -->
+            {% if not session.login %}
+                <!-- Login -->
+                {# Login #}
+                <div class='navbar-login'>
+                  <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sign-in fa-fw"></i><b>Login</b> <span class="caret"></span></a>
+                        <ul id="login-dp" class="dropdown-menu">
+                            <li>
+                                {{login()}}
+                            </li>
+                        </ul>
+                    </li>
+                  </ul>
+                </div>
+            {% else %}
+                <!-- User Preferences -->
+                {# User Preferences Post Login #}
+                <div class='navbar-userprefs'>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, User <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/user/preferences"><i class="fa fa-cog fa-fw"></i> Preferences</a></li>
+                                <li class="divider"></li>
+                                <li><a href="/auth/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
 
         </div>
     </div>
 </nav>
+
+

@@ -8,8 +8,8 @@ import marvin
 import PIL
 
 # General utilities
-__all__ = ['convertCoords', 'lookUpMpl', 'lookUpVersions', 'parseIdentifier', 'mangaid2plateifu',
-           'findClosestVector', 'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI']
+__all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
+           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI']
 
 drpTable = None
 
@@ -97,32 +97,33 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
     return cubeCoords
 
 
-mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}
+#mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}
+#mpldict = marvin.config._mpldict
 
 
-def lookUpVersions(mplver):
-    ''' Retrieve the DRP and DAP versions that make up an MPL '''
+# def lookUpVersions(mplver):
+#     ''' Retrieve the DRP and DAP versions that make up an MPL '''
 
-    try:
-        drpver, dapver = mpldict[mplver]
-    except KeyError as e:
-        raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
+#     try:
+#         drpver, dapver = mpldict[mplver]
+#     except KeyError as e:
+#         raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
 
-    return drpver, dapver
+#     return drpver, dapver
 
 
-def lookUpMpl(drpver):
-    ''' Retrieve the MPL version for a given DRP version'''
+# def lookUpMpl(drpver):
+#     ''' Retrieve the MPL version for a given DRP version'''
 
-    # Flip the mpldict
-    verdict = {val[0]: key for key, val in mpldict.items()}
+#     # Flip the mpldict
+#     verdict = {val[0]: key for key, val in mpldict.items()}
 
-    try:
-        mplver = verdict[drpver]
-    except KeyError as e:
-        raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
+#     try:
+#         mplver = verdict[drpver]
+#     except KeyError as e:
+#         raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
 
-    return mplver
+#     return mplver
 
 
 def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):

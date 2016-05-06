@@ -13,7 +13,23 @@
 {% if plateid %}
     <div class='well'>
         <div class='row'>
-            <h3>Plate ID: {{plateid}}</h3>
+            <div class='col-md-10'>
+                <h1>Plate ID: {{plateid|default(None)}} <small>Version: {{drpver|default('Unknown')}}</small></h1>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-md-3'>
+                <table class='table table-condensed table-bordered table-striped'>
+                    <tbody>
+                        <tr><th>Label</th><td>{{plateid}} Plate</td></tr>
+                        <tr><th>Plate Type, Survey Mode</th><td></td></tr>
+                        <tr><th>Design ID</th><td></td></tr>
+                        <tr><th>Date Observed</th><td></td></tr>
+                        <tr><th>RA, Dec</th><td></td></tr>
+                        <tr><th>Data Link</th><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% else %}

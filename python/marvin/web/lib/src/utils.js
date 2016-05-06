@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 23:33:27
+* @Last Modified time: 2016-05-05 16:10:40
 */
 
 // Javascript code for general things
@@ -27,6 +27,12 @@ class Utils {
         keys.forEach(function (key, index) {
             form[key] = args[index];
         });
+        return form;
+    }
+
+    // Serialize a Form
+    serializeForm(id) {
+        var form = $(id).serializeArray();
         return form;
     }
 

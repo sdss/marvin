@@ -29,6 +29,7 @@ class Plate(FlaskView):
         ''' Initialize the route '''
         self.plate = {}
         self.plate['title'] = 'Marvin | Plate'
+        self.plate['page'] = 'marvin-plate'
         self.plate['error'] = None
         self.plate['plateid'] = None
 

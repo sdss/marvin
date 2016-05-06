@@ -53,6 +53,7 @@ class Galaxy(FlaskView):
         ''' Initialize the route '''
         self.galaxy = {}
         self.galaxy['title'] = 'Marvin | Galaxy'
+        self.galaxy['page'] = 'marvin-galaxy'
         self.galaxy['error'] = None
 
     def before_request(self, *args, **kwargs):

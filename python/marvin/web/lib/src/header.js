@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-27 23:23:03
+* @Last Modified time: 2016-05-05 17:04:09
 */
 
 'use strict';
@@ -13,18 +13,26 @@ class Header {
     constructor() {
         this.navbar = $('.navbar');
         this.galidform = $('#headform');
-        this.typeahead = $('.galids .typeahead');
+        this.typeahead = $('#headform .typeahead');
+        this.mplform = $('#mplform');
+        this.mplselect = $('#mplselect');
 
         this.initTypeahead();
+
+        //Event Handlers
+        this.mplselect.on('change', this, this.selectMPL);
     }
 
     // Print
     print() {
-        console.log('I am Header!', this.galids, this.typeahead);
+        console.log('I am Header!');
     }
 
     // Initialize the Typeahead
-    initTypeahead() {
+    initTypeahead(typediv, formdiv) {
+
+        var typediv = (typediv === undefined) ? this.typeahead : $(typediv);
+        var formdiv = (formdiv === undefined) ? this.galidform : $(formdiv);
 
         var _this = this;
 
@@ -45,15 +53,47 @@ class Header {
         // initialize the bloodhound suggestion engine
         this.galids.initialize();
 
-        $('.typeahead').typeahead('destroy')
-        $('.typeahead').typeahead(
+        typediv.typeahead('destroy')
+        typediv.typeahead(
         {
         showHintOnFocus: true,
         source:this.galids.ttAdapter(),
         afterSelect: function() {
-            _this.galidform.submit();
+            formdiv.submit();
         }
         });
+    }
+
+    // Select the MPL version on the web
+    selectMPL(event) {
+        var _this = event.data;
+        var url = 'index_page.selectmpl';
+        var verform = m.utils.serializeForm('#mplform');
+        console.log('setting new mpl', verform);
+        _this.sendAjax(verform, url, _this.reloadPage);
+    }
+
+    // Reload the Current Page
+    reloadPage() {
+        location.reload(true);
+    }
+
+    // Send an AJAX request
+    sendAjax(form, url, fxn) {
+        var _this = this;
+        $.post(Flask.url_for(url), form, 'json')
+        .done(function(data){
+            // reload the current page, this re-instantiates a new Header with new version info from session
+            if (data.result.status == 1) {
+                fxn();
+            } else {
+                alert('Failed to set the versions! '+data.result.msg);
+            }
+        })
+        .fail(function(data){
+            alert('Failed to set the versions! Problem with Flask setversion. '+data.result.msg);
+        });
+
     }
 
 }

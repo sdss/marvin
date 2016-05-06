@@ -3,7 +3,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-14 14:33:50
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 10:41:37
+* @Last Modified time: 2016-05-06 14:58:08
 */
 /*!
  * Bootstrap v3.3.6 (http://getbootstrap.com)
@@ -6033,72 +6033,63 @@ a.list-group-item-danger.active:hover, a.list-group-item-danger.active:focus {
 
 /*
 * @Author: Brian Cherinka
+* @Date:   2016-05-06 14:56:06
+* @Last Modified by:   Brian
+* @Last Modified time: 2016-05-06 15:46:23
+*/
+#login-dp {
+  min-width: 250px;
+  padding: 14px 14px 0;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.8); }
+  #login-dp .help-block {
+    font-size: 12px; }
+  #login-dp .bottom {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-top: 1px solid #ddd;
+    clear: both;
+    padding: 14px; }
+  #login-dp .social-buttons {
+    margin: 12px 0; }
+  #login-dp .social-buttons a {
+    width: 49%; }
+  #login-dp .form-group {
+    margin-bottom: 10px; }
+
+@media (max-width: 768px) {
+  #login-dp {
+    background-color: inherit;
+    color: #fff; }
+
+  #login-dp .bottom {
+    background-color: inherit;
+    border-top: 0 none; } }
+#login-modal .modal-dialog {
+  width: 350px; }
+
+/*
+* @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 19:00:34
+* @Last Modified time: 2016-05-05 13:56:45
 */
-/*
-header {
-  background-image: url('../../static/images/sdss_marvin.png');
-  background-repeat: none;
-  background-attachment: scroll;
-  background-position: center center;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  background-size: cover;
-  -o-background-size: cover;
-  text-align: center;
-  color: white;
-}
-header .intro-text {
-  padding-top: 100px;
-  padding-bottom: 50px;
-}
-header .intro-text .intro-lead-in {
-  font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-style: italic;
-  font-size: 22px;
-  line-height: 22px;
-  margin-bottom: 25px;
-}
-header .intro-text .intro-heading {
-  font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-transform: lowercase;
-  font-weight: 700;
-  font-size: 40px;
-  line-height: 40px;
-  margin-bottom: 25px;
-}
-@media (min-width: 900px) {
-  header .intro-text {
-    padding-top: 300px;
-    padding-bottom: 200px;
-  }
-  header .intro-text .intro-lead-in {
-    font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-style: italic;
-    font-size: 40px;
-    line-height: 40px;
-    margin-bottom: 25px;
-  }
-  header .intro-text .intro-heading {
-    font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 75px;
-    line-height: 75px;
-    margin-bottom: 50px;
-  }
-}
-*/
+.marvin-main nav.navbar-default {
+  margin-bottom: 0px;
+  padding-left: 15px; }
+.marvin-main div.container-fluid {
+  padding: 0px; }
+.marvin-main .maingaliddiv {
+  padding-left: 75px; }
+
 .intro-header {
   padding-top: 50px;
   /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
-  padding-bottom: 50px;
+  padding-bottom: 200px;
   text-align: center;
   color: #f8f8f8;
   background: url("../../static/images/sdss_marvin.png") no-repeat center center;
-  background-size: cover; }
+  background-size: cover;
+  background-position: right bottom; }
 
 .intro-message {
   position: relative;
@@ -6134,7 +6125,10 @@ header .intro-text .intro-heading {
     margin-bottom: 0; }
 
   .intro-divider {
-    width: 100%; } }
+    width: 100%; }
+
+  .marvin-main .maingaliddiv {
+    padding-left: 0px; } }
 .img-centered {
   margin: 0 auto; }
 
