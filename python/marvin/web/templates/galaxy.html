@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from 'macros.html' import download, panellist %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -13,22 +14,76 @@
 <!-- Single Galaxy Page -->
 {% block body %}
 
-<div class='well'>
-    <div class='row'>
-        <div class='col-md-12 galinfo' id='{{cube.plateifu}}'>
-            {% if not cube %}
-                <h4>{{error}}</h4>
-            {% else %}
-                <h4>{{idtype|filtergaltype}}: {{id}}</h4>
-                <h5>Here's a cube: {{cube.ra, cube.dec, cube.mangaid, cube.plateifu, cube.plate}}</h5>
+<div class='singlegalaxy' id ='{{cube.plateifu}}'>
 
+<div class='well' id='metadata'>
+    <div class='row'>
+        <div class='col-md-12 galinfo'>
+            {% if not cube %}
+                <h3>{{error}}</h3>
+            {% else %}
+                <!-- Galaxy Meta Data -->
+                {# Galaxy Meta Data #}
                 <div class='row'>
-                  <div class='col-md-12'>
-                    <h5 id='specmsg'>Here's a spectrum: {{specmsg}}</h5>
-                    <div id='mouse-output'></div>
-                    <button class='btn btn-primary' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='Toggle Interaction Off'>Toggle Interaction On</button>
-                  </div>
+                    <div class='col-md-3'>
+                        <h4>Plate-IFU: {{cube.plateifu}}</h4>
+                        <h4>Manga-ID: {{cube.mangaid}}</h4>
+                        <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
+                            <tbody>
+                                <tr><th>OBJ RA, Dec</th><td>{{cubehdr.objra}}</td><td>{{cubehdr.objdec}}</td></tr>
+                                {% if not cubehdr.ifura|isclose(cubehdr.objra) %}<tr><th>IFU RA, Dec</th><td>{{cubehdr.ifura}}</td><td>{{cubehdr.ifudec}}</td></tr>{% endif %}
+                                <tr><th>IFU Glon, Glat</th><td>{{cubehdr.ifuglon}}</td><td>{{cubehdr.ifuglat}}</td></tr>
+                                <tr><th>SN2 Blue, Red</th><td align='center'>{{cubehdr.bluesn2|float|round(2)}}</td><td align='center'>{{cubehdr.redsn2|float|round(2)}}</td></tr>
+                                <tr><th>Date Observed</th><td colspan='2' align='center'>{{cubehdr['DATE-OBS']}}</td></tr>
+                                <tr><th>DAP Output</th><td colspan='2' align='center'>{{daplink|default(None)}}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Cube Quality Flags -->
+                    {# Cube Quality Flags #}
+                    <div class='col-md-2 flagalert'>
+                        {% set qualstatus = (quality|qaclass)[0] %}
+                        {% set qualmsg = (quality|qaclass)[1] %}
+                          <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
+                              <div class="panel-heading">
+                                  <h3 class="panel-title">Cube Quality: {{qualmsg}}</h3>
+                              </div>
+                              <div class='panel-body'>
+                                Bit: {{quality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover pull-right' id='qualitypopover' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
+                              </div>
+                          </div>
+                          <div class='btn-group-vertical'>
+                          {{download('#galaxydownload')}}
+                          <a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cubehdr.objra}}&dec={{cubehdr.objdec}}&opt=GS&scale=0.2' class='btn btn-warning' id='gotocas' target='_blank'><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to CAS</a>
+                          </div>
+                    </div>
+                    <!-- MaNGA Target Flags -->
+                    {# MaNGA Target Flags #}
+                    <div class='col-md-2'>
+                          <div class="panel panel-info" id='panel_targetflag'>
+                              <div class="panel-heading">
+                                  <h3 class="panel-title">MaNGA Target: {{mngtarget[0]}}</h3>
+                              </div>
+                              <div class='panel-body'>
+                                Bit: {{mngtarget[1]}} <a tabindex='0' role="button" class='btn btn-info btn-xs flagpopover pull-right' id='targpopover' data-trigger='hover' data-toggle="popover" title="Target Flags">Flags</a>
+                              </div>
+                          </div>
+                          <button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>
+                    </div>
+                    {{panellist('Quality Flags', quality[2], 'drp3quality')}}
+                    {{panellist('Target Flags', mngtarget[2], 'mngtarget')}}
                 </div>
+            {% endif %}
+        </div>
+    </div>
+</div> {# end metadata div #}
+
+<!-- Interactive Map and Spectrum View -->
+{# Map and Spectrum View #}
+{% if cube %}
+<div class='well' id='specview'>
+    <div class='row'>
+        <div class='col-md-12 galinfo'>
                 <!-- static galaxy image -->
                 {# Initial Static Image Display #}
                 <div class='row' id='staticdiv'>
@@ -44,13 +99,16 @@
                   </div>
                   <div class='col-md-9'>
                     <div id='graphdiv' style="width:100%;"></div>
+                    <h5 id='specmsg'>Here's a spectrum: {{specmsg}}</h5>
+                    <div id='mouse-output'></div>
                   </div>
                 </div>
-
-            {% endif %}
         </div>
     </div>
 </div>
+{% endif %}
+
+</div> {# end of singlegalaxydiv #}
 
 {% endblock body %}
 
@@ -67,6 +125,8 @@
         $('#toggleinteract').on('click', m.galaxy, function() {
             m.galaxy.toggleInteract(spaxel, galimage);
         });
+        $('#qualitypopover').popover({html:true,content:$('#list_drp3quality').html()});
+        $('#targpopover').popover({html:true,content:$('#list_mngtarget').html()});
     });
 </script>
 {% endblock code %}

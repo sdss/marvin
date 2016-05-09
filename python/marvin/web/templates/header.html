@@ -16,7 +16,7 @@
 
         <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="{{'active' if active_page=='search'}}"><a href="{{url_for('search_page.Search:index')}}"><i class="fa fa-search fa-fw"></i>Search</a></li>
+                <li class="{{'active' if active_page=='search'}}"><a href="{{url_for('search_page.Search:index')}}"><i class="fa fa-search fa-fw" aria-hidden="true"></i>Search</a></li>
             </ul>
 
             <!-- Galaxy ID Search Box-->
@@ -46,7 +46,7 @@
                 <div class='navbar-login'>
                   <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sign-in fa-fw"></i><b>Login</b> <span class="caret"></span></a>
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sign-in fa-fw" aria-hidden="true"></i><b>Login</b> <span class="caret"></span></a>
                         <ul id="login-dp" class="dropdown-menu">
                             <li>
                                 {{login()}}
@@ -62,9 +62,9 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, User <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="/user/preferences"><i class="fa fa-cog fa-fw"></i> Preferences</a></li>
+                                <li><a href="/user/preferences"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> Preferences</a></li>
                                 <li class="divider"></li>
-                                <li><a href="/auth/logout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                                <li><a href="/auth/logout"><i class="fa fa-sign-out fa-fw" aria-hidden="true"></i> Logout</a></li>
                             </ul>
                         </li>
                     </ul>

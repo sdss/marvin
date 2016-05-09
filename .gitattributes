@@ -363,6 +363,7 @@ python/marvin/web/lib/scss/flatly/_bootswatch.scss -text
 python/marvin/web/lib/scss/flatly/_variables.scss -text
 python/marvin/web/lib/scss/marvin.scss -text
 python/marvin/web/lib/scss/marvin/_footer.scss -text
+python/marvin/web/lib/scss/marvin/_galaxy.scss -text
 python/marvin/web/lib/scss/marvin/_header.scss -text
 python/marvin/web/lib/scss/marvin/_login.scss -text
 python/marvin/web/lib/scss/marvin/_random.scss -text

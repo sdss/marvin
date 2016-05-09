@@ -93,3 +93,37 @@
       </div>
   </div>
 {% endmacro %}
+
+{# Download Button #}
+{% macro download(id) %}
+  <div class="btn-group marvin-download-singles" id='{{id}}'>
+    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a href="#">Cube</a></li>
+      <li><a href="#">RSS</a></li>
+      <li><a href="#">Default MAPS</a></li>
+    </ul>
+  </div>
+{% endmacro %}
+
+{# List Group #}
+{% macro listgroup(mylist, id) %}
+  <ul class="list-group" id='list_{{id}}'>
+    {% for item in mylist %}
+    <li class="list-group-item" id='{{item|lower}}'>{{item}}</li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{# Panel With List Group #}
+{% macro panellist(title, mylist, id) %}
+  <div class="panel panel-info hide" id='panel_{{id}}'>
+      <div class="panel-heading">
+          <h3 class="panel-title">{{title|default('Panel Title')}}</h3>
+      </div>
+      {{listgroup(mylist, id)}}
+  </div>
+{% endmacro %}
+
