@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-13 17:45:08
+* @Last Modified time: 2016-05-09 13:10:14
 */
 
 //
@@ -97,12 +97,14 @@ var Galaxy = function () {
 
         this.setPlateIfu(plateifu);
         this.maindiv = $('#' + this.plateifu);
-        this.mapdiv = this.maindiv.find('#map');
-        this.specdiv = this.maindiv.find('#graphdiv');
-        this.specmsg = this.maindiv.find('#specmsg');
+        this.metadiv = this.maindiv.find('#metadata');
+        this.specdiv = this.maindiv.find('#specview');
+        this.mapdiv = this.specdiv.find('#map');
+        this.graphdiv = this.specdiv.find('#graphdiv');
+        this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
-        this.staticdiv = this.maindiv.find('#staticdiv');
-        this.dynamicdiv = this.maindiv.find('#dynamicdiv');
+        this.staticdiv = this.specdiv.find('#staticdiv');
+        this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
     }
 
@@ -121,7 +123,7 @@ var Galaxy = function () {
         key: 'setPlateIfu',
         value: function setPlateIfu(plateifu) {
             if (plateifu === undefined) {
-                this.plateifu = $('.galinfo').attr('id');
+                this.plateifu = $('.singlegalaxy').attr('id');
             } else {
                 this.plateifu = plateifu;
             }
@@ -139,7 +141,7 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel) {
-            this.webspec = new Dygraph(this.specdiv[0], spaxel, {
+            this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 labels: ['x', 'Flux'],
                 errorBars: true
             });
@@ -197,19 +199,23 @@ var Galaxy = function () {
         // Toggle the interactive OpenLayers map and Dygraph spectra
         value: function toggleInteract(spaxel, image) {
             if (this.togglediv.hasClass('active')) {
+                // Turning Off
+                this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
                 this.togglediv.button('reset');
                 this.dynamicdiv.hide();
                 this.staticdiv.show();
             } else {
+                // Turning On
+                this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
                 this.togglediv.button('complete');
                 this.staticdiv.hide();
                 this.dynamicdiv.show();
 
                 // check for empty divs
-                var specempty = this.specdiv.is(':empty');
+                var specempty = this.graphdiv.is(':empty');
                 var mapempty = this.mapdiv.is(':empty');
                 // load the spaxel if the div is initially empty;
-                if (this.specdiv !== undefined && specempty) {
+                if (this.graphdiv !== undefined && specempty) {
                     this.loadSpaxel(spaxel);
                 }
 
@@ -347,7 +353,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 21:48:13
+* @Last Modified time: 2016-05-08 19:35:12
 */
 
 'use strict';
@@ -364,6 +370,7 @@ var Marvin = function Marvin(options) {
     // set up utility functions
     this.utils = new Utils();
     this.utils.print();
+    //this.utils.initPopOvers();
 
     // load the header
     this.header = new Header();
@@ -700,7 +707,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-05 16:10:40
+* @Last Modified time: 2016-05-08 19:27:10
 */
 
 // Javascript code for general things
@@ -769,6 +776,14 @@ var Utils = function () {
             } else {
                 $('html,body').animate({ scrollTop: 0 }, 1500, 'easeInOutExpo');
             }
+        }
+
+        // Initialize Pop-Overs
+
+    }, {
+        key: 'initPopOvers',
+        value: function initPopOvers() {
+            $('[data-toggle="popover"]').popover();
         }
     }]);
 

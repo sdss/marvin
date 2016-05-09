@@ -96,6 +96,9 @@ class Galaxy(FlaskView):
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
+                self.galaxy['cubehdr'] = cube.hdr
+                self.galaxy['quality'] = cube.qualitybit
+                self.galaxy['mngtarget'] = cube.targetbit
                 print(specmsg)
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)

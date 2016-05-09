@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-05 16:10:40
+* @Last Modified time: 2016-05-08 19:27:10
 */
 
 // Javascript code for general things
@@ -71,6 +71,14 @@ var Utils = function () {
             } else {
                 $('html,body').animate({ scrollTop: 0 }, 1500, 'easeInOutExpo');
             }
+        }
+
+        // Initialize Pop-Overs
+
+    }, {
+        key: 'initPopOvers',
+        value: function initPopOvers() {
+            $('[data-toggle="popover"]').popover();
         }
     }]);
 

@@ -272,6 +272,37 @@ class Cube(MarvinToolsClass):
     mask = property(lambda self: self._getExtensionData('MASK'),
                     doc='Gets the `MASK` data extension.')
 
+    @property
+    def qualitybit(self):
+        ''' The Cube DRP3QUAL bits '''
+        bit = long(self.hdr['DRP3QUAL'])
+        labels = None
+        # get labels
+        if self.data_origin == 'db':
+            labels = self._cube.getQualFlags()
+        elif self.data_origin == 'file':
+            pass
+        elif self.data_origin == 'api':
+            pass
+
+        return 'DRP3QUAL', bit, labels
+
+    @property
+    def targetbit(self):
+        ''' The Cube MNGTRG bits '''
+        names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
+        targs = [long(self.hdr['MNGTRG1']), long(self.hdr['MNGTRG2']), long(self.hdr['MNGTRG3'])]
+        ind = np.nonzero(targs)[0]
+        labels = None
+        # get labels
+        if self.data_origin == 'db':
+            labels = self._cube.getTargFlags(type=ind+1)
+        elif self.data_origin == 'file':
+            pass
+        elif self.data_origin == 'api':
+            pass
+        return names[ind], targs[ind], labels
+
     def getWavelength(self):
         ''' Retrieve the wavelength array for the Cube '''
         if self._useDB:
