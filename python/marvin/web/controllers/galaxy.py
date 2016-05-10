@@ -41,7 +41,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         # make input array for Dygraph
         webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.flux)]
 
-        specmsg = "for relative coords x = {0}, y={1}".format(x, y)
+        specmsg = "Spectrum at RA, Dec = ({0}, {1})".format(x, y)
 
     return webspec, specmsg
 
@@ -118,7 +118,7 @@ class Galaxy(FlaskView):
         if mousecoords:
             pixshape = (int(f['imwidth']), int(f['imheight']))
             if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
-                output = {'message': 'error: pixel coords outside range'}
+                output = {'message': 'Error: requested pixel coords are outside the image range.'}
             else:
                 # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
                 infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
@@ -128,7 +128,7 @@ class Galaxy(FlaskView):
                 msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec}
         else:
-            output = {'message': 'error getting mouse coords'}
+            output = {'message': 'Error getting mouse coords'}
         return jsonify(result=output)
 
 Galaxy.register(galaxy)

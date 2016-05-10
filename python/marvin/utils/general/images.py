@@ -19,9 +19,9 @@ from functools import wraps
 import marvin
 
 try:
-    from sdss_access.path import Path
+    from sdss_access import RsyncAccess
 except ImportError:
-    Path = None
+    RsyncAccess = None
 
 __all__ = ['getRandomImages']
 
@@ -42,11 +42,11 @@ def setMode(func):
 
 
 def checkPath(func):
-    '''Decorator that checks if Path has been imported '''
+    '''Decorator that checks if RsyncAccess has been imported '''
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not Path:
+        if not RsyncAccess:
             raise MarvinError('sdss_access is not installed')
         else:
             return func(*args, **kwargs)
@@ -62,22 +62,66 @@ def getRandomImages(num=10, download=False, mode=None):
     '''
     print('mode', mode)
 
+    rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
+    rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='mastar')
+
+    listofimages = rsync_access.locations(as_url=True, as_path=True, limit=num, random=True)
+
+    if download:
+        rsync_access.commit()
+    else:
+        return listofimages
+
 
 @checkPath
 @setMode
 def getImagesByPlate(plateid, download=False, mode=None):
     ''' Get all images belonging to a given plate ID
     '''
-    pass
+    # setup Rsync Access
+    rsync_access = RsyncAccess(label='marvintest', verbose=True)
+    try:
+        rsync_access.remote()
+    except Exception as e:
+        raise MarvinError('sdss_access .netrc file not installed: {0}'.format(e))
+
+    # setup marvin inputs
+    drpver = marvin.config.drpver
+
+    rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='stack')
+    rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='mastar')
+
+    listofimages = rsync_access.locations(as_url=True, as_path=True)
+
+    if download:
+        rsync_access.commit()
+    else:
+        return listofimages
 
 
 @checkPath
 @setMode
-def getImagesByList(download=False, mode=None):
+def getImagesByList(inputlist, download=False, mode=None):
     ''' Get all images from a list of ids
     '''
-    pass
+    # inputids = [list of plateifus, list of mangaids]
 
+    # convert mangaids into plateifus
 
+    for plateifu in inputlist:
+        plateid, ifu = plateifu.split('-')
+        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
+
+    # if marvin.mode == 'local': asurl=True
+    # if marvin.model == 'remote':
+    #        depends
+    # if marvin.local and tools mode : depends
+
+    listofimages = rsync_access.locations(as_url=asurl, as_path=aspath)
+
+    if download:
+        rsync_access.commit()
+    else:
+        return listofimages
 
 
