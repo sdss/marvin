@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-09 13:10:14
+* @Last Modified time: 2016-05-09 13:55:08
 */
 
 //
@@ -26,6 +26,11 @@ class Galaxy {
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
+        this.qualpop = $('#qualitypopover');
+        this.targpop = $('#targpopover');
+
+        // init some stuff
+        this.initFlagPopovers();
     }
 
     // Test print
@@ -48,14 +53,16 @@ class Galaxy {
         this.webspec = new Dygraph(this.graphdiv[0],
                   spaxel,
                   {
-                    labels: ['x','Flux'],
-                    errorBars: true
+                    labels: ['Wavelength','Flux'],
+                    errorBars: true,
+                    ylabel: 'Flux',
+                    xlabel: 'Wavelength'
                   });
     };
 
     // Update a DyGraph spectrum
     updateSpaxel(spaxel, specmsg) {
-        var newmsg = "Here's a spectrum: "+specmsg;
+        var newmsg = '<strong>'+specmsg+'</strong>';
         this.specmsg.empty();
         this.specmsg.html(newmsg);
         this.webspec.updateOptions({'file': spaxel});
@@ -121,6 +128,12 @@ class Galaxy {
             }
 
         }
+    };
+
+    //  Initialize the Quality and Target Popovers
+    initFlagPopovers() {
+        this.qualpop.popover({html:true,content:$('#list_drp3quality').html()});
+        this.targpop.popover({html:true,content:$('#list_mngtarget').html()});
     };
 }
 

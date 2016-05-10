@@ -46,3 +46,12 @@ def qaclass(value):
     out = 'success' if isgood else 'danger' if iscrit else 'warning'
     text = 'Good' if isgood else 'DO NOT USE' if iscrit else 'Warning'
     return out, text
+
+
+def targtype(value):
+    ''' Return the MaNGA target type based on what bit is set '''
+    name, bit, flags = value
+    out = 'Galaxy' if '1' in name else 'Ancillary' if '3' in name else 'Stellar'
+    return out
+
+
