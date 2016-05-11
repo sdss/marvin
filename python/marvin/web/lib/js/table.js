@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 17:32:16
+* @Last Modified time: 2016-05-11 14:47:29
 */
 
 'use strict';
@@ -59,7 +59,7 @@ var Table = function () {
                 toggle: 'table',
                 pagination: true,
                 pageSize: 10,
-                pageList: '[5, 10, 20]',
+                pageList: '[10, 20, 50]',
                 sidePagination: 'server',
                 method: 'post',
                 contentType: "application/x-www-form-urlencoded",
