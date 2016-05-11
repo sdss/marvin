@@ -437,7 +437,7 @@ class Query(object):
         if names:
             if not isinstance(self.query, type(None)):
                 if not isinstance(self.query.whereclause, type(None)):
-                    wc = str(self.query.whereclause)
+                    wc = str(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
                     infilter = any([name in wc for name in names])
 
         return infilter
