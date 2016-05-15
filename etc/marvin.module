@@ -27,7 +27,6 @@ proc ModulesHelp {{ }} {{
 #
 set product {name}
 set version {version}
-set inspection_version trunk
 # conflict $product
 #
 # The line below is another part of the Modules help system.  You can
@@ -73,7 +72,7 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 module unload sdss_python_module
 module load sdss_python_module
-module load inspection/$inspection_version
+module load inspection/trunk
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
 setenv SAS_URL                                  https://sas.sdss.org
