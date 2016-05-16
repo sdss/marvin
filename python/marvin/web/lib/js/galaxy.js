@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-09 13:55:08
+* @Last Modified time: 2016-05-12 17:14:35
 */
 
 //
@@ -78,8 +78,8 @@ var Galaxy = function () {
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 labels: ['Wavelength', 'Flux'],
                 errorBars: true,
-                ylabel: 'Flux',
-                xlabel: 'Wavelength'
+                ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
+                xlabel: 'Wavelength [Ångströms]'
             });
         }
     }, {

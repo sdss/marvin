@@ -2,7 +2,7 @@ import json
 from flask.ext.classy import route
 from flask import session as current_session
 from brain.api.query import BrainQueryView
-from marvin.tools.query import doQuery
+from marvin.tools.query import doQuery, Query
 from marvin.core import MarvinError
 
 
@@ -50,6 +50,7 @@ class QueryView(BrainQueryView):
 
         # set parameters
         searchvalue = current_session['searchvalue']
+        returnparams = current_session['returnparams']
         print('webtable', searchvalue, self.results['inconfig'])
         limit = self.results['inconfig'].get('limit', None)
         offset = self.results['inconfig'].get('offset', None)
@@ -57,7 +58,7 @@ class QueryView(BrainQueryView):
         sort = self.results['inconfig'].get('sort', None)
         search = self.results['inconfig'].get('search', None)
         # do query
-        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort)
+        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)
         # get keys
@@ -67,4 +68,15 @@ class QueryView(BrainQueryView):
         output = {'total': res.count, 'rows': rows, 'columns': cols}
         print('webtable output', output)
         output = json.dumps(output)
+        return output
+
+    @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
+    def getparamslist(self):
+        ''' Retrieve a list of all available input parameters into the query '''
+
+        q = Query()
+        allparams = q.get_available_params()
+        self.results['data'] = allparams
+        self.results['status'] = 1
+        output = json.dumps(self.results)
         return output

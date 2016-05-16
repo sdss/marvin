@@ -23,7 +23,7 @@ try:
 except ImportError:
     RsyncAccess = None
 
-__all__ = ['getRandomImages']
+__all__ = ['getRandomImages', 'getImagesByPlate']
 
 
 # Decorators
@@ -56,17 +56,18 @@ def checkPath(func):
 # General image utilities
 @checkPath
 @setMode
-def getRandomImages(num=10, download=False, mode=None):
+def getRandomImages(num=10, download=False, mode=None, as_url=None):
     ''' Get a list of N random images from SAS
 
     '''
     print('mode', mode)
-
-    rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
-    rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='mastar')
+    rsync_access = RsyncAccess(label='marvintest', verbose=True)
+    rsync_access.add('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='stack')
+    rsync_access.add('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='mastar')
     rsync_access.set_stream()
 
-    if random: rsync_access.shuffle()
+    # randomize
+    rsync_access.shuffle()
     listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
 
     if download:

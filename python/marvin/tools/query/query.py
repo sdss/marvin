@@ -55,7 +55,11 @@ def doQuery(*args, **kwargs):
                 instance
     '''
     q = Query(*args, **kwargs)
-    res = q.run()
+    try:
+        res = q.run()
+    except TypeError as e:
+        warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
+        res = None
     return q, res
 
 
@@ -234,7 +238,10 @@ class Query(object):
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
         '''
+        if returnparams:
+            returnparams = [returnparams] if type(returnparams) != list else returnparams
         self.params.extend(returnparams)
+        print('postret', self.params)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type '''
@@ -261,6 +268,24 @@ class Query(object):
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
         print('queryorder', self.queryparams_order)
+
+    def get_available_params(self):
+        ''' Retrieve the available parameters to query on '''
+        if self.mode == 'local':
+            keys = self.marvinform._param_form_lookup.keys()
+            keys.sort()
+            mykeys = [k.split('.', 1)[-1] for k in keys if 'pk' not in k]
+            return mykeys
+        elif self.mode == 'remote':
+            # Get the query route
+            url = config.urlmap['api']['getparams']['url']
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call to get params failed: {0}'.format(e))
+            else:
+                mykeys = ii.getData()
+                return mykeys
 
     def set_filter(self, searchfilter=None):
         ''' Parses a filter string and adds it into the query.
