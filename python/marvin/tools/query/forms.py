@@ -15,7 +15,7 @@ from __future__ import division
 from marvin import marvindb, config
 from marvin.core import MarvinError, MarvinUserWarning
 from collections import defaultdict
-from wtforms import StringField, validators, SelectField, IntegerField, ValidationError
+from wtforms import StringField, validators, SelectField, SelectMultipleField, IntegerField, ValidationError, SubmitField
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
@@ -137,11 +137,14 @@ class ValidOperand(object):
             raise ValidationError(self.message)
 
 
-class MainForm(Form):
-    ''' Main Level WTForm for Marvin '''
+class SearchForm(Form):
+    ''' Main Search Level WTForm for Marvin '''
     searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'),
                             validators.DataRequired(message='Input filter string required'),
                             ValidOperand('[<>=]', message='Input must contain a valid operand.')])
+    parambox = StringField('Query Parameters')
+    returnparams = SelectMultipleField('Return Parameters')
+    submit = SubmitField('Submit')
 
 
 class MarvinForm(object):
@@ -156,7 +159,7 @@ class MarvinForm(object):
         self._param_form_lookup = ParamFormLookupDict()
         self._paramtree = tree()
         self._generateFormClasses(modelclasses)
-        self.MainForm = MainForm
+        self.SearchForm = SearchForm
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.

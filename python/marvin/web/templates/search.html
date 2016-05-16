@@ -6,13 +6,27 @@
     {# Search Box #}
     <div class='well'>
         <div class='row'>
-            <form class='form' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
+
+            <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
               <div class='row'>
-                <div class='col-md-6 col-md-offset-2'>
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <div>{{searchform.returnparams.label}}: {{searchform.returnparams(class_='form-control selectpicker multiple')}}</div>
+                    </div>
+                </div>
+
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <div>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead')}}</div>
+                    </div>
+                </div>
+
+                <div class='col-md-6'>
                   <div class='form-group'>
                     <div>{{searchform.searchbox.label}}: {{searchform.searchbox(class_='form-control', placeholder=placeholder)}}</div>
                   </div>
                 </div>
+                <div>{{searchform.submit(class_='form-control hide')}}</div>
               </div>
             </form>
         </div>
@@ -79,6 +93,12 @@
     $(function() {
         m.table = new Table($('#searchtable'));
         m.table.print();
+        // Set up query typeahead
+        //var url = Flask.url_for('search_page.getparams');
+        //m.header.initTypeahead('#searchform .typeahead', '#searchform', url);
+        m.search = new Search();
+        m.search.initTypeahead('#searchform .typeahead', '#searchform');
+        // Load Search Results if any
         var res = {{results|tojson}};
         var url = Flask.url_for('api.webtable')
         if (res) {

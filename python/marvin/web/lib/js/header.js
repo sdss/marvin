@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-05 17:04:09
+* @Last Modified time: 2016-05-13 11:19:07
 */
 
 'use strict';
@@ -43,21 +43,22 @@ var Header = function () {
 
     }, {
         key: 'initTypeahead',
-        value: function initTypeahead(typediv, formdiv) {
-
-            var typediv = typediv === undefined ? this.typeahead : $(typediv);
-            var formdiv = formdiv === undefined ? this.galidform : $(formdiv);
+        value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
+            var typediv = typediv === undefined ? this.typeahead : $(typediv);
+            var formdiv = formdiv === undefined ? this.galidform : $(formdiv);
+            var typeurl = url === undefined ? Flask.url_for('index_page.getgalidlist') : url;
+            var afterfxn = fxn === undefined ? null : fxn;
 
             // create the bloodhound engine
             this.galids = new Bloodhound({
                 datumTokenizer: Bloodhound.tokenizers.whitespace,
                 queryTokenizer: Bloodhound.tokenizers.whitespace,
                 //local:  ["(A)labama","Alaska","Arizona","Arkansas","Arkansas2","Barkansas", 'hello'],
-                prefetch: Flask.url_for('index_page.getgalidlist'),
+                prefetch: typeurl,
                 remote: {
-                    url: Flask.url_for('index_page.getgalidlist'),
+                    url: typeurl,
                     filter: function filter(galids) {
                         return galids;
                     }
