@@ -11,11 +11,9 @@ docs/sphinx/_static/marvin_favicon.png -text
 docs/sphinx/api/queries.rst -text
 etc/config.ini -text
 etc/marvin.module -text
-python/marvin/__init__.py -text
 python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
 python/marvin/api/base.py -text
-python/marvin/api/cube.py -text
 python/marvin/api/query.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text
@@ -31,7 +29,6 @@ python/marvin/tests/tools/test_cube.py -text
 python/marvin/tests/tools/test_query.py -text
 python/marvin/tests/tools/test_results.py -text
 python/marvin/tools/__init__.py -text
-python/marvin/tools/cube.py -text
 python/marvin/tools/query/__init__.py -text
 python/marvin/tools/query/forms.py -text
 python/marvin/tools/query/query.py -text
@@ -42,7 +39,6 @@ python/marvin/utils/db/dbutils.py -text
 python/marvin/utils/general/__init__.py -text
 python/marvin/utils/general/general.py -text
 python/marvin/utils/general/images.py -text
-python/marvin/web/__init__.py -text
 python/marvin/web/configuration/localhost.cfg -text
 python/marvin/web/configuration/utah.cfg -text
 python/marvin/web/controllers/__init__.py -text

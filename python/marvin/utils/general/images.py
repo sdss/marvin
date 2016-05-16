@@ -64,8 +64,10 @@ def getRandomImages(num=10, download=False, mode=None):
 
     rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
     rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='mastar')
+    rsync_access.set_stream()
 
-    listofimages = rsync_access.locations(as_url=True, as_path=True, limit=num, random=True)
+    if random: rsync_access.shuffle()
+    listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
 
     if download:
         rsync_access.commit()
@@ -90,8 +92,9 @@ def getImagesByPlate(plateid, download=False, mode=None):
 
     rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='stack')
     rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='mastar')
+    rsync_access.set_stream()
 
-    listofimages = rsync_access.locations(as_url=True, as_path=True)
+    listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
 
     if download:
         rsync_access.commit()
@@ -111,13 +114,14 @@ def getImagesByList(inputlist, download=False, mode=None):
     for plateifu in inputlist:
         plateid, ifu = plateifu.split('-')
         rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
+    rsync_access.set_stream()
 
     # if marvin.mode == 'local': asurl=True
     # if marvin.model == 'remote':
     #        depends
     # if marvin.local and tools mode : depends
 
-    listofimages = rsync_access.locations(as_url=asurl, as_path=aspath)
+    listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
 
     if download:
         rsync_access.commit()
