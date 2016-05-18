@@ -227,7 +227,7 @@ class Cube(MarvinToolsClass):
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
-        self.hdr = self._hdu[0].header
+        self.hdr = self._hdu[1].header
 
     def _openCubeRemote(self):
         """Calls the API to check that the cube exists and gets the header."""
