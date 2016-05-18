@@ -221,6 +221,7 @@ python/marvin/api/__init__.py -text
 python/marvin/api/api.py -text
 python/marvin/api/base.py -text
 python/marvin/api/cube.py -text
+python/marvin/api/plate.py -text
 python/marvin/api/query.py -text
 python/marvin/db/__init__.py -text
 python/marvin/db/database.py -text

@@ -13,9 +13,17 @@ from __future__ import division
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
+from marvin.api.api import Interaction
 from marvin import config, marvindb
 import numpy as np
 from astropy.io import fits
+from brain.utils.general import checkPath
+import re
+
+try:
+    from sdss_access.path import Path
+except ImportError:
+    Path = None
 
 
 class Plate(MarvinToolsClass, list):
@@ -47,7 +55,7 @@ class Plate(MarvinToolsClass, list):
         elif self.data_origin == 'db':
             self._getPlateFromDB()
         elif self.data_origin == 'api':
-            pass  # do api stuff
+            self._getPlateFromAPI()
 
         # load the plate params and init the Marvin Cubes
         self._setParams()
@@ -62,17 +70,22 @@ class Plate(MarvinToolsClass, list):
 
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
-        return super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
+        self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
+        self._checkFilename()
+        return self.filename
 
     def _getPlateFromFile(self):
         ''' Initialize a Plate from a Cube/RSS File'''
+
+        # Load file
         try:
-            self._hdr = fits.getheader(self.filename)
+            self._hdr = fits.getheader(self.filename, 1)
             self.plateid = int(self._hdr['PLATEID'])
         except Exception as e:
             raise MarvinError('Could not initialize via filename: {0}'
                               .format(e))
         else:
+            self.data_origin = 'file'
             self._makePdict()
 
     def _getPlateFromDB(self):
@@ -104,31 +117,53 @@ class Plate(MarvinToolsClass, list):
             self._plate = cube.plateclass
             self._hdr = self._plate._hdr
             self._pdict = self._plate.__dict__
+            self.data_origin = 'db'
 
         if not self._plate:
             raise MarvinError('Could not retrieve Plate for id {0}'.format(self.plateid))
 
+    def _getPlateFromAPI(self):
+        ''' Initialize a Plate using the API '''
+
+        # Checks that the Plate exists.
+        routeparams = {'plateid': self.plateid}
+        url = config.urlmap['api']['getPlate']['url'].format(**routeparams)
+
+        # Make the API call
+        response = Interaction(url)
+        data = response.getData()
+        self._hdr = data['header']
+        self.data_origin = 'api'
+        self._makePdict()
+
+    @checkPath
     def _initCubes(self):
-        ''' '''
+        ''' Initialize a list of Marvin Cube objects '''
 
         _cubes = [None]
         if self.data_origin == 'file':
-            # TODO - replace this will full sdss_access local implementation
-            # but for now - use this temporary hack
-            # also - Cube instantiation by filename is broken, causes segfault
-            import glob
-            import os
-            import re
-            cubes = glob.glob(os.path.join(self._getFullPath(), self.dir3d, '*LOGCUBE*'))
-            plateifus = [re.search('(\d{4}[-]\d{3,5})', cube).group(0) for cube in cubes]
-            _cubes = [Cube(plateifu=pifu) for pifu in plateifus]
+            sdss_path = Path()
+            if self.dir3d == 'stack':
+                cubes = sdss_path.expand('mangacube', drpver=self._drpver,
+                                         plate=self.plateid, ifu='*')
+            else:
+                cubes = sdss_path.expand('mangamastar', drpver=self._drpver,
+                                         plate=self.plateid, ifu='*')
+            _cubes = [Cube(filename=cube) for cube in cubes]
 
         elif self.data_origin == 'db':
             _cubes = [Cube(plateifu=cube.plateifu)
                       for cube in self._plate.cubes]
 
         elif self.data_origin == 'api':
-            pass
+            routeparams = {'plateid': self.plateid}
+            url = config.urlmap['api']['getPlateCubes']['url'].format(**routeparams)
+
+            # Make the API call
+            response = Interaction(url)
+            data = response.getData()
+            plateifus = data['plateifus']
+            _cubes = [Cube(plateifu=pifu, mode='remote', data_origin='api') for pifu in plateifus]
 
         list.__init__(self, _cubes)
 
@@ -143,6 +178,7 @@ class Plate(MarvinToolsClass, list):
         self.surveymode = self._pdict.get('surveymode', None)
         self.isbright = self._pdict.get('isbright', None)
         self.dir3d = self._pdict.get('dir3d', None)
+        self.plateid = int(self.plateid)
 
     def _makePdict(self):
         ''' Make the necessary plate dictionary '''
@@ -157,11 +193,40 @@ class Plate(MarvinToolsClass, list):
         self._pdict['isbright'] = 'APOGEE' in self._pdict['surveymode']
         self._pdict['dir3d'] = 'mastar' if self._pdict['isbright'] else 'stack'
 
+        self._pdict['ra'] = float(self._pdict['ra'])
+        self._pdict['dec'] = float(self._pdict['dec'])
+        self._pdict['designid'] = float(self._pdict['designid'])
+
     def _sortOutNames(self):
         ''' Sort out any name issues with plateid, plateifu, mangaid inputs '''
 
         if self.plateifu and 'XXX' not in self.plateifu:
             plate, ifu = self.plateifu.split('-')
             self.plateid = int(plate)
+
+    @checkPath
+    def _checkFilename(self):
+        ''' Checks the filename for a proper FITS file '''
+
+        # if filename is not FITS, then try to load one
+        if 'fits' not in self.filename.lower():
+            sdss_path = Path()
+            # try a cube
+            full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*')
+            cubeexists = sdss_path.any('', full=full)
+            if cubeexists:
+                file = sdss_path.one('', full=full)
+            else:
+                # try an rss
+                full = sdss_path.full('mangarss', drpver=self._drpver, plate=self.plateid, ifu='*')
+                rssexists = sdss_path.any('', full=full)
+                if rssexists:
+                    file = sdss_path.one('', full=full)
+                else:
+                    file = None
+            # load the file
+            if file:
+                self.filename = file
+
 
 
