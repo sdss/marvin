@@ -55,3 +55,9 @@ def targtype(value):
     return out
 
 
+def split(string, delim=None):
+    '''Split a string based on a delimiter'''
+    if not delim:
+        delim = ' '
+    return string.split(delim) if string else None
+

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-08 19:35:12
+* @Last Modified time: 2016-05-18 09:50:10
 */
 
 'use strict';
@@ -20,6 +20,7 @@ var Marvin = function Marvin(options) {
     this.utils = new Utils();
     this.utils.print();
     //this.utils.initPopOvers();
+    this.utils.initToolTips();
 
     // load the header
     this.header = new Header();

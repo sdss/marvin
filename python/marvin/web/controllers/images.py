@@ -16,8 +16,8 @@ from flask import current_app, Blueprint, render_template, session as current_se
 from flask.ext.classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core import MarvinError
-from collections import defaultdict
-import os
+from marvin.utils.general import getRandomImages
+from marvin.web.web_utils import buildImageDict
 
 images = Blueprint("images_page", __name__)
 
@@ -43,13 +43,21 @@ class Random(FlaskView):
         form = processRequest(request=request)
         self.random['imnumber'] = 16
         images = []
-        imdict = defaultdict(str)
-        # test run
-        for i in xrange(self.random['imnumber']):
-            imdict['name'] = '8485-1901'
-            imdict['image'] = 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1901.png'
-            imdict['thumb'] = 'http://localhost:80/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1901_thumb.png'
-            images.append(imdict)
+
+        # Get random images ; parse out thumbnails ; construct plate-IFUs
+        imfiles = None
+        try:
+            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'])
+        except MarvinError as e:
+            self.random['error'] = 'Error: could not get images: {0}'.format(e)
+        else:
+            images = buildImageDict(imfiles)
+
+        # if image grab failed, make placeholders
+        if not imfiles:
+            images = buildImageDict(imfiles, test=True, num=self.random['imnumber'])
+
+        # Add images to dict
         self.random['images'] = images
 
         return render_template('random.html', **self.random)

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-08 19:27:10
+* @Last Modified time: 2016-05-18 09:49:24
 */
 
 // Javascript code for general things
@@ -55,6 +55,11 @@ class Utils {
     // Initialize Pop-Overs
     initPopOvers() {
         $('[data-toggle="popover"]').popover();
+    };
+
+    // Initialize tooltips
+    initToolTips() {
+        $('[data-toggle="tooltip"]').tooltip();
     };
 }
 
