@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-08 19:27:10
+* @Last Modified time: 2016-05-18 09:49:24
 */
 
 // Javascript code for general things
@@ -79,6 +79,14 @@ var Utils = function () {
         key: 'initPopOvers',
         value: function initPopOvers() {
             $('[data-toggle="popover"]').popover();
+        }
+    }, {
+        key: 'initToolTips',
+
+
+        // Initialize tooltips
+        value: function initToolTips() {
+            $('[data-toggle="tooltip"]').tooltip();
         }
     }]);
 

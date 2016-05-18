@@ -26,7 +26,7 @@ search = Blueprint("search_page", __name__)
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa_redshift < 0.1 and ifu.name = 19*', 'cube.plate < 8000']
+    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000']
     q = random.choice(samples)
     return q
 

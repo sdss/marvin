@@ -17,7 +17,9 @@ from flask import current_app, Blueprint, render_template, session as current_se
 from flask.ext.classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core import MarvinError
-import os
+from marvin.tools.plate import Plate as mPlate
+from marvin.utils.general import getImagesByPlate
+from marvin.web.web_utils import buildImageDict
 
 plate = Blueprint("plate_page", __name__)
 
@@ -49,7 +51,33 @@ class Plate(FlaskView):
     def get(self, plateid):
         ''' Retrieve info for a given plate id '''
 
-        self.plate['plateid'] = plateid
+        self.plate['plateid'] = int(plateid)
+        try:
+            plate = mPlate(plateid=plateid, mode='local')
+        except MarvinError as e:
+            self.plate['error'] = 'Could not grab Plate for id {0}: {1}'.format(plateid, e)
+        else:
+            self.plate['plate'] = plate
+            self.plate['drpver'] = plate._drpver
+            self.plate['sasurl'] = plate._getFullPath(url=True)
+
+        # Get images for plate
+        imfiles = None
+        try:
+            imfiles = getImagesByPlate(plateid=plateid, as_url=True)
+        except MarvinError as e:
+            self.plate['error'] = 'Error: could not get images for plate {0}: {1}'.format(plateid, e)
+        else:
+            # thumbs = [imfiles.pop(imfiles.index(t)) if 'thumb' in t else t for t in imfiles]
+            # plateifu = ['-'.join(re.findall('\d{3,5}', im)) for im in imfiles]
+            images = buildImageDict(imfiles)
+
+        # if image grab failed, make placeholders
+        if not imfiles:
+            images = buildImageDict(imfiles, test=True, num=29)
+
+        # Add images to dict
+        self.plate['images'] = images
 
         return render_template('plate.html', **self.plate)
 

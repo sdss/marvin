@@ -122,14 +122,17 @@ class MarvinToolsClass(object):
             self.mode = 'remote'
             self.data_origin = 'api'
 
-    def _getFullPath(self, pathType, **pathParams):
+    def _getFullPath(self, pathType, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
 
         if not Path:
             raise MarvinError('sdss_access is not installed')
         else:
             try:
-                fullpath = Path().full(pathType, **pathParams)
+                if url:
+                    fullpath = Path().url(pathType, **pathParams)
+                else:
+                    fullpath = Path().full(pathType, **pathParams)
             except Exception as ee:
                 warnings.warn('sdss_access was not able to retrieve the full path of the file. '
                               'Error message is: {0}'.format(str(ee)), MarvinUserWarning)

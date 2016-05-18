@@ -14,6 +14,8 @@ from __future__ import print_function
 from __future__ import division
 from flask import session as current_session, current_app
 from marvin import config, marvindb
+from collections import defaultdict
+import re
 
 
 def configFeatures(app, mode):
@@ -134,3 +136,32 @@ def setGlobalVersion():
         realvers = [ver for ver in versions if os.path.isdir(os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'),
                     current_session['currentver'], ver))]
         current_session['currentdapver'] = realvers[0] if realvers else 'NA'
+
+
+def buildImageDict(imagelist, test=None, num=16):
+    ''' Builds a list of dictionaries from a sdss_access return list of images '''
+
+    # get thumbnails and plateifus
+    if imagelist:
+        thumbs = [imagelist.pop(imagelist.index(t)) if 'thumb' in t else t for t in imagelist]
+        plateifu = ['-'.join(re.findall('\d{3,5}', im)) for im in imagelist]
+
+    # build list of dictionaries
+    images = []
+    if imagelist:
+        for i, image in enumerate(imagelist):
+            imdict = defaultdict(str)
+            imdict['name'] = plateifu[i]
+            imdict['image'] = image
+            imdict['thumb'] = thumbs[i] if thumbs else None
+            images.append(imdict)
+    elif test and not imagelist:
+        for i in xrange(num):
+            imdict = defaultdict(str)
+            imdict['name'] = '4444-0000'
+            imdict['image'] = 'http://placehold.it/470x480&text={0}'.format(i)
+            imdict['thumb'] = 'http://placehold.it/150x150&text={0}'.format(i)
+            images.append(imdict)
+
+    return images
+
