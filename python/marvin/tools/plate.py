@@ -114,10 +114,18 @@ class Plate(MarvinToolsClass, list):
                               'Unknown exception: {1}'
                               .format(self.plateid, ee))
         else:
-            self._plate = cube.plateclass
-            self._hdr = self._plate._hdr
-            self._pdict = self._plate.__dict__
-            self.data_origin = 'db'
+            # no cube
+            if not cube:
+                raise MarvinError('No cube found in db for plate {0}, drpver {1}'.format(self.plateid, self._drpver))
+            # cube but no plateclass
+            try:
+                self._plate = cube.plateclass
+            except AttributeError as e:
+                raise MarvinError('AttributeError: cube has no plateclass for plate {0}: {1}'.format(self.plateid, e))
+            else:
+                self._hdr = self._plate._hdr
+                self._pdict = self._plate.__dict__
+                self.data_origin = 'db'
 
         if not self._plate:
             raise MarvinError('Could not retrieve Plate for id {0}'.format(self.plateid))
