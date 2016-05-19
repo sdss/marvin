@@ -426,7 +426,8 @@ class Query(object):
         # self.joins.extend([model.__tablename__ for model in sublist])
         # self.query = self.query.join(*sublist)
         for model in joinmodellist:
-            if not self._tableInQuery(model.__tablename__):
+            name = '{0}.{1}'.format(model.__table__.schema, model.__tablename__)
+            if not self._tableInQuery(name):
                 self.joins.append(model.__tablename__)
                 self.query = self.query.join(model)
 

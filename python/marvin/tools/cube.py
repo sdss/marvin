@@ -294,14 +294,19 @@ class Cube(MarvinToolsClass):
         targs = [long(self.hdr['MNGTRG1']), long(self.hdr['MNGTRG2']), long(self.hdr['MNGTRG3'])]
         ind = np.nonzero(targs)[0]
         labels = None
+        finaltargs = {}
+
+        finaltargs['names'] = [names[i] for i in ind]
+        finaltargs['bits'] = [targs[i] for i in ind]
         # get labels
         if self.data_origin == 'db':
-            labels = self._cube.getTargFlags(type=ind+1)
+            finaltargs['labels'] = [self._cube.getTargFlags(type=i+1) for i in ind]
         elif self.data_origin == 'file':
             pass
         elif self.data_origin == 'api':
             pass
-        return names[ind], targs[ind], labels
+
+        return finaltargs
 
     def getWavelength(self):
         ''' Retrieve the wavelength array for the Cube '''

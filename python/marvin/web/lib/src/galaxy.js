@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-12 17:14:35
+* @Last Modified time: 2016-05-19 11:31:59
 */
 
 //
@@ -27,7 +27,7 @@ class Galaxy {
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
         this.qualpop = $('#qualitypopover');
-        this.targpop = $('#targpopover');
+        this.targpops = $('.targpopovers');
 
         // init some stuff
         this.initFlagPopovers();
@@ -132,8 +132,19 @@ class Galaxy {
 
     //  Initialize the Quality and Target Popovers
     initFlagPopovers() {
+        // DRP Quality Popovers
         this.qualpop.popover({html:true,content:$('#list_drp3quality').html()});
-        this.targpop.popover({html:true,content:$('#list_mngtarget').html()});
+        // MaNGA Target Popovers
+        $.each(this.targpops, function(index, value) {
+            // get id of flag link
+            var popid = value.id;
+            // split id and grab the mngtarg
+            var [base, targ] = popid.split('_');
+            // build the label list id
+            var listid = '#list_'+targ;
+            // init the specific popover
+            $('#'+popid).popover({html:true,content:$(listid).html()});
+        });
     };
 }
 

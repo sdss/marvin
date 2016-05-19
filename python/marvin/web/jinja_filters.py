@@ -50,8 +50,10 @@ def qaclass(value):
 
 def targtype(value):
     ''' Return the MaNGA target type based on what bit is set '''
-    name, bit, flags = value
-    out = 'Galaxy' if '1' in name else 'Ancillary' if '3' in name else 'Stellar'
+    # names = value.get('names', None)
+    # namelabel = ', '.join(names)
+    # out = namelabel.replace('MNGTRG1', 'Galaxy').replace('MNGTRG2', 'Stellar').replace('MNGTRG3', 'Ancillary')
+    out = 'Galaxy' if '1' in value else 'Ancillary' if '3' in value else 'Stellar'
     return out
 
 
