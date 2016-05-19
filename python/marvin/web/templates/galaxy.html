@@ -49,7 +49,7 @@
                                   <h3 class="panel-title">Cube Quality: {{qualmsg}}</h3>
                               </div>
                               <div class='panel-body'>
-                                Bit: {{quality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover pull-right' id='qualitypopover' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
+                                Bit: {{quality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='qualitypopover' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
                               </div>
                           </div>
                           <div class='btn-group-vertical'>
@@ -62,16 +62,23 @@
                     <div class='col-md-2'>
                           <div class="panel panel-info" id='panel_targetflag'>
                               <div class="panel-heading">
-                                  <h3 class="panel-title">MaNGA Target: {{mngtarget|targtype}}</h3>
+                                  <h3 class="panel-title">MaNGA Target</h3>
                               </div>
                               <div class='panel-body'>
-                                Bit: {{mngtarget[1]}} <a tabindex='0' role="button" class='btn btn-info btn-xs flagpopover pull-right' id='targpopover' data-trigger='hover' data-toggle="popover" title="Target Flags">Flags</a>
+                                {% for bit in mngtarget.bits %}
+                                <div class='row'>
+                                  {% set targname = mngtarget.names[loop.index0]|lower %}
+                                  <div class='col-md-12'>
+                                  {{targname|targtype}} Bit: {{bit}} <a tabindex='0' role="button" class='btn btn-info btn-xs flagpopover targpopovers pull-right' id='targpopover_{{targname}}' data-trigger='hover' data-toggle="popover" title="Target Flags">Flags</a>
+                                  </div>
+                                </div>
+                                  {{panellist('Target Flags', mngtarget.labels[loop.index0], targname)}}
+                                {% endfor %}
                               </div>
                           </div>
                           <button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>
                     </div>
                     {{panellist('Quality Flags', quality[2], 'drp3quality')}}
-                    {{panellist('Target Flags', mngtarget[2], 'mngtarget')}}
                 </div>
             {% endif %}
         </div>
