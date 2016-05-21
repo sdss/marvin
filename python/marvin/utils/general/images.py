@@ -21,6 +21,7 @@ import marvin
 try:
     from sdss_access import RsyncAccess, AccessError
 except ImportError:
+    Path = None
     RsyncAccess = None
 
 __all__ = ['getRandomImages', 'getImagesByPlate']
@@ -59,24 +60,31 @@ def checkPath(func):
 def getRandomImages(num=10, download=False, mode=None, as_url=None):
     ''' Get a list of N random images from SAS
 
+
     '''
     rsync_access = RsyncAccess(label='marvin_getrandom', verbose=True)
-    rsync_access.remote()
-    rsync_access.add('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='stack')
-    try:
-        rsync_access.set_stream()
-    except AccessError as e:
-        raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
 
-    # refine and randomize
-    rsync_access.refine_task('\d{4,5}.png')
-    rsync_access.shuffle()
-    listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
-
-    if download:
-        rsync_access.commit()
-    else:
+    if mode == 'local':
+        full = rsync_access.full('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='stack')
+        listofimages = rsync_access.random('', full=full, num=16, refine='\d{4,5}.png', as_url=True)
         return listofimages
+    elif mode == 'remote':
+        rsync_access.remote()
+        rsync_access.add('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='stack')
+        try:
+            rsync_access.set_stream()
+        except AccessError as e:
+            raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
+
+        # refine and randomize
+        rsync_access.refine_task('\d{4,5}.png')
+        rsync_access.shuffle()
+        listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
+
+        if download:
+            rsync_access.commit()
+        else:
+            return listofimages
 
 
 @checkPath
@@ -89,28 +97,33 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None):
 
     # setup Rsync Access
     rsync_access = RsyncAccess(label='marvin_getplate', verbose=True)
-    rsync_access.remote()
 
     # setup marvin inputs
     drpver = marvin.config.drpver
     from marvin.tools.plate import Plate
     plate = Plate(plateid=plateid, nocubes=True)
 
-    rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=plate.dir3d)
-
-    # set the stream
-    try:
-        rsync_access.set_stream()
-    except AccessError as e:
-        raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
-
-    # get the list
-    listofimages = rsync_access.get_urls() if as_url else rsync_access.get_paths()
-
-    if download:
-        rsync_access.commit()
-    else:
+    if mode == 'local':
+        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=plate.dir3d)
+        listofimages = rsync_access.expand('', full=full, as_url=True)
         return listofimages
+    elif mode == 'remote':
+        rsync_access.remote()
+        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=plate.dir3d)
+
+        # set the stream
+        try:
+            rsync_access.set_stream()
+        except AccessError as e:
+            raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
+
+        # get the list
+        listofimages = rsync_access.get_urls() if as_url else rsync_access.get_paths()
+
+        if download:
+            rsync_access.commit()
+        else:
+            return listofimages
 
 
 @checkPath
