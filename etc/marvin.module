@@ -42,8 +42,10 @@ module-whatis "Sets up $product/$version in your environment."
 # A mandatory dependency is a module load command followed by a prereq
 # command.  An optional dependency is not followed by a prereq statement.
 #
-#module load sdss4tools
-#prereq sdss4tools
+
+module load marvin_brain
+prereq marvin_brain
+
 #
 # ENVIRONMENT SECTION
 #
@@ -71,7 +73,7 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 # Add any non-standard Module code below this point.
 #
 module unload sdss_python_module
-module load sdss_python_module
+module load sdss_python_module/marvin
 module load inspection/trunk
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
