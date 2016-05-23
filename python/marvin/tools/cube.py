@@ -87,6 +87,8 @@ class Cube(MarvinToolsClass):
         self.dec = float(self.hdr['OBJDEC'])
         self.plate = int(self.hdr['PLATEID'])
         self.mangaid = self.hdr['MANGAID']
+        self._isbright = 'APOGEE' in self.hdr['SRVYMODE']
+        self.dir3d = 'mastar' if self._isbright else 'stack'
 
     def __repr__(self):
         """Representation for Cube."""

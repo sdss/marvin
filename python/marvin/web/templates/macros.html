@@ -94,16 +94,16 @@
   </div>
 {% endmacro %}
 
-{# Download Button #}
-{% macro download(id) %}
+{# Download Button for Single Galaxy #}
+{% macro download(id, links) %}
   <div class="btn-group marvin-download-singles" id='{{id}}'>
     <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
-      <li><a href="#">Cube</a></li>
-      <li><a href="#">RSS</a></li>
-      <li><a href="#">Default MAPS</a></li>
+      <li><a href="{{links.cube|default('#')}}">Cube</a></li>
+      <li><a href="{{links.rss|default('#')}}">RSS</a></li>
+      <li><a href="{{links.map|default('#')}}">Default MAPS</a></li>
     </ul>
   </div>
 {% endmacro %}
