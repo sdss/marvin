@@ -36,6 +36,7 @@ extensions = [
     'sphinx.ext.viewcode','sphinx.ext.mathjax',
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
+    'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -136,7 +137,7 @@ html_theme_options = {
     # an arbitrary url.
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin/", True),
-        ("First steps", "First Steps"),
+        ("First steps", "first_steps"),
     ],
 
     # Render the next and previous page links in navbar. (Default: true)

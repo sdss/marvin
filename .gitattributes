@@ -37,7 +37,11 @@ docs/sphinx/.doctrees/marvin.web.controllers.index.doctree -text
 docs/sphinx/.doctrees/marvin.web.doctree -text
 docs/sphinx/.doctrees/marvin.web.jinja_filters.doctree -text
 docs/sphinx/Makefile -text
+docs/sphinx/_static/marvin.png -text svneol=unset#image/png
+docs/sphinx/api/api.rst -text
 docs/sphinx/api/queries.rst -text
+docs/sphinx/api/utils.rst -text
+docs/sphinx/api/web.rst -text
 docs/sphinx/build/.buildinfo -text
 docs/sphinx/build/.doctrees/environment.pickle -text
 docs/sphinx/build/.doctrees/index.doctree -text
@@ -214,6 +218,7 @@ docs/sphinx/source/marvin.web.controllers.rst -text
 docs/sphinx/source/marvin.web.jinja_filters.rst -text
 docs/sphinx/source/marvin.web.rst -text
 docs/sphinx/sphinx_warnings.out -text
+docs/sphinx/web.rst -text
 etc/config.ini -text
 etc/marvin.module -text
 python/marvin/__init__.py -text
@@ -380,6 +385,7 @@ python/marvin/web/lib/src/table.js -text
 python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/brian.jpg -text svneol=unset#image/jpeg
 python/marvin/web/static/images/logo5_lores.png -text svneol=unset#image/png
+python/marvin/web/static/images/marvin.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/static/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/templates/footer.html -text

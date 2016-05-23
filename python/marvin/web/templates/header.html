@@ -16,6 +16,7 @@
 
         <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
+                <li class="{{'active' if active_page=='help'}}"><a target='_blank' href="https://api.sdss.org/doc/manga/marvin/refactor/"><i class="fa fa-question-circle-o fa-fw" aria-hidden="true"></i>Help</a></li>
                 <li class="{{'active' if active_page=='search'}}"><a href="{{url_for('search_page.Search:index')}}"><i class="fa fa-search fa-fw" aria-hidden="true"></i>Search</a></li>
             </ul>
 
