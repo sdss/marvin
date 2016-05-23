@@ -71,8 +71,9 @@ class Plate(MarvinToolsClass, list):
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
         self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
+        platedir = self.filename
         self._checkFilename()
-        return self.filename
+        return platedir, self.filename
 
     def _getPlateFromFile(self):
         ''' Initialize a Plate from a Cube/RSS File'''
