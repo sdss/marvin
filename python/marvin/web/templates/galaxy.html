@@ -20,7 +20,7 @@
     <div class='row'>
         <div class='col-md-12 galinfo'>
             {% if not cube %}
-                <h3>{{error}}</h3>
+                <h3 class='alert alert-danger'>{{error}}</h3>
             {% else %}
                 <!-- Galaxy Meta Data -->
                 {# Galaxy Meta Data #}
@@ -108,8 +108,11 @@
                     <div id='graphdiv' style="width:100%;"></div>
                     <div class='row'>
                         <div class='col-md-5 col-md-offset-1'>
-                        <p id='specmsg'><strong>{{specmsg}}</strong></p>
-                        <div id='mouse-output'></div>
+                          {% if error %}
+                          <p class='alert alert-danger' id='specmsg_error'><strong>{{error}}</strong></p>
+                          {% else %}
+                          <p class='alert alert-danger' id='specmsg' style="display:none;"><strong>{{specmsg}}</strong></p>
+                          {% endif %}
                         </div>
                     </div>
                   </div>
@@ -133,8 +136,9 @@
         // toggle interaction on click
         var spaxel = {{spectra|tojson}};
         var galimage = {{image|tojson}};
+        var title = {{specmsg|tojson}};
         $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(spaxel, galimage);
+            m.galaxy.toggleInteract(spaxel, galimage, title);
         });
 
     });
