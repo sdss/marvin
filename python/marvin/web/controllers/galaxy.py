@@ -19,7 +19,13 @@ from marvin.utils.general.general import findClosestVector, convertImgCoords, pa
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
+from marvin import config
 import os
+
+try:
+    from sdss_access.path import Path
+except ImportError as e:
+    Path = None
 
 galaxy = Blueprint("galaxy_page", __name__)
 
@@ -88,7 +94,16 @@ class Galaxy(FlaskView):
                 return render_template("galaxy.html", **self.galaxy)
             else:
                 self.galaxy['cube'] = cube
-                self.galaxy['image'] = cube._cube.image
+                # get SAS url links to cube, rss, maps, image
+                if Path:
+                    sdss_path = Path()
+                    self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
+                    cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
+                    rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
+                    maplink = sdss_path.url('mangadefault', mpl=config.mplver, plate=cube.plate, ifu=cube.ifu)
+                    self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
+                else:
+                    self.galaxy['image'] = cube._cube.image
                 print('image', cube._cube.image)
 
             # Get the initial spectrum
