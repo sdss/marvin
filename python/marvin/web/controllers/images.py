@@ -29,7 +29,7 @@ class Random(FlaskView):
         ''' Initialize the route '''
         self.random = {}
         self.random['title'] = 'Marvin | Random'
-        self.random['page'] = 'marivn-random'
+        self.random['page'] = 'marvin-random'
         self.random['error'] = None
 
     def before_request(self, *args, **kwargs):

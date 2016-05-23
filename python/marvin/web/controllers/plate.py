@@ -59,7 +59,8 @@ class Plate(FlaskView):
         else:
             self.plate['plate'] = plate
             self.plate['drpver'] = plate._drpver
-            self.plate['sasurl'] = plate._getFullPath(url=True)
+            platedir, tmpfile = plate._getFullPath(url=True)
+            self.plate['sasurl'] = platedir
 
         # Get images for plate
         imfiles = None
