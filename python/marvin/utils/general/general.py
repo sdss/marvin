@@ -256,21 +256,19 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
     Finds the closest vector of array coordinates (x, y) from an input vector of pixel coordinates (x, y).
 
     Parameters:
-    ----------
-    point : tuple
-        Original point of interest in pixel units, order of (x,y)
-    arr_shape : tuple
-        Shape of data array in (x,y) order
-    pixel_shape : tuple
-        Shape of image in pixels in (x,y) order
-    xyorig : str
-        Indicates the origin point of coordinates.  Set to "relative" switches to an array coordinate
-        system relative to galaxy center.  Default is absolute array coordinates (x=0, y=0) = upper left corner
+        point : tuple
+            Original point of interest in pixel units, order of (x,y)
+        arr_shape : tuple
+            Shape of data array in (x,y) order
+        pixel_shape : tuple
+            Shape of image in pixels in (x,y) order
+        xyorig : str
+            Indicates the origin point of coordinates.  Set to "relative" switches to an array coordinate
+            system relative to galaxy center.  Default is absolute array coordinates (x=0, y=0) = upper left corner
 
     Returns:
-    --------
-    minind : tuple
-        A tuple of array coordinates in x, y order
+        minind : tuple
+            A tuple of array coordinates in x, y order
     '''
 
     # set as numpy arrays

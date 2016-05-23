@@ -5,6 +5,12 @@
 
 |
 
+
+.. image:: _static/marvin.png
+    :width: 200px
+    :align: left
+    :alt: Marvin
+
 .. image:: _static/logo5_lores.jpg
     :width: 800px
     :align: center
@@ -25,6 +31,7 @@ developed and maintained by the MaNGA team.
    first_steps
    marvin_tools
    queries
+   web
 
 
 Documentation
@@ -33,9 +40,11 @@ Documentation
 .. toctree::
    :maxdepth: 2
 
+   api/api
    api/tools
    api/queries
-
+   api/utils
+   api/web
 
 Indices and tables
 ==================

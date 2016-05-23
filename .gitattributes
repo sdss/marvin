@@ -6,9 +6,14 @@ docs/Mode_Decision_Tree.pdf -text
 docs/Mode_Decision_Tree.png -text
 docs/sphinx/Makefile -text
 docs/sphinx/_static/logo5_lores.jpg -text
+docs/sphinx/_static/marvin.png -text svneol=unset#image/png
 docs/sphinx/_static/marvin_favicon.ico -text
 docs/sphinx/_static/marvin_favicon.png -text
+docs/sphinx/api/api.rst -text
 docs/sphinx/api/queries.rst -text
+docs/sphinx/api/utils.rst -text
+docs/sphinx/api/web.rst -text
+docs/sphinx/web.rst -text
 etc/config.ini -text
 etc/marvin.module -text
 python/marvin/__init__.py -text
@@ -174,6 +179,7 @@ python/marvin/web/lib/src/table.js -text
 python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/brian.jpg -text svneol=unset#image/jpeg
 python/marvin/web/static/images/logo5_lores.png -text svneol=unset#image/png
+python/marvin/web/static/images/marvin.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/static/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/templates/footer.html -text
