@@ -41,7 +41,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         # make input array for Dygraph
         webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.flux)]
 
-        specmsg = "Spectrum at RA, Dec = ({0}, {1})".format(x, y)
+        specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spectrum.x, spectrum.y)
 
     return webspec, specmsg
 
@@ -94,12 +94,13 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
+                if not webspec:
+                    self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
                 self.galaxy['cubehdr'] = cube.hdr
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                print(specmsg)
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -118,17 +119,25 @@ class Galaxy(FlaskView):
         if mousecoords:
             pixshape = (int(f['imwidth']), int(f['imheight']))
             if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
-                output = {'message': 'Error: requested pixel coords are outside the image range.'}
+                output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
+                self.galaxy['error'] = output['specmsg']
             else:
                 # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
                 infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
                 arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
                 cube = Cube(plateifu=f['plateifu'])
                 webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                if not webspec:
+                    self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                    status = -1
+                else:
+                    status = 1
                 msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
-                output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec}
+                output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
         else:
-            output = {'message': 'Error getting mouse coords'}
+            output = {'specmsg': 'Error getting mouse coords', 'status': -1}
+            self.galaxy['error'] = output['specmsg']
+
         return jsonify(result=output)
 
 Galaxy.register(galaxy)

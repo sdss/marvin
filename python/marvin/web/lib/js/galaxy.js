@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-05-19 11:31:59
+* @Last Modified time: 2016-05-23 13:54:39
 */
 
 //
@@ -74,8 +74,9 @@ var Galaxy = function () {
 
     }, {
         key: 'loadSpaxel',
-        value: function loadSpaxel(spaxel) {
+        value: function loadSpaxel(spaxel, title) {
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
+                title: title,
                 labels: ['Wavelength', 'Flux'],
                 errorBars: true,
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
@@ -83,15 +84,27 @@ var Galaxy = function () {
             });
         }
     }, {
-        key: 'updateSpaxel',
+        key: 'updateSpecMsg',
 
 
-        // Update a DyGraph spectrum
-        value: function updateSpaxel(spaxel, specmsg) {
+        // Update the spectrum message div for errors only
+        value: function updateSpecMsg(specmsg, status) {
+            this.specmsg.hide();
+            if (status !== undefined && status === -1) {
+                this.specmsg.show();
+            }
             var newmsg = '<strong>' + specmsg + '</strong>';
             this.specmsg.empty();
             this.specmsg.html(newmsg);
-            this.webspec.updateOptions({ 'file': spaxel });
+        }
+
+        // Update a DyGraph spectrum
+
+    }, {
+        key: 'updateSpaxel',
+        value: function updateSpaxel(spaxel, specmsg) {
+            this.updateSpecMsg(specmsg);
+            this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
         }
     }, {
         key: 'initOpenLayers',
@@ -118,14 +131,13 @@ var Galaxy = function () {
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
-                $('#mouse-output').empty();
-                var myhtml = "<h5>My mouse coords " + mousecoords + ", message: " + data.result.message + "</h5>";
-                $('#mouse-output').html(myhtml);
-                _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                if (data.result.status !== -1) {
+                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                } else {
+                    _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                }
             }).fail(function (data) {
-                $('#mouse-output').empty();
-                var myhtml = "<h5>Error message: " + data.result.message + "</h5>";
-                $('#mouse-output').html(myhtml);
+                _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
     }, {
@@ -133,7 +145,7 @@ var Galaxy = function () {
 
 
         // Toggle the interactive OpenLayers map and Dygraph spectra
-        value: function toggleInteract(spaxel, image) {
+        value: function toggleInteract(spaxel, image, title) {
             if (this.togglediv.hasClass('active')) {
                 // Turning Off
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -152,7 +164,7 @@ var Galaxy = function () {
                 var mapempty = this.mapdiv.is(':empty');
                 // load the spaxel if the div is initially empty;
                 if (this.graphdiv !== undefined && specempty) {
-                    this.loadSpaxel(spaxel);
+                    this.loadSpaxel(spaxel, title);
                 }
 
                 // load the map if div is empty
