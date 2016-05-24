@@ -243,6 +243,8 @@ python/marvin/tests/tools/test_query.py -text
 python/marvin/tests/tools/test_results.py -text
 python/marvin/tools/__init__.py -text
 python/marvin/tools/cube.py -text
+python/marvin/tools/image/__init__.py -text
+python/marvin/tools/image/image.py -text
 python/marvin/tools/plate.py -text
 python/marvin/tools/query/__init__.py -text
 python/marvin/tools/query/forms.py -text
