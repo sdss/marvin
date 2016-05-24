@@ -101,7 +101,9 @@ class Search(FlaskView):
 
     @route('/getparams/', methods=['GET', 'POST'], endpoint='getparams')
     def getparams(self):
-        ''' Retrieves the list of query parameters for Bloodhound Typeahead '''
+        ''' Retrieves the list of query parameters for Bloodhound Typeahead
+
+        '''
         q = Query()
         allparams = q.get_available_params()
         output = json.dumps(allparams)
