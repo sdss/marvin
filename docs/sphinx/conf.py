@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.abspath('../../python/'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.todo',
-    'sphinx.ext.viewcode','sphinx.ext.mathjax',
+    'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
@@ -364,3 +364,22 @@ rst_epilog = """
    .. |numpy_array| replace:: Numpy array
    .. _numpy_array: http://example.com/
 """
+
+# -- Extensions to the  Napoleon GoogleDocstring class ---------------------
+
+from sphinx.ext.napoleon.docstring import GoogleDocstring
+
+
+# first, we define new methods for any new sections and add them to the class
+def parse_class_attributes_section(self, section):
+    return self._format_fields('Class Attributes', self._consume_fields())
+GoogleDocstring._parse_class_attributes_section = parse_class_attributes_section
+
+
+# we now patch the parse method to guarantee that the the above methods are
+# assigned to the _section dict
+def patched_parse(self):
+    self._sections['class attributes'] = self._parse_class_attributes_section
+    self._unpatched_parse()
+GoogleDocstring._unpatched_parse = GoogleDocstring._parse
+GoogleDocstring._parse = patched_parse

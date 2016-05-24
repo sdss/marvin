@@ -47,7 +47,7 @@ def doQuery(*args, **kwargs):
         the Results.
 
         Parameters:
-            see the Query class for a list of inputs
+            NA: see the Query class for a list of inputs
 
         Returns:
             query, results:
