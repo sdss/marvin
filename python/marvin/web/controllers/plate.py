@@ -65,7 +65,7 @@ class Plate(FlaskView):
         # Get images for plate
         imfiles = None
         try:
-            imfiles = getImagesByPlate(plateid=plateid, as_url=True)
+            imfiles = getImagesByPlate(plateid=plateid, as_url=True, mode='local')
         except MarvinError as e:
             self.plate['error'] = 'Error: could not get images for plate {0}: {1}'.format(plateid, e)
         else:

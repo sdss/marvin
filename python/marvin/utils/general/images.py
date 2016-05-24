@@ -17,6 +17,7 @@ import numpy as np
 import warnings
 from functools import wraps
 import marvin
+from marvin.utils.general import parseIdentifier, mangaid2plateifu
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -131,25 +132,56 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None):
 def getImagesByList(inputlist, download=False, mode=None):
     ''' Get all images from a list of ids
     '''
-    # inputids = [list of plateifus, list of mangaids]
+    # Check inputs
+    assert type(inputlist) == list or type(inputlist) == np.ndarray, 'Input must be of type list of Numpy array'
+    idtype = parseIdentifier(inputlist[0])
+    assert idtype in ['plateifu', 'mangaid'], 'Input must be of type plate-ifu or mangaid'
 
     # convert mangaids into plateifus
+    if idtype == 'mangaid':
+        newlist = []
+        for myid in inputlist:
+            try:
+                plateifu = mangaid2plateifu(myid)
+            except MarvinError as e:
+                plateifu = None
+            newlist.append(plateifu)
+        inputlist = newlist
 
-    for plateifu in inputlist:
-        plateid, ifu = plateifu.split('-')
-        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
-    rsync_access.set_stream()
+    # setup Rsync Access
+    drpver = marvin.config.drpver
+    rsync_access = RsyncAccess(label='marvin_getlist', verbose=True)
 
-    # if marvin.mode == 'local': asurl=True
-    # if marvin.model == 'remote':
-    #        depends
-    # if marvin.local and tools mode : depends
-
-    listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
-
-    if download:
-        rsync_access.commit()
-    else:
+    if mode == 'local':
+        # Get list of images
+        listofimages = []
+        from marvin.tools.plate import Plate
+        for plateifu in inputlist:
+            plateid, ifu = plateifu.split('-')
+            plate = Plate(plateid=plateid, nocubes=True)
+            url = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=plate.dir3d)
+            listofimages.append(url)
         return listofimages
+    elif mode == 'remote':
+        rsync_access.remote()
+        from marvin.tools.plate import Plate
+        # Add plateifus to stream
+        for plateifu in inputlist:
+            plateid, ifu = plateifu.split('-')
+            plate = Plate(plateid=plateid, nocubes=True)
+            rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=plate.dir3d)
+
+        # set the stream
+        try:
+            rsync_access.set_stream()
+        except AccessError as e:
+            raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
+
+        # get the list
+        listofimages = rsync_access.get_urls() if as_url else rsync_access.get_paths()
+        if download:
+            rsync_access.commit()
+        else:
+            return listofimages
 
 

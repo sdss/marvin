@@ -47,7 +47,7 @@ class Random(FlaskView):
         # Get random images ; parse out thumbnails ; construct plate-IFUs
         imfiles = None
         try:
-            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'])
+            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'], mode='local')
         except MarvinError as e:
             self.random['error'] = 'Error: could not get images: {0}'.format(e)
         else:
