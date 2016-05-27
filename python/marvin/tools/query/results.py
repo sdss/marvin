@@ -2,6 +2,7 @@ from __future__ import print_function
 from marvin.core import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
 from marvin import config, log
+from marvin.utils.general import getImagesByList, downloadList
 import warnings
 import json
 import copy
@@ -116,9 +117,16 @@ class Results(object):
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
-    def download(self):
-        ''' Download data via sdsssync '''
-        pass
+    def download(self, images=False):
+        ''' Download results via sdss_access '''
+
+        plates = self.getListOf(name='plate')
+        ifus = self.getListOf(name='ifu.name')
+        plateifu = ['{0}-{1}'.format(z[0], z[1]) for z in zip(plates, ifus)]
+        if images:
+            tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
+        else:
+            tmp = downloadList(plateifu, dltype=self.returntype)
 
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
@@ -297,6 +305,8 @@ class Results(object):
 
         # get reference name
         refname = self._getRefName(name, dir='partocol')
+        if not refname:
+            raise MarvinError('Name {0} not a property in results.  Try another.'.format(refname))
 
         output = None
         try:
@@ -585,7 +595,7 @@ class Results(object):
         '''
 
         # set the desired tool type
-        toollist = ['cube', 'spaxel', 'map']
+        toollist = ['cube', 'spaxel', 'map', 'rss']
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 

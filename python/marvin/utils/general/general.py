@@ -6,10 +6,15 @@ from scipy.interpolate import griddata
 import warnings
 import marvin
 import PIL
+try:
+    from sdss_access import RsyncAccess
+except ImportError as e:
+    RsyncAccess = None
 
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
-           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI']
+           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
+           'downloadList']
 
 drpTable = None
 
@@ -477,3 +482,82 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center
             return response.getData()
         else:
             raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
+
+
+def downloadList(inputlist, dltype='cube', **kwargs):
+    ''' Download a list of MaNGA objects '''
+
+    # Get some possible keywords
+    # Necessary rsync variables:
+    #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]
+    verbose = kwargs.get('verbose', None)
+    as_url = kwargs.get('as_url', None)
+    drpver = kwargs.get('drpver', marvin.config.drpver)
+    dapver = kwargs.get('dapver', marvin.config.dapver)
+    mplver = kwargs.get('mplver', marvin.config.mplver)
+    bintype = kwargs.get('bintype', '*')
+    binmode = kwargs.get('binmode', '*')
+    n = kwargs.get('n', '*')
+
+    # check for sdss_access
+    if not RsyncAccess:
+        raise MarvinError('sdss_access not installed.')
+
+    # Assert correct dltype
+    dltype = 'cube' if not dltype else dltype
+    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map',
+                      'default'], 'dltype must be one of plate, cube, mastar, rss, map, default'
+
+    # Parse and retrieve the input type and the download type
+    idtype = parseIdentifier(inputlist[0])
+    if not idtype:
+        raise MarvinError('Input list must be a list of plates, plate-ifus, or mangaids')
+
+    # Set download type
+    if dltype == 'cube':
+        name = 'mangacube'
+    elif dltype == 'rss':
+        name = 'mangarss'
+    elif dltype == 'default':
+        name = 'mangadefault'
+    elif dltype == 'plate':
+        name = 'mangaplate'
+    elif dltype == 'map':
+        name = 'mangamap'
+    elif dltype == 'mastar':
+        name = 'mangamastar'
+
+    # create rsync
+    rsync_access = RsyncAccess(label='marvin_download', verbose=verbose)
+    rsync_access.remote()
+
+    # Add objects
+    for item in inputlist:
+        if idtype == 'mangaid':
+            try:
+                plateifu = mangaid2plateifu(item)
+            except MarvinError as e:
+                plateifu = None
+            else:
+                plateid, ifu = plateifu.split('-')
+        elif idtype == 'plateifu':
+            plateid, ifu = item.split('-')
+        elif idtype == 'plate':
+            plateid = item
+            ifu = '*'
+
+        rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
+                         mpl=mplver, bintype=bintype, n=n, mode=binmode)
+
+    # set the stream
+    try:
+        rsync_access.set_stream()
+    except AccessError as e:
+        raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
+
+    # get the list and download
+    listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
+    rsync_access.commit()
+
+
+
