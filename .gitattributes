@@ -75,6 +75,8 @@ python/marvin/web/lib/dist/marvin.min.css -text
 python/marvin/web/lib/dist/marvin.min.js -text
 python/marvin/web/lib/images/brian.jpg -text svneol=unset#image/jpeg
 python/marvin/web/lib/images/logo5_lores.png -text svneol=unset#image/png
+python/marvin/web/lib/images/marvin.png -text svneol=unset#image/png
+python/marvin/web/lib/images/marvin_face.png -text svneol=unset#image/png
 python/marvin/web/lib/images/marvin_favicon.ico -text
 python/marvin/web/lib/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/lib/js/carousel.js -text
@@ -182,6 +184,7 @@ python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/brian.jpg -text svneol=unset#image/jpeg
 python/marvin/web/static/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin.png -text svneol=unset#image/png
+python/marvin/web/static/images/marvin_face.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin_favicon.ico -text
 python/marvin/web/static/images/sdss_marvin.png -text svneol=unset#image/png
 python/marvin/web/templates/footer.html -text

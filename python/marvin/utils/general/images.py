@@ -25,7 +25,7 @@ except ImportError:
     Path = None
     RsyncAccess = None
 
-__all__ = ['getRandomImages', 'getImagesByPlate']
+__all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList']
 
 
 # Decorators
@@ -55,15 +55,33 @@ def checkPath(func):
     return wrapper
 
 
+def getDir3d(inputid, mode=None):
+    ''' Get the 3d redux Image directory from an input plate or plate-IFU '''
+
+    idtype = parseIdentifier(inputid)
+    if idtype == 'plate':
+        plateid = inputid
+    elif idtype == 'plateifu':
+        plateid, ifu = inputid.split('-')
+
+    if marvin.config.drpver >= 'v1_5_4':
+        from marvin.tools.plate import Plate
+        plate = Plate(plateid=plateid, nocubes=True, mode=mode)
+    else:
+        dir3d = 'stack'
+
+    return dir3d
+
+
 # General image utilities
 @checkPath
 @setMode
-def getRandomImages(num=10, download=False, mode=None, as_url=None):
+def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None):
     ''' Get a list of N random images from SAS
 
 
     '''
-    rsync_access = RsyncAccess(label='marvin_getrandom', verbose=True)
+    rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose)
 
     if mode == 'local':
         full = rsync_access.full('mangaimage', plate='*', drpver=marvin.config.drpver, ifu='*', dir3d='stack')
@@ -90,27 +108,26 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None):
 
 @checkPath
 @setMode
-def getImagesByPlate(plateid, download=False, mode=None, as_url=None):
+def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=None):
     ''' Get all images belonging to a given plate ID
     '''
 
     assert str(plateid).isdigit(), 'Plateid must be a numeric integer value'
 
     # setup Rsync Access
-    rsync_access = RsyncAccess(label='marvin_getplate', verbose=True)
+    rsync_access = RsyncAccess(label='marvin_getplate', verbose=verbose)
 
     # setup marvin inputs
     drpver = marvin.config.drpver
-    from marvin.tools.plate import Plate
-    plate = Plate(plateid=plateid, nocubes=True)
+    dir3d = getDir3d(plateid, mode=mode)
 
     if mode == 'local':
-        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=plate.dir3d)
+        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
         listofimages = rsync_access.expand('', full=full, as_url=True)
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
-        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=plate.dir3d)
+        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
 
         # set the stream
         try:
@@ -129,7 +146,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None):
 
 @checkPath
 @setMode
-def getImagesByList(inputlist, download=False, mode=None):
+def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=None):
     ''' Get all images from a list of ids
     '''
     # Check inputs
@@ -150,16 +167,16 @@ def getImagesByList(inputlist, download=False, mode=None):
 
     # setup Rsync Access
     drpver = marvin.config.drpver
-    rsync_access = RsyncAccess(label='marvin_getlist', verbose=True)
+    rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose)
 
     if mode == 'local':
         # Get list of images
         listofimages = []
         from marvin.tools.plate import Plate
         for plateifu in inputlist:
+            dir3d = getDir3d(plateifu, mode=mode)
             plateid, ifu = plateifu.split('-')
-            plate = Plate(plateid=plateid, nocubes=True)
-            url = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=plate.dir3d)
+            url = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
             listofimages.append(url)
         return listofimages
     elif mode == 'remote':
@@ -167,9 +184,9 @@ def getImagesByList(inputlist, download=False, mode=None):
         from marvin.tools.plate import Plate
         # Add plateifus to stream
         for plateifu in inputlist:
+            dir3d = getDir3d(plateid, mode=mode)
             plateid, ifu = plateifu.split('-')
-            plate = Plate(plateid=plateid, nocubes=True)
-            rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=plate.dir3d)
+            rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
 
         # set the stream
         try:
