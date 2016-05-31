@@ -1,25 +1,31 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-'''
-Created by Brian Cherinka on 2016-02-18 18:04:14
-Licensed under a 3-clause BSD license.
+# Created by Brian Cherinka on 2016-02-18 18:04:14
+# Licensed under a 3-clause BSD license.
 
-Revision History:
-    Initial Version: 2016-02-18 18:04:14 by Brian Cherinka
-    Last Modified On: 2016-02-18 18:04:14 by Brian
+# Revision History:
+#     Initial Version: 2016-02-18 18:04:14 by Brian Cherinka
+#     Last Modified On: 2016-02-18 18:04:14 by Brian
 
-'''
 from __future__ import print_function
 from __future__ import division
 import numpy as np
-
-'''
-This file contains all custom Jinja2 filters for Marvin web
-'''
+import flask
+import jinja2
 
 
-def filtergaltype(value):
+# If the filter is to return HTML code and you don't want it autmatically
+# escaped, return the value as "return Markup(value)".
+
+jinjablue = flask.Blueprint('jinja_filters', __name__)
+
+# Ref: http://stackoverflow.com/questions/12288454/how-to-import-custom-jinja2-filters-from-another-file-and-using-flask
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def filtergaltype(context, value):
     ''' Parse plateifu or mangaid into better form '''
     if value == 'plateifu':
         return 'Plate-IFU'
@@ -27,18 +33,24 @@ def filtergaltype(value):
         return 'MaNGA-ID'
 
 
-def isclose(value, newvalue):
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def isclose(context, value, newvalue):
     ''' Do a numpy isclose comparison between the two values '''
     return np.isclose(float(value), float(newvalue))
 
 
-def prettyFlag(value):
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def prettyFlag(context, value):
     ''' Pretty print bit mask and flags '''
     name, bit, flags = value
     return '{0}: {1} - {2}'.format(name, bit, ', '.join(flags))
 
 
-def qaclass(value):
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def qaclass(context, value):
     ''' Return an alert indicator based on quality flags '''
     name, bit, flags = value
     isgood = ['VALIDFILE'] == flags
@@ -48,7 +60,9 @@ def qaclass(value):
     return out, text
 
 
-def targtype(value):
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def targtype(context, value):
     ''' Return the MaNGA target type based on what bit is set '''
     # names = value.get('names', None)
     # namelabel = ', '.join(names)
@@ -57,9 +71,11 @@ def targtype(value):
     return out
 
 
-def split(string, delim=None):
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def split(context, value, delim=None):
     '''Split a string based on a delimiter'''
     if not delim:
         delim = ' '
-    return string.split(delim) if string else None
+    return value.split(delim) if value else None
 
