@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from __future__ import print_function
+from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
 from flask_jsglue import JSGlue
@@ -9,9 +9,23 @@ from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
-import marvin.web.jinja_filters
+from marvin.web.jinja_filters import jinjablue
 import sys
 import os
+
+
+# ================================================================================
+
+def register_blueprints(app=None):
+    '''
+    Register the code associated with each URL paths. Manually add each new
+    controller file you create here.
+    '''
+    from .controllers.index import index_page
+
+    app.register_blueprint(index_page)
+
+# ================================================================================
 
 
 def create_app(debug=False):
@@ -34,12 +48,6 @@ def create_app(debug=False):
     api = Blueprint("api", __name__, url_prefix='/api')
     app.debug = debug
     jsglue = JSGlue(app)
-
-    # Define custom filters into the Jinja2 environment.
-    # Any filters defined in the jinja_env submodule are made available.
-    # See: http://stackoverflow.com/questions/12288454/how-to-import-custom-jinja2-filters-from-another-file-and-using-flask
-    custom_filters = {name: function for name, function in getmembers(jinja_filters) if isfunction(function)}
-    app.jinja_env.filters.update(custom_filters)
 
     # Logger
     app.logger.addHandler(log)
@@ -140,5 +148,8 @@ def create_app(debug=False):
     app.register_blueprint(search, url_prefix=url_prefix)
     app.register_blueprint(plate, url_prefix=url_prefix)
     app.register_blueprint(images, url_prefix=url_prefix)
+
+    # Register all custom Jinja filters in the file.
+    app.register_blueprint(jinjablue)
 
     return app
