@@ -4,6 +4,7 @@ from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
 from flask_jsglue import JSGlue
+import flask_profiler
 from inspect import getmembers, isfunction
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
@@ -51,6 +52,19 @@ def create_app(debug=False):
 
     # Logger
     app.logger.addHandler(log)
+
+    # Setup the profile configuration
+    app.config["flask_profiler"] = {
+        "enabled": True,
+        "storage": {
+            "engine": "sqlite"
+        },
+        "basicAuth": {
+            "enabled": True,
+            "username": "admin",
+            "password": "admin"
+        }
+    }
 
     # ----------------------------------
     # Initialize logging + Sentry + UWSGI config for Production Marvin
@@ -151,5 +165,8 @@ def create_app(debug=False):
 
     # Register all custom Jinja filters in the file.
     app.register_blueprint(jinjablue)
+
+    # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
+    flask_profiler.init_app(app)
 
     return app

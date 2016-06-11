@@ -31,7 +31,7 @@
                         <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
                             <tbody>
                                 <tr><th>OBJ RA, Dec</th><td>{{cubehdr.objra}}</td><td>{{cubehdr.objdec}}</td></tr>
-                                {% if not cubehdr.ifura|isclose(cubehdr.objra) %}<tr><th>IFU RA, Dec</th><td>{{cubehdr.ifura}}</td><td>{{cubehdr.ifudec}}</td></tr>{% endif %}
+                                {% if not cubehdr.ifura|allclose(cubehdr.objra) %}<tr><th>IFU RA, Dec</th><td>{{cubehdr.ifura}}</td><td>{{cubehdr.ifudec}}</td></tr>{% endif %}
                                 <tr><th>IFU Glon, Glat</th><td>{{cubehdr.ifuglon}}</td><td>{{cubehdr.ifuglat}}</td></tr>
                                 <tr><th>SN2 Blue, Red</th><td align='center'>{{cubehdr.bluesn2|float|round(2)}}</td><td align='center'>{{cubehdr.redsn2|float|round(2)}}</td></tr>
                                 <tr><th>Date Observed</th><td colspan='2' align='center'>{{cubehdr['DATE-OBS']}}</td></tr>
