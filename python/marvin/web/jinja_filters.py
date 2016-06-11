@@ -35,9 +35,9 @@ def filtergaltype(context, value):
 
 @jinja2.contextfilter
 @jinjablue.app_template_filter()
-def isclose(context, value, newvalue):
-    ''' Do a numpy isclose comparison between the two values '''
-    return np.isclose(float(value), float(newvalue))
+def allclose(context, value, newvalue):
+    ''' Do a numpy allclose comparison between the two values '''
+    return np.allclose(float(value), float(newvalue), 1e-7)
 
 
 @jinja2.contextfilter
@@ -53,7 +53,7 @@ def prettyFlag(context, value):
 def qaclass(context, value):
     ''' Return an alert indicator based on quality flags '''
     name, bit, flags = value
-    isgood = ['VALIDFILE'] == flags
+    isgood = ['VALIDFILE'] == flags or [] == flags
     iscrit = 'CRITICAL' in flags
     out = 'success' if isgood else 'danger' if iscrit else 'warning'
     text = 'Good' if isgood else 'DO NOT USE' if iscrit else 'Warning'
