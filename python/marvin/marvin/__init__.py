@@ -51,11 +51,11 @@ def create_app(debug=False):
 
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
-        # ----------------------------------------------------------        
-        dsn = 'https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254'
+        # ----------------------------------------------------------
+        dsn = 'https://4c766ddd46784463beda1db0b16a1a46:f81aa8416bc04b5983742b5b8fff200c@app.getsentry.com/52254'
         app.config['SENTRY_DSN'] = dsn
         sentry = Sentry(app,logging=True,level=logging.ERROR)
-        
+
 
         # --------------------------------------
         # Configuration when running under uWSGI
@@ -76,7 +76,7 @@ def create_app(debug=False):
 
     # Determine which configuration file should be loaded based on which
     # server we are running on. This value is set in the uWSGI config file for each server.
-    
+
     # Add global SAS Redux path
     os.environ['SAS_REDUX'] = 'sas/mangawork/manga/spectro/redux'
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
@@ -85,17 +85,17 @@ def create_app(debug=False):
     # Find which connection to make
     try: machine = os.environ['HOSTNAME']
     except: machine = None
-    
+
     try: localhost = bool(os.environ['MANGA_LOCALHOST'])
     except: localhost = machine == 'manga'
-    
+
     try: utah = os.environ['UUFSCELL'] == 'kingspeak.peaks'
     except: utah = None
 
     try: sasvm = 'sas-vm' in os.environ['HOSTNAME']
     except: sasvm = None
 
-    if app.debug: 
+    if app.debug:
         if localhost: server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),'configuration_files','localhost.cfg')
         elif utah or sasvm: server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),'configuration_files','utah.cfg')
         else:
@@ -132,14 +132,14 @@ def create_app(debug=False):
         error['page'] = flask.request.url
         flask.session['vermode']='MPL'
         app.logger.error('Page Not Found Exception {0}'.format(e))
-        return flask.render_template('errors/page_not_found.html',**error),404 
+        return flask.render_template('errors/page_not_found.html',**error),404
 
     @app.errorhandler(500)
     def internal_server_error(e):
         error={}
         error['title']='Marvin | Internal Server Error'
         flask.session['vermode']='MPL'
-        app.logger.error('Internal Server Error Exception {0}'.format(e))        
+        app.logger.error('Internal Server Error Exception {0}'.format(e))
         return flask.render_template('errors/internal_server_error.html',**error),500
 
     @app.errorhandler(400)
@@ -147,7 +147,7 @@ def create_app(debug=False):
         error={}
         error['title']='Marvin | Bad Request'
         flask.session['vermode']='MPL'
-        app.logger.error('Bad Request Exception {0}'.format(e))        
+        app.logger.error('Bad Request Exception {0}'.format(e))
         return flask.render_template('errors/bad_request.html',**error),400
 
     @app.errorhandler(405)
@@ -155,7 +155,7 @@ def create_app(debug=False):
         error={}
         error['title']='Marvin | Method Not Allowed'
         flask.session['vermode']='MPL'
-        app.logger.error('Method Not Allowed Exception {0}'.format(e))        
+        app.logger.error('Method Not Allowed Exception {0}'.format(e))
         return flask.render_template('errors/method_not_allowed.html',**error),405
 
     # -------------
@@ -181,12 +181,12 @@ def create_app(debug=False):
     from .controllers.explore import explore_page
     from .controllers.documentation import doc_page
     from .controllers.tests import test_page
-    
-    try: release = os.environ['MARVIN_RELEASE'] 
+
+    try: release = os.environ['MARVIN_RELEASE']
     except: release = 'mangawork'
 
     os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr13/marvin'
-    url_prefix = '' if localhost else '/{0}'.format(os.environ['SAS_PREFIX']) 
+    url_prefix = '' if localhost else '/{0}'.format(os.environ['SAS_PREFIX'])
 
     # register API hooks
     api.add_resource(TestPlate, '/testplates/<string:plateid>', endpoint='testplate')
@@ -205,7 +205,7 @@ def create_app(debug=False):
     app.register_blueprint(explore_page, url_prefix=url_prefix)
     app.register_blueprint(doc_page, url_prefix=url_prefix)
     app.register_blueprint(test_page, url_prefix=url_prefix)
-    
+
     return app
 
 # Perform early app setup here.
