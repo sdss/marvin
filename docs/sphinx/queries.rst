@@ -1,9 +1,35 @@
-
 Queries
 =======
 
-Lorem cupidatat sit quis sunt labore cillum irure nulla quis ipsum incididunt
-do velit id. Duis et commodo magna velit cupidatat exercitation quis consectetur.
-Irure labore anim ea eiusmod consectetur voluptate sunt irure ut pariatur mollit ex
-irure occaecat aliqua deserunt voluptate. Id eu dolor sit labore proident culpa
-proident excepteur dolore eu cillum culpa id ut cupidatat qui.
+Simple Query::
+
+    from marvin.tools.query import Query
+    q = Query()
+    q.set_filter('nsa_redshift<0.1')
+
+Get Results::
+
+    r = q.run()
+    r.results
+
+
+Returns::
+    
+    [(u'1-209232', u'SFLUX', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'EW', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'INSTSIGMA', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'GSIGMA', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'GVEL', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'GFLUX', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'SFLUX', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'EW', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'INSTSIGMA', u'1-209232', 8485, u'1901', u'Ha', 8485, 13),
+     (u'1-209232', u'GSIGMA', u'1-209232', 8485, u'1901', u'Ha', 8485, 13)]
+
+Do it all at once::
+
+    from marvin.tools.query import doQuery
+    q, r = doQuery('nsa_redshift<0.1')
+    r.results
+
+voila
