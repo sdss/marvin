@@ -113,16 +113,16 @@ class CubeView(BaseView):
         cube, res = _getCube(name)
         self.update_results(res)
         if not cube:
-            self.results['error'] = 'getSpectra: No cube: {0}'.format(res['error'])
+            self.results['error'] = 'getSpaxel: No cube: {0}'.format(res['error'])
             return json.dumps(self.results)
 
         try:
-            spectrum = cube.getSpectrum(**kwargs)
-            self.results['data'] = spectrum.tolist()
+            spectrum = cube.getSpaxel(**kwargs)
+            self.results['data'] = spectrum['flux'].tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1
-            self.results['error'] = 'getSpectra: Failed to get spectrum: {0}'.format(str(e))
+            self.results['error'] = 'getSpaxel: Failed to get spectrum: {0}'.format(str(e))
 
         return json.dumps(self.results)
 
