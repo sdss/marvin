@@ -23,9 +23,9 @@ class AnalisisProperty(object):
     Parameters:
         category (str):
             A string with the category to which this property belongs (e.g.,
-            EMLINE_GFLUX, SPECINDEX, etc).
+            `emline_gflux`, `specindex`, etc).
         name (str):
-            The name of the property (e.g., HA, NII, etc).
+            The name of the property (e.g., `ha`, `nii`, etc).
         value (float):
             The value of the property.
         ivar (float or None):
