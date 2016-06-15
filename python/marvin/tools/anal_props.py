@@ -28,6 +28,8 @@ class AnalisisProperty(object):
             The name of the property (e.g., `ha`, `nii`, etc).
         value (float):
             The value of the property.
+        unit (str or None):
+            The units of `value`.
         ivar (float or None):
             The inverse variance associated with `value`, or `None` if not
             defined.
@@ -36,10 +38,11 @@ class AnalisisProperty(object):
 
     """
 
-    def __init__(self, category, name, value, ivar=None, mask=True):
+    def __init__(self, category, name, value, unit=None, ivar=None, mask=True):
 
         self.category = category
         self.name = name
         self.value = value
+        self.unit = unit
         self.ivar = ivar
         self.mask = mask
