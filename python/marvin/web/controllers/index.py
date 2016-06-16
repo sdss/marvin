@@ -38,9 +38,6 @@ class Marvin(FlaskView):
     def quote(self):
         return 'getting quote'
 
-    def get(self, id):
-        return 'getting id {0}'.format(id)
-
     @route('/test/')
     def test(self):
         return 'new test'
