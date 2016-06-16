@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
-from flask_jsglue import JSGlue
+import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
 from brain.utils.general.general import getDbMachine
@@ -48,7 +48,8 @@ def create_app(debug=False):
     app = Flask(__name__, static_url_path='/marvin2/static')
     api = Blueprint("api", __name__, url_prefix='/api')
     app.debug = debug
-    jsglue = JSGlue(app)
+    jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
+    jsglue = jsg.JSGlue(app)
 
     # Logger
     app.logger.addHandler(log)
