@@ -86,7 +86,7 @@ class Spaxel(MarvinToolsClass, Spectrum):
         return '<Marvin Spaxel (x={0:d}, y={1:d})>'.format(self.x, self.y)
 
     def _getFullPath(self, **kwargs):
-        """Returns the full path of the file in the tree."""
+        """Returns the full path of the cube for this spaxel."""
 
         if not self.plateifu:
             return None
@@ -96,6 +96,17 @@ class Spaxel(MarvinToolsClass, Spectrum):
         return MarvinToolsClass._getFullPath(self, 'mangacube', ifu=ifu,
                                              drpver=self._drpver,
                                              plate=plate)
+
+    def download(self, **kwargs):
+        """Downloads the cube using sdss_access - Rsync"""
+        if not self.plateifu:
+            return None
+
+        plate, ifu = self.plateifu.split('-')
+
+        return super(Spaxel, self).download(self, 'mangacube', ifu=ifu,
+                                            drpver=self._drpver,
+                                            plate=plate)
 
     def _createSpectrum(self):
         """Initialises the :class:`.Spectrum` object based on this Spaxel."""
