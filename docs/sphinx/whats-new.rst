@@ -4,26 +4,40 @@ What's New in Marvin 2.0
 Overview
 --------
 
-With version 2.0, the Marvin environment expands from a web app to include two
-new Marvin products, :doc:`tools` and :doc:`api`.
+Marvin 2.0 expands the Marvin environment to include two new products,
+:doc:`tools` and :doc:`api`, and implements an extensive redesign of the `Marvin
+web app <https://sas.sdss.org/marvin/>`_ (now called :doc:`../web`). 
 
-Marvin 2.0 introduces of two new Marvin products, :doc:`marvin-tools` and
-:doc:`api`, and an extensive redesign of the `Marvin web app
-<https://sas.sdss.org/marvin/>`_ (now called :doc:`../web`). 
+* :doc:`../tools`: a python package for accessing and interacting
+  with MaNGA data, whether it is stored on your computer (:ref:`local-mode`)
+  or needs to be retrieved remotely via the :doc:`api` (:ref:`remote-mode`).
 
-This version also includes the ability to access MaNGA data stored on your
-computer (:ref:`local-mode`) or remotely via the :doc:`api`
-(:ref:`remote-mode`). 
+* :doc:`../api`: these are the data you are looking for.
 
-* :doc:`../marvin-tools`: an installable python package for accessing and
-  interacting with MaNGA data,
+* :doc:`../web`: completely overhauled 
 
-* :doc:`../queries`: query the MaNGA data set,
+* :doc:`../queries`: a tool to harness the full statistical power of the MaNGA
+  data set by querying the MaNGA database.
 
-* :doc:`../api`: remotely access MaNGA data.
+* :ref:`web-search`: an intuitive yet powerful pseudo-natural language search
+  capability.
+
+* :ref:`web-spectra`: plus interactive 
 
 Tools
 -----
 
+queries
+
+
 API
 ---
+
+quickly and seamlessly grab the data.
+
+
+Web
+---
+
+pseudo-natural language search
+point and click spectra
