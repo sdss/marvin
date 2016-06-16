@@ -123,7 +123,7 @@ html_theme = 'bootstrap'
 # documentation.
 html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
-    'navbar_title': "Marvin",
+    'navbar_title': "Marvin Docs",
 
     # Tab name for entire site. (Default: "Site")
     'navbar_site_name': "Site",
