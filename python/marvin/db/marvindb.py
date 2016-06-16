@@ -23,6 +23,7 @@ class MarvinDB(object):
 
     def __init__(self, *args, **kwargs):
         self.dbtype = kwargs.get('dbtype', None)
+        self.db = None
         self.log = kwargs.get('log', None)
         self.error = []
         if self.dbtype:

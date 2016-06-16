@@ -15,7 +15,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 import marvin
-from marvin.core import MarvinUserWarning, MarvinError
+from marvin.core import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
 import warnings
@@ -26,6 +26,10 @@ try:
 except ImportError:
     Path = None
 
+try:
+    from sdss_access import RsyncAccess
+except ImportError:
+    RsyncAccess = None
 
 __all__ = ['MarvinToolsClass']
 
@@ -47,6 +51,7 @@ class MarvinToolsClass(object):
         self.mode = kwargs.get('mode', None)
         self._drpall = kwargs.get('drpall', marvin.config.drpall)
         self._drpver = kwargs.get('drpver', marvin.config.drpver)
+        self._forcedownload = kwargs.get('download', marvin.config.download)
         self.data_origin = None
 
         if self.mode is None:
@@ -103,8 +108,9 @@ class MarvinToolsClass(object):
                     self.filename = fullpath
                     self.data_origin = 'file'
                 else:
-                    if marvin.config.download:
-                        raise NotImplementedError('sdsssync not yet implemented')
+                    if self._forcedownload:
+                        self.download()
+                        # raise NotImplementedError('sdsssync not yet implemented')
                         self.data_origin = 'file'
                         # When implemented, this should download the data and
                         # then kwargs['filename'] = downloaded_path and
@@ -122,11 +128,24 @@ class MarvinToolsClass(object):
             self.mode = 'remote'
             self.data_origin = 'api'
 
+    def download(self, pathType, url=None, **pathParams):
+        ''' Download using sdss_access Rsync '''
+        if not RsyncAccess:
+            raise MarvinError('sdss_access is not installed')
+        else:
+            rsync_access = RsyncAccess()
+            rsync_access.remote()
+            rsync_access.add(pathType, **pathParams)
+            rsync_access.set_stream()
+            rsync_access.commit()
+            paths = rsync_access.get_paths()
+            self.filename = paths[0]  # doing this for single files, may need to change
+
     def _getFullPath(self, pathType, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
 
         if not Path:
-            raise MarvinError('sdss_access is not installed')
+            raise MarvinMissingDependency('sdss_access is not installed')
         else:
             try:
                 if url:

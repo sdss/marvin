@@ -52,6 +52,17 @@ class Cube(MarvinToolsClass):
                                               drpver=self._drpver,
                                               plate=plate)
 
+    def download(self, **kwargs):
+        ''' Downloads the cube using sdss_access - Rsync '''
+        if not self.plateifu:
+            return None
+
+        plate, ifu = self.plateifu.split('-')
+
+        return super(Cube, self).download('mangacube', ifu=ifu,
+                                           drpver=self._drpver,
+                                           plate=plate)
+
     def __init__(self, *args, **kwargs):
 
         self.filename = None

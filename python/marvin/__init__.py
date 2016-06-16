@@ -55,7 +55,7 @@ class MarvinConfig(object):
             return os.path.join(os.environ['MANGA_SPECTRO_REDUX'], str(drpver),
                                 'drpall-{0}.fits'.format(drpver))
         else:
-            return None
+            raise MarvinError('Must have the MANGA_SPECTRO_REDUX environment variable set')
 
 ############ Brain Config overrides ############
 # These are configuration parameter defined in Brain.bconfig. We need
