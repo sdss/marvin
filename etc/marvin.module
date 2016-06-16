@@ -74,6 +74,9 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 module unload sdss_python_module
 module load sdss_python_module/marvin
+module unload tree
+module load tree/sdsswork
+module load sdss_access
 module load inspection/trunk
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
