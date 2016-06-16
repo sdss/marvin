@@ -651,7 +651,91 @@ class Query(object):
                 isin = False
         return isin
 
-    # -----------------------------------------------
-    #  DAP Query
-    #  ----------------------------------------------
+    # ------------------------------------------------------
+    #  DAP Query - unnesting, subqueries, etc go below here
+    #  -----------------------------------------------------
+
+    #
+    '''
+    Check all the parameters for ARRAY or not ARRAY (unnesting vs not)
+    Do the Query on all non-arrays and make it a subquery
+    then unnest the arrays using the subquery (only unnest the specified arrays)
+    then do the unnesting filtering
+    '''
+
+    def _unnestTable(self):
+        ''' Subquery - unnest a table
+
+            Builds a new table with unnested arrays for use in future queries
+
+        '''
+
+        # NEED in HERE
+        # list of Query params - ModelClasses
+        # joins for the query parameters
+        # filter conditions
+        #
+
+        default_unnested_qp = ['cube_shape.indices', 'binid.index', 'cube.pk']
+
+        makejoinlist
+
+        self.unnested = self.session.query(dapdb.EmLine.pk.label('pk'), dapdb.File.pk.label('filepk'),
+                                           datadb.Cube.pk.label('cubepk'), dapdb.Structure.pk.label('spk'),
+                                           func.unnest(dapdb.EmLine.value).label('val'), func.unnest(dapdb.BinId.index).label('binid'),
+                                           datadb.CubeShape.size.label('size'), func.unnest(datadb.CubeShape.indices).label('arrind')).\
+            join(dapdb.File, dapdb.Structure, dapdb.EmLineType, dapdb.EmLineParameter, datadb.Cube, datadb.CubeShape, dapdb.BinId).\
+            subquery('unnest', with_labels=True)
+
+    def getGoodSpaxels(self):
+        ''' Subquery - Counts the number of good spaxels
+
+            Counts the number of good spaxels from a prior unnested subquery
+            where BinId != -1
+        '''
+        if not isinstance(self.unnested, type(None)):
+            bincount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.binid).label('binidcount')).\
+                filter(self.unnested.c.binid != -1).group_by(self.unnested.c.pk).subquery('goodcount', with_labels=True)
+        else:
+            raise MarvinError('Cannot create subquery to count good spaxels.  No unnested table exists!')
+
+        return bincount
+
+    def getCountOf(self, value):
+        ''' Subquery - Counts the number of
+
+            Counts the number of rows from a prior unnested subquery
+            that satisfy the input condition
+
+            TODO - change the operand
+        '''
+
+        if not isinstance(self.unnested, type(None)):
+            valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
+                filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
+                subquery('goodvalcount', with_labels=True)
+        else:
+            raise MarvinError('Cannot create subquery to count rows.  No unnested table exists!')
+
+        return valcount
+
+    def getPercent(self, value, percent):
+        ''' Final Query
+
+            Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
+        '''
+
+        self._unnestTable()
+        bincount = self.getGoodSpaxels()
+        valcount = self.getCountOf(value)
+
+        q = self.session.query(self.unnested.c.cubepk).join(valcount, valcount.c.unnest_pk == self.unnested.c.pk).\
+            join(bincount, bincount.c.unnest_pk == self.unnested.c.pk).\
+            filter(valcount.c.valcount >= percent*bincount.c.binidcount).group_by(self.unnested.c.cubepk)
+
+        return q.all()
+
+
+
+
 
