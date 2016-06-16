@@ -139,7 +139,7 @@ class Query(object):
 
     Example:
         >>> # filter of "NSA redshift less than 0.1 and IFU names starting with 19"
-        >>> searchfilter = 'nsa_redshift < 0.1 and ifu.name = 19*'
+        >>> searchfilter = 'nsa.z < 0.1 and ifu.name = 19*'
         >>> returnparams = ['cube.ra', 'cube.dec']
         >>> q = Query(searchfilter=searchfilter, returnparams=returnparams)
         >>> results = q.run()
@@ -294,13 +294,13 @@ class Query(object):
         filter syntax.  String is a boolean join of one or more conditons
         of the form "PARAMETER_NAME OPERAND VALUE"
 
-        Parameter names must be uniquely specified. For example, nsa_redshift is
+        Parameter names must be uniquely specified. For example, nsa.z is
         a unique parameter name in the database and can be specified thusly.
         On the other hand, name is not a unique parameter name in the database,
         and must be clarified with the desired table.
 
         Parameter Naming Convention:
-            NSA redshift == nsa_redshift
+            NSA redshift == nsa.z
             IFU name == ifu.name
             Pipeline name == pipeline_info.name
 
@@ -331,19 +331,19 @@ class Query(object):
 
         Example:
             >>> # Filter string
-            >>> filter = "nsa_redshift < 0.012 and ifu.name = 19*"
+            >>> filter = "nsa.z < 0.012 and ifu.name = 19*"
             >>> # Converts to
-            >>> and_(nsa_redshift<0.012, ifu.name=19*)
+            >>> and_(nsa.z<0.012, ifu.name=19*)
             >>> # SQL syntax
-            >>> mangadatadb.sample.nsa_redshift < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
+            >>> mangasampledb.nsa.z < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
 
             >>> # Filter string
-            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa_redshift > 0.1 or not cube.ra > 225.)'
+            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa.z > 0.1 or not cube.ra > 225.)'
             >>> # Converts to
-            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa_redshift>0.1, not_(cube.ra>225.))))
+            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa.z>0.1, not_(cube.ra>225.))))
             >>> # SQL syntax
             >>> mangadatadb.cube.plate < 8000 AND lower(mangadatadb.ifudesign.name) LIKE lower(('%' || '19' || '%'))
-            >>> OR NOT (mangadatadb.sample.nsa_redshift > 0.1 OR mangadatadb.cube.ra <= 225.0)
+            >>> OR NOT (mangasampledb.nsa.z > 0.1 OR mangadatadb.cube.ra <= 225.0)
         '''
 
         if searchfilter:
@@ -448,10 +448,10 @@ class Query(object):
             parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
             Does not update self.params
             e.g.
-            original input parameters {'nsa_redshift': '< 0.012'}
-            newparams = {'nsa_redshift': '0.2'}
+            original input parameters {'nsa.z': '< 0.012'}
+            newparams = {'nsa.z': '0.2'}
             update_params(newparams)
-            new condition will be nsa_redshift < 0.2
+            new condition will be nsa.z < 0.2
         '''
         param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
         self.query = self.query.params(param)
@@ -650,3 +650,92 @@ class Query(object):
             else:
                 isin = False
         return isin
+
+    # ------------------------------------------------------
+    #  DAP Query - unnesting, subqueries, etc go below here
+    #  -----------------------------------------------------
+
+    #
+    '''
+    Check all the parameters for ARRAY or not ARRAY (unnesting vs not)
+    Do the Query on all non-arrays and make it a subquery
+    then unnest the arrays using the subquery (only unnest the specified arrays)
+    then do the unnesting filtering
+    '''
+
+    def _unnestTable(self):
+        ''' Subquery - unnest a table
+
+            Builds a new table with unnested arrays for use in future queries
+
+        '''
+
+        # NEED in HERE
+        # list of Query params - ModelClasses
+        # joins for the query parameters
+        # filter conditions
+        #
+
+        default_unnested_qp = ['cube_shape.indices', 'binid.index', 'cube.pk']
+
+        makejoinlist
+
+        self.unnested = self.session.query(dapdb.EmLine.pk.label('pk'), dapdb.File.pk.label('filepk'),
+                                           datadb.Cube.pk.label('cubepk'), dapdb.Structure.pk.label('spk'),
+                                           func.unnest(dapdb.EmLine.value).label('val'), func.unnest(dapdb.BinId.index).label('binid'),
+                                           datadb.CubeShape.size.label('size'), func.unnest(datadb.CubeShape.indices).label('arrind')).\
+            join(dapdb.File, dapdb.Structure, dapdb.EmLineType, dapdb.EmLineParameter, datadb.Cube, datadb.CubeShape, dapdb.BinId).\
+            subquery('unnest', with_labels=True)
+
+    def getGoodSpaxels(self):
+        ''' Subquery - Counts the number of good spaxels
+
+            Counts the number of good spaxels from a prior unnested subquery
+            where BinId != -1
+        '''
+        if not isinstance(self.unnested, type(None)):
+            bincount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.binid).label('binidcount')).\
+                filter(self.unnested.c.binid != -1).group_by(self.unnested.c.pk).subquery('goodcount', with_labels=True)
+        else:
+            raise MarvinError('Cannot create subquery to count good spaxels.  No unnested table exists!')
+
+        return bincount
+
+    def getCountOf(self, value):
+        ''' Subquery - Counts the number of
+
+            Counts the number of rows from a prior unnested subquery
+            that satisfy the input condition
+
+            TODO - change the operand
+        '''
+
+        if not isinstance(self.unnested, type(None)):
+            valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
+                filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
+                subquery('goodvalcount', with_labels=True)
+        else:
+            raise MarvinError('Cannot create subquery to count rows.  No unnested table exists!')
+
+        return valcount
+
+    def getPercent(self, value, percent):
+        ''' Final Query
+
+            Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
+        '''
+
+        self._unnestTable()
+        bincount = self.getGoodSpaxels()
+        valcount = self.getCountOf(value)
+
+        q = self.session.query(self.unnested.c.cubepk).join(valcount, valcount.c.unnest_pk == self.unnested.c.pk).\
+            join(bincount, bincount.c.unnest_pk == self.unnested.c.pk).\
+            filter(valcount.c.valcount >= percent*bincount.c.binidcount).group_by(self.unnested.c.cubepk)
+
+        return q.all()
+
+
+
+
+

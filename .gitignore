@@ -18,3 +18,5 @@ python/marvin/web/lib/.sass-cache
 python/marvin/web/lib/node_modules
 python/marvin/web/static/node_modules
 !python/marvin/web/lib
+bin/flask_profiler.sql
+docs/sphinx/flask_profiler.sql
