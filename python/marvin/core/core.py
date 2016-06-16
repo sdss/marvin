@@ -26,6 +26,10 @@ try:
 except ImportError:
     Path = None
 
+try:
+    from sdss_access import RsyncAccess
+except ImportError:
+    RsyncAccess = None
 
 __all__ = ['MarvinToolsClass']
 
@@ -104,7 +108,8 @@ class MarvinToolsClass(object):
                     self.data_origin = 'file'
                 else:
                     if marvin.config.download:
-                        raise NotImplementedError('sdsssync not yet implemented')
+                        self._download()
+                        # raise NotImplementedError('sdsssync not yet implemented')
                         self.data_origin = 'file'
                         # When implemented, this should download the data and
                         # then kwargs['filename'] = downloaded_path and
@@ -121,6 +126,17 @@ class MarvinToolsClass(object):
         else:
             self.mode = 'remote'
             self.data_origin = 'api'
+
+    def download(self, pathType, url=None, **pathParams):
+        ''' Download using sdss_access Rsync '''
+        if not RsyncAccess:
+            raise MarvinError('sdss_access is not installed')
+        else:
+            rsync_access = RsyncAccess()
+            rsync_access.remote()
+            rsync_access.add(pathType, **pathParams)
+            rsync_access.set_stream()
+            rsync_access.commit()
 
     def _getFullPath(self, pathType, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
