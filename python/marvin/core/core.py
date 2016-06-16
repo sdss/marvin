@@ -15,7 +15,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 import marvin
-from marvin.core import MarvinUserWarning, MarvinError
+from marvin.core import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
 import warnings
@@ -139,13 +139,13 @@ class MarvinToolsClass(object):
             rsync_access.set_stream()
             rsync_access.commit()
             paths = rsync_access.get_paths()
-            self.filename = paths[0] # doing this for single files, may need to change
+            self.filename = paths[0]  # doing this for single files, may need to change
 
     def _getFullPath(self, pathType, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
 
         if not Path:
-            raise MarvinError('sdss_access is not installed')
+            raise MarvinMissingDependency('sdss_access is not installed')
         else:
             try:
                 if url:
