@@ -139,7 +139,7 @@ class MarvinToolsClass(object):
             rsync_access.set_stream()
             rsync_access.commit()
             paths = rsync_access.get_paths()
-            self.filename = paths
+            self.filename = paths[0] # doing this for single files, may need to change
 
     def _getFullPath(self, pathType, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
