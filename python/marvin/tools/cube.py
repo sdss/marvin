@@ -70,7 +70,6 @@ class Cube(MarvinToolsClass):
         self._cube = None
 
         skip_check = kwargs.get('skip_check', False)
-        self.download = kwargs.get('download', marvin.config.download)
 
         super(Cube, self).__init__(*args, **kwargs)
 
