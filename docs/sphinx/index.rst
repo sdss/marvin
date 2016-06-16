@@ -35,7 +35,7 @@ developed and maintained by the MaNGA team.
 
    what-is
    first-steps
-   marvin-tools
+   tools
    queries
    data-access-modes
    api
