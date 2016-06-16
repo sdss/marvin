@@ -32,6 +32,7 @@ developed and maintained by the MaNGA team.
    marvin_tools
    queries
    web
+   whats_new
 
 
 Documentation
