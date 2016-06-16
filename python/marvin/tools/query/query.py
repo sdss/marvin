@@ -139,7 +139,7 @@ class Query(object):
 
     Example:
         >>> # filter of "NSA redshift less than 0.1 and IFU names starting with 19"
-        >>> searchfilter = 'nsa_redshift < 0.1 and ifu.name = 19*'
+        >>> searchfilter = 'nsa.z < 0.1 and ifu.name = 19*'
         >>> returnparams = ['cube.ra', 'cube.dec']
         >>> q = Query(searchfilter=searchfilter, returnparams=returnparams)
         >>> results = q.run()
@@ -294,13 +294,13 @@ class Query(object):
         filter syntax.  String is a boolean join of one or more conditons
         of the form "PARAMETER_NAME OPERAND VALUE"
 
-        Parameter names must be uniquely specified. For example, nsa_redshift is
+        Parameter names must be uniquely specified. For example, nsa.z is
         a unique parameter name in the database and can be specified thusly.
         On the other hand, name is not a unique parameter name in the database,
         and must be clarified with the desired table.
 
         Parameter Naming Convention:
-            NSA redshift == nsa_redshift
+            NSA redshift == nsa.z
             IFU name == ifu.name
             Pipeline name == pipeline_info.name
 
@@ -331,19 +331,19 @@ class Query(object):
 
         Example:
             >>> # Filter string
-            >>> filter = "nsa_redshift < 0.012 and ifu.name = 19*"
+            >>> filter = "nsa.z < 0.012 and ifu.name = 19*"
             >>> # Converts to
-            >>> and_(nsa_redshift<0.012, ifu.name=19*)
+            >>> and_(nsa.z<0.012, ifu.name=19*)
             >>> # SQL syntax
-            >>> mangadatadb.sample.nsa_redshift < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
+            >>> mangasampledb.nsa.z < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
 
             >>> # Filter string
-            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa_redshift > 0.1 or not cube.ra > 225.)'
+            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa.z > 0.1 or not cube.ra > 225.)'
             >>> # Converts to
-            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa_redshift>0.1, not_(cube.ra>225.))))
+            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa.z>0.1, not_(cube.ra>225.))))
             >>> # SQL syntax
             >>> mangadatadb.cube.plate < 8000 AND lower(mangadatadb.ifudesign.name) LIKE lower(('%' || '19' || '%'))
-            >>> OR NOT (mangadatadb.sample.nsa_redshift > 0.1 OR mangadatadb.cube.ra <= 225.0)
+            >>> OR NOT (mangasampledb.nsa.z > 0.1 OR mangadatadb.cube.ra <= 225.0)
         '''
 
         if searchfilter:
@@ -448,10 +448,10 @@ class Query(object):
             parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
             Does not update self.params
             e.g.
-            original input parameters {'nsa_redshift': '< 0.012'}
-            newparams = {'nsa_redshift': '0.2'}
+            original input parameters {'nsa.z': '< 0.012'}
+            newparams = {'nsa.z': '0.2'}
             update_params(newparams)
-            new condition will be nsa_redshift < 0.2
+            new condition will be nsa.z < 0.2
         '''
         param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
         self.query = self.query.params(param)

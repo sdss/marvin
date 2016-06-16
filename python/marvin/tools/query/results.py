@@ -69,7 +69,7 @@ class Results(object):
             results: An object representing the Results entity
 
         Example:
-            >>> f = 'nsa_redshift < 0.012 and ifu.name = 19*'
+            >>> f = 'nsa.z < 0.012 and ifu.name = 19*'
             >>> q = Query(searchfilter=f)
             >>> r = q.run()
             >>> print(r)
@@ -145,7 +145,7 @@ class Results(object):
             Example:
                 >>> r = q.run()
                 >>> r.getColumns()
-                >>> [u'mangaid', u'name', u'nsa_redshift']
+                >>> [u'mangaid', u'name', u'nsa.z']
                 >>> r.results
                 >>> [(u'4-3988', u'1901', -9999.0),
                 >>>  (u'4-3862', u'1902', -9999.0),
@@ -192,7 +192,7 @@ class Results(object):
                 >>> r = q.run()
                 >>> r.toTable()
                 >>> <Table length=5>
-                >>> mangaid    name   nsa_redshift
+                >>> mangaid    name   nsa.z
                 >>> unicode6 unicode4   float64
                 >>> -------- -------- ------------
                 >>>   4-3602     1902      -9999.0
@@ -255,7 +255,7 @@ class Results(object):
                 >>> r = q.run()
                 >>> cols = r.getColumns()
                 >>> print(cols)
-                >>> [u'mangaid', u'name', u'nsa_redshift']
+                >>> [u'mangaid', u'name', u'nsa.z']
         '''
         try:
             self.columns = self.results[0].keys() if self.results else None
@@ -341,17 +341,17 @@ class Results(object):
                 >>> r = q.run()
                 >>> # Get a list of dictionaries
                 >>> r.getDictOf(format_type='listdict')
-                >>> [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa_redshift': -9999.0},
-                >>>  {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa_redshift': -9999.0},
-                >>>  {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa_redshift': -9999.0},
-                >>>  {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa_redshift': -9999.0},
-                >>>  {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa_redshift': -9999.0}]
+                >>> [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa.z': -9999.0},
+                >>>  {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa.z': -9999.0},
+                >>>  {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa.z': -9999.0},
+                >>>  {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa.z': -9999.0},
+                >>>  {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa.z': -9999.0}]
 
                 >>> # Get a dictionary of lists
                 >>> r.getDictOf(format_type='dictlist')
                 >>> {'cube.mangaid': [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602'],
                 >>>  'ifu.name': [u'1901', u'1902', u'1901', u'1902', u'1901'],
-                >>>  'nsa_redshift': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
+                >>>  'nsa.z': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
 
                 >>> # Get a dictionary of only one parameter
                 >>> r.getDictOf('mangaid')
@@ -577,11 +577,11 @@ class Results(object):
                 >>> # Get the results from some query
                 >>> r = q.run()
                 >>> r.results
-                >>> [NamedTuple(mangaid=u'14-12', name=u'1901', nsa_redshift=-9999.0),
-                >>>  NamedTuple(mangaid=u'14-13', name=u'1902', nsa_redshift=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-134', name=u'1901', nsa_redshift=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-100', name=u'1902', nsa_redshift=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-762', name=u'1901', nsa_redshift=-9999.0)]
+                >>> [NamedTuple(mangaid=u'14-12', name=u'1901', nsa.z=-9999.0),
+                >>>  NamedTuple(mangaid=u'14-13', name=u'1902', nsa.z=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-134', name=u'1901', nsa.z=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-100', name=u'1902', nsa.z=-9999.0),
+                >>>  NamedTuple(mangaid=u'27-762', name=u'1901', nsa.z=-9999.0)]
 
                 >>> # convert results to Marvin Cube tools
                 >>> r.convertToTool('cube')
