@@ -22,7 +22,8 @@ web app <https://sas.sdss.org/marvin/>`_ (now called :doc:`../web`).
 * :ref:`web-search`: an intuitive yet powerful pseudo-natural language search
   capability.
 
-* :ref:`web-spectra`: plus interactive 
+* :ref:`web-spectra`: interactively select a spectrum to be displayed from a
+  galaxy image and then zoom in on your favorite regions.
 
 Tools
 -----
