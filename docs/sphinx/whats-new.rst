@@ -21,5 +21,4 @@ The major improvements and additions in this release:
   * A more powerful :ref:`web-search` with an intuitive pseudo-natural language
     search capability.
 
-  * Interactive :ref:`web-spectra` selction from the galaxy image with zooming
-    capability.
+  * Interactive spectrum selection from the galaxy image.

@@ -55,9 +55,26 @@ Find galaxies...
 
     
 
-.. _web-spectra:
+Galaxy
+------
 
-Spectra
--------
+The Galaxy page includes:
+
+* basic observation details (such as coordinates and signal-to-noise\ :sup:`2`),
+  quality flags, and targeting information,
+
+* links to download the cube, RSS, or DAP FITS files and to view the galaxy in
+  the `SDSS Skyserver <http://skyserver.sdss.org/dr12/en/home.aspx>`_,
+
+* an image of the galaxy that can be clicked on to show the nearest spectrum,
+  and
+
+* an interactive spectrum display.
+
+
+.. _web-spectrum:
+
+Spectrum
+^^^^^^^^
 
 Spectra stuff
