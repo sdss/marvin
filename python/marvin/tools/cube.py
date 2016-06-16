@@ -59,7 +59,7 @@ class Cube(MarvinToolsClass):
 
         plate, ifu = self.plateifu.split('-')
 
-        return super(Cube, self)._download('mangacube', ifu=ifu,
+        return super(Cube, self).download('mangacube', ifu=ifu,
                                            drpver=self._drpver,
                                            plate=plate)
 
