@@ -45,7 +45,7 @@ def create_app(debug=False):
 
     # ----------------------------------
     # Create App
-    app = Flask(__name__, static_url_path='/marvin/static')
+    app = Flask(__name__, static_url_path='/marvin2/static')
     api = Blueprint("api", __name__, url_prefix='/api')
     app.debug = debug
     jsglue = JSGlue(app)
