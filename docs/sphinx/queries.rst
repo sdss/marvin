@@ -5,7 +5,7 @@ Simple Query::
 
     from marvin.tools.query import Query
     q = Query()
-    q.set_filter('nsa_redshift<0.1')
+    q.set_filter('nsa.z < 0.1')
 
 Get Results::
 
@@ -29,7 +29,7 @@ Returns::
 Do it all at once::
 
     from marvin.tools.query import doQuery
-    q, r = doQuery('nsa_redshift<0.1')
+    q, r = doQuery('nsa.z < 0.1')
     r.results
 
 voila

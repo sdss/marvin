@@ -27,10 +27,18 @@ developed and maintained by the MaNGA team.
 .. toctree::
    :maxdepth: 2
 
-   what_is
-   first_steps
-   marvin_tools
+   whats-new
+
+
+.. toctree::
+   :maxdepth: 2
+
+   what-is
+   first-steps
+   marvin-tools
    queries
+   data-access-modes
+   api
    web
 
 
@@ -45,6 +53,7 @@ Documentation
    api/queries
    api/utils
    api/web
+   api/cube
 
 Indices and tables
 ==================

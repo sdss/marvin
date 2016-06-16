@@ -60,8 +60,8 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self).download('mangacube', ifu=ifu,
-                                           drpver=self._drpver,
-                                           plate=plate)
+                                          drpver=self._drpver,
+                                          plate=plate)
 
     def __init__(self, *args, **kwargs):
 
