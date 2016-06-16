@@ -107,7 +107,7 @@ def create_app(debug=False):
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
     os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
-    url_prefix = '/marvin2' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
+    url_prefix = '/marvin' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
 
     # ----------------------------------
     # Load the appropriate Flask configuration file for debug or production
