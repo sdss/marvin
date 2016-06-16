@@ -11,3 +11,11 @@ Search
 ------
 
 Search stuff
+
+
+.. _web-spectra:
+
+Spectra
+-------
+
+Spectra stuff
