@@ -51,6 +51,7 @@ class MarvinToolsClass(object):
         self.mode = kwargs.get('mode', None)
         self._drpall = kwargs.get('drpall', marvin.config.drpall)
         self._drpver = kwargs.get('drpver', marvin.config.drpver)
+        self._forcedownload = kwargs.get('download', marvin.config.download)
         self.data_origin = None
 
         if self.mode is None:
@@ -107,8 +108,8 @@ class MarvinToolsClass(object):
                     self.filename = fullpath
                     self.data_origin = 'file'
                 else:
-                    if marvin.config.download:
-                        self._download()
+                    if self._forcedownload:
+                        self.download()
                         # raise NotImplementedError('sdsssync not yet implemented')
                         self.data_origin = 'file'
                         # When implemented, this should download the data and
