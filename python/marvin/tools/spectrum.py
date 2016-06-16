@@ -13,7 +13,7 @@
 from __future__ import division
 from __future__ import print_function
 import numpy as np
-from marvin.core.exceptions import MarvinMissingDependence
+from marvin.core.exceptions import MarvinMissingDependency
 from marvin.core.core import Dotable
 
 try:
@@ -147,7 +147,7 @@ class Spectrum(Dotable):
         """
 
         if not mpl:
-            raise MarvinMissingDependence('matplotlib is not installed.')
+            raise MarvinMissingDependency('matplotlib is not installed.')
 
         array = array.lower()
         validSpectrum = ['flux', 'ivar', 'mask']
