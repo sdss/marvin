@@ -1,9 +1,6 @@
 What's New in Marvin 2.0
 ========================
 
-Overview
---------
-
 Marvin 2.0 adds two new products, :doc:`tools` and :doc:`api`, to the Marvin
 environment, and introduces an extensive redesign of the `Marvin web app
 <https://sas.sdss.org/marvin/>`_. 
