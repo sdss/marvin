@@ -14,6 +14,7 @@ if possible. More likely, you will not have access to the database, so it will
 look for a FITS file. If neither of those options is successful, then it will
 download the requested data if automatic downloading is enabled.
 
+.. _remote-mode:
 
 Remote Mode
 -----------
@@ -21,6 +22,8 @@ Remote Mode
 In Remote mode, :doc:`marvin_tools` will retrieve the data remotely via the
 :doc:`api` if a MaNGA-ID or a plate-IFU identifier is provided.
 
+
+.. _auto-mode:
 
 Auto Mode
 ---------

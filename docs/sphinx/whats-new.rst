@@ -8,7 +8,7 @@ Marvin 2.0 introduces of two new Marvin products, :doc:`marvin-tools` and
 :doc:`api`, and an extensive redesign of the `Marvin web app
 <https://sas.sdss.org/marvin/>`_ (now called :doc:`../web`). This version also
 includes the ability to access MaNGA data stored on your computer
-(:ref:`local-mode`).
+(:ref:`local-mode`) or remotely via :doc:`api` (:ref:`remote-mode`).
 
 * :doc:`../marvin-tools`: an installable python package for accessing and
   interacting with MaNGA data,
