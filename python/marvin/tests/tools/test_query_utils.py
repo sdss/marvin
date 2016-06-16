@@ -1,7 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
 import unittest
-import query_utils
+from marvin.tools.query import query_utils
 
 
 class ExpandFilterAliasesTestCase(unittest.TestCase):
