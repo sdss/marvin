@@ -27,17 +27,17 @@ developed and maintained by the MaNGA team.
 .. toctree::
    :maxdepth: 2
 
-   whats_new
+   whats-new
 
 
 .. toctree::
    :maxdepth: 2
 
-   what_is
-   first_steps
-   marvin_tools
+   what-is
+   first-steps
+   marvin-tools
    queries
-   data_access_modes
+   data-access-modes
    api
    web
 
