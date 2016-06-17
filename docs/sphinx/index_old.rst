@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:tocdepth: 2
+|
 
 
 .. image:: _static/marvin.png
@@ -32,18 +32,29 @@ developed and maintained by the MaNGA team.
 .. toctree::
    :titlesonly:
 
-   overview
-   installation
+   what-is
    first-steps
+   Tools <tools>
+   API <api>
+   Web <web>
 
-:doc:`general`
-^^^^^^^^^^^^^^
-:doc:`tools`
-^^^^^^^^^^^^
-:doc:`api`
-^^^^^^^^^^
-:doc:`web`
-^^^^^^^^^^
+
+Tools
+^^^^^
+
+.. toctree::
+   :maxdepth: 2
+
+   data-access-modes
+   query
+   results
+
+
+API
+^^^
+
+Web
+^^^
 
 Tutorials
 ^^^^^^^^^
@@ -57,7 +68,7 @@ Documentation
 =============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    api/api
    api/tools

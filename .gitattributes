@@ -183,6 +183,14 @@ docs/sphinx/build/objects.inv -text
 docs/sphinx/build/py-modindex.html -text
 docs/sphinx/build/search.html -text
 docs/sphinx/build/searchindex.js -text
+docs/sphinx/flask_profiler.sql -text svneol=unset#application/x-sqlite3
+docs/sphinx/general.rst -text
+docs/sphinx/index_old.rst -text
+docs/sphinx/installation.rst -text
+docs/sphinx/localtoc.rst -text
+docs/sphinx/overview.rst -text
+docs/sphinx/pages/general.rst -text
+docs/sphinx/queries.rst -text
 docs/sphinx/source/Makefile -text
 docs/sphinx/source/conf.py -text
 docs/sphinx/source/index.rst -text
@@ -218,6 +226,8 @@ docs/sphinx/source/marvin.web.controllers.rst -text
 docs/sphinx/source/marvin.web.jinja_filters.rst -text
 docs/sphinx/source/marvin.web.rst -text
 docs/sphinx/sphinx_warnings.out -text
+docs/sphinx/tutorials/boolean-search-tutorial.rst -text
+docs/sphinx/tutorials/query-examples.rst -text
 docs/sphinx/web.rst -text
 etc/config.ini -text
 etc/marvin.module -text
