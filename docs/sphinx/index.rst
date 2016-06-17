@@ -45,7 +45,7 @@ Tools
 .. toctree::
       :maxdepth: 2
 
-   queries
+   query
    data-access-modes
 
 
