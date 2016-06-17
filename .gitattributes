@@ -405,4 +405,6 @@ python/marvin/web/templates/plate.html -text
 python/marvin/web/templates/random.html -text
 python/marvin/web/templates/search.html -text
 python/marvin/web/templates/test.html -text
+python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini -text
+python/marvin/web/uwsgi_conf_files/uwsgi_marvin_utah.ini -text
 python/marvin/web/web_utils.py -text

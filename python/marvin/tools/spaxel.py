@@ -189,6 +189,17 @@ class Spaxel(MarvinToolsClass):
                                              drpver=self._drpver,
                                              plate=plate)
 
+    def download(self, **kwargs):
+        """Downloads the cube using sdss_access - Rsync"""
+        if not self.plateifu:
+            return None
+
+        plate, ifu = self.plateifu.split('-')
+
+        return super(Spaxel, self).download(self, 'mangacube', ifu=ifu,
+                                            drpver=self._drpver,
+                                            plate=plate)
+
     def _createSpectrum(self):
         """Initialises the :class:`.Spectrum` object based on this Spaxel."""
 

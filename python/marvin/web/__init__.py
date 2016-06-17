@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
-from flask_jsglue import JSGlue
+import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
 from brain.utils.general.general import getDbMachine
@@ -45,10 +45,11 @@ def create_app(debug=False):
 
     # ----------------------------------
     # Create App
-    app = Flask(__name__, static_url_path='/marvin/static')
-    api = Blueprint("api", __name__, url_prefix='/api')
+    app = Flask(__name__, static_url_path='/marvin2/static')
+    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
     app.debug = debug
-    jsglue = JSGlue(app)
+    jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
+    jsglue = jsg.JSGlue(app)
 
     # Logger
     app.logger.addHandler(log)
@@ -106,8 +107,8 @@ def create_app(debug=False):
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
-    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr13/marvin'
-    url_prefix = '/marvin' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
+    os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
+    url_prefix = '/marvin2' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
 
     # ----------------------------------
     # Load the appropriate Flask configuration file for debug or production
@@ -140,7 +141,7 @@ def create_app(debug=False):
     app.config["LIB_PATH"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib')
 
     # Add lib directory as a new static path
-    @app.route('/marvin/lib/<path:filename>')
+    @app.route('/marvin2/lib/<path:filename>')
     def lib(filename):
         return send_from_directory(app.config["LIB_PATH"], filename)
 

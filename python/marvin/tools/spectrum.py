@@ -17,9 +17,9 @@ from marvin.core.exceptions import MarvinMissingDependency
 from marvin.core.core import Dotable
 
 try:
-    import matplotlib as mpl
+    import matplotlib.pyplot as pyplot
 except:
-    mpl = None
+    pyplot = None
 
 
 class Spectrum(Dotable):
@@ -146,7 +146,7 @@ class Spectrum(Dotable):
 
         """
 
-        if not mpl:
+        if not pyplot:
             raise MarvinMissingDependency('matplotlib is not installed.')
 
         array = array.lower()
@@ -162,7 +162,7 @@ class Spectrum(Dotable):
 
         xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
 
-        fig = mpl.pyplot.figure() if figure is None else figure
+        fig = pyplot.figure() if figure is None else figure
         ax = fig.add_subplot(111)
 
         ax.plot(xaxis, data, **kwargs)

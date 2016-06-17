@@ -1,24 +1,24 @@
 What's New in Marvin 2.0
 ========================
 
-Overview
---------
+Marvin 2.0 adds two new products, :doc:`tools` and :doc:`api`, to the Marvin
+environment, and introduces an extensive redesign of the `Marvin web app
+<https://sas.sdss.org/marvin/>`_. 
 
-Marvin 2.0 introduces of two new Marvin products, :doc:`marvin_tools` and
-:doc:`api`, and an extensive redesign of the `Marvin web app
-<https://sas.sdss.org/marvin/>`_ (now called :doc:`../web`). This version also
-includes the ability to access MaNGA data stored on your computer
-(:ref:`local-mode`).
+The major improvements and additions in this release:
 
-* :doc:`../marvin_tools`: an installable python package for accessing and
-  interacting with MaNGA data,
+* :doc:`../tools`: a python package for accessing and interacting with MaNGA
+  data, whether the files are in your computer or they need to retrieved via the
+  API.
+  
+* :doc:`../api`: quickly and seamlessly grab the data you are looking for.
 
-* :doc:`../queries`: query the MaNGA data set,
+* :doc:`../queries`: a tool to harness the full statistical power of the MaNGA
+  data set by querying the MaNGA database.
 
-* :doc:`../api`: remotely access MaNGA data.
+* A completely overhauled :doc:`../web` interface, including:
 
-Tools
------
+  * A more powerful :ref:`web-search` with an intuitive pseudo-natural language
+    search capability.
 
-API
----
+  * Interactive spectrum selection from the galaxy image.

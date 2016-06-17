@@ -93,6 +93,17 @@ class RSS(MarvinToolsClass, list):
         return super(RSS, self)._getFullPath('mangarss', ifu=ifu,
                                              drpver=self._drpver, plate=plate)
 
+    def download(self, **kwargs):
+        """Downloads the cube using sdss_access - Rsync"""
+
+        if not self.plateifu:
+            return None
+
+        plate, ifu = self.plateifu.split('-')
+
+        return super(RSS, self).download('mangarss', ifu=ifu,
+                                         drpver=self._drpver, plate=plate)
+
     def _getRSSFromFile(self):
         """Initialises the RSS object from a file."""
 
