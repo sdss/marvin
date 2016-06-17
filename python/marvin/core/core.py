@@ -51,6 +51,7 @@ class MarvinToolsClass(object):
         self.mode = kwargs.get('mode', marvin.config.mode)
         self._drpall = kwargs.get('drpall', marvin.config.drpall)
         self._drpver = kwargs.get('drpver', marvin.config.drpver)
+        self._dapver = kwargs.get('dapver', marvin.config.dapver)
         self._forcedownload = kwargs.get('download', marvin.config.download)
         self.data_origin = None
 

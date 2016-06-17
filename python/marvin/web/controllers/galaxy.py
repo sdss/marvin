@@ -100,7 +100,7 @@ class Galaxy(FlaskView):
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = sdss_path.url('mangadefault', mpl=config.mplver, plate=cube.plate, ifu=cube.ifu)
+                    maplink = sdss_path.url('mangadefault', drpver=cube._drpver, dapver=cube._dapver, plate=cube.plate, ifu=cube.ifu)
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
                     self.galaxy['image'] = cube._cube.image
