@@ -73,7 +73,6 @@ Documentation
    api/queries
    api/utils
    api/web
-   api/cube
 
 Indices and tables
 ==================
