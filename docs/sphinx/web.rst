@@ -10,54 +10,11 @@ Description of Pages and Capabilities
 Search
 ------
 
-Marvin-web's search function accepts boolean search strings that are parsed with
-a `modified version <https://github.com/havok2063/SQLAlchemy-boolean-search>`_
-of `SQLAlchemy-boolean-search
-<https://github.com/lingthio/SQLAlchemy-boolean-search>`_.
-
-Boolean Search Tutorial
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Boolean search strings consist of a **name**-**operator**-**value** combination
-(e.g., :code:`a > 5`), where 
-
-* **name** is the variable name,
-
-* **operator** must be  :code:`==`, :code:`=`, :code:`!=`, :code:`<`,
-  :code:`<=`, :code:`>=`, or :code:`>`, and
-  
-  * :code:`==` finds exact matches whereas :code:`=` finds elements that contain
-    the value.
-
-* **value** can be a float, integer, or string.
-
-  * Strings with spaces must be enclosed in quotes.
-
-  * :code:`*` acts a wildcard.
-
-These **name**-**operator**-**value** combinations can be joined with the
-boolean operands (in order of descending precedence):
-
-1. :code:`not`
-2. :code:`and`
-3. :code:`or` 
-
-and grouped with parentheses :code:`()`. For example,::
-    
-    a = 5 or b = 7 and not c = 7
-
-is equivalent to::
-    
-    a = 5 or (b = 7 and (not c = 7))
-
-Variable names can have hierarchical dotted field names, such as
-:code:`cube.plateifu`.
-
-
-
-For a detailed description of boolean search string syntax see the
-`SQLAlchemy-boolean-search documentation
-<http://sqlalchemy-boolean-search.readthedocs.io/en/latest/>`_
+Marvin-web's Search accepts boolean search strings that are parsed with a
+`modified version <https://github.com/havok2063/SQLAlchemy-boolean-search>`_ of
+`SQLAlchemy-boolean-search
+<https://github.com/lingthio/SQLAlchemy-boolean-search>`_. Please see here for a
+:doc:`boolean-search-tutorial`.
 
 
 Example searches
