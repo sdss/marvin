@@ -291,7 +291,21 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
 
 def getWCSFromPng(image):
-    ''' Extracts any WCS info from the metadata of a PNG image '''
+    ''' Extracts any WCS info from the metadata of a PNG image
+
+    Extracts the WCS metadata info from the PNG optical
+    image of the galaxy using PIL (Python Imaging Library).
+    Converts it to an Astropy WCS object.
+
+    Parameters:
+        image (str):
+            The full path to the image
+
+    Returns:
+        pngwcs (WCS):
+            an Astropy WCS object
+
+    '''
 
     pngwcs = None
     try:
