@@ -38,6 +38,7 @@ developed and maintained by the MaNGA team.
    tools
    queries
    data-access-modes
+   boolean-search-tutorial
    api
    web
 
