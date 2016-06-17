@@ -1,11 +1,12 @@
 Queries
 =======
 
+How to design search filters: :doc:`boolean-search-tutorial`
+
 Simple Query::
 
     from marvin.tools.query import Query
-    q = Query()
-    q.set_filter('nsa.z < 0.1')
+    q = Query(searchfilter='nsa.z < 0.1')
 
 Get Results::
 
@@ -29,7 +30,7 @@ Returns::
 Do it all at once::
 
     from marvin.tools.query import doQuery
-    q, r = doQuery('nsa.z < 0.1')
+    q, r = doQuery(searchfilter='nsa.z < 0.1')
     r.results
 
-voila
+.
