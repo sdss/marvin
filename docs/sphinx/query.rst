@@ -1,5 +1,5 @@
-Queries
-=======
+Query
+=====
 
 How to design search filters: :doc:`boolean-search-tutorial`
 
