@@ -45,8 +45,9 @@ Tools
 .. toctree::
       :maxdepth: 2
 
-   queries
    data-access-modes
+   query
+   results
 
 
 API
@@ -58,9 +59,10 @@ Web
 Tutorials
 ^^^^^^^^^
 .. toctree::
-      :maxdepth: 2
+   :titlesonly:
 
    boolean-search-tutorial
+   query-examples
 
 Documentation
 =============

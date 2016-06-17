@@ -13,7 +13,7 @@ The major improvements and additions in this release:
   
 * :doc:`../api`: quickly and seamlessly grab the data you are looking for.
 
-* :doc:`../queries`: a tool to harness the full statistical power of the MaNGA
+* :doc:`../query`: a tool to harness the full statistical power of the MaNGA
   data set by querying the MaNGA database.
 
 * A completely overhauled :doc:`../web` interface, including:

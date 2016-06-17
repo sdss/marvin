@@ -69,9 +69,13 @@ An input string search filter box that accepts a pseudo-natural language format.
 The search filter accepts boolean search strings that are parsed with a
 `modified version <https://github.com/havok2063/SQLAlchemy-boolean-search>`_ of
 `SQLAlchemy-boolean-search
-<https://github.com/lingthio/SQLAlchemy-boolean-search>`_. Please see here for a
-:doc:`boolean-search-tutorial`.
+<https://github.com/lingthio/SQLAlchemy-boolean-search>`_.
 
+<<<<<<< HEAD
+See here for a :doc:`boolean-search-tutorial`.
+
+See here for :doc:`query-examples`.
+=======
 Example searches
 ^^^^^^^^^^^^^^^^
 
@@ -113,6 +117,7 @@ The Plate page includes:
   that link to the individual galaxy pages
 
 .. _web-galaxy:
+>>>>>>> 10c0c2af019eb1910ebbaf5bf221d671dd293fce
 
 Galaxy
 ------
