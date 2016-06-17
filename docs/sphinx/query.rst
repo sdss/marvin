@@ -8,6 +8,11 @@ How to design search filters: :doc:`boolean-search-tutorial`
 Simple Query::
 
     from marvin.tools.query import Query
+    q.set_filter(searchfilter='nsa.z < 0.1') 
+
+
+or:: 
+
     searchfilter = 'nsa.z < 0.1'
     q = Query(searchfilter=searchfilter)
 
