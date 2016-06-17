@@ -118,7 +118,26 @@ class Results(object):
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
     def download(self, images=False):
-        ''' Download results via sdss_access '''
+        ''' Download results via sdss_access
+
+            Uses sdss_access to download the query results via rsync.
+            Downloads them to the local sas. The data type downloaded
+            is indicated by the returntype parameter
+
+            i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux/...
+
+            Parameters:
+                images (bool):
+                    Set to only download the images of the query results
+
+            Returns:
+                NA: na
+
+            Example:
+                >>> r = q.run()
+                >>> r.returntype = 'cube'
+                >>> r.download()
+        '''
 
         plates = self.getListOf(name='plate')
         ifus = self.getListOf(name='ifu.name')

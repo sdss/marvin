@@ -102,35 +102,6 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
     return cubeCoords
 
 
-#mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}
-#mpldict = marvin.config._mpldict
-
-
-# def lookUpVersions(mplver):
-#     ''' Retrieve the DRP and DAP versions that make up an MPL '''
-
-#     try:
-#         drpver, dapver = mpldict[mplver]
-#     except KeyError as e:
-#         raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
-
-#     return drpver, dapver
-
-
-# def lookUpMpl(drpver):
-#     ''' Retrieve the MPL version for a given DRP version'''
-
-#     # Flip the mpldict
-#     verdict = {val[0]: key for key, val in mpldict.items()}
-
-#     try:
-#         mplver = verdict[drpver]
-#     except KeyError as e:
-#         raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
-
-#     return mplver
-
-
 def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
     """Returns the plate-ifu for a certain mangaid.
 
@@ -320,7 +291,21 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
 
 def getWCSFromPng(image):
-    ''' Extracts any WCS info from the metadata of a PNG image '''
+    ''' Extracts any WCS info from the metadata of a PNG image
+
+    Extracts the WCS metadata info from the PNG optical
+    image of the galaxy using PIL (Python Imaging Library).
+    Converts it to an Astropy WCS object.
+
+    Parameters:
+        image (str):
+            The full path to the image
+
+    Returns:
+        pngwcs (WCS):
+            an Astropy WCS object
+
+    '''
 
     pngwcs = None
     try:
@@ -351,7 +336,27 @@ def getWCSFromPng(image):
 
 
 def convertImgCoords(coords, image, to_pix=None, to_radec=None):
-    ''' Convert image pixel coordinates to RA/Dec based on PNG image metadata or vice_versa'''
+    ''' Transform the WCS info in an image
+
+    Convert image pixel coordinates to RA/Dec based on
+    PNG image metadata or vice_versa
+
+    Parameters:
+        coords (tuple):
+            The input coordindates to transform
+        image (str):
+            The full path to the image
+        to_pix (bool):
+            Set to convert to pixel coordinates
+        to_radec (bool):
+            Set to convert to RA/Dec coordinates
+
+    Returns:
+        newcoords (tuple):
+            Tuple of either (x, y) pixel coordinates
+            or (RA, Dec) coordinates
+
+    '''
 
     try:
         wcs = getWCSFromPng(image)
@@ -372,7 +377,20 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
 
 
 def parseIdentifier(galid):
-    ''' Determines if a string input is a plate, plateifu, or manga-id '''
+    ''' Determines if a string input is a plate, plateifu, or manga-id
+
+    Parses a string object id and determines whether it is a
+    plate ID, a plate-IFU, or MaNGA-ID designation.
+
+    Parameters:
+        galid (str):
+            The string of an id name to parse
+
+    Returns:
+        idtype (str):
+            String indicating either plate, plateifu, mangaid, or None
+
+    '''
 
     galid = str(galid)
     hasdash = '-' in galid
@@ -485,7 +503,38 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):
-    ''' Download a list of MaNGA objects '''
+    ''' Download a list of MaNGA objects
+
+    Uses sdss_access to download a list of objects
+    via rsync.  Places them in your local sas path mimicing
+    the Utah SAS.
+
+    i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux
+
+    Parameters:
+        inputlist (list):
+            A list of objects to download.  Must be a list of plate IDs,
+            plate-IFUs, or manga-ids
+        dltype (str):
+            Indicated the type of object to download.  Can be any of
+            plate, cube, mastar, rss, map, or default (default map).
+            If not specified, the dltype defaults to cube.
+        drpver (str):
+            The DRP version of the data to download.  Defaults to Marvin config.drpver
+        dapver (str):
+            The DAP version of the data to download.  Defaults to Marvin config.dapver
+        bintype (str):
+            The bin type of the DAP maps to download. Defaults to *
+        binmode (str):
+            The bin mode of the DAP maps to download. Defaults to *
+        n (int):
+            The plan id number [1-12] of the DAP maps to download. Defaults to *
+        verbose (bool):
+            Turns on verbosity during rsync
+    Returns:
+        NA: Downloads
+
+    '''
 
     # Get some possible keywords
     # Necessary rsync variables:
