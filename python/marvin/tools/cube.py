@@ -88,7 +88,11 @@ class Cube(MarvinToolsClass):
             except RuntimeError as e:
                 raise MarvinError('Could not initialize via db: {0}'.format(e))
             self.wcs = self._cube.wcs.makeHeader()
-            self.redshift = self._cube.sample[0].nsa_redshift  # TODO change this to sampledb
+            nsaobjs = self._cube.target.NSA_objects if self._cube.target else None
+            if nsaobjs:
+                self.redshift = None if len(nsaobjs) > 1 else nsaobjs[0].z
+            else:
+                self.redshift = None
         elif self.data_origin == 'api':
             if not skip_check:
                 self._openCubeRemote()
