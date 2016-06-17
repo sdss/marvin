@@ -58,9 +58,10 @@ Web
 Tutorials
 ^^^^^^^^^
 .. toctree::
-      :maxdepth: 2
+   :titlesonly:
 
    boolean-search-tutorial
+   query-examples
 
 Documentation
 =============

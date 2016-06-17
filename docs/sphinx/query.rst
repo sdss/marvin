@@ -3,6 +3,8 @@ Query
 
 How to design search filters: :doc:`boolean-search-tutorial`
 
+:doc:`query-examples`
+
 Simple Query::
 
     from marvin.tools.query import Query
