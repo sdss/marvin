@@ -6216,7 +6216,7 @@ section h3.section-subheading {
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 01:03:54
+* @Last Modified time: 2016-06-17 17:22:48
 */
 footer {
   margin-top: 20px; }
@@ -6257,13 +6257,13 @@ footer {
   footer .contact a:hover {
     background-color: rgba(255, 255, 255, 0.85);
     text-decoration: none; }
-  footer .contact a.brian:hover, footer .contact .fa-bolt {
+  footer .contact a.brian:hover, footer .contact .fa-eye {
     color: #00aff0; }
-  footer .contact a.brett:hover, footer .contact .fa-rocket {
-    color: #dd4b39; }
-  footer .contact a.jose:hover, footer .contact .fa-eye {
-    color: #7F0EA8; }
-  footer .contact a.joel:hover, footer .contact .fa-cube {
+  footer .contact a.brett:hover, footer .contact .fa-fighter-jet {
+    color: #bb0000; }
+  footer .contact a.jose:hover, footer .contact .fa-paw {
+    color: #291D4F; }
+  footer .contact a.joel:hover, footer .contact .fa-university {
     color: #00D607; }
 
 /*# sourceMappingURL=marvin.css.map */

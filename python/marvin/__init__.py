@@ -21,7 +21,14 @@ warnings.simplefilter('once')
 
 
 class MarvinConfig(object):
+    ''' Global Marvin Configuration
 
+    Parameters:
+        drpver (str):
+        dapver (str):
+        mplver (str):
+        download (bool):
+    '''
     def __init__(self):
 
         self._drpall = None
