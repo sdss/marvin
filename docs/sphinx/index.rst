@@ -47,6 +47,7 @@ developed and maintained by the MaNGA team.
 
 Tutorials
 ^^^^^^^^^
+
 .. toctree::
    :titlesonly:
 
