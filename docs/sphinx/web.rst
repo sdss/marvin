@@ -69,38 +69,9 @@ An input string search filter box that accepts a pseudo-natural language format.
 The search filter accepts boolean search strings that are parsed with a
 `modified version <https://github.com/havok2063/SQLAlchemy-boolean-search>`_ of
 `SQLAlchemy-boolean-search
-<https://github.com/lingthio/SQLAlchemy-boolean-search>`_.
+<https://github.com/lingthio/SQLAlchemy-boolean-search>`_. Please see here for a
+:doc:`boolean-search-tutorial`.
 
-<<<<<<< HEAD
-See here for a :doc:`boolean-search-tutorial`.
-
-See here for :doc:`query-examples`.
-=======
-Example searches
-^^^^^^^^^^^^^^^^
-
-Find galaxies...
-""""""""""""""""
-
-...below a redshift of 0.1::
-
-    nsa.z < 0.1
-
-...on plates 7815 and 8485::
-
-    cube.plate == 7815 or cube.plate == 8485
-
-...with a IFU size of 127::
-
-    ifu.name = 127*
-
-...that contain any spaxel with an Halpha flux > 25::
-
-    emline_type.name == Ha and emline_parameter.name == GFLUX and emline.value > 25
-
-...that contain any spaxel with a velocity > 250 km/s::
-
-    stellar_kin_parameter.name == vel and stellar_kin.value > 250
 
 .. _web-plate:
 
@@ -117,7 +88,6 @@ The Plate page includes:
   that link to the individual galaxy pages
 
 .. _web-galaxy:
->>>>>>> 10c0c2af019eb1910ebbaf5bf221d671dd293fce
 
 Galaxy
 ------
@@ -173,6 +143,3 @@ Enable the spectrum display by clicking on the Map/Spec View box.
   * solid line: spectrum
   * shaded region: 1-sigma error range
   * cursor coordinates: wavelength and flux value
-
-
-.

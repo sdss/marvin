@@ -8,17 +8,8 @@ How to design search filters: :doc:`boolean-search-tutorial`
 Simple Query::
 
     from marvin.tools.query import Query
-<<<<<<< HEAD:docs/sphinx/query.rst
-    q = Query(searchfilter='nsa.z < 0.1')
-=======
-    q = Query()
-    q.set_filter(searchfilter='nsa.z < 0.1')
-
-or
-
     searchfilter = 'nsa.z < 0.1'
     q = Query(searchfilter=searchfilter)
->>>>>>> 10c0c2af019eb1910ebbaf5bf221d671dd293fce:docs/sphinx/queries.rst
 
 Get Results::
 
@@ -45,8 +36,4 @@ Do it all at once::
     q, r = doQuery(searchfilter='nsa.z < 0.1')
     r.results
 
-<<<<<<< HEAD:docs/sphinx/query.rst
 .
-=======
-voila
->>>>>>> 10c0c2af019eb1910ebbaf5bf221d671dd293fce:docs/sphinx/queries.rst
