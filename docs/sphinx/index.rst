@@ -18,30 +18,49 @@
 
 |
 
-Welcome to Marvin's documentation!
-==================================
+Marvin Docs
+===========
 
+Welcome to Marvin's documentation!
+----------------------------------
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
-.. toctree::
-   :maxdepth: 2
-
-   whats-new
-
+:doc:`whats-new`
+^^^^^^^^^^^^^^^^
 
 .. toctree::
-   :maxdepth: 2
+   :titlesonly:
 
    what-is
    first-steps
-   tools
+   Tools <tools>
+   API <api>
+   Web <web>
+
+
+Tools
+^^^^^
+
+.. toctree::
+      :maxdepth: 2
+
    queries
    data-access-modes
-   boolean-search-tutorial
-   api
-   web
 
+
+API
+^^^
+
+Web
+^^^
+
+Tutorials
+^^^^^^^^^
+.. toctree::
+      :maxdepth: 2
+
+   boolean-search-tutorial
 
 Documentation
 =============
