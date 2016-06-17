@@ -45,4 +45,9 @@ class AnalisisProperty(object):
         self.value = value
         self.unit = unit
         self.ivar = ivar
-        self.mask = mask
+        self.mask = bool(mask)
+
+    def __repr__(self):
+
+        return ('<AnalisisProperty ({0.category}, {0.name}, value={0.value} '
+                'ivar={0.ivar}, mask={0.mask!r})>'.format(self))
