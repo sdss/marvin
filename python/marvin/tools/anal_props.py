@@ -10,8 +10,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import marvin.core.core
 
-class AnalisisProperty(object):
+
+class AnalisisProperty(marvin.core.core.Dotable):
     """A class describing a property with a value and additional information.
 
     This class is intended for internal use, not to be initialisided by the
@@ -40,12 +42,14 @@ class AnalisisProperty(object):
 
     def __init__(self, category, name, value, unit=None, ivar=None, mask=True):
 
-        self.category = category
-        self.name = name
-        self.value = value
-        self.unit = unit
-        self.ivar = ivar
-        self.mask = bool(mask)
+        self['category'] = category
+        self['name'] = name
+        self['value'] = value
+        self['unit'] = unit
+        self['ivar'] = ivar
+        self['mask'] = bool(mask)
+
+        # super(AnalisisProperty, self).__init__()
 
     def __repr__(self):
 
