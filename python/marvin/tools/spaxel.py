@@ -28,7 +28,10 @@ class Spaxel(MarvinToolsClass):
 
     This class represents a fully reduced spaxel, initialised either
     from a file, a database, or remotely via the Marvin API. An spaxel contains
-    flux, ivar, and mask information.
+    flux, ivar, and mask information. Additionally, the spaxel can be
+    initialised with DAP properties if the ``create_dap_properties=True``
+    keyword is passed. This is done by default if the spaxel is loaded
+    during the initialisation of a ``Maps`` object.
 
     Parameters:
         x,y (int):
@@ -44,12 +47,12 @@ class Spaxel(MarvinToolsClass):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
         create_dap_properties (bool):
-            If `True`, populates the object with the DAP `AnalysisProperty`
-            values. Requires defining the `bintype` and `niter`. If one of
+            If ``True``, populates the object with the DAP ``AnalysisProperty``
+            values. Requires defining the ``bintype`` and ``niter``. If one of
             those is not defined, the default map will be used.
         bintype (str or None):
             The binning type of the DAP MAPS file to use. The default value is
-            `'NONE'`
+            ``'NONE'``
         niter (int):
             The iteration number of the DAP map.
         drpall (str):
@@ -57,11 +60,16 @@ class Spaxel(MarvinToolsClass):
             ``marvin.config.drpall``.
         drpver (str):
             The DRP version to use. Defaults to ``marvin.config.drpver``.
-        dapver
+        dapver (str):
+            The DAP version to use. Defaults to ``marvin.confg.dapver``.
 
-    Return:
-        rss:
-            An object representing the Spaxel entity.
+    Attributes:
+        drp (`Spectrum`):
+            A `Spectrum` object with the DRP spectrum and associated ivar and
+            mask for this spaxel.
+        dap (dict):
+            A dictionary of `AnalysisProperty` objects, sorted by category
+            and name (usually the channel for each category).
 
     """
 
