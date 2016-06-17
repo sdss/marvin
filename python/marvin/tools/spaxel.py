@@ -23,7 +23,7 @@ import marvin.tools.anal_props as anal_props
 import marvin.utils.general.dap
 
 
-class Spaxel(MarvinToolsClass, Spectrum, dict):
+class Spaxel(MarvinToolsClass):
     """A class to interface with a spaxel in a cube.
 
     This class represents a fully reduced spaxel, initialised either
@@ -67,11 +67,12 @@ class Spaxel(MarvinToolsClass, Spectrum, dict):
 
     def __init__(self, *args, **kwargs):
 
-        dict.__init__(self, {})
-
         self.data_origin = None
         self._hduList = None
         self._spaxel_db = None
+
+        self.drp = {}
+        self.dap = {}
 
         if len(args) > 0:
             self.x = args[0]
@@ -130,7 +131,7 @@ class Spaxel(MarvinToolsClass, Spectrum, dict):
                 mask = data[cat][channel]['mask']
                 unit = data[cat]['unit']
                 anal_prop_key = cat.lower() + '_' + channel.lower()
-                self[anal_prop_key] = anal_props.AnalisisProperty(
+                self.dap[anal_prop_key] = anal_props.AnalisisProperty(
                     cat.lower(), channel.lower(), value, ivar=ivar, mask=mask,
                     unit=unit)
 
@@ -210,9 +211,9 @@ class Spaxel(MarvinToolsClass, Spectrum, dict):
             mask = np.array(self._arrays['mask'])
             wavelength = np.array(self._arrays['wavelength'])
 
-        Spectrum.__init__(self, flux, ivar=ivar, mask=mask, wavelength=wavelength,
-                          flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
-                          wavelength_unit='Angstrom')
+        self.drp = Spectrum(flux, ivar=ivar, mask=mask, wavelength=wavelength,
+                            flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
+                            wavelength_unit='Angstrom')
 
     def _getSpaxelFromFile(self, cubeHDU=None):
         """Initialises the Spaxel object from a file data cube.
