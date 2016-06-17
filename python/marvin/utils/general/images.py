@@ -79,6 +79,27 @@ def getDir3d(inputid, mode=None):
 def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None):
     ''' Get a list of N random images from SAS
 
+    Retrieve a random set of images from either your local filesystem SAS
+    or the Utah SAS.  Optionally can download the images by rsync using
+    sdss_access.
+
+    Parameters:
+        num (int):
+            The number of images to retrieve
+        download (bool):
+            Set to download the images from the SAS
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`.
+            the cube exists.
+        as_url (bool):
+            Convert the list of images to use the SAS url
+        verbose (bool):
+            Turns on verbosity during rsync
+
+    Returns:
+        listofimages (list):
+            The list of images
 
     '''
     rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose)
@@ -110,6 +131,29 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 @setMode
 def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=None):
     ''' Get all images belonging to a given plate ID
+
+    Retrieve all images belonging to a given plate ID from either your local filesystem SAS
+    or the Utah SAS.  Optionally can download the images by rsync using
+    sdss_access.
+
+    Parameters:
+        plateid (int):
+            The plate ID to retrieve the images for
+        download (bool):
+            Set to download the images from the SAS
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`.
+            the cube exists.
+        as_url (bool):
+            Convert the list of images to use the SAS url
+        verbose (bool):
+            Turns on verbosity during rsync
+
+    Returns:
+        listofimages (list):
+            The list of images
+
     '''
 
     assert str(plateid).isdigit(), 'Plateid must be a numeric integer value'
@@ -148,6 +192,29 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 @setMode
 def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=None):
     ''' Get all images from a list of ids
+
+    Retrieve a list of images from either your local filesystem SAS
+    or the Utah SAS.  Optionally can download the images by rsync using
+    sdss_access.
+
+    Parameters:
+        inputlist (list):
+            A list of plate-ifus or mangaids for the images you want to retrieve
+        download (bool):
+            Set to download the images from the SAS
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`.
+            the cube exists.
+        as_url (bool):
+            Convert the list of images to use the SAS url
+        verbose (bool):
+            Turns on verbosity during rsync
+
+    Returns:
+        listofimages (list):
+            The list of images
+
     '''
     # Check inputs
     assert type(inputlist) == list or type(inputlist) == np.ndarray, 'Input must be of type list of Numpy array'
