@@ -34,10 +34,9 @@ developed and maintained by the MaNGA team.
 
    overview
    installation
+   general
    first-steps
 
-:doc:`general`
-^^^^^^^^^^^^^^
 :doc:`tools`
 ^^^^^^^^^^^^
 :doc:`api`
@@ -49,9 +48,10 @@ Tutorials
 ^^^^^^^^^
 .. toctree::
    :titlesonly:
+   :maxdepth: 1
 
-   boolean-search-tutorial
-   query-examples
+   tutorials/boolean-search-tutorial
+   tutorials/query-examples
 
 Documentation
 =============
