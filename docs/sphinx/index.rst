@@ -43,7 +43,7 @@ Tools
 ^^^^^
 
 .. toctree::
-      :maxdepth: 2
+   :maxdepth: 2
 
    data-access-modes
    query
