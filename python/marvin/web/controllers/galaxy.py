@@ -61,6 +61,7 @@ class Galaxy(FlaskView):
         self.galaxy['title'] = 'Marvin | Galaxy'
         self.galaxy['page'] = 'marvin-galaxy'
         self.galaxy['error'] = None
+        self.galaxy['specmsg'] = None
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
