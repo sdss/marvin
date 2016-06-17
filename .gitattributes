@@ -13,6 +13,16 @@ docs/sphinx/api/api.rst -text
 docs/sphinx/api/queries.rst -text
 docs/sphinx/api/utils.rst -text
 docs/sphinx/api/web.rst -text
+docs/sphinx/flask_profiler.sql -text svneol=unset#application/x-sqlite3
+docs/sphinx/general.rst -text
+docs/sphinx/index_old.rst -text
+docs/sphinx/installation.rst -text
+docs/sphinx/localtoc.rst -text
+docs/sphinx/overview.rst -text
+docs/sphinx/pages/general.rst -text
+docs/sphinx/queries.rst -text
+docs/sphinx/tutorials/boolean-search-tutorial.rst -text
+docs/sphinx/tutorials/query-examples.rst -text
 docs/sphinx/web.rst -text
 etc/config.ini -text
 etc/marvin.module -text

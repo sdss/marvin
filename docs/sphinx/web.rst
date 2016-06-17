@@ -1,6 +1,6 @@
 
-Marvin Web
-============
+Web
+===
 
 Description of Pages and Capabilities
 
@@ -35,8 +35,8 @@ A link to the Marvin Documentation page
 
 .. _web-random:
 
-Random
-------
+Image Roulette
+--------------
 
 Displays a random set of 16 images of galaxies from the MaNGA survey.  Each
 thumbnail on the left is displayed in larger form on the right.  Click the giant
