@@ -16,7 +16,7 @@ from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from marvin.tools.spectrum import Spectrum
 from astropy.io import fits
-from brain.api import api
+from marvin.api import api
 import marvin
 import numpy as np
 
