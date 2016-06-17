@@ -48,14 +48,11 @@ class MarvinToolsClass(object):
         self.filename = kwargs.get('filename', None)
         self.mangaid = kwargs.get('mangaid', None)
         self.plateifu = kwargs.get('plateifu', None)
-        self.mode = kwargs.get('mode', None)
+        self.mode = kwargs.get('mode', marvin.config.mode)
         self._drpall = kwargs.get('drpall', marvin.config.drpall)
         self._drpver = kwargs.get('drpver', marvin.config.drpver)
         self._forcedownload = kwargs.get('download', marvin.config.download)
         self.data_origin = None
-
-        if self.mode is None:
-            self.mode = marvin.config.mode
 
         args = [self.filename, self.plateifu, self.mangaid]
         errmsg = 'Enter filename, plateifu, or mangaid!'
