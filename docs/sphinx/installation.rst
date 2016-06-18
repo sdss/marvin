@@ -6,6 +6,26 @@ Marvin requires installing some dependencies before you can start using it.
 In the future we hope this process will be mostly automatic but, for now,
 please follow this instructions to install Marvin.
 
+The full list of dependencies includes:
+
+* Python 2.7 (the final Marvin version will be Python 3-compatible)
+* GNU Modules
+* tree
+* sdss_access
+* sdss_python_module
+* marvin_brain
+* numpy
+* astropy
+* sqlalchemy
+* networkx
+* matplotlib (optional, needed for plotting)
+* pillow
+* requests
+* wtforms
+* SQLAlchemy-boolean-search (custom fork)
+* wtforms-alchemy (custom fork)
+
+|
 
 Installing modules
 ------------------
@@ -36,6 +56,7 @@ You must add the corresponding ``source`` statement to your ``.bashrc``, ``.prof
 ``.cshrc``. If you open a new terminal and write ``module`` you should get the help
 page for the command.
 
+|
 
 Installing sdss4install
 -----------------------
@@ -57,6 +78,7 @@ download and run the script ::
 If you now run ``module avail`` you must get a list containing ``sdss4tools``. Now
 your are ready to install more SDSS software by just using the ``sdss4install`` command.
 
+|
 
 Installing SDSS packages
 ------------------------
@@ -94,52 +116,75 @@ branch. If you now do a ``module avail`` you should get something like ::
 
 Doing ``module load marvin`` will setup all the necessary environment variables that Marvin
 needs to work. However, you may not want to do that every time you want to work with Marvin.
-Let's see how to have ``modules`` load Marvin for each new terminal.
+To have ``modules`` load Marvin for each new terminal you can create a file containing
+``modules`` commands and source it in your ``.bashrc`` or ``.cshrc``. For example, do ::
 
-TBD.
+    cat > ~/.modules <<EOL
+    module load sdss4tools
+    module load marvin
+    EOL
+
+and then ::
+
+    echo "source ~/.modules" > ~/.bashrc
+
+or edit ``.modules`` and your configuration file with your favourite text editor. The lines
+in `.modules` will load ``sdss4tools`` and ``marvin`` for each new terminal.
+
+|
 
 Installing Python packages
 --------------------------
 
-TBD.
+In addition to SDSS software, Marvin depends on a few Python libraries. These can easily
+be installed with `pip <https://pip.pypa.io/en/stable/>`_. If your system does not have
+``pip``, you can install it following these
+`instructions <https://pip.pypa.io/en/stable/installing/>`_. Most packages can also
+be installed with `easy_install <https://pypi.python.org/pypi/setuptools>`_.
 
-.. You are invited to participate in the closed-alpha testing of Marvin 2.0 at the SDSS-IV Collaboration meeting in Madison, on the afternoon of Thursday the Thirtieth day of June, in the year of our lord Two Thousand and Sixteen.  If you choose to participate, here are some start instructions that we would like you to have completed before Madison.
-..
-.. 1.  Modules is currently required.  If you already have Modules installed then you do not need to do anything.  If you need Modules, please check out, and run, the Modules install script .
-..
-.. To check out, svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4_getmodules
-..
-.. To run, type ./sdss4_getmodules -m /your/path/to/a/nonexistent/modules/directory (e.g.  /Users/Me/modules’ )  (this directory should not exist or be empty!!)
-..
-.. If everything proceeds according to plan, you shall see a line instructing you to source a file depending on your terminal shell
-..
-.. Installation complete!
-.. bash users will need to add: source /Users/Me/modules/init/bash to the .bashrc file
-.. tcshrc users will need to add: source /Users/Me/modules/init/csh to the .tcshrc file
-..
-.. Test by opening a new terminal window, and type module
-..
-.. 2. sdss4tools is required.  If you already have sdss4tools and sdss4install installed, then you do not need to do anything.  If you need sdss4tools, please check out, and run, the sdss4bootstrap install script.
-..
-.. Follow the instructions on this wiki page:
-.. https://trac.sdss.org/wiki/Software/sdss4install#sdss4tools
-..
-.. By the end, you should be able to module load sdss4tools.  If that works, you are ready to use sdss4install.
-..
-.. Your first task, if you choose to accept it, is to time the installation process, and report any difficulties you had during this process.
-..
-.. Once completed, please await for further instructions.
-..
-.. We look forward to you seeing you in Madison!
-..
-.. Cheers,
-.. The Marvin Dev. Team (Brian, José, Brett, and Joel)
-..
-.. ---------------------------------------
-.. Brian Cherinka, Ph.D
-.. Dept of Physics & Astronomy
-.. Johns Hopkins University
-.. Baltimore, MD, 21218
-.. phone: 1-410-516-5624
-.. email: bcherin1@jhu.edu
-.. ----------------------------------------
+With ``pip`` run the following commands and make sure they finish without errors ::
+
+    pip install numpy
+    pip install astropy
+    pip install sqlalchemy
+    pip install networkx
+    pip install matplotlib
+    pip install requests
+    pip install pillow
+    pip install wtforms
+
+You may need to use ``sudo`` to run these commands. Also, some modern versions of Mac OSX do
+not allow to install these products even with ``sudo``. If that is your case, try using
+``pip install --user <package>``.
+
+Additionally, Marvin requires installing two forks of Python packages. Those forks will
+eventually be merged into Marvin, but during active development they live in GitHub
+repositories. To install ``SQLAlchemy-boolean-search`` do ::
+
+    git clone https://github.com/havok2063/SQLAlchemy-boolean-search.git
+    cd SQLAlchemy-boolean-search
+    python setup install
+
+You may need ``sudo`` for the last command. Once the library is installed you can
+remove the ``SQLAlchemy-boolean-search`` directory. Similarly, for ``wtforms-alchemy`` do ::
+
+    git clone https://github.com/havok2063/wtforms-alchemy.git
+    cd wtforms-alchemy
+    python setup install
+
+You should now be ready to use Marvin!
+
+|
+
+Testing the installation
+------------------------
+
+Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
+
+    python
+    >>> import marvin
+    >>> marvin.config.mode
+    'auto'
+
+You may get a few warnings and info messages after ``import marvin``. That's ok,
+we'll deal with them later. Congratulations, you have finished the Marvin installation!
