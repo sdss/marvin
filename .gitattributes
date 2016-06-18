@@ -39,6 +39,7 @@ docs/sphinx/.doctrees/marvin.web.jinja_filters.doctree -text
 docs/sphinx/Makefile -text
 docs/sphinx/_static/marvin.png -text svneol=unset#image/png
 docs/sphinx/api/api.rst -text
+docs/sphinx/api/db.rst -text
 docs/sphinx/api/general.rst -text
 docs/sphinx/api/queries.rst -text
 docs/sphinx/api/utils.rst -text
