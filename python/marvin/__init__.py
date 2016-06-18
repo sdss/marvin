@@ -21,7 +21,14 @@ warnings.simplefilter('once')
 
 
 class MarvinConfig(object):
+    ''' Global Marvin Configuration
 
+    Parameters:
+        drpver (str):
+        dapver (str):
+        mplver (str):
+        download (bool):
+    '''
     def __init__(self):
 
         self._drpall = None
@@ -178,7 +185,7 @@ marvindb = MarvinDB(dbtype=config.db)
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-# config.sasurl = 'http://04803586.ngrok.io/'  # this is a temporary measure REMOVE THIS
+# config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://8a7373c3.ngrok.io'  # Jose's ngrok
 
 

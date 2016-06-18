@@ -85,6 +85,7 @@ python/marvin/web/lib/dist/marvin.min.css -text
 python/marvin/web/lib/dist/marvin.min.js -text
 python/marvin/web/lib/images/brett.jpg -text svneol=unset#image/jpeg
 python/marvin/web/lib/images/brian.jpg -text svneol=unset#image/jpeg
+python/marvin/web/lib/images/joel.jpg -text svneol=unset#image/png
 python/marvin/web/lib/images/jose.jpg -text svneol=unset#image/jpeg
 python/marvin/web/lib/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/web/lib/images/marvin.png -text svneol=unset#image/png
@@ -195,6 +196,7 @@ python/marvin/web/lib/src/table.js -text
 python/marvin/web/lib/src/utils.js -text
 python/marvin/web/static/images/brett.jpg -text svneol=unset#image/jpeg
 python/marvin/web/static/images/brian.jpg -text svneol=unset#image/jpeg
+python/marvin/web/static/images/joel.jpg -text svneol=unset#image/png
 python/marvin/web/static/images/jose.jpg -text svneol=unset#image/jpeg
 python/marvin/web/static/images/logo5_lores.png -text svneol=unset#image/png
 python/marvin/web/static/images/marvin.png -text svneol=unset#image/png

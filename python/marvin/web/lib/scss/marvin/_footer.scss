@@ -2,15 +2,15 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52
 * @Last Modified by:   Brian
-* @Last Modified time: 2016-04-28 01:03:54
+* @Last Modified time: 2016-06-17 17:22:48
 */
 
 @import '../flatly/variables';
 
 $contact-text: #fff !default;
 $brian: #00aff0 !default;
-$brett: #dd4b39 !default;
-$jose: #7F0EA8 !default;
+$brett: #bb0000 !default;
+$jose: #291D4F !default;
 $joel: #00D607 !default;
 
 // Mixins
@@ -75,16 +75,16 @@ footer{
             background-color:rgba(255,255,255,0.85);
             text-decoration:none;
         }
-        a.brian:hover,.fa-bolt {
+        a.brian:hover,.fa-eye {
             color:$brian;
         }
-        a.brett:hover,.fa-rocket {
+        a.brett:hover,.fa-fighter-jet {
             color:$brett;
         }
-        a.jose:hover,.fa-eye {
+        a.jose:hover,.fa-paw {
             color:$jose;
         }
-        a.joel:hover,.fa-cube {
+        a.joel:hover,.fa-university {
             color:$joel;
         }
     }
