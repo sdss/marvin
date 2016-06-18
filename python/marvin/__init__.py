@@ -21,7 +21,20 @@ warnings.simplefilter('once')
 
 
 class MarvinConfig(object):
+    ''' Global Marvin Configuration
 
+    The global configuration of Marvin.
+
+    Parameters:
+        drpver (str):
+            The DRP version of the MaNGA data you want to use
+        dapver (str):
+            The DAP version of the MaNGA data you want to use
+        mplver (str):
+            The MPL version of the MaNGA data you want to use
+        download (bool):
+            Set to turn on downloading of objects with sdss_access
+    '''
     def __init__(self):
 
         self._drpall = None
@@ -110,7 +123,18 @@ class MarvinConfig(object):
             self.setMPL('MPL-4')
 
     def setMPL(self, mplver):
-        ''' Set the data version by MPL '''
+        ''' Set the data version by MPL
+
+        Sets the MPL version globally in the config. When specifying the MPL,
+        the DRP and DAP versions also get set globally.
+
+        Parameters:
+            mplver (str):
+                The MPL version to set, in form of MPL-X
+
+        Example:
+            >>> config.setMPL('MPL-4')
+        '''
 
         m = re.search('MPL-([0-9])', mplver)
         assert m is not None, 'MPL version must be of form "MPL-[X]"'
@@ -119,7 +143,18 @@ class MarvinConfig(object):
             self.drpver, self.dapver = self.lookUpVersions(mplver)
 
     def setDR(self, drver):
-        ''' Set the data version by Data Release '''
+        ''' Set the data version by Data Release (DR)
+
+        Sets the DR version globally in the config. When specifying the DR,
+        the DRP and DAP versions also get set globally.
+
+        Parameters:
+            drver (str):
+                The DR version to set, in form of DRXX
+
+        Example:
+            >>> config.setDR('DR13')
+        '''
         m = re.search('DR1([3-9])', drver)
         assert m is not None, 'DR version must be of form "DR[XX]"'
         if m:
@@ -127,8 +162,19 @@ class MarvinConfig(object):
             self.drpver, self.dapver = self.lookUpVersions(drver)
 
     def setVersions(self, drpver=None, dapver=None):
-        ''' Set the data version by DRPVER and DAPVER '''
+        ''' Set the data version by DRP and DAP versions
 
+        Sets the MPL version globally in the config. When specifying the MPL,
+        the DRP and DAP versions also get set globally.
+
+        Parameters:
+            drpver (str):
+                The DRP version to set, in form of vX_X_X
+            dapver (str):
+                The DAP version to set, in form of X.X.X
+        Example:
+            >>> config.setVersions(drpver='v1_5_1', dapver='1.1.1')
+        '''
         if drpver:
             assert type(drpver) == str, 'drpver needs to be a string'
             drpre = re.search('v([0-9][_]([0-9])[_]([0-9]))', drpver)
@@ -147,7 +193,19 @@ class MarvinConfig(object):
                 self.dapver = dapver
 
     def lookUpVersions(self, mplver):
-        ''' Retrieve the DRP and DAP versions that make up an MPL '''
+        ''' Retrieve the DRP and DAP versions that make up an MPL
+
+        Look up the DRP and DAP version for a specified MPL version.
+
+        Parameters:
+            mplver (str):
+                The MPL version
+        Returns:
+            drpver (str):
+                The DRP version according to the input MPL version
+            dapver (str):
+                The DAP version according to the input MPL version
+        '''
 
         try:
             drpver, dapver = self._mpldict[mplver]
@@ -157,7 +215,17 @@ class MarvinConfig(object):
         return drpver, dapver
 
     def lookUpMpl(self, drpver):
-        ''' Retrieve the MPL version for a given DRP version'''
+        ''' Retrieve the MPL version for a given DRP version
+
+        Look up the MPL version for a specified DRP version.
+
+        Parameters:
+            drpver (str):
+                The DRP version to use
+        Returns:
+            mplver (str):
+                The MPL version according to the input DRP version
+        '''
 
         # Flip the mpldict
         verdict = {val[0]: key for key, val in self._mpldict.items()}
