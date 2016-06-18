@@ -185,9 +185,7 @@ docs/sphinx/build/py-modindex.html -text
 docs/sphinx/build/search.html -text
 docs/sphinx/build/searchindex.js -text
 docs/sphinx/general.rst -text
-docs/sphinx/index_old.rst -text
 docs/sphinx/installation.rst -text
-docs/sphinx/localtoc.rst -text
 docs/sphinx/overview.rst -text
 docs/sphinx/queries.rst -text
 docs/sphinx/source/Makefile -text
