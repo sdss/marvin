@@ -1,6 +1,6 @@
 
-Marvin Tools API
-================
+Marvin Tools Reference
+======================
 
 Cube
 ----

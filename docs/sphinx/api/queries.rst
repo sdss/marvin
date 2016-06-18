@@ -1,6 +1,6 @@
 
-Marvin Query API
-================
+Marvin Query Reference
+======================
 
 Query
 -----
