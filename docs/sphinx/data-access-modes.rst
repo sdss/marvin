@@ -1,4 +1,4 @@
-Data Access Modes 
+Data Access Modes
 =================
 
 .. _local-mode:
@@ -20,7 +20,7 @@ Remote Mode
 -----------
 
 In Remote mode, :doc:`marvin_tools` will retrieve the data remotely via the
-:doc:`api` if a MaNGA-ID or a plate-IFU identifier is provided.
+:doc:`api` if a MaNGA-ID or a plate-IFU identifier is provided, and return the data as a JSON object.
 
 
 .. _auto-mode:

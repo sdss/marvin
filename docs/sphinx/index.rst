@@ -60,6 +60,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
+   api/general
    api/api
    api/tools
    api/queries
