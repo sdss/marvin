@@ -1,6 +1,6 @@
 
 Marvin API
-================
+==========
 
 .. automodule:: marvin.api.api
    :members:

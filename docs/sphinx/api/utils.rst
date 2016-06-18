@@ -1,6 +1,6 @@
 
-Marvin Utilities API
-====================
+Marvin Utilities Reference
+==========================
 
 General
 -------
