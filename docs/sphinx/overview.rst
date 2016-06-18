@@ -20,6 +20,10 @@ any attempt to harness the full statistical power of this data set.
 Marvin
 ------
 
+.. note::
+
+    Add link
+
 Marvin is a complete ecosystem designed for overcoming the challenge of
 searching, accessing, and visualizing the MaNGA data. It consists of a
 three-pronged approach of a web app, a python package, and an API. The web app,
