@@ -14,14 +14,45 @@ if possible. More likely, you will not have access to the database, so it will
 look for a FITS file. If neither of those options is successful, then it will
 download the requested data if automatic downloading is enabled.
 
+Explicit Filename
+::
+
+    import marvin
+    from marvin.tools.cube import Cube
+    marvin.config.mode = 'local'
+
+    # loads a cube from an explicit filepath
+    cc = Cube(filename='/Users/Brian/mycubes/manga-8485-1901-LOGCUBE.fits.gz')
+
+Local SAS
+::
+
+    import marvin
+    from marvin.tools.cube import Cube
+    marvin.config.mode = 'local'
+
+    # checks for file in your local SAS. If found, loads it.  If not, may download it.
+    cc = Cube(plateifu='8485-1901')
+
 .. _remote-mode:
 
 Remote Mode
 -----------
 
 In Remote mode, :doc:`marvin_tools` will retrieve the data remotely via the
-:doc:`api` if a MaNGA-ID or a plate-IFU identifier is provided, and return the data as a JSON object.
+:doc:`api`.  When dealing with Marvin Tools like Cubes or Spaxels, if a MaNGA-ID or a plate-IFU identifier
+is provided, a remote API call is made to Marvin running at Utah, where it retrieves the data requested
+and returns it as a JSON object.  Once the data has been acquired, the Marvin Tool object you are dealing with
+will work as if you had the data locally.
 
+::
+
+    import marvin
+    from marvin.tools.cube import Cube
+    marvin.config.mode = 'remote'
+
+    # grabs the necessary information from Utah, returns it to instantiate the Cube tool
+    cc = Cube(plateifu='8485-1901')
 
 .. _auto-mode:
 

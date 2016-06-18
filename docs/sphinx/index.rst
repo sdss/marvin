@@ -66,6 +66,7 @@ Documentation
    api/queries
    api/utils
    api/web
+   api/db
 
 Indices and tables
 ==================

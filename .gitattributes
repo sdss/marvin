@@ -10,6 +10,7 @@ docs/sphinx/_static/marvin.png -text svneol=unset#image/png
 docs/sphinx/_static/marvin_favicon.ico -text
 docs/sphinx/_static/marvin_favicon.png -text
 docs/sphinx/api/api.rst -text
+docs/sphinx/api/db.rst -text
 docs/sphinx/api/general.rst -text
 docs/sphinx/api/queries.rst -text
 docs/sphinx/api/utils.rst -text
