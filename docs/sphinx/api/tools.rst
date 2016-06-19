@@ -2,6 +2,8 @@
 Marvin Tools Reference
 ======================
 
+.. _marvin-tools-cube::
+
 Cube
 ----
 
@@ -10,12 +12,18 @@ Cube
    :undoc-members:
    :show-inheritance:
 
+
+.. _marvin-tools-plate::
+
 Plate
 -----
 .. automodule:: marvin.tools.plate
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+.. _marvin-tools-spaxel::
 
 Spaxel
 -------
@@ -25,6 +33,9 @@ Spaxel
    :undoc-members:
    :show-inheritance:
 
+
+.. _marvin-tools-spectrum::
+
 Spectrum
 --------
 
@@ -32,6 +43,9 @@ Spectrum
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+.. _marvin-tools-rss::
 
 RSS
 -------
