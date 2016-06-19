@@ -137,7 +137,7 @@ html_theme_options = {
     # an arbitrary url.
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin/", True),
-        ("First steps", "first_steps"),
+        ("First steps", "first-steps"),
     ],
 
     # Render the next and previous page links in navbar. (Default: true)

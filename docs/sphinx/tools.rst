@@ -1,4 +1,6 @@
 
+.. _marvin-tools:
+
 Tools
 =====
 
@@ -21,3 +23,11 @@ python script or terminal. With the Marvin-tools class :doc:`query` you can
 build and execute a query. The results of your query are returned as an instance
 of the :doc:`results` class, which has built-in methods for navigating and
 presenting those results.
+
+Performing Queries:
+
+:doc:`query`
+
+Dealing with Results from Queries:
+
+:doc:`results`

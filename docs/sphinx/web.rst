@@ -1,8 +1,9 @@
 
+.. _marvin-web:
+
 Web
 ===
 
-Description of Pages and Capabilities
 
 .. _web-main:
 
@@ -13,7 +14,7 @@ The main Marvin splash page for the MaNGA survey.  Contains a navgiation bar wit
 to other Marvin pages, a Log-In window, general information about Marvin
 and the development team, as well as quick contact information at the bottom.
 
-**Id Search Box**:
+**ID Search Box**:
 
 This search box allows to search for MaNGA objects either by
 plate-IFU, plateID, or mangaID.  It features autocompletion so just
@@ -31,7 +32,7 @@ currently working with.
 
 Help
 ----
-A link to the Marvin Documentation page
+A link to the Marvin Documentation page.
 
 .. _web-random:
 
@@ -70,7 +71,7 @@ The search filter accepts boolean search strings that are parsed with a
 `modified version <https://github.com/havok2063/SQLAlchemy-boolean-search>`_ of
 `SQLAlchemy-boolean-search
 <https://github.com/lingthio/SQLAlchemy-boolean-search>`_. Please see here for a
-:doc:`boolean-search-tutorial`.
+:doc:`tutorials/boolean-search-tutorial`.
 
 
 .. _web-plate:

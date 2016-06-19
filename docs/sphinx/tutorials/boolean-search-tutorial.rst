@@ -1,14 +1,17 @@
+
+.. _marvin-sqlboolean:
+
 Boolean Search Tutorial
 =======================
 
 Boolean search strings consist of a **name**-**operator**-**value** combination
-(e.g., :code:`a > 5`), where 
+(e.g., :code:`a > 5`), where
 
 * **name** is the variable name,
 
 * **operator** must be  :code:`==`, :code:`=`, :code:`!=`, :code:`<`,
   :code:`<=`, :code:`>=`, or :code:`>`, and
-  
+
   * :code:`==` finds exact matches whereas :code:`=` finds elements that contain
     the value.
 
@@ -23,14 +26,14 @@ boolean operands (in order of descending precedence):
 
 1. :code:`not`
 2. :code:`and`
-3. :code:`or` 
+3. :code:`or`
 
 and grouped with parentheses :code:`()`. For example,::
-    
+
     a = 5 or b = 7 and not c = 7
 
 is equivalent to::
-    
+
     a = 5 or (b = 7 and (not c = 7))
 
 Variable names can have hierarchical dotted field names, such as
@@ -40,4 +43,4 @@ Variable names can have hierarchical dotted field names, such as
 
 For more details on boolean search string syntax see the
 `SQLAlchemy-boolean-search documentation
-<http://sqlalchemy-boolean-search.readthedocs.io/en/latest/>`_
+<http://sqlalchemy-boolean-search.readthedocs.io/en/latest/>`_.
