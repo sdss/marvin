@@ -2,6 +2,8 @@
 Marvin Utilities Reference
 ==========================
 
+.. _marvin-utils-general-general:
+
 General
 -------
 
@@ -9,6 +11,8 @@ General
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-utils-general-images:
 
 Image
 -----

@@ -13,7 +13,7 @@ Let's import Marvin
     import marvin
     INFO: No MPL or DRP/DAP version set. Setting default to MPL-4
 
-    print config.mplver, config.drpver, config.dapver
+    print marvin.config.mplver, marvin.config.drpver, marvin.config.dapver
     MPL-4 v1_5_1 1.1.1
 
 On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data
@@ -29,6 +29,11 @@ using the Marvin :ref:`marvin-config-class`. ::
 
 My First Cube
 -------------
+
+.. note::
+    
+    Perhaps we should use a generic file path like
+    $MANGA_SPECTRO_REDUX/v1_5_1/... or use the API?
 
 Now let's play with a Marvin Cube
 ::
@@ -49,7 +54,7 @@ Now let's play with a Marvin Cube
     cc.targetbit
     {'bits': [2336L], 'names': ['MNGTRG1']}
 
-    cc.qualitybits
+    cc.qualitybit
     ('DRP3QUAL', 1L, None)
 
     # get the wavelength
@@ -62,6 +67,9 @@ Now let's play with a Marvin Cube
     spax = cc[10,10]
     print spax
     <Marvin Spaxel (x=10, y=10)>
+    
+    # plot the spectrum
+    spax.plot()
 
 See the Marvin :ref:`marvin-tools` section for more details and examples.  And the :ref:`marvin-tools-ref` for the detailed Reference Guide.
 

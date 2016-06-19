@@ -37,7 +37,7 @@ several attributes that control how you interact with MaNGA data.
 
 * **urlmap**:
     This attribute is a lookup dictionary for all of the API routes that Marvin uses internally.
-    This attribute is set automatically.  If you not using the Marvin API :ref:`marvin-interaction` class directly,
+    This attribute is set automatically.  If you not using the Marvin API :ref:`marvin-api-interaction` class directly,
     then **you do not have to do anything with this attribute**.
 
 .. _marvin-modes:
@@ -99,7 +99,7 @@ Via Config
 
     # set config attributes and turn on global downloads
     config.setMPL('MPL-4')
-    config.mode = local
+    config.mode = 'local'
     config.download = True
 
     # instantiate Cube objects
@@ -118,7 +118,7 @@ Via Tools
 
     from marvin import config
     from marvin.tools.cube import Cube
-    config.mode = local
+    config.mode = 'local'
 
     # instantiate Cube objects
     cc = Cube(plateifu='8485-1901', download=True)
@@ -130,7 +130,7 @@ Via Query Results
 ^^^^^^^^^^^^^^^^^
 ::
 
-    from marvin.tools.query import Query, Results
+    from marvin.tools.query import Query
 
     # Make a query
     searchfilter = 'nsa.z < 0.2'
@@ -153,7 +153,7 @@ Via Explicit Call
     from marvin.utils.general import downloadList
     config.setMPL('MPL-4')
 
-    # Make a list of plate-IFUS
+    # Make a list of plate-IFUs
     gallist = ['8485-1901', '7443-12701']
 
     # Download cubes for the objects in your list

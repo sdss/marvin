@@ -65,6 +65,7 @@ Auto Mode
 In Auto mode, Marvin first tries `Local Mode`_, but if that attempt fails, it
 automatically switches to `Remote Mode`_ .
 
+.. _mode-decision-tree:
 
 Mode Decision Tree
 ------------------

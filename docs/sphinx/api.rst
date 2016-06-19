@@ -4,7 +4,7 @@
 API
 ===
 
-API stands for Application Protocol Interface.  It describes a set of rules designed to faciliate remote acquisition of data.  It is
+API stands for Application Programming Interface.  It describes a set of rules designed to faciliate remote acquisition of data.  It is
 typically designed as a set of HTTP Request methods (i.e. GET or POST), that you can interact with in a browser, or via code packages, e.g. the Python package `Requests <http://docs.python-requests.org/en/master/>`_.  These URL routes, along with all their parameters, can sometimes be tedious to deal with explicitly.
 
 Marvin makes this easy for you in two ways:
@@ -77,6 +77,16 @@ Usage:
     data = response.getData()
     print data
 
+
+Queries
+-------
+
+The most ground-breaking feature is that you can run queries using Marvin-tools,
+which will trigger a Marvin-API request and return the query results. Marvin-API
+returns data in JSON format and the Marvin-tools classes translate it to more
+user-friendly python data types (e.g. numpy arrays).
+
+
 Http Status Codes
 -----------------
 These tell you whether or not your request was successful.  A status code of 200 mean success.  Any other status code means failure.  If the Interaction requset fails, you will receive a dictionary containing the status code, and an error message.
@@ -91,6 +101,5 @@ Status Codes:
 * **400**: Bad Request
 * **502**: Bad Gateway
 * **504**: Gateway Timeout
-
 
 

@@ -43,4 +43,4 @@ Variable names can have hierarchical dotted field names, such as
 
 For more details on boolean search string syntax see the
 `SQLAlchemy-boolean-search documentation
-<http://sqlalchemy-boolean-search.readthedocs.io/en/latest/>`_
+<http://sqlalchemy-boolean-search.readthedocs.io/en/latest/>`_.

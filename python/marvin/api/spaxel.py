@@ -60,7 +60,7 @@ class SpaxelView(BaseView):
     @route('/<name>/<path:path>/', methods=['GET', 'POST'], endpoint='getSpaxel')
     @parseRoutePath
     def get(self, name, x=None, y=None):
-        """Retrieves the spaxel at ``(x, y)`` and returns its arrays."""
+        """Retrieves the spaxel at ``(x, y)`` and returns its spectral data arrays."""
 
         assert x is not None and y is not None
 

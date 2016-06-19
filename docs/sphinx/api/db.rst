@@ -5,7 +5,7 @@ Marvin Databases
 ================
 
 Marvin relies heavily on databases throughout itself.  Databases allow for fast access to data across the entire sample, and can be
-constructed to easily extract complex sets of data, or complete complex tasks.  All Marvin Queries, Marvin API calls, Marvin Web
+constructed to easily extract complex sets of data, or complete complex tasks.  All Marvin Queries, Marvin API calls, and Marvin Web
 functionality use the databases at Utah.
 
 .. _marvin-datadb:

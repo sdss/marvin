@@ -25,9 +25,7 @@ class Cube(MarvinToolsClass):
             The plate-ifu of the data cube to load (either ``mangaid`` or
             ``plateifu`` can be used, but not both).
         mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See
-            :doc:`Mode secision tree</mode_decision>`.
-            the cube exists.
+            The load mode to use. See :doc:`mode-decision-tree>`.
         drpall (str):
             The path to the drpall file to use. Defaults to
             ``marvin.config.drpall``.

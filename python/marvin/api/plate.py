@@ -39,7 +39,7 @@ def _getPlate(plateid, nocubes=None):
 
 
 class PlateView(BaseView):
-    """Class describing API calls related to RSS files."""
+    """Class describing API calls related to plates."""
 
     route_base = '/plate/'
 

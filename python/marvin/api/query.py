@@ -20,12 +20,10 @@ def _getCubes(searchfilter, params=None):
 
 
 class QueryView(BrainQueryView):
-    """Class describing API calls related to queries."""
-
-    """example query post:
-    curl -X POST --data "searchfilter=nsa_redshift<0.1" http://cd057661.ngrok.io/api/query/cubes/
-
-    curl -X POST --data "searchfilter=nsa_redshift<0.1&params_out=mangaid" http://localhost:5000/api/query/cubes/
+    """Class describing API calls related to queries.
+    
+    example query post:
+    curl -X POST --data "searchfilter=nsa_redshift<0.1" http://sas.sdss.org/marvin2/api/query/cubes/
     """
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')

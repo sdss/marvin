@@ -1,5 +1,5 @@
-What's New in Marvin 2.0
-========================
+What's New in Marvin 2.0 (June 2016)
+====================================
 
 Marvin 2.0 is a complete overhaul of Marvin 1.0, converting Marvin into a full suite of interaction tools.
 
