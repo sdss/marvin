@@ -44,10 +44,10 @@ several attributes that control how you interact with MaNGA data.
 
 Marvin Modes
 ------------
-* Local mode - Use this mode to deal with local FITS files either in your local SAS or through explicit file locations.
-* Remote mode - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API and
-    returned as a JSON object, where
-* Auto mode - Use this mode to have Marvin attempt to automatically handle the modes.
+* **Local mode** - Use this mode to deal with local FITS files either in your local SAS or through explicit file locations.
+* **Remote mode** - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API.  Depending on your use,
+  it may be returned as a JSON object or used to complete the Tool function you are using.
+* **Auto mode** - Use this mode to have Marvin attempt to automatically handle the modes.
 * See :doc:`data-access-modes` for more detailed information.
 
 .. _marvin-set-versions:

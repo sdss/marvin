@@ -34,8 +34,8 @@ developed and maintained by the MaNGA team.
 
    overview
    installation
-   general
    first-steps
+   general
 
 :doc:`tools`
 ^^^^^^^^^^^^
@@ -45,7 +45,7 @@ developed and maintained by the MaNGA team.
 ^^^^^^^^^^
 
 Tutorials
-^^^^^^^^^
+=========
 
 .. toctree::
    :titlesonly:

@@ -1,6 +1,10 @@
 
+.. _marvin-query-ref:
+
 Marvin Query Reference
 ======================
+
+.. _marvin-queries-ref:
 
 Query
 -----
@@ -10,6 +14,7 @@ Query
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-results-ref:
 
 Results
 -------
