@@ -33,7 +33,7 @@ several attributes that control how you interact with MaNGA data.
 
 * **urlmap**:
     This attribute is a lookup dictionary for all of the API routes that Marvin uses internally.
-    This attribute is set automatically.  If you not using the Marvin API :ref:`marvin-interaction` class directly,
+    This attribute is set automatically.  If you not using the Marvin API :ref:`marvin-api-interaction` class directly,
     then **you do not have to do anything with this attribute**.
 
 .. _marvin-modes:

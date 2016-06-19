@@ -2,7 +2,7 @@
 Marvin API
 ==========
 
-.. _marvin-interaction:
+.. _marvin-api-interaction:
 
 Interaction
 -----------

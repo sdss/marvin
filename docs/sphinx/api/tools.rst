@@ -2,7 +2,7 @@
 Marvin Tools Reference
 ======================
 
-.. _marvin-tools-cube::
+.. _marvin-tools-cube:
 
 Cube
 ----
@@ -13,7 +13,7 @@ Cube
    :show-inheritance:
 
 
-.. _marvin-tools-plate::
+.. _marvin-tools-plate:
 
 Plate
 -----
@@ -23,7 +23,7 @@ Plate
    :show-inheritance:
 
 
-.. _marvin-tools-spaxel::
+.. _marvin-tools-spaxel:
 
 Spaxel
 -------
@@ -34,7 +34,7 @@ Spaxel
    :show-inheritance:
 
 
-.. _marvin-tools-spectrum::
+.. _marvin-tools-spectrum:
 
 Spectrum
 --------
@@ -45,7 +45,7 @@ Spectrum
    :show-inheritance:
 
 
-.. _marvin-tools-rss::
+.. _marvin-tools-rss:
 
 RSS
 -------
