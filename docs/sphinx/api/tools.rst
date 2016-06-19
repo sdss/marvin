@@ -1,4 +1,6 @@
 
+.. _marvin-tools-ref:
+
 Marvin Tools Reference
 ======================
 

@@ -45,6 +45,9 @@ is provided, a remote API call is made to Marvin running at Utah, where it retri
 and returns it as a JSON object.  Once the data has been acquired, the Marvin Tool object you are dealing with
 will work as if you had the data locally.
 
+When working in remote mode, data is lazy loaded.  This means it only grabs the bare minimum you need.
+New data are grabbed on demand.
+
 ::
 
     import marvin
