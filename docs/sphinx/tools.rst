@@ -2,14 +2,22 @@
 Tools
 =====
 
-Lorem cupidatat sit quis sunt labore cillum irure nulla quis ipsum incididunt
-do velit id. Duis et commodo magna velit cupidatat exercitation quis consectetur.
-Irure labore anim ea eiusmod consectetur voluptate sunt irure ut pariatur mollit ex
-irure occaecat aliqua deserunt voluptate. Id eu dolor sit labore proident culpa
-proident excepteur dolore eu cillum culpa id ut cupidatat qui.
+Marvin-tools is an importable python package that provides convenience classes
+and functions for searching, accessing, interacting with, and visualzing MaNGA
+data. Since these capabilities are useful in both an exploratory environment,
+such as in Marvin-web, and in science-grade analysis code, we factored out the
+common elements into Marvin-tools.
 
+Marvin-tools includes classes that represent hierarchical levels of MaNGA data
+organization: :ref:`marvin-tools-spectrum`, :ref:`marvin-tools-spaxel`,
+:ref:`marvin-tools-rss`, :ref:`marvin-tools-cube`, and
+:ref:`marvin-tools-plate`.  These classes have methods to retrieve the
+appropriate data from a locally stored file, over the internet via Marvin-API,
+or by downloading FITS files.
 
-:doc:`query`
-
-:doc:`results`
-
+One of the most powerful aspects of the Marvin ecosystem is the ability to use
+Marvin-API through Marvin-tools to query the MaNGA databases from within a
+python script or terminal. With the Marvin-tools class :doc:`query` you can
+build and execute a query. The results of your query are returned as an instance
+of the :doc:`results` class, which has built-in methods for navigating and
+presenting those results.
