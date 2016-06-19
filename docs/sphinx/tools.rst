@@ -8,8 +8,8 @@ data. Since these capabilities are useful in both an exploratory environment,
 such as in Marvin-web, and in science-grade analysis code, we factored out the
 common elements into Marvin-tools.
 
-Marvin-tools includes classes that represent hierarchical levels of MaNGA data
-organization: :ref:`marvin-tools-spectrum`, :ref:`marvin-tools-spaxel`,
+Marvin-tools includes classes that correspond to different levels of MaNGA data
+organization\: :ref:`marvin-tools-spectrum`, :ref:`marvin-tools-spaxel`,
 :ref:`marvin-tools-rss`, :ref:`marvin-tools-cube`, and
 :ref:`marvin-tools-plate`.  These classes have methods to retrieve the
 appropriate data from a locally stored file, over the internet via Marvin-API,
