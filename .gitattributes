@@ -4,6 +4,12 @@ bin/run_marvin -text
 docs/Mode_Decision_Tree.graffle -text
 docs/Mode_Decision_Tree.pdf -text
 docs/Mode_Decision_Tree.png -text
+docs/dbschema/mangadapdb_schema.pdf -text svneol=unset#application/pdf
+docs/dbschema/mangadapdb_schema.png -text svneol=unset#image/png
+docs/dbschema/mangadatadb_schema.pdf -text svneol=unset#application/pdf
+docs/dbschema/mangadatadb_schema.png -text svneol=unset#image/png
+docs/dbschema/mangasampledb_schema.pdf -text svneol=unset#application/pdf
+docs/dbschema/mangasampledb_schema.png -text svneol=unset#image/png
 docs/sphinx/Makefile -text
 docs/sphinx/_static/logo5_lores.jpg -text
 docs/sphinx/_static/marvin.png -text svneol=unset#image/png

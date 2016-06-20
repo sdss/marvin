@@ -19,3 +19,4 @@ python/marvin/web/lib/node_modules
 python/marvin/web/static/node_modules
 python/marvin/web/templates/__pycache__
 logs/
+!docs/dbschema/logs
