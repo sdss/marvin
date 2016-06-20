@@ -27,8 +27,8 @@ The full list of dependencies includes:
 
 |
 
-Installing modules
-------------------
+Getting modules
+---------------
 
 `GNU Modules <http://modules.sourceforge.net>`_ is a powerful tool to control
 what software versions are installed in your computer, and to setup their
@@ -58,8 +58,8 @@ page for the command.
 
 |
 
-Installing sdss4install
------------------------
+sdss4install
+------------
 
 ``sdss4install`` is a tool that lives in ``sdss4tools`` that helps significantly
 to download, configure, and make available SDSS software. To install ``sdss4tool``
@@ -80,8 +80,8 @@ your are ready to install more SDSS software by just using the ``sdss4install`` 
 
 |
 
-Installing SDSS packages
-------------------------
+SDSS packages
+-------------
 
 Marvin depends on a few SDSS packages. First, create a directory that will act as
 your local SAS. This directory will follow the same structure as the remote SAS and will
@@ -133,8 +133,8 @@ in `.modules` will load ``sdss4tools`` and ``marvin`` for each new terminal.
 
 |
 
-Installing Python packages
---------------------------
+Python packages
+---------------
 
 In addition to SDSS software, Marvin depends on a few Python libraries. These can easily
 be installed with `pip <https://pip.pypa.io/en/stable/>`_. If your system does not have
