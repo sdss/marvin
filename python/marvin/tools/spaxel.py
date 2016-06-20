@@ -12,21 +12,28 @@
 
 from __future__ import division
 from __future__ import print_function
+
+from astropy.io import fits
+import numpy as np
+
+import marvin
+from marvin.api import api
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from marvin.tools.spectrum import Spectrum
-from astropy.io import fits
-from marvin.api import api
-import marvin
-import numpy as np
+import marvin.tools.anal_props as anal_props
+import marvin.utils.general.dap
 
 
-class Spaxel(MarvinToolsClass, Spectrum):
+class Spaxel(MarvinToolsClass):
     """A class to interface with a spaxel in a cube.
 
     This class represents a fully reduced spaxel, initialised either
     from a file, a database, or remotely via the Marvin API. An spaxel contains
-    flux, ivar, and mask information.
+    flux, ivar, and mask information. Additionally, the spaxel can be
+    initialised with DAP properties if the ``create_dap_properties=True``
+    keyword is passed. This is done by default if the spaxel is loaded
+    during the initialisation of a ``Maps`` object.
 
     Parameters:
         x,y (int):
@@ -41,15 +48,30 @@ class Spaxel(MarvinToolsClass, Spectrum):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
+        create_dap_properties (bool):
+            If ``True``, populates the object with the DAP ``AnalysisProperty``
+            values. Requires defining the ``bintype`` and ``niter``. If one of
+            those is not defined, the default map will be used.
+        bintype (str or None):
+            The binning type of the DAP MAPS file to use. The default value is
+            ``'NONE'``
+        niter (int):
+            The iteration number of the DAP map.
         drpall (str):
             The path to the drpall file to use. Defaults to
             ``marvin.config.drpall``.
         drpver (str):
             The DRP version to use. Defaults to ``marvin.config.drpver``.
+        dapver (str):
+            The DAP version to use. Defaults to ``marvin.confg.dapver``.
 
-    Return:
-        rss:
-            An object representing the Spaxel entity.
+    Attributes:
+        drp (`Spectrum`):
+            A `Spectrum` object with the DRP spectrum and associated ivar and
+            mask for this spaxel.
+        dap (dict):
+            A dictionary of `AnalysisProperty` objects, sorted by category
+            and name (usually the channel for each category).
 
     """
 
@@ -58,6 +80,9 @@ class Spaxel(MarvinToolsClass, Spectrum):
         self.data_origin = None
         self._hduList = None
         self._spaxel_db = None
+
+        self.drp = {}
+        self.dap = {}
 
         if len(args) > 0:
             self.x = args[0]
@@ -80,20 +105,87 @@ class Spaxel(MarvinToolsClass, Spectrum):
 
         self._createSpectrum()
 
+        create_dap_properties = kwargs.get('create_dap_properties', False)
+
+        if create_dap_properties is True:
+            self._create_dap_properties(**kwargs)
+
     def __repr__(self):
         """Spaxel representation."""
 
         return '<Marvin Spaxel (x={0:d}, y={1:d})>'.format(self.x, self.y)
 
-    def _getFullPath(self, **kwargs):
-        """Returns the full path of the cube for this spaxel."""
+    def _initDAP(self, data):
+        """Initialises the dictionary of `AnalysisProperty` objects.
+
+        Parameters:
+            data (dict):
+                A dictionary in the form
+                `{category: {channel_1: {value: VALUE, ivar: IVAR, mask: MASK},
+                             channel_2: ..., unit: UNIT},
+                  category_2: {...}, ...}`
+                where `category` is of the form `'EMLINE_GFLUX',
+                'STELLAR_VEL', ...`, `channels` are the channels defined for
+                each category, and `unit` are the physical units for the
+                specified values in a category.
+
+        """
+
+        for cat in data:
+            for channel in data[cat]:
+                # Skips unit, which is not a real channel.
+                if channel == 'unit':
+                    continue
+                value = data[cat][channel]['value']
+                ivar = data[cat][channel]['ivar']
+                mask = data[cat][channel]['mask']
+                unit = data[cat]['unit']
+                anal_prop_key = cat.lower() + '_' + channel.lower()
+                self.dap[anal_prop_key] = anal_props.AnalisisProperty(
+                    cat.lower(), channel.lower(), value, ivar=ivar, mask=mask,
+                    unit=unit)
+
+    def _create_dap_properties(self, **kwargs):
+        """Creates the DAP `AnalysisProperty` dictionary.
+
+        This method populates the object dictionary with DAP properties. It
+        creates a data dictionary to be passed to `Spaxel._initDAP()` by using
+        the same data data access mode used to initialise the spaxel. If
+        `dapver` was specified during the spaxel initialisation, uses that;
+        otherwise uses the system-wide `dapver`.
+
+        """
+
+        plate, ifu = self.plateifu.split('-')
+        bintype = kwargs.get('bintype', 'NONE')
+        niter = kwargs.get('niter', None)
+        self.data_origin = 'file'
+        if self.data_origin == 'file':
+            # If the binning type and iteration are specified, we use the binned map.
+            # Otherwise we use the default map
+            if bintype and niter:
+                path_type = 'mangamap'
+                params = dict(drpver=self._drpver, dapver=self._dapver, plate=plate, ifu=ifu,
+                              bintype=bintype, n=niter, mode='CUBE')
+            else:
+                path_type = 'mangadefault'
+                params = dict(drpver=self._drpver, dapver=self._dapver, plate=plate,
+                              ifu=ifu, mode='CUBE')
+
+            maps_file = MarvinToolsClass._getFullPath(self, path_type, **params)
+            maps_data = marvin.utils.general.dap.maps2dict_of_props(maps_file, self.x, self.y)
+
+            self._initDAP(maps_data)
+
+    def _getFullPath(self, data_type='mangacube', **kwargs):
+        """Returns the full path of the file in the tree."""
 
         if not self.plateifu:
             return None
 
         plate, ifu = self.plateifu.split('-')
 
-        return MarvinToolsClass._getFullPath(self, 'mangacube', ifu=ifu,
+        return MarvinToolsClass._getFullPath(self, data_type, ifu=ifu,
                                              drpver=self._drpver,
                                              plate=plate)
 
@@ -129,9 +221,9 @@ class Spaxel(MarvinToolsClass, Spectrum):
             mask = np.array(self._arrays['mask'])
             wavelength = np.array(self._arrays['wavelength'])
 
-        Spectrum.__init__(self, flux, ivar=ivar, mask=mask, wavelength=wavelength,
-                          flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
-                          wavelength_unit='Angstrom')
+        self.drp = Spectrum(flux, ivar=ivar, mask=mask, wavelength=wavelength,
+                            flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
+                            wavelength_unit='Angstrom')
 
     def _getSpaxelFromFile(self, cubeHDU=None):
         """Initialises the Spaxel object from a file data cube.
