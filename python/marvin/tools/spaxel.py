@@ -14,8 +14,10 @@ from __future__ import division
 from __future__ import print_function
 
 from astropy.io import fits
-from marvin.api import api
+import numpy as np
+
 import marvin
+from marvin.api import api
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from marvin.tools.spectrum import Spectrum
