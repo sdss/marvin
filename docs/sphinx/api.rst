@@ -11,6 +11,8 @@ Marvin makes this easy for you in two ways:
 1. The Marvin API wraps this functionality into an :ref:`marvin-interaction-class`, making it easy for you to make these calls if you want.
 2. All Marvin Tools have an API call built in when interacting in 'remote' mode, that uses the :ref:`marvin-interaction-class` already, so you don't have to.
 
+With the Marvin API, you can build your own application, website, or scripts very easily.
+
 .. _marvin-urlmap:
 
 Config.Urlmap
