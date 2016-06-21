@@ -22,6 +22,7 @@ bin/flask_profiler.sql
 bin/logs
 docs/logs
 docs/sphinx/_static/logs
+docs/sphinx/api/brain/logs
 docs/sphinx/api/logs
 docs/sphinx/flask_profiler.sql
 docs/sphinx/logs
