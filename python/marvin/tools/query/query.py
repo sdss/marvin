@@ -199,7 +199,6 @@ class Query(object):
 
         # Don't do anything if nothing specified
         allnot = [not searchfilter, not returnparams]
-        print('inside query', allnot, not all(allnot), self.mode, not all(allnot) and self.mode == 'local')
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
@@ -237,11 +236,18 @@ class Query(object):
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
+
+        Adds a list of string parameter names into the main list of
+        query parameters to return
+
+        Parameters:
+            returnparams (list):
+                A string list of the parameters you wish to return in the query
+
         '''
         if returnparams:
             returnparams = [returnparams] if type(returnparams) != list else returnparams
         self.params.extend(returnparams)
-        print('postret', self.params)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type '''
@@ -270,7 +276,17 @@ class Query(object):
         print('queryorder', self.queryparams_order)
 
     def get_available_params(self):
-        ''' Retrieve the available parameters to query on '''
+        ''' Retrieve the available parameters to query on
+
+        Retrieves a list of all the available query parameters.
+        Used primarily for the web autocompletion.
+
+        Parameters:
+
+        Returns:
+            mykeys (list):
+                a list of all of the available queryable parameters
+        '''
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
@@ -559,7 +575,27 @@ class Query(object):
 
     @updateConfig
     def show(self, prop=None):
-        ''' Prints info to the console with parameter variables plugged in.  '''
+        ''' Prints into to the console
+
+        Displays the query to the console with parameter variables plugged in.
+        Works only in local mode.  Input prop can be one of Can be one of query,
+        tables, joins, or filter.
+
+        Only works in LOCAL mode.
+
+        Allowed Values for Prop:
+            query - displays the entire query (default if nothing specified)
+            tables - displays the tables that have been joined in the query
+            joins -  same as table
+            filter - displays only the filter used on the query
+
+        Parameters:
+            prop (str):
+                The type of info to print.
+
+        Example:
+
+        '''
 
         assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
 

@@ -4,13 +4,14 @@
 API
 ===
 
-API stands for Application Programming Interface.  It describes a set of rules designed to faciliate remote acquisition of data.  It is
-typically designed as a set of HTTP Request methods (i.e. GET or POST), that you can interact with in a browser, or via code packages, e.g. the Python package `Requests <http://docs.python-requests.org/en/master/>`_.  These URL routes, along with all their parameters, can sometimes be tedious to deal with explicitly.
+API stands for Application Programming Interface.  It describes a set of rules designed to faciliate remote acquisition of data, without using a user interface.  It is typically designed as a set of HTTP Request methods (i.e. GET or POST), that you can interact with in a browser, or via code packages, e.g. the Python package `Requests <http://docs.python-requests.org/en/master/>`_.  These URL routes, along with all their parameters, can sometimes be tedious to deal with explicitly.
 
 Marvin makes this easy for you in two ways:
 
 1. The Marvin API wraps this functionality into an :ref:`marvin-interaction-class`, making it easy for you to make these calls if you want.
 2. All Marvin Tools have an API call built in when interacting in 'remote' mode, that uses the :ref:`marvin-interaction-class` already, so you don't have to.
+
+With the Marvin API, you can build your own application, website, or scripts very easily, and forego the rest of Marvin, if so desired.
 
 .. _marvin-urlmap:
 
