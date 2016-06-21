@@ -55,7 +55,7 @@ class Spaxel(MarvinToolsClass):
         bintype (str or None):
             The binning type of the DAP MAPS file to use. The default value is
             ``'NONE'``
-        niter (int):
+        niter (int or None):
             The iteration number of the DAP map.
         drpall (str):
             The path to the drpall file to use. Defaults to
