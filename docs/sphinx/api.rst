@@ -52,7 +52,8 @@ Some urls require parameters passed to them. Others do not.  Urls with curly bra
 Interaction Class
 -----------------
 
-If you want to explicitly grab the data remotely outside of Marvin Tools, you can do so with the :ref:`marvin-interaction` class. This class, in combination with the Marvin :ref:`marvin-urlmap`, allows you to easily make API requests and retrieve the results.
+If you want to explicitly grab the data remotely outside of Marvin Tools, you can do so with the :ref:`marvin-interaction` class. This class, in combination with the Marvin :ref:`marvin-urlmap`, allows you to easily make API requests and retrieve the results.  The Interaction class returns data in a basic JSON format and translates it to a more user-friendly python data types (e.g. numpy arrays).
+
 
 Usage:
 ::
@@ -77,15 +78,6 @@ Usage:
     # get the data in your response
     data = response.getData()
     print data
-
-
-Queries
--------
-
-The most ground-breaking feature is that you can run queries using Marvin-tools,
-which will trigger a Marvin-API request and return the query results. Marvin-API
-returns data in JSON format and the Marvin-tools classes translate it to more
-user-friendly python data types (e.g. numpy arrays).
 
 
 Http Status Codes
