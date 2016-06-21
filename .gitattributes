@@ -27,6 +27,7 @@ docs/sphinx/index_old.rst -text
 docs/sphinx/installation.rst -text
 docs/sphinx/localtoc.rst -text
 docs/sphinx/overview.rst -text
+docs/sphinx/query_params.rst -text
 docs/sphinx/tutorials/boolean-search-tutorial.rst -text
 docs/sphinx/tutorials/query-examples.rst -text
 docs/sphinx/web.rst -text
