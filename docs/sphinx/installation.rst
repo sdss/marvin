@@ -41,19 +41,19 @@ to install ``modules``, run the following command on a fresh terminal ::
 
     svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4_getmodules
 
-The run ::
+Then run ::
 
     ./sdss4_getmodules -m <path-to-modules>
 
-where ``<path-to-modules>`` must be the path to the empty or inexistent directory
+where ``<path-to-modules>`` must be the path to the empty or non-existent directory
 where you want to install the ``modules`` package. ``sdss4_getmodules`` will take care
-of compiling ``modules``. If everything works you must get a message ending in ::
+of compiling ``modules``. If everything works you will get a message ending in ::
 
     bash users will need to add: source <path-to-modules>/init/bash to the .bashrc file
     tcshrc users will need to add: source <path-to-modules>/init/csh to the .tcshrc file
 
 You must add the corresponding ``source`` statement to your ``.bashrc``, ``.profile``, or
-``.cshrc``. If you open a new terminal and write ``module`` you should get the help
+``.cshrc`` file (likely located in your ``HOME`` directory). If you open a new terminal and write ``module`` you should get the help
 page for the command.
 
 |
@@ -75,7 +75,7 @@ download and run the script ::
     svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4bootstrap
     ./sdss4bootstrap -l
 
-If you now run ``module avail`` you must get a list containing ``sdss4tools``. Now
+If you now run ``module avail`` you will get a list containing ``sdss4tools``. Now
 your are ready to install more SDSS software by just using the ``sdss4install`` command.
 
 |
@@ -129,7 +129,7 @@ and then ::
     echo "source ~/.modules" > ~/.bashrc
 
 or edit ``.modules`` and your configuration file with your favourite text editor. The lines
-in `.modules` will load ``sdss4tools`` and ``marvin`` for each new terminal.
+in ``.modules`` will load ``sdss4tools`` and ``marvin`` for each new terminal.
 
 |
 
