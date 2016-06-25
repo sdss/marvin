@@ -66,6 +66,8 @@ class Cube(MarvinToolsClass):
         self.filename = None
         self._hdu = None
         self._cube = None
+        self.data = None
+        self._shape = None
 
         skip_check = kwargs.get('skip_check', False)
 
@@ -239,6 +241,7 @@ class Cube(MarvinToolsClass):
         self._useDB = False
         try:
             self._hdu = fits.open(self.filename)
+            self.data = self._hdu
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
@@ -286,6 +289,22 @@ class Cube(MarvinToolsClass):
                     doc='Gets the `IVAR` data extension.')
     mask = property(lambda self: self._getExtensionData('MASK'),
                     doc='Gets the `MASK` data extension.')
+
+    @property
+    def shape(self):
+        """The shape of the cube."""
+
+        if self._shape is None:
+            if self.data_origin == 'file':
+                self._shape = self._hdu['FLUX'].data.shape[1:]
+            elif self.data_origin == 'db':
+                self._shape = self._cube.shape.shape
+            elif self.data_origin == 'api':
+                # TODO: implement shape for API
+                pass
+
+        return self._shape
+
 
     @property
     def qualitybit(self):
@@ -375,3 +394,4 @@ class Cube(MarvinToolsClass):
             if self._cube:
                 self._useDB = True
                 self.hdr = self._cube.header
+                self.data = self._cube
