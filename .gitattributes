@@ -194,6 +194,7 @@ docs/sphinx/build/searchindex.js -text
 docs/sphinx/general.rst -text
 docs/sphinx/installation.rst -text
 docs/sphinx/overview.rst -text
+docs/sphinx/query_params.rst -text
 docs/sphinx/source/Makefile -text
 docs/sphinx/source/conf.py -text
 docs/sphinx/source/index.rst -text

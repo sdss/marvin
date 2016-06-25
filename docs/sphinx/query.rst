@@ -2,9 +2,36 @@
 .. _marvin-queries:
 
 Query
-=====
+=======
+
+Query is a new Marvin tool that allows you to programmtically search the MaNGA dataset in a pseudo-natural language format.
+Queries work with just three main input keyword arguments:
+
+* **searchfilter** - a pseudo-natural language string dictating the filter conditions on your query
+* **returnparams** - a list of parameters you want the query to return
+* **returntype** - a string name indicating the type of Marvin object you wish to return
+
+Queries take your inputs, parse the filter, run the Query, and return the results as a Marvin :ref:`marvin-results` object.
+When in local mode, queries will assume you have a database to query on.  You probably don't have a database.  This means for you, queries
+primarily work in remote mode.  Querying while in remote mode will trigger a Marvin-API request to the Marvin at Utah where it performs your
+query and returns the results.
+
+Filters
+-------
 
 See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.
+
+Return Parameters
+-----------------
+Queries will return a set of default parameters no matter what.  If you want to return additional parameters, input them here as a string list.  See :ref:`marvin-query-parameters` for a list of available parameters to return.
+
+Return Type
+-----------
+The results of your Query by default might not be in the format you desire.  Instead you may want to return a list of Marvin Tool objects such as Cubes, Spaxels, or Maps.  The return type can be
+
+* **cube** - returns a :ref:`marvin-tools-cube` object
+
+**NOTE**: This is time intensive.  Depending on the size of your results, this conversion may take awhile.  Be wary.
 
 Simple Query
 ------------
