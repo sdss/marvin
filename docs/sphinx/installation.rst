@@ -78,6 +78,19 @@ download and run the script ::
 If you now run ``module avail`` you must get a list containing ``sdss4tools``. Now
 your are ready to install more SDSS software by just using the ``sdss4install`` command.
 
+Before we continue, let's make sure SVN has the right permissions to access the private
+repositories. For that, run ::
+
+    module load sdss4tools
+    sdss4auth
+
+which will prompt you for your trac username and password. When it asks you to store the
+credentials say yes and make sure to run ::
+
+    chmod g-rwX,o-rwX ~/.subversion
+
+to ensure that your subversion directory only accesible by you.
+
 |
 
 SDSS packages
