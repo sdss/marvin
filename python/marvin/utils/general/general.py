@@ -6,6 +6,7 @@ from scipy.interpolate import griddata
 import warnings
 import marvin
 import PIL
+
 try:
     from sdss_access import RsyncAccess
 except ImportError as e:
@@ -14,9 +15,128 @@ except ImportError as e:
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
-           'downloadList']
+           'downloadList', 'getSpaxel']
 
 drpTable = None
+
+
+def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
+              ra=None, dec=None, xyorig='center'):
+    """Returns the |spaxel| matching certain coordinates.
+
+    The coordinates of the spaxel to return can be input as ``x, y`` pixels
+    relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
+    coordinates.
+
+    This function is intended to be called by
+    :func:`~marvin.tools.cube.Cube.getSpaxel` or
+    :func:`~marvin.tools.maps.Maps.getSpaxel`, and provides shared code for
+    both of them.
+
+    Parameters:
+        cube_object (:class:`~marvin.tools.cube.Cube` or None)
+            A :class:`~marvin.tools.cube.Cube` object with th DRP cube
+            data from which the spaxel spectrum will be extracted. If None,
+            the |spaxel| object(s) returned won't contain spectral information.
+        maps_object (:class:`~marvin.tools.maps.Maps` or None)
+            As ``cube_object`` but for the :class:`~marvin.tools.maps.Maps`
+            object representing the DAP maps entity. If None, the |spaxel|
+            will be returned without DAP information. At least one of
+            ``cube_object`` or ``maps_object`` must not be None.
+        x,y (int or array):
+            The spaxel coordinates relative to ``xyorig``. If ``x`` is an
+            array of coordinates, the size of ``x`` must much that of
+            ``y``.
+        ra,dec (float or array):
+            The coordinates of the spaxel to return. The closest spaxel to
+            those coordinates will be returned. If ``ra`` is an array of
+            coordinates, the size of ``ra`` must much that of ``dec``.
+        xyorig ({'center', 'lower'}):
+            The reference point from which ``x`` and ``y`` are measured.
+            Valid values are ``'center'`` (default), for the centre of the
+            spatial dimensions of the cube, or ``'lower'`` for the
+            lower-left corner. This keyword is ignored if ``ra`` and
+            ``dec`` are defined.
+
+    Returns:
+        spaxels (list):
+            The |spaxel| objects for this cube/maps corresponding to the input
+            coordinates. The length of the list is equal to the number
+            of input coordinates.
+
+    .. |spaxel| replace:: :class:`~marvin.tools.spaxel.Spaxel`
+
+    """
+
+    # TODO: for now let's put these imports here, but we should fix the
+    # circular imports soon.
+    import marvin.tools.cube
+    import marvin.tools.maps
+    import marvin.tools.spaxel
+
+    # Checks that the cube and maps data are correct
+    assert cube_object is not None or maps_object is not None, \
+        'Either cube_object or maps_object needs to be specified.'
+
+    assert cube_object is None or isinstance(cube_object, marvin.tools.cube.Cube), \
+        'cube_object is not an instance of Cube'
+
+    assert maps_object is None or isinstance(maps_object, marvin.tools.maps.Maps), \
+        'maps_object is not an instance of Maps'
+
+    # Checks that we have the correct set of inputs.
+    if x is not None or y is not None:
+        assert ra is None and dec is None, 'Either use (x, y) or (ra, dec)'
+        assert x is not None and y is not None, 'Specify both x and y'
+
+        inputMode = 'pix'
+        isScalar = np.isscalar(x)
+        x = np.atleast_1d(x)
+        y = np.atleast_1d(y)
+        coords = np.array([x, y], np.float).T
+
+    elif ra is not None or dec is not None:
+        assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
+        assert ra is not None and dec is not None, 'Specify both ra and dec'
+
+        inputMode = 'sky'
+        isScalar = np.isscalar(ra)
+        ra = np.atleast_1d(ra)
+        dec = np.atleast_1d(dec)
+        coords = np.array([ra, dec], np.float).T
+
+    else:
+        raise ValueError('You need to specify either (x, y) or (ra, dec)')
+
+    if not xyorig:
+        xyorig = 'center'
+
+    drp_data = cube_object.data if cube_object else None
+    dap_data = maps_object.data if maps_object else None
+
+    if cube_object:
+        ww = cube_object.wcs if inputMode == 'sky' else None
+        cubeShape = cube_object.shape
+        plateifu = cube_object.plateifu
+    else:
+        ww = maps_object.wcs if inputMode == 'sky' else None
+        cubeShape = maps_object.shape
+        plateifu = maps_object.plateifu
+
+    iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape,
+                                     mode=inputMode, xyorig=xyorig).T)
+
+    _spaxels = []
+    for ii in range(len(iCube[0])):
+        _spaxels.append(
+            marvin.tools.spaxel.Spaxel._initFromData(
+                plateifu, jCube[0][ii], iCube[0][ii],
+                drp_data=drp_data, dap_data=dap_data))
+
+    if len(_spaxels) == 1 and isScalar:
+        return _spaxels[0]
+    else:
+        return _spaxels
 
 
 def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
@@ -607,6 +727,3 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
     rsync_access.commit()
-
-
-
