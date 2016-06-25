@@ -63,6 +63,10 @@ class Cube(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
 
+        # TODO: consolidate _hdu/_cube in data. This class needs a clean up.
+        # Can use Maps or Spaxel as an example. For now I'm adding more
+        # clutter to avoid breaking things (JSG).
+
         self.filename = None
         self._hdu = None
         self._cube = None
@@ -145,8 +149,10 @@ class Cube(MarvinToolsClass):
 
         """
 
-        # TBD: do we want to use x/y, ra/dec, or a single coords parameter (as
+        # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
         # an array of coordinates) and a mode keyword.
+
+        # TODO: adapt to use marvin.general.general.getSpaxel.
 
         # Checks that we have the correct set of inputs.
         if x is not None or y is not None:
