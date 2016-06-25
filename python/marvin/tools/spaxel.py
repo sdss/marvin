@@ -13,6 +13,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import warnings
+
 from astropy.io import fits
 import numpy as np
 
@@ -20,9 +22,11 @@ import marvin
 from marvin.api import api
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
+import marvin.core.exceptions
 from marvin.tools.spectrum import Spectrum
 import marvin.tools.anal_props as anal_props
 import marvin.utils.general.dap
+import marvin.utils.general.general
 
 
 class Spaxel(MarvinToolsClass):
@@ -75,14 +79,25 @@ class Spaxel(MarvinToolsClass):
 
     """
 
+    def __new__(cls, *args, **kwargs):
+
+        obj = super(Spaxel, cls).__new__(cls, *args, **kwargs)
+
+        obj.data_origin = None
+        obj._hduList = None
+        obj._spaxel_db = None
+        obj.filename = None
+        obj.plateifu = None
+
+        obj.x = None
+        obj.y = None
+
+        obj.drp = None
+        obj.dap = {}
+
+        return obj
+
     def __init__(self, *args, **kwargs):
-
-        self.data_origin = None
-        self._hduList = None
-        self._spaxel_db = None
-
-        self.drp = {}
-        self.dap = {}
 
         if len(args) > 0:
             self.x = args[0]
@@ -140,7 +155,11 @@ class Spaxel(MarvinToolsClass):
                 ivar = data[cat][channel]['ivar']
                 mask = data[cat][channel]['mask']
                 unit = data[cat]['unit']
-                anal_prop_key = cat.lower() + '_' + channel.lower()
+
+                anal_prop_key = cat.lower()
+                if channel.lower() != 'na':
+                     anal_prop_key += '_' + channel.lower()
+
                 self.dap[anal_prop_key] = anal_props.AnalisisProperty(
                     cat.lower(), channel.lower(), value, ivar=ivar, mask=mask,
                     unit=unit)
@@ -173,7 +192,8 @@ class Spaxel(MarvinToolsClass):
                               ifu=ifu, mode='CUBE')
 
             maps_file = MarvinToolsClass._getFullPath(self, path_type, **params)
-            maps_data = marvin.utils.general.dap.maps2dict_of_props(maps_file, self.x, self.y)
+            maps_data = marvin.utils.general.dap.maps_file2dict_of_props(
+                maps_file, self.x, self.y)
 
             self._initDAP(maps_data)
 
@@ -250,8 +270,7 @@ class Spaxel(MarvinToolsClass):
                         self._hduList.append(ext)
                     else:
                         spectrum = ext.data[:, self.y, self.x]
-                        newHDU = fits.ImageHDU(data=spectrum,
-                                               header=ext.header)
+                        newHDU = fits.ImageHDU(data=spectrum, header=ext.header)
                         self._hduList.append(newHDU)
 
             self.data_origin = 'file'
@@ -260,8 +279,26 @@ class Spaxel(MarvinToolsClass):
             raise MarvinError('Could not initialize via filename: {0}'
                               .format(ee))
 
-    def _getSpaxelFromDB(self):
+    def _getSpaxelFromDB(self, data=None):
         """Initialises the spaxel object from the DB."""
+
+        self.data_origin = 'db'
+
+        if data.__tablename__ == 'spaxel':
+            self._spaxel_db = data
+            return
+        elif data.__tablename__ == 'cube':
+            self._spaxel_db = marvin.utils.general.general.getSpaxelXY(
+                data, self.plateifu, self.x, self.y)
+            return
+        elif data is None:
+            pass
+        else:
+            warnings.warn('Spaxel._getSpaxelFromDB: '
+                          'data of type {0} is not valid.'.format(type(data)),
+                          marvin.core.exceptions.MarvinUserWarning)
+
+        # Performs a complete query.
 
         mdb = marvin.marvindb
 
@@ -284,8 +321,6 @@ class Spaxel(MarvinToolsClass):
             raise MarvinError('Could not retrieve spaxel for plate-ifu {0}. {1}: {2}'
                               .format(self.plateifu, str(ee.__class__.__name__), str(ee)))
 
-        self.data_origin = 'db'
-
     def _getSpaxelFromAPI(self):
         """Initialises the spaxels object using the remote API."""
 
@@ -307,27 +342,45 @@ class Spaxel(MarvinToolsClass):
         return response
 
     @classmethod
-    def _initFromData(cls, x, y, data):
+    def _initFromData(cls, plateifu, x, y, drp_data=None, dap_data=None):
         """Initialises a spaxel from and HDUList or DB object."""
 
-        obj = Spaxel.__new__(Spaxel)
+        assert drp_data is not None or dap_data is not None
 
-        obj.data_origin = None
-        obj._hduList = None
-        obj._spaxel_db = None
-        obj.filename = None
+        obj = Spaxel.__new__(Spaxel)
 
         obj.x = x
         obj.y = y
 
-        if isinstance(data, fits.HDUList):
-            obj._getSpaxelFromFile(cubeHDU=data)
-        elif hasattr(data, '__tablename__') and data.__tablename__ == 'spaxel':
-            obj._getSpaxelFromDB()
-        else:
-            raise MarvinError('cannot initialise a Spaxel from data type {0}'
-                              .format(type(data)))
+        obj.plateifu = plateifu
 
-        obj._createSpectrum()
+        # DRP data loading section
+        if drp_data is None:
+            pass
+        elif isinstance(drp_data, fits.HDUList):
+            # Case when we receive a FITS file (open)
+            obj._getSpaxelFromFile(cubeHDU=drp_data)
+            obj._createSpectrum()
+        elif hasattr(drp_data, '__tablename__'):
+            # Case when we receive a DB object
+            obj._getSpaxelFromDB(data=drp_data)
+            obj._createSpectrum()
+        else:
+            raise MarvinError(
+                'cannot initialise a Spaxel from data type {0}'.format(type(drp_data)))
+
+        # DAP data loading section
+        if dap_data is None:
+            pass
+        elif isinstance(dap_data, fits.HDUList):
+            dap_dict = marvin.utils.general.dap.maps_file2dict_of_props(dap_data, obj.x, obj.y)
+            obj._initDAP(dap_dict)
+        elif hasattr(dap_data, '__tablename__'):
+            # Assumes this is a dapdb.File object
+            dap_dict = marvin.utils.general.dap.maps_db2dict_of_props(dap_data, obj.x, obj.y)
+            obj._initDAP(dap_dict)
+        else:
+            raise MarvinError(
+                'cannot initialise a Spaxel from data type {0}'.format(type(dap_data)))
 
         return obj
