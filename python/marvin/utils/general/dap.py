@@ -14,11 +14,17 @@ import re
 
 import astropy.io.fits as fits
 
+import marvin
 
-def maps2dict_of_props(maps_file, x, y):
+
+def maps_file2dict_of_props(maps_file, x, y):
     """From a MAPS file, creates a dictionary of properties for the `(x, y)` spaxel."""
 
-    fits_map = fits.open(maps_file)
+    if not isinstance(maps_file, fits.HDUList):
+        fits_map = fits.open(maps_file)
+    else:
+        fits_map = maps_file
+
     dict_of_props = {}
 
     # Selects extensions that contains a "category", i.e., if it has a value,
