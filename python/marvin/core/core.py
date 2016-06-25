@@ -34,6 +34,17 @@ except ImportError:
 __all__ = ['MarvinToolsClass']
 
 
+def kwargsGet(kwargs, key, replacement):
+    """As kwargs.get but handles uses replacemente if the value is None."""
+
+    if key not in kwargs:
+        return replacement
+    elif key in kwargs and kwargs[key] is None:
+        return replacement
+    else:
+        return kwargs[key]
+
+
 class MarvinToolsClass(object):
 
     def __init__(self, *args, **kwargs):
@@ -45,15 +56,15 @@ class MarvinToolsClass(object):
 
         """
 
-        self.filename = kwargs.get('filename', None)
-        self.mangaid = kwargs.get('mangaid', None)
-        self.plateifu = kwargs.get('plateifu', None)
-        self.mode = kwargs.get('mode', marvin.config.mode)
-        self._drpall = kwargs.get('drpall', marvin.config.drpall)
-        self._drpver = kwargs.get('drpver', marvin.config.drpver)
-        self._dapver = kwargs.get('dapver', marvin.config.dapver)
-        self._forcedownload = kwargs.get('download', marvin.config.download)
-        self._dapver = kwargs.get('drpver', marvin.config.dapver)
+        self.filename = kwargsGet(kwargs, 'filename', None)
+        self.mangaid = kwargsGet(kwargs, 'mangaid', None)
+        self.plateifu = kwargsGet(kwargs, 'plateifu', None)
+        self.mode = kwargsGet(kwargs, 'mode', marvin.config.mode)
+        self._drpall = kwargsGet(kwargs, 'drpall', marvin.config.drpall)
+        self._drpver = kwargsGet(kwargs, 'drpver', marvin.config.drpver)
+        self._dapver = kwargsGet(kwargs, 'dapver', marvin.config.dapver)
+        self._forcedownload = kwargsGet(kwargs, 'download', marvin.config.download)
+        self._dapver = kwargsGet(kwargs, 'drpver', marvin.config.dapver)
         self.data_origin = None
 
         args = [self.filename, self.plateifu, self.mangaid]
