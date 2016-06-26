@@ -4,25 +4,25 @@
 Tools
 =====
 
-Marvin-tools is an importable python package that provides convenience classes
-and functions for searching, accessing, interacting with, and visualzing MaNGA
-data. Since these capabilities are useful in both an exploratory environment,
-such as in Marvin-web, and in science-grade analysis code, we factored out the
-common elements into Marvin-tools.
+Marvin provides tools that are convenience classes and functions for searching, accessing, interacting with, and visualzing MaNGA
+data. The tools make up the common core components of Marvin and are utilized within the tools itself, as well as by the Web and API.
 
-Marvin-tools includes classes that correspond to different levels of MaNGA data
+.. marvin-tools-classes:
+
+Object-Based Tools
+------------------
+
+Marvin includes classes that correspond to different levels of MaNGA data
 organization\: :ref:`marvin-tools-spectrum`, :ref:`marvin-tools-spaxel`,
-:ref:`marvin-tools-rss`, :ref:`marvin-tools-cube`, and
-:ref:`marvin-tools-plate`.  These classes have methods to retrieve the
-appropriate data from a locally stored file, over the internet via Marvin-API,
-or by downloading FITS files.
+:ref:`marvin-tools-rss`, :ref:`marvin-tools-cube`, and :ref:`marvin-tools-plate`.  These classes follow the Manga :doc:`data-access-modes` when determining the data location.  Thus they seamlessly move between local FITS file and remote data via API.
 
-One of the most powerful aspects of the Marvin ecosystem is the ability to use
-Marvin-API through Marvin-tools to query the MaNGA databases from within a
-python script or terminal. With the Marvin-tools class :doc:`query` you can
-build and execute a query. The results of your query are returned as an instance
-of the :doc:`results` class, which has built-in methods for navigating and
-presenting those results.
+
+.. marvin-tools-queries:
+
+Search-Based Tools
+------------------
+
+Marvin provides tools for easily searching through the MaNGA dataset via queries, from within your own Python terminal.
 
 Performing Queries:
 

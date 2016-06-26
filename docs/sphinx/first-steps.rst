@@ -1,4 +1,6 @@
 
+.. _marvin-first-steps:
+
 First Steps
 ===========
 
@@ -29,11 +31,6 @@ using the Marvin :ref:`marvin-config-class`. ::
 
 My First Cube
 -------------
-
-.. note::
-    
-    Perhaps we should use a generic file path like
-    $MANGA_SPECTRO_REDUX/v1_5_1/... or use the API?
 
 Now let's play with a Marvin Cube
 ::
@@ -67,7 +64,7 @@ Now let's play with a Marvin Cube
     spax = cc[10,10]
     print spax
     <Marvin Spaxel (x=10, y=10)>
-    
+
     # plot the spectrum
     spax.plot()
 
