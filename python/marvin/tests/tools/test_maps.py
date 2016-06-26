@@ -207,6 +207,30 @@ class TestMapsAPI(TestMapsBase):
         self.assertEqual(maps.cube.plateifu, self.plateifu)
         self.assertEqual(maps.cube.mangaid, self.mangaid)
 
+    def test_get_spaxel(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
+                                      dapver='1.1.1')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
+        self.assertEqual(spaxel.data_origin, 'api')
+        self.assertIsNone(spaxel.drp)
+        self.assertTrue(len(spaxel.dap.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel.dap['stellar_vel'].ivar, 1.013657e-05)
+
+    def test_get_spaxel_with_drp(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
+                                      load_drp=True)
+        spaxel = maps.getSpaxel(x=5, y=5)
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
+        self.assertEqual(spaxel.data_origin, 'api')
+        self.assertIsNotNone(spaxel.drp)
+        self.assertTrue(len(spaxel.dap.keys()) > 0)
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
