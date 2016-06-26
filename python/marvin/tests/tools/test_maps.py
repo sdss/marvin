@@ -41,7 +41,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
         cls.dec = 48.6902009334
         cls.bintype = 'NONE'
 
-        cls.marvindb = marvin.marvindb
+        cls.marvindb_session = marvin.marvindb.session
 
     @classmethod
     def tearDownClass(cls):
@@ -49,7 +49,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
 
     def setUp(self):
 
-        marvin.marvindb = self.marvindb
+        marvin.marvindb.session = self.marvindb_session
         self.assertTrue(os.path.exists(self.filename_default))
 
     def tearDown(self):
