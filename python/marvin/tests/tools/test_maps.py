@@ -63,7 +63,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
         self.assertEqual(maps.mangaid, self.mangaid)
         self.assertIsNotNone(maps.wcs)
         self.assertEqual(maps.bintype, self.bintype)
-        self.assertListEqual(maps.shape, [34, 34])
+        self.assertListEqual(list(maps.shape), [34, 34])
 
 
 class TestMapsFile(TestMapsBase):
