@@ -6,7 +6,7 @@ import marvin
 from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords
-from marvin.tools.spaxel import Spaxel
+import marvin.tools.spaxel
 from marvin.api.api import Interaction
 
 
@@ -195,7 +195,8 @@ class Cube(MarvinToolsClass):
             _spaxels = []
             for ii in range(len(iCube[0])):
                 _spaxels.append(
-                    Spaxel._initFromData(jCube[0][ii], iCube[0][ii], self._hdu))
+                    marvin.tools.spaxel.Spaxel._initFromData(
+                        jCube[0][ii], iCube[0][ii], self._hdu))
 
         elif self.data_origin == 'db':
 
@@ -213,7 +214,9 @@ class Cube(MarvinToolsClass):
 
             _spaxels = []
             for ii in range(len(iCube[0])):
-                _spaxels.append(Spaxel(jCube[0][ii], iCube[0][ii], plateifu=self.plateifu))
+                _spaxels.append(
+                    marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
+                                               plateifu=self.plateifu))
 
         elif self.data_origin == 'api':
 
@@ -234,7 +237,10 @@ class Cube(MarvinToolsClass):
 
             _spaxels = []
             for ii in range(len(xx)):
-                _spaxels.append(Spaxel(xx[ii], yy[ii], plateifu=self.plateifu, mode='remote'))
+                _spaxels.append(
+                    marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
+                                               plateifu=self.plateifu,
+                                               mode='remote'))
 
         if len(_spaxels) == 1 and isScalar:
             return _spaxels[0]
