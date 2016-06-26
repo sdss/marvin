@@ -16,6 +16,7 @@ import astropy.io.fits
 import astropy.wcs
 
 import marvin
+import marvin.api.api
 import marvin.core.core
 import marvin.core.exceptions
 import marvin.tools.cube
@@ -97,9 +98,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
             self._load_maps_from_file()
         elif self.data_origin == 'db':
             self._load_maps_from_db()
+        elif self.data_origin == 'api':
+            self._load_maps_from_api()
         else:
-            raise marvin.core.exceptions.MarvinNotImplemented(
-                'data_origin={0} not yet implemented'.format(self.data_origin))
+            raise marvin.core.exceptions.MarvinError(
+                'data_origin={0} is not valid'.format(self.data_origin))
 
         # Loads the cube
         if self._load_drp:
@@ -262,6 +265,43 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # TODO: I'm assuming the cube WCS is the same as the maps. That might
         # not be true (JSG)
         self.wcs = astropy.wcs.WCS(self.data.cube.wcs.makeHeader())
+
+    def _load_maps_from_api(self):
+        """Loads a Maps object from remote."""
+
+        url = marvin.config.urlmap['api']['getMaps']['url']
+
+        try:
+            response = marvin.api.api.Interaction(url.format(name=self.plateifu))
+        except Exception as ee:
+            raise marvin.core.exceptions.MarvinError(
+                'found a problem when checking if remote cube exists: {0}'
+                .format(str(ee)))
+
+        data = response.getData()
+
+        if self.plateifu not in data:
+            raise marvin.core.exceptions.MarvinError(
+                'remote cube has a different plateifu!')
+
+        # TODO: replace self.data with a property that returns an error for
+        # Maps initialised from remote.
+        self.data = None
+
+        # Sets the mangaid
+        self.mangaid = data[self.plateifu]['mangaid']
+
+        # Gets the shape from the associated cube.
+        self.shape = data[self.plateifu]['shape']
+
+        # Defines the bintype and template.
+        self.bintype = data[self.plateifu]['bintype']
+        self.template_kin = data[self.plateifu]['template_kin']
+
+        # Sets the WCS
+        self.wcs = data[self.plateifu]['wcs']
+
+        return
 
     def _load_drp_cube(self, **kwargs):
         """Loads the DRP cube associated to this maps file."""

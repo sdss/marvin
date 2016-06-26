@@ -59,11 +59,11 @@ class TestMapsBase(marvin.tests.MarvinTest):
         """Basic checks for a Maps object."""
 
         self.assertIsNotNone(maps)
-        self.assertIsNotNone(maps.data)
         self.assertEqual(maps.plateifu, self.plateifu)
         self.assertEqual(maps.mangaid, self.mangaid)
         self.assertIsNotNone(maps.wcs)
         self.assertEqual(maps.bintype, self.bintype)
+        self.assertListEqual(maps.shape, [34, 34])
 
 
 class TestMapsFile(TestMapsBase):
@@ -73,6 +73,7 @@ class TestMapsFile(TestMapsBase):
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self._assert_maps(maps)
         self.assertIsInstance(maps.data, astropy.io.fits.HDUList)
+        self.assertIsNotNone(maps.data)
 
         self.assertTrue(maps.bintype, 'NONE')
         self.assertTrue(maps.template_kin, 'MIUSCAT-THIN')
@@ -82,6 +83,7 @@ class TestMapsFile(TestMapsBase):
         maps = marvin.tools.maps.Maps(filename=self.filename_default,
                                       load_drp=True)
         self._assert_maps(maps)
+        self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, astropy.io.fits.HDUList)
         self.assertIsNotNone(maps.cube)
         self.assertEqual(maps.cube.plateifu, self.plateifu)
@@ -128,6 +130,7 @@ class TestMapsDB(TestMapsBase):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         self._assert_maps(maps)
+        self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
 
     def test_load_full_from_db(self):
@@ -135,15 +138,17 @@ class TestMapsDB(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
                                       bintype='none', niter=23, mode='local')
         self._assert_maps(maps)
+        self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
         self.assertTrue(maps.bintype, 'NONE')
         self.assertTrue(maps.template_kin, 'MILES-THIN')
 
-    def test_load_default_from_file_with_drp(self):
+    def test_load_default_from_db_with_drp(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local',
                                       load_drp=True)
         self._assert_maps(maps)
+        self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
         self.assertIsNotNone(maps.cube)
         self.assertEqual(maps.cube.plateifu, self.plateifu)
@@ -169,6 +174,34 @@ class TestMapsDB(TestMapsBase):
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertIsNotNone(spaxel.drp)
         self.assertTrue(len(spaxel.dap.keys()) > 0)
+
+
+class TestMapsAPI(TestMapsBase):
+
+    def test_load_default_from_api(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        self._assert_maps(maps)
+        self.assertIsNone(maps.data)
+
+    def test_load_full_from_api(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
+                                      bintype='none', niter=23, mode='remote')
+        self._assert_maps(maps)
+        self.assertIsNone(maps.data)
+        self.assertTrue(maps.bintype, 'NONE')
+        self.assertTrue(maps.template_kin, 'MILES-THIN')
+
+    def test_load_default_from_api_with_drp(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
+                                      load_drp=True)
+        self._assert_maps(maps)
+        self.assertIsNone(maps.data)
+        self.assertIsNotNone(maps.cube)
+        self.assertEqual(maps.cube.plateifu, self.plateifu)
+        self.assertEqual(maps.cube.mangaid, self.mangaid)
 
 
 if __name__ == '__main__':
