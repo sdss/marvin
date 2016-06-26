@@ -200,4 +200,4 @@ Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
     'auto'
 
 You may get a few warnings and info messages after ``import marvin``. That's ok,
-we'll deal with them later. Congratulations, you have finished the Marvin installation!
+we'll deal with them later. Congratulations, you have finished the Marvin installation!  Now go on to :ref:`marvin-first-steps`!

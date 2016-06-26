@@ -19,7 +19,39 @@ configkeys = ['mplver', 'drpver', 'dapver']
 
 
 class Interaction(BrainInteraction):
-    ''' Marvins Interaction class, subclassed from Brain '''
+    ''' Marvins Interaction class, subclassed from Brain
+
+    This is the main class to make calls to the Marvin API.  Instantaiate
+    the Interaction object with a URL to make the call.
+
+    GET requests can be made without passing parameters.
+    POST requests require parameters to be passed.
+
+    A successful call results in a HTTP status code of 200.  Failures result
+    in some other HTTP status code.  Results from the successful call are stored
+    in an sttribute called results, as a dictionary.  Any data requested is
+    stored as a key inside results called "data"
+
+    Parameters:
+        route (str):
+            Relative url path of the API call you want to make
+
+        params (dict):
+            dictionary of parameters you are passing into the API function call
+
+        request_type (str):
+            the method type of the API call, can be either "get" or "post" (default: post)
+
+    Returns:
+        results (dict):
+            The results of the API call
+
+    Examples:
+        >>>
+        >>>
+        >>>
+
+    '''
 
     def _loadConfigParams(self):
         """Load the local configuration into a parameters dictionary to be sent with the request"""
