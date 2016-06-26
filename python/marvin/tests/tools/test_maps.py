@@ -184,6 +184,7 @@ class TestMapsAPI(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self._assert_maps(maps)
         self.assertIsNone(maps.data)
+        self.assertEqual(maps.data_origin, 'api')
 
     def test_load_full_from_api(self):
 
@@ -191,6 +192,7 @@ class TestMapsAPI(TestMapsBase):
                                       bintype='none', niter=23, mode='remote')
         self._assert_maps(maps)
         self.assertIsNone(maps.data)
+        self.assertEqual(maps.data_origin, 'api')
         self.assertTrue(maps.bintype, 'NONE')
         self.assertTrue(maps.template_kin, 'MILES-THIN')
 
@@ -201,6 +203,7 @@ class TestMapsAPI(TestMapsBase):
         self._assert_maps(maps)
         self.assertIsNone(maps.data)
         self.assertIsNotNone(maps.cube)
+        self.assertEqual(maps.cube.data_origin, 'api')
         self.assertEqual(maps.cube.plateifu, self.plateifu)
         self.assertEqual(maps.cube.mangaid, self.mangaid)
 
