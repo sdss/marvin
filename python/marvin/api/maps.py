@@ -14,6 +14,7 @@ from __future__ import absolute_import
 import flask.ext.classy
 import json
 
+import brain.utils.general
 import marvin.api.base
 import marvin.core.exceptions
 import marvin.tools.maps
@@ -99,5 +100,39 @@ class MapsView(marvin.api.base.BaseView):
                                        'shape': shape,
                                        'bintype': bintype,
                                        'template_kin': template_kin}}
+
+        return json.dumps(self.results)
+
+    @flask.ext.classy.route('/<name>/dap_props/<path:path>',
+                            methods=['GET', 'POST'], endpoint='getdap_props')
+    @brain.utils.general.parseRoutePath
+    def getDAP_props(self, **kwargs):
+        """Returns a dictionary of DAP parameters for a Maps spaxel.
+
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            x,y (int):
+                The x/y coordinates of the spaxel (origin is ``lower``).
+            kwargs (dict):
+                Any other parameter to pass for the ``Maps`` initialisation.
+
+        """
+
+        name = kwargs.pop('name')
+        xx = int(kwargs.pop('x'))
+        yy = int(kwargs.pop('y'))
+
+        # Initialises the Maps object
+        maps, results = _getMaps(name, **kwargs)
+        self.update_results(results)
+
+        if maps is None:
+            return json.dumps(self.results)
+
+        dict_of_props = marvin.utils.general.dap.maps_db2dict_of_props(
+            maps.data, xx, yy)
+
+        self.results['data'] = dict_of_props
 
         return json.dumps(self.results)
