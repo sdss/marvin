@@ -310,7 +310,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         drpall = kwargs.get('drpall', None)
 
         self.cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
-                                           drpver=drpver, drpall=drpall)
+                                           drpver=drpver, drpall=drpall,
+                                           mode=self.mode)
 
     def getSpaxel(self, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
