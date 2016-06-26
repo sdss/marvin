@@ -111,14 +111,16 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     if not xyorig:
         xyorig = 'center'
 
-    if cube_object:
-        ww = cube_object.wcs if inputMode == 'sky' else None
-        cubeShape = cube_object.shape
-        plateifu = cube_object.plateifu
-    else:
+    # TODO: cube_object does not have wcs or shape if initialised from API.
+    # Fix this in the initialisation of Cube.
+    if maps_object:
         ww = maps_object.wcs if inputMode == 'sky' else None
         cubeShape = maps_object.shape
         plateifu = maps_object.plateifu
+    else:
+        ww = cube_object.wcs if inputMode == 'sky' else None
+        cubeShape = cube_object.shape
+        plateifu = cube_object.plateifu
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape,
                                      mode=inputMode, xyorig=xyorig).T)
