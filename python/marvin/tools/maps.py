@@ -112,7 +112,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu}, mode={0.mode}, '
-                'data_origin={0}.data_origin)>'.format(self))
+                'data_origin={0.data_origin})>'.format(self))
 
     def _getPathParams(self):
         """Returns a dictionary with the paramters of the Maps file.
