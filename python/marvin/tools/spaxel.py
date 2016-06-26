@@ -342,10 +342,10 @@ class Spaxel(MarvinToolsClass):
         return response
 
     @classmethod
-    def _initFromData(cls, plateifu, x, y, drp_data=None, dap_data=None):
+    def _initFromData(cls, plateifu, x, y, maps=None, cube=None):
         """Initialises a spaxel from and HDUList or DB object."""
 
-        assert drp_data is not None or dap_data is not None
+        assert maps is not None or cube is not None
 
         obj = Spaxel.__new__(Spaxel)
 
@@ -355,32 +355,35 @@ class Spaxel(MarvinToolsClass):
         obj.plateifu = plateifu
 
         # DRP data loading section
-        if drp_data is None:
+        if cube is None:
             pass
-        elif isinstance(drp_data, fits.HDUList):
+        elif cube.data_origin == 'file':
             # Case when we receive a FITS file (open)
-            obj._getSpaxelFromFile(cubeHDU=drp_data)
+            obj._getSpaxelFromFile(cubeHDU=cube.data)
             obj._createSpectrum()
-        elif hasattr(drp_data, '__tablename__'):
+        elif cube.data_origin == 'db':
             # Case when we receive a DB object
-            obj._getSpaxelFromDB(data=drp_data)
+            obj._getSpaxelFromDB(data=cube.data)
             obj._createSpectrum()
+        elif cube.data_origin == 'api':
+            pass
         else:
             raise MarvinError(
-                'cannot initialise a Spaxel from data type {0}'.format(type(drp_data)))
+                'cannot initialise a Spaxel from data type {0}'.format(type(cube.data)))
 
         # DAP data loading section
-        if dap_data is None:
+        if maps is None:
             pass
-        elif isinstance(dap_data, fits.HDUList):
-            dap_dict = marvin.utils.general.dap.maps_file2dict_of_props(dap_data, obj.x, obj.y)
+        elif maps.data_origin == 'file':
+            dap_dict = marvin.utils.general.dap.maps_file2dict_of_props(maps.data, obj.x, obj.y)
             obj._initDAP(dap_dict)
-        elif hasattr(dap_data, '__tablename__'):
-            # Assumes this is a dapdb.File object
-            dap_dict = marvin.utils.general.dap.maps_db2dict_of_props(dap_data, obj.x, obj.y)
+        elif maps.data_origin == 'db':
+            dap_dict = marvin.utils.general.dap.maps_db2dict_of_props(maps.data, obj.x, obj.y)
             obj._initDAP(dap_dict)
+        elif maps.data_origin == 'api':
+            pass
         else:
             raise MarvinError(
-                'cannot initialise a Spaxel from data type {0}'.format(type(dap_data)))
+                'cannot initialise a Spaxel from data type {0}'.format(type(maps.data)))
 
         return obj

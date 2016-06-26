@@ -111,9 +111,6 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     if not xyorig:
         xyorig = 'center'
 
-    drp_data = cube_object.data if cube_object else None
-    dap_data = maps_object.data if maps_object else None
-
     if cube_object:
         ww = cube_object.wcs if inputMode == 'sky' else None
         cubeShape = cube_object.shape
@@ -131,7 +128,7 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
         _spaxels.append(
             marvin.tools.spaxel.Spaxel._initFromData(
                 plateifu, jCube[0][ii], iCube[0][ii],
-                drp_data=drp_data, dap_data=dap_data))
+                cube=cube_object, maps=maps_object))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
