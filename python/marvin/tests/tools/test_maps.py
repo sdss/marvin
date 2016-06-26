@@ -168,7 +168,8 @@ class TestMapsDB(TestMapsBase):
 
     def test_get_spaxel_with_drp(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', load_drp=True)
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local',
+                                      load_drp=True)
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
