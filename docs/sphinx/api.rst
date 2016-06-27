@@ -36,13 +36,13 @@ Usage
     from marvin import config
 
     # look at available urlmap API endpoints
-    print config.urlmap['api'].keys()
+    print(config.urlmap['api'].keys())
     [u'getroutemap', u'querycubes', u'getCube', u'getspectra', u'getparams', u'getspaxels', u'getSpaxel', u'mangaid2plateifu', u'getRSS', u'getPlate', u'getPlateCubes', u'webtable']
 
     # get the URL for getting basic Cube properties
     url = config.urlmap['api']['getCube']['url']
 
-    # print url
+    # print(url)
     u'/marvin2/api/cubes/{name}/'
 
 Some urls require parameters passed to them. Others do not.  Urls with curly braces {} in them indicate an input parameter. For example, in the above url, ```{name}``` means a parameter called name must be passed into the url. See how to pass in parameters in the examples below.
@@ -69,15 +69,15 @@ Usage:
     url = config.urlmap['api']['getCube']['url']
 
     # create and send the request, and retrieve a response
-    response = Interaction(url.format(name=self.plateifu))
+    response = Interaction(url.format(name=plateifu))
 
     # check your response's status code
-    print response.status_code
+    print(response.status_code)
     200
 
     # get the data in your response
     data = response.getData()
-    print data
+    print(data)
 
 
 Http Status Codes
