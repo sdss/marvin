@@ -248,7 +248,7 @@ marvindb = MarvinDB(dbtype=config.db)
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
-# config.sasurl = 'http://8a7373c3.ngrok.io'  # Jose's ngrok
+# config.sasurl = 'http://localhost:5000/marvin2/'
 
 
 from brain.core.core import URLMapDict
