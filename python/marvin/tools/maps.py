@@ -395,5 +395,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
         map_1.mask &= map_2.mask
 
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
+        map_1.unit = map_1.channel
 
         return map_1
