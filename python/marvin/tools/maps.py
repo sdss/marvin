@@ -357,7 +357,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         return marvin.utils.general.general.getSpaxel(**kwargs)
 
     def getMap(self, category, channel=None):
-        """Retrieves a :class:`~marvin.tools.map.Map object`.
+        """Retrieves a :class:`~marvin.tools.map.Map` object.
 
         Parameters:
             category (str):
