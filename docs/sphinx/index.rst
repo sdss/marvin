@@ -68,6 +68,7 @@ Documentation
    api/web
    api/db
    api/brain/api
+   api/brain/utils
 
 Indices and tables
 ==================
