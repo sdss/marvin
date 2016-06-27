@@ -357,7 +357,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         return marvin.utils.general.general.getSpaxel(**kwargs)
 
     def getMap(self, category, channel=None):
-        """Retrieves a :class:~marvin.tools.map.Map object.
+        """Retrieves a :class:`~marvin.tools.map.Map object`.
 
         Parameters:
             category (str):
@@ -369,3 +369,31 @@ class Maps(marvin.core.core.MarvinToolsClass):
         """
 
         return marvin.tools.map.Map(self, category, channel=channel)
+
+    def getMapRatio(self, category, channel_1, channel_2):
+        """Returns a ratio :class:`~marvin.tools.map.Map`.
+
+        For a given ``category``, returns a :class:`~marvin.tools.map.Map`
+        which is the ratio of ``channel_1/channel_2``.
+
+        Parameters:
+            category (str):
+                The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+            channel_1,channel_2 (str):
+                The channels to use.
+
+        """
+
+        map_1 = self.getMap(category, channel=channel_1)
+        map_2 = self.getMap(category, channel=channel_2)
+
+        map_1.value /= map_2.value
+
+        # TODO: this is probably wrong (JSG)
+        map_1.ivar /= map_2.ivar
+
+        map_1.mask &= map_2.mask
+
+        map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
+
+        return map_1
