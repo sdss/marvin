@@ -75,8 +75,16 @@ download and run the script ::
     svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4bootstrap
     ./sdss4bootstrap -l
 
-If you now run ``module avail`` you will get a list containing ``sdss4tools``. Now
-your are ready to install more SDSS software by just using the ``sdss4install`` command.
+Next, edit your ``.bashrc`` file to include ::
+
+    export MODULEPATH=$SDSS4_PRODUCT_ROOT/repo/modulefiles
+    module use $MODULEPATH
+
+(modify those lines accordingly if you are using a different type of shell).
+
+If you now run ``module avail`` in a new terminal you will get a list containing
+``sdss4tools``. Now you are ready to install more SDSS software by just
+using the ``sdss4install`` command.
 
 Before we continue, let's make sure SVN has the right permissions to access the private
 repositories. For that, run ::
@@ -165,6 +173,7 @@ With ``pip`` run the following commands and make sure they finish without errors
     pip install requests
     pip install pillow
     pip install wtforms
+    pip install Flask
 
 You may need to use ``sudo`` to run these commands. Also, some modern versions of Mac OSX do
 not allow to install these products even with ``sudo``. If that is your case, try using
@@ -176,14 +185,14 @@ repositories. To install ``SQLAlchemy-boolean-search`` do ::
 
     git clone https://github.com/havok2063/SQLAlchemy-boolean-search.git
     cd SQLAlchemy-boolean-search
-    python setup install
+    python setup.py install
 
 You may need ``sudo`` for the last command. Once the library is installed you can
 remove the ``SQLAlchemy-boolean-search`` directory. Similarly, for ``wtforms-alchemy`` do ::
 
     git clone https://github.com/havok2063/wtforms-alchemy.git
     cd wtforms-alchemy
-    python setup install
+    python setup.py install
 
 You should now be ready to use Marvin!
 
