@@ -6,7 +6,8 @@
 - Use pull requests
 - Fix circular imports (either refactor or use import XXX vs from XXX import YYY)
 - Add README and CHANGELOG.
-
+- Use TODO in code.
+- Add link to issue tracking in Marvin-web/documentation.
 
 ## Maps
 
