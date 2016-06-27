@@ -274,6 +274,7 @@ class Cube(MarvinToolsClass):
 
         self.hdr = data['header']
         self.redshift = float(data['redshift'])
+        self._shape = data['shape']
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -312,7 +313,7 @@ class Cube(MarvinToolsClass):
             elif self.data_origin == 'db':
                 self._shape = self._cube.shape.shape
             elif self.data_origin == 'api':
-                # TODO: implement shape for API
+                # self._shape gets initialised in self._openCubeRemote
                 pass
 
         return self._shape
