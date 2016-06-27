@@ -20,6 +20,7 @@ import marvin.api.api
 import marvin.core.core
 import marvin.core.exceptions
 import marvin.tools.cube
+import marvin.tools.map
 import marvin.utils.general.general
 
 try:
@@ -354,3 +355,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
         kwargs['maps_object'] = self
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
+
+    def getMap(self, category, channel=None):
+        """Retrieves a :class:~marvin.tools.map.Map object.
+
+        Parameters:
+            category (str):
+                The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+            channel (str or None):
+                If the ``category`` contains multiple channels, the channel to use,
+                e.g., ``Ha-6564'. Otherwise, ``None``.
+
+        """
+
+        return marvin.tools.map.Map(self, category, channel=channel)
