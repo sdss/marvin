@@ -198,8 +198,8 @@ class Map(object):
         return
 
     def plot(self, array='value', xlim=None, ylim=None, zlim=None,
-             xlabel=None, ylabel=None, zlabel=None, cmap=None, figure=None,
-             return_figure=False, **kwargs):
+             xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
+             figure=None, return_figure=False):
         """Plot a map using matplotlib.
 
         Returns a |axes|_ object with a representation of this map.
@@ -229,16 +229,15 @@ class Map(object):
                 `this <http://matplotlib.org/users/colormaps.html#list-colormaps>`_
                 page for possible colourmaps). If ``None``, defaults to
                 ``coolwarm_r``.
+            kw_imshow (dict):
+                Any other kwyword arguments to be passed to
+                `imshow <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_.
             figure (matplotlib Figure object or None):
                 The matplotlib figure object from which the axes must be
                 created. If ``figure=None``, a new figure will be created.
             return_figure (bool):
                 If ``True``, the matplotlib Figure object used will be returned
                 along with the axes object.
-            kwargs (dict):
-                Any other keyword argument that will be passed to
-                `matplotlib.pyplot.plot
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot>`_.
 
         Returns:
             ax (`matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_):
@@ -285,11 +284,15 @@ class Map(object):
             vmin = None
             vmax = None
 
+        if kw_imshow is None:
+            kw_imshow = dict(vmin=vmin, vmax=vmax,
+                             origin='lower', aspect='auto',
+                             interpolation='none')
+
         if cmap is None:
             cmap = matplotlib.pyplot.cm.coolwarm_r
 
-        imPlot = ax.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax,
-                           origin='lower', aspect='auto')
+        imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
 
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.1)
