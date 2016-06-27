@@ -210,7 +210,7 @@ class Map(object):
         the plot will be displayed interactivelly.
 
         Parameters:
-            array ({'data', 'ivar', 'mask'}):
+            array ({'value', 'ivar', 'mask'}):
                 The array to display, either the data itself, the inverse
                 variance or the mask.
             xlim,ylim (tuple-like or None):
