@@ -185,6 +185,11 @@ class Map(object):
 
         data = response.getData()
 
+        if data is None:
+            raise marvin.core.exceptions.MarvinError(
+                'something went wrong. '
+                'Error is: {0}'.format(response.results['error']))
+
         self.value = numpy.array(data['value'])
         self.ivar = numpy.array(data['ivar'])
         self.mask = numpy.array(data['mask'])
