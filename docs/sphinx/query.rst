@@ -14,7 +14,7 @@ Queries work with just three main input keyword arguments:
 Queries take your inputs, parse the filter, run the Query, and return the results as a Marvin :ref:`marvin-results` object.
 When in local mode, queries will assume you have a database to query on.  You probably don't have a database.  This means for you, queries
 primarily work in remote mode.  Querying while in remote mode will trigger a Marvin-API request to the Marvin at Utah where it performs your
-query and returns the results.
+query and returns the results.  To see how to handle your results, go to :ref:`marvin-results`.
 
 Filters
 -------
@@ -24,6 +24,12 @@ See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.
 Return Parameters
 -----------------
 Queries will return a set of default parameters no matter what.  If you want to return additional parameters, input them here as a string list.  See :ref:`marvin-query-parameters` for a list of available parameters to return.
+
+::
+
+    # To see the parameters returned in you query
+    print q.params
+    ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
 Return Type
 -----------
@@ -76,10 +82,41 @@ Do it all at once::
     q, r = doQuery(searchfilter='nsa.z < 0.1')
     r.results
 
+See :ref:`marvin-query-examples` for examples of different types of queries.  When you want to perform a new query or update an old query, currently, you must start a fresh query, or run ```q.reset()```.
+
 Show Query
 ----------
+In **local mode**, you can see your query before you submit it.  When operating in **remote mode**, you cannot see your query before you submit, however you can examine your query after you run it.
 
+From the Results object
+^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+   # do a query
+   q = Query(searchfilter='nsa.z < 0.1')
+   r = q.run()
+
+   # show the Query
+   r.showQuery()
+    'SELECT mangadatadb.cube.mangaid, mangadatadb.cube.plate, mangadatadb.ifudesign.name, mangasampledb.nsa.z \nFROM mangadatadb.cube JOIN mangadatadb.ifudesign ON mangadatadb.ifudesign.pk = mangadatadb.cube.ifudesign_pk JOIN mangasampledb.manga_target ON mangasampledb.manga_target.pk = mangadatadb.cube.manga_target_pk JOIN mangasampledb.manga_target_to_nsa ON mangasampledb.manga_target.pk = mangasampledb.manga_target_to_nsa.manga_target_pk JOIN mangasampledb.nsa ON mangasampledb.nsa.pk = mangasampledb.manga_target_to_nsa.nsa_pk JOIN mangadatadb.pipeline_info AS drpalias ON drpalias.pk = mangadatadb.cube.pipeline_info_pk \nWHERE mangasampledb.nsa.z < 0.1 AND drpalias.pk = 21'
+
+From the Query object (if in local mode)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+    # show the entire SQL query
+    q.show()
+    SELECT mangadatadb.cube.mangaid, mangadatadb.cube.plate, mangadatadb.ifudesign.name, mangasampledb.nsa.z
+    FROM mangadatadb.cube JOIN mangadatadb.ifudesign ON mangadatadb.ifudesign.pk = mangadatadb.cube.ifudesign_pk JOIN mangasampledb.manga_target ON mangasampledb.manga_target.pk = mangadatadb.cube.manga_target_pk JOIN mangasampledb.manga_target_to_nsa ON mangasampledb.manga_target.pk = mangasampledb.manga_target_to_nsa.manga_target_pk JOIN mangasampledb.nsa ON mangasampledb.nsa.pk = mangasampledb.manga_target_to_nsa.nsa_pk JOIN mangadatadb.pipeline_info AS drpalias ON drpalias.pk = mangadatadb.cube.pipeline_info_pk
+
+    # show only the filter condition
+    q.show('filter')
+    mangasampledb.nsa.z < 0.1 AND drpalias.pk = 21
+
+    # show only the tables you have joined to
+    q.show('joins') or q.show('tables')
+    ['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']
 
 See :ref:`marvin-query-examples` for examples of different types of queries.
 
-Go to :ref:`marvin-results` to see how to handle query results
+Queries produce results.  Go to :ref:`marvin-results` to see how to handle your query results.

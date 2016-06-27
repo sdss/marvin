@@ -4,7 +4,7 @@
 Results
 =======
 
-This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
+When you perform a Query in Marvin, you get a Results object.  This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
 
 To perform a simple Query::
 
@@ -39,20 +39,32 @@ Alternatively, you can perform it in a single step::
 
 Viewing Results
 ---------------
-
 Basics::
 
     r.results
+    [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
+     (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
+     (u'1-38157', 8083, u'1901', u'1901', 0.037575539201498),
+     (u'1-38347', 8083, u'1902', u'1902', 0.036589004099369),
+     (u'1-43214', 8135, u'1902', u'1902', 0.117997065186501),
+     ...
+     ...
 
-View the Column Names::
+To View the Column Names::
 
     columns = r.getColumns()
+    print columns
+    [u'mangaid', u'plate', u'name', u'z']
 
-or the Full Columnd Names::
+or to view the Full Column Names::
 
     fullnames = r.mapColumnsToParams()
+    print fullnames
+    ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
-For results over 150 objects, Marvin automatically paginates results in groups of 10. In local mode only, you can view the next or previous chunk with::
+Get Next/Previous Chunks in List
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+For results over 150 objects, Marvin automatically paginates results in groups of 10. Currently, in local mode only, you can view the next or previous chunk with::
 
     r.getNext()
     r.getPrevious()
@@ -78,18 +90,51 @@ You can also specify a chunk value::
      (u'4-3602', u'1902', -9999.0),
      (u'4-4602', u'1901', -9999.0)]
 
+Get Subset
+^^^^^^^^^^
+To retrieve a subset of the results, use ```r.getSubset```.  getSubset works by specifying the starting index to grab from and a limit
+on the number to grab (default is 10)::
+
+    # Get the count of objects in results
+    r.count
+    1219L
+
+    # Get a subet of 10 objects starting at index 100
+    r.getSubset(100)
+    [(u'1-44117', 8141, u'12705', 0.0477223694324493),
+     (u'1-44141', 8141, u'3704', 0.0473998412489891),
+     (u'1-44163', 8141, u'6102', 0.031343836337328),
+     (u'1-44172', 8141, u'12704', 0.0482183173298836),
+     (u'1-44180', 8141, u'3701', 0.0315594673156738),
+     (u'1-44183', 8138, u'3704', 0.0262834001332521),
+     (u'1-44216', 8138, u'3701', 0.0495306216180325),
+     (u'1-44219', 8138, u'9102', 0.0633076727390289),
+     (u'1-44418', 8143, u'3704', 0.0315773263573647),
+     (u'1-44436', 8143, u'6103', 0.0435708276927471)]
+
+    # Get a subset of 5 objects starting at index 25
+    r.getSubset(25, limit=5)
+    [(u'1-24390', 7990, u'3702', 0.0296944621950388),
+     (u'1-24476', 7990, u'12705', 0.0295156575739384),
+     (u'1-25554', 7990, u'12704', 0.0268193148076534),
+     (u'1-25593', 7990, u'6104', 0.0261989794671535),
+     (u'1-25609', 7990, u'9102', 0.0291846375912428)]
+
+Get All
+^^^^^^^
 You get all of the results with::
 
     r.getAll()
 
 When operating Marvin in remote mode, all of the results are always returned.
 
+
 .. _marvin-results-downlaod:
 
 Downloading Results
 -------------------
 
-Download the results of your query.  The downloaded object is determined by the returntype parameter, which defaults to cube if not specified.
+Download the results of your query.  The downloaded object (FITS file) is determined by the returntype parameter, which defaults to cube if not specified.
 
 ::
 

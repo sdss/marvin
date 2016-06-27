@@ -78,6 +78,19 @@ download and run the script ::
 If you now run ``module avail`` you will get a list containing ``sdss4tools``. Now
 your are ready to install more SDSS software by just using the ``sdss4install`` command.
 
+Before we continue, let's make sure SVN has the right permissions to access the private
+repositories. For that, run ::
+
+    module load sdss4tools
+    sdss4auth
+
+which will prompt you for your trac username and password. When it asks you to store the
+credentials say yes and make sure to run ::
+
+    chmod g-rwX,o-rwX ~/.subversion
+
+to ensure that your subversion directory only accesible by you.
+
 |
 
 SDSS packages
@@ -187,4 +200,4 @@ Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
     'auto'
 
 You may get a few warnings and info messages after ``import marvin``. That's ok,
-we'll deal with them later. Congratulations, you have finished the Marvin installation!
+we'll deal with them later. Congratulations, you have finished the Marvin installation!  Now go on to :ref:`marvin-first-steps`!
