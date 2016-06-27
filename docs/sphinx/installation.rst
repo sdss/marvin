@@ -77,8 +77,7 @@ download and run the script ::
 
 Next, edit your ``.bashrc`` file to include ::
 
-    export MODULEPATH=$SDSS4_PRODUCT_ROOT/repo/modulefiles
-    module use $MODULEPATH
+    module use $SDSS4_PRODUCT_ROOT/repo/modulefiles
 
 (modify those lines accordingly if you are using a different type of shell).
 
