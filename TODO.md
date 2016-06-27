@@ -20,6 +20,8 @@
 
 - Make the class MarvinToolsClass.
 - Allow to plot in sky coordinates (pywcsgrid2?).
+- Allow loading with incomplete but unique category/channel. E.g.,
+    category='gflux', channel='ha'.
 - Test suite
 
 
