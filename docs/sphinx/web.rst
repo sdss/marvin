@@ -4,14 +4,17 @@
 Web
 ===
 
-Here we describe the general content and functionality of all pages in Marvin-Web.  Most of the functionality that you will find on the Web exists in Marvin Tools. Indeed, a lot of the functionality simply uses existing Marvin tools.
+Here we describe the general content and functionality of all pages in
+Marvin-Web.  Most of the functionality that you will find on the Web exists in
+Marvin Tools. Indeed, a lot of the functionality simply uses existing Marvin
+tools.
 
 .. _web-main:
 
 Main
 ----
 
-The main Marvin splash page for the MaNGA survey.  Contains a navgiation bar with links
+The main Marvin splash page for the MaNGA survey contains a navgiation bar with links
 to other Marvin pages, a Log-In window, general information about Marvin
 and the development team, as well as quick contact information at the bottom.
 
