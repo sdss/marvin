@@ -71,7 +71,7 @@ class Spaxel(MarvinToolsClass):
             The DAP version to use. Defaults to ``marvin.confg.dapver``.
 
     Attributes:
-        drp (`Spectrum`):
+        drp (:class:`~marvin.tools.spectrum.Spectrum` object):
             A `Spectrum` object with the DRP spectrum and associated ivar and
             mask for this spaxel.
         dap (dict):
