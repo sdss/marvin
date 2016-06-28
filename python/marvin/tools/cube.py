@@ -196,7 +196,7 @@ class Cube(MarvinToolsClass):
             for ii in range(len(iCube[0])):
                 _spaxels.append(
                     marvin.tools.spaxel.Spaxel._initFromData(
-                        jCube[0][ii], iCube[0][ii], self._hdu))
+                        self.plateifu, jCube[0][ii], iCube[0][ii], cube=self))
 
         elif self.data_origin == 'db':
 
