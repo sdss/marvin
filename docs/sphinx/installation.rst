@@ -160,7 +160,9 @@ be installed with `pip <https://pip.pypa.io/en/stable/>`_. If your system does n
 `instructions <https://pip.pypa.io/en/stable/installing/>`_. Most packages can also
 be installed with `easy_install <https://pypi.python.org/pypi/setuptools>`_.
 
-With ``pip`` run the following commands and make sure they finish without errors ::
+With ``pip`` run the following commands and make sure they finish without errors. You may need to use ``sudo`` to run these commands. Also, some modern versions of Mac OSX do
+not allow to install these products even with ``sudo``. If that is your case, try using
+``pip install --user <package>``::
 
     pip install numpy
     pip install astropy
@@ -171,10 +173,6 @@ With ``pip`` run the following commands and make sure they finish without errors
     pip install pillow
     pip install wtforms
     pip install Flask
-
-You may need to use ``sudo`` to run these commands. Also, some modern versions of Mac OSX do
-not allow to install these products even with ``sudo``. If that is your case, try using
-``pip install --user <package>``.
 
 Additionally, Marvin requires installing two forks of Python packages. Those forks will
 eventually be merged into Marvin, but during active development they live in GitHub
