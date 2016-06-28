@@ -50,6 +50,6 @@ catalog.  The schema for this database is
     :align: center
     :alt: MangaSampleDb Schema
 
-End
+|
 
 

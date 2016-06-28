@@ -1,8 +1,8 @@
 
-.. _marvin-queries:
+.. _marvin-query:
 
 Query
-=======
+=====
 
 Query is a new Marvin tool that allows you to programmtically search the MaNGA dataset in a pseudo-natural language format.
 Queries work with just three main input keyword arguments:

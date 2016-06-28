@@ -4,7 +4,7 @@
 Results
 =======
 
-When you perform a Query in Marvin, you get a Results object.  This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
+When you perform a :ref:`marvin-query` in Marvin, you get a Results object.  This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
 
 To perform a simple Query::
 
@@ -36,6 +36,7 @@ Alternatively, you can perform it in a single step::
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.z < 0.1')
 
+|
 
 Viewing Results
 ---------------
@@ -63,7 +64,7 @@ or to view the Full Column Names::
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
 Get Next/Previous Chunks in List
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For results over 150 objects, Marvin automatically paginates results in groups of 10. Currently, in local mode only, you can view the next or previous chunk with::
 
     r.getNext()
@@ -128,6 +129,7 @@ You get all of the results with::
 
 When operating Marvin in remote mode, all of the results are always returned.
 
+|
 
 .. _marvin-results-downlaod:
 
@@ -139,6 +141,8 @@ Download the results of your query.  The downloaded object (FITS file) is determ
 ::
 
     r.download()
+
+|
 
 .. _marvin-results-sort:
 
@@ -172,11 +176,14 @@ You can sort the results on specific columns::
      (u'4-3988', u'1901', -9999.0),
      (u'4-4602', u'1901', -9999.0)]
 
+
+|
+
 .. _marvin-results-extract:
 
 Extracting Results
 ------------------
-You can extract columns from the results and format them in specific ways
+You can extract columns from the results and format them in specific ways.
 
 Get List Of
 ^^^^^^^^^^^
@@ -213,6 +220,7 @@ Return the results either as a list of dictionaries or a dictionary of lists::
      {'cube.mangaid': u'4-3602'},
      {'cube.mangaid': u'4-4602'}]
 
+|
 
 .. _marvin-results-convert:
 
@@ -273,7 +281,4 @@ To JSON object
       ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
 
 
-
-
-
-.
+|
