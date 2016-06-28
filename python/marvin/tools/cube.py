@@ -8,6 +8,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords
 import marvin.tools.spaxel
 from marvin.api.api import Interaction
+import marvin.tools.maps
 
 
 class Cube(MarvinToolsClass):
@@ -408,6 +409,23 @@ class Cube(MarvinToolsClass):
                 self._useDB = True
                 self.hdr = self._cube.header
                 self.data = self._cube
+
+    def getMaps(self, **kwargs):
+        """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
+
+        If called without additional ``kwargs``, :func:`getMaps` will initilise
+        the :class:`~marvin.tools.maps.Maps` using the ``plateifu`` of this
+        :class:`~marvin.tools.cube.Cube`. Otherwise, the ``kwargs`` will be
+        passed when initialising the :class:`~marvin.tools.maps.Maps`.
+
+        """
+
+        if len(kwargs.keys()) == 0 or 'filename' not in kwargs:
+            kwargs.update({'plateifu': self.plateifu})
+
+        maps = marvin.tools.maps.Maps(**kwargs)
+
+        return maps
 
     def getAperture(self, coords, radius, mode='pix', weight=True,
                     return_type='mask'):
