@@ -247,6 +247,7 @@ class Query(object):
         '''
         if returnparams:
             returnparams = [returnparams] if type(returnparams) != list else returnparams
+            self._returnparams = returnparams
         self.params.extend(returnparams)
 
     def set_defaultparams(self):
@@ -543,7 +544,7 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self.params}
+            params = {'searchfilter': self.searchfilter, 'params': self._returnparams}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
