@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# anal_props.py
+# analysis_props.py
 #
 # Created by José Sánchez-Gallego on 13 Jun 2016.
 
@@ -13,7 +13,7 @@ from __future__ import absolute_import
 import marvin.core.core
 
 
-class AnalisisProperty(marvin.core.core.Dotable):
+class AnalysisProperty(marvin.core.core.Dotable):
     """A class describing a property with a value and additional information.
 
     This class is intended for internal use, not to be initialisided by the

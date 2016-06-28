@@ -56,3 +56,19 @@ RSS
    :members:
    :undoc-members:
    :show-inheritance:
+
+Maps
+----
+
+.. automodule:: marvin.tools.maps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Map
+---
+
+.. automodule:: marvin.tools.map
+   :members:
+   :undoc-members:
+   :show-inheritance:
