@@ -10,6 +10,7 @@
 - Add link to issue tracking in Marvin-web/documentation.
 - Check valid kwargs for all MarvinToolsClass classes.
 - xyorig standards.
+- Document attributes
 
 - make toggle sasurl function in Config
 - make it easier to turn off local db if you have one
@@ -24,6 +25,10 @@
 - Attributes for commonly used parameters (basically rework the header into
     something more readable).
 
+## API
+
+- Move api.cube.getSpaxel to api.general and rename it to convertCoords or
+    something similar.
 
 ## Map
 

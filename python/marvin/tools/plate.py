@@ -27,8 +27,26 @@ except ImportError:
 
 
 class Plate(MarvinToolsClass, list):
-    ''' A class representing a Plate
+    '''A class to interface with MaNGA Plate.
 
+    This class represents a Plate, initialised either
+    from a file, a database, or remotely via the Marvin API. The class
+    inherits from Python's list class, and is defined as a list of
+    Cube objects.
+
+    Parameters:
+        plateid (str):
+            The plateid of the Plate to load.
+        plateifu (str):
+            The plate-ifu of the Plate to load
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`..
+
+    Return:
+        plate:
+            An object representing the Plate entity. The object is a list of
+            Cube objects, one for each IFU cube in the Plate entity.
     '''
 
     def __init__(self, *args, **kwargs):
