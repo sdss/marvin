@@ -10,6 +10,7 @@
 - Add link to issue tracking in Marvin-web/documentation.
 - Check valid kwargs for all MarvinToolsClass classes.
 - xyorig standards.
+- Document attributes
 
 - make toggle sasurl function in Config
 - make it easier to turn off local db if you have one
