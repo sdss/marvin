@@ -26,6 +26,9 @@ Welcome to Marvin's documentation!
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
+If you are using Marvin in any way (Web, API, or Tools) to do your science, please cite us in your in papers and
+acknowledge the members of the Marvin team personally in your acknowledgements. (Details on how forthcoming)
+
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
