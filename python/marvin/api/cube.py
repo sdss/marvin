@@ -61,7 +61,8 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': json.loads(cube._cube.hdr[0].header),
-                                    'redshift': cube._cube.sample[0].nsa_redshift}
+                                    'redshift': cube._cube.sample[0].nsa_redshift,
+                                    'shape': cube.shape}
         return json.dumps(self.results)
 
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')

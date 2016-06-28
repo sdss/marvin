@@ -82,7 +82,7 @@ class Spectrum(Dotable):
 
     def plot(self, array='flux', xlim=None, ylim=None, mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
-        """Plots and spectrum using matplotlib.
+        """Plots a spectrum using matplotlib.
 
         Returns a |axes|_ object with a representation of this spectrum.
         The returned ``axes`` object can then be showed, modified, or saved to

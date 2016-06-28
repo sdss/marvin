@@ -6,7 +6,7 @@ import marvin
 from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords
-from marvin.tools.spaxel import Spaxel
+import marvin.tools.spaxel
 from marvin.api.api import Interaction
 
 
@@ -63,9 +63,15 @@ class Cube(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
 
+        # TODO: consolidate _hdu/_cube in data. This class needs a clean up.
+        # Can use Maps or Spaxel as an example. For now I'm adding more
+        # clutter to avoid breaking things (JSG).
+
         self.filename = None
         self._hdu = None
         self._cube = None
+        self.data = None
+        self._shape = None
 
         skip_check = kwargs.get('skip_check', False)
 
@@ -143,8 +149,10 @@ class Cube(MarvinToolsClass):
 
         """
 
-        # TBD: do we want to use x/y, ra/dec, or a single coords parameter (as
+        # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
         # an array of coordinates) and a mode keyword.
+
+        # TODO: adapt to use marvin.general.general.getSpaxel.
 
         # Checks that we have the correct set of inputs.
         if x is not None or y is not None:
@@ -187,7 +195,8 @@ class Cube(MarvinToolsClass):
             _spaxels = []
             for ii in range(len(iCube[0])):
                 _spaxels.append(
-                    Spaxel._initFromData(jCube[0][ii], iCube[0][ii], self._hdu))
+                    marvin.tools.spaxel.Spaxel._initFromData(
+                        self.plateifu, jCube[0][ii], iCube[0][ii], cube=self))
 
         elif self.data_origin == 'db':
 
@@ -205,7 +214,9 @@ class Cube(MarvinToolsClass):
 
             _spaxels = []
             for ii in range(len(iCube[0])):
-                _spaxels.append(Spaxel(jCube[0][ii], iCube[0][ii], plateifu=self.plateifu))
+                _spaxels.append(
+                    marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
+                                               plateifu=self.plateifu))
 
         elif self.data_origin == 'api':
 
@@ -226,7 +237,10 @@ class Cube(MarvinToolsClass):
 
             _spaxels = []
             for ii in range(len(xx)):
-                _spaxels.append(Spaxel(xx[ii], yy[ii], plateifu=self.plateifu, mode='remote'))
+                _spaxels.append(
+                    marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
+                                               plateifu=self.plateifu,
+                                               mode='remote'))
 
         if len(_spaxels) == 1 and isScalar:
             return _spaxels[0]
@@ -239,6 +253,7 @@ class Cube(MarvinToolsClass):
         self._useDB = False
         try:
             self._hdu = fits.open(self.filename)
+            self.data = self._hdu
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
@@ -259,6 +274,7 @@ class Cube(MarvinToolsClass):
 
         self.hdr = data['header']
         self.redshift = float(data['redshift'])
+        self._shape = data['shape']
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -286,6 +302,22 @@ class Cube(MarvinToolsClass):
                     doc='Gets the `IVAR` data extension.')
     mask = property(lambda self: self._getExtensionData('MASK'),
                     doc='Gets the `MASK` data extension.')
+
+    @property
+    def shape(self):
+        """The shape of the cube."""
+
+        if self._shape is None:
+            if self.data_origin == 'file':
+                self._shape = self._hdu['FLUX'].data.shape[1:]
+            elif self.data_origin == 'db':
+                self._shape = self._cube.shape.shape
+            elif self.data_origin == 'api':
+                # self._shape gets initialised in self._openCubeRemote
+                pass
+
+        return self._shape
+
 
     @property
     def qualitybit(self):
@@ -375,3 +407,57 @@ class Cube(MarvinToolsClass):
             if self._cube:
                 self._useDB = True
                 self.hdr = self._cube.header
+                self.data = self._cube
+
+    def getAperture(self, coords, radius, mode='pix', weight=True,
+                    return_type='mask'):
+        """Returns the spaxel in a circular or elliptical aperture.
+
+        Returns either a mask of the same shape as the cube with the spaxels
+        within an aperture, or the integrated spaxel from combining the spectra
+        for those spaxels.
+
+        The centre of the aperture is defined by ``coords``, which must be a
+        tuple of ``(x,y)`` (if ``mode='pix'``) or ``(ra,dec)`` coordinates
+        (if ``mode='sky'``). ``radius`` defines the radius of the circular
+        aperture, or the parameters of the aperture ellipse.
+
+        If ``weight=True``, the returned mask indicated the fraction of the
+        spaxel encompassed by the aperture, ranging from 0 for spaxels not
+        included to 1 for pixels totally included in the aperture. This
+        weighting is used to return the integrated spaxel.
+
+        Parameters:
+            coords (tuple):
+                Either the ``(x,y)`` or ``(ra,dec)`` coordinates of the centre
+                of the aperture.
+            radius (float or tuple):
+                If a float, the radius of the circular aperture. If
+                ``mode='pix'`` it must be the radius in pixels; if
+                ``mode='sky'``, ``radius`` is in arcsec. To define an
+                elliptical aperture, ``radius`` must be a 3-element tuple with
+                the first two elements defining the major and minor semi-axis
+                of the ellipse, and the third one the position angle in degrees
+                from North to East.
+            mode ({'pix', 'sky'}):
+                Defines whether the values in ``coords`` and ``radius`` refer
+                to pixels in the cube or angles on the sky.
+            weight (bool):
+                If ``True``, the returned mask or integrated spaxel will be
+                weighted by the fractional pixels in the aperture.
+            return_type ({'mask', 'mean', 'median', 'sum'}):
+                If ``mask``, this methods returns a 2D mask with the shape
+                of the cube indicating the spaxels included in the aperture.
+
+        Returns:
+            result (str):
+                Description.
+
+        Example:
+            An example of use
+              >>> print a
+              >>> a = f(b)
+
+        """
+
+        return
