@@ -24,6 +24,10 @@
 - Attributes for commonly used parameters (basically rework the header into
     something more readable).
 
+## API
+
+- Move api.cube.getSpaxel to api.general and rename it to convertCoords or
+    something similar.
 
 ## Map
 
