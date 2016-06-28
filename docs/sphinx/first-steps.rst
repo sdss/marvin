@@ -65,7 +65,7 @@ Now let's play with a Marvin Cube
     >>> spax
     <Marvin Spaxel (x=10, y=10)>
 
-    # plot the spectrum
+    # plot the spectrum (you may need matplotlib.pyplot.ion() for interactive display)
     >>> spax.drp.plot()
 
 See the Marvin :ref:`marvin-tools` section for more details and examples.  And the :ref:`marvin-tools-ref` for the detailed Reference Guide.
