@@ -319,7 +319,6 @@ class Cube(MarvinToolsClass):
 
         return self._shape
 
-
     @property
     def qualitybit(self):
         ''' The Cube DRP3QUAL bits '''
