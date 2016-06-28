@@ -375,3 +375,5 @@ class Cube(MarvinToolsClass):
             if self._cube:
                 self._useDB = True
                 self.hdr = self._cube.header
+            else:
+                self._useDB = False
