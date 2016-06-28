@@ -38,8 +38,7 @@ class Plate(MarvinToolsClass, list):
         plateid (str):
             The plateid of the Plate to load.
         plateifu (str):
-            The plate-ifu of the Plate to load (either ``mangaid`` or
-            ``plateifu`` can be used, but not both).
+            The plate-ifu of the Plate to load
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`..
