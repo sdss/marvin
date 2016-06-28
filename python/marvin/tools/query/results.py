@@ -228,7 +228,11 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
-        nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+        try:
+            nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+        except ValueError as e:
+            raise MarvinError('Cannot created NamedTuple from remote Results: {0}'.format(e))
+
         qpo = self._queryobj.queryparams_order
 
         def keys(self):
