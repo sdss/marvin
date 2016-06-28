@@ -72,6 +72,7 @@ class Cube(MarvinToolsClass):
         self._hdu = None
         self._cube = None
         self.data = None
+        self.wavelength = None
         self._shape = None
 
         skip_check = kwargs.get('skip_check', False)
@@ -259,6 +260,7 @@ class Cube(MarvinToolsClass):
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.hdr = self._hdu[1].header
+        self.wavelength = self._hdu['WAVE'].data
 
     def _openCubeRemote(self):
         """Calls the API to check that the cube exists and gets the header."""
@@ -276,6 +278,7 @@ class Cube(MarvinToolsClass):
         self.hdr = data['header']
         self.redshift = float(data['redshift'])
         self._shape = data['shape']
+        self.wavelength = data['wavelength']
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -355,20 +358,6 @@ class Cube(MarvinToolsClass):
 
         return finaltargs
 
-    def getWavelength(self):
-        ''' Retrieve the wavelength array for the Cube '''
-        if self._useDB:
-            if self._cube:
-                wavelength = self._cube.wavelength.wavelength
-            else:
-                raise MarvinError('Cannot retrieve wavelength.  No DB cube entry found!')
-        else:
-            if self._hdu:
-                wavelength = self._hdu['WAVE'].data
-            else:
-                raise MarvinError('Cannot retrieve wavelength.  No HDU found!')
-        return wavelength
-
     def _getCubeFromDB(self):
         ''' server-side code '''
 
@@ -408,6 +397,7 @@ class Cube(MarvinToolsClass):
                 self._useDB = True
                 self.hdr = self._cube.header
                 self.data = self._cube
+                self.wavelength = self.data.wavelength.wavelength
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
