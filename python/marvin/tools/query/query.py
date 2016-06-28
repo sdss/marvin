@@ -377,7 +377,8 @@ class Query(object):
             self._parsed = parsed
             self.strfilter = str(parsed)
             self.filterparams.update(parsed.params)
-            self.params.extend(self.filterparams.keys())
+            filterkeys = [key for key in self.filterparams.keys() if key not in self.params]
+            self.params.extend(filterkeys)
 
             # print filter
             if not self.quiet:
@@ -551,6 +552,7 @@ class Query(object):
                 res = ii.getData()
                 self.queryparams_order = ii.results['queryparams_order']
                 self.query = ii.results['query']
+            print('length of results', len(res))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=len(res), returntype=self.returntype)
 
     def _sortQuery(self):
