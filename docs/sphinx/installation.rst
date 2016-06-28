@@ -75,11 +75,9 @@ download and run the script ::
     svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4bootstrap
     ./sdss4bootstrap -l
 
-Next, edit your ``.bashrc`` file to include ::
+Next, edit your ``.bashrc`` or ``.cshrc`` file to include ::
 
     module use $SDSS4_PRODUCT_ROOT/repo/modulefiles
-
-(modify those lines accordingly if you are using a different type of shell).
 
 If you now run ``module avail`` in a new terminal you will get a list containing
 ``sdss4tools``. Now you are ready to install more SDSS software by just
