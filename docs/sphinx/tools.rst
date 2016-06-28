@@ -24,10 +24,7 @@ Search-Based Tools
 
 Marvin provides tools for easily searching through the MaNGA dataset via queries, from within your own Python terminal.
 
-Performing Queries:
+- :doc:`query`: Perform Queries.
+- :doc:`results`: Deal with Results from Queries.
 
-:doc:`query`
-
-Dealing with Results from Queries:
-
-:doc:`results`
+|

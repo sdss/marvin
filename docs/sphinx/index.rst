@@ -44,6 +44,8 @@ developed and maintained by the MaNGA team.
 :doc:`web`
 ^^^^^^^^^^
 
+|
+
 Tutorials
 =========
 
@@ -53,6 +55,20 @@ Tutorials
 
    tutorials/boolean-search-tutorial
    tutorials/query-examples
+
+|
+
+General Reference
+=================
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   data-access-modes.rst
+   Available Query Parameters <query_params.rst>
+
+|
 
 Documentation
 =============
@@ -69,6 +85,8 @@ Documentation
    api/db
    api/brain/api
    api/brain/utils
+
+|
 
 Indices and tables
 ==================
