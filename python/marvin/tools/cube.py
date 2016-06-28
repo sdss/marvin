@@ -398,6 +398,8 @@ class Cube(MarvinToolsClass):
                 self.hdr = self._cube.header
                 self.data = self._cube
                 self.wavelength = self.data.wavelength.wavelength
+            else:
+                self._useDB = False
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.

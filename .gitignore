@@ -26,6 +26,7 @@ docs/sphinx/api/brain/logs
 docs/sphinx/api/logs
 docs/sphinx/flask_profiler.sql
 docs/sphinx/logs
+docs/sphinx/tools/logs
 docs/sphinx/tutorials/logs
 etc/logs
 /logs
