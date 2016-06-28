@@ -13,6 +13,8 @@ Marvin makes this easy for you in two ways:
 
 With the Marvin API, you can build your own application, website, or scripts very easily, and forego the rest of Marvin, if so desired.
 
+|
+
 .. _marvin-urlmap:
 
 Config.Urlmap
@@ -47,6 +49,8 @@ Usage
 
 Some urls require parameters passed to them. Others do not.  Urls with curly braces {} in them indicate an input parameter. For example, in the above url, ```{name}``` means a parameter called name must be passed into the url. See how to pass in parameters in the examples below.
 
+|
+
 .. _marvin-interaction-class:
 
 Interaction Class
@@ -79,6 +83,9 @@ Usage:
     data = response.getData()
     print(data)
 
+|
+
+.. _marvin-http-status-codes:
 
 Http Status Codes
 -----------------
