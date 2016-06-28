@@ -11,6 +11,9 @@
 - Check valid kwargs for all MarvinToolsClass classes.
 - xyorig standards.
 
+- make toggle sasurl function in Config
+- make it easier to turn off local db if you have one
+
 ## Query
 
 - Make remote mode queries NOT return all the cubes - paginate results
