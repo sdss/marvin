@@ -11,6 +11,11 @@
 - Check valid kwargs for all MarvinToolsClass classes.
 - xyorig standards.
 
+## Query
+
+- Make remote mode queries NOT return all the cubes - paginate results
+- Setting returntype causes segmentation faults
+
 ## Maps
 
 - Attributes for commonly used parameters (basically rework the header into

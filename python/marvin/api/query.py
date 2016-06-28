@@ -9,7 +9,7 @@ from marvin.core import MarvinError
 def _getCubes(searchfilter, params=None):
     """Run query locally at Utah."""
 
-    q, r = doQuery(searchfilter=searchfilter, returnparam=params, mode='local')
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local')
     r.getAll()
     print('query worked', r.results[0])
     output = dict(data=r.results, query=r.showQuery(),
@@ -21,7 +21,7 @@ def _getCubes(searchfilter, params=None):
 
 class QueryView(BrainQueryView):
     """Class describing API calls related to queries.
-    
+
     example query post:
     curl -X POST --data "searchfilter=nsa_redshift<0.1" http://sas.sdss.org/marvin2/api/query/cubes/
     """

@@ -622,6 +622,7 @@ class Results(object):
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
+        print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__('mangaid'), mode=self.mode) for res in self.results]
 
