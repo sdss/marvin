@@ -9,6 +9,7 @@
 - Use TODO in code.
 - Add link to issue tracking in Marvin-web/documentation.
 - Check valid kwargs for all MarvinToolsClass classes.
+- xyorig standards.
 
 ## Maps
 
