@@ -25,7 +25,7 @@ from marvin.core import MarvinError
 import marvin.core.exceptions
 import marvin.tools.maps
 from marvin.tools.spectrum import Spectrum
-import marvin.tools.anal_props as anal_props
+import marvin.tools.analysis_props
 import marvin.utils.general.dap
 import marvin.utils.general.general
 
@@ -82,7 +82,7 @@ class Spaxel(MarvinToolsClass):
 
     def __new__(cls, *args, **kwargs):
 
-        obj = super(Spaxel, cls).__new__(cls, *args, **kwargs)
+        obj = super(Spaxel, cls).__new__(cls)
 
         obj.data_origin = None
         obj._hduList = None
@@ -156,11 +156,11 @@ class Spaxel(MarvinToolsClass):
                 mask = data[cat][channel]['mask']
                 unit = data[cat]['unit']
 
-                anal_prop_key = cat.lower()
+                analysis_prop_key = cat.lower()
                 if channel.lower() != 'na':
-                    anal_prop_key += '_' + channel.lower()
+                    analysis_prop_key += '_' + channel.lower()
 
-                self.dap[anal_prop_key] = anal_props.AnalisisProperty(
+                self.dap[analysis_prop_key] = marvin.tools.analysis_props.AnalysisProperty(
                     cat.lower(), channel.lower(), value, ivar=ivar, mask=mask,
                     unit=unit)
 
