@@ -61,7 +61,8 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': json.loads(cube._cube.hdr[0].header),
-                                    'redshift': cube._cube.sample[0].nsa_redshift}
+                                    'redshift': cube._cube.sample[0].nsa_redshift,
+                                    'shape': cube.shape}
         return json.dumps(self.results)
 
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
@@ -70,10 +71,12 @@ class CubeView(BaseView):
         self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
         return json.dumps(self.results)
 
-    @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'],
-           endpoint='getspaxels')
+    @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
+        '''
+        This gets the Spaxel x y for initialization purposes only
+        '''
 
         name = kwargs.pop('name')
         for var in ['x', 'y', 'ra', 'dec']:
@@ -106,6 +109,9 @@ class CubeView(BaseView):
     @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
     @parseRoutePath
     def getSpectra(self, **kwargs):
+        '''
+            This just gets a single flux spectrum
+        '''
 
         name = kwargs.pop('name')
 
@@ -113,12 +119,12 @@ class CubeView(BaseView):
         cube, res = _getCube(name)
         self.update_results(res)
         if not cube:
-            self.results['error'] = 'getSpaxel: No cube: {0}'.format(res['error'])
+            self.results['error'] = 'getSpectrum: No cube: {0}'.format(res['error'])
             return json.dumps(self.results)
 
         try:
             spectrum = cube.getSpaxel(**kwargs)
-            self.results['data'] = spectrum['flux'].tolist()
+            self.results['data'] = spectrum.drp.flux.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1

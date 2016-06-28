@@ -228,7 +228,11 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
-        nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+        try:
+            nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+        except ValueError as e:
+            raise MarvinError('Cannot created NamedTuple from remote Results: {0}'.format(e))
+
         qpo = self._queryobj.queryparams_order
 
         def keys(self):
@@ -618,6 +622,7 @@ class Results(object):
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
+        print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__('mangaid'), mode=self.mode) for res in self.results]
 
