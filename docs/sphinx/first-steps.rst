@@ -106,7 +106,7 @@ Now let's play with a Marvin Query
     >>> r.mapColumnsToParams()
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
-See the Marvin :ref:`marvin-queries` section for more details and examples.  And the :ref:`marvin-query-ref` for the detailed Reference Guide.
+See the Marvin :ref:`marvin-query` section for more details and examples.  And the :ref:`marvin-query-ref` for the detailed Reference Guide.
 
 
 No really, go read the :ref:`marvin-general`.
