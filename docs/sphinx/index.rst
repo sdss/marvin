@@ -42,6 +42,15 @@ acknowledge the members of the Marvin team personally in your acknowledgements. 
 
 :doc:`tools`
 ^^^^^^^^^^^^
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   query
+   results
+   tools/cube
+
 :doc:`api`
 ^^^^^^^^^^
 :doc:`web`
@@ -68,8 +77,8 @@ General Reference
    :titlesonly:
    :maxdepth: 1
 
-   data-access-modes.rst
-   Available Query Parameters <query_params.rst>
+   data-access-modes
+   Available Query Parameters <query_params>
 
 |
 
