@@ -666,6 +666,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
     n = kwargs.get('n', '*')
+    limit = kwargs.get('limit', None)
 
     # check for sdss_access
     if not RsyncAccess:
@@ -725,4 +726,4 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
-    rsync_access.commit()
+    rsync_access.commit(limit=limit)

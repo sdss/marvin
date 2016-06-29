@@ -121,7 +121,7 @@ class Results(object):
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
 
-    def download(self, images=False):
+    def download(self, images=False, limit=None):
         ''' Download results via sdss_access
 
             Uses sdss_access to download the query results via rsync.
@@ -149,7 +149,7 @@ class Results(object):
         if images:
             tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
         else:
-            tmp = downloadList(plateifu, dltype=self.returntype)
+            tmp = downloadList(plateifu, dltype=self.returntype, limit=limit)
 
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
