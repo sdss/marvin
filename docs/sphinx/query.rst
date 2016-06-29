@@ -16,20 +16,26 @@ When in local mode, queries will assume you have a database to query on.  You pr
 primarily work in remote mode.  Querying while in remote mode will trigger a Marvin-API request to the Marvin at Utah where it performs your
 query and returns the results.  To see how to handle your results, go to :ref:`marvin-results`.
 
+|
+
 Filters
 -------
 
 See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.
 
+|
+
 Return Parameters
 -----------------
 Queries will return a set of default parameters no matter what.  If you want to return additional parameters, input them here as a string list.  See :ref:`marvin-query-parameters` for a list of available parameters to return.
 
-::
+.. code-block:: python
 
     # To see the parameters returned in you query
     print q.params
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
+
+|
 
 Return Type
 -----------
@@ -39,16 +45,22 @@ The results of your Query by default might not be in the format you desire.  Ins
 
 **NOTE**: This is time intensive.  Depending on the size of your results, this conversion may take awhile.  Be wary.
 
+|
+
 Simple Query
 ------------
 
-Simple Query from initialization::
+Simple Query from initialization
+
+.. code-block:: python
 
     from marvin.tools.query import Query
     q = Query(searchfilter='nsa.z < 0.1')
     q.run()
 
-or in steps::
+or in steps
+
+.. code-block:: python
 
     searchfilter = 'nsa.z < 0.1'
     q = Query()
@@ -58,12 +70,16 @@ or in steps::
     q.add_condition()
     q.run()
 
-Get Results::
+Get Results
+
+.. code-block:: python
 
     r = q.run()
     r.results
 
-Returns::
+Returns
+
+.. code-block:: python
 
     [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
      (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
@@ -76,7 +92,9 @@ Returns::
      (u'1-43717', 8137, u'1902', u'1902', 0.0314487814903259),
      (u'1-44047', 8143, u'1902', u'1902', 0.04137859120965)]
 
-Do it all at once::
+Do it all at once
+
+.. code-block:: python
 
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.z < 0.1')
@@ -84,13 +102,16 @@ Do it all at once::
 
 See :ref:`marvin-query-examples` for examples of different types of queries.  When you want to perform a new query or update an old query, currently, you must start a fresh query, or run ```q.reset()```.
 
+|
+
 Show Query
 ----------
 In **local mode**, you can see your query before you submit it.  When operating in **remote mode**, you cannot see your query before you submit, however you can examine your query after you run it.
 
 From the Results object
 ^^^^^^^^^^^^^^^^^^^^^^^
-::
+
+.. code-block:: python
 
    # do a query
    q = Query(searchfilter='nsa.z < 0.1')
@@ -102,7 +123,8 @@ From the Results object
 
 From the Query object (if in local mode)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-::
+
+.. code-block:: python
 
     # show the entire SQL query
     q.show()
