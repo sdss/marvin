@@ -60,6 +60,7 @@ def doQuery(*args, **kwargs):
     except TypeError as e:
         warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
         res = None
+
     return q, res
 
 
@@ -162,11 +163,14 @@ class Query(object):
         self._errors = []
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
+        self._returnparams = None
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
         self.marvinform = MarvinForm()
+        #self._start = kwargs.get('start', None)
+        #self._chunk = kwargs.get('chunk', None)
 
         # set the mode
         if self.mode is None:
@@ -519,6 +523,7 @@ class Query(object):
 
             # get total count, and if more than 150 results, paginate and only return the first 10
             count = self.query.count()
+            self.totalcount = count
             if count > 150:
                 query = self.query.slice(0, self.limit)
                 warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
@@ -534,7 +539,8 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype, queryobj=self)
+            return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
+                           queryobj=self)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -553,8 +559,11 @@ class Query(object):
                 res = ii.getData()
                 self.queryparams_order = ii.results['queryparams_order']
                 self.query = ii.results['query']
+                count = ii.results['count']
+                totalcount = ii.results['totalcount']
             print('length of results', len(res))
-            return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=len(res), returntype=self.returntype)
+            return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
+                           returntype=self.returntype, totalcount=totalcount)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

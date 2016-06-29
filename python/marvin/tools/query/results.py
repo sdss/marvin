@@ -3,6 +3,7 @@ from marvin.core import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList
+from marvin.api.api import Interaction
 import warnings
 import json
 import copy
@@ -55,7 +56,9 @@ class Results(object):
             objects (list):
                 The list of Marvin Tools objects created by returntype
             count (int):
-                The total number of objects in the results
+                The number of objects in the returned query results
+            totalcount (int):
+                The total number of objects in the full query results
             mode ({'auto', 'local', 'remote'}):
                 The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
             chunk (int):
@@ -87,6 +90,7 @@ class Results(object):
         self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
         self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.count = kwargs.get('count', None)
+        self.totalcount = kwargs.get('totalcount', self.count)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
         self.chunk = kwargs.get('chunk', 10)
         self.start = kwargs.get('start', 0)
@@ -437,15 +441,12 @@ class Results(object):
 
         return refname
 
-    @local_mode_only
     def getNext(self, chunk=None):
         ''' Retrieve the next chunk of results
 
             Returns the next chunk of results from the query.
             from start to end in units of chunk.  Used with getPrevious
             to paginate through a long list of results
-
-            Can only be run in local mode.
 
             Parameters:
                 chunk (int):
@@ -470,27 +471,43 @@ class Results(object):
         newstart = self.end
         self.chunk = chunk if chunk else self.chunk
         newend = newstart + self.chunk
-        if newend > self.count:
+        if newend > self.totalcount:
             warnings.warn('You have reached the end.', MarvinUserWarning)
-            newend = self.count
+            newend = self.totalcount
             newstart = newend - self.chunk
 
         log.info('Retrieving next {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
-        self.results = self.query.slice(newstart, newend).all()
+        if self.mode == 'local':
+            self.results = self.query.slice(newstart, newend).all()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['getsubset']['url']
+
+            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
+                      'start': newstart, 'end': newend}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            else:
+                self.results = ii.getData()
+                self._makeNamedTuple()
+
         self.start = newstart
         self.end = newend
 
         return self.results
 
-    @local_mode_only
     def getPrevious(self, chunk=None):
         ''' Retrieve the previous chunk of results.
 
             Returns a previous chunk of results from the query.
             from start to end in units of chunk.  Used with getNext
             to paginate through a long list of results
-
-            Can only be run in local mode.
 
             Parameters:
                 chunk (int):
@@ -521,17 +538,33 @@ class Results(object):
             newend = newstart + self.chunk
 
         log.info('Retrieving previous {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
-        self.results = self.query.slice(newstart, newend).all()
+        if self.mode == 'local':
+            self.results = self.query.slice(newstart, newend).all()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['getsubset']['url']
+
+            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
+                      'start': newstart, 'end': newend}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            else:
+                self.results = ii.getData()
+                self._makeNamedTuple()
+
         self.start = newstart
         self.end = newend
 
         return self.results
 
-    @local_mode_only
     def getSubset(self, start, limit=10):
         ''' Extracts a subset of results
-
-            Can only be run in local mode.
 
             Parameters:
                 start (int):
@@ -565,7 +598,26 @@ class Results(object):
         self.start = start
         self.end = end
         self.chunk = limit
-        self.results = self.query.slice(start, end).all()
+        if self.mode == 'local':
+            self.results = self.query.slice(start, end).all()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['getsubset']['url']
+
+            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
+                      'start': start, 'end': end}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            else:
+                self.results = ii.getData()
+                self._makeNamedTuple()
+
         return self.results
 
     @local_mode_only

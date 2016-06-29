@@ -65,7 +65,7 @@ or to view the Full Column Names::
 
 Get Next/Previous Chunks in List
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For results over 150 objects, Marvin automatically paginates results in groups of 10. Currently, in local mode only, you can view the next or previous chunk with::
+For results over 150 objects, Marvin automatically paginates results in groups of 10. You can view the next or previous chunk with::
 
     r.getNext()
     r.getPrevious()
