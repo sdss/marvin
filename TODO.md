@@ -11,6 +11,8 @@
 - Check valid kwargs for all MarvinToolsClass classes.
 - xyorig standards.
 - Document attributes
+- Maybe geturlmap should not run when loading marvin, but only when the first
+    Interaction is called.
 
 - make toggle sasurl function in Config
 - make it easier to turn off local db if you have one
