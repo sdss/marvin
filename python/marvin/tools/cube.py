@@ -10,6 +10,13 @@ import marvin.tools.spaxel
 from marvin.api.api import Interaction
 import marvin.tools.maps
 
+import marvin.core.exceptions
+
+try:
+    import photutils.aperture_funcs
+except:
+    photutils = False
+
 
 class Cube(MarvinToolsClass):
     """A class to interface with MaNGA DRP data cubes.
@@ -454,19 +461,70 @@ class Cube(MarvinToolsClass):
             weight (bool):
                 If ``True``, the returned mask or integrated spaxel will be
                 weighted by the fractional pixels in the aperture.
-            return_type ({'mask', 'mean', 'median', 'sum'}):
-                If ``mask``, this methods returns a 2D mask with the shape
-                of the cube indicating the spaxels included in the aperture.
+            return_type ({'mask', 'mean', 'median', 'sum', 'spaxels'}):
+                The type of data to be returned.
 
         Returns:
-            result (str):
-                Description.
+            result:
+                If ``return_type='mask'``, this methods returns a 2D mask with
+                the shape of the cube indicating the spaxels included in the
+                aperture and, if appliable, their fractional contribution to
+                the aperture. If ``spaxels``, both the mask (flattened to a
+                1D array) and the :class:`~marvin.tools.spaxel.Spaxel`
+                included in the aperture are returned. ``mean``, ``median``,
+                or ``sum`` will allow arithmetic operations with the spaxels
+                in the aperture in the future.
 
         Example:
-            An example of use
-              >>> print a
-              >>> a = f(b)
+            To get the mask for a circular aperture centred in spaxel (5, 7)
+            and with radius 5 spaxels
+              >>> mask = cube.getAperture((5, 7), 5)
+              >>> mask.shape
+              (34, 34)
+            If you want to get the spaxels associated with that mask
+              >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
+              >>> len(spaxels)
+              15
 
         """
 
-        return
+        assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
+
+        if return_type not in ['mask', 'spaxels']:
+            raise marvin.core.exceptions.MarvinNotImplemented(
+                'return_type={0} is not yet implemented'.format(return_type))
+
+        if not photutils:
+            raise MarvinError('getAperture currently requires photutils.')
+
+        if mode != 'pix':
+            raise marvin.core.exceptions.MarvinNotImplemented(
+                'mode={0} is not yet implemented'.format(mode))
+
+        if not np.isscalar(radius):
+            raise marvin.core.exceptions.MarvinNotImplemented(
+                'elliptical apertures are not yet implemented'.format(mode))
+
+        data_mask = np.zeros(self.shape)
+
+        if weight:
+            phot_mode = ''
+        else:
+            phot_mode = 'center'
+
+        coords = np.atleast_2d(coords) + 0.5
+
+        mask = photutils.aperture_funcs.get_circular_fractions(
+            data_mask, coords, radius, phot_mode, 0)
+
+        if return_type == 'mask':
+            return mask
+
+        if return_type == 'spaxels':
+            mask_idx = np.where(mask)
+            spaxels = self.getSpaxel(x=mask_idx[0], y=mask_idx[1],
+                                     xyorig='lower')
+
+            fractions = mask[mask_idx]
+
+            return (fractions, spaxels)
