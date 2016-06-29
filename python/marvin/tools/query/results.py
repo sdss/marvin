@@ -500,6 +500,9 @@ class Results(object):
         self.start = newstart
         self.end = newend
 
+        if self.returntype:
+            self.convertToTool()
+
         return self.results
 
     def getPrevious(self, chunk=None):
@@ -561,6 +564,9 @@ class Results(object):
         self.start = newstart
         self.end = newend
 
+        if self.returntype:
+            self.convertToTool()
+
         return self.results
 
     def getSubset(self, start, limit=10):
@@ -617,6 +623,9 @@ class Results(object):
             else:
                 self.results = ii.getData()
                 self._makeNamedTuple()
+
+        if self.returntype:
+            self.convertToTool()
 
         return self.results
 
