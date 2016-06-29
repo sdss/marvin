@@ -561,7 +561,7 @@ class Query(object):
                 self.query = ii.results['query']
                 count = ii.results['count']
                 totalcount = ii.results['totalcount']
-            print('length of results', len(res))
+            print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount)
 
