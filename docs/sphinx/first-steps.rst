@@ -30,6 +30,9 @@ using the Marvin :ref:`marvin-config-class`.
     config.mplver, config.drpver, config.dapver
     MPL-3 v1_3_3 v1_0_0
 
+
+|
+
 .. _marvin-firststep-cube:
 
 My First Cube
@@ -79,6 +82,9 @@ See the Marvin :ref:`marvin-tools` section for more details and examples.  And t
 
 Did you read :ref:`marvin-general` yet?  Do that now!
 
+
+|
+
 .. _marvin-firststep-query:
 
 My First Query
@@ -91,22 +97,34 @@ Now let's play with a Marvin Query
     # import a Marvin query convenience tool
     from marvin.tools.query import doQuery
 
-    # do a Query - select all galaxies with NSA redshift < 0.2 and only 19-fiber IFUs
+    # Do a Query: select all galaxies with NSA redshift < 0.2 and only 19-fiber IFUs
     q, r = doQuery(searchfilter='nsa.z < 0.2 and ifu.name=19*')
+    init condition [['nsa.z', '<', '0.2']]
+    init condition [['ifu.name', '=', '19*']]
     Your parsed filter is:
     and_(nsa.z<0.2, ifu.name=19*)
 
-    # look at results
-    r.count
-    72
+    # How many objects met the search criteria?
+    r.totalcount
+    151
     
-    r.results[0:5]
-    [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
-     (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
-     (u'1-38157', 8083, u'1901', u'1901', 0.037575539201498),
-     (u'1-38347', 8083, u'1902', u'1902', 0.036589004099369),
-     (u'1-43214', 8135, u'1902', u'1902', 0.117997065186501)]
+    # Results are returned in chunks of 10 by default
+    r.results
+    [NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-23023', plate=7992, name=u'1902', z=0.0270670596510172),
+     NamedTuple(mangaid=u'1-24099', plate=7991, name=u'1902', z=0.0281657855957747),
+     NamedTuple(mangaid=u'1-38103', plate=8082, name=u'1901', z=0.0285587850958109),
+     NamedTuple(mangaid=u'1-38157', plate=8083, name=u'1901', z=0.037575539201498),
+     NamedTuple(mangaid=u'1-38347', plate=8083, name=u'1902', z=0.036589004099369),
+     NamedTuple(mangaid=u'1-43214', plate=8135, name=u'1902', z=0.117997065186501),
+     NamedTuple(mangaid=u'1-43629', plate=8143, name=u'1901', z=0.031805731356144),
+     NamedTuple(mangaid=u'1-43663', plate=8140, name=u'1902', z=0.0407325178384781),
+     NamedTuple(mangaid=u'1-43679', plate=8140, name=u'1901', z=0.0286782365292311)]
 
+    # NamedTuples can be accessed using dotted syntax or like normal tuples
+    r.results[0].mangaid
+    u'1-22438'
+    
     # see the column names
     r.getColumns()
     [u'mangaid', u'plate', u'name', u'name', u'z']
