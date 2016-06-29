@@ -65,7 +65,8 @@ or to view the Full Column Names::
 
 Get Next/Previous Chunks in List
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For results over 150 objects, Marvin automatically paginates results in groups of 10. You can view the next or previous chunk with::
+For results over 150 objects, Marvin automatically paginates results in groups of 10. If you have the returntype attribute
+specified, then you will also generate the new Marvin Tools for the new chunk.  You can view the next or previous chunk with::
 
     r.getNext()
     r.getPrevious()
@@ -94,7 +95,8 @@ You can also specify a chunk value::
 Get Subset
 ^^^^^^^^^^
 To retrieve a subset of the results, use ```r.getSubset```.  getSubset works by specifying the starting index to grab from and a limit
-on the number to grab (default is 10)::
+on the number to grab (default is 10).  Having the returntype specified will also generate the corresponding Marvin Tools for the new
+subset::
 
     # Get the count of objects in results
     r.count
@@ -231,7 +233,8 @@ You can convert your results to a variety of forms.
 To Marvin Tool
 ^^^^^^^^^^^^^^
 You can convert directly to Marvin Tools objects.  Available objects are Cube, Spaxel, RSS, and MAPS.  To successfully convert to
-a particular Marvin object, the results must contain the minimum default information needed to uniquely create that object.
+a particular Marvin object, the results must contain the minimum default information needed to uniquely create that object.  The new
+Tools are stored in a separate Results attribute called 'objects'.
 
 For example, a Cube object needs at least a plate-IFU, or manga-id.  A Spaxel needs a plate-IFU or manga-ID, and a X and Y position.
 
