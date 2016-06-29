@@ -64,8 +64,10 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/', methods=['GET', 'POST'], endpoint='getMaps')
-    def get(self, name):
+    @flask.ext.classy.route('/<name>/<path:path>',
+                            methods=['GET', 'POST'], endpoint='getMaps')
+    @brain.utils.general.parseRoutePath
+    def get(self, name, **kwargs):
         """Returns the parameters needed to initialise a Maps remotely.
 
         To initialise a Maps we need to return:
@@ -78,7 +80,7 @@ class MapsView(marvin.api.base.BaseView):
 
         """
 
-        maps, results = _getMaps(name)
+        maps, results = _getMaps(name, **kwargs)
         self.update_results(results)
 
         if maps is None:

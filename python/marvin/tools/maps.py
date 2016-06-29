@@ -274,18 +274,23 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         url = marvin.config.urlmap['api']['getMaps']['url']
 
+        if self.bintype is not None and self.niter is not None:
+            path = 'bintype={0}/niter={1}/'.format(self.bintype, self.niter)
+
+        url_full = url.format(name=self.plateifu, path=path)
+
         try:
-            response = marvin.api.api.Interaction(url.format(name=self.plateifu))
+            response = marvin.api.api.Interaction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
-                'found a problem when checking if remote cube exists: {0}'
+                'found a problem when checking if remote maps exists: {0}'
                 .format(str(ee)))
 
         data = response.getData()
 
         if self.plateifu not in data:
             raise marvin.core.exceptions.MarvinError(
-                'remote cube has a different plateifu!')
+                'remote maps has a different plateifu!')
 
         # TODO: replace self.data with a property that returns an error for
         # Maps initialised from remote.
