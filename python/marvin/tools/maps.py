@@ -278,14 +278,14 @@ class Maps(marvin.core.core.MarvinToolsClass):
             response = marvin.api.api.Interaction(url.format(name=self.plateifu))
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
-                'found a problem when checking if remote cube exists: {0}'
+                'found a problem when checking if remote maps exists: {0}'
                 .format(str(ee)))
 
         data = response.getData()
 
         if self.plateifu not in data:
             raise marvin.core.exceptions.MarvinError(
-                'remote cube has a different plateifu!')
+                'remote maps has a different plateifu!')
 
         # TODO: replace self.data with a property that returns an error for
         # Maps initialised from remote.
