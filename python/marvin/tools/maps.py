@@ -274,8 +274,13 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         url = marvin.config.urlmap['api']['getMaps']['url']
 
+        if self.bintype is not None and self.niter is not None:
+            path = 'bintype={0}/niter={1}/'.format(self.bintype, self.niter)
+
+        url_full = url.format(name=self.plateifu, path=path)
+
         try:
-            response = marvin.api.api.Interaction(url.format(name=self.plateifu))
+            response = marvin.api.api.Interaction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when checking if remote maps exists: {0}'
