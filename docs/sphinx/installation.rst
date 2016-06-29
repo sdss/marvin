@@ -132,10 +132,12 @@ branch. If you now do a ``module avail`` you should get something like ::
     sdss4tools/0.2.6(default) tree/dr10                 tree/dr7
     sdss_access/trunk         tree/dr11                 tree/dr8
 
-Doing ``module load marvin`` will setup all the necessary environment variables that Marvin
-needs to work. However, you may not want to do that every time you want to work with Marvin.
-To have ``modules`` load Marvin for each new terminal you can create a file containing
-``modules`` commands and source it in your ``.bashrc`` or ``.cshrc``. For example, do ::
+Doing ``module load marvin`` will setup all the necessary environment variables
+that Marvin needs to work. (Also, you can ignore the errors about 'dust' and
+'inspection/trunk'.) However, you may not want to do that every time you want to
+work with Marvin. To have ``modules`` load Marvin for each new terminal you can
+create a file containing ``modules`` commands and source it in your ``.bashrc``
+or ``.cshrc``. For example, do ::
 
     cat > ~/.modules <<EOL
     module load sdss4tools
