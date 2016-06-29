@@ -24,7 +24,7 @@ def _getMaps(name, **kwargs):
     """Returns a Maps object after parsing the name."""
 
     results = {}
-
+    print(kwargs)
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
 
@@ -50,6 +50,7 @@ def _getMaps(name, **kwargs):
                                       mode='local', **kwargs)
         results['status'] = 1
     except Exception as ee:
+        maps = None
         results['error'] = 'Failed to retrieve maps {0}: {1}'.format(name, str(ee))
 
     return maps, results
@@ -64,10 +65,9 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/<path:path>',
+    @flask.ext.classy.route('/<name>/<bintype>/<niter>/',
                             methods=['GET', 'POST'], endpoint='getMaps')
-    @brain.utils.general.parseRoutePath
-    def get(self, name, **kwargs):
+    def get(self, name, bintype, niter):
         """Returns the parameters needed to initialise a Maps remotely.
 
         To initialise a Maps we need to return:
@@ -80,6 +80,7 @@ class MapsView(marvin.api.base.BaseView):
 
         """
 
+        kwargs = {'bintype': bintype, 'niter': niter}
         maps, results = _getMaps(name, **kwargs)
         self.update_results(results)
 

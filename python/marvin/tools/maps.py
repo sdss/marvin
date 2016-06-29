@@ -272,12 +272,14 @@ class Maps(marvin.core.core.MarvinToolsClass):
     def _load_maps_from_api(self):
         """Loads a Maps object from remote."""
 
+        # TODO: here we are hardcoding the default maps. We should find a better
+        # way to handle this.
+
         url = marvin.config.urlmap['api']['getMaps']['url']
 
-        if self.bintype is not None and self.niter is not None:
-            path = 'bintype={0}/niter={1}/'.format(self.bintype, self.niter)
-
-        url_full = url.format(name=self.plateifu, path=path)
+        url_full = url.format(name=self.plateifu,
+                              bintype=self.bintype if self.bintype else 'NONE',
+                              niter=self.niter if self.niter else '13')
 
         try:
             response = marvin.api.api.Interaction(url_full)
