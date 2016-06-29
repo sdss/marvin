@@ -6,130 +6,167 @@ Results
 
 When you perform a :ref:`marvin-query` in Marvin, you get a Results object.  This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
 
-To perform a simple Query::
+To perform a simple Query
+
+.. code-block:: python
 
     from marvin.tools.query import Query
     q = Query(searchfilter='nsa.z < 0.1')
 
-and get the Results::
+and get the Results
+
+.. code-block:: python
 
     r = q.run()
 
     # number of results
-    r.count
-    72
+    r.totalcount
+    1219
 
     # print results
     r.results
-    [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
-     (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
-     (u'1-38157', 8083, u'1901', u'1901', 0.037575539201498),
-     (u'1-38347', 8083, u'1902', u'1902', 0.036589004099369),
-     (u'1-43214', 8135, u'1902', u'1902', 0.117997065186501),
-     ...
-     ...
+    [NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237),
+     NamedTuple(mangaid=u'1-22333', plate=7992, name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22347', plate=7992, name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22383', plate=7992, name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
 
-.. _marvin-results-singlestep
 
-Alternatively, you can perform it in a single step::
+.. _marvin-results-singlestep:
+ 
+Alternatively, you can perform it in a single step
+
+.. code-block:: python
 
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.z < 0.1')
+
 
 |
 
 Viewing Results
 ---------------
-Basics::
+Basics
+
+.. code-block:: python
 
     r.results
-    [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
-     (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
-     (u'1-38157', 8083, u'1901', u'1901', 0.037575539201498),
-     (u'1-38347', 8083, u'1902', u'1902', 0.036589004099369),
-     (u'1-43214', 8135, u'1902', u'1902', 0.117997065186501),
-     ...
-     ...
+    [NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237),
+     NamedTuple(mangaid=u'1-22333', plate=7992, name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22347', plate=7992, name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22383', plate=7992, name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
 
-To View the Column Names::
+For an introduction to NamedTuples see `here
+<http://stackoverflow.com/questions/2970608/what-are-named-tuples-in-python>`_.
+
+
+To View the Column Names
+
+.. code-block:: python
 
     columns = r.getColumns()
-    print columns
+    print(columns)
     [u'mangaid', u'plate', u'name', u'z']
 
-or to view the Full Column Names::
+or to view the Full Column Names
+
+.. code-block:: python
 
     fullnames = r.mapColumnsToParams()
-    print fullnames
+    print(fullnames)
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
 Get Next/Previous Chunks in List
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For results over 150 objects, Marvin automatically paginates results in groups of 10. If you have the returntype attribute
-specified, then you will also generate the new Marvin Tools for the new chunk.  You can view the next or previous chunk with::
+
+For results over 150 objects, Marvin automatically paginates results in groups
+of 10. If you have the returntype attribute specified, then you will also
+generate the new Marvin Tools for the new chunk.  You can view the next or
+previous chunk with
+
+.. code-block:: python
 
     r.getNext()
     r.getPrevious()
 
-You can also specify a chunk value::
+You can also specify a chunk value
 
-    r = q.run()
+.. code-block:: python
+
     # get next 5 entries
     r.getNext(5)
-    Retrieving next 5, from 35 to 40
-    [(u'4-4231', u'1902', -9999.0),
-     (u'4-14340', u'1901', -9999.0),
-     (u'4-14510', u'1902', -9999.0),
-     (u'4-13634', u'1901', -9999.0),
-     (u'4-13538', u'1902', -9999.0)]
+    INFO: Retrieving next 5, from 10 to 15
+    [NamedTuple(mangaid=u'1-23023', plate=7992, name=u'1902', z=0.0270670596510172),
+     NamedTuple(mangaid=u'1-23877', plate=7990, name=u'12702', z=0.0283643137663603),
+     NamedTuple(mangaid=u'1-23891', plate=7991, name=u'3704', z=0.0274681802839041),
+     NamedTuple(mangaid=u'1-23894', plate=7990, name=u'3701', z=0.0304149892181158),
+     NamedTuple(mangaid=u'1-23914', plate=7990, name=u'9101', z=0.028008446097374)]
 
     # get previous 5 entries
     r.getPrevious(5)
-    Retrieving previous 5, from 30 to 35
-    [(u'4-3988', u'1901', -9999.0),
-     (u'4-3862', u'1902', -9999.0),
-     (u'4-3293', u'1901', -9999.0),
-     (u'4-3602', u'1902', -9999.0),
-     (u'4-4602', u'1901', -9999.0)]
+    INFO: Retrieving previous 5, from 5 to 10
+    [NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
+
+
 
 Get Subset
 ^^^^^^^^^^
-To retrieve a subset of the results, use ```r.getSubset```.  getSubset works by specifying the starting index to grab from and a limit
+To retrieve a subset of the results, use ``r.getSubset``.  getSubset works by specifying the starting index to grab from and a limit
 on the number to grab (default is 10).  Having the returntype specified will also generate the corresponding Marvin Tools for the new
-subset::
+subset
+
+.. code-block:: python
 
     # Get the count of objects in results
-    r.count
-    1219L
+    r.totalcount
+    1219
 
     # Get a subet of 10 objects starting at index 100
     r.getSubset(100)
-    [(u'1-44117', 8141, u'12705', 0.0477223694324493),
-     (u'1-44141', 8141, u'3704', 0.0473998412489891),
-     (u'1-44163', 8141, u'6102', 0.031343836337328),
-     (u'1-44172', 8141, u'12704', 0.0482183173298836),
-     (u'1-44180', 8141, u'3701', 0.0315594673156738),
-     (u'1-44183', 8138, u'3704', 0.0262834001332521),
-     (u'1-44216', 8138, u'3701', 0.0495306216180325),
-     (u'1-44219', 8138, u'9102', 0.0633076727390289),
-     (u'1-44418', 8143, u'3704', 0.0315773263573647),
-     (u'1-44436', 8143, u'6103', 0.0435708276927471)]
+    [NamedTuple(mangaid=u'1-44117', plate=8141, name=u'12705', z=0.0477223694324493),
+     NamedTuple(mangaid=u'1-44141', plate=8141, name=u'3704', z=0.0473998412489891),
+     NamedTuple(mangaid=u'1-44163', plate=8141, name=u'6102', z=0.031343836337328),
+     NamedTuple(mangaid=u'1-44172', plate=8141, name=u'12704', z=0.0482183173298836),
+     NamedTuple(mangaid=u'1-44180', plate=8141, name=u'3701', z=0.0315594673156738),
+     NamedTuple(mangaid=u'1-44183', plate=8138, name=u'3704', z=0.0262834001332521),
+     NamedTuple(mangaid=u'1-44216', plate=8138, name=u'3701', z=0.0495306216180325),
+     NamedTuple(mangaid=u'1-44219', plate=8138, name=u'9102', z=0.0633076727390289),
+     NamedTuple(mangaid=u'1-44418', plate=8143, name=u'3704', z=0.0315773263573647),
+     NamedTuple(mangaid=u'1-44436', plate=8143, name=u'6103', z=0.0435708276927471)]
 
     # Get a subset of 5 objects starting at index 25
     r.getSubset(25, limit=5)
-    [(u'1-24390', 7990, u'3702', 0.0296944621950388),
-     (u'1-24476', 7990, u'12705', 0.0295156575739384),
-     (u'1-25554', 7990, u'12704', 0.0268193148076534),
-     (u'1-25593', 7990, u'6104', 0.0261989794671535),
-     (u'1-25609', 7990, u'9102', 0.0291846375912428)]
+    [NamedTuple(mangaid=u'1-24390', plate=7990, name=u'3702', z=0.0296944621950388),
+     NamedTuple(mangaid=u'1-24476', plate=7990, name=u'12705', z=0.0295156575739384),
+     NamedTuple(mangaid=u'1-25554', plate=7990, name=u'12704', z=0.0268193148076534),
+     NamedTuple(mangaid=u'1-25593', plate=7990, name=u'6104', z=0.0261989794671535),
+     NamedTuple(mangaid=u'1-25609', plate=7990, name=u'9102', z=0.0291846375912428)]
 
-Get All
-^^^^^^^
-You get all of the results with::
 
-    r.getAll()
-
-When operating Marvin in remote mode, all of the results are always returned.
+.. Get All
+.. ^^^^^^^
+.. You get all of the results with
+.. 
+.. .. code-block:: python
+.. 
+..     r.getAll()
+.. 
+.. When operating Marvin in remote mode, all of the results are always returned.
 
 |
 
@@ -138,9 +175,10 @@ When operating Marvin in remote mode, all of the results are always returned.
 Downloading Results
 -------------------
 
-Download the results of your query.  The downloaded object (FITS file) is determined by the returntype parameter, which defaults to cube if not specified.
+Download the results of your query.  The downloaded object (FITS file) is
+determined by the returntype parameter, which defaults to cube if not specified.
 
-::
+.. code-block:: python
 
     r.download()
 
@@ -150,33 +188,50 @@ Download the results of your query.  The downloaded object (FITS file) is determ
 
 Sorting Results
 ---------------
-You can sort the results on specific columns::
+You can sort the results on specific columns
 
-    r = q.run()
+.. code-block:: python
+
     r.getColumns()
-    [u'mangaid', u'name', u'nsa.z']
+    [u'mangaid', u'plate', u'name', u'z']
+
     r.results
-    [(u'4-3988', u'1901', -9999.0),
-     (u'4-3862', u'1902', -9999.0),
-     (u'4-3293', u'1901', -9999.0),
-     (u'4-3602', u'1902', -9999.0),
-     (u'4-4602', u'1901', -9999.0)]
+    [NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237),
+     NamedTuple(mangaid=u'1-22333', plate=7992, name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22347', plate=7992, name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22383', plate=7992, name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
 
     # Sort the results by mangaid
     r.sort('mangaid')
-    [(u'4-3293', u'1901', -9999.0),
-     (u'4-3602', u'1902', -9999.0),
-     (u'4-3862', u'1902', -9999.0),
-     (u'4-3988', u'1901', -9999.0),
-     (u'4-4602', u'1901', -9999.0)]
+    [NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237),
+     NamedTuple(mangaid=u'1-22333', plate=7992, name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22347', plate=7992, name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22383', plate=7992, name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
 
     # Sort the results by IFU name in descending order
     r.sort('ifu.name', order='desc')
-    [(u'4-3602', u'1902', -9999.0),
-     (u'4-3862', u'1902', -9999.0),
-     (u'4-3293', u'1901', -9999.0),
-     (u'4-3988', u'1901', -9999.0),
-     (u'4-4602', u'1901', -9999.0)]
+    [NamedTuple(mangaid=u'1-22412', plate=7992, name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22414', plate=7992, name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22333', plate=7992, name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325),
+     NamedTuple(mangaid=u'1-22383', plate=7992, name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22347', plate=7992, name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237)]
 
 
 |
@@ -189,38 +244,49 @@ You can extract columns from the results and format them in specific ways.
 
 Get List Of
 ^^^^^^^^^^^
-Extract a column and return it as a single list::
+Extract a column and return it as a single list
 
-    r = q.run()
+.. code-block:: python
+
     r.getListOf('mangaid')
-    [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602']
+    [u'1-22286', u'1-22298', u'1-22333', u'1-22347', u'1-22383', u'1-22412', u'1-22414', u'1-22438',
+     u'1-22662', u'1-22970']
 
 Get Dict Of
 ^^^^^^^^^^^
-Return the results either as a list of dictionaries or a dictionary of lists::
+Return the results either as a list of dictionaries or a dictionary of lists
 
-    r = q.run()
+.. code-block:: python
+
     # Get a list of dictionaries
     r.getDictOf(format_type='listdict')
-    [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa.z': -9999.0},
-     {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa.z': -9999.0},
-     {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa.z': -9999.0},
-     {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa.z': -9999.0},
-     {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa.z': -9999.0}]
+    [{'cube.mangaid': u'1-22286',
+      'cube.plate': 7992,
+      'ifu.name': u'12704',
+      'nsa.z': 0.099954180419445}, ...]
 
     # Get a dictionary of lists
     r.getDictOf(format_type='dictlist')
-    {'cube.mangaid': [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602'],
-     'ifu.name': [u'1901', u'1902', u'1901', u'1902', u'1901'],
-     'nsa.z': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
+    {'cube.mangaid': [u'1-22286', u'1-22298', u'1-22333', u'1-22347', u'1-22383', u'1-22412',
+                      u'1-22414', u'1-22438', u'1-22662', u'1-22970'],
+     'cube.plate': [7992, 7992, 7992, 7992, 7992, 7992, 7992, 7992, 7992, 7992],
+     'ifu.name': [u'12704', u'12702', u'3704', u'3701', u'3702', u'9101', u'6103', u'1901', u'6104', u'3703'],
+     'nsa.z': [0.099954180419445, 0.0614774264395237, 0.0366250574588776, 0.0437936186790466,
+               0.0542150922119617, 0.0190997123718262, 0.0922721400856972, 0.016383046284318,
+               0.027131162583828, 0.0564263463020325]}
 
     # Get a dictionary of only one parameter
     r.getDictOf('mangaid')
-    [{'cube.mangaid': u'4-3988'},
-     {'cube.mangaid': u'4-3862'},
-     {'cube.mangaid': u'4-3293'},
-     {'cube.mangaid': u'4-3602'},
-     {'cube.mangaid': u'4-4602'}]
+    [{'cube.mangaid': u'1-22286'},
+     {'cube.mangaid': u'1-22298'},
+     {'cube.mangaid': u'1-22333'},
+     {'cube.mangaid': u'1-22347'},
+     {'cube.mangaid': u'1-22383'},
+     {'cube.mangaid': u'1-22412'},
+     {'cube.mangaid': u'1-22414'},
+     {'cube.mangaid': u'1-22438'},
+     {'cube.mangaid': u'1-22662'},
+     {'cube.mangaid': u'1-22970'}]
 
 |
 
@@ -238,7 +304,7 @@ Tools are stored in a separate Results attribute called 'objects'.
 
 For example, a Cube object needs at least a plate-IFU, or manga-id.  A Spaxel needs a plate-IFU or manga-ID, and a X and Y position.
 
-::
+.. code-block:: python
 
     r = q.run()
     r.results
@@ -259,29 +325,33 @@ For example, a Cube object needs at least a plate-IFU, or manga-id.  A Spaxel ne
 
 To Astropy Table
 ^^^^^^^^^^^^^^^^
-::
 
-    r = q.run()
+.. code-block:: python
+
     r.toTable()
-    <Table length=5>
-    mangaid    name   nsa.z
-    unicode6 unicode4   float64
-    -------- -------- ------------
-      4-3602     1902      -9999.0
-      4-3862     1902      -9999.0
-      4-3293     1901      -9999.0
-      4-3988     1901      -9999.0
-      4-4602     1901      -9999.0
+    <Table length=10>
+    mangaid  plate   name          z       
+    unicode7 int64 unicode5     float64    
+    -------- ----- -------- ---------------
+     1-22286  7992    12704 0.0999541804194
+     1-22298  7992    12702 0.0614774264395
+     1-22333  7992     3704 0.0366250574589
+     1-22347  7992     3701  0.043793618679
+     1-22383  7992     3702  0.054215092212
+     1-22412  7992     9101 0.0190997123718
+     1-22414  7992     6103 0.0922721400857
+     1-22438  7992     1901 0.0163830462843
+     1-22662  7992     6104 0.0271311625838
+     1-22970  7992     3703  0.056426346302
 
 
 To JSON object
 ^^^^^^^^^^^^^^
-::
 
-    r = q.run()
+.. code-block:: python
+
     r.toJson()
-    '[["4-3602", "1902", -9999.0], ["4-3862", "1902", -9999.0], ["4-3293", "1901", -9999.0],
-      ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
+    '[["1-22286", 7992, "12704", 0.099954180419445], ["1-22298", 7992, "12702", 0.0614774264395237], ["1-22333", 7992, "3704", 0.0366250574588776], ["1-22347", 7992, "3701", 0.0437936186790466], ["1-22383", 7992, "3702", 0.0542150922119617], ["1-22412", 7992, "9101", 0.0190997123718262], ["1-22414", 7992, "6103", 0.0922721400856972], ["1-22438", 7992, "1901", 0.016383046284318], ["1-22662", 7992, "6104", 0.027131162583828], ["1-22970", 7992, "3703", 0.0564263463020325]]'
 
 
 |
