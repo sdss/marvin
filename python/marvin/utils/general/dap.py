@@ -139,3 +139,71 @@ def get_dict_of_props_api(plateifu, x, y):
     data = response.getData()
 
     return data
+
+
+def list_categories(hdu=None, dapver=marvin.config.dapver):
+    """Returns a list of categories for a DAP :class:`~marvin.tools.maps.Maps`.
+
+    Parameters:
+        hdu (``astropy.io.fits.HDUList`` or None):
+            If ``hdu`` is defined, it will use the extension names in the HDU.
+            Otherwise it will use the DB.
+        dapver (string or None):
+            The DAP version to use.
+
+    Returns:
+        list_categories (dict):
+            A dictionary in which keys are the valid categories an the values
+            are the valid channels or None if channels are not appliable for
+            that category.
+
+    """
+
+    cat_dict = {}
+
+    if hdu is not None:
+        categories = [ext.name.lower() for ext in hdu
+                      if ext.name + '_ivar' in hdu and ext.name + '_mask']
+
+        for category in categories:
+            extension = hdu[category]
+            if len(extension.data.shape) == 2:
+                cat_dict[category] = None
+
+            elif len(extension.data.shape) == 3:
+
+                # Gets the channels and creates the names.
+                channel_keys = [key for key in extension.header.keys()
+                                if re.match('C[0-9]+', key)]
+                names = [re.sub('\-+', '-', extension.header[key])
+                         for key in channel_keys]
+
+                cat_dict[category] = [name.lower() for name in names]
+
+        return cat_dict
+
+    else:
+
+        mdb = marvin.marvindb
+
+        # Emission lines
+        emline_params = ['emline_' + row.name.lower()
+                         for row in mdb.session.query(mdb.dapdb.EmLineParameter).all()]
+        emline_channels = ['{0}-{1}'.format(row.name.lower(), row.rest_wavelength)
+                           for row in mdb.session.query(mdb.dapdb.EmLineType).all()]
+        for param in emline_params:
+            cat_dict[param] = emline_channels
+
+        # Stellar kinematics
+        stell_kin_params = ['stellar_' + row.name.lower()
+                            for row in mdb.session.query(mdb.dapdb.StellarKinParameter).all()]
+        for param in stell_kin_params:
+            cat_dict[param] = None
+
+        # Spectral indices
+        specindex_channels = [row.name.lower()
+                              for row in mdb.session.query(mdb.dapdb.SpecIndexType).all()]
+        cat_dict['specindex'] = specindex_channels
+
+
+    return cat_dict

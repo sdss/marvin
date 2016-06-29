@@ -22,6 +22,7 @@ import marvin.core.exceptions
 import marvin.tools.cube
 import marvin.tools.map
 import marvin.utils.general.general
+import marvin.utils.general.dap
 
 try:
     import sqlalchemy
@@ -92,6 +93,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self.wcs = None
         self.shape = None
         self.template_kin = None
+        self._categories = None
 
         super(Maps, self).__init__(*args, **kwargs)
 
@@ -398,3 +400,18 @@ class Maps(marvin.core.core.MarvinToolsClass):
         map_1.unit = map_1.channel
 
         return map_1
+
+    @property
+    def categories(self):
+        """Returns a list of categories for this :class:`Maps`."""
+
+        if self._categories is None:
+
+            if self.data_origin == 'file':
+                hdu = self.data
+            else:
+                hdu = None
+
+            self._categories = marvin.utils.general.dap.list_categories(hdu=hdu)
+
+        return self._categories
