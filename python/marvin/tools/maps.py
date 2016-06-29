@@ -167,7 +167,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         params = self._getPathParams()
         path_type = params.pop('path_type')
 
-        return super(Maps, self)._getFullPath(path_type, **params)
+        return super(Maps, self).download(path_type, **params)
 
     def _load_maps_from_file(self):
         """Loads a MAPS file."""
