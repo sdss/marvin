@@ -120,7 +120,7 @@ password ::
     sdss4install sdss/sdss_access trunk
     sdss4install sdss/sdss_python_module branches/marvin
     sdss4install manga/marvin_brain trunk
-    sdss4install manga/marvin branches/marvin_refactor
+    sdss4install manga/marvin branches/marvin_alpha
 
 The last line actually installs Marvin from the
 `marvin_refactor <https://trac.sdss.org/browser/repo/manga/marvin/branches/marvin_refactor>`_
