@@ -119,7 +119,7 @@ class MarvinDB(object):
 
     def _setModelGraph(self):
         ''' Initiates the ModelGraph using all available ModelClasses '''
-        models = filter(None, [self.datadb, self.sampledb, self.dapdb])
+        models = list(filter(None, [self.datadb, self.sampledb, self.dapdb]))
         if models:
             self.modelgraph = ModelGraph(models)
         else:
