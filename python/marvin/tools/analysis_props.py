@@ -53,5 +53,5 @@ class AnalysisProperty(marvin.core.core.Dotable):
 
     def __repr__(self):
 
-        return ('<AnalisisProperty ({0.category}, {0.name}, value={0.value} '
+        return ('<AnalysisProperty ({0.category}, {0.name}, value={0.value} '
                 'ivar={0.ivar}, mask={0.mask!r})>'.format(self))

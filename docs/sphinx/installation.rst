@@ -120,7 +120,7 @@ password ::
     sdss4install sdss/sdss_access trunk
     sdss4install sdss/sdss_python_module branches/marvin
     sdss4install manga/marvin_brain trunk
-    sdss4install manga/marvin branches/marvin_refactor
+    sdss4install manga/marvin branches/marvin_alpha
 
 The last line actually installs Marvin from the
 `marvin_refactor <https://trac.sdss.org/browser/repo/manga/marvin/branches/marvin_refactor>`_
@@ -133,23 +133,21 @@ branch. If you now do a ``module avail`` you should get something like ::
     sdss_access/trunk         tree/dr11                 tree/dr8
 
 Doing ``module load marvin`` will setup all the necessary environment variables
-that Marvin needs to work. (Also, you can ignore the errors about missing
-modulefiles for 'dust' and 'inspection/trunk'.) However, you may not want to do
-that every time you want to work with Marvin. To have ``modules`` load Marvin
-for each new terminal you can create a file containing ``modules`` commands and
-source it in your ``.bashrc`` or ``.cshrc``. For example, do ::
+that Marvin needs to work. (Also, you can ignore the errors about 'dust' and
+'inspection/trunk'.) However, you may not want to do that every time you want to
+work with Marvin. To have ``modules`` load Marvin for each new terminal you can
+create a file containing ``modules`` commands ::
 
     cat > ~/.modules <<EOL
     module load sdss4tools
     module load marvin
     EOL
 
-and then ::
+and edit your ``.bashrc`` or ``.cshrc`` to source it ::
 
-    echo "source ~/.modules" > ~/.bashrc
+    source ~/.modules
 
-or edit ``.modules`` and your configuration file with your favourite text editor. The lines
-in ``.modules`` will load ``sdss4tools`` and ``marvin`` for each new terminal.
+The lines in ``.modules`` will load ``sdss4tools`` and ``marvin`` for each new terminal.
 
 |
 

@@ -87,11 +87,11 @@ class Search(FlaskView):
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
                     self.search['filter'] = q.strfilter
-                    self.search['count'] = res.count
+                    self.search['count'] = res.totalcount
                     if res.count > 0:
                         cols = res.mapColumnsToParams()
                         rows = res.getDictOf(format_type='listdict')
-                        output = {'total': res.count, 'rows': rows, 'columns': cols}
+                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
                     else:
                         output = None
                     self.search['results'] = output
