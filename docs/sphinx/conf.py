@@ -139,7 +139,7 @@ html_theme_options = {
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin/", True),
         ("First steps", "first-steps"),
-        ("New Issue", "https://bitbucket.org/sdss/marvin/issues/new", True)
+        ("New Issue", "https://github.com/marvin-manga/marvin/issues/new", True)
     ],
 
     # Render the next and previous page links in navbar. (Default: true)
