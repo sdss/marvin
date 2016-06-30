@@ -9,6 +9,11 @@ then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Down
 
 .. _marvin-firststep:
 
+From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython
+instead of python.::
+
+    > ipython
+
 Let's import Marvin
 
 .. code-block:: python
@@ -41,7 +46,7 @@ My First Cube
 Now let's play with a Marvin Cube
 
 .. code-block:: python
-    
+
     # get a cube
     from marvin.tools.cube import Cube
     cc = Cube(filename='/Users/Brian/Work/Manga/redux/v1_5_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
@@ -63,14 +68,14 @@ Now let's play with a Marvin Cube
 
     # get a Spaxel and show its wavelength and flux arrays
     spax = cc[10,10]
-    
+
     spax
     <Marvin Spaxel (x=10, y=10)>
-    
+
     spax.drp.wavelength
     array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
             10349.03843826,  10351.42166679,  10353.80544415])
-        
+
     spax.drp.flux
     array([-0.00318646,  0.00827731,  0.01482985, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
@@ -107,7 +112,7 @@ Now let's play with a Marvin Query
     # How many objects met the search criteria?
     r.totalcount
     151
-    
+
     # Results are returned in chunks of 10 by default
     r.results
     [NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
@@ -124,7 +129,7 @@ Now let's play with a Marvin Query
     # NamedTuples can be accessed using dotted syntax or like normal tuples
     r.results[0].mangaid
     u'1-22438'
-    
+
     # see the column names
     r.getColumns()
     [u'mangaid', u'plate', u'name', u'name', u'z']
