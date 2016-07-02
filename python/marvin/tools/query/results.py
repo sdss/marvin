@@ -12,6 +12,11 @@ from functools import wraps
 from astropy.table import Table, Column
 from collections import OrderedDict, namedtuple
 
+try:
+    import pandas as pd
+except ImportError:
+    warnings.warn('Could not import pandas.', MarvinUserWarning)
+
 __all__ = ['Results']
 
 
@@ -229,6 +234,39 @@ class Results(object):
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
+
+    def toDF(self):
+        '''Call toDataFrame().
+        '''
+        return self.toDataFrame()
+
+    def toDataFrame(self):
+        '''Output the results as an pandas dataframe.
+
+            Uses the pandas package.
+
+            Parameters:
+                None
+
+            Returns:
+                dfres:
+                    pandas dataframe
+
+            Example:
+                >>> r = q.run()
+                >>> r.toDataFrame()
+                mangaid  plate   name     nsa_mstar         z
+                0  1-22286   7992  12704  1.702470e+11  0.099954
+                1  1-22301   7992   6101  9.369260e+10  0.105153
+                2  1-22414   7992   6103  7.489660e+10  0.092272
+                3  1-22942   7992  12705  8.470360e+10  0.104958
+                4  1-22948   7992   9102  1.023530e+11  0.119399
+        '''
+        try:
+            dfres = pd.DataFrame(self.results)
+        except ValueError as e:
+            raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
+        return dfres
 
     def _makeNamedTuple(self):
         ''' '''
