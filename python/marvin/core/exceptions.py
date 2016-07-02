@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import print_function
 
 
-__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWargning',
+__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
            'MarvinNotImplemented', 'MarvinMissingDependency']
 
 
