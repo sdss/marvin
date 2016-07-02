@@ -3,6 +3,7 @@ bin/profile_marvin -text
 bin/run_marvin -text
 docs/Mode_Decision_Tree.graffle -text
 docs/Mode_Decision_Tree.pdf -text
+docs/Mode_Decision_Tree.png -text
 docs/dbschema/mangadapdb_schema.pdf -text svneol=unset#application/pdf
 docs/dbschema/mangadapdb_schema.png -text svneol=unset#image/png
 docs/dbschema/mangadatadb_schema.pdf -text svneol=unset#application/pdf
@@ -43,7 +44,10 @@ docs/sphinx/.doctrees/marvin.web.controllers.index.doctree -text
 docs/sphinx/.doctrees/marvin.web.doctree -text
 docs/sphinx/.doctrees/marvin.web.jinja_filters.doctree -text
 docs/sphinx/Makefile -text
+docs/sphinx/_static/logo5_lores.jpg -text
 docs/sphinx/_static/marvin.png -text svneol=unset#image/png
+docs/sphinx/_static/marvin_favicon.ico -text
+docs/sphinx/_static/marvin_favicon.png -text
 docs/sphinx/api/api.rst -text
 docs/sphinx/api/db.rst -text
 docs/sphinx/api/general.rst -text
