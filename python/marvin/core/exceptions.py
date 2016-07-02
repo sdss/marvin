@@ -50,6 +50,6 @@ class MarvinUserWarning(UserWarning, MarvinWarning):
     pass
 
 
-class MarvinSkippedTestWargning(MarvinUserWarning):
+class MarvinSkippedTestWarning(MarvinUserWarning):
     """A warning for when a test is skipped."""
     pass
