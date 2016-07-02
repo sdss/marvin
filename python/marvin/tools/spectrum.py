@@ -146,6 +146,8 @@ class Spectrum(Dotable):
 
         """
 
+        # Alternative if this block keeps throwing an error when matplotlib is actually installed:
+        # if pyplot not in sys.modules
         if not pyplot:
             raise MarvinMissingDependency('matplotlib is not installed.')
 
