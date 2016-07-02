@@ -196,7 +196,7 @@ class Spectrum(Dotable):
             if array == 'flux':
                 ylabel = 'Flux'
                 if self.flux_units == '1e-17 erg/s/cm^2/Ang/spaxel':
-                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]'
+                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
                 elif self.flux_units is not None:
                     ylabel += r' [{0}]'.format(self.flux_units)
             elif array == 'ivar':
