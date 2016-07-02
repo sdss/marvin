@@ -264,7 +264,7 @@ class Results(object):
         '''
         try:
             dfres = pd.DataFrame(self.results)
-        except ValueError as e:
+        except (ValueError, NameError) as e:
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
 
