@@ -52,7 +52,11 @@ def create_app(debug=False):
     app.debug = debug
     jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
     jsglue = jsg.JSGlue(app)
+<<<<<<< 6503b702593e5f340dfbd31bdc8e86d7af46d1e7
     CORS(app, origins='*')
+=======
+    CORS(api, supports_credentials=True)
+>>>>>>> Merge branch 'marvin_refactor' of /Users/albireo/Documents/Repo/SubGit/manga/marvin into marvin_refactor
 
     # Logger
     app.logger.addHandler(log)
