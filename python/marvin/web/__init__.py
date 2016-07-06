@@ -52,7 +52,7 @@ def create_app(debug=False):
     app.debug = debug
     jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
     jsglue = jsg.JSGlue(app)
-    CORS(api, supports_credentials=True)
+    CORS(app, origins='*')
 
     # Logger
     app.logger.addHandler(log)
