@@ -82,6 +82,11 @@ Now let's play with a Marvin Cube
 
     # plot the spectrum (you may need matplotlib.pyplot.ion() for interactive display)
     spax.drp.plot()
+    
+    # save plot to Downloads directory
+    import os
+    import matplotlib.pyplot as plt
+    plt.savefig(os.getenv('HOME') + '/Downloads/my-first-spectrum.png')
 
 See the Marvin :ref:`marvin-tools` section for more details and examples.  And the :ref:`marvin-tools-ref` for the detailed Reference Guide.
 
