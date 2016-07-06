@@ -128,7 +128,7 @@ class Map(object):
 
         # TODO: this will break if the datamodel changes ... (JSG)
 
-        assert matplotlib, 'matplotlib is required.'
+        assert sqlalchemy, 'sqlalchemy is required.'
 
         dap_db_file = self.parent_maps.data
 
