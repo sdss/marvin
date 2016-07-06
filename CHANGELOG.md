@@ -4,6 +4,7 @@
 ### Changed
 - Full refactoring of Marvin 1.0
 - Refactored web
+
 ### Added
 - Marvin Tools
 - Queries (only global properties, for now)
