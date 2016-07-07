@@ -20,7 +20,7 @@ import marvin.core.exceptions
 import marvin.tools.maps
 
 try:
-    import matplotlib.pyplot
+    import matplotlib.pyplot as plt
     import mpl_toolkits.axes_grid1
     pyplot = True
 except:
@@ -273,7 +273,7 @@ class Map(object):
         elif array == 'mask':
             data = self.mask
 
-        fig = matplotlib.pyplot.figure() if figure is None else figure
+        fig = plt.figure() if figure is None else figure
         ax = fig.add_subplot(111)
 
         if zlim is not None:
@@ -290,14 +290,14 @@ class Map(object):
                              interpolation='none')
 
         if cmap is None:
-            cmap = matplotlib.pyplot.cm.coolwarm_r
+            cmap = plt.cm.coolwarm_r
 
         imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
 
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.1)
 
-        cBar = matplotlib.pyplot.colorbar(imPlot, cax=cax)
+        cBar = plt.colorbar(imPlot, cax=cax)
         cBar.solids.set_edgecolor('face')
 
         if xlim is not None:
