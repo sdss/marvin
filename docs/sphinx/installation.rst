@@ -204,4 +204,15 @@ Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
     'auto'
 
 You may get a few warnings and info messages after ``import marvin``. That's ok,
-we'll deal with them later. Congratulations, you have finished the Marvin installation!  Now go on to :ref:`marvin-first-steps`!
+we'll deal with them later. Congratulations, you have finished the Marvin installation!
+Now go on to :ref:`marvin-first-steps`!
+
+|
+
+Using IPython
+-------------
+
+If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
+`IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
+between history, colour coding, etc. It's also especialy useful if you plan to use Matplotlib,
+as IPython
