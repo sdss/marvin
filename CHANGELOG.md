@@ -13,4 +13,4 @@
 - Many more changes
 
 ### Fixed
-- albireox/marvin#2
+- [albireox/marvin#2](albireox/Marvin/issues/2): Change how matplotlib gets imported
