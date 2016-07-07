@@ -214,5 +214,10 @@ Using IPython
 
 If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
 `IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
-between history, colour coding, etc. It's also especialy useful if you plan to use Matplotlib,
-as IPython
+between history, colour coding, etc. It's also especialyl useful if you plan to use Matplotlib,
+as IPython comes with default interactive plotting. To install it, follow the instructions in
+the webpage, or simply do ::
+
+    pip install jupyter
+
+And just run ``ipython`` in your terminal.
