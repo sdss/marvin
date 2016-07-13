@@ -153,6 +153,8 @@ class MapsView(marvin.api.base.BaseView):
             channel (str or None):
                 If the ``category`` contains multiple channels, the channel to use,
                 e.g., ``Ha-6564'. Otherwise, ``None``.
+        
+        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/map/category=EMLINE_GFLUX/channel=Ha-6564/
 
         """
 
