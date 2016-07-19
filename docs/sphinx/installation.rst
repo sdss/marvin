@@ -25,6 +25,8 @@ The full list of dependencies includes:
 * SQLAlchemy-boolean-search (custom fork)
 * wtforms-alchemy (custom fork)
 
+.. flask_cors
+
 |
 
 Getting modules

@@ -14,6 +14,11 @@ instead of python.::
 
     > ipython
 
+.. jupyter notebook
+.. Ctrl-C to exit
+.. %matplotlib inline
+.. Shift-Enter
+
 Let's import Marvin
 
 .. code-block:: python
