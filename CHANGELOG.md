@@ -11,3 +11,6 @@
 - Point-and-click for marvin-web
 - RESTful API
 - Many more changes
+
+### Fixed
+- Issue albireox/marvin#2: Change how matplotlib gets imported

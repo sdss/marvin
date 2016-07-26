@@ -17,7 +17,8 @@ from marvin.core.exceptions import MarvinMissingDependency
 from marvin.core.core import Dotable
 
 try:
-    import matplotlib.pyplot as pyplot
+    import matplotlib.pyplot as plt
+    pyplot = True
 except:
     pyplot = None
 
@@ -164,7 +165,7 @@ class Spectrum(Dotable):
 
         xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
 
-        fig = pyplot.figure() if figure is None else figure
+        fig = plt.figure() if figure is None else figure
         ax = fig.add_subplot(111)
 
         ax.plot(xaxis, data, **kwargs)
