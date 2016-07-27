@@ -301,7 +301,7 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['getparams']['url']
             try:
-                ii = Interaction(route=url, params=params)
+                ii = Interaction(route=url)
             except MarvinError as e:
                 raise MarvinError('API Query call to get params failed: {0}'.format(e))
             else:

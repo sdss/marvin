@@ -4,15 +4,22 @@
 First Steps
 ===========
 
-Now that you have installed Marvin, it's time to take your first steps.  If you want to learn more about how Marvin works,
-then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Downloading.  If you just want to play, then read on.
+Now that you have installed Marvin, it's time to take your first steps.  
+
+*Side Note*: If you are **new to Python**, we recommend that you check out the `AstroBetter Python <http://www.astrobetter.com/wiki/python>`_ page and `Practical Python for Astronomers <http://python4astronomers.github.io/>`_.  You can also find many general Python tutorials on Google or try typing any specific question you have into Google. If Google returns a link to a similar question asked on `Stack Overflow <http://stackoverflow.com/>`_, then definitely start there.
+
+If you want to learn more about how Marvin works, then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Downloading.  If you just want to play, then read on.
 
 .. _marvin-firststep:
 
-From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython
-instead of python.::
+From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython instead of python.::
 
     > ipython
+
+.. jupyter notebook
+.. Ctrl-C to exit
+.. %matplotlib inline
+.. Shift-Enter
 
 Let's import Marvin
 
@@ -24,8 +31,7 @@ Let's import Marvin
     marvin.config.mplver, marvin.config.drpver, marvin.config.dapver
     MPL-4 v1_5_1 1.1.1
 
-On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data
-using the Marvin :ref:`marvin-config-class`.
+On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data using the Marvin :ref:`marvin-config-class`.
 
 .. code-block:: python
 
