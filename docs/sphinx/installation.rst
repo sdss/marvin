@@ -29,6 +29,8 @@ The full list of dependencies includes:
 
 .. flask_cors
 
+.. flask_cors
+
 |
 
 Getting modules
