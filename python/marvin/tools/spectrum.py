@@ -17,7 +17,8 @@ from marvin.core.exceptions import MarvinMissingDependency
 from marvin.core.core import Dotable
 
 try:
-    import matplotlib.pyplot as pyplot
+    import matplotlib.pyplot as plt
+    pyplot = True
 except:
     pyplot = None
 
@@ -146,6 +147,8 @@ class Spectrum(Dotable):
 
         """
 
+        # Alternative if this block keeps throwing an error when matplotlib is actually installed:
+        # if pyplot not in sys.modules
         if not pyplot:
             raise MarvinMissingDependency('matplotlib is not installed.')
 
@@ -162,7 +165,7 @@ class Spectrum(Dotable):
 
         xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
 
-        fig = pyplot.figure() if figure is None else figure
+        fig = plt.figure() if figure is None else figure
         ax = fig.add_subplot(111)
 
         ax.plot(xaxis, data, **kwargs)
@@ -196,7 +199,7 @@ class Spectrum(Dotable):
             if array == 'flux':
                 ylabel = 'Flux'
                 if self.flux_units == '1e-17 erg/s/cm^2/Ang/spaxel':
-                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]'
+                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
                 elif self.flux_units is not None:
                     ylabel += r' [{0}]'.format(self.flux_units)
             elif array == 'ivar':

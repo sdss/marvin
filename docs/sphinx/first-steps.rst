@@ -4,10 +4,22 @@
 First Steps
 ===========
 
-Now that you have installed Marvin, it's time to take your first steps.  If you want to learn more about how Marvin works,
-then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Downloading.  If you just want to play, then read on.
+Now that you have installed Marvin, it's time to take your first steps.  
+
+*Side Note*: If you are **new to Python**, we recommend that you check out the `AstroBetter Python <http://www.astrobetter.com/wiki/python>`_ page and `Practical Python for Astronomers <http://python4astronomers.github.io/>`_.  You can also find many general Python tutorials on Google or try typing any specific question you have into Google. If Google returns a link to a similar question asked on `Stack Overflow <http://stackoverflow.com/>`_, then definitely start there.
+
+If you want to learn more about how Marvin works, then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Downloading.  If you just want to play, then read on.
 
 .. _marvin-firststep:
+
+From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython instead of python.::
+
+    > ipython
+
+.. jupyter notebook
+.. Ctrl-C to exit
+.. %matplotlib inline
+.. Shift-Enter
 
 Let's import Marvin
 
@@ -19,8 +31,7 @@ Let's import Marvin
     marvin.config.mplver, marvin.config.drpver, marvin.config.dapver
     MPL-4 v1_5_1 1.1.1
 
-On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data
-using the Marvin :ref:`marvin-config-class`.
+On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data using the Marvin :ref:`marvin-config-class`.
 
 .. code-block:: python
 
@@ -41,7 +52,7 @@ My First Cube
 Now let's play with a Marvin Cube
 
 .. code-block:: python
-    
+
     # get a cube
     from marvin.tools.cube import Cube
     cc = Cube(filename='/Users/Brian/Work/Manga/redux/v1_5_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
@@ -63,20 +74,25 @@ Now let's play with a Marvin Cube
 
     # get a Spaxel and show its wavelength and flux arrays
     spax = cc[10,10]
-    
+
     spax
     <Marvin Spaxel (x=10, y=10)>
-    
+
     spax.drp.wavelength
     array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
             10349.03843826,  10351.42166679,  10353.80544415])
-        
+
     spax.drp.flux
     array([-0.00318646,  0.00827731,  0.01482985, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # plot the spectrum (you may need matplotlib.pyplot.ion() for interactive display)
     spax.drp.plot()
+    
+    # save plot to Downloads directory
+    import os
+    import matplotlib.pyplot as plt
+    plt.savefig(os.getenv('HOME') + '/Downloads/my-first-spectrum.png')
 
 See the Marvin :ref:`marvin-tools` section for more details and examples.  And the :ref:`marvin-tools-ref` for the detailed Reference Guide.
 
@@ -107,7 +123,7 @@ Now let's play with a Marvin Query
     # How many objects met the search criteria?
     r.totalcount
     151
-    
+
     # Results are returned in chunks of 10 by default
     r.results
     [NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),
@@ -124,7 +140,7 @@ Now let's play with a Marvin Query
     # NamedTuples can be accessed using dotted syntax or like normal tuples
     r.results[0].mangaid
     u'1-22438'
-    
+
     # see the column names
     r.getColumns()
     [u'mangaid', u'plate', u'name', u'name', u'z']

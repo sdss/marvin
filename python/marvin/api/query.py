@@ -1,6 +1,7 @@
 import json
 from flask.ext.classy import route
 from flask import session as current_session
+from flask_cors import cross_origin
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
 from marvin.core import MarvinError
@@ -63,7 +64,8 @@ class QueryView(BrainQueryView):
 
         return json.dumps(self.results)
 
-    @route('/webtable/', methods=['POST'], endpoint='webtable')
+    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
+    @cross_origin(allow_headers=['Content-Type'])
     def webtable(self):
         ''' Do a query for Bootstrap Table interaction in Marvin web '''
 

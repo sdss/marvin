@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import print_function
 
 
-__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWargning',
+__all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
            'MarvinNotImplemented', 'MarvinMissingDependency']
 
 
@@ -50,6 +50,6 @@ class MarvinUserWarning(UserWarning, MarvinWarning):
     pass
 
 
-class MarvinSkippedTestWargning(MarvinUserWarning):
+class MarvinSkippedTestWarning(MarvinUserWarning):
     """A warning for when a test is skipped."""
     pass

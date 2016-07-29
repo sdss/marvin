@@ -25,6 +25,8 @@ The full list of dependencies includes:
 * SQLAlchemy-boolean-search (custom fork)
 * wtforms-alchemy (custom fork)
 
+.. flask_cors
+
 |
 
 Getting modules
@@ -120,7 +122,7 @@ password ::
     sdss4install sdss/sdss_access trunk
     sdss4install sdss/sdss_python_module branches/marvin
     sdss4install manga/marvin_brain trunk
-    sdss4install manga/marvin branches/marvin_refactor
+    sdss4install manga/marvin branches/marvin_alpha
 
 The last line actually installs Marvin from the
 `marvin_refactor <https://trac.sdss.org/browser/repo/manga/marvin/branches/marvin_refactor>`_
@@ -204,4 +206,20 @@ Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
     'auto'
 
 You may get a few warnings and info messages after ``import marvin``. That's ok,
-we'll deal with them later. Congratulations, you have finished the Marvin installation!  Now go on to :ref:`marvin-first-steps`!
+we'll deal with them later. Congratulations, you have finished the Marvin installation!
+Now go on to :ref:`marvin-first-steps`!
+
+|
+
+Using IPython
+-------------
+
+If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
+`IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
+between history, colour coding, etc. It's also especialyl useful if you plan to use Matplotlib,
+as IPython comes with default interactive plotting. To install it, follow the instructions in
+the webpage, or simply do ::
+
+    pip install jupyter
+
+And just run ``ipython`` in your terminal.
