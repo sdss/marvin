@@ -24,6 +24,8 @@ The full list of dependencies includes:
 * wtforms
 * SQLAlchemy-boolean-search (custom fork)
 * wtforms-alchemy (custom fork)
+* validators
+* intervals
 
 .. flask_cors
 
@@ -175,6 +177,8 @@ not allow to install these products even with ``sudo``. If that is your case, tr
     pip install pillow
     pip install wtforms
     pip install Flask
+    pip install validators
+    pip install intervals
 
 Additionally, Marvin requires installing two forks of Python packages. Those forks will
 eventually be merged into Marvin, but during active development they live in GitHub
