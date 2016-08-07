@@ -26,6 +26,7 @@ import marvin.core.exceptions
 import marvin.tools.maps
 from marvin.tools.spectrum import Spectrum
 import marvin.tools.analysis_props
+import marvin.core.core
 import marvin.utils.general.dap
 import marvin.utils.general.general
 
@@ -93,8 +94,8 @@ class Spaxel(MarvinToolsClass):
         obj.x = None
         obj.y = None
 
-        obj.drp = None
-        obj.dap = {}
+        obj.spectrum = None
+        obj.properties = {}
 
         return obj
 
@@ -146,6 +147,7 @@ class Spaxel(MarvinToolsClass):
 
         """
 
+        properties = {}
         for cat in data:
             for channel in data[cat]:
                 # Skips unit, which is not a real channel.
@@ -156,13 +158,14 @@ class Spaxel(MarvinToolsClass):
                 mask = data[cat][channel]['mask']
                 unit = data[cat]['unit']
 
-                analysis_prop_key = cat.lower()
+                analysis_prop_key = str(cat.lower())
                 if channel.lower() != 'na':
-                    analysis_prop_key += '_' + channel.lower()
+                    analysis_prop_key += str('_' + channel.lower())
 
-                self.dap[analysis_prop_key] = marvin.tools.analysis_props.AnalysisProperty(
-                    cat.lower(), channel.lower(), value, ivar=ivar, mask=mask,
-                    unit=unit)
+                properties[analysis_prop_key] = marvin.tools.analysis_props.AnalysisProperty(
+                    cat.lower(), channel.lower(), value, ivar=ivar, mask=mask, unit=unit)
+
+        self.properties = marvin.core.core.DotableCaseInsensitive(properties)
 
     def _create_dap_properties(self, **kwargs):
         """Creates the DAP `AnalysisProperty` dictionary.
@@ -183,13 +186,18 @@ class Spaxel(MarvinToolsClass):
         if self.data_origin == 'file' or self.data_origin == 'db':
             maps = marvin.tools.maps.Maps(**kwargs)
             spaxel = maps.getSpaxel(x=self.x, y=self.y, xyorig='lower')
-            self.dap = spaxel.dap
+            self.properties = spaxel.properties
 
         # If the data origin is API, gets the dictionary of DAP properties.
         elif self.data_origin == 'api':
             dict_of_dap_props = marvin.utils.general.dap.get_dict_of_props_api(
                 self.plateifu, self.x, self.y)
             self._initDAP(dict_of_dap_props)
+
+    @property
+    def categories(self):
+        """Returns a list of DAP property categories."""
+        return sorted(self.properties.keys())
 
     def _getFullPath(self, data_type='mangacube', **kwargs):
         """Returns the full path of the file in the tree."""
@@ -235,9 +243,12 @@ class Spaxel(MarvinToolsClass):
             mask = np.array(self._arrays['mask'])
             wavelength = np.array(self._arrays['wavelength'])
 
-        self.drp = Spectrum(flux, ivar=ivar, mask=mask, wavelength=wavelength,
-                            flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
-                            wavelength_unit='Angstrom')
+        self.spectrum = Spectrum(flux,
+                                 ivar=ivar,
+                                 mask=mask,
+                                 wavelength=wavelength,
+                                 flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
+                                 wavelength_unit='Angstrom')
 
     def _getSpaxelFromFile(self, cubeHDU=None):
         """Initialises the Spaxel object from a file data cube.
