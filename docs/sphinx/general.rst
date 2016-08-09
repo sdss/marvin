@@ -4,7 +4,7 @@
 General Info
 ============
 
-This page describes some of the core functionality of the Marvin python package.
+This web page describes some of the core functionality of the Marvin python package.
 
 .. _marvin-config-info:
 
