@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Carousel = function () {
 
     // Constructor
-
     function Carousel(cardiv, thumbs) {
         _classCallCheck(this, Carousel);
 
@@ -91,7 +90,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Galaxy = function () {
 
     // Constructor
-
     function Galaxy(plateifu) {
         _classCallCheck(this, Galaxy);
 
@@ -291,7 +289,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Header = function () {
 
     // Constructor
-
     function Header() {
         _classCallCheck(this, Header);
 
@@ -444,7 +441,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var OLMap = function () {
 
     // Constructor
-
     function OLMap(image) {
         _classCallCheck(this, OLMap);
 
@@ -640,7 +636,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Search = function () {
 
     // Constructor
-
     function Search() {
         _classCallCheck(this, Search);
 
@@ -758,7 +753,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Table = function () {
 
     // Constructor
-
     function Table(tablediv) {
         _classCallCheck(this, Table);
 
@@ -887,7 +881,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Utils = function () {
 
     // Constructor
-
     function Utils() {
         _classCallCheck(this, Utils);
     }

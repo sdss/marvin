@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Header = function () {
 
     // Constructor
-
     function Header() {
         _classCallCheck(this, Header);
 
