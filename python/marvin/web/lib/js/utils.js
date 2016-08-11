@@ -16,7 +16,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Utils = function () {
 
     // Constructor
-
     function Utils() {
         _classCallCheck(this, Utils);
     }

@@ -18,7 +18,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var OLMap = function () {
 
     // Constructor
-
     function OLMap(image) {
         _classCallCheck(this, OLMap);
 

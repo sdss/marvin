@@ -20,7 +20,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Galaxy = function () {
 
     // Constructor
-
     function Galaxy(plateifu) {
         _classCallCheck(this, Galaxy);
 
