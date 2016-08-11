@@ -9,6 +9,9 @@
 {% block jshead %}
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
 {% endblock jshead %}
 
 <!-- Single Galaxy Page -->
@@ -16,74 +19,12 @@
 
 <div class='singlegalaxy' id ='{{cube.plateifu}}'>
 
-<div class='well' id='metadata'>
-    <div class='row'>
-        <div class='col-md-12 galinfo'>
-            {% if not cube %}
-                <h3 class='alert alert-danger'>{{error}}</h3>
-            {% else %}
-                <!-- Galaxy Meta Data -->
-                {# Galaxy Meta Data #}
-                <div class='row'>
-                    <div class='col-md-3'>
-                        <h4>Plate-IFU: {{cube.plateifu}}</h4>
-                        <h4>Manga-ID: {{cube.mangaid}}</h4>
-                        <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
-                            <tbody>
-                                <tr><th>OBJ RA, Dec</th><td>{{cubehdr.objra}}</td><td>{{cubehdr.objdec}}</td></tr>
-                                {% if not cubehdr.ifura|allclose(cubehdr.objra) %}<tr><th>IFU RA, Dec</th><td>{{cubehdr.ifura}}</td><td>{{cubehdr.ifudec}}</td></tr>{% endif %}
-                                <tr><th>IFU Glon, Glat</th><td>{{cubehdr.ifuglon}}</td><td>{{cubehdr.ifuglat}}</td></tr>
-                                <tr><th>SN2 Blue, Red</th><td align='center'>{{cubehdr.bluesn2|float|round(2)}}</td><td align='center'>{{cubehdr.redsn2|float|round(2)}}</td></tr>
-                                <tr><th>Date Observed</th><td colspan='2' align='center'>{{cubehdr['DATE-OBS']}}</td></tr>
-                                <tr><th>DAP Output</th><td colspan='2' align='center'>{{daplink|default(None)}}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Cube Quality Flags -->
-                    {# Cube Quality Flags #}
-                    <div class='col-md-2 flagalert'>
-                        {% set qualstatus = (quality|qaclass)[0] %}
-                        {% set qualmsg = (quality|qaclass)[1] %}
-                          <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
-                              <div class="panel-heading">
-                                  <h3 class="panel-title">Cube Quality: {{qualmsg}}</h3>
-                              </div>
-                              <div class='panel-body'>
-                                Bit: {{quality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='qualitypopover' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
-                              </div>
-                          </div>
-                          <div class='btn-group-vertical'>
-                          {{download('#galaxydownload', links)}}
-                          <a href='http://skyserver.sdss.org/dr12/en/tools/chart/navi.aspx?ra={{cubehdr.objra}}&dec={{cubehdr.objdec}}&opt=GS&scale=0.2' class='btn btn-warning' id='gotocas' target='_blank'><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to CAS</a>
-                          </div>
-                    </div>
-                    <!-- MaNGA Target Flags -->
-                    {# MaNGA Target Flags #}
-                    <div class='col-md-2'>
-                          <div class="panel panel-info" id='panel_targetflag'>
-                              <div class="panel-heading">
-                                  <h3 class="panel-title">MaNGA Target</h3>
-                              </div>
-                              <div class='panel-body'>
-                                {% for bit in mngtarget.bits %}
-                                <div class='row'>
-                                  {% set targname = mngtarget.names[loop.index0]|lower %}
-                                  <div class='col-md-12'>
-                                  {{targname|targtype}} Bit: {{bit}} <a tabindex='0' role="button" class='btn btn-info btn-xs flagpopover targpopovers pull-right' id='targpopover_{{targname}}' data-trigger='hover' data-toggle="popover" title="Target Flags">Flags</a>
-                                  </div>
-                                </div>
-                                  {{panellist('Target Flags', mngtarget.labels[loop.index0], targname)}}
-                                {% endfor %}
-                              </div>
-                          </div>
-                          <button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>
-                    </div>
-                    {{panellist('Quality Flags', quality[2], 'drp3quality')}}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div> {# end metadata div #}
+<script type="text/javascript">
+Highcharts.theme = {chart: {backgroundColor: null}};
+Highcharts.setOptions(Highcharts.theme);
+</script>
+
+
 
 <!-- Interactive Map and Spectrum View -->
 {# Map and Spectrum View #}
@@ -102,7 +43,7 @@
                 {# Dynamic Interaction #}
                 <div class='row' id='dynamicdiv' style='display:none;'>
                   <div class='col-md-3'>
-                    <div id='map' class='map' style='width:100%; height:400px;'></div>
+                    <div id='mapdiv' class='map' style='width:600px; height:600px;'></div>
                   </div>
                   <div class='col-md-9'>
                     <div id='graphdiv' style="width:100%;"></div>
@@ -136,10 +77,15 @@
         // toggle interaction on click
         var spaxel = {{spectra|tojson}};
         var galimage = {{image|tojson}};
-        var title = {{specmsg|tojson}};
-        $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(spaxel, galimage, title);
-        });
+        var spectitle = {{specmsg|tojson}};
+        var maptitle = {{'8485-1901 Halpha'|tojson}};
+        var map = {{map|tojson}};
+        var mapmsg = {{mapmsg|tojson}};
+        console.log('spaxel html', spaxel);
+        m.galaxy.toggleInteract(map, spaxel, maptitle, spectitle);
+        // $('#toggleinteract').on('click', m.galaxy, function() {
+        //     m.galaxy.toggleInteract(spaxel, galimage, title);
+        //});
 
     });
 </script>
