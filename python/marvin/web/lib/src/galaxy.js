@@ -19,7 +19,7 @@ class Galaxy {
         this.maindiv = $('#'+this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
-        this.mapdiv = this.specdiv.find('#map');
+        this.mapdiv = this.specdiv.find('#mapdiv');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -55,7 +55,7 @@ class Galaxy {
                   {
                     title: title,
                     labels: ['Wavelength','Flux'],
-                    errorBars: true,
+                    errorBars: true,  // TODO DyGraph shows 2-sigma error bars FIX THIS
                     ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                     xlabel: 'Wavelength [Ångströms]'
                   });
@@ -86,6 +86,77 @@ class Galaxy {
         this.olmap.map.on('singleclick', this.getSpaxel, this);
     };
 
+    // Initialize Highcharts heatmap
+    initHeatmap(myjson, spaxel, maptitle, spectitle){
+        var _this = this;
+        $(function () {
+            var cubeside = 34;
+            $('#mapdiv').highcharts({
+                chart: {type: 'heatmap',
+                    marginTop: 40,
+                    marginBottom: 80,
+                    plotBorderWidth: 1,
+                    panning: true,
+                    panKey: 'shift',
+                    zoomType: 'xy',
+                    alignticks: false,
+                },
+                credits: {enabled: false},
+                title: {text: maptitle},
+                xAxis: {
+                    title: {text: 'Delta RA'},
+                    allowDecimals: false,
+                    min: 0,
+                    max: cubeside - 1,
+                    minorGridLineWidth: 0,
+                },
+                yAxis: {
+                    title: {text: 'Delta DEC'},
+                    allowDecimals: false,
+                    min: 0,
+                    max: cubeside - 1,
+                    endontick: false,
+                },
+                colorAxis: {min: 0, max: 30,
+                    // minColor: 'rgba(255,255,255,0)',
+                    minColor: '#00BFFF',
+                    maxColor: '#000080',
+                    reversed: false,
+                    labels: {align: 'right'}
+                },
+                legend: {align: 'right',
+                    layout: 'vertical',
+                    margin: 0,
+                    verticalAlign: 'bottom',
+                    y: -53,
+                    symbolHeight: 380,
+                    title: {text: 'Flux'}
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<br>('+ this.point.x + ', ' + this.point.y + '): <b>' + this.point.value + '</b> Halphas <br>';
+                    }
+                },
+                plotOptions:  {
+                    series: {
+                        events: {
+                            click: function (event) {
+                                _this.loadSpaxel(spaxel, spectitle);
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: "heatmap",
+                    name: "Halphas",
+                    borderWidth: 1, // 0
+                    data: myjson,
+                    dataLabels: {enabled: false},
+                }]
+            });
+        });
+    }
+
     // Retrieves a new Spaxel from the server based on a given mouse position
     getSpaxel(event) {
         var map = event.map;
@@ -109,7 +180,7 @@ class Galaxy {
     };
 
     // Toggle the interactive OpenLayers map and Dygraph spectra
-    toggleInteract(spaxel, image, title) {
+    toggleInteract(map, spaxel, maptitle, spectitle) {
         if (this.togglediv.hasClass('active')){
             // Turning Off
             this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -128,12 +199,14 @@ class Galaxy {
             var mapempty = this.mapdiv.is(':empty');
             // load the spaxel if the div is initially empty;
             if (this.graphdiv !== undefined && specempty) {
-                this.loadSpaxel(spaxel, title);
+                console.log('spaxel js', spaxel);
+                this.loadSpaxel(spaxel, spectitle);
             }
 
             // load the map if div is empty
             if (mapempty) {
-                this.initOpenLayers(image);
+                // this.initOpenLayers(image);
+                this.initHeatmap(map, spaxel, maptitle, spectitle);
             }
 
         }
