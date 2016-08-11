@@ -42,14 +42,40 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         specmsg = 'Could not get spectrum: {0}'.format(e)
     else:
         # get error and wavelength
-        error = convertIvarToErr(spectrum.drp.ivar)
-        wave = spectrum.drp.wavelength
+        error = convertIvarToErr(spectrum.spectrum.ivar)
+        wave = spectrum.spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.drp.flux)]
+        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.spectrum.flux)]
 
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spectrum.x, spectrum.y)
 
     return webspec, specmsg
+
+
+def getWebMap(cube, x, y, xyorig=None, byradec=False):
+    ''' Get and format a map for the web '''
+    webmap = None
+    try:
+        if byradec:
+            pass
+        else:
+            pass
+    except Exception as e:
+        mapmsg = 'Could not get map: {0}'.format(e)
+    else:
+        # get error and wavelength
+        # error = convertIvarToErr(spectrum.drp.ivar)
+        # wave = spectrum.drp.wavelength
+        import urllib
+        import json
+        url = 'https://raw.githubusercontent.com/bretthandrews/highcharts-heatmap/master/resources/data/fake_map2.json'
+        response = urllib.urlopen(url)
+        data = json.loads(response.read())
+        values = data['data']['value']
+        webmap = [[i, j, values[i][j]] for i in range(34) for j in range(34)]
+        mapmsg = "8485-1901 Halpha"
+    return webmap, mapmsg
+
 
 
 class Galaxy(FlaskView):
@@ -110,6 +136,7 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
+                webmap, mapmsg = getWebMap(cube, cube.ra, cube.dec)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['spectra'] = webspec
@@ -117,6 +144,8 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.hdr
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
+                self.galaxy['map'] = webmap
+                self.galaxy['mapmsg'] = mapmsg
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
