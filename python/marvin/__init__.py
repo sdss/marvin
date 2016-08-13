@@ -112,8 +112,8 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         # set and sort the base MPL dictionary
-        mpldict = {'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'), 'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None), 'DR13': ('v1_5_4', None), 'MPL-5': ('v2_0_1', '2.0.2')}
+        mpldict = {'MPL-5': ('v2_0_1', '2.0.2'), 'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'),
+                   'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None), 'DR13': ('v1_5_4', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 

@@ -12,7 +12,7 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from flask import session as current_session, current_app
+from flask import session as current_session, current_app, request
 from marvin import config, marvindb
 from collections import defaultdict
 import re
@@ -24,6 +24,13 @@ def configFeatures(app, mode):
     app.config['FEATURE_FLAGS']['collab'] = False if mode == 'dr13' else True
     app.config['FEATURE_FLAGS']['new'] = False if mode == 'dr13' else True
     app.config['FEATURE_FLAGS']['dev'] = True if config.db == 'local' else False
+
+
+def updateGlobalSession():
+    ''' updates the Marvin config with the global Flask session '''
+
+    if 'currentmpl' in current_session:
+        config.setMPL(current_session['currentmpl'])
 
 
 def setGlobalSession():
