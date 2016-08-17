@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Carousel = function () {
 
     // Constructor
-
     function Carousel(cardiv, thumbs) {
         _classCallCheck(this, Carousel);
 
@@ -91,7 +90,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Galaxy = function () {
 
     // Constructor
-
     function Galaxy(plateifu) {
         _classCallCheck(this, Galaxy);
 
@@ -99,7 +97,8 @@ var Galaxy = function () {
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
-        this.mapdiv = this.specdiv.find('#map');
+        this.imagediv = this.specdiv.find('#imagediv');
+        this.mapdiv = this.specdiv.find('#mapdiv');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -149,7 +148,7 @@ var Galaxy = function () {
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
                 labels: ['Wavelength', 'Flux'],
-                errorBars: true,
+                errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 xlabel: 'Wavelength [Ångströms]'
             });
@@ -189,6 +188,98 @@ var Galaxy = function () {
             this.olmap.map.on('singleclick', this.getSpaxel, this);
         }
     }, {
+        key: 'initHeatmap',
+
+
+        // Initialize Highcharts heatmap
+        value: function initHeatmap(myjson, spaxel, maptitle, spectitle) {
+            var _this = this;
+            $(function () {
+                var cubeside = 34;
+                $('#mapdiv').highcharts({
+                    chart: { type: 'heatmap',
+                        marginTop: 40,
+                        marginBottom: 80,
+                        plotBorderWidth: 1,
+                        panning: true,
+                        panKey: 'shift',
+                        zoomType: 'xy',
+                        alignticks: false
+                    },
+                    credits: { enabled: false },
+                    title: { text: maptitle },
+                    xAxis: {
+                        title: { text: 'Delta RA' },
+                        allowDecimals: false,
+                        min: 0,
+                        max: cubeside - 1,
+                        minorGridLineWidth: 0
+                    },
+                    yAxis: {
+                        title: { text: 'Delta DEC' },
+                        allowDecimals: false,
+                        min: 0,
+                        max: cubeside - 1,
+                        endontick: false
+                    },
+                    colorAxis: { min: 0, max: 30,
+                        // minColor: 'rgba(255,255,255,0)',
+                        minColor: '#00BFFF',
+                        maxColor: '#000080',
+                        reversed: false,
+                        labels: { align: 'right' }
+                    },
+                    legend: { align: 'right',
+                        layout: 'vertical',
+                        margin: 0,
+                        verticalAlign: 'bottom',
+                        y: -53,
+                        symbolHeight: 380,
+                        title: { text: 'Flux' }
+                    },
+                    tooltip: {
+                        formatter: function formatter() {
+                            return '<br>(' + this.point.x + ', ' + this.point.y + '): <b>' + this.point.value + '</b> Halphas <br>';
+                        }
+                    },
+                    plotOptions: {
+                        series: {
+                            events: {
+                                click: function click(event) {
+                                    _this.getSpaxelFromMap(event);
+                                }
+                            }
+                        }
+                    },
+                    series: [{
+                        type: "heatmap",
+                        name: "Halphas",
+                        borderWidth: 0,
+                        data: myjson,
+                        dataLabels: { enabled: false }
+                    }]
+                });
+            });
+        }
+    }, {
+        key: 'getSpaxelFromMap',
+        value: function getSpaxelFromMap(event) {
+            var keys = ['plateifu', 'x', 'y'];
+            var form = m.utils.buildForm(keys, this.plateifu, event.point.x, event.point.y);
+            var _this = this;
+
+            // send the form data
+            $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
+                if (data.result.status !== -1) {
+                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                } else {
+                    _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                }
+            }).fail(function (data) {
+                _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+            });
+        }
+    }, {
         key: 'getSpaxel',
 
 
@@ -216,7 +307,7 @@ var Galaxy = function () {
 
 
         // Toggle the interactive OpenLayers map and Dygraph spectra
-        value: function toggleInteract(spaxel, image, title) {
+        value: function toggleInteract(image, map, spaxel, maptitle, spectitle) {
             if (this.togglediv.hasClass('active')) {
                 // Turning Off
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -232,15 +323,21 @@ var Galaxy = function () {
 
                 // check for empty divs
                 var specempty = this.graphdiv.is(':empty');
+                var imageempty = this.imagediv.is(':empty');
                 var mapempty = this.mapdiv.is(':empty');
                 // load the spaxel if the div is initially empty;
                 if (this.graphdiv !== undefined && specempty) {
-                    this.loadSpaxel(spaxel, title);
+                    this.loadSpaxel(spaxel, spectitle);
                 }
 
+                // load the image if div is empty
+                if (imageempty) {
+                    console.log('image empty');
+                    this.initOpenLayers(image);
+                }
                 // load the map if div is empty
                 if (mapempty) {
-                    this.initOpenLayers(image);
+                    this.initHeatmap(map, spaxel, maptitle, spectitle);
                 }
             }
         }
@@ -291,7 +388,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Header = function () {
 
     // Constructor
-
     function Header() {
         _classCallCheck(this, Header);
 
@@ -444,7 +540,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var OLMap = function () {
 
     // Constructor
-
     function OLMap(image) {
         _classCallCheck(this, OLMap);
 
@@ -453,7 +548,7 @@ var OLMap = function () {
         } else {
             this.image = image;
             this.staticimdiv = $('#staticimage')[0];
-            this.mapdiv = $('#map')[0];
+            this.mapdiv = $('#imagediv')[0];
             this.getImageSize();
             this.setProjection();
             this.setView();
@@ -640,7 +735,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Search = function () {
 
     // Constructor
-
     function Search() {
         _classCallCheck(this, Search);
 
@@ -758,7 +852,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Table = function () {
 
     // Constructor
-
     function Table(tablediv) {
         _classCallCheck(this, Table);
 
@@ -887,7 +980,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Utils = function () {
 
     // Constructor
-
     function Utils() {
         _classCallCheck(this, Utils);
     }

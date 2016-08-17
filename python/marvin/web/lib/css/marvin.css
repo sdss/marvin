@@ -6212,6 +6212,10 @@ section h3.section-subheading {
   border-radius: 0px;
   border-color: #3498DB; }
 
+.map {
+  width: 100%;
+  padding-bottom: 100%; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52

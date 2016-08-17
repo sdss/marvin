@@ -19,6 +19,7 @@ class Galaxy {
         this.maindiv = $('#'+this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
+        this.imagediv = this.specdiv.find('#imagediv');
         this.mapdiv = this.specdiv.find('#mapdiv');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
@@ -141,7 +142,7 @@ class Galaxy {
                     series: {
                         events: {
                             click: function (event) {
-                                _this.loadSpaxel(spaxel, spectitle);
+                                _this.getSpaxelFromMap(event);
                             }
                         }
                     }
@@ -149,13 +150,32 @@ class Galaxy {
                 series: [{
                     type: "heatmap",
                     name: "Halphas",
-                    borderWidth: 1, // 0
+                    borderWidth: 0,
                     data: myjson,
                     dataLabels: {enabled: false},
                 }]
             });
         });
     }
+
+    getSpaxelFromMap(event) {
+        var keys = ['plateifu', 'x', 'y'];
+        var form = m.utils.buildForm(keys, this.plateifu, event.point.x, event.point.y);
+        var _this = this;
+
+        // send the form data
+        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
+            .done(function(data) {
+                if (data.result.status !== -1) {
+                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                } else {
+                    _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+                }
+            })
+            .fail(function(data) {
+                _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+            });
+    };
 
     // Retrieves a new Spaxel from the server based on a given mouse position
     getSpaxel(event) {
@@ -180,7 +200,7 @@ class Galaxy {
     };
 
     // Toggle the interactive OpenLayers map and Dygraph spectra
-    toggleInteract(map, spaxel, maptitle, spectitle) {
+    toggleInteract(image, map, spaxel, maptitle, spectitle) {
         if (this.togglediv.hasClass('active')){
             // Turning Off
             this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -196,16 +216,20 @@ class Galaxy {
 
             // check for empty divs
             var specempty = this.graphdiv.is(':empty');
+            var imageempty = this.imagediv.is(':empty');
             var mapempty = this.mapdiv.is(':empty');
             // load the spaxel if the div is initially empty;
             if (this.graphdiv !== undefined && specempty) {
-                console.log('spaxel js', spaxel);
                 this.loadSpaxel(spaxel, spectitle);
             }
 
+            // load the image if div is empty
+            if (imageempty) {
+                console.log('image empty');
+                this.initOpenLayers(image);
+            }
             // load the map if div is empty
             if (mapempty) {
-                // this.initOpenLayers(image);
                 this.initHeatmap(map, spaxel, maptitle, spectitle);
             }
 

@@ -52,27 +52,18 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     return webspec, specmsg
 
 
-def getWebMap(cube, x, y, xyorig=None, byradec=False):
+def getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564'):
     ''' Get and format a map for the web '''
     webmap = None
     try:
-        if byradec:
-            pass
-        else:
-            pass
+        maps = cube.getMaps(plateifu='8485-1901', mode='local', bintype='NONE', niter='003')
+        ha = maps.getMap(category=category, channel=channel)
     except Exception as e:
+        raise(e)
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
-        # get error and wavelength
-        # error = convertIvarToErr(spectrum.drp.ivar)
-        # wave = spectrum.drp.wavelength
-        import urllib
-        import json
-        url = 'https://raw.githubusercontent.com/bretthandrews/highcharts-heatmap/master/resources/data/fake_map2.json'
-        response = urllib.urlopen(url)
-        data = json.loads(response.read())
-        values = data['data']['value']
-        webmap = [[i, j, values[i][j]] for i in range(34) for j in range(34)]
+        vals = ha.value
+        webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
         mapmsg = "8485-1901 Halpha"
     return webmap, mapmsg
 
@@ -136,7 +127,7 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-                webmap, mapmsg = getWebMap(cube, cube.ra, cube.dec)
+                webmap, mapmsg = getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564')
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['spectra'] = webspec
@@ -161,6 +152,15 @@ class Galaxy(FlaskView):
             mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
         except:
             mousecoords = None
+
+        # grab spectrum based on (x, y) coordinates
+        try:
+            x = int(f.get('x'))
+            y = int(f.get('y'))
+        except:
+            x = None
+            y = None
+
         if mousecoords:
             pixshape = (int(f['imwidth']), int(f['imheight']))
             if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
@@ -179,6 +179,16 @@ class Galaxy(FlaskView):
                     status = 1
                 msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
+        elif (x is not None) and (y is not None):
+            cube = Cube(plateifu=f['plateifu'])
+            webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
+            msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
+            if not webspec:
+                self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                status = -1
+            else:
+                status = 1
+            output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
         else:
             output = {'specmsg': 'Error getting mouse coords', 'status': -1}
             self.galaxy['error'] = output['specmsg']

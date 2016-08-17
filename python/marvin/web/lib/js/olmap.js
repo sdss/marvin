@@ -18,7 +18,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var OLMap = function () {
 
     // Constructor
-
     function OLMap(image) {
         _classCallCheck(this, OLMap);
 
@@ -27,7 +26,7 @@ var OLMap = function () {
         } else {
             this.image = image;
             this.staticimdiv = $('#staticimage')[0];
-            this.mapdiv = $('#map')[0];
+            this.mapdiv = $('#imagediv')[0];
             this.getImageSize();
             this.setProjection();
             this.setView();
