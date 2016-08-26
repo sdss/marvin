@@ -255,6 +255,12 @@ class MarvinConfig(object):
         elif sasmode == 'utah':
             self.sasurl = 'https://api.sdss.org/marvin2/'
 
+    def forceDbOff(self):
+        ''' Force the database to be turned off '''
+        config.db = None
+        from marvin import marvindb
+        marvindb.forceDbOff()
+
 config = MarvinConfig()
 config._checkConfig()
 
