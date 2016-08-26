@@ -7,6 +7,7 @@ from marvin.api.api import Interaction
 import warnings
 import json
 import copy
+import os
 from pprint import pformat
 from functools import wraps
 from astropy.table import Table, Column
@@ -234,6 +235,24 @@ class Results(object):
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
+
+    def toFits(self, filename='myresults.fits'):
+        ''' Output the results as a FITS file
+
+        Writes a new FITS file from search results using
+        the astropy Table.write()
+
+        Parameters:
+            filename (str):
+                Name of FITS file to output
+
+        '''
+        myext = os.path.splitext(filename)[1]
+        if not myext:
+            filename = filename+'.fits'
+        table = self.toTable()
+        table.write(filename, format='fits')
+        print('Writing new FITS file {0}'.format(filename))
 
     def toDF(self):
         '''Call toDataFrame().
