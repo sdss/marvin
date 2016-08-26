@@ -14,11 +14,6 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 {% endblock jshead %}
 
-<script type="text/javascript">
-    Highcharts.theme = {chart: {backgroundColor: null}};
-    Highcharts.setOptions(Highcharts.theme);
-</script>
-
 <!-- Single Galaxy Page -->
 {% block body %}
 
@@ -35,7 +30,7 @@
                 {# Galaxy Meta Data #}
                 <div class='row'>
                     <div class='col-md-3'>
-                        <h4>Plate-IFU: {{cube.plateifu}} <small>{{cube._drpver}}</small></h4>
+                        <h4>Plate-IFU: {{cube.plateifu}}</h4>
                         <h4>Manga-ID: {{cube.mangaid}}</h4>
                         <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
                             <tbody>
@@ -111,30 +106,36 @@
                 <!-- dynamic image and spaxel -->
                 {# Dynamic Interaction #}
                 <div id='dynamicdiv' style='display:none;'>
-                  <div class='row' id='image-spec'>
-                    <div class='col-md-4'>
-                      <!-- <div id='imagediv' class='map' style='width:100%; height:400px;'></div> -->
-                      <div id='imagediv' style='width:100%; height:400px;'></div>
+                    <div class='row' id='image-spec'>
+                        <div class='col-md-4'>
+                            <!-- <div id='imagediv' class='map' style='width:100%; height:400px;'></div> -->
+                            <div id='imagediv' style='width:100%; height:400px;'></div>
+                        </div>
+                        <div class='col-md-8'>
+                            <div id='graphdiv' style="width:100%;"></div>
+                            <div class='row'>
+                                <div class='col-md-5 col-md-offset-1'>
+                                    {% if error %}
+                                    <p class='alert alert-danger' id='specmsg_error'><strong>{{error}}</strong></p>
+                                    {% else %}
+                                    <p class='alert alert-danger' id='specmsg' style="display:none;"><strong>{{specmsg}}</strong></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class='col-md-8'>
-                      <div id='graphdiv' style="width:100%;"></div>
-                      <div class='row'>
-                          <div class='col-md-5 col-md-offset-1'>
-                            {% if error %}
-                            <p class='alert alert-danger' id='specmsg_error'><strong>{{error}}</strong></p>
-                            {% else %}
-                            <p class='alert alert-danger' id='specmsg' style="display:none;"><strong>{{specmsg}}</strong></p>
-                            {% endif %}
-                          </div>
-                      </div>
+                    <!-- maps -->
+                    <div class='row' id='mapsdiv'>
+                        <div class='col-md-4' id='leftcol'>
+                            <div id='mapdiv' class='map'></div>
+                        </div>
+                        <div class='col-md-4'>
+                            <div id='mapdiv2' class='map'></div>
+                        </div>
+                        <div class='col-md-4'>
+                            <div id='mapdiv3' class='map'></div>
+                        </div>
                     </div>
-                  </div>
-                  <!-- maps -->
-                  <div class='row' id='mapsdiv'>
-                    <div class='col-md-5'>
-                        <div id='mapdiv' class='map'></div>
-                    </div>
-                  </div>
                 </div>
         </div>
     </div>
@@ -148,6 +149,9 @@
 <!-- JS Code -->
 {% block code %}
 <script type='text/javascript'>
+    // Highcharts.theme = {chart: {backgroundColor: null}};
+    // Highcharts.setOptions(Highcharts.theme);
+    
     /*$(function() {
         var div = $('#mapdiv');
         var width = div.width();
@@ -157,7 +161,7 @@
     });*/
     //var mapwidth = $('.map').width();
     //$('.map').css({'height':mapwidth+'px'});
-    
+        
     var galaxy = {};
     $(function() {
         m.galaxy = new Galaxy();
@@ -169,10 +173,70 @@
         var maptitle = {{'8485-1901 Halpha'|tojson}};
         var map = {{map|tojson}};
         var mapmsg = {{mapmsg|tojson}};
-        $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle);
-        });
-
+        var chartWidth = null;
+        m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
+        /*$('#toggleinteract').on('click', m.galaxy, function() {
+            var chartWidth = null;
+            m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
+            chartWidth = $('#mapdiv').width();
+            var chartHeight = $('#mapdiv').height();
+            console.log('toggle width', $('#mapdiv').width());
+            //m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
+            //document.getElementById('mapdiv').style.width = 400;
+            window.setTimeout(function(){
+                var chartWidth = $('#mapdiv').width();
+                console.log('timeout', chartWidth);
+                if (chartWidth) {
+                    if (chartWidth > 400){
+                        chartWidth = 400;
+                        //chartHeight = 400;
+                    } else {
+                        chartHeight = chartWidth;
+                    }
+                    console.log('h,w', chartHeight, chartWidth);
+                    $('#mapdiv').css('width', chartWidth);
+                    $('#mapdiv').css('height', chartHeight);
+                }
+            }, 3000);
+        });*/
     });
+    /*$(document).ready(function(){
+        window.setTimeout(function(){
+            console.log("timeout delay");
+            var chartWidth = $('#mpadiv').width();
+            if (chartWidth > 400){
+                chartWidth = 400;
+            } else {
+                chartHeight = chartWidth;
+            }
+            $('#mpadiv').css('width', chartWidth);
+            $('#mpadiv').css('height', chartHeight);
+        }, 10000);
+    });*/
+    function fixAspectRatio() {
+        console.log('start fixAspectRatio w, h', $('#mapdiv').width(), $('#mapdiv').height());
+        var chartWidth = $('#mapdiv').width();
+        var chartHeight = $('#mapdiv').height();
+        if (chartWidth > 400){
+            chartWidth = 400;
+            chartHeight = 400;
+        } else {
+            chartHeight = chartWidth;
+        }
+        $("#mapdiv").width(chartWidth);
+        $("#mapdiv").height(chartHeight);
+        console.log('end fixAspectRatio w, h', $('#mapdiv').width(), $('#mapdiv').height());
+    };
+    $(window).load(function() {
+        fixAspectRatio();
+        $('#mapdiv').hide();
+        console.log($('#mapdiv').width());
+        setTimeout(function() {
+            $('#mapdiv').show();
+        }, 0);
+        console.log('on load');
+    });
+    $(window).resize(fixAspectRatio);
 </script>
 {% endblock code %}
+

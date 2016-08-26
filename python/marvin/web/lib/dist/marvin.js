@@ -192,11 +192,14 @@ var Galaxy = function () {
 
 
         // Initialize Highcharts heatmap
-        value: function initHeatmap(myjson, spaxel, maptitle, spectitle) {
+        value: function initHeatmap(myjson, spaxel, maptitle, spectitle, divname, chartWidth) {
+            console.log('initHeatmap chartWidth', chartWidth);
             var _this = this;
             $(function () {
+                var $container = $('#' + divname),
+                    chart;
                 var cubeside = 34;
-                $('#mapdiv').highcharts({
+                $container.highcharts({
                     chart: { type: 'heatmap',
                         marginTop: 40,
                         marginBottom: 80,
@@ -207,6 +210,11 @@ var Galaxy = function () {
                         alignticks: false
                     },
                     credits: { enabled: false },
+                    navigation: {
+                        buttonOptions: {
+                            theme: { fill: null }
+                        }
+                    },
                     title: { text: maptitle },
                     xAxis: {
                         title: { text: 'Delta RA' },
@@ -259,6 +267,21 @@ var Galaxy = function () {
                         dataLabels: { enabled: false }
                     }]
                 });
+                chart = $container.highcharts();
+                if (chartWidth) {
+                    if (chartWidth > 400) {
+                        var chartWidth = 400;
+                        var chartHeight = 400;
+                    } else {
+                        var chartHeight = chartWidth;
+                    }
+                    chart.setSize(chartWidth, chartHeight);
+                }
+                /*$('<button>+</button>').insertBefore($container).click(function () {
+                    //chartWidth *= 1.1;
+                    chartWidth = chartHeight;
+                    chart.setSize(chartWidth, chartHeight);
+                });*/
             });
         }
     }, {
@@ -307,7 +330,7 @@ var Galaxy = function () {
 
 
         // Toggle the interactive OpenLayers map and Dygraph spectra
-        value: function toggleInteract(image, map, spaxel, maptitle, spectitle) {
+        value: function toggleInteract(image, map, spaxel, maptitle, spectitle, chartWidth) {
             if (this.togglediv.hasClass('active')) {
                 // Turning Off
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -337,7 +360,9 @@ var Galaxy = function () {
                 }
                 // load the map if div is empty
                 if (mapempty) {
-                    this.initHeatmap(map, spaxel, maptitle, spectitle);
+                    this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv', chartWidth);
+                    this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv2', chartWidth);
+                    this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv3', chartWidth);
                 }
             }
         }

@@ -6212,9 +6212,8 @@ section h3.section-subheading {
   border-radius: 0px;
   border-color: #3498DB; }
 
-.map {
-  width: 100%;
-  padding-bottom: 100%; }
+.highcharts-button-symbol {
+  background-color: null; }
 
 /*
 * @Author: Brian Cherinka
