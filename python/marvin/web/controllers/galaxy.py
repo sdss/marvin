@@ -35,28 +35,29 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     webspec = None
     try:
         if byradec:
-            spectrum = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig)
+            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig)
         else:
-            spectrum = cube.getSpaxel(x=x, y=y, xyorig=xyorig)
+            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig)
     except Exception as e:
-        specmsg = 'Could not get spectrum: {0}'.format(e)
+        specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
         # get error and wavelength
-        error = convertIvarToErr(spectrum.spectrum.ivar)
-        wave = spectrum.spectrum.wavelength
+        error = convertIvarToErr(spaxel.spectrum.ivar)
+        wave = spaxel.spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.spectrum.flux)]
+        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spaxel.spectrum.flux)]
 
-        specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spectrum.x, spectrum.y)
+        specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg
 
 
 def getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564'):
     ''' Get and format a map for the web '''
+    name = '{0}_{1}'.format(category.lower(), channel)
     webmap = None
     try:
-        maps = cube.getMaps(plateifu='8485-1901', mode='local', bintype='NONE', niter='003')
+        maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype='NONE', niter='003')
         ha = maps.getMap(category=category, channel=channel)
     except Exception as e:
         raise(e)
@@ -64,9 +65,23 @@ def getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564'):
     else:
         vals = ha.value
         webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
-        mapmsg = "8485-1901 Halpha"
+        mapmsg = "{0}: {1}".format(cube.plateifu, name)
     return webmap, mapmsg
 
+
+def buildMapDict(cube, params):
+    ''' Build a list of dictionaries of maps
+
+    params - list of string parameter names in form of category_channel
+
+        NOT GENERALIZED
+    '''
+    mapdict = []
+    for param in params:
+        category, channel = param.rsplit('_', 1)
+        webmap, mapmsg = getWebMap(cube, category=category, channel=channel)
+        mapdict.append({'data': webmap, 'msg': mapmsg})
+    return mapdict
 
 
 class Galaxy(FlaskView):
@@ -128,7 +143,9 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-                webmap, mapmsg = getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564')
+                #webmap, mapmsg = getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564')
+                params = ['emline_gflux_ha-6564', 'emline_gvel_hb-4862', 'emline_gsigma_nii-6549']
+                mapdict = buildMapDict(cube, params)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['spectra'] = webspec
@@ -136,8 +153,9 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.hdr
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                self.galaxy['map'] = webmap
-                self.galaxy['mapmsg'] = mapmsg
+                self.galaxy['maps'] = mapdict
+                #self.galaxy['map'] = webmap
+                #self.galaxy['mapmsg'] = mapmsg
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -148,50 +166,57 @@ class Galaxy(FlaskView):
     def getSpaxel(self):
         f = processRequest(request=request)
         print(f)
-        # for now, do this, but TODO - general processRequest to handle lists and not lists
-        try:
-            mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
-        except:
-            mousecoords = None
 
-        # grab spectrum based on (x, y) coordinates
-        try:
-            x = int(f.get('x'))
-            y = int(f.get('y'))
-        except:
-            x = None
-            y = None
+        maptype = f.get('type', None)
 
-        if mousecoords:
-            pixshape = (int(f['imwidth']), int(f['imheight']))
-            if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
-                output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
-                self.galaxy['error'] = output['specmsg']
+        if maptype == 'optical':
+            # for now, do this, but TODO - general processRequest to handle lists and not lists
+            try:
+                mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
+            except:
+                mousecoords = None
+
+            if mousecoords:
+                pixshape = (int(f['imwidth']), int(f['imheight']))
+                if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
+                    output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
+                    self.galaxy['error'] = output['specmsg']
+                else:
+                    # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
+                    infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
+                    arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
+                    cube = Cube(plateifu=f['plateifu'])
+                    webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                    if not webspec:
+                        self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                        status = -1
+                    else:
+                        status = 1
+                    print('inside getspaxel', len(webspec))
+                    msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
+                    output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
             else:
-                # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
-                infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
-                arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
+                output = {'specmsg': 'Error getting mouse coords', 'status': -1}
+                self.galaxy['error'] = output['specmsg']
+        elif maptype == 'heatmap':
+            # grab spectrum based on (x, y) coordinates
+            x = int(f.get('x')) if 'x' in f.keys() else None
+            y = int(f.get('y')) if 'y' in f.keys() else None
+            if all([x, y]):
                 cube = Cube(plateifu=f['plateifu'])
-                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
+                msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                     status = -1
                 else:
                     status = 1
-                msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
-        elif (x is not None) and (y is not None):
-            cube = Cube(plateifu=f['plateifu'])
-            webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
-            msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
-            if not webspec:
-                self.galaxy['error'] = 'Error: {0}'.format(specmsg)
-                status = -1
             else:
-                status = 1
-            output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
+                output = {'specmsg': 'Error: X or Y not specified for map', 'status': -1}
+                self.galaxy['error'] = output['specmsg']
         else:
-            output = {'specmsg': 'Error getting mouse coords', 'status': -1}
+            output = {'specmsg': 'Error: No maptype specified in request', 'status': -1}
             self.galaxy['error'] = output['specmsg']
 
         return jsonify(result=output)

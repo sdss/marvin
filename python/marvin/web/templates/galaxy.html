@@ -9,16 +9,16 @@
 {% block jshead %}
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    {#<script rel='preconnect' src="https://code.highcharts.com/highcharts.js"></script>#}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/4.2.6/highcharts.js"></script>
+    <script rel='preconnect' src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script rel='preconnect' src="https://code.highcharts.com/modules/exporting.js"></script>
 {% endblock jshead %}
 
 <!-- Single Galaxy Page -->
 {% block body %}
 
 <div class='singlegalaxy' id ='{{cube.plateifu}}'>
-
 
 <div class='well' id='metadata'>
     <div class='row'>
@@ -30,7 +30,7 @@
                 {# Galaxy Meta Data #}
                 <div class='row'>
                     <div class='col-md-3'>
-                        <h4>Plate-IFU: {{cube.plateifu}}</h4>
+                        <h4>Plate-IFU: {{cube.plateifu}} <small>{{cube._drpver}}</small></h4>
                         <h4>Manga-ID: {{cube.mangaid}}</h4>
                         <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
                             <tbody>
@@ -89,7 +89,6 @@
     </div>
 </div> {# end metadata div #}
 
-
 <!-- Interactive Map and Spectrum View -->
 {# Map and Spectrum View #}
 {% if cube %}
@@ -124,17 +123,14 @@
                             </div>
                         </div>
                     </div>
-                    <!-- maps -->
+                    <!-- dap dynamic maps -->
+                    {# loop over all maps #}
                     <div class='row' id='mapsdiv'>
-                        <div class='col-md-4' id='leftcol'>
-                            <div id='mapdiv' class='map'></div>
-                        </div>
+                        {% for map in maps %}
                         <div class='col-md-4'>
-                            <div id='mapdiv2' class='map'></div>
+                            <div id='mapdiv{{loop.index}}' class='map'></div>
                         </div>
-                        <div class='col-md-4'>
-                            <div id='mapdiv3' class='map'></div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
         </div>
@@ -149,19 +145,6 @@
 <!-- JS Code -->
 {% block code %}
 <script type='text/javascript'>
-    // Highcharts.theme = {chart: {backgroundColor: null}};
-    // Highcharts.setOptions(Highcharts.theme);
-    
-    /*$(function() {
-        var div = $('#mapdiv');
-        var width = div.width();
-        console.log('width', width);
-        
-        div.css('height', width);
-    });*/
-    //var mapwidth = $('.map').width();
-    //$('.map').css({'height':mapwidth+'px'});
-        
     var galaxy = {};
     $(function() {
         m.galaxy = new Galaxy();
@@ -170,73 +153,11 @@
         var spaxel = {{spectra|tojson}};
         var galimage = {{image|tojson}};
         var spectitle = {{specmsg|tojson}};
-        var maptitle = {{'8485-1901 Halpha'|tojson}};
-        var map = {{map|tojson}};
-        var mapmsg = {{mapmsg|tojson}};
-        var chartWidth = null;
-        m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
-        /*$('#toggleinteract').on('click', m.galaxy, function() {
-            var chartWidth = null;
-            m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
-            chartWidth = $('#mapdiv').width();
-            var chartHeight = $('#mapdiv').height();
-            console.log('toggle width', $('#mapdiv').width());
-            //m.galaxy.toggleInteract(galimage, map, spaxel, maptitle, spectitle, chartWidth);
-            //document.getElementById('mapdiv').style.width = 400;
-            window.setTimeout(function(){
-                var chartWidth = $('#mapdiv').width();
-                console.log('timeout', chartWidth);
-                if (chartWidth) {
-                    if (chartWidth > 400){
-                        chartWidth = 400;
-                        //chartHeight = 400;
-                    } else {
-                        chartHeight = chartWidth;
-                    }
-                    console.log('h,w', chartHeight, chartWidth);
-                    $('#mapdiv').css('width', chartWidth);
-                    $('#mapdiv').css('height', chartHeight);
-                }
-            }, 3000);
-        });*/
+        var maps = {{maps|tojson}};
+        $('#toggleinteract').on('click', m.galaxy, function() {
+            m.galaxy.toggleInteract(galimage, maps, spaxel, spectitle);
+        });
     });
-    /*$(document).ready(function(){
-        window.setTimeout(function(){
-            console.log("timeout delay");
-            var chartWidth = $('#mpadiv').width();
-            if (chartWidth > 400){
-                chartWidth = 400;
-            } else {
-                chartHeight = chartWidth;
-            }
-            $('#mpadiv').css('width', chartWidth);
-            $('#mpadiv').css('height', chartHeight);
-        }, 10000);
-    });*/
-    function fixAspectRatio() {
-        console.log('start fixAspectRatio w, h', $('#mapdiv').width(), $('#mapdiv').height());
-        var chartWidth = $('#mapdiv').width();
-        var chartHeight = $('#mapdiv').height();
-        if (chartWidth > 400){
-            chartWidth = 400;
-            chartHeight = 400;
-        } else {
-            chartHeight = chartWidth;
-        }
-        $("#mapdiv").width(chartWidth);
-        $("#mapdiv").height(chartHeight);
-        console.log('end fixAspectRatio w, h', $('#mapdiv').width(), $('#mapdiv').height());
-    };
-    $(window).load(function() {
-        fixAspectRatio();
-        $('#mapdiv').hide();
-        console.log($('#mapdiv').width());
-        setTimeout(function() {
-            $('#mapdiv').show();
-        }, 0);
-        console.log('on load');
-    });
-    $(window).resize(fixAspectRatio);
 </script>
 {% endblock code %}
 

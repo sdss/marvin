@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-23 13:54:39
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-08-30 14:02:14
 */
 
 //
@@ -20,7 +20,8 @@ class Galaxy {
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
         this.imagediv = this.specdiv.find('#imagediv');
-        this.mapdiv = this.specdiv.find('#mapdiv');
+        this.mapsdiv = this.specdiv.find('#mapsdiv');
+        this.mapdiv = this.specdiv.find('#mapdiv1');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -87,125 +88,26 @@ class Galaxy {
         this.olmap.map.on('singleclick', this.getSpaxel, this);
     };
 
-    // Initialize Highcharts heatmap
-    initHeatmap(myjson, spaxel, maptitle, spectitle, divname, chartWidth){
-        console.log('initHeatmap chartWidth', chartWidth);
+    initHeatmap(maps) {
+        console.log('initHeatmap', this.mapsdiv);
+        var mapchildren = this.mapsdiv.children('div');
         var _this = this;
-        $(function () {
-            var $container = $('#' + divname),
-                chart;
-            var cubeside = 34;
-            $container.highcharts({
-                chart: {type: 'heatmap',
-                    marginTop: 40,
-                    marginBottom: 80,
-                    plotBorderWidth: 1,
-                    panning: true,
-                    panKey: 'shift',
-                    zoomType: 'xy',
-                    alignticks: false,
-                },
-                credits: {enabled: false},
-                navigation: {
-                    buttonOptions: {
-                        theme: {fill: null}
-                    }
-                },
-                title: {text: maptitle},
-                xAxis: {
-                    title: {text: 'Delta RA'},
-                    allowDecimals: false,
-                    min: 0,
-                    max: cubeside - 1,
-                    minorGridLineWidth: 0,
-                },
-                yAxis: {
-                    title: {text: 'Delta DEC'},
-                    allowDecimals: false,
-                    min: 0,
-                    max: cubeside - 1,
-                    endontick: false,
-                },
-                colorAxis: {min: 0, max: 30,
-                    // minColor: 'rgba(255,255,255,0)',
-                    minColor: '#00BFFF',
-                    maxColor: '#000080',
-                    reversed: false,
-                    labels: {align: 'right'}
-                },
-                legend: {align: 'right',
-                    layout: 'vertical',
-                    margin: 0,
-                    verticalAlign: 'bottom',
-                    y: -53,
-                    symbolHeight: 380,
-                    title: {text: 'Flux'}
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<br>('+ this.point.x + ', ' + this.point.y + '): <b>' + this.point.value + '</b> Halphas <br>';
-                    }
-                },
-                plotOptions:  {
-                    series: {
-                        events: {
-                            click: function (event) {
-                                _this.getSpaxelFromMap(event);
-                            }
-                        }
-                    }
-                },
-                series: [{
-                    type: "heatmap",
-                    name: "Halphas",
-                    borderWidth: 0,
-                    data: myjson,
-                    dataLabels: {enabled: false},
-                }]
-            });
-            chart = $container.highcharts();
-            if (chartWidth) {
-                if (chartWidth > 400){
-                    var chartWidth = 400;
-                    var chartHeight = 400;
-                } else {
-                    var chartHeight = chartWidth;
-                }
-                chart.setSize(chartWidth, chartHeight);
-            }
-            /*$('<button>+</button>').insertBefore($container).click(function () {
-                //chartWidth *= 1.1;
-                chartWidth = chartHeight;
-                chart.setSize(chartWidth, chartHeight);
-            });*/
+        $.each(mapchildren, function(index, child) {
+            var mapdiv = $(child).find('div').first();
+            this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
         });
-    }
-
-    getSpaxelFromMap(event) {
-        var keys = ['plateifu', 'x', 'y'];
-        var form = m.utils.buildForm(keys, this.plateifu, event.point.x, event.point.y);
-        var _this = this;
-
-        // send the form data
-        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
-            .done(function(data) {
-                if (data.result.status !== -1) {
-                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
-                } else {
-                    _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
-                }
-            })
-            .fail(function(data) {
-                _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
-            });
     };
 
-    // Retrieves a new Spaxel from the server based on a given mouse position
+    // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
     getSpaxel(event) {
-        var map = event.map;
-        var mousecoords = event.coordinate;
-        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords'];
-        var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords);
+        var mousecoords = (event.coordinate === undefined) ? null : event.coordinate;
+        var divid = $(event.target).parents('div').first().attr('id');
+        var maptype = (divid !== undefined && divid.search('highcharts') !== -1) ? 'heatmap' : 'optical';
+        var x = (event.point === undefined) ? null : event.point.x;
+        var y = (event.point === undefined) ? null : event.point.y;
+        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
+        var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth,
+            this.olmap.imheight, mousecoords, maptype, x, y);
         var _this = this;
 
         // send the form data
@@ -223,7 +125,7 @@ class Galaxy {
     };
 
     // Toggle the interactive OpenLayers map and Dygraph spectra
-    toggleInteract(image, map, spaxel, maptitle, spectitle, chartWidth) {
+    toggleInteract(image, maps, spaxel, spectitle) {
         if (this.togglediv.hasClass('active')){
             // Turning Off
             this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -245,18 +147,15 @@ class Galaxy {
             if (this.graphdiv !== undefined && specempty) {
                 this.loadSpaxel(spaxel, spectitle);
             }
-
             // load the image if div is empty
             if (imageempty) {
-                console.log('image empty');
                 this.initOpenLayers(image);
             }
             // load the map if div is empty
             if (mapempty) {
-                this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv', chartWidth);
-                this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv2', chartWidth);
-                this.initHeatmap(map, spaxel, maptitle, spectitle, 'mapdiv3', chartWidth);
+                this.initHeatmap(maps);
             }
+
         }
     };
 
@@ -277,4 +176,3 @@ class Galaxy {
         });
     };
 }
-
