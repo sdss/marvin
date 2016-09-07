@@ -191,3 +191,24 @@ class Dotable(dict):
             return [cls.parse(i) for i in v]
         else:
             return v
+
+
+class DotableCaseInsensitive(Dotable):
+    """Like dotable but access to attributes and keys is case insensitive."""
+
+    def _match(self, list_of_keys, value):
+
+        lower_values = map(str.lower, list_of_keys)
+        if value.lower() in lower_values:
+            return list_of_keys[lower_values.index(value.lower())]
+        else:
+            return False
+
+    def __getattr__(self, value):
+        return self.__getitem__(value)
+
+    def __getitem__(self, value):
+        key = self._match(self.keys(), value)
+        if key is False:
+            raise KeyError('{0} key or attribute not found'.format(value))
+        return dict.__getitem__(self, key)

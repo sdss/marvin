@@ -92,6 +92,12 @@ class MarvinDB(object):
         else:
             self.isdbconnected = False
 
+    def forceDbOff(self):
+        ''' Force the database to turn off '''
+        self.db = None
+        self.session = None
+        self.isdbconnected = False
+
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
             Selects only those classes in the module with attribute __tablename__

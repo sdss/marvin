@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Search = function () {
 
     // Constructor
-
     function Search() {
         _classCallCheck(this, Search);
 

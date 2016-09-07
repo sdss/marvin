@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Carousel = function () {
 
     // Constructor
-
     function Carousel(cardiv, thumbs) {
         _classCallCheck(this, Carousel);
 

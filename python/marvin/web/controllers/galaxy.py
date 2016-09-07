@@ -42,10 +42,10 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         specmsg = 'Could not get spectrum: {0}'.format(e)
     else:
         # get error and wavelength
-        error = convertIvarToErr(spectrum.drp.ivar)
-        wave = spectrum.drp.wavelength
+        error = convertIvarToErr(spectrum.spectrum.ivar)
+        wave = spectrum.spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.drp.flux)]
+        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.spectrum.flux)]
 
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spectrum.x, spectrum.y)
 
@@ -84,10 +84,11 @@ class Galaxy(FlaskView):
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
             self.galaxy['idtype'] = idtype
-            galaxyid = {self.galaxy['idtype']: galid}
+            galaxyid = {self.galaxy['idtype']: galid, 'drpver': config.drpver}
 
             # Get cube
             try:
+                print('marvin config', config.mplver, config.drpver, config.dapver)
                 cube = Cube(**galaxyid)
             except MarvinError as e:
                 self.galaxy['cube'] = None
@@ -101,7 +102,7 @@ class Galaxy(FlaskView):
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = sdss_path.url('mangadefault', drpver=cube._drpver, dapver=cube._dapver, plate=cube.plate, ifu=cube.ifu)
+                    maplink = sdss_path.url('mangadefault', drpver=cube._drpver, dapver=config.dapver, plate=cube.plate, ifu=cube.ifu)
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
                     self.galaxy['image'] = cube._cube.image

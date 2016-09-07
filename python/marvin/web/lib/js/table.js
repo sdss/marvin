@@ -14,7 +14,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Table = function () {
 
     // Constructor
-
     function Table(tablediv) {
         _classCallCheck(this, Table);
 

@@ -12,6 +12,7 @@ from marvin import config, log
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
 from marvin.web.jinja_filters import jinjablue
+from marvin.web.web_utils import updateGlobalSession
 import sys
 import os
 
@@ -147,6 +148,12 @@ def create_app(debug=False):
     @app.route('/marvin2/lib/<path:filename>')
     def lib(filename):
         return send_from_directory(app.config["LIB_PATH"], filename)
+
+    # Register update global session
+    @app.before_request
+    def global_update():
+        ''' updates the global session / config '''
+        updateGlobalSession()
 
     # ----------------------------------
     # Registration

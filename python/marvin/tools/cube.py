@@ -347,8 +347,14 @@ class Cube(MarvinToolsClass):
     @property
     def targetbit(self):
         ''' The Cube MNGTRG bits '''
-        names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-        targs = [long(self.hdr['MNGTRG1']), long(self.hdr['MNGTRG2']), long(self.hdr['MNGTRG3'])]
+
+        try:
+            names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
+            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+        except KeyError as e:
+            names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
+            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+
         ind = np.nonzero(targs)[0]
         labels = None
         finaltargs = {}

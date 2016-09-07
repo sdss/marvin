@@ -24,6 +24,10 @@ The full list of dependencies includes:
 * wtforms
 * SQLAlchemy-boolean-search (custom fork)
 * wtforms-alchemy (custom fork)
+* validators
+* intervals
+
+.. flask_cors
 
 .. flask_cors
 
@@ -166,19 +170,22 @@ With ``pip`` run the following commands and make sure they finish without errors
 not allow to install these products even with ``sudo``. If that is your case, try using
 ``pip install --user <package>``::
 
-    pip install numpy
-    pip install astropy
-    pip install sqlalchemy
-    pip install networkx
-    pip install matplotlib
-    pip install requests
-    pip install pillow
-    pip install wtforms
-    pip install Flask
+    pip install --upgrade numpy
+    pip install --upgrade astropy
+    pip install --upgrade sqlalchemy
+    pip install --upgrade networkx
+    pip install --upgrade matplotlib
+    pip install --upgrade requests
+    pip install --upgrade pillow
+    pip install --upgrade wtforms
+    pip install --upgrade Flask
+    pip install --upgrade validators
+    pip install --upgrade intervals
 
-Additionally, Marvin requires installing two forks of Python packages. Those forks will
-eventually be merged into Marvin, but during active development they live in GitHub
-repositories. To install ``SQLAlchemy-boolean-search`` do ::
+The ``--upgrade`` flag will make sure you are running the latest versions of the
+packages. Additionally, Marvin requires installing two forks of Python packages.
+Those forks will eventually be merged into Marvin, but during active development
+they live in GitHub repositories. To install ``SQLAlchemy-boolean-search`` do ::
 
     git clone https://github.com/havok2063/SQLAlchemy-boolean-search.git
     cd SQLAlchemy-boolean-search
