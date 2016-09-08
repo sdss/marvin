@@ -3,16 +3,13 @@
 
 from unittest import TestCase
 import warnings
-from marvin.core.exceptions import MarvinSkippedTestWargning
+from marvin.core.exceptions import MarvinSkippedTestWarning
 from functools import wraps
 
 
 # Moved from init in utils/test
 
 # Copied from http://bit.ly/20i4EHC
-
-from functools import wraps
-
 
 def template(args):
 
@@ -77,4 +74,4 @@ class MarvinTest(TestCase):
     def skipTest(self, test):
         """Issues a warning when we skip a test."""
         warnings.warn('Skipped test {0} because there is no DB connection.'
-                      .format(test.__name__), MarvinSkippedTestWargning)
+                      .format(test.__name__), MarvinSkippedTestWarning)
