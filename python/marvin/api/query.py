@@ -70,14 +70,20 @@ class QueryView(BrainQueryView):
         ''' Do a query for Bootstrap Table interaction in Marvin web '''
 
         # set parameters
-        searchvalue = current_session['searchvalue']
-        returnparams = current_session['returnparams']
+        searchvalue = current_session.get('searchvalue', self.results['inconfig'].get('searchvalue', None))
+        returnparams = current_session.get('returnparams', self.results['inconfig'].get('returnparams', None))
         print('webtable', searchvalue, self.results['inconfig'])
-        limit = self.results['inconfig'].get('limit', None)
+        limit = self.results['inconfig'].get('limit', 10)
         offset = self.results['inconfig'].get('offset', None)
         order = self.results['inconfig'].get('order', None)
         sort = self.results['inconfig'].get('sort', None)
         search = self.results['inconfig'].get('search', None)
+
+        # exit if no searchvalue is found
+        if not searchvalue:
+            output = json.dumps({'webtable_error': 'No searchvalue found'})
+            return output
+
         # do query
         q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
