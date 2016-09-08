@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import copy
 import unittest
 from marvin.tools.cube import Cube
 from marvin.core import MarvinError
