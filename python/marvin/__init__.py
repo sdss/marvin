@@ -119,8 +119,9 @@ class MarvinConfig(object):
 
         # Check the versioning config
         if not self.mplver or not (self.drpver and self.dapver):
-            log.info('No MPL or DRP/DAP version set. Setting default to MPL-4')
-            self.setMPL('MPL-4')
+            topkey = self._mpldict.keys()[0]
+            log.info('No MPL or DRP/DAP version set. Setting default to {0}'.format(topkey))
+            self.setMPL(topkey)
 
     def setMPL(self, mplver):
         ''' Set the data version by MPL
