@@ -69,9 +69,9 @@ class SpaxelView(BaseView):
         self.update_results(results)
 
         if spaxel is not None:
-            self.results['data'] = {'flux': spaxel.drp.flux.tolist(),
-                                    'ivar': spaxel.drp.ivar.tolist(),
-                                    'mask': spaxel.drp.mask.tolist(),
-                                    'wavelength': spaxel.drp.wavelength.tolist()}
+            self.results['data'] = {'flux': spaxel.spectrum.flux.tolist(),
+                                    'ivar': spaxel.spectrum.ivar.tolist(),
+                                    'mask': spaxel.spectrum.mask.tolist(),
+                                    'wavelength': spaxel.spectrum.wavelength.tolist()}
 
         return json.dumps(self.results)
