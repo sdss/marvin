@@ -21,7 +21,7 @@ drpTable = None
 
 
 def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
-              ra=None, dec=None, xyorig='center'):
+              ra=None, dec=None, xyorig=None):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -53,10 +53,11 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
             coordinates, the size of ``ra`` must much that of ``dec``.
         xyorig ({'center', 'lower'}):
             The reference point from which ``x`` and ``y`` are measured.
-            Valid values are ``'center'`` (default), for the centre of the
+            Valid values are ``'center'``, for the centre of the
             spatial dimensions of the cube, or ``'lower'`` for the
             lower-left corner. This keyword is ignored if ``ra`` and
-            ``dec`` are defined.
+            ``dec`` are defined. ``xyorig`` defaults to
+            ``marvin.config.xyorig.``
 
     Returns:
         spaxels (list):
@@ -109,7 +110,7 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
         raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
     if not xyorig:
-        xyorig = 'center'
+        xyorig = marvin.config.xyorig
 
     # TODO: cube_object does not have wcs or shape if initialised from API.
     # Fix this in the initialisation of Cube.
@@ -131,6 +132,10 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
             marvin.tools.spaxel.Spaxel._initFromData(
                 plateifu, jCube[0][ii], iCube[0][ii],
                 cube=cube_object, maps=maps_object))
+
+    # Sets the shape of the cube on the spaxels
+    for sp in _spaxels:
+        sp._parent_shape = cubeShape
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]

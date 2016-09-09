@@ -91,6 +91,9 @@ class Spaxel(MarvinToolsClass):
         obj.filename = None
         obj.plateifu = None
 
+        # The shape of the parent object (cube or maps)
+        obj._parent_shape = None
+
         obj.x = None
         obj.y = None
 
@@ -129,7 +132,13 @@ class Spaxel(MarvinToolsClass):
     def __repr__(self):
         """Spaxel representation."""
 
-        return '<Marvin Spaxel (x={0:d}, y={1:d})>'.format(self.x, self.y)
+        # Gets the coordinates relative to the centre of the cube/maps.
+        yMid, xMid = np.array(self._parent_shape) / 2.
+        xCentre = int(self.x - xMid)
+        yCentre = int(self.y - yMid)
+
+        return ('<Marvin Spaxel (x={0:d}, y={1:d}; x_cen={2:d}, y_cen={3:d}>'
+                .format(self.x, self.y, xCentre, yCentre))
 
     def _initDAP(self, data):
         """Initialises the dictionary of `AnalysisProperty` objects.
@@ -277,6 +286,7 @@ class Spaxel(MarvinToolsClass):
                         spectrum = ext.data[:, self.y, self.x]
                         newHDU = fits.ImageHDU(data=spectrum, header=ext.header)
                         self._hduList.append(newHDU)
+                        self._parent_shape = ext.data.shape[1:]
 
             self.data_origin = 'file'
 
@@ -322,6 +332,8 @@ class Spaxel(MarvinToolsClass):
                     mdb.datadb.Spaxel.x == int(self.x),
                     mdb.datadb.Spaxel.y == int(self.y)).one()
 
+            self._parent_shape = self._spaxel_db.cube.shape.shape
+
         except Exception as ee:
             raise MarvinError('Could not retrieve spaxel for plate-ifu {0}. {1}: {2}'
                               .format(self.plateifu, str(ee.__class__.__name__), str(ee)))
@@ -339,7 +351,9 @@ class Spaxel(MarvinToolsClass):
         response = api.Interaction(url)
 
         # Temporarily stores the arrays prior to subclassing from np.array
-        self._arrays = response.getData()
+        data = response.getData()
+        self._parent_shape = data.pop('parent_shape')
+        self._arrays = data
 
         return response
 

@@ -125,7 +125,7 @@ class Cube(MarvinToolsClass):
                 .format(repr(self.plateifu), repr(self.mode),
                         repr(self.data_origin)))
 
-    def getSpaxel(self, x=None, y=None, ra=None, dec=None, xyorig='center'):
+    def getSpaxel(self, x=None, y=None, ra=None, dec=None, xyorig=None):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -143,10 +143,11 @@ class Cube(MarvinToolsClass):
                 coordinates, the size of ``ra`` must much that of ``dec``.
             xyorig ({'center', 'lower'}):
                 The reference point from which ``x`` and ``y`` are measured.
-                Valid values are ``'center'`` (default), for the centre of the
+                Valid values are ``'center'``, for the centre of the
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
-                ``dec`` are defined.
+                ``dec`` are defined. ``xyorig`` defaults to
+                ``marvin.config.xyorig.``
 
         Returns:
             spaxels (list):
@@ -188,7 +189,7 @@ class Cube(MarvinToolsClass):
             raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
         if not xyorig:
-            xyorig = 'center'
+            xyorig = marvin.config.xyorig
 
         if self.data_origin == 'file':
 
@@ -250,6 +251,10 @@ class Cube(MarvinToolsClass):
                     marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
                                                plateifu=self.plateifu,
                                                mode='remote'))
+
+        # Sets the shape of the cube on the spaxels
+        for sp in _spaxels:
+            sp._parent_shape = self.shape
 
         if len(_spaxels) == 1 and isScalar:
             return _spaxels[0]
