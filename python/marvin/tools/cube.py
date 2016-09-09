@@ -398,7 +398,7 @@ class Cube(MarvinToolsClass):
                 self._cube = mdb.session.query(mdb.datadb.Cube).join(mdb.datadb.PipelineInfo,
                                                                      mdb.datadb.PipelineVersion,
                                                                      mdb.datadb.IFUDesign).\
-                    filter(mdb.datadb.PipelineVersion.version == marvin.config.drpver,
+                    filter(mdb.datadb.PipelineVersion.version == self._drpver,
                            mdb.datadb.Cube.plate == plate,
                            mdb.datadb.IFUDesign.name == ifu).one()
             except sqlalchemy.orm.exc.MultipleResultsFound as e:

@@ -13,7 +13,11 @@
 from __future__ import division
 from __future__ import print_function
 import json
+
+import flask
 from flask.ext.classy import route
+
+from marvin.api import parse_params
 from marvin.tools.rss import RSS
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
@@ -25,6 +29,8 @@ def _getRSS(name):
 
     rss = None
     results = {}
+
+    drpver, __ = parse_params(flask.request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -43,7 +49,7 @@ def _getRSS(name):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        rss = RSS(mangaid=mangaid, plateifu=plateifu, mode='local')
+        rss = RSS(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve RSS {0}: {1}'.format(name, str(e))

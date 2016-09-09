@@ -102,6 +102,7 @@ class TestCube(TestCubeBase):
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
+
         # TODO: This tests fails because config.db = None does not disable the
         # local DB, and there is currently no way of doing so.
 
@@ -311,16 +312,10 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_x_y_success(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         expect = -0.10531
         self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
     def test_getSpaxel_remote_ra_dec_success(self):
-
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
 
         expect = 0.62007582
         self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
@@ -395,9 +390,6 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_flux_x_y_lower_array(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         x = [10, 0]
         y = [5, 0]
         expected = [0.017929086, 0.0]
@@ -427,9 +419,6 @@ class TestGetSpaxel(TestCubeBase):
                                    ra=ra, dec=dec, xyorig='lower')
 
     def test_getSpaxel_remote_flux_ra_dec_lower_array(self):
-
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
 
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
