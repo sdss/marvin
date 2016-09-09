@@ -5,6 +5,7 @@ from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
 from collections import OrderedDict
 from brain import bconfig
+from brain.core.core import URLMapDict
 
 # Inits the log
 from brain.core.logger import initLog
@@ -39,6 +40,8 @@ class MarvinConfig(object):
 
         self._drpall = None
         self._inapp = False
+
+        self._urlmap = None
 
         self.drpver = None
         self.dapver = None
@@ -92,6 +95,27 @@ class MarvinConfig(object):
         bconfig.sasurl = value
 
 #################################################
+
+    @property
+    def urlmap(self):
+        """Retrieves the URLMap the first time it is needed."""
+
+        if self._urlmap is None:
+            try:
+                response = Interaction('api/general/getroutemap', request_type='get')
+            except Exception as e:
+                warnings.warn('cannot retrieve URLMap. Remote functionality will not work.',
+                              MarvinUserWarning)
+                self._urlmap = URLMapDict()
+            else:
+                self._urlmap = response.getRouteMap()
+
+        return self._urlmap
+
+    @urlmap.setter
+    def urlmap(self, value):
+        """Manually sets the URLMap."""
+        self._urlmap = value
 
     @property
     def drpall(self):
@@ -274,13 +298,3 @@ from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
-
-
-from brain.core.core import URLMapDict
-
-try:
-    response = Interaction('api/general/getroutemap', request_type='get')
-except Exception as e:
-    config.urlmap = URLMapDict()
-else:
-    config.urlmap = response.getRouteMap()

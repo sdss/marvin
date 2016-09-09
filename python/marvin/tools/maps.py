@@ -214,33 +214,29 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         # Runs the query if we are selecting a default map.
         if self.bintype is None and self.niter is None:
-            db_maps_file = version_query.join(
-                mdb.datadb.Cube,
-                mdb.datadb.IFUDesign,
-                mdb.dapdb.CurrentDefault).filter(
-                    mdb.datadb.Cube.plate == plate,
-                    mdb.datadb.IFUDesign.name == str(ifu)).all()
+            # TODO: for now I am hardcoding  the values for MPL-4. This will
+            # need to change when we implement MPL-5 (JSG).
+            self.niter = '013'
+            self.bintype = 'NONE'
 
-        # Otherwise
-        else:
-            # Splits niter into its parts.
-            niter_str = str('{0:>03}'.format(self.niter))
-            __, template_kin_id, execution_plan_id = [ii for ii in niter_str]
+        # Splits niter into its parts.
+        niter_str = str('{0:>03}'.format(self.niter))
+        __, template_kin_id, execution_plan_id = [ii for ii in niter_str]
 
-            db_maps_file = version_query.join(
-                mdb.datadb.Cube,
-                mdb.datadb.IFUDesign).filter(
-                    mdb.datadb.Cube.plate == plate,
-                    mdb.datadb.IFUDesign.name == str(ifu)).from_self().join(
-                        mdb.dapdb.Structure,
-                        mdb.dapdb.BinType,
-                        mdb.dapdb.ExecutionPlan).join(
-                            mdb.dapdb.Template,
-                            mdb.dapdb.Structure.template_kin_pk == mdb.dapdb.Template.pk).filter(
-                                sqlalchemy.func.upper(mdb.dapdb.BinType.name) ==
-                                sqlalchemy.func.upper(self.bintype),
-                                mdb.dapdb.ExecutionPlan.id == execution_plan_id,
-                                mdb.dapdb.Template.id == template_kin_id).all()
+        db_maps_file = version_query.join(
+            mdb.datadb.Cube,
+            mdb.datadb.IFUDesign).filter(
+                mdb.datadb.Cube.plate == plate,
+                mdb.datadb.IFUDesign.name == str(ifu)).from_self().join(
+                    mdb.dapdb.Structure,
+                    mdb.dapdb.BinType,
+                    mdb.dapdb.ExecutionPlan).join(
+                        mdb.dapdb.Template,
+                        mdb.dapdb.Structure.template_kin_pk == mdb.dapdb.Template.pk).filter(
+                            sqlalchemy.func.upper(mdb.dapdb.BinType.name) ==
+                            sqlalchemy.func.upper(self.bintype),
+                            mdb.dapdb.ExecutionPlan.id == execution_plan_id,
+                            mdb.dapdb.Template.id == template_kin_id).all()
 
         if len(db_maps_file) > 1:
             raise marvin.core.exceptions.MarvinError(
