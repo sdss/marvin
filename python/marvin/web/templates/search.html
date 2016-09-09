@@ -98,7 +98,7 @@
         m.search.initTypeahead('#searchform .typeahead', '#searchform');
         // Load Search Results if any
         var res = {{results|tojson}};
-        var url = Flask.url_for('api.webtable')
+        var url = Flask.url_for('search_page.webtable')
         if (res) {
             m.table.initTable(url, res);
         };
