@@ -98,7 +98,7 @@ class Map(object):
                 'invalid category {0}'.format(self.category))
 
         self.header = self.parent_maps.data[self.category].header
-        self.unit = self.header['BUNIT']
+        self.unit = self.header['BUNIT'] if 'BUNIT' in self.header else None
 
         # Gets the channels and creates the names.
         channel_keys = [key for key in self.header.keys() if re.match('C[0-9]+', key)]
@@ -130,19 +130,16 @@ class Map(object):
 
         assert sqlalchemy, 'sqlalchemy is required.'
 
+        mdb = marvin.marvindb
+
         dap_db_file = self.parent_maps.data
 
-        assert self.category in ['EMLINE_GFLUX', 'EMLINE_GVEL', 'EMLINE_GSIGMA',
-                                 'EMLINE_EW', 'EMLINE_SFLUX', 'STELLAR_VEL',
-                                 'STELLAR_SIGMA'], 'invalid category {0}'.format(self.category)
-
+        # Depending on the type of category we'll need to run a different query.
         if 'EMLINE' in self.category:
             assert self.channel is not None, 'channel required for {0}'.format(self.category)
-
+            subcategory = self.category.split('_')[1]
             emline_name, emline_wavelength = self.channel.split('-')
-            emline_parameter_name = self.category.split('_')[1]
 
-            mdb = marvin.marvindb
             emline = mdb.session.query(mdb.dapdb.EmLine).join(
                 mdb.dapdb.File,
                 mdb.dapdb.EmLineType,
@@ -150,7 +147,7 @@ class Map(object):
                     mdb.dapdb.File.pk == dap_db_file.pk,
                     sqlalchemy.func.upper(mdb.dapdb.EmLineType.name) == emline_name,
                     mdb.dapdb.EmLineType.rest_wavelength == float(emline_wavelength),
-                    mdb.dapdb.EmLineParameter.name == emline_parameter_name).first()
+                    mdb.dapdb.EmLineParameter.name == subcategory).first()
 
             if emline is None:
                 raise marvin.core.exceptions.MarvinError('no results found')
@@ -160,10 +157,44 @@ class Map(object):
             self.mask = numpy.array(emline.mask)
             self.unit = emline.parameter.unit
 
-        else:
+        elif 'STELLAR' in self.category:
+            subcategory = self.category.split('_')[1]
+            assert subcategory in ['VEL', 'SIGMA']
 
-            marvin.core.exceptions.MarvinNotImplemented(
-                'category {0} from DB not yet implemented'.format(self.category))
+            stellar = mdb.session.query(mdb.dapdb.StellarKin).join(
+                mdb.dapdb.File, mdb.dapdb.StellarKinParameter).filter(
+                    mdb.dapdb.File.pk == dap_db_file.pk,
+                    mdb.dapdb.StellarKinParameter.name == subcategory).first()
+
+            if stellar is None:
+                raise marvin.core.exceptions.MarvinError('no results found')
+
+            self.value = numpy.array(stellar.value)
+            self.ivar = numpy.array(stellar.ivar)
+            self.mask = numpy.array(stellar.mask)
+            self.unit = stellar.parameter.unit
+
+        elif 'SPECINDEX' in self.category:
+            assert self.channel is not None, 'channel required for {0}'.format(self.category)
+
+            specindex = mdb.session.query(mdb.dapdb.SpecIndex).join(
+                mdb.dapdb.File,
+                mdb.dapdb.SpecIndexType).filter(
+                    mdb.dapdb.File.pk == dap_db_file.pk,
+                    sqlalchemy.func.upper(mdb.dapdb.SpecIndexType.name) == self.channel).first()
+
+            if specindex is None:
+                raise marvin.core.exceptions.MarvinError('no results found')
+
+            self.value = numpy.array(specindex.value)
+            self.ivar = numpy.array(specindex.ivar)
+            self.mask = numpy.array(specindex.mask)
+            self.unit = None
+
+        else:
+            marvin.core.exceptions.MarvinError(
+                'category {0} is not valid or I do not know how to parse it.'
+                .format(self.category))
 
         return
 
