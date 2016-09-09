@@ -179,6 +179,9 @@ def create_app(debug=False):
     app.register_blueprint(jinjablue)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
-    flask_profiler.init_app(app)
+    try:
+        flask_profiler.init_app(app)
+    except Exception as e:
+        pass
 
     return app
