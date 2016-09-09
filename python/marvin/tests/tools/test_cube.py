@@ -32,6 +32,7 @@ class TestCubeBase(MarvinTest):
         cls.init_mode = config.mode
         cls.init_sasurl = config.sasurl
         cls.init_urlmap = config.urlmap
+        cls.init_xyorig = config.xyorig
 
         cls.session = marvindb.session
 
@@ -46,6 +47,7 @@ class TestCubeBase(MarvinTest):
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
+        config.xyorig = self.init_xyorig
 
         config.setMPL('MPL-4')
 
@@ -436,6 +438,19 @@ class TestGetSpaxel(TestCubeBase):
         cube = Cube(mangaid=self.mangaid, mode='remote')
         self._test_getSpaxel_array(cube, 2, 3000, expected,
                                    ra=ra, dec=dec, xyorig='lower')
+
+    def test_getSpaxel_global_xyorig_center(self):
+        config.xyorig = 'center'
+        expect = -0.10531
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpaxel(cube, 10, expect, x=10, y=5)
+
+    def test_getSpaxel_global_xyorig_lower(self):
+        config.xyorig = 'lower'
+        expect = 0.017929086
+        cube = Cube(mangaid=self.mangaid)
+        self._test_getSpaxel(cube, 3000, expect, x=10, y=5)
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.

@@ -42,6 +42,7 @@ class MarvinConfig(object):
         self._inapp = False
 
         self._urlmap = None
+        self._xyorig = None
 
         self.drpver = None
         self.dapver = None
@@ -116,6 +117,20 @@ class MarvinConfig(object):
     def urlmap(self, value):
         """Manually sets the URLMap."""
         self._urlmap = value
+
+    @property
+    def xyorig(self):
+        if not self._xyorig:
+            self._xyorig = 'center'
+
+        return self._xyorig
+
+    @xyorig.setter
+    def xyorig(self, value):
+
+        assert value.lower() in ['center', 'lower'], 'xyorig must be center or lower.'
+
+        self._xyorig = value.lower()
 
     @property
     def drpall(self):
