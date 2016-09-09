@@ -107,6 +107,7 @@ def maps_db2dict_of_props(maps_db_file, x, y):
         dict_of_props[parameter]['unit'] = unit
 
     # Idem with the spectral indices
+    dict_of_props['SPECINDEX'] = {}
     for specindex in maps_db_file.specindices:
         value = specindex.value[y][x]
         ivar = specindex.ivar[y][x] if specindex.ivar else 0
@@ -114,7 +115,6 @@ def maps_db2dict_of_props(maps_db_file, x, y):
         unit = specindex.type.unit
         channel_name = specindex.type.name
 
-        dict_of_props['SPECINDEX'] = {}
         dict_of_props['SPECINDEX'][channel_name] = {'value': value,
                                                     'ivar': ivar,
                                                     'mask': mask}
