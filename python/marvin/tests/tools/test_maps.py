@@ -17,6 +17,7 @@ import astropy.io.fits
 
 import marvin
 import marvin.tests
+import marvin.tools.map
 import marvin.tools.maps
 import marvin.tools.spaxel
 
@@ -234,6 +235,24 @@ class TestMapsAPI(TestMapsBase):
         self.assertEqual(spaxel.data_origin, 'api')
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+
+class TestGetMap(TestMapsBase):
+
+    def test_getmap_from_db(self):
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
+        self.assertEqual(maps.data_origin, 'db')
+        self.assertIsInstance(maps.getMap('specindex', channel='fe5406'), marvin.tools.map.Map)
+
+    def test_getmap_from_file(self):
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self.assertEqual(maps.data_origin, 'file')
+        self.assertIsInstance(maps.getMap('specindex', channel='fe5406'), marvin.tools.map.Map)
+
+    def test_getmap_from_api(self):
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(maps.data_origin, 'api')
+        self.assertIsInstance(maps.getMap('specindex', channel='fe5406'), marvin.tools.map.Map)
 
 
 if __name__ == '__main__':
