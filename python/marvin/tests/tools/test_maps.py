@@ -50,6 +50,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
     def setUp(self):
 
         marvin.marvindb.session = self.marvindb_session
+        marvin.config.setMPL('MPL-4')
         self.assertTrue(os.path.exists(self.filename_default))
 
     def tearDown(self):
@@ -95,10 +96,10 @@ class TestMapsFile(TestMapsBase):
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
-        self.assertAlmostEqual(spaxel.dap['stellar_vel'].ivar, 1.013657e-05)
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
     def test_get_spaxel_with_drp(self):
 
@@ -107,8 +108,8 @@ class TestMapsFile(TestMapsBase):
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNotNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
     def test_get_spaxel_with_drp_no_db(self):
         """Tests getting an spaxel if there is no DB."""
@@ -120,8 +121,8 @@ class TestMapsFile(TestMapsBase):
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNotNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
 
 class TestMapsDB(TestMapsBase):
@@ -161,10 +162,10 @@ class TestMapsDB(TestMapsBase):
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
-        self.assertAlmostEqual(spaxel.dap['stellar_vel'].ivar, 1.013657e-05)
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
     def test_get_spaxel_with_drp(self):
 
@@ -173,11 +174,14 @@ class TestMapsDB(TestMapsBase):
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNotNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
 
 class TestMapsAPI(TestMapsBase):
+
+    # TODO: API tests don't work if the default MPL is not MPL-4 as right
+    # now it's not possible to change teh MPL used by the remote server.
 
     def test_load_default_from_api(self):
 
@@ -215,10 +219,10 @@ class TestMapsAPI(TestMapsBase):
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertEqual(spaxel.data_origin, 'api')
-        self.assertIsNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
-        self.assertAlmostEqual(spaxel.dap['stellar_vel'].ivar, 1.013657e-05)
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
     def test_get_spaxel_with_drp(self):
 
@@ -228,8 +232,8 @@ class TestMapsAPI(TestMapsBase):
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertEqual(spaxel.data_origin, 'api')
-        self.assertIsNotNone(spaxel.drp)
-        self.assertTrue(len(spaxel.dap.keys()) > 0)
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
 
 
 if __name__ == '__main__':

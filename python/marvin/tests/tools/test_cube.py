@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import copy
 import unittest
 from marvin.tools.cube import Cube
 from marvin.core import MarvinError
@@ -18,6 +17,7 @@ class TestCubeBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
+        cls.mpl = 'MPL-4'
         cls.outver = 'v1_5_1'
         cls.filename = os.path.join(
             os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
@@ -29,7 +29,6 @@ class TestCubeBase(MarvinTest):
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
 
-        cls.initconfig = copy.deepcopy(config)
         cls.init_mode = config.mode
         cls.init_sasurl = config.sasurl
         cls.init_urlmap = config.urlmap
@@ -43,14 +42,12 @@ class TestCubeBase(MarvinTest):
         pass
 
     def setUp(self):
-        # reset config variables
-        cvars = ['drpver', 'dapver', 'db']
-        for var in cvars:
-            config.__setattr__(var, self.initconfig.__getattribute__(var))
-        config.drpver = self.outver
+
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
+
+        config.setMPL('MPL-4')
 
     def tearDown(self):
         if self.session:
@@ -58,6 +55,9 @@ class TestCubeBase(MarvinTest):
 
 
 class TestCube(TestCubeBase):
+
+    def test_mpl_version(self):
+        self.assertEqual(config.drpver, self.outver)
 
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
@@ -94,7 +94,7 @@ class TestCube(TestCubeBase):
     @skipIfNoDB
     def test_cube_load_from_local_database_nodrpver(self):
         config.drpver = None
-        params = {'mangaid': self.mangaid}
+        params = {'mangaid': self.mangaid, 'mode': 'local'}
         errMsg = 'drpver not set in config'
         self._load_from_db_fail(params, errMsg)
 
@@ -104,41 +104,41 @@ class TestCube(TestCubeBase):
         # local DB, and there is currently no way of doing so.
 
         config.db = None
-        params = {'mangaid': self.mangaid}
+        params = {'mangaid': self.mangaid, 'mode': 'local'}
         errMsg = 'No db connected'
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_noresultsfound(self):
-        params = {'plateifu': '8485-0923'}
+        params = {'plateifu': '8485-0923', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
             params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_otherexception(self):
-        params = {'plateifu': '84.85-1901'}
+        params = {'plateifu': '84.85-1901', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
             params['plateifu'])
         self._load_from_db_fail(params, errMsg)
 
-    @skipIfNoDB
-    def test_cube_load_from_local_database_multipleresultsfound(self):
-        params = {'plateifu': self.plateifu}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(
-            params['plateifu'])
-        newrow = {'plate': '8485', 'mangaid': self.mangaid,
-                  'ifudesign_pk': 12, 'pipeline_info_pk': 21}
-        self._addToDB(marvindb.datadb.Cube, newrow)
-        self._load_from_db_fail(params, errMsg)
-
-    def _addToDB(self, table, colvaldict):
-        self.session.begin()
-        param = table()
-        for column, value in colvaldict.iteritems():
-            param.__setattr__(column, value)
-        self.session.add(param)
-        self.session.flush()
+    # @skipIfNoDB
+    # def test_cube_load_from_local_database_multipleresultsfound(self):
+    #     params = {'plateifu': self.plateifu, 'mode': 'local'}
+    #     errMsg = 'Could not retrieve cube for plate-ifu {0}: Multiple Results Found'.format(
+    #         params['plateifu'])
+    #     newrow = {'plate': '8485', 'mangaid': self.mangaid,
+    #               'ifudesign_pk': 12, 'pipeline_info_pk': 21}
+    #     self._addToDB(marvindb.datadb.Cube, newrow)
+    #     self._load_from_db_fail(params, errMsg)
+    #
+    # def _addToDB(self, table, colvaldict):
+    #     self.session.begin()
+    #     param = table()
+    #     for column, value in colvaldict.iteritems():
+    #         param.__setattr__(column, value)
+    #     self.session.add(param)
+    #     self.session.flush()
 
     def test_cube_flux_from_local_database(self):
 
@@ -158,7 +158,7 @@ class TestGetSpaxel(TestCubeBase):
         """Convenience method to test getSpaxel."""
 
         ext = kwargs.pop('ext', 'flux')
-        spectrum = cube.getSpaxel(**kwargs)
+        spectrum = cube.getSpaxel(**kwargs).spectrum
         self.assertAlmostEqual(spectrum[ext][idx], expect, places=5)
 
     def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, **kwargs):
@@ -309,10 +309,16 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_x_y_success(self):
 
-        expect = -0.10531016
+        # TODO: this test fails if the default MPL is not MPL-4 because the
+        # remote server does not know about setMPL.
+
+        expect = -0.10531
         self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
     def test_getSpaxel_remote_ra_dec_success(self):
+
+        # TODO: this test fails if the default MPL is not MPL-4 because the
+        # remote server does not know about setMPL.
 
         expect = 0.62007582
         self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
@@ -346,7 +352,7 @@ class TestGetSpaxel(TestCubeBase):
         with self.assertRaises(MarvinError) as cm:
             Cube(mangaid=self.mangaid, mode='remote')
 
-        self.assertIn('Connection aborted.', str(cm.exception))
+        self.assertIn('Failed to establish a new connection', str(cm.exception))
 
     def test_getSpaxel_remote_fail_badpixcoords(self):
 
@@ -361,7 +367,7 @@ class TestGetSpaxel(TestCubeBase):
         spaxels = cube.getSpaxel(**kwargs)
 
         self.assertEqual(len(spaxels), nCoords)
-        fluxes = np.array([spaxel.flux for spaxel in spaxels])
+        fluxes = np.array([spaxel.spectrum.flux for spaxel in spaxels])
 
         assert_allclose(fluxes[:, specIndex], expected, rtol=1e-6)
 
@@ -386,6 +392,9 @@ class TestGetSpaxel(TestCubeBase):
                                    x=x, y=y, xyorig='lower')
 
     def test_getSpaxel_remote_flux_x_y_lower_array(self):
+
+        # TODO: this test fails if the default MPL is not MPL-4 because the
+        # remote server does not know about setMPL.
 
         x = [10, 0]
         y = [5, 0]
@@ -416,6 +425,9 @@ class TestGetSpaxel(TestCubeBase):
                                    ra=ra, dec=dec, xyorig='lower')
 
     def test_getSpaxel_remote_flux_ra_dec_lower_array(self):
+
+        # TODO: this test fails if the default MPL is not MPL-4 because the
+        # remote server does not know about setMPL.
 
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
