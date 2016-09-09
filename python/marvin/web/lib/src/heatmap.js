@@ -88,8 +88,11 @@ class HeatMap {
     }
     
     addNull(x) {
-        x.map(function(el){if (el < 0.01) return null});
-        return x;
+        var x_nulls = x.map(function(el){
+            if (el[2] < 0.01) {el[2] = null};
+            return el;
+        });
+        return x_nulls;
     }
     
     colorNoData(H) {
@@ -123,6 +126,7 @@ class HeatMap {
         //console.log('AFTER data', data.length, data[0].length, data[0][0]);
 
         var data = this.addNull(this.data);
+        console.log('AFTER data', data);
 
         this.mapdiv.highcharts({
             chart: {
@@ -161,7 +165,9 @@ class HeatMap {
                 reversed: false
             },
             plotOptions: {
-                nullColor: '#FF00FF'
+                heatmap:{
+                    nullColor: '#FF00FF'
+                }
             },
             // colors: spaxColors,
             legend: {

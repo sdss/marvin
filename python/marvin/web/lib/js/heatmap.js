@@ -123,10 +123,13 @@ var HeatMap = function () {
     }, {
         key: 'addNull',
         value: function addNull(x) {
-            x.map(function (el) {
-                if (el < 0.01) return null;
+            var x_nulls = x.map(function (el) {
+                if (el[2] < 0.01) {
+                    el[2] = null;
+                };
+                return el;
             });
-            return x;
+            return x_nulls;
         }
     }, {
         key: 'colorNoData',
@@ -173,6 +176,7 @@ var HeatMap = function () {
             zmin = _getMinMax4[0];
             zmax = _getMinMax4[1];
             var data = this.addNull(this.data);
+            console.log('AFTER data', data);
 
             this.mapdiv.highcharts({
                 chart: {
@@ -211,7 +215,9 @@ var HeatMap = function () {
                     reversed: false
                 },
                 plotOptions: {
-                    nullColor: '#FF00FF'
+                    heatmap: {
+                        nullColor: '#FF00FF'
+                    }
                 },
                 // colors: spaxColors,
                 legend: {
