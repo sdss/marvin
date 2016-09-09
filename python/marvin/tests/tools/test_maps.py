@@ -179,6 +179,9 @@ class TestMapsDB(TestMapsBase):
 
 class TestMapsAPI(TestMapsBase):
 
+    # TODO: API tests don't work if the default MPL is not MPL-4 as right
+    # now it's not possible to change teh MPL used by the remote server.
+
     def test_load_default_from_api(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
