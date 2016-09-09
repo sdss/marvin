@@ -72,6 +72,7 @@ class SpaxelView(BaseView):
             self.results['data'] = {'flux': spaxel.spectrum.flux.tolist(),
                                     'ivar': spaxel.spectrum.ivar.tolist(),
                                     'mask': spaxel.spectrum.mask.tolist(),
-                                    'wavelength': spaxel.spectrum.wavelength.tolist()}
+                                    'wavelength': spaxel.spectrum.wavelength.tolist(),
+                                    'parent_shape': spaxel._parent_shape}
 
         return json.dumps(self.results)

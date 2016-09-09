@@ -252,6 +252,10 @@ class Cube(MarvinToolsClass):
                                                plateifu=self.plateifu,
                                                mode='remote'))
 
+        # Sets the shape of the cube on the spaxels
+        for sp in _spaxels:
+            sp._parent_shape = self.shape
+
         if len(_spaxels) == 1 and isScalar:
             return _spaxels[0]
         else:
