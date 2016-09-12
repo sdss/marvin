@@ -106,7 +106,6 @@ class TestSpaxelParent(TestSpaxelBase):
         self._test_from_cube_or_map(maps)
 
     def test_parent_spaxel_from_maps_remote(self):
-        # TODO: fails because we cannot set the MPL of the remote server.
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self.assertEqual(maps.data_origin, 'api')
         self._test_from_cube_or_map(maps)
