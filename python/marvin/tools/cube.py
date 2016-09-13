@@ -136,7 +136,7 @@ class Cube(MarvinToolsClass):
                 .format(repr(self.plateifu), repr(self.mode),
                         repr(self.data_origin)))
 
-    def getSpaxel(self, x=None, y=None, ra=None, dec=None, xyorig=None):
+    def getSpaxel(self, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -173,109 +173,10 @@ class Cube(MarvinToolsClass):
         # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
         # an array of coordinates) and a mode keyword.
 
-        # TODO: adapt to use marvin.general.general.getSpaxel.
+        kwargs['cube_object'] = self
+        kwargs['maps_object'] = None
 
-        # Checks that we have the correct set of inputs.
-        if x is not None or y is not None:
-            assert ra is None and dec is None, 'Either use (x, y) or (ra, dec)'
-            assert x is not None and y is not None, 'Specify both x and y'
-
-            inputMode = 'pix'
-            isScalar = np.isscalar(x)
-            x = np.atleast_1d(x)
-            y = np.atleast_1d(y)
-            coords = np.array([x, y], np.float).T
-
-        elif ra is not None or dec is not None:
-            assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
-            assert ra is not None and dec is not None, 'Specify both ra and dec'
-
-            inputMode = 'sky'
-            isScalar = np.isscalar(ra)
-            ra = np.atleast_1d(ra)
-            dec = np.atleast_1d(dec)
-            coords = np.array([ra, dec], np.float).T
-
-        else:
-            raise ValueError('You need to specify either (x, y) or (ra, dec)')
-
-        if not xyorig:
-            xyorig = marvin.config.xyorig
-
-        if self.data_origin == 'file':
-
-            # Uses the flux extension to get the WCS
-            cubeExt = self._hdu['FLUX']
-            cubeShape = cubeExt.data.shape[1:]
-
-            ww = WCS(cubeExt.header) if inputMode == 'sky' else None
-
-            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
-                                             xyorig=xyorig).T)
-
-            _spaxels = []
-            for ii in range(len(iCube[0])):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel._initFromData(
-                        self.plateifu, jCube[0][ii], iCube[0][ii], cube=self))
-
-        elif self.data_origin == 'db':
-
-            size = int(np.sqrt(len(self._cube.spaxels)))
-            cubeShape = (size, size)
-
-            if inputMode == 'sky':
-                cubehdr = self._cube.wcs.makeHeader()
-                ww = WCS(cubehdr)
-            else:
-                ww = None
-
-            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
-                                             xyorig=xyorig).T)
-
-            _spaxels = []
-            for ii in range(len(iCube[0])):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
-                                               plateifu=self.plateifu,
-                                               drpver=self._drpver))
-
-        elif self.data_origin == 'api':
-
-            # TODO: we are doing two interactions for what probably can be
-            # accomplished with one.
-
-            path = '{0}={1}/{2}={3}/xyorig={4}'.format(
-                'x' if inputMode == 'pix' else 'ra', coords[:, 0].tolist(),
-                'y' if inputMode == 'pix' else 'dec', coords[:, 1].tolist(), xyorig)
-
-            routeparams = {'name': self.plateifu, 'path': path}
-
-            # Get the getSpaxel route
-            url = marvin.config.urlmap['api']['getspaxels']['url'].format(**routeparams)
-
-            response = Interaction(url, params={'drpver': self._drpver})
-            data = response.getData()
-
-            xx = data['x']
-            yy = data['y']
-
-            _spaxels = []
-            for ii in range(len(xx)):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
-                                               plateifu=self.plateifu,
-                                               mode='remote',
-                                               drpver=self._drpver))
-
-        # Sets the shape of the cube on the spaxels
-        for sp in _spaxels:
-            sp._parent_shape = self.shape
-
-        if len(_spaxels) == 1 and isScalar:
-            return _spaxels[0]
-        else:
-            return _spaxels
+        return marvin.utils.general.general.getSpaxel(**kwargs)
 
     def _openFile(self):
         """Initialises a cube from a file."""

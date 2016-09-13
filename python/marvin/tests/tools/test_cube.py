@@ -337,7 +337,7 @@ class TestGetSpaxel(TestCubeBase):
         expect = 0.62007582
         self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
 
-    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2, excType=MarvinError):
+    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2=None, excType=MarvinError):
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
 
@@ -345,7 +345,8 @@ class TestGetSpaxel(TestCubeBase):
             cube.getSpaxel(ra=ra, dec=dec)
 
         self.assertIn(errMsg1, str(cm.exception))
-        self.assertIn(errMsg2, str(cm.exception))
+        if errMsg2:
+            self.assertIn(errMsg2, str(cm.exception))
 
     def test_getSpaxel_remote_fail_nourlmap(self):
 
@@ -371,9 +372,7 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_remote_fail_badpixcoords(self):
 
         self.assertIsNotNone(config.urlmap)
-        self._getSpaxel_remote_fail(232, 48, 'Something went wrong with the interaction',
-                                    'some indices are out of limits.',
-                                    excType=BrainError)
+        self._getSpaxel_remote_fail(232, 48, 'some indices are out of limits.')
 
     def _test_getSpaxel_array(self, cube, nCoords, specIndex, expected, **kwargs):
         """Tests getSpaxel with array coordinates."""
