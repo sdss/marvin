@@ -1,16 +1,26 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+#
+# cube.py
+
+
+from __future__ import division
 from __future__ import print_function
-import numpy as np
+from __future__ import absolute_import
+
 from astropy.io import fits
 from astropy.wcs import WCS
+import numpy as np
+
 import marvin
+import marvin.core.exceptions
+import marvin.tools.spaxel
+import marvin.tools.maps
+import marvin.utils.general.general
+
+from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import convertCoords
-import marvin.tools.spaxel
-from marvin.api.api import Interaction
-import marvin.tools.maps
-
-import marvin.core.exceptions
 
 try:
     import photutils.aperture_funcs
