@@ -85,12 +85,14 @@ class Cube(MarvinToolsClass):
         # Can use Maps or Spaxel as an example. For now I'm adding more
         # clutter to avoid breaking things (JSG).
 
-        self.filename = None
         self._hdu = None
         self._cube = None
+        self._shape = None
+
+        self.filename = None
+        self.wcs = None
         self.data = None
         self.wavelength = None
-        self._shape = None
 
         skip_check = kwargs.get('skip_check', False)
 
@@ -101,21 +103,20 @@ class Cube(MarvinToolsClass):
                 self._openFile()
             except IOError as e:
                 raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            wcs_table = WCS(self.hdr)
             self.plateifu = self.hdr['PLATEIFU'].strip()
-            self.wcs = wcs_table.to_header()
             self.redshift = None
+
         elif self.data_origin == 'db':
             try:
                 self._getCubeFromDB()
             except RuntimeError as e:
                 raise MarvinError('Could not initialize via db: {0}'.format(e))
-            self.wcs = self._cube.wcs.makeHeader()
             nsaobjs = self._cube.target.NSA_objects if self._cube.target else None
             if nsaobjs:
                 self.redshift = None if len(nsaobjs) > 1 else nsaobjs[0].z
             else:
                 self.redshift = None
+
         elif self.data_origin == 'api':
             if not skip_check:
                 self._openCubeRemote()
@@ -287,6 +288,7 @@ class Cube(MarvinToolsClass):
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.hdr = self._hdu[1].header
+        self.wcs = WCS(self.hdr)
         self.wavelength = self._hdu['WAVE'].data
 
     def _openCubeRemote(self):
@@ -302,10 +304,11 @@ class Cube(MarvinToolsClass):
 
         data = response.getData()
 
-        self.hdr = data['header']
+        self.hdr = fits.Header.fromstring(data['header'])
         self.redshift = float(data['redshift'])
         self._shape = data['shape']
         self.wavelength = data['wavelength']
+        self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -428,7 +431,11 @@ class Cube(MarvinToolsClass):
 
             if self._cube:
                 self._useDB = True
-                self.hdr = self._cube.header
+
+                # TODO: this is ugly at so many levels ...
+                self.hdr = fits.Header(eval(self._cube.hdr[0].header).items())
+
+                self.wcs = WCS(self._cube.wcs.makeHeader())
                 self.data = self._cube
                 self.wavelength = self.data.wavelength.wavelength
             else:
