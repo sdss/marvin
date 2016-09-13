@@ -13,7 +13,11 @@
 from __future__ import division
 from __future__ import print_function
 import json
+
 from flask.ext.classy import route
+from flask import request
+
+from marvin.api import parse_params
 from marvin.tools.spaxel import Spaxel
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
@@ -26,6 +30,8 @@ def _getSpaxel(name, x, y):
 
     spaxel = None
     results = {}
+
+    drpver, __ = parse_params(request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -44,7 +50,7 @@ def _getSpaxel(name, x, y):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu, mode='local')
+        spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve Spaxels {0}: {1}'.format(name, str(e))

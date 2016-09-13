@@ -11,10 +11,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import flask.ext.classy
+from flask import request
+
 import json
 
 import brain.utils.general
 import marvin.api.base
+from marvin.api import parse_params
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.general
@@ -24,9 +27,11 @@ def _getMaps(name, **kwargs):
     """Returns a Maps object after parsing the name."""
 
     results = {}
-    print(kwargs)
+
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
+
+    drpver, dapver = parse_params(request)
 
     # Parses name into either mangaid or plateifu
     try:
@@ -47,7 +52,7 @@ def _getMaps(name, **kwargs):
                 'invalid plateifu or mangaid: {0}'.format(idtype))
 
         maps = marvin.tools.maps.Maps(mangaid=mangaid, plateifu=plateifu,
-                                      mode='local', **kwargs)
+                                      mode='local', drpver=drpver, dapver=dapver, **kwargs)
         results['status'] = 1
     except Exception as ee:
         maps = None
@@ -153,7 +158,7 @@ class MapsView(marvin.api.base.BaseView):
             channel (str or None):
                 If the ``category`` contains multiple channels, the channel to use,
                 e.g., ``Ha-6564'. Otherwise, ``None``.
-        
+
         e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/map/category=EMLINE_GFLUX/channel=Ha-6564/
 
         """

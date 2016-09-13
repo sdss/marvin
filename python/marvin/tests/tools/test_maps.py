@@ -181,9 +181,6 @@ class TestMapsDB(TestMapsBase):
 
 class TestMapsAPI(TestMapsBase):
 
-    # TODO: API tests don't work if the default MPL is not MPL-4 as right
-    # now it's not possible to change teh MPL used by the remote server.
-
     def test_load_default_from_api(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
@@ -235,6 +232,20 @@ class TestMapsAPI(TestMapsBase):
         self.assertEqual(spaxel.data_origin, 'api')
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+    def test_get_spaxel_drp_differ_from_global(self):
+
+        marvin.config.setMPL('MPL-5')
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
+                                      drpver='v1_5_1', dapver='1.1.1')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
+        self.assertIsNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
 
 class TestGetMap(TestMapsBase):

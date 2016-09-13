@@ -1,11 +1,17 @@
 import json
+
 from flask.ext.classy import route
 from flask import Blueprint, redirect, url_for
-from marvin.tools.cube import Cube
+from flask import request
+
+from marvin.api import parse_params
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
+from marvin.tools.cube import Cube
+
 from brain.utils.general import parseRoutePath
+
 ''' stuff that runs server-side '''
 
 # api = Blueprint("api", __name__)
@@ -13,6 +19,9 @@ from brain.utils.general import parseRoutePath
 
 def _getCube(name):
     ''' Retrieve a cube using marvin tools '''
+
+    # Gets the drpver from the request
+    drpver, __ = parse_params(request)
 
     cube = None
     results = {}
@@ -34,7 +43,7 @@ def _getCube(name):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local')
+        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
@@ -60,10 +69,12 @@ class CubeView(BaseView):
         if cube:
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
-                                    'header': json.loads(cube._cube.hdr[0].header),
+                                    'header': cube.header.tostring(),
                                     'redshift': cube._cube.target.NSA_objects[0].z,
                                     'shape': cube.shape,
-                                    'wavelength': cube.wavelength}
+                                    'wavelength': cube.wavelength,
+                                    'wcs_header': cube._cube.wcs.makeHeader().tostring()}
+
         return json.dumps(self.results)
 
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')

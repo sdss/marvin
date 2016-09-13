@@ -2,15 +2,20 @@
 
 import os
 import unittest
-from marvin.tools.cube import Cube
-from marvin.core import MarvinError
-from marvin import config, marvindb
-from marvin.tests import MarvinTest, skipIfNoDB
-from numpy.testing import assert_allclose
+
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
+
+from marvin import config, marvindb
+from marvin.tools.cube import Cube
+from marvin.core import MarvinError
+from marvin.tests import MarvinTest, skipIfNoDB
+
 import numpy as np
+from numpy.testing import assert_allclose
+
 from astropy.io import fits
+from astropy import wcs
 
 
 class TestCubeBase(MarvinTest):
@@ -102,6 +107,7 @@ class TestCube(TestCubeBase):
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
+
         # TODO: This tests fails because config.db = None does not disable the
         # local DB, and there is currently no way of doing so.
 
@@ -151,6 +157,18 @@ class TestCube(TestCubeBase):
         cubeFlux = fits.getdata(self.filename)
 
         self.assertTrue(np.allclose(flux, cubeFlux))
+
+    def test_cube_remote_drpver_differ_from_global(self):
+
+        # This tests requires having the cube for 8485-1901 loaded for both
+        # MPL-4 and MPL-5.
+
+        config.setMPL('MPL-5')
+        self.assertEqual(config.drpver, 'v2_0_1')
+
+        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        self.assertEqual(cube._drpver, 'v1_5_1')
+        self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
 
 
 class TestGetSpaxel(TestCubeBase):
@@ -311,21 +329,15 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_x_y_success(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         expect = -0.10531
         self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
     def test_getSpaxel_remote_ra_dec_success(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         expect = 0.62007582
         self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
 
-    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2, excType=MarvinError):
+    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2=None, excType=MarvinError):
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
 
@@ -333,7 +345,8 @@ class TestGetSpaxel(TestCubeBase):
             cube.getSpaxel(ra=ra, dec=dec)
 
         self.assertIn(errMsg1, str(cm.exception))
-        self.assertIn(errMsg2, str(cm.exception))
+        if errMsg2:
+            self.assertIn(errMsg2, str(cm.exception))
 
     def test_getSpaxel_remote_fail_nourlmap(self):
 
@@ -359,9 +372,7 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_remote_fail_badpixcoords(self):
 
         self.assertIsNotNone(config.urlmap)
-        self._getSpaxel_remote_fail(232, 48, 'Something went wrong with the interaction',
-                                    'some indices are out of limits.',
-                                    excType=BrainError)
+        self._getSpaxel_remote_fail(232, 48, 'some indices are out of limits.')
 
     def _test_getSpaxel_array(self, cube, nCoords, specIndex, expected, **kwargs):
         """Tests getSpaxel with array coordinates."""
@@ -395,9 +406,6 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_flux_x_y_lower_array(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         x = [10, 0]
         y = [5, 0]
         expected = [0.017929086, 0.0]
@@ -428,9 +436,6 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_flux_ra_dec_lower_array(self):
 
-        # TODO: this test fails if the default MPL is not MPL-4 because the
-        # remote server does not know about setMPL.
-
         ra = [232.546173, 232.548277]
         dec = [48.6885343, 48.6878398]
         expected = [0.017929086, 0.0]
@@ -450,6 +455,33 @@ class TestGetSpaxel(TestCubeBase):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 3000, expect, x=10, y=5)
+
+    def test_getSpaxel_remote_drpver_differ_from_global(self):
+
+        config.setMPL('MPL-5')
+        self.assertEqual(config.drpver, 'v2_0_1')
+
+        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        expect = 0.62007582
+        self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
+
+
+class TestWCS(TestCubeBase):
+
+    def test_wcs_file(self):
+        cube = Cube(filename=self.filename)
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+    def test_wcs_db(self):
+        cube = Cube(plateifu=self.plateifu)
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+    def test_wcs_api(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
 
 
 if __name__ == '__main__':

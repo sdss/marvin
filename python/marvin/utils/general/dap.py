@@ -123,7 +123,7 @@ def maps_db2dict_of_props(maps_db_file, x, y):
     return dict_of_props
 
 
-def get_dict_of_props_api(plateifu, x, y):
+def get_dict_of_props_api(plateifu, x, y, dapver=None):
     """Returns a dictionary of DAP properties by performing an API call."""
 
     url = marvin.config.urlmap['api']['getdap_props']['url']
@@ -131,7 +131,7 @@ def get_dict_of_props_api(plateifu, x, y):
     try:
         path = 'x={0}/y={1}'.format(x, y)
         url_full = url.format(name=plateifu, path=path)
-        response = marvin.api.api.Interaction(url_full)
+        response = marvin.api.api.Interaction(url_full, params={'dapver': dapver})
     except Exception as ee:
         raise marvin.core.exceptions.MarvinError(
             'found a problem when checking if remote maps exists: {0}'.format(str(ee)))

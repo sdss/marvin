@@ -200,7 +200,7 @@ class Spaxel(MarvinToolsClass):
         # If the data origin is API, gets the dictionary of DAP properties.
         elif self.data_origin == 'api':
             dict_of_dap_props = marvin.utils.general.dap.get_dict_of_props_api(
-                self.plateifu, self.x, self.y)
+                self.plateifu, self.x, self.y, dapver=self._dapver)
             self._initDAP(dict_of_dap_props)
 
     @property
@@ -348,7 +348,8 @@ class Spaxel(MarvinToolsClass):
             **routeparams)
 
         # Make the API call
-        response = api.Interaction(url)
+        response = api.Interaction(url, params={'drpver': self._drpver,
+                                                'dapver': self._dapver})
 
         # Temporarily stores the arrays prior to subclassing from np.array
         data = response.getData()
@@ -369,6 +370,9 @@ class Spaxel(MarvinToolsClass):
 
         obj.x = x
         obj.y = y
+
+        obj._drpver = cube._drpver if cube is not None else marvin.config.drpver
+        obj._dapver = maps._dapver if maps is not None else marvin.config.dapver
 
         obj.plateifu = plateifu
 
