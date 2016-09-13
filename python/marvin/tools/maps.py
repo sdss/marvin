@@ -278,7 +278,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                               niter=self.niter if self.niter else '13')
 
         try:
-            response = marvin.api.api.Interaction(url_full)
+            response = marvin.api.api.Interaction(url_full, params={'drpver': self._drpver,
+                                                                    'dapver': self._dapver})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when checking if remote maps exists: {0}'

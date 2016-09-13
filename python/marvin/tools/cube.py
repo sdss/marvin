@@ -226,9 +226,13 @@ class Cube(MarvinToolsClass):
             for ii in range(len(iCube[0])):
                 _spaxels.append(
                     marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
-                                               plateifu=self.plateifu))
+                                               plateifu=self.plateifu,
+                                               drpver=self._drpver))
 
         elif self.data_origin == 'api':
+
+            # TODO: we are doing two interactions for what probably can be
+            # accomplished with one.
 
             path = '{0}={1}/{2}={3}/xyorig={4}'.format(
                 'x' if inputMode == 'pix' else 'ra', coords[:, 0].tolist(),
@@ -239,7 +243,7 @@ class Cube(MarvinToolsClass):
             # Get the getSpaxel route
             url = marvin.config.urlmap['api']['getspaxels']['url'].format(**routeparams)
 
-            response = Interaction(url)
+            response = Interaction(url, params={'drpver': self._drpver})
             data = response.getData()
 
             xx = data['x']
@@ -250,7 +254,8 @@ class Cube(MarvinToolsClass):
                 _spaxels.append(
                     marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
                                                plateifu=self.plateifu,
-                                               mode='remote'))
+                                               mode='remote',
+                                               drpver=self._drpver))
 
         # Sets the shape of the cube on the spaxels
         for sp in _spaxels:
@@ -280,7 +285,7 @@ class Cube(MarvinToolsClass):
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
-            response = Interaction(url.format(name=self.plateifu))
+            response = Interaction(url.format(name=self.plateifu), params={'drpver': self._drpver})
         except Exception as ee:
             raise MarvinError('found a problem when checking if remote cube '
                               'exists: {0}'.format(str(ee)))
