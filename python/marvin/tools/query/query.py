@@ -733,19 +733,12 @@ class Query(object):
         return isin
 
     # ------------------------------------------------------
-    #  DAP Query - unnesting, subqueries, etc go below here
+    #  DAP Specific Query Modifiers - subqueries, etc go below here
     #  -----------------------------------------------------
 
-    #
-    '''
-    Check all the parameters for ARRAY or not ARRAY (unnesting vs not)
-    Do the Query on all non-arrays and make it a subquery
-    then unnest the arrays using the subquery (only unnest the specified arrays)
-    then do the unnesting filtering
-    '''
-
     def _buildDapQuery(self):
-        ''' Builds a DAP zonal query '''
+        ''' Builds a DAP zonal query
+        '''
 
         # get good spaxels
         # bingood = self.getGoodSpaxels()
@@ -754,23 +747,29 @@ class Query(object):
 
         # check for additional modifier criteria
         if self._parsed.functions:
-            print('doing function stuff')
+            # loop over all functions
             for fxn in self._parsed.functions:
-                print(fxn.fxnname)
+                # look up the function name in the marvinform dictionary
                 try:
                     methodname = self.marvinform._param_fxn_lookup[fxn.fxnname]
                 except KeyError as e:
                     self.reset()
                     raise MarvinError('Could not set function: {0}'.format(e))
                 else:
+                    # run the method
                     methodcall = self.__getattribute__(methodname)
                     methodcall(fxn)
 
     def getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
 
-            Counts the number of good spaxels from a prior unnested subquery
-            where BinId != -1
+            Counts the number of good spaxels with binid != -1
+            Uses the junk.bindid_pk != 9999 since this is known and set.
+            Removes need to join to the binid table
+
+        Returns:
+            bincount (subquery):
+                An SQLalchemy subquery to be joined into the main query object
         '''
         bincount = self.session.query(marvindb.dapdb.Junk.file_pk.label('binfile'),
                                       func.count(marvindb.dapdb.Junk.pk).label('goodcount')).\
@@ -780,23 +779,28 @@ class Query(object):
         return bincount
 
     def getCountOf(self, expression):
-        ''' Subquery - Counts the number of
+        ''' Subquery - Counts the number of spaxels of a
+            given parameter above a certain value.
 
-            Counts the number of rows from a prior unnested subquery
-            that satisfy the input condition
+        Parameters:
+            expression (str):
+                The filter expression to parse
 
-            TODO - change the operand
+        Returns:
+            valcount (subquery):
+                An SQLalchemy subquery to be joined into the main query object
+
+        Example:
+            expression = 'junk.emline_gflux_ha_6564 >= 25'
         '''
 
-        # valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
-        #     filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
-        #     subquery('goodvalcount', with_labels=True)
-
-        print('inside getcount')
+        # parse the expression into name, operator, value
         param, ops, value = self._parseExpression(expression)
+        # look up the InstrumentedAttribute, Operator, and convert Value
         attribute = self.marvinform._param_form_lookup.mapToColumn(param)
         op = opdict[ops]
         value = float(value)
+        # Build the subquery
         valcount = self.session.query(marvindb.dapdb.Junk.file_pk.label('valfile'),
                                       (func.count(marvindb.dapdb.Junk.pk)).label('valcount')).\
             filter(op(attribute, value)).\
@@ -805,28 +809,41 @@ class Query(object):
         return valcount
 
     def getPercent(self, fxn, **kwargs):
-        ''' Final Query
+        ''' Query - Computes count comparisons
 
-            Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
+        Retrieves the number of objects that have satisfy a given expression
+        in x% of good spaxels.  Expression is of the form
+        Parameter Operand Value. This function is mapped to
+        the "npergood" filter name.
+
+        Syntax: fxnname(expression) operator value
+
+        Parameters:
+            fxn (str):
+                The function condition used in the query filter
+
+        Example:
+            fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            Syntax: npergood() - function name
+                    npergood(expression) operator value
+
+            Select objects with Ha flux > 25 in more than
+            20% of their (good) spaxels.
         '''
 
-        'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
-
-        print('inside get percent', fxn.fxnname)
+        # parse the function into name, condition, operator, and value
         name, condition, ops, value = self._parseFxn(fxn)
         percent = float(value)/100.
         op = opdict[ops]
 
+        # Retrieve the necessary subqueries
         bincount = self.getGoodSpaxels()
         valcount = self.getCountOf(condition)
 
+        # Join to the main query
         self.query = self.query.join(bincount, bincount.c.binfile == marvindb.dapdb.Junk.file_pk).\
             join(valcount, valcount.c.valfile == marvindb.dapdb.Junk.file_pk).\
             filter(op(valcount.c.valcount, percent*bincount.c.goodcount))#.group_by(marvindb.datadb.Cube.mangaid)
-
-        print(self.query.statement.compile())
-
-        # return q.all()
 
     def _parseFxn(self, fxn):
         ''' Parse a fxn condition '''

@@ -76,9 +76,7 @@ ops = [(key, val) for key, val in opdict.items()]
 
 
 class ParamFxnLookupDict(dict):
-    ''' parameter form lookup for functions
-
-        TODO: generalize this so not hard-coded
+    ''' Parameter function lookup for new function expressions
     '''
 
     def __getitem__(self, key):
@@ -235,6 +233,10 @@ class MarvinForm(object):
         ''' Generate the fxn dictionary
 
             TODO: make this general and not hard-coded
+
+            The key is the function name used in the query syntax.
+            The value is the method call that lives in Query
+
         '''
         self._param_fxn_lookup['npergood'] = 'getPercent'
 

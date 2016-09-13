@@ -116,7 +116,10 @@ class TestQuery(MarvinTest):
         p = 'npergood(junk.emline_gflux_ha_6564 > 5) >= 20'
         q = Query(searchfilter=p)
         r = q.run()
-        self.assertEqual(9, r.totalcount)
+        self.assertEqual(10008, r.totalcount)
+        tmp = r.getAll()
+        mangaids = r.getListOf('mangaid')
+        self.assertEqual(8, len(set(mangaids)))
 
 if __name__ == '__main__':
     verbosity = 2
