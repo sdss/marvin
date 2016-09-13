@@ -28,11 +28,12 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import re
+import numpy as np
 import warnings
 from functools import wraps
 
 __all__ = ['Query', 'doQuery']
-opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
+opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
 
 
 # Boom. Tree dictionary.
@@ -222,7 +223,7 @@ class Query(object):
 
             # check if query if a dap query
             if self._isdapquery:
-                pass
+                self._buildDapQuery()
 
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
@@ -411,6 +412,7 @@ class Query(object):
             # update the parameters dictionary
             self.searchfilter = searchfilter
             self._parsed = parsed
+            self._checkParsed()
             self.strfilter = str(parsed)
             self.filterparams.update(parsed.params)
             filterkeys = [key for key in self.filterparams.keys() if key not in self.params]
@@ -746,10 +748,23 @@ class Query(object):
         ''' Builds a DAP zonal query '''
 
         # get good spaxels
-        bingood = self.getGoodSpaxels()
-        self.query = self.query.\
-            join(bingood, bingood.c.binfile == marvindb.dapdb.Junk.file_pk)
+        # bingood = self.getGoodSpaxels()
+        # self.query = self.query.\
+        #     join(bingood, bingood.c.binfile == marvindb.dapdb.Junk.file_pk)
 
+        # check for additional modifier criteria
+        if self._parsed.functions:
+            print('doing function stuff')
+            for fxn in self._parsed.functions:
+                print(fxn.fxnname)
+                try:
+                    methodname = self.marvinform._param_fxn_lookup[fxn.fxnname]
+                except KeyError as e:
+                    self.reset()
+                    raise MarvinError('Could not set function: {0}'.format(e))
+                else:
+                    methodcall = self.__getattribute__(methodname)
+                    methodcall(fxn)
 
     def getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
@@ -764,7 +779,7 @@ class Query(object):
                                                            with_labels=True)
         return bincount
 
-    def getCountOf(self, value):
+    def getCountOf(self, expression):
         ''' Subquery - Counts the number of
 
             Counts the number of rows from a prior unnested subquery
@@ -777,14 +792,19 @@ class Query(object):
         #     filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
         #     subquery('goodvalcount', with_labels=True)
 
+        print('inside getcount')
+        param, ops, value = self._parseExpression(expression)
+        attribute = self.marvinform._param_form_lookup.mapToColumn(param)
+        op = opdict[ops]
+        value = float(value)
         valcount = self.session.query(marvindb.dapdb.Junk.file_pk.label('valfile'),
                                       (func.count(marvindb.dapdb.Junk.pk)).label('valcount')).\
-            filter(marvindb.dapdb.Junk.binid_pk != 9999, marvindb.dapdb.Junk.emline_gflux_ha_6564 > 25).\
+            filter(op(attribute, value)).\
             group_by(marvindb.dapdb.Junk.file_pk).subquery('goodhacount', with_labels=True)
 
         return valcount
 
-    def getPercent(self, value, percent):
+    def getPercent(self, fxn, **kwargs):
         ''' Final Query
 
             Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
@@ -792,16 +812,36 @@ class Query(object):
 
         'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
 
+        print('inside get percent', fxn.fxnname)
+        name, condition, ops, value = self._parseFxn(fxn)
+        percent = float(value)/100.
+        op = opdict[ops]
+
         bincount = self.getGoodSpaxels()
-        valcount = self.getCountOf(value)
+        valcount = self.getCountOf(condition)
 
-        q = self.session.query(self.unnested.c.cubepk).join(valcount, valcount.c.unnest_pk == self.unnested.c.pk).\
-            join(bincount, bincount.c.unnest_pk == self.unnested.c.pk).\
-            filter(valcount.c.valcount >= percent*bincount.c.binidcount).group_by(self.unnested.c.cubepk)
+        self.query = self.query.join(bincount, bincount.c.binfile == marvindb.dapdb.Junk.file_pk).\
+            join(valcount, valcount.c.valfile == marvindb.dapdb.Junk.file_pk).\
+            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))#.group_by(marvindb.datadb.Cube.mangaid)
 
-        return q.all()
+        print(self.query.statement.compile())
 
+        # return q.all()
 
+    def _parseFxn(self, fxn):
+        ''' Parse a fxn condition '''
+        return fxn.fxnname, fxn.fxncond, fxn.op, fxn.value
 
+    def _parseExpression(self, expr):
+        ''' Parse an expression '''
+        return expr.fullname, expr.op, expr.value
 
+    def _checkParsed(self):
+        ''' Check the boolean parsed object
 
+            check for function conditions vs normal
+        '''
+
+        # Triggers for only one filter and it is a function condition
+        if hasattr(self._parsed, 'fxn'):
+            self._parsed.functions = [self._parsed]

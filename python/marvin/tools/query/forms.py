@@ -75,6 +75,29 @@ ops = [(key, val) for key, val in opdict.items()]
 # operator = SelectField(u'Operator', choices=ops)
 
 
+class ParamFxnLookupDict(dict):
+    ''' parameter form lookup for functions
+
+        TODO: generalize this so not hard-coded
+    '''
+
+    def __getitem__(self, key):
+
+        lowkey = key.lower()
+        mykeys = self.keys()
+
+        inkey = lowkey in mykeys
+        if not inkey:
+            raise KeyError('{0} does not match any column.'.format(lowkey))
+        else:
+            keycount = mykeys.count(lowkey)
+            if keycount > 1:
+                raise KeyError('{0} matches multiple parameters in the lookup'
+                               ' table'.format(lowkey))
+            else:
+                return dict.__getitem__(self, lowkey)
+
+
 class ParamFormLookupDict(dict):
 
     _tableShortcuts = {'ifu': 'ifudesign'}
@@ -157,8 +180,10 @@ class MarvinForm(object):
         '''
 
         self._param_form_lookup = ParamFormLookupDict()
+        self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
         self._generateFormClasses(modelclasses)
+        self._generateFxns()
         self.SearchForm = SearchForm
 
     def _generateFormClasses(self, classes):
@@ -205,3 +230,15 @@ class MarvinForm(object):
     def callInstance(self, form, params=None, **kwargs):
         ''' Creates an instance of a specified WTForm.  '''
         return form(**params) if params else form(**kwargs)
+
+    def _generateFxns(self):
+        ''' Generate the fxn dictionary
+
+            TODO: make this general and not hard-coded
+        '''
+        self._param_fxn_lookup['npergood'] = 'getPercent'
+
+
+
+
+

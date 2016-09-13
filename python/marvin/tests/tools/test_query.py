@@ -89,14 +89,34 @@ class TestQuery(MarvinTest):
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
 
-    def test_Query_remote(self):
+    def test_Query_remote_mpl4(self):
         self._setRemote()
         p = 'nsa.z < 0.12 and ifu.name = 19*'
         q = Query(searchfilter=p, mode='remote')
         r = q.run()
         self.assertEqual([], q.joins)
-        self.assertEqual(151, r.count)  # MPL-4 count
+        self.assertEqual(151, r.totalcount)  # MPL-4 count
 
+    def test_Query_remote_mpl5(self):
+        config.setMPL('MPL-5')
+        self._setRemote()
+        p = 'nsa.z < 0.12 and ifu.name = 19*'
+        q = Query(searchfilter=p, mode='remote')
+        r = q.run()
+        self.assertEqual([], q.joins)
+        self.assertEqual(2, r.totalcount)  # MPL-4 count
+
+    def test_dap_query_1(self):
+        p = 'junk.emline_gflux_ha_6564 > 25'
+        q = Query(searchfilter=p, returnparams=['junk.emline_gflux_hb_4862'])
+        r = q.run()
+        self.assertEqual(231, r.totalcount)
+
+    def test_dap_query_2(self):
+        p = 'npergood(junk.emline_gflux_ha_6564 > 5) >= 20'
+        q = Query(searchfilter=p)
+        r = q.run()
+        self.assertEqual(9, r.totalcount)
 
 if __name__ == '__main__':
     verbosity = 2
