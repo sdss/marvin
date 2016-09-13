@@ -36,6 +36,7 @@ class TestQuery(MarvinTest):
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
+        config.setMPL('MPL-4')
 
     def tearDown(self):
         pass
@@ -45,12 +46,12 @@ class TestQuery(MarvinTest):
         self.assertIsNone(q.query)
 
     def test_Query_drpver_and_dapver(self):
-        p = 'cube.plate==8485 and emline_type.name==Ha'
+        p = 'cube.plate==8485 and junk.emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
         self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
-        self.assertEqual('Ha', r.results[0].__getattribute__('name'))
+        self.assertEqual(26.3447, r.results[0].__getattribute__('emline_gflux_ha_6564'))
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -78,23 +79,23 @@ class TestQuery(MarvinTest):
         self.assertListEqual(queryparams, keys)
 
     def test_Query_queryparams_onlyfilter(self):
-        p = 'nsa_redshift < 0.012 and ifu.name = 19*'
-        params = ['cube.mangaid', 'ifu.name', 'nsa_redshift']
-        qps = ['mangaid', 'name', 'nsa_redshift']
+        p = 'nsa.z < 0.12 and ifu.name = 19*'
+        params = ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
+        qps = ['mangaid', 'plate', 'name', 'z']
         self._queryparams(p, params, qps)
 
     def _setRemote(self):
-        config.sasurl = 'http://cd057661.ngrok.io'
+        config.sasurl = 'http://localhost:5000/marvin2/'
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
 
     def test_Query_remote(self):
         self._setRemote()
-        p = 'nsa_redshift < 0.012 and ifu.name = 19*'
+        p = 'nsa.z < 0.12 and ifu.name = 19*'
         q = Query(searchfilter=p, mode='remote')
         r = q.run()
         self.assertEqual([], q.joins)
-        self.assertEqual(64, r.count)
+        self.assertEqual(151, r.count)  # MPL-4 count
 
 
 if __name__ == '__main__':

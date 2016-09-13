@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
+from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
@@ -169,8 +170,8 @@ class Query(object):
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
         self.marvinform = MarvinForm()
-        #self._start = kwargs.get('start', None)
-        #self._chunk = kwargs.get('chunk', None)
+        self._drpver = kwargs.get('drpver', config.drpver)
+        self._dapver = kwargs.get('dapver', config.dapver)
 
         # set the mode
         if self.mode is None:
@@ -188,24 +189,26 @@ class Query(object):
         # get return type
         self.returntype = kwargs.get('returntype', None)
 
+        # set default parameters
+        self.set_defaultparams()
+
         # get user-defined input parameters
         returnparams = kwargs.get('returnparams', None)
         if returnparams:
             self.set_returnparams(returnparams)
 
-        # set default parameters
-        self.set_defaultparams()
-
         # if searchfilter is set then set the parameters
         searchfilter = kwargs.get('searchfilter', None)
         if searchfilter:
             self.set_filter(searchfilter=searchfilter)
+            self._isdapquery = self._checkInFilter(name='dapdb')
 
         # Don't do anything if nothing specified
         allnot = [not searchfilter, not returnparams]
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
+            self._adjust_defaults()
 
             # join tables
             self._join_tables()
@@ -216,6 +219,10 @@ class Query(object):
 
             # add PipelineInfo
             self._addPipeline()
+
+            # check if query if a dap query
+            if self._isdapquery:
+                pass
 
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
@@ -237,6 +244,30 @@ class Query(object):
             raise MarvinError('No URL Map found.  Cannot make remote calls!')
         else:
             self.mode = 'remote'
+
+    def _checkInFilter(self, name='dapdb'):
+        ''' Check if the given name is in the schema of any of the filter params '''
+
+        fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
+        fparams = [fparams] if type(fparams) != list else fparams
+        inschema = [name in c.class_.__table__.schema for c in fparams]
+        return True if any(inschema) else False
+
+    def _adjust_defaults(self):
+        ''' Adjust the default parameters to include necessary parameters
+
+        For any query involving DAP DB, always return the spaxel index
+        TODO: change this to spaxel x and y
+
+        TODO: change this entirely
+
+        '''
+        dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
+        if any(dapschema):
+            dapcols = ['junk.spaxel_index']
+            self.defaultparams.extend(dapcols)
+            self.params.extend(dapcols)
+            self.queryparams.extend([self.marvinform._param_form_lookup.mapToColumn(dapcols)])
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -266,7 +297,7 @@ class Query(object):
         elif self.returntype == 'rssfiber':
             self.defaultparams.extend(['rssfiber.fiber.fiberid'])
         elif self.returntype == 'map':
-            pass
+            self.defaultparams.extend(['junk.spaxel_index'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)
@@ -642,7 +673,7 @@ class Query(object):
 
         # bindparam values
         bindname = 'drpver' if pipename.lower() == 'drp' else 'dapver'
-        bindvalue = config.drpver if pipename.lower() == 'drp' else config.dapver
+        bindvalue = self._drpver if pipename.lower() == 'drp' else self._dapver
 
         # class names
         if pipename.lower() == 'drp':
@@ -711,29 +742,14 @@ class Query(object):
     then do the unnesting filtering
     '''
 
-    def _unnestTable(self):
-        ''' Subquery - unnest a table
+    def _buildDapQuery(self):
+        ''' Builds a DAP zonal query '''
 
-            Builds a new table with unnested arrays for use in future queries
+        # get good spaxels
+        bingood = self.getGoodSpaxels()
+        self.query = self.query.\
+            join(bingood, bingood.c.binfile == marvindb.dapdb.Junk.file_pk)
 
-        '''
-
-        # NEED in HERE
-        # list of Query params - ModelClasses
-        # joins for the query parameters
-        # filter conditions
-        #
-
-        default_unnested_qp = ['cube_shape.indices', 'binid.index', 'cube.pk']
-
-        makejoinlist
-
-        self.unnested = self.session.query(dapdb.EmLine.pk.label('pk'), dapdb.File.pk.label('filepk'),
-                                           datadb.Cube.pk.label('cubepk'), dapdb.Structure.pk.label('spk'),
-                                           func.unnest(dapdb.EmLine.value).label('val'), func.unnest(dapdb.BinId.index).label('binid'),
-                                           datadb.CubeShape.size.label('size'), func.unnest(datadb.CubeShape.indices).label('arrind')).\
-            join(dapdb.File, dapdb.Structure, dapdb.EmLineType, dapdb.EmLineParameter, datadb.Cube, datadb.CubeShape, dapdb.BinId).\
-            subquery('unnest', with_labels=True)
 
     def getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
@@ -741,12 +757,11 @@ class Query(object):
             Counts the number of good spaxels from a prior unnested subquery
             where BinId != -1
         '''
-        if not isinstance(self.unnested, type(None)):
-            bincount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.binid).label('binidcount')).\
-                filter(self.unnested.c.binid != -1).group_by(self.unnested.c.pk).subquery('goodcount', with_labels=True)
-        else:
-            raise MarvinError('Cannot create subquery to count good spaxels.  No unnested table exists!')
-
+        bincount = self.session.query(marvindb.dapdb.Junk.file_pk.label('binfile'),
+                                      func.count(marvindb.dapdb.Junk.pk).label('goodcount')).\
+            filter(marvindb.dapdb.Junk.binid_pk != 9999).\
+            group_by(marvindb.dapdb.Junk.file_pk).subquery('bingood',
+                                                           with_labels=True)
         return bincount
 
     def getCountOf(self, value):
@@ -758,12 +773,14 @@ class Query(object):
             TODO - change the operand
         '''
 
-        if not isinstance(self.unnested, type(None)):
-            valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
-                filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
-                subquery('goodvalcount', with_labels=True)
-        else:
-            raise MarvinError('Cannot create subquery to count rows.  No unnested table exists!')
+        # valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
+        #     filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
+        #     subquery('goodvalcount', with_labels=True)
+
+        valcount = self.session.query(marvindb.dapdb.Junk.file_pk.label('valfile'),
+                                      (func.count(marvindb.dapdb.Junk.pk)).label('valcount')).\
+            filter(marvindb.dapdb.Junk.binid_pk != 9999, marvindb.dapdb.Junk.emline_gflux_ha_6564 > 25).\
+            group_by(marvindb.dapdb.Junk.file_pk).subquery('goodhacount', with_labels=True)
 
         return valcount
 
@@ -773,7 +790,8 @@ class Query(object):
             Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
         '''
 
-        self._unnestTable()
+        'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+
         bincount = self.getGoodSpaxels()
         valcount = self.getCountOf(value)
 
