@@ -2,15 +2,20 @@
 
 import os
 import unittest
-from marvin.tools.cube import Cube
-from marvin.core import MarvinError
-from marvin import config, marvindb
-from marvin.tests import MarvinTest, skipIfNoDB
-from numpy.testing import assert_allclose
+
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
+
+from marvin import config, marvindb
+from marvin.tools.cube import Cube
+from marvin.core import MarvinError
+from marvin.tests import MarvinTest, skipIfNoDB
+
 import numpy as np
+from numpy.testing import assert_allclose
+
 from astropy.io import fits
+from astropy import wcs
 
 
 class TestCubeBase(MarvinTest):
@@ -163,7 +168,7 @@ class TestCube(TestCubeBase):
 
         cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
         self.assertEqual(cube._drpver, 'v1_5_1')
-        self.assertEqual(cube.hdr['VERSDRP3'].strip(), 'v1_5_0')
+        self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
 
 
 class TestGetSpaxel(TestCubeBase):
@@ -332,7 +337,7 @@ class TestGetSpaxel(TestCubeBase):
         expect = 0.62007582
         self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
 
-    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2, excType=MarvinError):
+    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2=None, excType=MarvinError):
 
         cube = Cube(mangaid=self.mangaid, mode='remote')
 
@@ -340,7 +345,8 @@ class TestGetSpaxel(TestCubeBase):
             cube.getSpaxel(ra=ra, dec=dec)
 
         self.assertIn(errMsg1, str(cm.exception))
-        self.assertIn(errMsg2, str(cm.exception))
+        if errMsg2:
+            self.assertIn(errMsg2, str(cm.exception))
 
     def test_getSpaxel_remote_fail_nourlmap(self):
 
@@ -366,9 +372,7 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_remote_fail_badpixcoords(self):
 
         self.assertIsNotNone(config.urlmap)
-        self._getSpaxel_remote_fail(232, 48, 'Something went wrong with the interaction',
-                                    'some indices are out of limits.',
-                                    excType=BrainError)
+        self._getSpaxel_remote_fail(232, 48, 'some indices are out of limits.')
 
     def _test_getSpaxel_array(self, cube, nCoords, specIndex, expected, **kwargs):
         """Tests getSpaxel with array coordinates."""
@@ -460,6 +464,24 @@ class TestGetSpaxel(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
         expect = 0.62007582
         self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
+
+
+class TestWCS(TestCubeBase):
+
+    def test_wcs_file(self):
+        cube = Cube(filename=self.filename)
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+    def test_wcs_db(self):
+        cube = Cube(plateifu=self.plateifu)
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+    def test_wcs_api(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertIsInstance(cube.wcs, wcs.WCS)
+        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
 
 
 if __name__ == '__main__':

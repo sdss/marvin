@@ -1,16 +1,26 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+#
+# cube.py
+
+
+from __future__ import division
 from __future__ import print_function
-import numpy as np
+from __future__ import absolute_import
+
 from astropy.io import fits
 from astropy.wcs import WCS
+import numpy as np
+
 import marvin
+import marvin.core.exceptions
+import marvin.tools.spaxel
+import marvin.tools.maps
+import marvin.utils.general.general
+
+from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import convertCoords
-import marvin.tools.spaxel
-from marvin.api.api import Interaction
-import marvin.tools.maps
-
-import marvin.core.exceptions
 
 try:
     import photutils.aperture_funcs
@@ -75,12 +85,14 @@ class Cube(MarvinToolsClass):
         # Can use Maps or Spaxel as an example. For now I'm adding more
         # clutter to avoid breaking things (JSG).
 
-        self.filename = None
         self._hdu = None
         self._cube = None
+        self._shape = None
+
+        self.filename = None
+        self.wcs = None
         self.data = None
         self.wavelength = None
-        self._shape = None
 
         skip_check = kwargs.get('skip_check', False)
 
@@ -91,31 +103,30 @@ class Cube(MarvinToolsClass):
                 self._openFile()
             except IOError as e:
                 raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            wcs_table = WCS(self.hdr)
-            self.plateifu = self.hdr['PLATEIFU'].strip()
-            self.wcs = wcs_table.to_header()
+            self.plateifu = self.header['PLATEIFU'].strip()
             self.redshift = None
+
         elif self.data_origin == 'db':
             try:
                 self._getCubeFromDB()
             except RuntimeError as e:
                 raise MarvinError('Could not initialize via db: {0}'.format(e))
-            self.wcs = self._cube.wcs.makeHeader()
             nsaobjs = self._cube.target.NSA_objects if self._cube.target else None
             if nsaobjs:
                 self.redshift = None if len(nsaobjs) > 1 else nsaobjs[0].z
             else:
                 self.redshift = None
+
         elif self.data_origin == 'api':
             if not skip_check:
                 self._openCubeRemote()
 
-        self.ifu = int(self.hdr['IFUDSGN'])
-        self.ra = float(self.hdr['OBJRA'])
-        self.dec = float(self.hdr['OBJDEC'])
-        self.plate = int(self.hdr['PLATEID'])
-        self.mangaid = self.hdr['MANGAID']
-        self._isbright = 'APOGEE' in self.hdr['SRVYMODE']
+        self.ifu = int(self.header['IFUDSGN'])
+        self.ra = float(self.header['OBJRA'])
+        self.dec = float(self.header['OBJDEC'])
+        self.plate = int(self.header['PLATEID'])
+        self.mangaid = self.header['MANGAID']
+        self._isbright = 'APOGEE' in self.header['SRVYMODE']
         self.dir3d = 'mastar' if self._isbright else 'stack'
 
     def __repr__(self):
@@ -125,7 +136,7 @@ class Cube(MarvinToolsClass):
                 .format(repr(self.plateifu), repr(self.mode),
                         repr(self.data_origin)))
 
-    def getSpaxel(self, x=None, y=None, ra=None, dec=None, xyorig=None):
+    def getSpaxel(self, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -162,109 +173,10 @@ class Cube(MarvinToolsClass):
         # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
         # an array of coordinates) and a mode keyword.
 
-        # TODO: adapt to use marvin.general.general.getSpaxel.
+        kwargs['cube_object'] = self
+        kwargs['maps_object'] = None
 
-        # Checks that we have the correct set of inputs.
-        if x is not None or y is not None:
-            assert ra is None and dec is None, 'Either use (x, y) or (ra, dec)'
-            assert x is not None and y is not None, 'Specify both x and y'
-
-            inputMode = 'pix'
-            isScalar = np.isscalar(x)
-            x = np.atleast_1d(x)
-            y = np.atleast_1d(y)
-            coords = np.array([x, y], np.float).T
-
-        elif ra is not None or dec is not None:
-            assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
-            assert ra is not None and dec is not None, 'Specify both ra and dec'
-
-            inputMode = 'sky'
-            isScalar = np.isscalar(ra)
-            ra = np.atleast_1d(ra)
-            dec = np.atleast_1d(dec)
-            coords = np.array([ra, dec], np.float).T
-
-        else:
-            raise ValueError('You need to specify either (x, y) or (ra, dec)')
-
-        if not xyorig:
-            xyorig = marvin.config.xyorig
-
-        if self.data_origin == 'file':
-
-            # Uses the flux extension to get the WCS
-            cubeExt = self._hdu['FLUX']
-            cubeShape = cubeExt.data.shape[1:]
-
-            ww = WCS(cubeExt.header) if inputMode == 'sky' else None
-
-            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
-                                             xyorig=xyorig).T)
-
-            _spaxels = []
-            for ii in range(len(iCube[0])):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel._initFromData(
-                        self.plateifu, jCube[0][ii], iCube[0][ii], cube=self))
-
-        elif self.data_origin == 'db':
-
-            size = int(np.sqrt(len(self._cube.spaxels)))
-            cubeShape = (size, size)
-
-            if inputMode == 'sky':
-                cubehdr = self._cube.wcs.makeHeader()
-                ww = WCS(cubehdr)
-            else:
-                ww = None
-
-            iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape, mode=inputMode,
-                                             xyorig=xyorig).T)
-
-            _spaxels = []
-            for ii in range(len(iCube[0])):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
-                                               plateifu=self.plateifu,
-                                               drpver=self._drpver))
-
-        elif self.data_origin == 'api':
-
-            # TODO: we are doing two interactions for what probably can be
-            # accomplished with one.
-
-            path = '{0}={1}/{2}={3}/xyorig={4}'.format(
-                'x' if inputMode == 'pix' else 'ra', coords[:, 0].tolist(),
-                'y' if inputMode == 'pix' else 'dec', coords[:, 1].tolist(), xyorig)
-
-            routeparams = {'name': self.plateifu, 'path': path}
-
-            # Get the getSpaxel route
-            url = marvin.config.urlmap['api']['getspaxels']['url'].format(**routeparams)
-
-            response = Interaction(url, params={'drpver': self._drpver})
-            data = response.getData()
-
-            xx = data['x']
-            yy = data['y']
-
-            _spaxels = []
-            for ii in range(len(xx)):
-                _spaxels.append(
-                    marvin.tools.spaxel.Spaxel(xx[ii], yy[ii],
-                                               plateifu=self.plateifu,
-                                               mode='remote',
-                                               drpver=self._drpver))
-
-        # Sets the shape of the cube on the spaxels
-        for sp in _spaxels:
-            sp._parent_shape = self.shape
-
-        if len(_spaxels) == 1 and isScalar:
-            return _spaxels[0]
-        else:
-            return _spaxels
+        return marvin.utils.general.general.getSpaxel(**kwargs)
 
     def _openFile(self):
         """Initialises a cube from a file."""
@@ -276,7 +188,8 @@ class Cube(MarvinToolsClass):
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
-        self.hdr = self._hdu[1].header
+        self.header = self._hdu[1].header
+        self.wcs = WCS(self.header)
         self.wavelength = self._hdu['WAVE'].data
 
     def _openCubeRemote(self):
@@ -292,10 +205,11 @@ class Cube(MarvinToolsClass):
 
         data = response.getData()
 
-        self.hdr = data['header']
+        self.header = fits.Header.fromstring(data['header'])
         self.redshift = float(data['redshift'])
         self._shape = data['shape']
         self.wavelength = data['wavelength']
+        self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
 
         if self.plateifu not in data:
             raise MarvinError('remote cube has a different plateifu!')
@@ -342,7 +256,7 @@ class Cube(MarvinToolsClass):
     @property
     def qualitybit(self):
         ''' The Cube DRP3QUAL bits '''
-        bit = long(self.hdr['DRP3QUAL'])
+        bit = long(self.header['DRP3QUAL'])
         labels = None
         # get labels
         if self.data_origin == 'db':
@@ -360,10 +274,12 @@ class Cube(MarvinToolsClass):
 
         try:
             names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
         except KeyError as e:
             names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
 
         ind = np.nonzero(targs)[0]
         labels = None
@@ -418,7 +334,11 @@ class Cube(MarvinToolsClass):
 
             if self._cube:
                 self._useDB = True
-                self.hdr = self._cube.header
+
+                # TODO: this is ugly at so many levels ...
+                self.header = fits.Header(eval(self._cube.hdr[0].header).items())
+
+                self.wcs = WCS(self._cube.wcs.makeHeader())
                 self.data = self._cube
                 self.wavelength = self.data.wavelength.wavelength
             else:
