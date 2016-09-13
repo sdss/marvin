@@ -153,6 +153,18 @@ class TestCube(TestCubeBase):
 
         self.assertTrue(np.allclose(flux, cubeFlux))
 
+    def test_cube_remote_drpver_differ_from_global(self):
+
+        # This tests requires having the cube for 8485-1901 loaded for both
+        # MPL-4 and MPL-5.
+
+        config.setMPL('MPL-5')
+        self.assertEqual(config.drpver, 'v2_0_1')
+
+        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        self.assertEqual(cube._drpver, 'v1_5_1')
+        self.assertEqual(cube.hdr['VERSDRP3'].strip(), 'v1_5_0')
+
 
 class TestGetSpaxel(TestCubeBase):
 
@@ -439,6 +451,15 @@ class TestGetSpaxel(TestCubeBase):
         expect = 0.017929086
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 3000, expect, x=10, y=5)
+
+    def test_getSpaxel_remote_drpver_differ_from_global(self):
+
+        config.setMPL('MPL-5')
+        self.assertEqual(config.drpver, 'v2_0_1')
+
+        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        expect = 0.62007582
+        self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
 
 
 if __name__ == '__main__':

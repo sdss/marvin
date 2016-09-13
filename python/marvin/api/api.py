@@ -57,8 +57,7 @@ class Interaction(BrainInteraction):
         """Load the local configuration into a parameters dictionary to be sent with the request"""
         if self.params:
             for k in configkeys:
-                self.params[k] = config.__getattribute__(k)
+                if k not in self.params or self.params[k] is None:
+                    self.params[k] = config.__getattribute__(k)
         else:
             self.params = {k: config.__getattribute__(k) for k in configkeys}
-
-
