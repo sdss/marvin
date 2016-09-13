@@ -69,7 +69,7 @@ class CubeView(BaseView):
         if cube:
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
-                                    'header': cube.hdr.tostring(),
+                                    'header': cube.header.tostring(),
                                     'redshift': cube._cube.target.NSA_objects[0].z,
                                     'shape': cube.shape,
                                     'wavelength': cube.wavelength,

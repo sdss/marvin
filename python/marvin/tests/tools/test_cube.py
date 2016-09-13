@@ -168,7 +168,7 @@ class TestCube(TestCubeBase):
 
         cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
         self.assertEqual(cube._drpver, 'v1_5_1')
-        self.assertEqual(cube.hdr['VERSDRP3'].strip(), 'v1_5_0')
+        self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
 
 
 class TestGetSpaxel(TestCubeBase):

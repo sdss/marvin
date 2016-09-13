@@ -126,7 +126,7 @@ This is the list of available parameters returnable in your Query.  The naming c
 * "cube.dapfiles"
 * "cube.dec"
 * "cube.designid"
-* "cube.hdr"
+* "cube.header"
 * "cube.headervals"
 * "cube.ifu"
 * "cube.mangaid"

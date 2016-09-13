@@ -115,7 +115,7 @@ class Galaxy(FlaskView):
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
-                self.galaxy['cubehdr'] = cube.hdr
+                self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
         else:

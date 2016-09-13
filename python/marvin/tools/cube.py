@@ -103,7 +103,7 @@ class Cube(MarvinToolsClass):
                 self._openFile()
             except IOError as e:
                 raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            self.plateifu = self.hdr['PLATEIFU'].strip()
+            self.plateifu = self.header['PLATEIFU'].strip()
             self.redshift = None
 
         elif self.data_origin == 'db':
@@ -121,12 +121,12 @@ class Cube(MarvinToolsClass):
             if not skip_check:
                 self._openCubeRemote()
 
-        self.ifu = int(self.hdr['IFUDSGN'])
-        self.ra = float(self.hdr['OBJRA'])
-        self.dec = float(self.hdr['OBJDEC'])
-        self.plate = int(self.hdr['PLATEID'])
-        self.mangaid = self.hdr['MANGAID']
-        self._isbright = 'APOGEE' in self.hdr['SRVYMODE']
+        self.ifu = int(self.header['IFUDSGN'])
+        self.ra = float(self.header['OBJRA'])
+        self.dec = float(self.header['OBJDEC'])
+        self.plate = int(self.header['PLATEID'])
+        self.mangaid = self.header['MANGAID']
+        self._isbright = 'APOGEE' in self.header['SRVYMODE']
         self.dir3d = 'mastar' if self._isbright else 'stack'
 
     def __repr__(self):
@@ -188,8 +188,8 @@ class Cube(MarvinToolsClass):
         except IOError as err:
             raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
 
-        self.hdr = self._hdu[1].header
-        self.wcs = WCS(self.hdr)
+        self.header = self._hdu[1].header
+        self.wcs = WCS(self.header)
         self.wavelength = self._hdu['WAVE'].data
 
     def _openCubeRemote(self):
@@ -205,7 +205,7 @@ class Cube(MarvinToolsClass):
 
         data = response.getData()
 
-        self.hdr = fits.Header.fromstring(data['header'])
+        self.header = fits.Header.fromstring(data['header'])
         self.redshift = float(data['redshift'])
         self._shape = data['shape']
         self.wavelength = data['wavelength']
@@ -256,7 +256,7 @@ class Cube(MarvinToolsClass):
     @property
     def qualitybit(self):
         ''' The Cube DRP3QUAL bits '''
-        bit = long(self.hdr['DRP3QUAL'])
+        bit = long(self.header['DRP3QUAL'])
         labels = None
         # get labels
         if self.data_origin == 'db':
@@ -274,10 +274,12 @@ class Cube(MarvinToolsClass):
 
         try:
             names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
         except KeyError as e:
             names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [long(self.hdr[names[0]]), long(self.hdr[names[1]]), long(self.hdr[names[2]])]
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
 
         ind = np.nonzero(targs)[0]
         labels = None
@@ -334,7 +336,7 @@ class Cube(MarvinToolsClass):
                 self._useDB = True
 
                 # TODO: this is ugly at so many levels ...
-                self.hdr = fits.Header(eval(self._cube.hdr[0].header).items())
+                self.header = fits.Header(eval(self._cube.hdr[0].header).items())
 
                 self.wcs = WCS(self._cube.wcs.makeHeader())
                 self.data = self._cube
