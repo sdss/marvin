@@ -239,6 +239,7 @@ class MarvinForm(object):
         self._generateFormClasses(modelclasses)
         self._generateFxns()
         self.SearchForm = SearchForm
+        self._cleanParams()
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.
@@ -302,5 +303,20 @@ class MarvinForm(object):
         dapkeys = [k for k in self._param_form_lookup.keys() if 'mangadapdb.junk' in k]
         dapkeys.sort()
         return dapkeys
+
+    def _cleanParams(self):
+        ''' Clean up the parameter-form lookup dictionary '''
+
+        # remove keys for pk, mangadatadb.sample, test_, and cube_header
+        new = ParamFormLookupDict()
+        for k, v in self._param_form_lookup.items():
+            if 'pk' not in k and \
+               'mangadatadb.sample' not in k and \
+               'test_' not in k and \
+               'cube_header' not in k:
+                new[k] = v
+
+        # make new dictionary
+        self._param_form_lookup = new
 
 
