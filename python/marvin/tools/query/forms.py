@@ -100,6 +100,7 @@ class ParamFormLookupDict(dict):
 
     def __init__(self):
         self._init_table_shortcuts()
+        self._init_name_shortcuts()
         self._mplver = config.mplver
 
     def __getitem__(self, key):
@@ -108,6 +109,7 @@ class ParamFormLookupDict(dict):
         # Update shortcuts upon MPL changes
         if self._mplver != config.mplver:
             self._init_table_shortcuts()
+            self._init_name_shortcuts()
             self._mplver = config.mplver
 
         # Applies shortcuts
@@ -158,15 +160,23 @@ class ParamFormLookupDict(dict):
         self._tableShortcuts = {'ifu': 'ifudesign'}
         self._set_junk_shortcuts()
 
+    def _init_name_shortcuts(self):
+        ''' initialize the name shortcuts '''
+        self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564'}
+
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''
 
         # Gets the paths that match the key
         keySplits = key.split('.')
 
-        # Applies shortcuts
+        # Applies table shortcuts
         if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
             keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+
+        # Applies name shortcuts
+        if len(keySplits) >= 1 and keySplits[-1] in self._nameShortcuts:
+            keySplits[-1] = self._nameShortcuts[keySplits[-1]]
 
         return keySplits
 
@@ -188,6 +198,7 @@ class ParamFormLookupDict(dict):
                    if all([keySplits[-1 - ii] == path.split('.')[-1 - ii]
                            for ii in range(len(keySplits))])]
         return matches
+
 
 # Custom validator for MainForm
 class ValidOperand(object):
