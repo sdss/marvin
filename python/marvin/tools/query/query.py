@@ -209,7 +209,8 @@ class Query(object):
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
-            self._adjust_defaults()
+            # this adds spaxel_index into default for query 1 dap zonal query
+            #self._adjust_defaults()
 
             # join tables
             self._join_tables()
@@ -843,7 +844,12 @@ class Query(object):
         # Join to the main query
         self.query = self.query.join(bincount, bincount.c.binfile == marvindb.dapdb.Junk.file_pk).\
             join(valcount, valcount.c.valfile == marvindb.dapdb.Junk.file_pk).\
-            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))#.group_by(marvindb.datadb.Cube.mangaid)
+            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))
+
+        # Group the results by main defaultdatadb parameters,
+        # so as not to include all spaxels
+        newdefaults = self.marvinform._param_form_lookup.mapToColumn(self.defaultparams)
+        self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
     def _parseFxn(self, fxn):
         ''' Parse a fxn condition '''
@@ -856,7 +862,8 @@ class Query(object):
     def _checkParsed(self):
         ''' Check the boolean parsed object
 
-            check for function conditions vs normal
+            check for function conditions vs normal.  This should be moved
+            into SQLalchemy Boolean Search
         '''
 
         # Triggers for only one filter and it is a function condition
