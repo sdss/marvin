@@ -145,6 +145,8 @@ class ParamFormLookupDict(dict):
 
         columns = []
         for key in keys:
+            keySplits = self._apply_shortcuts(key)
+            key = self._get_matches(keySplits)[0]
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))

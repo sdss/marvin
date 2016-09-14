@@ -255,6 +255,19 @@ class Query(object):
         inschema = [name in c.class_.__table__.schema for c in fparams]
         return True if any(inschema) else False
 
+    def _check_shortcuts_in_filter(self, strfilter):
+        ''' Check for shortcut names in string filter
+
+            Replaces shortcut names in string searchfilter
+            with the full names.
+
+            is there a better way?
+        '''
+        for key in self.marvinform._param_form_lookup._nameShortcuts.keys():
+            if key in strfilter:
+                strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
+        return strfilter
+
     def _adjust_defaults(self):
         ''' Adjust the default parameters to include necessary parameters
 
@@ -403,6 +416,7 @@ class Query(object):
         if searchfilter:
             # if params is a string, then parse and filter
             if type(searchfilter) == str or type(searchfilter) == unicode:
+                searchfilter = self._check_shortcuts_in_filter(searchfilter)
                 try:
                     parsed = parse_boolean_search(searchfilter)
                 except BooleanSearchException as e:
@@ -489,7 +503,10 @@ class Query(object):
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
-        self.filter = self._parsed.filter(self._modellist)
+        try:
+            self.filter = self._parsed.filter(self._modellist)
+        except BooleanSearchException as e:
+            raise MarvinError('Your boolean expression could not me mapped to model: {0}'.format(e))
 
     def update_params(self, param):
         ''' Update the input parameters '''
@@ -875,3 +892,12 @@ class Query(object):
         # Triggers for only one filter and it is a function condition
         if hasattr(self._parsed, 'fxn'):
             self._parsed.functions = [self._parsed]
+
+        # Checks for shortcut names and replaces them in params
+        # now redundant after pre-check on searchfilter
+        for key, val in self._parsed.params.items():
+            if key in self.marvinform._param_form_lookup._nameShortcuts.keys():
+                newkey = self.marvinform._param_form_lookup._nameShortcuts[key]
+                self._parsed.params.pop(key)
+                self._parsed.params.update({newkey: val})
+
