@@ -98,22 +98,31 @@ class ParamFxnLookupDict(dict):
 
 class ParamFormLookupDict(dict):
 
-    _tableShortcuts = {'ifu': 'ifudesign'}
+    def __init__(self):
+        self._init_table_shortcuts()
+        self._mplver = config.mplver
 
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""
 
-        # Gets the paths that match the key
-        keySplits = key.split('.')
+        # Update shortcuts upon MPL changes
+        if self._mplver != config.mplver:
+            self._init_table_shortcuts()
+            self._mplver = config.mplver
 
         # Applies shortcuts
-        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
-            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+        keySplits = self._apply_shortcuts(key)
 
-        matches = [path for path in self
-                   if all([keySplits[-1 - ii] == path.split('.')[-1 - ii]
-                           for ii in range(len(keySplits))])]
+        # Get key matches
+        matches = self._get_matches(keySplits)
 
+        # Check DAP Junk keys
+        isdapjunk = any(['mangadapdb.junk' in m for m in matches])
+        if isdapjunk:
+            keySplits = self._apply_shortcuts(matches[0])
+            matches = self._get_matches(keySplits)
+
+        # Return matched key
         if len(matches) == 0:
             # No matches. This returns the standards KeyError from dict
             raise KeyError('{0} does not match any column.'.format(key))
@@ -143,6 +152,42 @@ class ParamFormLookupDict(dict):
         else:
             return columns
 
+    def _init_table_shortcuts(self):
+        ''' initialize the table shortcuts '''
+
+        self._tableShortcuts = {'ifu': 'ifudesign'}
+        self._set_junk_shortcuts()
+
+    def _apply_shortcuts(self, key):
+        ''' Apply the shortcuts to the key '''
+
+        # Gets the paths that match the key
+        keySplits = key.split('.')
+
+        # Applies shortcuts
+        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
+            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+
+        return keySplits
+
+    def _set_junk_shortcuts(self):
+        ''' Sets the DAP junk shortcuts based on MPL '''
+
+        newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
+        if '4' in config.mplver:
+            dapcut = {'junk{0}'.format(m.split('-')[1]): 'junk' for m in newmpls}
+        else:
+            mdigit = config.mplver.split('-')[1]
+            dapcut = {'junk{0}'.format(m.split('-')[1]): 'junk{0}'.format(mdigit) for m in newmpls}
+            dapcut.update({'junk': 'junk{0}'.format(mdigit)})
+        self._tableShortcuts.update(dapcut)
+
+    def _get_matches(self, keySplits):
+        ''' Get the matches from a set of key splits '''
+        matches = [path for path in self
+                   if all([keySplits[-1 - ii] == path.split('.')[-1 - ii]
+                           for ii in range(len(keySplits))])]
+        return matches
 
 # Custom validator for MainForm
 class ValidOperand(object):
@@ -240,7 +285,11 @@ class MarvinForm(object):
         '''
         self._param_fxn_lookup['npergood'] = 'getPercent'
 
-
-
+    def _getDapKeys(self):
+        ''' Returns the DAP keys from the Junk tables
+        '''
+        dapkeys = [k for k in self._param_form_lookup.keys() if 'mangadapdb.junk' in k]
+        dapkeys.sort()
+        return dapkeys
 
 
