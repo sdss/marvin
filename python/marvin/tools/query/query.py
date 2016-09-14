@@ -768,9 +768,9 @@ class Query(object):
     def getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
 
-            Counts the number of good spaxels with binid != -1
-            Uses the junk.bindid_pk != 9999 since this is known and set.
-            Removes need to join to the binid table
+        Counts the number of good spaxels with binid != -1
+        Uses the junk.bindid_pk != 9999 since this is known and set.
+        Removes need to join to the binid table
 
         Returns:
             bincount (subquery):
@@ -784,8 +784,10 @@ class Query(object):
         return bincount
 
     def getCountOf(self, expression):
-        ''' Subquery - Counts the number of spaxels of a
-            given parameter above a certain value.
+        ''' Subquery - Counts spaxels satisfying an expression
+
+        Counts the number of spaxels of a given
+        parameter above a certain value.
 
         Parameters:
             expression (str):
@@ -796,7 +798,7 @@ class Query(object):
                 An SQLalchemy subquery to be joined into the main query object
 
         Example:
-            expression = 'junk.emline_gflux_ha_6564 >= 25'
+            >>> expression = 'junk.emline_gflux_ha_6564 >= 25'
         '''
 
         # parse the expression into name, operator, value
@@ -828,12 +830,12 @@ class Query(object):
                 The function condition used in the query filter
 
         Example:
-            fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
-            Syntax: npergood() - function name
-                    npergood(expression) operator value
-
-            Select objects with Ha flux > 25 in more than
-            20% of their (good) spaxels.
+            >>> fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            >>> Syntax: npergood() - function name
+            >>>         npergood(expression) operator value
+            >>>
+            >>> Select objects that have Ha flux > 25 in more than
+            >>> 20% of their (good) spaxels.
         '''
 
         # parse the function into name, condition, operator, and value
