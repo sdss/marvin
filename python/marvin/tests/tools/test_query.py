@@ -118,6 +118,13 @@ class TestQuery(MarvinTest):
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
+    def test_dap_query_2_remote(self):
+        self._setRemote()
+        p = 'npergood(junk.emline_gflux_ha_6564 > 5) >= 20'
+        q = Query(searchfilter=p)
+        r = q.run()
+        self.assertEqual(8, r.totalcount)
+
 if __name__ == '__main__':
     verbosity = 2
     unittest.main(verbosity=verbosity)
