@@ -741,6 +741,10 @@ class Query(object):
         ''' Builds a DAP zonal query
         '''
 
+        # get the appropriate Junk ModelClass
+        self._junkclass = self.marvinform.\
+            _param_form_lookup['junk.file'].Meta.model
+
         # get good spaxels
         # bingood = self.getGoodSpaxels()
         # self.query = self.query.\
@@ -772,10 +776,10 @@ class Query(object):
             bincount (subquery):
                 An SQLalchemy subquery to be joined into the main query object
         '''
-        bincount = self.session.query(marvindb.dapdb.Junk.file_pk.label('binfile'),
-                                      func.count(marvindb.dapdb.Junk.pk).label('goodcount')).\
-            filter(marvindb.dapdb.Junk.binid_pk != 9999).\
-            group_by(marvindb.dapdb.Junk.file_pk).subquery('bingood',
+        bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
+                                      func.count(self._junkclass.pk).label('goodcount')).\
+            filter(self._junkclass.binid_pk != 9999).\
+            group_by(self._junkclass.file_pk).subquery('bingood',
                                                            with_labels=True)
         return bincount
 
@@ -802,10 +806,10 @@ class Query(object):
         op = opdict[ops]
         value = float(value)
         # Build the subquery
-        valcount = self.session.query(marvindb.dapdb.Junk.file_pk.label('valfile'),
-                                      (func.count(marvindb.dapdb.Junk.pk)).label('valcount')).\
+        valcount = self.session.query(self._junkclass.file_pk.label('valfile'),
+                                      (func.count(self._junkclass.pk)).label('valcount')).\
             filter(op(attribute, value)).\
-            group_by(marvindb.dapdb.Junk.file_pk).subquery('goodhacount', with_labels=True)
+            group_by(self._junkclass.file_pk).subquery('goodhacount', with_labels=True)
 
         return valcount
 
@@ -842,8 +846,8 @@ class Query(object):
         valcount = self.getCountOf(condition)
 
         # Join to the main query
-        self.query = self.query.join(bincount, bincount.c.binfile == marvindb.dapdb.Junk.file_pk).\
-            join(valcount, valcount.c.valfile == marvindb.dapdb.Junk.file_pk).\
+        self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
+            join(valcount, valcount.c.valfile == self._junkclass.file_pk).\
             filter(op(valcount.c.valcount, percent*bincount.c.goodcount))
 
         # Group the results by main defaultdatadb parameters,
