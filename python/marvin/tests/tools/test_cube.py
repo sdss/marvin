@@ -92,9 +92,8 @@ class TestCube(TestCubeBase):
         self.assertEqual(self.dec, cube.dec)
         self.assertEqual(self.ra, cube.ra)
 
-    def _load_from_db_fail(self, params, errMsg):
-        errMsg = 'Could not initialize via db: {0}'.format(errMsg)
-        with self.assertRaises(MarvinError) as cm:
+    def _load_from_db_fail(self, params, errMsg, errType=MarvinError):
+        with self.assertRaises(errType) as cm:
             Cube(**params)
         self.assertIn(errMsg, str(cm.exception))
 
@@ -102,8 +101,8 @@ class TestCube(TestCubeBase):
     def test_cube_load_from_local_database_nodrpver(self):
         config.drpver = None
         params = {'mangaid': self.mangaid, 'mode': 'local'}
-        errMsg = 'drpver not set in config'
-        self._load_from_db_fail(params, errMsg)
+        errMsg = 'No Results Found: No row was found for one()'
+        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
@@ -121,14 +120,14 @@ class TestCube(TestCubeBase):
         params = {'plateifu': '8485-0923', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
             params['plateifu'])
-        self._load_from_db_fail(params, errMsg)
+        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_otherexception(self):
         params = {'plateifu': '84.85-1901', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
             params['plateifu'])
-        self._load_from_db_fail(params, errMsg)
+        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
 
     # @skipIfNoDB
     # def test_cube_load_from_local_database_multipleresultsfound(self):
@@ -169,6 +168,18 @@ class TestCube(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
         self.assertEqual(cube._drpver, 'v1_5_1')
         self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
+
+    def test_cube_file_redshift(self):
+        cube = Cube(filename=self.filename)
+        self.assertAlmostEqual(cube.redshift, 0.0407447)
+
+    def test_cube_db_redshift(self):
+        cube = Cube(plateifu=self.plateifu, mode='local')
+        self.assertAlmostEqual(cube.redshift, 0.0407447)
+
+    def test_cube_remote_redshift(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertAlmostEqual(cube.redshift, 0.0407447)
 
 
 class TestGetSpaxel(TestCubeBase):

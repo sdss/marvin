@@ -29,8 +29,8 @@ def _getCube(name):
     # parse name into either mangaid or plateifu
     try:
         idtype = parseIdentifier(name)
-    except Exception as e:
-        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
         return cube, results
 
     try:
@@ -45,8 +45,8 @@ def _getCube(name):
 
         cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
-    except Exception as e:
-        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
 
     return cube, results
 
@@ -70,10 +70,10 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': cube._cube.target.NSA_objects[0].z,
+                                    'redshift': cube.data.target.NSA_objects[0].z,
                                     'shape': cube.shape,
                                     'wavelength': cube.wavelength,
-                                    'wcs_header': cube._cube.wcs.makeHeader().tostring()}
+                                    'wcs_header': cube.data.wcs.makeHeader().tostring()}
 
         return json.dumps(self.results)
 
