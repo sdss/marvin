@@ -428,6 +428,7 @@ class Cube(MarvinToolsClass):
             kwargs.update({'plateifu': self.plateifu})
 
         maps = marvin.tools.maps.Maps(**kwargs)
+        # print('\nmaps\n', maps.data.__dict__.keys())
 
         return maps
 

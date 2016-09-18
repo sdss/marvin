@@ -445,7 +445,8 @@ var HeatMap = function () {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            // this.colorNoData(Highcharts);
+            this.forceRedraw(Highcharts);
+            this.setColorNoData(this, Highcharts);
         }
     }
 
@@ -480,16 +481,15 @@ var HeatMap = function () {
             this.channel = _newtitle$split2[2];
         }
 
-        // Get a slice of the mapdata array
+        // Get range of x (or y) data and z (DAP property) data
 
     }, {
         key: 'getRange',
-        value: function getRange(axis) {
-            var axis = axis === undefined ? 0 : axis;
-            var range = this.data.map(function (elt) {
-                return elt[axis];
-            });
-            return range;
+        value: function getRange() {
+            var xylength = this.data['values'].length;
+            var xyrange = Array.apply(null, { length: xylength }).map(Number.call, Number);
+            var zrange = [].concat.apply([], this.data['values']);
+            return [xyrange, zrange];
         }
 
         // return the min and max of a range
@@ -497,61 +497,56 @@ var HeatMap = function () {
     }, {
         key: 'getMinMax',
         value: function getMinMax(range) {
-            var range = range === undefined ? this.getRange() : range;
+            // var range = (range === undefined) ? this.getRange() : range;
             var min = Math.min.apply(null, range);
             var max = Math.max.apply(null, range);
             return [min, max];
         }
     }, {
-        key: 'interpColors',
-        value: function interpColors(range) {
-            var spread = range[1] - range[0];
-            var midpt = (range[0] + range[1]) / 2;
-            var f = chroma.scale();
-            /*var data = this.data.map(function(el) {return ((el[2] - midpt) / spread) + 0.5});
-            //{return ((element[2] - midpt) / spread) + 0.5});
-            console.log('this.data', this.data);
-            console.log('data', data);
-            var colors = data.map(f);
-            colors = colors.map(function(x) {return chroma(x).hex()});
-            console.log('colors', colors);
-            */
+        key: 'setNull',
+        value: function setNull(x) {
+            var values = x.values;
+            var ivar = x.ivar;
+            var mask = x.mask;
 
-            var assignColor = function assignColor(el) {
-                var normedVal = (el[2] - midpt) / spread + 0.5;
-                var colorRGB = f(normedVal);
-                var colorHex = chroma(colorRGB).hex();
-                var spaxel = [{
-                    x: el[0],
-                    y: el[1],
-                    value: el[2],
-                    color: colorHex
-                }];
-                return spaxel;
-            };
-            var data = new Array();
-            for (var ii = 0; ii < this.data.length; ii++) {
-                data.push(assignColor(this.data[ii]));
-            }
-            return data;
-        }
-    }, {
-        key: 'addNull',
-        value: function addNull(x) {
-            var x_nulls = x.map(function (el) {
-                if (el[2] < 0.01) {
-                    el[2] = null;
+            var xyz = Array();
+
+            console.log();
+
+            for (var ii = 0; ii < values.length; ii++) {
+                for (var jj = 0; jj < values.length; jj++) {
+                    var val = values[ii][jj];
+
+                    //
+                    // TODO change the mask conditional to parse the maskbits in MPL-5
+                    //
+                    if (mask[ii][jj] === 1) {
+                        val = 'no-data';
+                    } else if (ivar[ii][jj] > 10.) {
+                        // } else if (ivar[ii][jj] === 0) {
+                        val = null;
+                    };
+                    xyz.push([ii, jj, val]);
                 };
-                return el;
-            });
-            return x_nulls;
+            };
+            return xyz;
         }
     }, {
-        key: 'colorNoData',
-        value: function colorNoData(H) {
+        key: 'setColorNoData',
+        value: function setColorNoData(_this, H) {
             H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
-                if (value < 5) return '#FF00FF'; // My color
-                else return proceed.apply(this, Array.prototype.slice.call(arguments, 1)); // Normal coloring
+                if (value === 'no-data') {
+                    console.log(_this.title);
+                    return 'rgba(0,0,0,0)'; // '#A8A8A8';
+                } else return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+            });
+        }
+    }, {
+        key: 'forceRedraw',
+        value: function forceRedraw(H) {
+            H.wrap(H.Chart.prototype, 'redraw', function (p) {
+                console.log('redraw!');
+                p.apply(this, [].slice.call(arguments, 1));
             });
         }
 
@@ -564,41 +559,46 @@ var HeatMap = function () {
             var _galthis = this.galthis;
 
             // get the ranges
-            var range = this.getRange(0);
-            var zscale = this.getRange(2);
+            //var range  = this.getXRange();
+            var xyrange, zrange;
+
+            var _getRange = this.getRange();
+
+            var _getRange2 = _slicedToArray(_getRange, 2);
+
+            var xyrange = _getRange2[0];
+            var zrange = _getRange2[1];
 
             // get the min and max of the ranges
-            var xmin, xmax, zmin, zmax;
 
-            var _getMinMax = this.getMinMax(range);
+            var xymin, xymax, zmin, zmax;
+
+            var _getMinMax = this.getMinMax(xyrange);
 
             var _getMinMax2 = _slicedToArray(_getMinMax, 2);
 
-            xmin = _getMinMax2[0];
-            xmax = _getMinMax2[1];
+            xymin = _getMinMax2[0];
+            xymax = _getMinMax2[1];
 
-            // set the colors of each spaxel
-            // var spaxColors = this.interpColors([zmin, zmax]);
-            //console.log('spaxColors', spaxColors);
-            //console.log('BEFORE this.data', this.data.length, this.data[0].length, this.data[0]);
-            //var data = this.interpColors([zmin, zmax]);
-            //console.log('AFTER data', data.length, data[0].length, data[0][0]);
-
-            var _getMinMax3 = this.getMinMax(zscale);
+            var _getMinMax3 = this.getMinMax(zrange);
 
             var _getMinMax4 = _slicedToArray(_getMinMax3, 2);
 
             zmin = _getMinMax4[0];
             zmax = _getMinMax4[1];
-            var data = this.addNull(this.data);
-            console.log('AFTER data', data);
+
+
+            var data = this.setNull(this.data);
+            console.log('\n\n\ndraw: ', this.title);
 
             this.mapdiv.highcharts({
                 chart: {
                     type: 'heatmap',
                     marginTop: 40,
                     marginBottom: 80,
-                    plotBorderWidth: 1
+                    plotBorderWidth: 1,
+                    backgroundColor: null,
+                    plotBackgroundColor: '#A8A8A8'
                 },
                 credits: { enabled: false },
                 title: { text: this.title },
@@ -610,16 +610,18 @@ var HeatMap = function () {
                 xAxis: {
                     title: { text: 'Spaxel X' },
                     minorGridLineWidth: 0,
-                    min: xmin,
-                    max: xmax,
-                    tickInterval: 1
+                    min: xymin,
+                    max: xymax,
+                    tickInterval: 1,
+                    tickLength: 0
                 },
                 yAxis: {
                     title: { text: 'Spaxel Y' },
-                    min: xmin,
-                    max: xmax,
+                    min: xymin,
+                    max: xymax,
                     tickInterval: 1,
-                    endontick: false
+                    endOnTick: false,
+                    gridLineWidth: 0
                 },
                 colorAxis: {
                     min: Math.floor(zmin),
@@ -631,10 +633,31 @@ var HeatMap = function () {
                 },
                 plotOptions: {
                     heatmap: {
-                        nullColor: '#FF00FF'
+                        nullColor: 'url(#custom-pattern)' //'#A8A8A8'
                     }
                 },
-                // colors: spaxColors,
+                defs: {
+                    patterns: [{
+                        width: 3,
+                        height: 3,
+                        'id': 'custom-pattern',
+                        'path': {
+                            // I *think* M and L define the start and end points of line segments of the
+                            // pattern in units of the width and height, which both default to 10. To
+                            // change the density of the pattern hatching, decrease the width and height
+                            // and then scale down the "d" values accorindingly.
+                            // The second and third set of M and L coordinates color in the upper right
+                            // and lower left corners of the box to make the line segments of the
+                            // adjacent boxes look continuous. This isn't needed for the vertical or
+                            // horizontal hatching.
+                            // d: 'M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11',
+                            // d: 'M 0 0 L 7 7 M 6 -1 L 8 1 M -1 6 L 1 8',
+                            d: 'M 0 0 L 3 3 M 0 3 L 3 0',
+                            stroke: 'white', // '#A8A8A8',
+                            strokeWidth: 0.3
+                        }
+                    }]
+                },
                 legend: {
                     align: 'right',
                     layout: 'vertical',

@@ -21,6 +21,7 @@ from marvin.core import MarvinError
 from marvin.tools.cube import Cube
 from marvin import config
 import os
+import json
 
 try:
     from sdss_access.path import Path
@@ -58,13 +59,19 @@ def getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564'):
     webmap = None
     try:
         maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype='NONE', niter='003')
-        ha = maps.getMap(category=category, channel=channel)
+        data = maps.getMap(category=category, channel=channel)
     except Exception as e:
         raise(e)
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
-        vals = ha.value
-        webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
+        vals = data.value
+        # ivar = data.ivar TODO
+        # mask = data.mask TODO
+        # TODO How does highcharts read in values? Pass ivar and mask with webmap.
+        webmap = {'values': [list(it) for it in data.value],
+                  'ivar': [list(it) for it in data.ivar],
+                  'mask': [list(it) for it in data.mask]}
+        # webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
         mapmsg = "{0}: {1}".format(cube.plateifu, name)
     return webmap, mapmsg
 
