@@ -15,13 +15,12 @@ except ImportError as e:
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
-           'downloadList', 'getSpaxel']
+           'downloadList', 'getSpaxel', 'get_drpall_row']
 
-drpTable = None
+drpTable = {}
 
 
-def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
-              ra=None, dec=None, xyorig=None):
+def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=None):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -34,15 +33,15 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     both of them.
 
     Parameters:
-        cube_object (:class:`~marvin.tools.cube.Cube` or None)
+        cube (:class:`~marvin.tools.cube.Cube` or None)
             A :class:`~marvin.tools.cube.Cube` object with th DRP cube
             data from which the spaxel spectrum will be extracted. If None,
             the |spaxel| object(s) returned won't contain spectral information.
-        maps_object (:class:`~marvin.tools.maps.Maps` or None)
-            As ``cube_object`` but for the :class:`~marvin.tools.maps.Maps`
+        maps (:class:`~marvin.tools.maps.Maps` or None)
+            As ``cube`` but for the :class:`~marvin.tools.maps.Maps`
             object representing the DAP maps entity. If None, the |spaxel|
             will be returned without DAP information. At least one of
-            ``cube_object`` or ``maps_object`` must not be None.
+            ``cube`` or ``maps`` must not be None.
         x,y (int or array):
             The spaxel coordinates relative to ``xyorig``. If ``x`` is an
             array of coordinates, the size of ``x`` must much that of
@@ -76,14 +75,14 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     import marvin.tools.spaxel
 
     # Checks that the cube and maps data are correct
-    assert cube_object is not None or maps_object is not None, \
-        'Either cube_object or maps_object needs to be specified.'
+    assert cube is not None or maps is not None, \
+        'Either cube or maps needs to be specified.'
 
-    assert cube_object is None or isinstance(cube_object, marvin.tools.cube.Cube), \
-        'cube_object is not an instance of Cube'
+    assert cube is None or isinstance(cube, marvin.tools.cube.Cube), \
+        'cube is not an instance of Cube'
 
-    assert maps_object is None or isinstance(maps_object, marvin.tools.maps.Maps), \
-        'maps_object is not an instance of Maps'
+    assert maps is None or isinstance(maps, marvin.tools.maps.Maps), \
+        'maps is not an instance of Maps'
 
     # Checks that we have the correct set of inputs.
     if x is not None or y is not None:
@@ -112,30 +111,27 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     if not xyorig:
         xyorig = marvin.config.xyorig
 
-    # TODO: cube_object does not have wcs or shape if initialised from API.
-    # Fix this in the initialisation of Cube.
-    if maps_object:
-        ww = maps_object.wcs if inputMode == 'sky' else None
-        cubeShape = maps_object.shape
-        plateifu = maps_object.plateifu
+    if maps:
+        ww = maps.wcs if inputMode == 'sky' else None
+        cube_shape = maps.shape
+        plateifu = maps.plateifu
     else:
-        ww = cube_object.wcs if inputMode == 'sky' else None
-        cubeShape = cube_object.shape
-        plateifu = cube_object.plateifu
+        ww = cube.wcs if inputMode == 'sky' else None
+        cube_shape = cube.shape
+        plateifu = cube.plateifu
 
-    iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape,
+    iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
 
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel._initFromData(
-                plateifu, jCube[0][ii], iCube[0][ii],
-                cube=cube_object, maps=maps_object))
+            marvin.tools.spaxel.Spaxel._from_data(plateifu, jCube[0][ii], iCube[0][ii],
+                                                  cube_shape, cube=cube, maps=maps))
 
     # Sets the shape of the cube on the spaxels
     for sp in _spaxels:
-        sp._parent_shape = cubeShape
+        sp._parent_shape = cube_shape
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -256,7 +252,6 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     """
 
-    global drpTable
     from marvin import config, marvindb
     from marvin.api.api import Interaction
 
@@ -274,12 +269,12 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
             raise ValueError('no drpall file can be found.')
 
         # Loads the drpall table if it was not cached from a previos session.
-        if not drpTable:
-            drpTable = table.Table.read(drpall)
+        if drpver not in drpTable:
+            drpTable[drpver] = table.Table.read(drpall)
 
-        mangaids = np.array([mm.strip() for mm in drpTable['mangaid']])
+        mangaids = np.array([mm.strip() for mm in drpTable[drpver]['mangaid']])
 
-        plateifus = drpTable[np.where(mangaids == mangaid)]
+        plateifus = drpTable[drpver][np.where(mangaids == mangaid)]
 
         if len(plateifus) > 1:
             warnings.warn('more than one plate-ifu found for mangaid={0}. '
@@ -573,6 +568,7 @@ def getSpaxelXY(cube, plateifu, x, y):
     return spaxel
 
 
+# TODO: getSpaxelAPI is deprecated now.
 def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center'):
     """Gets and spaxel from a cube using the API.
 
@@ -732,3 +728,25 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
     rsync_access.commit(limit=limit)
+
+
+def get_drpall_row(plateifu, drpver=None, drpall=None):
+    """Returns a row from drpall matching the plateifu."""
+
+    from marvin import config
+
+    if drpall:
+        drpall_table = table.Table.read(drpall)
+    else:
+        drpver = drpver if drpver else config.drpver
+        if drpver not in drpTable:
+            drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+            drpTable[drpver] = table.Table.read(drpall)
+        drpall_table = drpTable[drpver]
+
+    row = drpall_table[drpall_table['plateifu'] == plateifu]
+
+    if len(row) != 1:
+        raise ValueError('{0} results found for {1} in drpall table'.format(len(row), plateifu))
+
+    return row[0]
