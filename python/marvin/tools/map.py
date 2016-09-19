@@ -10,8 +10,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import re
+from distutils import version
+import warnings
 
+from astropy.io import fits
 import numpy
 
 import marvin
@@ -23,13 +25,8 @@ try:
     import matplotlib.pyplot as plt
     import mpl_toolkits.axes_grid1
     pyplot = True
-except:
+except ImportError:
     pyplot = False
-
-try:
-    import sqlalchemy
-except:
-    sqlalchemy = None
 
 
 class Map(object):
@@ -53,163 +50,123 @@ class Map(object):
         maps (:class:`~marvin.tools.maps.Maps` object):
             The :class:`~marvin.tools.maps.Maps` instance from which we
             are extracting the ``Map``.
-        category (str):
-            The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+        property_name (str):
+            The category of the map to be extractred. E.g., `'emline_gflux'`.
         channel (str or None):
-            If the ``category`` contains multiple channels, the channel to use,
-            e.g., ``Ha-6564'. Otherwise, ``None``.
+            If the ``property`` contains multiple channels, the channel to use,
+            e.g., ``ha_6564'. Otherwise, ``None``.
 
     """
 
     # TODO: make this a MarvinToolsClass (JSG)
 
-    def __init__(self, maps, category, channel=None):
+    def __init__(self, maps, property_name, channel=None):
 
         assert isinstance(maps, marvin.tools.maps.Maps)
 
-        self.parent_maps = maps
-        self.category = category.upper()
-        self.channel = channel.upper() if channel is not None else None
+        self.maps = maps
+        self.property_name = property_name.lower()
+        self.channel = channel.lower() if channel else None
+        self.shape = self.maps.shape
+
+        self.maps_property = self.maps.properties[self.property_name]
+        if self.maps_property is None or self.channel not in self.maps_property.channels:
+            raise marvin.core.exceptions.MarvinError(
+                'invalid combination of property name and channel.')
 
         self.value = None
+        self.ivar = None
+        self.mask = None
+
         self.header = None
         self.unit = None
-        self.index = None
 
         if maps.data_origin == 'file':
-            self._init_from_file()
+            self._load_map_from_file()
         elif maps.data_origin == 'db':
-            self._init_from_db()
+            self._load_map_from_db()
         elif maps.data_origin == 'api':
-            self._init_from_remote()
+            self._load_map_from_api()
 
-        # In some cases ivar and mask are None. We make them arrays.
-        if self.ivar is None:
-            self.ivar = numpy.zeros(self.value.shape)
-
-        if self.mask is None:
-            self.mask = numpy.ones(self.value.shape)
-
-    def _init_from_file(self):
+    def _load_map_from_file(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='file'``."""
 
-        if self.category not in self.parent_maps.data:
-            raise marvin.core.exceptions.MarvinError(
-                'invalid category {0}'.format(self.category))
+        self.header = self.maps.data[self.property_name].header
 
-        self.header = self.parent_maps.data[self.category].header
-        self.unit = self.header['BUNIT'] if 'BUNIT' in self.header else None
+        if self.channel is not None:
+            channel_idx = self.maps_property.channels.index(self.channel)
+            self.value = self.maps.data[self.property_name].data[channel_idx]
+            if self.maps_property.ivar:
+                self.ivar = self.maps.data[self.property_name + '_ivar'].data[channel_idx]
+            if self.maps_property.mask:
+                self.mask = self.maps.data[self.property_name + '_mask'].data[channel_idx]
+        else:
+            self.value = self.maps.data[self.property_name].data
+            if self.maps_property.ivar:
+                self.ivar = self.maps.data[self.property_name + '_ivar'].data
+            if self.maps_property.mask:
+                self.mask = self.maps.data[self.property_name + '_mask'].data
 
-        # Gets the channels and creates the names.
-        channel_keys = [key for key in self.header.keys() if re.match('C[0-9]+', key)]
-        names = [re.sub('\-+', '-', self.header[key]) for key in channel_keys]
-        names_upper = [name.upper() for name in names]
-
-        if len(names_upper) > 0 and self.channel is None:
-            raise marvin.core.exceptions.MarvinError(
-                'a channel is required to initialise a map for category {0}'
-                .format(self.category))
-
-        if self.channel not in names_upper:
-            raise marvin.core.exceptions.MarvinError(
-                'channel {0} not found for category {1}'.format(self.channel,
-                                                                self.category))
-
-        self.index = names_upper.index(self.channel)
-
-        self.value = self.parent_maps.data[self.category].data[self.index, :, :]
-        self.ivar = self.parent_maps.data[self.category + '_ivar'].data[self.index, :, :]
-        self.mask = self.parent_maps.data[self.category + '_mask'].data[self.index, :, :]
+        if isinstance(self.maps_property.unit, list):
+            self.unit = self.maps_property.unit[channel_idx]
+        else:
+            self.unit = self.maps_property.unit
 
         return
 
-    def _init_from_db(self):
+    def _load_map_from_db(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='db'``."""
 
-        # TODO: this will break if the datamodel changes ... (JSG)
-
-        assert sqlalchemy, 'sqlalchemy is required.'
-
-        mdb = marvin.marvindb
-
-        dap_db_file = self.parent_maps.data
-
-        # Depending on the type of category we'll need to run a different query.
-        if 'EMLINE' in self.category:
-            assert self.channel is not None, 'channel required for {0}'.format(self.category)
-            subcategory = self.category.split('_')[1]
-            emline_name, emline_wavelength = self.channel.split('-')
-
-            emline = mdb.session.query(mdb.dapdb.EmLine).join(
-                mdb.dapdb.File,
-                mdb.dapdb.EmLineType,
-                mdb.dapdb.EmLineParameter).filter(
-                    mdb.dapdb.File.pk == dap_db_file.pk,
-                    sqlalchemy.func.upper(mdb.dapdb.EmLineType.name) == emline_name,
-                    mdb.dapdb.EmLineType.rest_wavelength == float(emline_wavelength),
-                    mdb.dapdb.EmLineParameter.name == subcategory).first()
-
-            if emline is None:
-                raise marvin.core.exceptions.MarvinError('no results found')
-
-            self.value = numpy.array(emline.value)
-            self.ivar = numpy.array(emline.ivar)
-            self.mask = numpy.array(emline.mask)
-            self.unit = emline.parameter.unit
-
-        elif 'STELLAR' in self.category:
-            subcategory = self.category.split('_')[1]
-            assert subcategory in ['VEL', 'SIGMA']
-
-            stellar = mdb.session.query(mdb.dapdb.StellarKin).join(
-                mdb.dapdb.File, mdb.dapdb.StellarKinParameter).filter(
-                    mdb.dapdb.File.pk == dap_db_file.pk,
-                    mdb.dapdb.StellarKinParameter.name == subcategory).first()
-
-            if stellar is None:
-                raise marvin.core.exceptions.MarvinError('no results found')
-
-            self.value = numpy.array(stellar.value)
-            self.ivar = numpy.array(stellar.ivar)
-            self.mask = numpy.array(stellar.mask)
-            self.unit = stellar.parameter.unit
-
-        elif 'SPECINDEX' in self.category:
-            assert self.channel is not None, 'channel required for {0}'.format(self.category)
-
-            specindex = mdb.session.query(mdb.dapdb.SpecIndex).join(
-                mdb.dapdb.File,
-                mdb.dapdb.SpecIndexType).filter(
-                    mdb.dapdb.File.pk == dap_db_file.pk,
-                    sqlalchemy.func.upper(mdb.dapdb.SpecIndexType.name) == self.channel).first()
-
-            if specindex is None:
-                raise marvin.core.exceptions.MarvinError('no results found')
-
-            self.value = numpy.array(specindex.value)
-            self.ivar = numpy.array(specindex.ivar)
-            self.mask = numpy.array(specindex.mask)
-            self.unit = None
-
+        if version.StrictVersion(self.maps._dapver) <= version.StrictVersion('1.1.1'):
+            spaxels = self.maps.data.spaxelprops
         else:
-            marvin.core.exceptions.MarvinError(
-                'category {0} is not valid or I do not know how to parse it.'
-                .format(self.category))
+            spaxels = self.maps.data.spaxelprops5
 
-        return
+        spaxel_index = numpy.array([spaxel.spaxel_index for spaxel in spaxels])
+        spaxel_order = numpy.argsort(spaxel_index)
 
-    def _init_from_remote(self):
+        fullname_value = self.maps_property.fullname(channel=self.channel)
+        self.value = numpy.array([getattr(spaxel, fullname_value)
+                                  for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+
+        if self.maps_property.ivar:
+            fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
+            self.ivar = numpy.array([getattr(spaxel, fullname_ivar)
+                                     for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+
+        if self.maps_property.mask:
+            fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
+            self.mask = numpy.array([getattr(spaxel, fullname_mask)
+                                     for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+
+        # Gets the header
+        hdus = self.maps.data.hdus
+        header_dict = None
+        for hdu in hdus:
+            if self.maps_property.name.upper() == hdu.extname.name.upper():
+                header_dict = hdu.header_to_dict()
+                break
+
+        if not header_dict:
+            warnings.warn('cannot find the header for property {0}.'
+                          .format(self.maps_property.name),
+                          marvin.core.exceptions.MarvinUserWarning)
+        else:
+            self.header = fits.Header(header_dict)
+
+    def _load_map_from_api(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='api'``."""
 
         url = marvin.config.urlmap['api']['getmap']['url']
 
         url_full = url.format(
-            **{'name': self.parent_maps.plateifu,
-               'path': 'category={0}/channel={1}'.format(self.category,
-                                                         self.channel)})
+            **{'name': self.maps.plateifu,
+               'path': 'property_name={0}/channel={1}'.format(self.property_name, self.channel)})
 
         try:
-            response = marvin.api.api.Interaction(url_full)
+            response = marvin.api.api.Interaction(url_full,
+                                                  params={'drpver': self.maps._drpver,
+                                                          'dapver': self.maps._dapver})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))
@@ -218,13 +175,13 @@ class Map(object):
 
         if data is None:
             raise marvin.core.exceptions.MarvinError(
-                'something went wrong. '
-                'Error is: {0}'.format(response.results['error']))
+                'something went wrong. Error is: {0}'.format(response.results['error']))
 
         self.value = numpy.array(data['value'])
         self.ivar = numpy.array(data['ivar'])
         self.mask = numpy.array(data['mask'])
         self.unit = data['unit']
+        self.header = fits.Header(data['header'])
 
         return
 
