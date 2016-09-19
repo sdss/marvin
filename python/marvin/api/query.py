@@ -1,15 +1,18 @@
 import json
 from flask.ext.classy import route
-from flask import session as current_session
+from flask import session as current_session, request
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
 from marvin.core import MarvinError
+from marvin.api import parse_params
 
 
 def _getCubes(searchfilter, params=None, start=None, end=None):
     """Run query locally at Utah."""
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local')
+    drpver, dapver = parse_params(request)
+
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local', drpver=drpver, dapver=dapver)
     results = r.results
 
     # get a subset
