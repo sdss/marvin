@@ -119,7 +119,7 @@ class ParamFormLookupDict(dict):
         matches = self._get_matches(keySplits)
 
         # Check DAP Junk keys
-        isdapjunk = any(['mangadapdb.junk' in m for m in matches])
+        isdapjunk = any(['mangadapdb.spaxelprop' in m for m in matches])
         if isdapjunk:
             keySplits = self._apply_shortcuts(matches[0])
             matches = self._get_matches(keySplits)
@@ -183,15 +183,15 @@ class ParamFormLookupDict(dict):
         return keySplits
 
     def _set_junk_shortcuts(self):
-        ''' Sets the DAP junk shortcuts based on MPL '''
+        ''' Sets the DAP spaxelprop shortcuts based on MPL '''
 
         newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
         if '4' in config.mplver:
-            dapcut = {'junk{0}'.format(m.split('-')[1]): 'junk' for m in newmpls}
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop' for m in newmpls}
         else:
             mdigit = config.mplver.split('-')[1]
-            dapcut = {'junk{0}'.format(m.split('-')[1]): 'junk{0}'.format(mdigit) for m in newmpls}
-            dapcut.update({'junk': 'junk{0}'.format(mdigit)})
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop{0}'.format(mdigit) for m in newmpls}
+            dapcut.update({'spaxelprop': 'spaxelprop{0}'.format(mdigit)})
         self._tableShortcuts.update(dapcut)
 
     def _get_matches(self, keySplits):
@@ -302,7 +302,7 @@ class MarvinForm(object):
     def _getDapKeys(self):
         ''' Returns the DAP keys from the Junk tables
         '''
-        dapkeys = [k for k in self._param_form_lookup.keys() if 'mangadapdb.junk' in k]
+        dapkeys = [k for k in self._param_form_lookup.keys() if 'mangadapdb.spaxelprop' in k]
         dapkeys.sort()
         return dapkeys
 

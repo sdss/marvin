@@ -46,7 +46,7 @@ class TestQuery(MarvinTest):
         self.assertIsNone(q.query)
 
     def test_Query_drpver_and_dapver(self):
-        p = 'cube.plate==8485 and junk.emline_gflux_ha_6564>25'
+        p = 'cube.plate==8485 and spaxelprop.emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
@@ -107,20 +107,20 @@ class TestQuery(MarvinTest):
         self.assertEqual(2, r.totalcount)  # MPL-4 count
 
     def test_dap_query_1(self):
-        p = 'junk.emline_gflux_ha_6564 > 25'
-        q = Query(searchfilter=p, returnparams=['junk.emline_gflux_hb_4862'])
+        p = 'spaxelprop.emline_gflux_ha_6564 > 25'
+        q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'])
         r = q.run()
         self.assertEqual(231, r.totalcount)
 
     def test_dap_query_2(self):
-        p = 'npergood(junk.emline_gflux_ha_6564 > 5) >= 20'
+        p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
     def test_dap_query_2_remote(self):
         self._setRemote()
-        p = 'npergood(junk.emline_gflux_ha_6564 > 5) >= 20'
+        p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(8, r.totalcount)

@@ -758,9 +758,9 @@ class Query(object):
         ''' Builds a DAP zonal query
         '''
 
-        # get the appropriate Junk ModelClass
+        # get the appropriate Junk (SpaxelProp) ModelClass
         self._junkclass = self.marvinform.\
-            _param_form_lookup['junk.file'].Meta.model
+            _param_form_lookup['spaxelprop.file'].Meta.model
 
         # get good spaxels
         # bingood = self.getGoodSpaxels()
