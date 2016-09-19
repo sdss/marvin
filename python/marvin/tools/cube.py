@@ -335,9 +335,7 @@ class Cube(MarvinToolsClass):
             if self._cube:
                 self._useDB = True
 
-                # TODO: this is ugly at so many levels ...
-                self.header = fits.Header(eval(self._cube.hdr[0].header).items())
-
+                self.header = self._cube.header
                 self.wcs = WCS(self._cube.wcs.makeHeader())
                 self.data = self._cube
                 self.wavelength = self.data.wavelength.wavelength
