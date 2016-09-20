@@ -106,11 +106,38 @@ class TestQuery(MarvinTest):
         self.assertEqual([], q.joins)
         self.assertEqual(2, r.totalcount)  # MPL-4 count
 
-    def test_dap_query_1(self):
-        p = 'spaxelprop.emline_gflux_ha_6564 > 25'
+    def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp'):
+        if table:
+            key = '{0}.{1}'.format(table, name)
+        else:
+            key = '{0}'.format(name)
+
+        p = '{0} > 25'.format(key)
         q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'])
         r = q.run()
-        self.assertEqual(231, r.totalcount)
+        self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
+        self.assertEqual(count, r.totalcount)
+
+    def test_dap_query_1_normal(self):
+        self._dap_query_1(231, table='spaxelprop')
+
+    def test_dap_query_1_haflux(self):
+        self._dap_query_1(231, name='haflux')
+
+    def test_dap_query_1_sp5(self):
+        self._dap_query_1(231, table='spaxelprop5')
+
+    def test_dap_query_1_normal_mpl5(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5')
+
+    def test_dap_query_1_haflux_mpl5(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, name='haflux', classname='SpaxelProp5')
+
+    def test_dap_query_1_sp5_mpl5(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, table='spaxelprop5', classname='SpaxelProp5')
 
     def test_dap_query_2(self):
         p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'

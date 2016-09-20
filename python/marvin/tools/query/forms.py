@@ -19,7 +19,7 @@ from wtforms import StringField, validators, SelectField, SelectMultipleField, I
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 import re
 import warnings
@@ -164,7 +164,8 @@ class ParamFormLookupDict(dict):
 
     def _init_name_shortcuts(self):
         ''' initialize the name shortcuts '''
-        self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564'}
+        self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
+                               'g-r': 'nsa.petroth50_el_colour("g","r")'}
 
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''
@@ -182,6 +183,11 @@ class ParamFormLookupDict(dict):
 
         return keySplits
 
+    def _get_real_key(self, key):
+        ''' Returns the real full key given some shortcuts '''
+        keySplits = self._apply_shortcuts(key)
+        return '.'.join(keySplits)
+
     def _set_junk_shortcuts(self):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''
 
@@ -192,6 +198,12 @@ class ParamFormLookupDict(dict):
             mdigit = config.mplver.split('-')[1]
             dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop{0}'.format(mdigit) for m in newmpls}
             dapcut.update({'spaxelprop': 'spaxelprop{0}'.format(mdigit)})
+
+        # add junk shortcuts
+        junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
+        dapcut.update(junkcuts)
+
+        # update the main dictionary
         self._tableShortcuts.update(dapcut)
 
     def _get_matches(self, keySplits):
@@ -272,10 +284,11 @@ class MarvinForm(object):
         tablename = model.__table__.name
 
         mapper = sa_inspect(model)
-        for item in mapper.all_orm_descriptors:
-            if type(item) == hybrid_property:
-                key = item.__name__
-            elif type(item) == InstrumentedAttribute:
+        for key, item in mapper.all_orm_descriptors.items():
+            if isinstance(item, hybrid_property) or \
+               isinstance(item, hybrid_method):
+                key = key
+            elif isinstance(item, InstrumentedAttribute):
                 key = item.key
             else:
                 continue

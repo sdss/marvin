@@ -256,13 +256,20 @@ class Query(object):
         return True if any(inschema) else False
 
     def _check_shortcuts_in_filter(self, strfilter):
-        ''' Check for shortcut names in string filter
+        ''' Check for shortcuts in string filter
 
-            Replaces shortcut names in string searchfilter
-            with the full names.
+            Replaces shortcuts in string searchfilter
+            with the full tables and names.
 
             is there a better way?
         '''
+        # table shortcuts
+        # for key in self.marvinform._param_form_lookup._tableShortcuts.keys():
+        #     #if key in strfilter:
+        #     if re.search('{0}.[a-z]'.format(key), strfilter):
+        #         strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._tableShortcuts[key])
+
+        # name shortcuts
         for key in self.marvinform._param_form_lookup._nameShortcuts.keys():
             if key in strfilter:
                 strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
@@ -279,7 +286,7 @@ class Query(object):
         '''
         dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
         if any(dapschema):
-            dapcols = ['junk.spaxel_index']
+            dapcols = ['spaxelprop.spaxel_index']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
             self.queryparams.extend([self.marvinform._param_form_lookup.mapToColumn(dapcols)])
@@ -312,7 +319,7 @@ class Query(object):
         elif self.returntype == 'rssfiber':
             self.defaultparams.extend(['rssfiber.fiber.fiberid'])
         elif self.returntype == 'map':
-            self.defaultparams.extend(['junk.spaxel_index'])
+            self.defaultparams.extend(['spaxelprop.spaxel_index'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)
