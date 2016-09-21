@@ -17,7 +17,10 @@ import marvin
 import marvin.tests
 import marvin.tools.cube
 import marvin.tools.maps
-import marvin.tools.spaxel
+
+from marvin.tools.analysis_props import DictOfProperties
+from marvin.tools.spaxel import Spaxel
+from marvin.tools.spectrum import Spectrum
 
 
 class TestSpaxelBase(marvin.tests.MarvinTest):
@@ -59,66 +62,115 @@ class TestSpaxelBase(marvin.tests.MarvinTest):
         pass
 
 
-class TestSpaxelParent(TestSpaxelBase):
+class TestSpaxelInit(TestSpaxelBase):
 
-    def test_parent_shape_file(self):
-        spaxel = marvin.tools.spaxel.Spaxel(filename=self.filename_cube, x=5, y=3)
-        self.assertIsNotNone(spaxel._parent_shape)
-        self.assertListEqual(list(spaxel._parent_shape), [34, 34])
+    def test_no_cube_no_maps_db(self):
 
-    def test_parent_shape_db(self):
-        spaxel = marvin.tools.spaxel.Spaxel(plateifu=self.plateifu, x=5, y=3)
-        self.assertIsNotNone(spaxel._parent_shape)
-        self.assertListEqual(list(spaxel._parent_shape), [34, 34])
+        spaxel = Spaxel(x=15, y=16, plateifu=self.plateifu)
 
-    def test_parent_shape_remote(self):
-        spaxel = marvin.tools.spaxel.Spaxel(plateifu=self.plateifu, x=5, y=3, mode='remote')
-        self.assertIsNotNone(spaxel._parent_shape)
-        self.assertListEqual(list(spaxel._parent_shape), [34, 34])
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
 
-    def _test_from_cube_or_map(self, obj):
-        spaxels = obj.getSpaxel(x=[5, 10], y=[2, 3])
-        for sp in spaxels:
-            self.assertIsNotNone(sp._parent_shape)
-            self.assertListEqual(list(sp._parent_shape), [34, 34])
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
 
-    def test_parent_spaxel_from_cube_file(self):
+    def test_cube_false_no_maps_db(self):
+
+        spaxel = Spaxel(x=15, y=16, plateifu=self.plateifu, cube=False)
+
+        self.assertIsNone(spaxel.cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
+
+        self.assertIsNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+
+    def test_no_cube_maps_false_db(self):
+
+        spaxel = Spaxel(x=15, y=16, plateifu=self.plateifu, maps=False)
+
+        self.assertIsNone(spaxel.maps)
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) == 0)
+
+    def test_cube_object_db(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
+        spaxel = Spaxel(x=15, y=16, cube=cube)
+
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+
+    def test_cube_object_maps_false_db(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
+        spaxel = Spaxel(x=15, y=16, cube=cube, maps=False)
+
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsNone(spaxel.maps)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) == 0)
+
+    def test_cube_maps_object_filename(self):
+
         cube = marvin.tools.cube.Cube(filename=self.filename_cube)
-        self._test_from_cube_or_map(cube)
-
-    def test_parent_spaxel_from_cube_db(self):
-        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
-        self.assertEqual(cube.data_origin, 'db')
-        self._test_from_cube_or_map(cube)
-
-    def test_parent_spaxel_from_cube_remote(self):
-        cube = marvin.tools.cube.Cube(plateifu=self.plateifu, mode='remote')
-        self.assertEqual(cube.data_origin, 'api')
-        self._test_from_cube_or_map(cube)
-
-    def test_parent_spaxel_from_maps_file(self):
         maps = marvin.tools.maps.Maps(filename=self.filename_maps_default)
-        self._test_from_cube_or_map(maps)
+        spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
 
-    def test_parent_spaxel_from_maps_db(self):
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
-        self.assertEqual(maps.data_origin, 'db')
-        self._test_from_cube_or_map(maps)
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
 
-    def test_parent_spaxel_from_maps_remote(self):
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+
+    def test_cube_maps_object_filename_mpl5(self):
+
+        marvin.config.setMPL('MPL-5')
+
+        cube = marvin.tools.cube.Cube(filename=self.filename_cube)
+        maps = marvin.tools.maps.Maps(filename=self.filename_maps_default)
+        spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
+
+        self.assertEqual(cube._drpver, 'v1_5_1')
+        self.assertEqual(spaxel._drpver, 'v1_5_1')
+        self.assertEqual(maps._drpver, 'v1_5_1')
+        self.assertEqual(maps._dapver, '1.1.1')
+        self.assertEqual(spaxel._dapver, '1.1.1')
+
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+
+    def test_cube_object_api(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu, mode='remote')
+        spaxel = Spaxel(x=15, y=16, cube=cube)
+
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+
+    def test_cube_maps_object_api(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu, mode='remote')
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
-        self.assertEqual(maps.data_origin, 'api')
-        self._test_from_cube_or_map(maps)
+        spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
 
-    def test_repr_central_spaxel(self):
-        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
-        spaxel = cube.getSpaxel(x=0, y=0, xyorig='center')
-        self.assertEqual(repr(spaxel), '<Marvin Spaxel (x=17, y=17; x_cen=0, y_cen=0>')
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
 
-    def test_repr_random_spaxel(self):
-        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
-        spaxel = cube.getSpaxel(x=5, y=3, xyorig='lower')
-        self.assertEqual(repr(spaxel), '<Marvin Spaxel (x=5, y=3; x_cen=-12, y_cen=-14>')
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+        self.assertIsInstance(spaxel.properties, DictOfProperties)
 
 
 if __name__ == '__main__':
