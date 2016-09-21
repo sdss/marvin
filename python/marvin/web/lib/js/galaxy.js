@@ -126,6 +126,7 @@ var Galaxy = function () {
             var _this = this;
             $.each(mapchildren, function (index, child) {
                 var mapdiv = $(child).find('div').first();
+                console.log('maps[index].data', maps[index].data);
                 this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
             });
         }

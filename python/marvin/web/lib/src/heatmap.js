@@ -22,8 +22,8 @@ class HeatMap {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            this.forceRedraw(Highcharts);
-            this.setColorNoData(this, Highcharts);
+            //this.forceRedraw(Highcharts);
+            //this.setColorNoData(this, Highcharts);
         }
 
     };
@@ -62,8 +62,6 @@ class HeatMap {
         var mask = x.mask;
 
         var xyz = Array();
-        
-        console.log();
         
         for (var ii=0; ii < values.length; ii++) {
             for (var jj=0; jj < values.length; jj++){
@@ -115,10 +113,10 @@ class HeatMap {
         // get the min and max of the ranges
         var xymin, xymax, zmin, zmax;
         [xymin, xymax] = this.getMinMax(xyrange);
-        [zmin, zmax] = this.getMinMax(zrange);
+        [zmin, zmax] = this.getMinMax(zrange);        
         
         var data = this.setNull(this.data);
-        console.log('\n\n\ndraw: ', this.title);
+        // console.log('data', data);
 
         this.mapdiv.highcharts({
             chart: {

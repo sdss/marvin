@@ -30,8 +30,8 @@ var HeatMap = function () {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            this.forceRedraw(Highcharts);
-            this.setColorNoData(this, Highcharts);
+            //this.forceRedraw(Highcharts);
+            //this.setColorNoData(this, Highcharts);
         }
     }
 
@@ -95,8 +95,6 @@ var HeatMap = function () {
             var mask = x.mask;
 
             var xyz = Array();
-
-            console.log();
 
             for (var ii = 0; ii < values.length; ii++) {
                 for (var jj = 0; jj < values.length; jj++) {
@@ -174,7 +172,7 @@ var HeatMap = function () {
 
 
             var data = this.setNull(this.data);
-            console.log('\n\n\ndraw: ', this.title);
+            // console.log('data', data);
 
             this.mapdiv.highcharts({
                 chart: {
