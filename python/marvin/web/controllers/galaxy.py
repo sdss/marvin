@@ -105,8 +105,8 @@ class Galaxy(FlaskView):
                     maplink = sdss_path.url('mangadefault', drpver=cube._drpver, dapver=config.dapver, plate=cube.plate, ifu=cube.ifu)
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
-                    self.galaxy['image'] = cube._cube.image
-                print('image', cube._cube.image)
+                    self.galaxy['image'] = cube.data.image
+                print('image', cube.data.image)
 
             # Get the initial spectrum
             if cube:
