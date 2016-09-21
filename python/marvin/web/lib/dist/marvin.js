@@ -276,8 +276,8 @@ var Galaxy = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-13 11:19:07
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-14 10:54:56
 */
 
 'use strict';
@@ -345,6 +345,7 @@ var Header = function () {
             typediv.typeahead('destroy');
             typediv.typeahead({
                 showHintOnFocus: true,
+                items: 30,
                 source: this.galids.ttAdapter(),
                 afterSelect: function afterSelect() {
                     formdiv.submit();
@@ -623,8 +624,8 @@ var OLMap = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-16 10:51:44
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-14 10:29:12
 */
 
 'use strict';
@@ -708,6 +709,7 @@ var Search = function () {
             typediv.typeahead('destroy');
             typediv.typeahead({
                 showHintOnFocus: true,
+                items: 'all',
                 source: this.queryparams.ttAdapter(),
                 updater: function updater(item) {
                     // used to updated the input box with selected option

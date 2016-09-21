@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-13 11:19:07
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-14 10:54:56
 */
 
 'use strict';
@@ -58,6 +58,7 @@ class Header {
         typediv.typeahead(
         {
         showHintOnFocus: true,
+        items: 30,
         source:this.galids.ttAdapter(),
         afterSelect: function() {
             formdiv.submit();

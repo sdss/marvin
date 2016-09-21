@@ -67,7 +67,7 @@ Tutorials
 
    tutorials/boolean-search-tutorial
    tutorials/query-examples
-
+   tutorials/jupyter-notebooks
 |
 
 General Reference

@@ -8,7 +8,7 @@ Query is a new Marvin tool that allows you to programmtically search the MaNGA d
 Queries work with just three main input keyword arguments:
 
 * **searchfilter** - a pseudo-natural language string dictating the filter conditions on your query
-* **returnparams** - a list of parameters you want the query to return
+* **returnparams** - a list of parameters you want the query to return (:ref:`marvin-query-parameters`)
 * **returntype** - a string name indicating the type of Marvin object you wish to return
 
 Queries take your inputs, parse the filter, run the Query, and return the results as a Marvin :ref:`marvin-results` object.
