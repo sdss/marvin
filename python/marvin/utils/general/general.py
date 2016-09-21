@@ -33,11 +33,11 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
     both of them.
 
     Parameters:
-        cube (:class:`~marvin.tools.cube.Cube` or None)
+        cube (:class:`~marvin.tools.cube.Cube` or None or bool)
             A :class:`~marvin.tools.cube.Cube` object with th DRP cube
             data from which the spaxel spectrum will be extracted. If None,
             the |spaxel| object(s) returned won't contain spectral information.
-        maps (:class:`~marvin.tools.maps.Maps` or None)
+        maps (:class:`~marvin.tools.maps.Maps` or None or bool)
             As ``cube`` but for the :class:`~marvin.tools.maps.Maps`
             object representing the DAP maps entity. If None, the |spaxel|
             will be returned without DAP information. At least one of
@@ -75,13 +75,13 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
     import marvin.tools.spaxel
 
     # Checks that the cube and maps data are correct
-    assert cube is not None or maps is not None, \
+    assert cube or maps, \
         'Either cube or maps needs to be specified.'
 
-    assert cube is None or isinstance(cube, marvin.tools.cube.Cube), \
+    assert not cube or isinstance(cube, marvin.tools.cube.Cube), \
         'cube is not an instance of Cube'
 
-    assert maps is None or isinstance(maps, marvin.tools.maps.Maps), \
+    assert not maps or isinstance(maps, marvin.tools.maps.Maps), \
         'maps is not an instance of Maps'
 
     # Checks that we have the correct set of inputs.
@@ -126,8 +126,8 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel._from_data(plateifu, jCube[0][ii], iCube[0][ii],
-                                                  cube_shape, cube=cube, maps=maps))
+            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
+                                       cube=cube, maps=maps))
 
     # Sets the shape of the cube on the spaxels
     for sp in _spaxels:
