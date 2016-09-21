@@ -802,7 +802,7 @@ class Query(object):
         '''
         bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
                                       func.count(self._junkclass.pk).label('goodcount')).\
-            filter(self._junkclass.binid_pk != 9999).\
+            filter(self._junkclass.binid != -1).\
             group_by(self._junkclass.file_pk).subquery('bingood',
                                                            with_labels=True)
         return bincount
