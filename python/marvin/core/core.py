@@ -71,7 +71,8 @@ class MarvinToolsClass(object):
         args = [self.filename, self.plateifu, self.mangaid]
         errmsg = 'Enter filename, plateifu, or mangaid!'
         assert any(args), errmsg
-        assert sum([bool(arg) for arg in args]) == 1, errmsg
+        assert sum([bool(arg) for arg in args]) == 1, \
+            'enter only one filename, plateifu, or mangaid.'
 
         if self.mangaid:
             self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall, drpver=self._drpver)
