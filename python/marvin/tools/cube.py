@@ -158,6 +158,11 @@ class Cube(MarvinToolsClass):
             warnings.warn('cannot retrieve redshift from drpall.', MarvinUserWarning)
             self.redshift = None
 
+        # Updates the cube _drpver. Fixes a problem in which the nominal drpver for MPL-4 is
+        # v1_5_1 but actually the files contain v1_5_0
+        header_version = self.header['VERSDRP3']
+        self._drpver = 'v1_5_1' if header_version == 'v1_5_0' else header_version
+
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
 
