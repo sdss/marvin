@@ -81,7 +81,10 @@ class MapsProperty(object):
     def fullname(self, channel=None, ext=None):
 
         if self.channels is None:
-            return self.name
+            if ext:
+                return self.name + '_' + ext
+            else:
+                return self.name
 
         if channel is None:
             raise ValueError('this MapsProperty has multiple channels. Please, specify one.')
@@ -151,7 +154,7 @@ dap_datamodel = {
                      channels=MPL4_specindex_channels,
                      unit=None,
                      description='Measurements of spectral indices.'),
-        MapsProperty('bindid', ivar=False, mask=False, channels=None,
+        MapsProperty('binid', ivar=False, mask=False, channels=None,
                      unit=None,
                      description='ID number for the bin for which the pixel value was '
                                  'calculated; bins are sorted by S/N.')],
@@ -172,7 +175,7 @@ dap_datamodel = {
         MapsProperty('spx_snr', ivar=False, mask=False, channels=None,
                      unit=None,
                      description='r-band signal-to-noise ratio per pixel.'),
-        MapsProperty('bindid', ivar=False, mask=False, channels=None,
+        MapsProperty('binid', ivar=False, mask=False, channels=None,
                      unit=None,
                      description='Numerical ID for spatial bins.'),
         MapsProperty('bin_lwskycoo', ivar=False, mask=False,
