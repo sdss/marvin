@@ -182,8 +182,8 @@ class Dotable(dict):
 
     __getattr__ = dict.__getitem__
 
-    def __init__(self, d):
-        self.update(**dict((k, self.parse(v)) for k, v in d.iteritems()))
+    # def __init__(self, d):
+    #     dict.__init__(self, ((k, self.parse(v)) for k, v in d.iteritems()))
 
     @classmethod
     def parse(cls, v):
@@ -200,7 +200,7 @@ class DotableCaseInsensitive(Dotable):
 
     def _match(self, list_of_keys, value):
 
-        lower_values = map(str.lower, list_of_keys)
+        lower_values = [str(xx).lower() for xx in list_of_keys]
         if value.lower() in lower_values:
             return list_of_keys[lower_values.index(value.lower())]
         else:
