@@ -165,7 +165,7 @@ class ParamFormLookupDict(dict):
     def _init_name_shortcuts(self):
         ''' initialize the name shortcuts '''
         self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
-                               'g_r': 'petroth50_el_colour("g","r")'}
+                               'g_r': 'petroth50_el_g_r'}
 
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''
@@ -247,10 +247,11 @@ class MarvinForm(object):
         _param_form_lookup = dictionary of all modelclass parameters of form {'SQLalchemy ModelClass parameter name': WTForm Class}
         '''
 
+        self._modelclasses = marvindb.buildUberClassDict()
         self._param_form_lookup = ParamFormLookupDict()
         self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
-        self._generateFormClasses(modelclasses)
+        self._generateFormClasses(self._modelclasses)
         self._generateFxns()
         self.SearchForm = SearchForm
         self._cleanParams()

@@ -4,6 +4,7 @@ from __future__ import print_function, division, absolute_import
 import unittest
 import copy
 from marvin import config, marvindb
+from marvin.core import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 from marvin.tools.query import Query, doQuery
 from marvin.api.api import Interaction
@@ -118,14 +119,28 @@ class TestQuery(MarvinTest):
         self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
         self.assertEqual(count, r.totalcount)
 
+    def _bad_query_1(self, errmsg, *args, **kwargs):
+        with self.assertRaises(MarvinError) as cm:
+            self._dap_query_1(*args, **kwargs)
+        self.assertIn(errmsg, str(cm.exception))
+
     def test_dap_query_1_normal(self):
         self._dap_query_1(231, table='spaxelprop')
 
     def test_dap_query_1_haflux(self):
         self._dap_query_1(231, name='haflux')
 
-    def test_dap_query_1_sp5(self):
-        self._dap_query_1(231, table='spaxelprop5')
+    def test_dap_query_1_badshortcut(self):
+        errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"
+        self._bad_query_1(errmsg, 231, table='spaxelprop5')
+
+    def test_dap_query_1_wrongname(self):
+        errmsg = 'spaxelprop5.emline_gluxf_ha does not match any column'
+        self._bad_query_1(errmsg, 231, table='spaxelprop5', name='emline_gluxf_ha')
+
+    def test_dap_query_1_wrongtable(self):
+        errmsg = 'prop5.emline_gflux_ha_6564 does not match any column'
+        self._bad_query_1(errmsg, 231, table='prop5')
 
     def test_dap_query_1_normal_mpl5(self):
         config.setMPL('MPL-5')

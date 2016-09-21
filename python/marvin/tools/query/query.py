@@ -312,14 +312,34 @@ class Query(object):
         # TODO - change mangaid to plateifu once plateifu works in
         # SQLalchemy_boolean_search and we can figure out how to grab the classes
         # for hybrid properties
-        assert self.returntype in [None, 'cube', 'spaxel', 'map', 'rss'], 'Query returntype must be either cube, spaxel, map, rss'
+
+        # cube, maps, rss, modelcube - file objects
+        # spaxel, map, rssfiber - derived objects (no file)
+        # return any of our tools
+        assert self.returntype in [None, 'cube', 'spaxel', 'maps', 'rss'], 'Query returntype must be either cube, spaxel, maps, rss'
         self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']  # cube.plate,ifu.name temp until cube.plateifu works
         if self.returntype == 'spaxel':
+            # this is ok
             self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
-        elif self.returntype == 'rssfiber':
+        elif self.returntype == 'rss':
+            #
             self.defaultparams.extend(['rssfiber.fiber.fiberid'])
-        elif self.returntype == 'map':
+        elif self.returntype == 'maps':
+            # convert this to spaxel x and y
             self.defaultparams.extend(['spaxelprop.spaxel_index'])
+
+        # these are also the default params except
+        # any query on spaxelprop should return spaxel_index (x/y)
+
+        # Minimum parameters to instantiate a Marvin Tool
+        # cube - return plateifu/mangaid
+        # modelcube - return plateifu/mangaid, bintype, template
+        # rss - return plateifu/mangaid
+        # maps - return plateifu/mangaid, bintype, template
+        # spaxel - return plateifu/mangaid, spaxel x and y
+
+        # map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
+        # rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
 
         # add to main set of params
         self.params.extend(self.defaultparams)
