@@ -366,7 +366,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return self._cube
 
-    def getSpaxel(self, with_drp=True, **kwargs):
+    def getSpaxel(self, spectrum=True, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -392,7 +392,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            with_drp (bool):
+            spectrum (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DRP spectrum.
 
@@ -406,7 +406,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
-        kwargs['cube'] = self.cube if with_drp else None
+        kwargs['cube'] = self.cube if spectrum else None
         kwargs['maps'] = self
 
         return marvin.utils.general.general.getSpaxel(**kwargs)

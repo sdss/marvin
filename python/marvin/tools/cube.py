@@ -299,7 +299,7 @@ class Cube(MarvinToolsClass):
 
         return finaltargs
 
-    def getSpaxel(self, **kwargs):
+    def getSpaxel(self, properties=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -322,6 +322,9 @@ class Cube(MarvinToolsClass):
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined. ``xyorig`` defaults to
                 ``marvin.config.xyorig.``
+            properties (bool):
+                If ``True``, the spaxel will be initiated with the DAP
+                properties from the default Maps matching this cube.
 
         Returns:
             spaxels (list):
@@ -337,7 +340,7 @@ class Cube(MarvinToolsClass):
         # an array of coordinates) and a mode keyword.
 
         kwargs['cube'] = self
-        kwargs['maps'] = None
+        kwargs['maps'] = properties
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
 
