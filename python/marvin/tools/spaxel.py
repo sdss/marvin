@@ -15,94 +15,114 @@ from __future__ import print_function
 
 import warnings
 
-from astropy.io import fits
 import numpy as np
 
 import marvin
-from marvin.api import api
-from marvin.core import MarvinToolsClass
-from marvin.core import MarvinError
-import marvin.core.exceptions
-import marvin.tools.maps
-from marvin.tools.spectrum import Spectrum
-import marvin.tools.analysis_props
 import marvin.core.core
+import marvin.core.exceptions
 import marvin.utils.general.dap
 import marvin.utils.general.general
+import marvin.tools.cube
+import marvin.tools.maps
+
+from marvin.api import api
+from marvin.core import MarvinError, MarvinUserWarning
+from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
+from marvin.tools.spectrum import Spectrum
 
 
-class Spaxel(MarvinToolsClass):
+class Spaxel(object):
     """A class to interface with a spaxel in a cube.
 
-    This class represents a fully reduced spaxel, initialised either
-    from a file, a database, or remotely via the Marvin API. An spaxel contains
-    flux, ivar, and mask information. Additionally, the spaxel can be
-    initialised with DAP properties if the ``create_dap_properties=True``
-    keyword is passed. This is done by default if the spaxel is loaded
-    during the initialisation of a ``Maps`` object.
+    This class represents an spaxel with information from the reduced DRP
+    spectrum, the DAP maps properties, and the model spectrum from the DAP
+    logcube. A ``Spaxel`` can be initialised with all or only part of that
+    information, and either from a file, a database, or remotely via the
+    Marvin API.
 
     Parameters:
         x,y (int):
             The `x` and `y` coordinates of the spaxel in the cube (0-indexed).
-        filename (str):
+        cube_filename (str):
+            The path of the data cube file containing the spaxel to load.
+        maps_filename (str):
             The path of the data cube file containing the spaxel to load.
         mangaid (str):
-            The mangaid of the spaxel to load.
+            The mangaid of the cube/maps of the spaxel to load.
         plateifu (str):
-            The plate-ifu of the spaxel to load (either ``mangaid`` or
-            ``plateifu`` can be used, but not both).
-        mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See
-            :doc:`Mode secision tree</mode_decision>`.
-        create_dap_properties (bool):
-            If ``True``, populates the object with the DAP ``AnalysisProperty``
-            values. Requires defining the ``bintype`` and ``niter``. If one of
-            those is not defined, the default map will be used.
+            The plate-ifu of the cube/maps of the spaxel to load (either
+            ``mangaid`` or ``plateifu`` can be used, but not both).
+        cube (:class:`~marvin.tools.cube.Cube` object or bool):
+            If ``cube`` is a :class:`~marvin.tools.cube.Cube` object, that
+            cube will be used for the ``Spaxel`` initilisitation. This mode
+            is mostly intended for
+            :class:`~marvin.utils.general.general.getSpaxel` as it
+            significantly improves loading time. Otherwise, ``cube`` can be
+            ``True`` (default), in which case a cube will be instantiated using
+            the input ``filename``, ``mangaid``, or ``plateifu``. If
+            ``cube=False``, no cube will be used and ``Spaxel.spectrum`` will
+            not be populated.
+        maps (:class:`~marvin.tools.maps.Maps` object or bool)
+            As ``cube`` but populates ``Spaxel.properties`` with a dictionary
+            of DAP measurements corresponding to the spaxel in the maps that
+            matches ``bintype``, ``template_kin``, and ``template_pop``.
+        logcube (:class:`marvin.tools.maps.LogCube` object or bool)
+            As ``cube`` but populates ``Spaxel.model_spectrum`` with an
+            spectrum of the corresponding spaxel of the DAP logcube that
+            matches ``bintype``, ``template_kin``, and ``template_pop``.
         bintype (str or None):
-            The binning type of the DAP MAPS file to use. The default value is
-            ``'NONE'``
-        niter (int or None):
-            The iteration number of the DAP map.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
+            The binning type. For MPL-4, one of the following: ``'NONE',
+            'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
+            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
+            (defaults to ``'ALL'``).
+        template_kin (str or None):
+            The template use for kinematics. For MPL-4, one of
+            ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
+            defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
+            option in ``'GAU-MILESHC'`` (``None`` defaults to it).
+        template_pop (str or None):
+            A placeholder for a future version in which stellar populations
+            are fitted using a different template that ``template_kin``. It
+            has no effect for now.
         drpver (str):
             The DRP version to use. Defaults to ``marvin.config.drpver``.
         dapver (str):
-            The DAP version to use. Defaults to ``marvin.confg.dapver``.
+            The DAP version to use. Defaults to ``marvin.config.dapver``.
 
     Attributes:
-        drp (:class:`~marvin.tools.spectrum.Spectrum` object):
+        spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
             A `Spectrum` object with the DRP spectrum and associated ivar and
             mask for this spaxel.
-        dap (dict):
-            A dictionary of `AnalysisProperty` objects, sorted by category
-            and name (usually the channel for each category).
+        specres (Numpy array):
+            Median spectral resolution as a function of wavelength for the
+            fibers in this IFU.
+        specresd (Numpy array):
+            Standard deviation of spectral resolution as a function of
+            wavelength for the fibers in this IFU.
+        properties (:class:`~marvin.tools.analysis_props.DictOfProperties`):
+            A dotable, case-insensitive dictionary of
+            :class:`~marvin.tools.analysis_props.AnalysisProperty` objects
+            from the DAP maps extensions. The keys are a combination of
+            category and channel, when applicable, e.g.,
+            ``emline_sflux_siii_9533``.
+        model_spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
+            A `Spectrum` object with the DAP model spectrum from the logcube.
 
     """
 
-    def __new__(cls, *args, **kwargs):
-
-        obj = super(Spaxel, cls).__new__(cls)
-
-        obj.data_origin = None
-        obj._hduList = None
-        obj._spaxel_db = None
-        obj.filename = None
-        obj.plateifu = None
-
-        # The shape of the parent object (cube or maps)
-        obj._parent_shape = None
-
-        obj.x = None
-        obj.y = None
-
-        obj.spectrum = None
-        obj.properties = {}
-
-        return obj
-
     def __init__(self, *args, **kwargs):
+
+        self.cube = kwargs.pop('cube', True) or False
+        self.maps = kwargs.pop('maps', True) or False
+
+        if not self.cube and not self.maps:
+            raise MarvinError('either cube or maps must be True or a Marvin Cube or Maps object.')
+
+        self._drpver = kwargs.get('drpver', marvin.config.drpver)
+        self._dapver = kwargs.get('dapver', marvin.config.dapver)
+
+        self.plateifu = None
+        self.mangaid = None
 
         if len(args) > 0:
             self.x = args[0]
@@ -111,23 +131,89 @@ class Spaxel(MarvinToolsClass):
             self.x = kwargs.pop('x', None)
             self.y = kwargs.pop('y', None)
 
-        assert self.x is not None and self.y is not None
+        assert self.x is not None and self.y is not None, 'Spaxel requires x and y to initialise.'
 
-        MarvinToolsClass.__init__(self, *args, **kwargs)
+        self.specres = None
+        self.specresd = None
+        self.spectrum = None
+        self.properties = {}
 
-        if self.data_origin == 'file':
-            self._getSpaxelFromFile()
-        elif self.data_origin == 'db':
-            self._getSpaxelFromDB()
-        elif self.data_origin == 'api':
-            self._getSpaxelFromAPI()
+        cube_filename = kwargs.pop('cube_filename', None)
+        maps_filename = kwargs.pop('maps_filename', None)
+        mangaid_input = kwargs.pop('mangaid', None)
+        plateifu_input = kwargs.pop('plateifu', None)
 
-        self._createSpectrum()
+        # Checks that the cube is correct or load ones if cube == True.
+        if not isinstance(self.cube, bool):
+            assert isinstance(self.cube, marvin.tools.cube.Cube), \
+                'cube is not an instance of marvin.tools.cube.Cube or a boolean.'
+        elif self.cube is True:
+            self.cube = marvin.tools.cube.Cube(filename=cube_filename, mangaid=mangaid_input,
+                                               plateifu=plateifu_input, drpver=self._drpver)
+        else:
+            self.cube = None
 
-        create_dap_properties = kwargs.pop('create_dap_properties', False)
+        # If we have a cube, loads information from it.
+        if self.cube:
+            self.plateifu = str(self.cube.plateifu)
+            self.mangaid = str(self.cube.mangaid)
+            self._drpver = self.cube._drpver
+            self._parent_shape = self.cube.shape
 
-        if create_dap_properties is True:
-            self._create_dap_properties(**kwargs)
+            if mangaid_input is not None and mangaid_input != self.mangaid:
+                warnings.warn('input mangaid does not match the cube mangaid. '
+                              'Will use the cube mangaid.', MarvinUserWarning)
+
+            if plateifu_input is not None and plateifu_input != self.plateifu:
+                warnings.warn('input plateifu does not match the cube plateifu. '
+                              'Will use the cube plateifu.', MarvinUserWarning)
+
+            # Loads the spectrum
+            self._load_spectrum()
+
+        # We do the same with the Maps
+        if not isinstance(self.maps, bool):
+            assert isinstance(self.maps, marvin.tools.maps.Maps), \
+                'maps is not an instance of marvin.tools.maps.Maps or a boolean.'
+        elif self.maps is True:
+
+            # Makes sure we call Maps with a filename or with only one of plateifu or mangaid.
+            if maps_filename:
+                pass
+            else:
+                if self.plateifu and self.mangaid:
+                    plateifu_input = self.plateifu
+                    mangaid_input = None
+
+            self.maps = marvin.tools.maps.Maps(filename=maps_filename,
+                                               mangaid=mangaid_input,
+                                               plateifu=plateifu_input,
+                                               drpver=self._drpver,
+                                               dapver=self._dapver)
+        else:
+            self.maps = None
+
+        if self.maps:
+
+            self._dapver = self.maps._dapver
+
+            # Runs some checks to make sure cube and maps match
+            if self.cube:
+                if (self.cube.plateifu != self.maps.plateifu or
+                        self.cube.mangaid != self.maps.mangaid):
+                    raise MarvinError('plateifu or mangaid from cube does not '
+                                      'match the one in maps.')
+                if self.maps._drpver != self.cube._drpver:
+                    raise MarvinError('maps has drpver={0} while cube has {1}'
+                                      .format(self.maps._drpver, self.cube._drpver))
+            else:
+                self.plateifu = self.maps.plateifu
+                self.mangaid = self.maps.mangaid
+                self._drpver = self.maps._drpver
+                self._parent_shape = self.maps.shape
+
+            # Loads the properties
+            self._load_properties()
 
     def __repr__(self):
         """Spaxel representation."""
@@ -137,278 +223,214 @@ class Spaxel(MarvinToolsClass):
         xCentre = int(self.x - xMid)
         yCentre = int(self.y - yMid)
 
-        return ('<Marvin Spaxel (x={0:d}, y={1:d}; x_cen={2:d}, y_cen={3:d}>'
-                .format(self.x, self.y, xCentre, yCentre))
+        return ('<Marvin Spaxel (x={0.x:d}, y={0.y:d}; x_cen={1:d}, y_cen={2:d}>'.format(self,
+                                                                                         xCentre,
+                                                                                         yCentre))
 
-    def _initDAP(self, data):
-        """Initialises the dictionary of `AnalysisProperty` objects.
+    def _is_MPL4(self):
+        """Returns True if the dapver correspond to MPL-4."""
 
-        Parameters:
-            data (dict):
-                A dictionary in the form
-                `{category: {channel_1: {value: VALUE, ivar: IVAR, mask: MASK},
-                             channel_2: ..., unit: UNIT},
-                  category_2: {...}, ...}`
-                where `category` is of the form `'EMLINE_GFLUX',
-                'STELLAR_VEL', ...`, `channels` are the channels defined for
-                each category, and `unit` are the physical units for the
-                specified values in a category.
+        if self._dapver == '1.1.1':
+            return True
+        return False
 
-        """
+    def _load_spectrum(self):
+        """Initialises Spaxel.spectrum."""
 
-        properties = {}
-        for cat in data:
-            for channel in data[cat]:
-                # Skips unit, which is not a real channel.
-                if channel == 'unit':
-                    continue
-                value = data[cat][channel]['value']
-                ivar = data[cat][channel]['ivar']
-                mask = data[cat][channel]['mask']
-                unit = data[cat]['unit']
+        assert self.cube, 'a valid cube is needed to initialise the spectrum.'
 
-                analysis_prop_key = str(cat.lower())
-                if channel.lower() != 'na':
-                    analysis_prop_key += str('_' + channel.lower())
+        if self.cube.data_origin == 'file':
 
-                properties[analysis_prop_key] = marvin.tools.analysis_props.AnalysisProperty(
-                    cat.lower(), channel.lower(), value, ivar=ivar, mask=mask, unit=unit)
+            cube_hdu = self.cube.data
 
-        self.properties = marvin.core.core.DotableCaseInsensitive(properties)
+            self.spectrum = Spectrum(cube_hdu['FLUX'].data[:, self.y, self.x],
+                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=cube_hdu['WAVE'].data,
+                                     wavelength_unit='Angstrom',
+                                     ivar=cube_hdu['IVAR'].data[:, self.y, self.x],
+                                     mask=cube_hdu['MASK'].data[:, self.y, self.x])
 
-    def _create_dap_properties(self, **kwargs):
-        """Creates the DAP `AnalysisProperty` dictionary.
+            self.specres = cube_hdu['SPECRES'].data
+            self.specresd = cube_hdu['SPECRESD'].data
 
-        This method populates the object dictionary with DAP properties. It
-        creates a data dictionary to be passed to `Spaxel._initDAP()` by using
-        the same data data access mode used to initialise the spaxel. If
-        `dapver` was specified during the spaxel initialisation, uses that;
-        otherwise uses the system-wide `dapver`.
+        elif self.cube.data_origin == 'db':
 
-        """
+            if marvin.marvindb is None:
+                raise MarvinError('there is not a valid DB connection.')
 
-        # If the data origin is file or DB, loads the Maps object with the
-        # same input arguments and uses Maps.getSpaxel.
+            session = marvin.marvindb.session
+            datadb = marvin.marvindb.datadb
 
-        # TODO: This is the easy way to do it, but it may be not the most
-        # efficient. We may want to do our own query here to speed things up. (JSG)
-        if self.data_origin == 'file' or self.data_origin == 'db':
-            maps = marvin.tools.maps.Maps(**kwargs)
-            spaxel = maps.getSpaxel(x=self.x, y=self.y, xyorig='lower')
-            self.properties = spaxel.properties
+            cube_db = self.cube.data
 
-        # If the data origin is API, gets the dictionary of DAP properties.
-        elif self.data_origin == 'api':
-            dict_of_dap_props = marvin.utils.general.dap.get_dict_of_props_api(
-                self.plateifu, self.x, self.y, dapver=self._dapver)
-            self._initDAP(dict_of_dap_props)
+            spaxel = session.query(datadb.Spaxel).filter(
+                datadb.Spaxel.cube == cube_db,
+                datadb.Spaxel.x == self.x, datadb.Spaxel.y == self.y).one()
 
-    @property
-    def categories(self):
-        """Returns a list of DAP property categories."""
-        return sorted(self.properties.keys())
+            if spaxel is None:
+                raise MarvinError('cannot find an spaxel for x={0.x}, y={0.y}'.format(self))
 
-    def _getFullPath(self, data_type='mangacube', **kwargs):
-        """Returns the full path of the file in the tree."""
+            self.spectrum = Spectrum(spaxel.flux,
+                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=cube_db.wavelength.wavelength,
+                                     wavelength_unit='Angstrom',
+                                     ivar=spaxel.ivar,
+                                     mask=spaxel.mask)
 
-        if not self.plateifu:
-            return None
+            self.specres = np.array(cube_db.specres)
+            self.specresd = None
 
-        plate, ifu = self.plateifu.split('-')
+        elif self.cube.data_origin == 'api':
 
-        return MarvinToolsClass._getFullPath(self, data_type, ifu=ifu,
-                                             drpver=self._drpver,
-                                             plate=plate)
+            routeparams = {'name': self.plateifu,
+                           'path': 'x={0}/y={1}'.format(self.x, self.y)}
 
-    def download(self, **kwargs):
-        """Downloads the cube using sdss_access - Rsync"""
-        if not self.plateifu:
-            return None
+            url = marvin.config.urlmap['api']['getSpectrum']['url'].format(**routeparams)
 
-        plate, ifu = self.plateifu.split('-')
+            # Make the API call
+            response = api.Interaction(url, params={'drpver': self._drpver,
+                                                    'dapver': self._dapver})
 
-        return super(Spaxel, self).download(self, 'mangacube', ifu=ifu,
-                                            drpver=self._drpver,
-                                            plate=plate)
+            # Temporarily stores the arrays prior to subclassing from np.array
+            data = response.getData()
 
-    def _createSpectrum(self):
-        """Initialises the :class:`.Spectrum` object based on this Spaxel."""
+            self.spectrum = Spectrum(data['flux'],
+                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=data['wavelength'],
+                                     wavelength_unit='Angstrom',
+                                     ivar=data['ivar'],
+                                     mask=data['mask'])
 
-        if self.data_origin == 'file':
-            flux = self._hduList['FLUX'].data
-            ivar = self._hduList['IVAR'].data
-            mask = self._hduList['MASK'].data
-            wavelength = self._hduList['WAVE'].data
+            self.specres = np.array(data['specres'])
+            self.specresd = None
 
-        elif self.data_origin == 'db':
-            flux = self._spaxel_db.flux
-            ivar = self._spaxel_db.ivar
-            mask = self._spaxel_db.mask
-            wavelength = self._spaxel_db.cube.wavelength.wavelength
+            return response
 
-        elif self.data_origin == 'api':
-            flux = np.array(self._arrays['flux'])
-            ivar = np.array(self._arrays['ivar'])
-            mask = np.array(self._arrays['mask'])
-            wavelength = np.array(self._arrays['wavelength'])
+    def _load_properties(self):
+        """Initialises Spaxel.properties."""
 
-        self.spectrum = Spectrum(flux,
-                                 ivar=ivar,
-                                 mask=mask,
-                                 wavelength=wavelength,
-                                 flux_units='1e-17 erg/s/cm^2/Ang/spaxel',
-                                 wavelength_unit='Angstrom')
+        assert self.maps, 'a valid maps is needed to initialise the properties.'
 
-    def _getSpaxelFromFile(self, cubeHDU=None):
-        """Initialises the Spaxel object from a file data cube.
+        maps_properties = self.maps.properties
 
-        We create a new HDUList object containing all the extensions of the
-        cube file except the broand band imaging. For the extension with data
-        cubes (flux, ivar, mask), we keep only the spectrum for the given
-        spaxel.
+        if self.maps.data_origin == 'file':
 
-        """
+            maps_hdu = self.maps.data
 
-        validExts = ['PRIMARY', 'FLUX', 'IVAR', 'MASK', 'WAVE', 'SPECRES',
-                     'SPECRESD']
+            properties = {}
+            for prop in maps_properties:
 
-        try:
-            if cubeHDU is None:
-                cubeHDU = fits.open(self.filename)
+                prop_hdu = maps_hdu[prop.name]
+                prop_hdu_ivar = None if not prop.ivar else maps_hdu[prop.name + '_ivar']
+                prop_hdu_mask = None if not prop.mask else maps_hdu[prop.name + '_mask']
 
-            self._hduList = fits.HDUList()
+                if prop.channels:
+                    for ii, channel in enumerate(prop.channels):
 
-            for ext in cubeHDU:
-                if ext.name.upper() in validExts:
-                    if ext.data is None or len(ext.data.shape) == 1:
-                        self._hduList.append(ext)
-                    else:
-                        spectrum = ext.data[:, self.y, self.x]
-                        newHDU = fits.ImageHDU(data=spectrum, header=ext.header)
-                        self._hduList.append(newHDU)
-                        self._parent_shape = ext.data.shape[1:]
+                        if isinstance(prop.unit, str) or not prop.unit:
+                            unit = prop.unit
+                        else:
+                            unit = prop.unit[ii]
 
-            self.data_origin = 'file'
+                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                            prop.name,
+                            channel=channel,
+                            value=prop_hdu.data[ii, self.y, self.x],
+                            ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
+                            mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None,
+                            unit=unit,
+                            description=prop.description)
 
-        except Exception as ee:
-            raise MarvinError('Could not initialize via filename: {0}'
-                              .format(ee))
+                else:
 
-    def _getSpaxelFromDB(self, data=None):
-        """Initialises the spaxel object from the DB."""
+                    properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                        prop.name,
+                        channel=channel,
+                        value=prop_hdu.data[self.y, self.x],
+                        ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
+                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None,
+                        unit=unit,
+                        description=prop.description)
 
-        self.data_origin = 'db'
+        elif self.maps.data_origin == 'db':
 
-        if data is None:
-            pass
-        elif data.__tablename__ == 'spaxel':
-            self._spaxel_db = data
-            return
-        elif data.__tablename__ == 'cube':
-            self._spaxel_db = marvin.utils.general.general.getSpaxelXY(
-                data, self.plateifu, self.x, self.y)
-            return
-        else:
-            warnings.warn('Spaxel._getSpaxelFromDB: '
-                          'data of type {0} is not valid.'.format(type(data)),
-                          marvin.core.exceptions.MarvinUserWarning)
+            if marvin.marvindb is None:
+                raise MarvinError('there is not a valid DB connection.')
 
-        # Performs a complete query.
+            session = marvin.marvindb.session
+            dapdb = marvin.marvindb.dapdb
 
-        mdb = marvin.marvindb
+            # Gets the spaxel_index for this spaxel.
+            spaxel_index = self.x * self.maps.shape[0] + self.y
 
-        if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            spaxelprops_table = dapdb.SpaxelProp if self._is_MPL4() else dapdb.SpaxelProp5
+            spaxelprops = session.query(spaxelprops_table).filter(
+                spaxelprops_table.file == self.maps.data,
+                spaxelprops_table.spaxel_index == spaxel_index).one()
 
-        plate, ifudesign = map(lambda xx: xx.strip(), self.plateifu.split('-'))
+            if spaxelprops is None:
+                raise MarvinError('cannot find an spaxelprops for x={0.x}, y={0.y}'.format(self))
 
-        try:
-            self._spaxel_db = mdb.session.query(mdb.datadb.Spaxel).join(
-                mdb.datadb.Cube, mdb.datadb.PipelineInfo,
-                mdb.datadb.PipelineVersion, mdb.datadb.IFUDesign).filter(
-                    mdb.datadb.PipelineVersion.version == self._drpver,
-                    mdb.datadb.Cube.plate == plate,
-                    mdb.datadb.IFUDesign.name == ifudesign,
-                    mdb.datadb.Spaxel.x == int(self.x),
-                    mdb.datadb.Spaxel.y == int(self.y)).one()
+            properties = {}
+            for prop in maps_properties:
 
-            self._parent_shape = self._spaxel_db.cube.shape.shape
+                if prop.channels:
 
-        except Exception as ee:
-            raise MarvinError('Could not retrieve spaxel for plate-ifu {0}. {1}: {2}'
-                              .format(self.plateifu, str(ee.__class__.__name__), str(ee)))
+                    for ii, channel in enumerate(prop.channels):
 
-    def _getSpaxelFromAPI(self):
-        """Initialises the spaxels object using the remote API."""
+                        if isinstance(prop.unit, str) or not prop.unit:
+                            unit = prop.unit
+                        else:
+                            unit = prop.unit[ii]
 
-        # Checks that the spaxel exists.
-        routeparams = {'name': self.plateifu,
-                       'path': 'x={0}/y={1}'.format(self.x, self.y)}
-        url = marvin.config.urlmap['api']['getSpaxel']['url'].format(
-            **routeparams)
+                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                            prop.name,
+                            channel=channel,
+                            value=getattr(spaxelprops, prop.fullname(channel=channel)),
+                            ivar=(getattr(spaxelprops, prop.fullname(channel=channel, ext='ivar'))
+                                  if prop.ivar else None),
+                            mask=(getattr(spaxelprops, prop.fullname(channel=channel, ext='mask'))
+                                  if prop.mask else None),
+                            unit=unit,
+                            description=prop.description)
 
-        # Make the API call
-        response = api.Interaction(url, params={'drpver': self._drpver,
-                                                'dapver': self._dapver})
+                else:
 
-        # Temporarily stores the arrays prior to subclassing from np.array
-        data = response.getData()
-        self._parent_shape = data.pop('parent_shape')
-        self._arrays = data
+                    properties[prop.fullname()] = AnalysisProperty(
+                        prop.name,
+                        channel=None,
+                        value=getattr(spaxelprops, prop.fullname()),
+                        ivar=(getattr(spaxelprops, prop.fullname(ext='ivar'))
+                              if prop.ivar else None),
+                        mask=(getattr(spaxelprops, prop.fullname(ext='mask'))
+                              if prop.mask else None),
+                        unit=prop.unit,
+                        description=prop.description)
 
-        return response
+        elif self.maps.data_origin == 'api':
 
-    @classmethod
-    def _initFromData(cls, plateifu, x, y, maps=None, cube=None):
-        """Initialises a spaxel from and HDUList or DB object."""
+            routeparams = {'name': self.plateifu,
+                           'path': 'x={0}/y={1}'.format(self.x, self.y)}
 
-        # TODO: I don't love this implementation. Maybe this can be refactored (JSG)
+            url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
-        assert maps is not None or cube is not None
+            # Make the API call
+            response = api.Interaction(url, params={'drpver': self._drpver,
+                                                    'dapver': self._dapver})
 
-        obj = Spaxel.__new__(Spaxel)
+            # Temporarily stores the arrays prior to subclassing from np.array
+            data = response.getData()
 
-        obj.x = x
-        obj.y = y
+            properties = {}
+            for prop_fullname in data['properties']:
+                prop = data['properties'][prop_fullname]
+                properties[prop_fullname] = AnalysisProperty(
+                    prop['name'],
+                    channel=prop['channel'],
+                    value=prop['value'],
+                    ivar=prop['ivar'],
+                    mask=prop['mask'],
+                    unit=prop['unit'],
+                    description=prop['description'])
 
-        obj._drpver = cube._drpver if cube is not None else marvin.config.drpver
-        obj._dapver = maps._dapver if maps is not None else marvin.config.dapver
-
-        obj.plateifu = plateifu
-
-        # DRP data loading section
-        if cube is None:
-            pass
-        elif cube.data_origin == 'file':
-            # Case when we receive a FITS file (open)
-            obj._getSpaxelFromFile(cubeHDU=cube.data)
-            obj._createSpectrum()
-        elif cube.data_origin == 'db':
-            # Case when we receive a DB object
-            obj._getSpaxelFromDB(data=cube.data)
-            obj._createSpectrum()
-        elif cube.data_origin == 'api':
-            obj.data_origin = 'api'
-            obj._getSpaxelFromAPI()
-            obj._createSpectrum()
-        else:
-            raise MarvinError(
-                'cannot initialise a Spaxel from data type {0}'.format(type(cube.data)))
-
-        # DAP data loading section
-        if maps is None:
-            pass
-        elif maps.data_origin == 'file':
-            dap_dict = marvin.utils.general.dap.maps_file2dict_of_props(maps.data, obj.x, obj.y)
-            obj._initDAP(dap_dict)
-        elif maps.data_origin == 'db':
-            dap_dict = marvin.utils.general.dap.maps_db2dict_of_props(maps.data, obj.x, obj.y)
-            obj._initDAP(dap_dict)
-        elif maps.data_origin == 'api':
-            obj.data_origin = 'api'
-            obj._create_dap_properties()
-        else:
-            raise MarvinError(
-                'cannot initialise a Spaxel from data type {0}'.format(type(maps.data)))
-
-        return obj
+        self.properties = DictOfProperties(properties)
