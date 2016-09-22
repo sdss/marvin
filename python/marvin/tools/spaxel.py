@@ -294,6 +294,8 @@ class Spaxel(object):
 
         elif self.cube.data_origin == 'api':
 
+            # Calls the API to retrieve the DRP spectrum information for this spaxel.
+
             routeparams = {'name': self.plateifu,
                            'path': 'x={0}/y={1}'.format(self.x, self.y)}
 
@@ -306,6 +308,7 @@ class Spaxel(object):
             # Temporarily stores the arrays prior to subclassing from np.array
             data = response.getData()
 
+            # Instantiates the spectrum from the returned values from the Interaction
             self.spectrum = Spectrum(data['flux'],
                                      flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
                                      wavelength=data['wavelength'],
@@ -421,6 +424,8 @@ class Spaxel(object):
 
         elif self.maps.data_origin == 'api':
 
+            # Calls /api/<name>/properties/<path:path> to retrieve a
+            # dictionary with all the properties for this spaxel.
             routeparams = {'name': self.plateifu,
                            'path': 'x={0}/y={1}'.format(self.x, self.y)}
 

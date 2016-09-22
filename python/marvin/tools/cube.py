@@ -220,7 +220,7 @@ class Cube(MarvinToolsClass):
                     self.redshift = nsaobjs[0].z
 
     def _load_cube_from_api(self):
-        """Calls the API to check that the cube exists and gets the header."""
+        """Calls the API and retrieves the necessary information to instantiate the cube."""
 
         url = marvin.config.urlmap['api']['getCube']['url']
 

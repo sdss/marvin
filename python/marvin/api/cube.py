@@ -63,7 +63,8 @@ class CubeView(BaseView):
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
-        ''' This method performs a get request at the url route /cubes/<id> '''
+        """Returns the necessary information to instantiate a cube for a given plateifu."""
+
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
@@ -86,9 +87,7 @@ class CubeView(BaseView):
     @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
-        '''
-        This gets the Spaxel x y for initialization purposes only
-        '''
+        """Returns a list of x, y positions for all the spaxels in a given cube."""
 
         name = kwargs.pop('name')
         for var in ['x', 'y', 'ra', 'dec']:
@@ -121,9 +120,7 @@ class CubeView(BaseView):
     @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
     @parseRoutePath
     def getSpectra(self, **kwargs):
-        '''
-            This just gets a single flux spectrum
-        '''
+        """Returns the flux of the DRP spectrum for a given spaxel."""
 
         name = kwargs.pop('name')
 
@@ -135,8 +132,8 @@ class CubeView(BaseView):
             return json.dumps(self.results)
 
         try:
-            spectrum = cube.getSpaxel(**kwargs)
-            self.results['data'] = spectrum.drp.flux.tolist()
+            spaxel = cube.getSpaxel(**kwargs)
+            self.results['data'] = spaxel.spectrum.flux.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1
