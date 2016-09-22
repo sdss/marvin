@@ -21,7 +21,7 @@ class Galaxy {
         this.specdiv = this.maindiv.find('#specview');
         this.imagediv = this.specdiv.find('#imagediv');
         this.mapsdiv = this.specdiv.find('#mapsdiv');
-        this.mapdiv = this.specdiv.find('#mapdiv1');
+        //this.mapdiv = this.specdiv.find('#mapdiv1');  // Initializing mapdiv1 could be causing it to not render properly (black background) 
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -91,6 +91,7 @@ class Galaxy {
     initHeatmap(maps) {
         console.log('initHeatmap', this.mapsdiv);
         var mapchildren = this.mapsdiv.children('div');
+        console.log('mapchildren', mapchildren);
         var _this = this;
         $.each(mapchildren, function(index, child) {
             var mapdiv = $(child).find('div').first();

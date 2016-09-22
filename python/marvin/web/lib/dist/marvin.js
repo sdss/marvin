@@ -99,7 +99,7 @@ var Galaxy = function () {
         this.specdiv = this.maindiv.find('#specview');
         this.imagediv = this.specdiv.find('#imagediv');
         this.mapsdiv = this.specdiv.find('#mapsdiv');
-        this.mapdiv = this.specdiv.find('#mapdiv1');
+        //this.mapdiv = this.specdiv.find('#mapdiv1');  // Initializing mapdiv1 could be causing it to not render properly (black background) 
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -193,10 +193,10 @@ var Galaxy = function () {
         value: function initHeatmap(maps) {
             console.log('initHeatmap', this.mapsdiv);
             var mapchildren = this.mapsdiv.children('div');
+            console.log('mapchildren', mapchildren);
             var _this = this;
             $.each(mapchildren, function (index, child) {
                 var mapdiv = $(child).find('div').first();
-                console.log('maps[index].data', maps[index].data);
                 this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
             });
         }
@@ -447,7 +447,7 @@ var HeatMap = function () {
             this.parseTitle();
             this.initMap();
             //this.forceRedraw(Highcharts);
-            //this.setColorNoData(this, Highcharts);
+            this.setColorNoData(this, Highcharts);
         }
     }
 
@@ -535,7 +535,6 @@ var HeatMap = function () {
         value: function setColorNoData(_this, H) {
             H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
                 if (value === 'no-data') {
-                    console.log(_this.title);
                     return 'rgba(0,0,0,0)'; // '#A8A8A8';
                 } else return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
             });
@@ -561,15 +560,13 @@ var HeatMap = function () {
             //var range  = this.getXRange();
             var xyrange, zrange;
 
+            // get the min and max of the ranges
             var _getRange = this.getRange();
 
             var _getRange2 = _slicedToArray(_getRange, 2);
 
-            var xyrange = _getRange2[0];
-            var zrange = _getRange2[1];
-
-            // get the min and max of the ranges
-
+            xyrange = _getRange2[0];
+            zrange = _getRange2[1];
             var xymin, xymax, zmin, zmax;
 
             var _getMinMax = this.getMinMax(xyrange);
@@ -588,7 +585,6 @@ var HeatMap = function () {
 
 
             var data = this.setNull(this.data);
-            // console.log('data', data);
 
             this.mapdiv.highcharts({
                 chart: {

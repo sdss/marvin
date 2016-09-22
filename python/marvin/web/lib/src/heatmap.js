@@ -23,7 +23,7 @@ class HeatMap {
             this.parseTitle();
             this.initMap();
             //this.forceRedraw(Highcharts);
-            //this.setColorNoData(this, Highcharts);
+            this.setColorNoData(this, Highcharts);
         }
 
     };
@@ -85,7 +85,6 @@ class HeatMap {
     setColorNoData(_this, H) {
         H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
             if(value === 'no-data') {
-                console.log(_this.title);
                 return 'rgba(0,0,0,0)';  // '#A8A8A8';
             }
             else
@@ -108,15 +107,14 @@ class HeatMap {
         // get the ranges
         //var range  = this.getXRange();
         var xyrange, zrange;
-        var [xyrange, zrange]  = this.getRange();
+        [xyrange, zrange]  = this.getRange();
 
         // get the min and max of the ranges
         var xymin, xymax, zmin, zmax;
         [xymin, xymax] = this.getMinMax(xyrange);
-        [zmin, zmax] = this.getMinMax(zrange);        
-        
+        [zmin, zmax] = this.getMinMax(zrange);
+
         var data = this.setNull(this.data);
-        // console.log('data', data);
 
         this.mapdiv.highcharts({
             chart: {
