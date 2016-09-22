@@ -362,6 +362,7 @@ autodoc_member_order = 'groupwise'
 modindex_common_prefix = ['marvin.']
 
 napoleon_use_rtype = False
+napoleon_use_ivar = True
 
 rst_epilog = """
    .. |numpy_array| replace:: Numpy array

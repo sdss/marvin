@@ -46,6 +46,14 @@ Spectrum
    :undoc-members:
    :show-inheritance:
 
+AnalysisProperty
+----------------
+
+.. automodule:: marvin.tools.analysis_props
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 .. _marvin-tools-rss:
 

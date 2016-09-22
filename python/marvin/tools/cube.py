@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # encoding: utf-8
 #
 # cube.py
@@ -7,6 +7,8 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
+
+import warnings
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -20,11 +22,11 @@ import marvin.utils.general.general
 
 from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 try:
     import photutils.aperture_funcs
-except:
+except ImportError:
     photutils = False
 
 
@@ -35,6 +37,10 @@ class Cube(MarvinToolsClass):
     from a file, a database, or remotely via the Marvin API.
 
     Parameters:
+        data (``HDUList``, SQLAlchemy object, or None):
+            An astropy ``HDUList`` or a SQLAlchemy object of a cube, to
+            be used for initialisation. If ``None``, the normal mode will
+            be used (see :ref:`mode-decision-tree`).
         filename (str):
             The path of the file containing the data cube to load.
         mangaid (str):
@@ -43,7 +49,7 @@ class Cube(MarvinToolsClass):
             The plate-ifu of the data cube to load (either ``mangaid`` or
             ``plateifu`` can be used, but not both).
         mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See :doc:`mode-decision-tree>`.
+            The load mode to use. See :ref:`mode-decision-tree`.
         drpall (str):
             The path to the drpall file to use. Defaults to
             ``marvin.config.drpall``.
@@ -56,7 +62,33 @@ class Cube(MarvinToolsClass):
 
     """
 
-    def _getFullPath(self, **kwargs):
+    def __init__(self, *args, **kwargs):
+
+        valid_kwargs = [
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver']
+
+        assert len(args) == 0, 'Cube does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+
+        self.shape = None
+        self.wcs = None
+        self.wavelength = None
+        self.redshift = None
+        self._drpall_data = None
+
+        super(Cube, self).__init__(*args, **kwargs)
+
+        if self.data_origin == 'file':
+            self._load_cube_from_file(data=self.data)
+        elif self.data_origin == 'db':
+            self._load_cube_from_db(data=self.data)
+        elif self.data_origin == 'api':
+            self._load_cube_from_api()
+
+        self._init_attributes()
+
+    def _getFullPath(self):
         """Returns the full path of the file in the tree."""
 
         if not self.plateifu:
@@ -65,69 +97,18 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=self._drpver,
-                                              plate=plate)
+                                              drpver=self._drpver, plate=plate)
 
-    def download(self, **kwargs):
-        ''' Downloads the cube using sdss_access - Rsync '''
+    def download(self):
+        """Downloads the cube using sdss_access - Rsync,"""
+
         if not self.plateifu:
             return None
 
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self).download('mangacube', ifu=ifu,
-                                          drpver=self._drpver,
-                                          plate=plate)
-
-    def __init__(self, *args, **kwargs):
-
-        # TODO: consolidate _hdu/_cube in data. This class needs a clean up.
-        # Can use Maps or Spaxel as an example. For now I'm adding more
-        # clutter to avoid breaking things (JSG).
-
-        self._hdu = None
-        self._cube = None
-        self._shape = None
-
-        self.filename = None
-        self.wcs = None
-        self.data = None
-        self.wavelength = None
-
-        skip_check = kwargs.get('skip_check', False)
-
-        super(Cube, self).__init__(*args, **kwargs)
-
-        if self.data_origin == 'file':
-            try:
-                self._openFile()
-            except IOError as e:
-                raise MarvinError('Could not initialize via filename: {0}'.format(e))
-            self.plateifu = self.header['PLATEIFU'].strip()
-            self.redshift = None
-
-        elif self.data_origin == 'db':
-            try:
-                self._getCubeFromDB()
-            except RuntimeError as e:
-                raise MarvinError('Could not initialize via db: {0}'.format(e))
-            nsaobjs = self._cube.target.NSA_objects if self._cube.target else None
-            if nsaobjs:
-                self.redshift = None if len(nsaobjs) > 1 else nsaobjs[0].z
-            else:
-                self.redshift = None
-
-        elif self.data_origin == 'api':
-            if not skip_check:
-                self._openCubeRemote()
-
-        self.ifu = int(self.header['IFUDSGN'])
-        self.ra = float(self.header['OBJRA'])
-        self.dec = float(self.header['OBJDEC'])
-        self.plate = int(self.header['PLATEID'])
-        self.mangaid = self.header['MANGAID']
-        self._isbright = 'APOGEE' in self.header['SRVYMODE']
-        self.dir3d = 'mastar' if self._isbright else 'stack'
+                                          drpver=self._drpver, plate=plate)
 
     def __repr__(self):
         """Representation for Cube."""
@@ -136,7 +117,196 @@ class Cube(MarvinToolsClass):
                 .format(repr(self.plateifu), repr(self.mode),
                         repr(self.data_origin)))
 
-    def getSpaxel(self, **kwargs):
+    def __getitem__(self, xy):
+        """Returns the spaxel for ``(x, y)``"""
+
+        return self.getSpaxel(x=xy[0], y=xy[1], xyorig='lower')
+
+    def _init_attributes(self):
+        """Initialises several attributes."""
+
+        self.ra = float(self.header['OBJRA'])
+        self.dec = float(self.header['OBJDEC'])
+
+        self.plate = int(self.header['PLATEID'])
+        self.ifu = int(self.header['IFUDSGN'])
+        self.mangaid = self.header['MANGAID']
+
+        self._isbright = 'APOGEE' in self.header['SRVYMODE']
+
+        self.dir3d = 'mastar' if self._isbright else 'stack'
+
+    def _load_cube_from_file(self, data=None):
+        """Initialises a cube from a file."""
+
+        if data is not None:
+            assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
+        else:
+            try:
+                self.data = fits.open(self.filename)
+            except IOError as err:
+                raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
+
+        self.header = self.data[1].header
+        self.shape = self.data['FLUX'].data.shape[1:]
+        self.wcs = WCS(self.header)
+        self.wavelength = self.data['WAVE'].data
+        self.plateifu = self.header['PLATEIFU']
+
+        # Retrieves the redshift from the drpall file
+        self._drpall_data = marvin.utils.general.general.get_drpall_row(self.plateifu,
+                                                                        drpver=self._drpver,
+                                                                        drpall=self._drpall)
+        if 'nsa_z' in self._drpall_data.colnames:
+            self.redshift = self._drpall_data['nsa_z']
+        elif 'nsa_redshift' in self._drpall_data.colnames:
+            self.redshift = self._drpall_data['nsa_redshift']
+        else:
+            warnings.warn('cannot retrieve redshift from drpall.', MarvinUserWarning)
+            self.redshift = None
+
+        # Updates the cube _drpver. Fixes a problem in which the nominal drpver for MPL-4 is
+        # v1_5_1 but actually the files contain v1_5_0
+        header_version = self.header['VERSDRP3']
+        self._drpver = 'v1_5_1' if header_version == 'v1_5_0' else header_version
+
+    def _load_cube_from_db(self, data=None):
+        """Initialises a cube from the DB."""
+
+        mdb = marvin.marvindb
+        plate, ifu = self.plateifu.split('-')
+
+        if not mdb.isdbconnected:
+            raise RuntimeError('No db connected')
+        else:
+            import sqlalchemy
+            datadb = mdb.datadb
+
+            if self.data:
+                assert isinstance(data, datadb.Cube), 'data is not an instance of mangadb.Cube.'
+                self.data = data
+            else:
+                try:
+                    self.data = mdb.session.query(datadb.Cube).join(
+                        datadb.PipelineInfo,
+                        datadb.PipelineVersion,
+                        datadb.IFUDesign).filter(
+                            mdb.datadb.PipelineVersion.version == self._drpver,
+                            datadb.Cube.plate == int(plate), datadb.IFUDesign.name == ifu).one()
+                except sqlalchemy.orm.exc.MultipleResultsFound as ee:
+                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                       'Multiple Results Found: {1}'.format(self.plateifu, ee))
+                except sqlalchemy.orm.exc.NoResultFound as ee:
+                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                       'No Results Found: {1}'.format(self.plateifu, ee))
+                except Exception as ee:
+                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
+                                       'Unknown exception: {1}'.format(self.plateifu, ee))
+
+            self.header = fits.Header(eval(self.data.hdr[0].header).items())
+            self.wcs = WCS(self.data.wcs.makeHeader())
+            self.data = self.data
+            self.shape = self.data.shape.shape
+            self.wavelength = self.data.wavelength.wavelength
+
+            if not self.data.target:
+                warnings.warn('no NSA targets found for this cube.', MarvinUserWarning)
+            else:
+                nsaobjs = self.data.target.NSA_objects
+                if len(nsaobjs) > 1:
+                    warnings.warn('more than one NSA target found for this cube.',
+                                  MarvinUserWarning)
+                else:
+                    self.redshift = nsaobjs[0].z
+
+    def _load_cube_from_api(self):
+        """Calls the API and retrieves the necessary information to instantiate the cube."""
+
+        url = marvin.config.urlmap['api']['getCube']['url']
+
+        try:
+            response = Interaction(url.format(name=self.plateifu), params={'drpver': self._drpver})
+        except Exception as ee:
+            raise MarvinError('found a problem when checking if remote cube '
+                              'exists: {0}'.format(str(ee)))
+
+        data = response.getData()
+
+        self.header = fits.Header.fromstring(data['header'])
+        self.redshift = float(data['redshift'])
+        self.shape = data['shape']
+        self.wavelength = data['wavelength']
+        self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
+
+        if self.plateifu not in data:
+            raise MarvinError('remote cube has a different plateifu!')
+
+        return
+
+    def _getExtensionData(self, extName):
+        """Returns the data from an extension."""
+
+        if self.data_origin == 'file':
+            return self.data[extName.upper()].data
+        elif self.data_origin == 'db':
+            return self.data.get3DCube(extName.lower())
+        elif self.data_origin == 'api':
+            raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
+
+    flux = property(lambda self: self._getExtensionData('FLUX'),
+                    doc='Gets the `FLUX` data extension.')
+    ivar = property(lambda self: self._getExtensionData('IVAR'),
+                    doc='Gets the `IVAR` data extension.')
+    mask = property(lambda self: self._getExtensionData('MASK'),
+                    doc='Gets the `MASK` data extension.')
+
+    @property
+    def qualitybit(self):
+        """The Cube DRP3QUAL bits."""
+
+        bit = long(self.header['DRP3QUAL'])
+        labels = None
+
+        # get labels
+        if self.data_origin == 'db':
+            labels = self.data.getQualFlags()
+        elif self.data_origin == 'file':
+            pass
+        elif self.data_origin == 'api':
+            pass
+
+        return 'DRP3QUAL', bit, labels
+
+    @property
+    def targetbit(self):
+        """The Cube MNGTRG bits."""
+
+        try:
+            names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
+        except KeyError:
+            names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
+            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
+                     long(self.header[names[2]])]
+
+        ind = np.nonzero(targs)[0]
+
+        finaltargs = {}
+        finaltargs['names'] = [names[i] for i in ind]
+        finaltargs['bits'] = [targs[i] for i in ind]
+
+        # get labels
+        if self.data_origin == 'db':
+            finaltargs['labels'] = [self.data.getTargFlags(type=i+1) for i in ind]
+        elif self.data_origin == 'file':
+            pass
+        elif self.data_origin == 'api':
+            pass
+
+        return finaltargs
+
+    def getSpaxel(self, properties=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -159,6 +329,9 @@ class Cube(MarvinToolsClass):
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined. ``xyorig`` defaults to
                 ``marvin.config.xyorig.``
+            properties (bool):
+                If ``True``, the spaxel will be initiated with the DAP
+                properties from the default Maps matching this cube.
 
         Returns:
             spaxels (list):
@@ -173,174 +346,10 @@ class Cube(MarvinToolsClass):
         # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
         # an array of coordinates) and a mode keyword.
 
-        kwargs['cube_object'] = self
-        kwargs['maps_object'] = None
+        kwargs['cube'] = self
+        kwargs['maps'] = properties
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
-
-    def _openFile(self):
-        """Initialises a cube from a file."""
-
-        self._useDB = False
-        try:
-            self._hdu = fits.open(self.filename)
-            self.data = self._hdu
-        except IOError as err:
-            raise IOError('IOError: Filename {0} cannot be found: {1}'.format(self.filename, err))
-
-        self.header = self._hdu[1].header
-        self.wcs = WCS(self.header)
-        self.wavelength = self._hdu['WAVE'].data
-
-    def _openCubeRemote(self):
-        """Calls the API to check that the cube exists and gets the header."""
-
-        url = marvin.config.urlmap['api']['getCube']['url']
-
-        try:
-            response = Interaction(url.format(name=self.plateifu), params={'drpver': self._drpver})
-        except Exception as ee:
-            raise MarvinError('found a problem when checking if remote cube '
-                              'exists: {0}'.format(str(ee)))
-
-        data = response.getData()
-
-        self.header = fits.Header.fromstring(data['header'])
-        self.redshift = float(data['redshift'])
-        self._shape = data['shape']
-        self.wavelength = data['wavelength']
-        self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
-
-        if self.plateifu not in data:
-            raise MarvinError('remote cube has a different plateifu!')
-
-        return
-
-    def __getitem__(self, xy):
-        """Returns the spaxel for ``(x, y)``"""
-        x, y = xy
-        return self.getSpaxel(x=x, y=y, xyorig='lower')
-
-    def _getExtensionData(self, extName):
-        """Returns the data from an extension."""
-
-        if self.data_origin == 'file':
-            return self._hdu[extName.upper()].data
-        elif self.data_origin == 'db':
-            return self._cube.get3DCube(extName.lower())
-        elif self.data_origin == 'api':
-            raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
-
-    flux = property(lambda self: self._getExtensionData('FLUX'),
-                    doc='Gets the `FLUX` data extension.')
-    ivar = property(lambda self: self._getExtensionData('IVAR'),
-                    doc='Gets the `IVAR` data extension.')
-    mask = property(lambda self: self._getExtensionData('MASK'),
-                    doc='Gets the `MASK` data extension.')
-
-    @property
-    def shape(self):
-        """The shape of the cube."""
-
-        if self._shape is None:
-            if self.data_origin == 'file':
-                self._shape = self._hdu['FLUX'].data.shape[1:]
-            elif self.data_origin == 'db':
-                self._shape = self._cube.shape.shape
-            elif self.data_origin == 'api':
-                # self._shape gets initialised in self._openCubeRemote
-                pass
-
-        return self._shape
-
-    @property
-    def qualitybit(self):
-        ''' The Cube DRP3QUAL bits '''
-        bit = long(self.header['DRP3QUAL'])
-        labels = None
-        # get labels
-        if self.data_origin == 'db':
-            labels = self._cube.getQualFlags()
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return 'DRP3QUAL', bit, labels
-
-    @property
-    def targetbit(self):
-        ''' The Cube MNGTRG bits '''
-
-        try:
-            names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
-                     long(self.header[names[2]])]
-        except KeyError as e:
-            names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
-                     long(self.header[names[2]])]
-
-        ind = np.nonzero(targs)[0]
-        labels = None
-        finaltargs = {}
-
-        finaltargs['names'] = [names[i] for i in ind]
-        finaltargs['bits'] = [targs[i] for i in ind]
-        # get labels
-        if self.data_origin == 'db':
-            finaltargs['labels'] = [self._cube.getTargFlags(type=i+1) for i in ind]
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return finaltargs
-
-    def _getCubeFromDB(self):
-        ''' server-side code '''
-
-        mdb = marvin.marvindb
-
-        # look for drpver
-        if not marvin.config.drpver:
-            raise RuntimeError('drpver not set in config!')
-
-        # parse the plate-ifu
-        if self.plateifu:
-            plate, ifu = self.plateifu.split('-')
-
-        if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
-        else:
-            import sqlalchemy
-            self._cube = None
-            try:
-                self._cube = mdb.session.query(mdb.datadb.Cube).join(mdb.datadb.PipelineInfo,
-                                                                     mdb.datadb.PipelineVersion,
-                                                                     mdb.datadb.IFUDesign).\
-                    filter(mdb.datadb.PipelineVersion.version == self._drpver,
-                           mdb.datadb.Cube.plate == plate,
-                           mdb.datadb.IFUDesign.name == ifu).one()
-            except sqlalchemy.orm.exc.MultipleResultsFound as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                   'Multiple Results Found: {1}'.format(self.plateifu, e))
-            except sqlalchemy.orm.exc.NoResultFound as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                   'No Results Found: {1}'.format(self.plateifu, e))
-            except Exception as e:
-                raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                   'Unknown exception: {1}'.format(self.plateifu, e))
-
-            if self._cube:
-                self._useDB = True
-
-                self.header = self._cube.header
-                self.wcs = WCS(self._cube.wcs.makeHeader())
-                self.data = self._cube
-                self.wavelength = self.data.wavelength.wavelength
-            else:
-                self._useDB = False
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
@@ -353,9 +362,10 @@ class Cube(MarvinToolsClass):
         """
 
         if len(kwargs.keys()) == 0 or 'filename' not in kwargs:
-            kwargs.update({'plateifu': self.plateifu})
+            kwargs.update({'plateifu': self.plateifu, 'drpver': self._drpver})
 
         maps = marvin.tools.maps.Maps(**kwargs)
+        maps._cube = self
 
         return maps
 
@@ -437,7 +447,7 @@ class Cube(MarvinToolsClass):
 
         if not np.isscalar(radius):
             raise marvin.core.exceptions.MarvinNotImplemented(
-                'elliptical apertures are not yet implemented'.format(mode))
+                'elliptical apertures are not yet implemented')
 
         data_mask = np.zeros(self.shape)
 

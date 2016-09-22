@@ -29,8 +29,8 @@ def _getCube(name):
     # parse name into either mangaid or plateifu
     try:
         idtype = parseIdentifier(name)
-    except Exception as e:
-        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
         return cube, results
 
     try:
@@ -45,8 +45,8 @@ def _getCube(name):
 
         cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
-    except Exception as e:
-        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
 
     return cube, results
 
@@ -63,17 +63,18 @@ class CubeView(BaseView):
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
-        ''' This method performs a get request at the url route /cubes/<id> '''
+        """Returns the necessary information to instantiate a cube for a given plateifu."""
+
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': cube._cube.target.NSA_objects[0].z,
+                                    'redshift': cube.data.target.NSA_objects[0].z,
                                     'shape': cube.shape,
                                     'wavelength': cube.wavelength,
-                                    'wcs_header': cube._cube.wcs.makeHeader().tostring()}
+                                    'wcs_header': cube.data.wcs.makeHeader().tostring()}
 
         return json.dumps(self.results)
 
@@ -86,9 +87,7 @@ class CubeView(BaseView):
     @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
-        '''
-        This gets the Spaxel x y for initialization purposes only
-        '''
+        """Returns a list of x, y positions for all the spaxels in a given cube."""
 
         name = kwargs.pop('name')
         for var in ['x', 'y', 'ra', 'dec']:
@@ -121,9 +120,7 @@ class CubeView(BaseView):
     @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
     @parseRoutePath
     def getSpectra(self, **kwargs):
-        '''
-            This just gets a single flux spectrum
-        '''
+        """Returns the flux of the DRP spectrum for a given spaxel."""
 
         name = kwargs.pop('name')
 
@@ -135,8 +132,8 @@ class CubeView(BaseView):
             return json.dumps(self.results)
 
         try:
-            spectrum = cube.getSpaxel(**kwargs)
-            self.results['data'] = spectrum.drp.flux.tolist()
+            spaxel = cube.getSpaxel(**kwargs)
+            self.results['data'] = spaxel.spectrum.flux.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1
