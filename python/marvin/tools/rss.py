@@ -12,13 +12,15 @@
 
 from __future__ import division
 from __future__ import print_function
-from marvin.core import MarvinToolsClass
-from marvin.core import MarvinError
+
 from astropy.io import fits
-from brain.api import api
-import marvin
-from marvin.tools.spectrum import Spectrum
 import numpy as np
+
+import marvin
+
+from marvin.api.api import Interaction
+from marvin.core import MarvinToolsClass, MarvinError
+from marvin.tools.spectrum import Spectrum
 
 
 class RSS(MarvinToolsClass, list):
@@ -40,9 +42,6 @@ class RSS(MarvinToolsClass, list):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
-        skip_check (bool):
-            If True, and ``mode='remote'``, skips the API call to check that
-            the cube exists.
         drpall (str):
             The path to the drpall file to use. Defaults to
             ``marvin.config.drpall``.
@@ -58,23 +57,26 @@ class RSS(MarvinToolsClass, list):
 
     def __init__(self, *args, **kwargs):
 
-        self._hdu = None
-        self._rss_db = None
-        self._fibers = None
+        valid_kwargs = [
+            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver']
 
-        skip_check = kwargs.get('skip_check', False)
+        assert len(args) == 0, 'RSS does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+
+        self.data = None
 
         MarvinToolsClass.__init__(self, *args, **kwargs)
 
         if self.data_origin == 'file':
-            self._getRSSFromFile()
+            self._load_rss_from_file()
         elif self.data_origin == 'db':
-            self._getRSSFromDB()
+            self._load_rss_from_db()
         elif self.data_origin == 'api':
-            if not skip_check:
-                self._getRSSFromAPI()
+            self._load_rss_from_api()
 
-        self._initFibers()
+        _fibers = self._init_fibers()
+        list.__init__(self, _fibers)
 
     def __repr__(self):
         """Representation for RSS."""
@@ -82,7 +84,7 @@ class RSS(MarvinToolsClass, list):
         return ('<Marvin RSS (mangaid={self.mangaid!r}, plateifu={self.plateifu!r}, '
                 'mode={self.mode!r}, data_origin={self.data_origin!r})>'.format(self=self))
 
-    def _getFullPath(self, **kwargs):
+    def _getFullPath(self):
         """Returns the full path of the file in the tree."""
 
         if not self.plateifu:
@@ -90,10 +92,9 @@ class RSS(MarvinToolsClass, list):
 
         plate, ifu = self.plateifu.split('-')
 
-        return super(RSS, self)._getFullPath('mangarss', ifu=ifu,
-                                             drpver=self._drpver, plate=plate)
+        return super(RSS, self)._getFullPath('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
 
-    def download(self, **kwargs):
+    def download(self):
         """Downloads the cube using sdss_access - Rsync"""
 
         if not self.plateifu:
@@ -101,22 +102,20 @@ class RSS(MarvinToolsClass, list):
 
         plate, ifu = self.plateifu.split('-')
 
-        return super(RSS, self).download('mangarss', ifu=ifu,
-                                         drpver=self._drpver, plate=plate)
+        return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
 
-    def _getRSSFromFile(self):
+    def _load_rss_from_file(self):
         """Initialises the RSS object from a file."""
 
         try:
-            self._hdu = fits.open(self.filename)
-            self.mangaid = self._hdu[0].header['MANGAID'].strip()
+            self.data = fits.open(self.filename)
+            self.mangaid = self.data[0].header['MANGAID'].strip()
             self.plateifu = '{0}-{1}'.format(
-                self._hdu[0].header['PLATEID'], self._hdu[0].header['IFUDSGN'])
+                self.data[0].header['PLATEID'], self.data[0].header['IFUDSGN'])
         except Exception as ee:
-            raise MarvinError('Could not initialize via filename: {0}'
-                              .format(ee))
+            raise MarvinError('Could not initialize via filename: {0}'.format(ee))
 
-    def _getRSSFromDB(self):
+    def _load_rss_from_db(self):
         """Initialises the RSS object from the DB."""
 
         import sqlalchemy
@@ -126,11 +125,10 @@ class RSS(MarvinToolsClass, list):
         if not mdb.isdbconnected:
             raise RuntimeError('No db connected')
 
-        plate, ifudesign = map(lambda xx: xx.strip(),
-                               self.plateifu.split('-'))
+        plate, ifudesign = [item.strip() for item in self.plateifu.split('-')]
 
         try:
-            self._rss_db = mdb.session.query(mdb.datadb.RssFiber).join(
+            self.data = mdb.session.query(mdb.datadb.RssFiber).join(
                 mdb.datadb.Cube, mdb.datadb.PipelineInfo,
                 mdb.datadb.PipelineVersion, mdb.datadb.IFUDesign).filter(
                     mdb.datadb.PipelineVersion.version == self._drpver,
@@ -147,11 +145,11 @@ class RSS(MarvinToolsClass, list):
                                'Unknown exception: {1}'
                                .format(self.plateifu, ee))
 
-        if not self._rss_db:
+        if not self.data:
             raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
                               'Unknown error.'.format(self.plateifu))
 
-    def _getRSSFromAPI(self):
+    def _load_rss_from_api(self):
         """Initialises the RSS object using the remote API."""
 
         # Checks that the RSS exists.
@@ -159,18 +157,17 @@ class RSS(MarvinToolsClass, list):
         url = marvin.config.urlmap['api']['getRSS']['url'].format(**routeparams)
 
         # Make the API call
-        api.Interaction(url)
+        Interaction(url, params={'drpver': self._drpver})
 
-    def _initFibers(self):
+    def _init_fibers(self):
         """Initialises the object as a list of RSSFiber instances."""
 
         if self.data_origin == 'file':
-            _fibers = [RSSFiber._initFromHDU(hdulist=self._hdu, index=ii)
-                       for ii in range(self._hdu[1].data.shape[0])]
+            _fibers = [RSSFiber._init_from_hdu(hdulist=self.data, index=ii)
+                       for ii in range(self.data[1].data.shape[0])]
 
         elif self.data_origin == 'db':
-            _fibers = [RSSFiber._initFromDB(rssfiber=rssfiber)
-                       for rssfiber in self._rss_db]
+            _fibers = [RSSFiber._init_from_db(rssfiber=rssfiber) for rssfiber in self.data]
 
         elif self.data_origin == 'api':
             # Makes a call to the API to retrieve all the arrays for all the fibres.
@@ -179,7 +176,7 @@ class RSS(MarvinToolsClass, list):
             url = marvin.config.urlmap['api']['getRSSAllFibers']['url'].format(**routeparams)
 
             # Make the API call
-            response = api.Interaction(url)
+            response = Interaction(url, params={'drpver': self._drpver})
             data = response.getData()
 
             wavelength = np.array(data['wavelength'])
@@ -193,7 +190,7 @@ class RSS(MarvinToolsClass, list):
                     RSSFiber(flux, ivar=ivar, mask=mask, wavelength=wavelength,
                              mangaid=self.mangaid, plateifu=self.plateifu, data_origin='api'))
 
-        list.__init__(self, _fibers)
+        return _fibers
 
 
 class RSSFiber(Spectrum):
@@ -224,9 +221,9 @@ class RSSFiber(Spectrum):
         self.data_origin = kwargs.pop('data_origin', None)
 
         flux_units = '1e-17 erg/s/cm^2/Ang/fiber'
-        wavelength_units = 'Angstrom'
+        wavelength_unit = 'Angstrom'
         kwargs['flux_units'] = flux_units
-        kwargs['wavelength_units'] = wavelength_units
+        kwargs['wavelength_unit'] = wavelength_unit
 
         Spectrum.__init__(self, *args, **kwargs)
 
@@ -237,7 +234,7 @@ class RSSFiber(Spectrum):
                 'data_origin={self.data_origin!r})>'.format(self=self))
 
     @classmethod
-    def _initFromHDU(cls, hdulist, index):
+    def _init_from_hdu(cls, hdulist, index):
         """Initialises a RSSFiber object from a RSS HDUList."""
 
         assert index is not None, \
@@ -257,7 +254,7 @@ class RSSFiber(Spectrum):
         return obj
 
     @classmethod
-    def _initFromDB(cls, rssfiber):
+    def _init_from_db(cls, rssfiber):
         """Initialites a RSS fiber from the DB."""
 
         mangaid = rssfiber.cube.mangaid
