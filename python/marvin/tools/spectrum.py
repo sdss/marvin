@@ -19,7 +19,7 @@ from marvin.core.core import Dotable
 try:
     import matplotlib.pyplot as plt
     pyplot = True
-except:
+except ImportError:
     pyplot = None
 
 
@@ -48,14 +48,17 @@ class Spectrum(Dotable):
     def __init__(self, flux, flux_units=None, wavelength_unit=None,
                  ivar=None, mask=None, wavelength=None):
 
-        self['flux'] = np.array(flux)
-        self['ivar'] = np.array(ivar) if ivar is not None else None
-        self['mask'] = np.array(mask) if mask is not None else None
-        self['wavelength'] = np.array(wavelength) \
+        tmp_dict = {}
+        tmp_dict['flux'] = np.array(flux)
+        tmp_dict['ivar'] = np.array(ivar) if ivar is not None else None
+        tmp_dict['mask'] = np.array(mask) if mask is not None else None
+        tmp_dict['wavelength'] = np.array(wavelength) \
             if wavelength is not None else None
 
-        self['flux_units'] = flux_units
-        self['wavelength_unit'] = wavelength_unit
+        tmp_dict['flux_units'] = flux_units
+        tmp_dict['wavelength_unit'] = wavelength_unit
+
+        Dotable.__init__(self, tmp_dict)
 
         # Performs some checks.
 
