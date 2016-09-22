@@ -35,8 +35,8 @@ class Map(object):
     Unlike a ``Maps`` object, which contains all the information from a DAP
     maps file, this class represents only one of the multiple 2D maps contained
     within. For instance, ``Maps`` may contain emission line maps for multiple
-    channels. A ``Map`` would be, for example, the map for ``EMLINE_GFLUX`` and
-    channel ``Ha-6564``.
+    channels. A ``Map`` would be, for example, the map for ``emline_gflux`` and
+    channel ``ha_6564``.
 
     A ``Map`` is basically a set of three Numpy 2D arrays (``value``, ``ivar``,
     and ``mask``), with extra information and additional methods for
@@ -58,8 +58,6 @@ class Map(object):
 
     """
 
-    # TODO: make this a MarvinToolsClass (JSG)
-
     def __init__(self, maps, property_name, channel=None):
 
         assert isinstance(maps, marvin.tools.maps.Maps)
@@ -70,7 +68,9 @@ class Map(object):
         self.shape = self.maps.shape
 
         self.maps_property = self.maps.properties[self.property_name]
-        if self.maps_property is None or self.channel not in self.maps_property.channels:
+        if (self.maps_property is None or
+                (self.maps_property.channels is not None and
+                 self.channel not in self.maps_property.channels)):
             raise marvin.core.exceptions.MarvinError(
                 'invalid combination of property name and channel.')
 
@@ -87,6 +87,11 @@ class Map(object):
             self._load_map_from_db()
         elif maps.data_origin == 'api':
             self._load_map_from_api()
+
+    def __repr__(self):
+
+        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
+                'channel={0.channel!r})>'.format(self))
 
     def _load_map_from_file(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='file'``."""

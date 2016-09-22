@@ -156,6 +156,18 @@ class TestMapsDB(TestMapsBase):
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
+    def test_get_spaxel_getitem(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+        spaxel_getitem = maps[15, 8]
+
+        self.assertTrue(isinstance(spaxel_getitem, marvin.tools.spaxel.Spaxel))
+        self.assertIsNotNone(spaxel_getitem.spectrum)
+        self.assertTrue(len(spaxel_getitem.properties.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel_getitem.spectrum.flux[100], spaxel.spectrum.flux[100])
+
 
 class TestMapsAPI(TestMapsBase):
 
@@ -252,6 +264,16 @@ class TestGetMap(TestMapsBase):
         self.assertIsInstance(map_api, marvin.tools.map.Map)
         self.assertIsInstance(map_api.header, astropy.io.fits.Header)
         self.assertEqual(map_api.header['C01'], 'D4000')
+
+    def test_getmap_getitem(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
+
+        map_getitem = maps['specindex_fe5406']
+        self.assertIsInstance(map_getitem, marvin.tools.map.Map)
+
+        map_getitem_no_channel = maps['binid']
+        self.assertIsInstance(map_getitem_no_channel, marvin.tools.map.Map)
 
 
 if __name__ == '__main__':
