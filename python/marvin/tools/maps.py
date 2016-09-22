@@ -24,6 +24,7 @@ import marvin.tools.cube
 import marvin.tools.map
 import marvin.utils.general.general
 import marvin.utils.dap
+import marvin.utils.six
 
 try:
     import sqlalchemy
@@ -126,6 +127,22 @@ class Maps(marvin.core.core.MarvinToolsClass):
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu}, mode={0.mode}, '
                 'data_origin={0.data_origin})>'.format(self))
+
+    def __getitem__(self, value):
+        """Gets either a spaxel or a map depending on the type on input."""
+
+        if isinstance(value, tuple):
+            assert len(value) == 2, 'slice must have two elements.'
+            x, y = value
+            return self.getSpaxel(x=x, y=y, xyorig='lower')
+        elif isinstance(value, marvin.utils.six.string_types):
+            parsed_property = self.properties.get(value)
+            if parsed_property is None:
+                raise marvin.core.MarvinError('invalid property')
+            maps_property, channel = parsed_property
+            return self.getMap(maps_property.name, channel=channel)
+        else:
+            raise marvin.core.MarvinError('invalid type for getitem.')
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
