@@ -64,6 +64,13 @@ class Cube(MarvinToolsClass):
 
     def __init__(self, *args, **kwargs):
 
+        valid_kwargs = [
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver']
+
+        assert len(args) == 0, 'Cube does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+
         self.shape = None
         self.wcs = None
         self.wavelength = None
