@@ -58,8 +58,6 @@ class Map(object):
 
     """
 
-    # TODO: make this a MarvinToolsClass (JSG)
-
     def __init__(self, maps, property_name, channel=None):
 
         assert isinstance(maps, marvin.tools.maps.Maps)
@@ -70,7 +68,9 @@ class Map(object):
         self.shape = self.maps.shape
 
         self.maps_property = self.maps.properties[self.property_name]
-        if self.maps_property is None or self.channel not in self.maps_property.channels:
+        if (self.maps_property is None or
+                (self.maps_property.channels is not None and
+                 self.channel not in self.maps_property.channels)):
             raise marvin.core.exceptions.MarvinError(
                 'invalid combination of property name and channel.')
 
