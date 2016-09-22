@@ -1,16 +1,18 @@
 import json
 from flask.ext.classy import route
-from flask import session as current_session
-from flask_cors import cross_origin
+from flask import session as current_session, request
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
 from marvin.core import MarvinError
+from marvin.api import parse_params
 
 
 def _getCubes(searchfilter, params=None, start=None, end=None):
     """Run query locally at Utah."""
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local')
+    drpver, dapver = parse_params(request)
+
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local', drpver=drpver, dapver=dapver)
     results = r.results
 
     # get a subset
@@ -63,33 +65,6 @@ class QueryView(BrainQueryView):
             self.update_results(res)
 
         return json.dumps(self.results)
-
-    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
-    @cross_origin(allow_headers=['Content-Type'])
-    def webtable(self):
-        ''' Do a query for Bootstrap Table interaction in Marvin web '''
-
-        # set parameters
-        searchvalue = current_session['searchvalue']
-        returnparams = current_session['returnparams']
-        print('webtable', searchvalue, self.results['inconfig'])
-        limit = self.results['inconfig'].get('limit', None)
-        offset = self.results['inconfig'].get('offset', None)
-        order = self.results['inconfig'].get('order', None)
-        sort = self.results['inconfig'].get('sort', None)
-        search = self.results['inconfig'].get('search', None)
-        # do query
-        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort, returnparams=returnparams)
-        # get subset on a given page
-        results = res.getSubset(offset, limit=limit)
-        # get keys
-        cols = res.mapColumnsToParams()
-        # create output
-        rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        print('webtable output', output)
-        output = json.dumps(output)
-        return output
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     def getparamslist(self):

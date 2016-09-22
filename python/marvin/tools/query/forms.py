@@ -19,7 +19,7 @@ from wtforms import StringField, validators, SelectField, SelectMultipleField, I
 from wtforms.widgets import Select
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 import re
 import warnings
@@ -75,24 +75,56 @@ ops = [(key, val) for key, val in opdict.items()]
 # operator = SelectField(u'Operator', choices=ops)
 
 
+class ParamFxnLookupDict(dict):
+    ''' Parameter function lookup for new function expressions
+    '''
+
+    def __getitem__(self, key):
+
+        lowkey = key.lower()
+        mykeys = self.keys()
+
+        inkey = lowkey in mykeys
+        if not inkey:
+            raise KeyError('{0} does not match any column.'.format(lowkey))
+        else:
+            keycount = mykeys.count(lowkey)
+            if keycount > 1:
+                raise KeyError('{0} matches multiple parameters in the lookup'
+                               ' table'.format(lowkey))
+            else:
+                return dict.__getitem__(self, lowkey)
+
+
 class ParamFormLookupDict(dict):
 
-    _tableShortcuts = {'ifu': 'ifudesign'}
+    def __init__(self):
+        self._init_table_shortcuts()
+        self._init_name_shortcuts()
+        self._mplver = config.mplver
 
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""
 
-        # Gets the paths that match the key
-        keySplits = key.split('.')
+        # Update shortcuts upon MPL changes
+        if self._mplver != config.mplver:
+            self._init_table_shortcuts()
+            self._init_name_shortcuts()
+            self._mplver = config.mplver
 
         # Applies shortcuts
-        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
-            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+        keySplits = self._apply_shortcuts(key)
 
-        matches = [path for path in self
-                   if all([keySplits[-1 - ii] == path.split('.')[-1 - ii]
-                           for ii in range(len(keySplits))])]
+        # Get key matches
+        matches = self._get_matches(keySplits)
 
+        # Check DAP Junk keys
+        isdapjunk = any(['mangadapdb.spaxelprop' in m for m in matches])
+        if isdapjunk:
+            keySplits = self._apply_shortcuts(matches[0])
+            matches = self._get_matches(keySplits)
+
+        # Return matched key
         if len(matches) == 0:
             # No matches. This returns the standards KeyError from dict
             raise KeyError('{0} does not match any column.'.format(key))
@@ -113,6 +145,8 @@ class ParamFormLookupDict(dict):
 
         columns = []
         for key in keys:
+            keySplits = self._apply_shortcuts(key)
+            key = self._get_matches(keySplits)[0]
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))
@@ -121,6 +155,63 @@ class ParamFormLookupDict(dict):
             return columns[0]
         else:
             return columns
+
+    def _init_table_shortcuts(self):
+        ''' initialize the table shortcuts '''
+
+        self._tableShortcuts = {'ifu': 'ifudesign'}
+        self._set_junk_shortcuts()
+
+    def _init_name_shortcuts(self):
+        ''' initialize the name shortcuts '''
+        self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
+                               'g_r': 'petroth50_el_g_r'}
+
+    def _apply_shortcuts(self, key):
+        ''' Apply the shortcuts to the key '''
+
+        # Gets the paths that match the key
+        keySplits = key.split('.')
+
+        # Applies table shortcuts
+        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
+            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+
+        # Applies name shortcuts
+        if len(keySplits) >= 1 and keySplits[-1] in self._nameShortcuts:
+            keySplits[-1] = self._nameShortcuts[keySplits[-1]]
+
+        return keySplits
+
+    def _get_real_key(self, key):
+        ''' Returns the real full key given some shortcuts '''
+        keySplits = self._apply_shortcuts(key)
+        return '.'.join(keySplits)
+
+    def _set_junk_shortcuts(self):
+        ''' Sets the DAP spaxelprop shortcuts based on MPL '''
+
+        newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
+        if '4' in config.mplver:
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop' for m in newmpls}
+        else:
+            mdigit = config.mplver.split('-')[1]
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop{0}'.format(mdigit) for m in newmpls}
+            dapcut.update({'spaxelprop': 'spaxelprop{0}'.format(mdigit)})
+
+        # add junk shortcuts
+        junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
+        dapcut.update(junkcuts)
+
+        # update the main dictionary
+        self._tableShortcuts.update(dapcut)
+
+    def _get_matches(self, keySplits):
+        ''' Get the matches from a set of key splits '''
+        matches = [path for path in self
+                   if all([keySplits[-1 - ii] == path.split('.')[-1 - ii]
+                           for ii in range(len(keySplits))])]
+        return matches
 
 
 # Custom validator for MainForm
@@ -156,10 +247,14 @@ class MarvinForm(object):
         _param_form_lookup = dictionary of all modelclass parameters of form {'SQLalchemy ModelClass parameter name': WTForm Class}
         '''
 
+        self._modelclasses = marvindb.buildUberClassDict()
         self._param_form_lookup = ParamFormLookupDict()
+        self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
-        self._generateFormClasses(modelclasses)
+        self._generateFormClasses(self._modelclasses)
+        self._generateFxns()
         self.SearchForm = SearchForm
+        self._cleanParams()
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.
@@ -190,10 +285,11 @@ class MarvinForm(object):
         tablename = model.__table__.name
 
         mapper = sa_inspect(model)
-        for item in mapper.all_orm_descriptors:
-            if type(item) == hybrid_property:
-                key = item.__name__
-            elif type(item) == InstrumentedAttribute:
+        for key, item in mapper.all_orm_descriptors.items():
+            if isinstance(item, hybrid_property) or \
+               isinstance(item, hybrid_method):
+                key = key
+            elif isinstance(item, InstrumentedAttribute):
                 key = item.key
             else:
                 continue
@@ -205,3 +301,38 @@ class MarvinForm(object):
     def callInstance(self, form, params=None, **kwargs):
         ''' Creates an instance of a specified WTForm.  '''
         return form(**params) if params else form(**kwargs)
+
+    def _generateFxns(self):
+        ''' Generate the fxn dictionary
+
+            TODO: make this general and not hard-coded
+
+            The key is the function name used in the query syntax.
+            The value is the method call that lives in Query
+
+        '''
+        self._param_fxn_lookup['npergood'] = 'getPercent'
+
+    def _getDapKeys(self):
+        ''' Returns the DAP keys from the Junk tables
+        '''
+        dapkeys = [k for k in self._param_form_lookup.keys() if 'mangadapdb.spaxelprop' in k]
+        dapkeys.sort()
+        return dapkeys
+
+    def _cleanParams(self):
+        ''' Clean up the parameter-form lookup dictionary '''
+
+        # remove keys for pk, mangadatadb.sample, test_, and cube_header
+        new = ParamFormLookupDict()
+        for k, v in self._param_form_lookup.items():
+            if 'pk' not in k and \
+               'mangadatadb.sample' not in k and \
+               'test_' not in k and \
+               'cube_header' not in k:
+                new[k] = v
+
+        # make new dictionary
+        self._param_form_lookup = new
+
+

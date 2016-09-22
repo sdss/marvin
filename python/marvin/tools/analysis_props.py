@@ -13,45 +13,58 @@ from __future__ import absolute_import
 import marvin.core.core
 
 
-class AnalysisProperty(marvin.core.core.Dotable):
+__all__ = ('DictOfProperties', 'AnalysisProperty')
+
+
+class DictOfProperties(marvin.core.core.DotableCaseInsensitive):
+    """A dotable dictionary to list a groups of AnalysisProperty objects."""
+
+    pass
+
+
+class AnalysisProperty(object):
     """A class describing a property with a value and additional information.
 
     This class is intended for internal use, not to be initialisided by the
     user. The class is designed to mimic the DAP MAPS structure, with
-    `category` reflecting the `name` of the header, and name the channel.
-    However, the class is flexible and can be used to define any scalar
-    property. For each value, an `ivar` and a `mask` value.
+    ``property_name`` reflecting the name of the proery being represented
+    (e.g., ``'emline_gflux'``) and ``channel``, if any, the channel to which
+    the values make reference. However, the class is flexible and can be used
+    to define any scalar property. For each value, an ``ivar``, ``mask``, and
+    ``unit`` can be defined.
 
     Parameters:
-        category (str):
-            A string with the category to which this property belongs (e.g.,
-            `emline_gflux`, `specindex`, etc).
         name (str):
-            The name of the property (e.g., `ha`, `nii`, etc).
+            A string with the property name to which this property belongs
+            (e.g., ``emline_gflux``, ``specindex``, etc).
+        channel (str or None):
+            The name of the property (e.g., ``ha_6564``, ``nii_6585``, etc).
         value (float):
             The value of the property.
         unit (str or None):
-            The units of `value`.
+            The units of ``value``.
         ivar (float or None):
-            The inverse variance associated with `value`, or `None` if not
+            The inverse variance associated with ``value``, or ``None`` if not
             defined.
         mask (bool):
-            Whether the value is masked or not.
+            The value of the mask for this value.
+        description (str):
+            A string describing the property.
 
     """
 
-    def __init__(self, category, name, value, unit=None, ivar=None, mask=True):
+    def __init__(self, name, channel, value, unit=None, ivar=None, mask=None,
+                 description=''):
 
-        self['category'] = category
-        self['name'] = name
-        self['value'] = value
-        self['unit'] = unit
-        self['ivar'] = ivar
-        self['mask'] = bool(mask)
-
-        # super(AnalisisProperty, self).__init__()
+        self.name = name
+        self.channel = channel
+        self.value = value
+        self.unit = unit
+        self.ivar = ivar
+        self.mask = mask
+        self.description = description
 
     def __repr__(self):
 
-        return ('<AnalysisProperty ({0.category}, {0.name}, value={0.value} '
-                'ivar={0.ivar}, mask={0.mask!r})>'.format(self))
+        return ('<AnalysisProperty ({0.name}, {0.channel}, value={0.value} '
+                'ivar={0.ivar}, mask={0.mask})>'.format(self))

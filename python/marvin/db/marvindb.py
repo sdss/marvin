@@ -13,6 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.db.modelGraph import ModelGraph
+from marvin import config
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -72,8 +73,22 @@ class MarvinDB(object):
         except Exception as e:
             print('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
             self.dapdb = None
+            self.spaxelpropdict = None
         else:
             self.dapdb = dapdb
+            self.spaxelpropdict = self._setSpaxelPropDict()
+
+    def _setSpaxelPropDict(self):
+        ''' Set the SpaxelProp lookup dictionary '''
+        newmpls = [m for m in config._mpldict.keys() if m > 'MPL-4']
+        spdict = {'MPL-4': 'SpaxelProp'}
+        newdict = {mpl: 'SpaxelProp{0}'.format(mpl.split('-')[1]) for mpl in newmpls}
+        spdict.update(newdict)
+        return spdict
+
+    def _getSpaxelProp(self):
+        ''' Get the correct SpaxelProp class given an MPL '''
+        return self.spaxelpropdict[config.mplver]
 
     def _setSession(self):
         ''' Sets the database session '''
@@ -92,6 +107,12 @@ class MarvinDB(object):
         else:
             self.isdbconnected = False
 
+    def forceDbOff(self):
+        ''' Force the database to turn off '''
+        self.db = None
+        self.session = None
+        self.isdbconnected = False
+
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
             Selects only those classes in the module with attribute __tablename__
@@ -104,7 +125,12 @@ class MarvinDB(object):
         for model in inspect.getmembers(module, inspect.isclass):
             keyname = model[0].lower() if lower else model[0]
             if hasattr(model[1], '__tablename__'):
-                classdict[keyname] = model[1]
+                # only include the spaxelprop table matching the MPL version
+                if 'SpaxelProp' in keyname:
+                    if keyname == self._getSpaxelProp():
+                        classdict[keyname] = model[1]
+                else:
+                    classdict[keyname] = model[1]
         return classdict
 
     def buildUberClassDict(self):

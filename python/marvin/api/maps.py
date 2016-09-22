@@ -11,10 +11,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import flask.ext.classy
+from flask import request
+
 import json
 
 import brain.utils.general
 import marvin.api.base
+from marvin.api import parse_params
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.general
@@ -24,9 +27,11 @@ def _getMaps(name, **kwargs):
     """Returns a Maps object after parsing the name."""
 
     results = {}
-    print(kwargs)
+
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
+
+    drpver, dapver = parse_params(request)
 
     # Parses name into either mangaid or plateifu
     try:
@@ -47,7 +52,7 @@ def _getMaps(name, **kwargs):
                 'invalid plateifu or mangaid: {0}'.format(idtype))
 
         maps = marvin.tools.maps.Maps(mangaid=mangaid, plateifu=plateifu,
-                                      mode='local', **kwargs)
+                                      mode='local', drpver=drpver, dapver=dapver, **kwargs)
         results['status'] = 1
     except Exception as ee:
         maps = None
@@ -65,9 +70,9 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/<bintype>/<niter>/',
+    @flask.ext.classy.route('/<name>/<bintype>/<template_kin>/',
                             methods=['GET', 'POST'], endpoint='getMaps')
-    def get(self, name, bintype, niter):
+    def get(self, name, bintype, template_kin):
         """Returns the parameters needed to initialise a Maps remotely.
 
         To initialise a Maps we need to return:
@@ -80,7 +85,7 @@ class MapsView(marvin.api.base.BaseView):
 
         """
 
-        kwargs = {'bintype': bintype, 'niter': niter}
+        kwargs = {'bintype': bintype, 'template_kin': template_kin}
         maps, results = _getMaps(name, **kwargs)
         self.update_results(results)
 
@@ -148,19 +153,19 @@ class MapsView(marvin.api.base.BaseView):
         Parameters:
             name (str):
                 The ``plateifu`` or ``mangaid`` of the object.
-            category (str):
-                The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+            property_name (str):
+                The property_name of the map to be extractred. E.g., `'emline_gflux'`.
             channel (str or None):
-                If the ``category`` contains multiple channels, the channel to use,
-                e.g., ``Ha-6564'. Otherwise, ``None``.
-        
-        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/map/category=EMLINE_GFLUX/channel=Ha-6564/
+                If the ``property_name`` contains multiple channels, the channel to use,
+                e.g., ``ha_6564'. Otherwise, ``None``.
+
+        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/map/category=emline_gflux/channel=ha_6564/
 
         """
 
         name = kwargs.pop('name')
-        category = kwargs.pop('category')
-        channel = kwargs.pop('channel')
+        property_name = str(kwargs.pop('property_name'))
+        channel = kwargs.pop('channel', None)
 
         # Initialises the Maps object
         maps, results = _getMaps(name, **kwargs)
@@ -170,12 +175,13 @@ class MapsView(marvin.api.base.BaseView):
             return json.dumps(self.results)
 
         try:
-            mmap = maps.getMap(category=category, channel=channel)
+            mmap = maps.getMap(property_name=property_name, channel=channel)
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist()
             self.results['data']['mask'] = mmap.ivar.tolist()
             self.results['data']['unit'] = mmap.unit
+            self.results['data']['header'] = {key: mmap.header[key] for key in mmap.header}
         except Exception as ee:
             self.results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
 

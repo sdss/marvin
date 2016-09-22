@@ -5,6 +5,7 @@ from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
 from collections import OrderedDict
 from brain import bconfig
+from brain.core.core import URLMapDict
 
 # Inits the log
 from brain.core.logger import initLog
@@ -39,6 +40,9 @@ class MarvinConfig(object):
 
         self._drpall = None
         self._inapp = False
+
+        self._urlmap = None
+        self._xyorig = None
 
         self.drpver = None
         self.dapver = None
@@ -94,6 +98,41 @@ class MarvinConfig(object):
 #################################################
 
     @property
+    def urlmap(self):
+        """Retrieves the URLMap the first time it is needed."""
+
+        if self._urlmap is None:
+            try:
+                response = Interaction('api/general/getroutemap', request_type='get')
+            except Exception as e:
+                warnings.warn('cannot retrieve URLMap. Remote functionality will not work.',
+                              MarvinUserWarning)
+                self._urlmap = URLMapDict()
+            else:
+                self._urlmap = response.getRouteMap()
+
+        return self._urlmap
+
+    @urlmap.setter
+    def urlmap(self, value):
+        """Manually sets the URLMap."""
+        self._urlmap = value
+
+    @property
+    def xyorig(self):
+        if not self._xyorig:
+            self._xyorig = 'center'
+
+        return self._xyorig
+
+    @xyorig.setter
+    def xyorig(self, value):
+
+        assert value.lower() in ['center', 'lower'], 'xyorig must be center or lower.'
+
+        self._xyorig = value.lower()
+
+    @property
     def drpall(self):
         return self._drpall
 
@@ -119,8 +158,9 @@ class MarvinConfig(object):
 
         # Check the versioning config
         if not self.mplver or not (self.drpver and self.dapver):
-            log.info('No MPL or DRP/DAP version set. Setting default to MPL-4')
-            self.setMPL('MPL-4')
+            topkey = self._mpldict.keys()[0]
+            log.info('No MPL or DRP/DAP version set. Setting default to {0}'.format(topkey))
+            self.setMPL(topkey)
 
     def setMPL(self, mplver):
         ''' Set the data version by MPL
@@ -255,6 +295,12 @@ class MarvinConfig(object):
         elif sasmode == 'utah':
             self.sasurl = 'https://api.sdss.org/marvin2/'
 
+    def forceDbOff(self):
+        ''' Force the database to be turned off '''
+        config.db = None
+        from marvin import marvindb
+        marvindb.forceDbOff()
+
 config = MarvinConfig()
 config._checkConfig()
 
@@ -267,13 +313,3 @@ from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
-
-
-from brain.core.core import URLMapDict
-
-try:
-    response = Interaction('api/general/getroutemap', request_type='get')
-except Exception as e:
-    config.urlmap = URLMapDict()
-else:
-    config.urlmap = response.getRouteMap()

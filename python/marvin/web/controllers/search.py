@@ -74,7 +74,10 @@ class Search(FlaskView):
             returnparams = form.getlist('returnparams', None)
             # Get the returnparams from the autocomplete input
             parambox = form.get('parambox', None)
-            parambox = parambox.split(',')[:-1] if parambox else None
+            if parambox:
+                parms = parambox.split(',')
+                parms = parms if parms[-1].strip() else parms[:-1]
+                parambox = parms if parambox else None
             # Select the one that is not none
             returnparams = returnparams if returnparams else parambox if parambox else None
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
@@ -107,6 +110,40 @@ class Search(FlaskView):
         q = Query()
         allparams = q.get_available_params()
         output = json.dumps(allparams)
+        return output
+
+    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
+    def webtable(self):
+        ''' Do a query for Bootstrap Table interaction in Marvin web '''
+
+        form = processRequest(request=request, raw=True)
+
+        # set parameters
+        searchvalue = current_session.get('searchvalue', None)
+        returnparams = current_session.get('returnparams', None)
+        print('webtable', searchvalue, returnparams)
+        limit = form.get('limit', 10)
+        offset = form.get('offset', None)
+        order = form.get('order', None)
+        sort = form.get('sort', None)
+        search = form.get('search', None)
+
+        # exit if no searchvalue is found
+        if not searchvalue:
+            output = json.dumps({'webtable_error': 'No searchvalue found'})
+            return output
+
+        # do query
+        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort, returnparams=returnparams)
+        # get subset on a given page
+        results = res.getSubset(offset, limit=limit)
+        # get keys
+        cols = res.mapColumnsToParams()
+        # create output
+        rows = res.getDictOf(format_type='listdict')
+        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+        print('webtable output', output)
+        output = json.dumps(output)
         return output
 
 Search.register(search)

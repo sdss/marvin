@@ -1,11 +1,17 @@
 import json
+
 from flask.ext.classy import route
 from flask import Blueprint, redirect, url_for
-from marvin.tools.cube import Cube
+from flask import request
+
+from marvin.api import parse_params
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
+from marvin.tools.cube import Cube
+
 from brain.utils.general import parseRoutePath
+
 ''' stuff that runs server-side '''
 
 # api = Blueprint("api", __name__)
@@ -14,14 +20,17 @@ from brain.utils.general import parseRoutePath
 def _getCube(name):
     ''' Retrieve a cube using marvin tools '''
 
+    # Gets the drpver from the request
+    drpver, __ = parse_params(request)
+
     cube = None
     results = {}
 
     # parse name into either mangaid or plateifu
     try:
         idtype = parseIdentifier(name)
-    except Exception as e:
-        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
         return cube, results
 
     try:
@@ -34,10 +43,10 @@ def _getCube(name):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local')
+        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
         results['status'] = 1
-    except Exception as e:
-        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
 
     return cube, results
 
@@ -54,16 +63,19 @@ class CubeView(BaseView):
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
-        ''' This method performs a get request at the url route /cubes/<id> '''
+        """Returns the necessary information to instantiate a cube for a given plateifu."""
+
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
-                                    'header': json.loads(cube._cube.hdr[0].header),
-                                    'redshift': cube._cube.sample[0].nsa_redshift,
+                                    'header': cube.header.tostring(),
+                                    'redshift': cube.data.target.NSA_objects[0].z,
                                     'shape': cube.shape,
-                                    'wavelength': cube.wavelength}
+                                    'wavelength': cube.wavelength,
+                                    'wcs_header': cube.data.wcs.makeHeader().tostring()}
+
         return json.dumps(self.results)
 
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
@@ -75,9 +87,7 @@ class CubeView(BaseView):
     @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
-        '''
-        This gets the Spaxel x y for initialization purposes only
-        '''
+        """Returns a list of x, y positions for all the spaxels in a given cube."""
 
         name = kwargs.pop('name')
         for var in ['x', 'y', 'ra', 'dec']:
@@ -110,9 +120,7 @@ class CubeView(BaseView):
     @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
     @parseRoutePath
     def getSpectra(self, **kwargs):
-        '''
-            This just gets a single flux spectrum
-        '''
+        """Returns the flux of the DRP spectrum for a given spaxel."""
 
         name = kwargs.pop('name')
 
@@ -124,8 +132,8 @@ class CubeView(BaseView):
             return json.dumps(self.results)
 
         try:
-            spectrum = cube.getSpaxel(**kwargs)
-            self.results['data'] = spectrum.drp.flux.tolist()
+            spaxel = cube.getSpaxel(**kwargs)
+            self.results['data'] = spaxel.spectrum.flux.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1
