@@ -35,8 +35,8 @@ class Map(object):
     Unlike a ``Maps`` object, which contains all the information from a DAP
     maps file, this class represents only one of the multiple 2D maps contained
     within. For instance, ``Maps`` may contain emission line maps for multiple
-    channels. A ``Map`` would be, for example, the map for ``EMLINE_GFLUX`` and
-    channel ``Ha-6564``.
+    channels. A ``Map`` would be, for example, the map for ``emline_gflux`` and
+    channel ``ha_6564``.
 
     A ``Map`` is basically a set of three Numpy 2D arrays (``value``, ``ivar``,
     and ``mask``), with extra information and additional methods for
