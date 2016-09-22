@@ -84,6 +84,9 @@ class Spaxel(object):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
+        drpall (str):
+            The path to the drpall file to use. Defaults to
+            ``marvin.config.drpall``.
         drpver (str):
             The DRP version to use. Defaults to ``marvin.config.drpver``.
         dapver (str):
@@ -111,6 +114,15 @@ class Spaxel(object):
     """
 
     def __init__(self, *args, **kwargs):
+
+        valid_kwargs = [
+            'x', 'y', 'cube_filename', 'maps_filename', 'mangaid', 'plateifu',
+            'cube', 'maps', 'logcube', 'bintype', 'template_kin', 'template_pop',
+            'drpall', 'drpver', 'dapver']
+
+        assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
         self.cube = kwargs.pop('cube', True) or False
         self.maps = kwargs.pop('maps', True) or False
