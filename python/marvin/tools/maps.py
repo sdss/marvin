@@ -77,6 +77,9 @@ class Maps(marvin.core.core.MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
+        drpall (str):
+            The path to the drpall file to use. Defaults to
+            ``marvin.config.drpall``.
         drpver (str):
             The DRP version to use. Defaults to ``marvin.config.drpver``.
         dapver (str):
@@ -87,8 +90,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'filename', 'mangaid', 'plateifu', 'mode', 'drpver',
-            'dapver', 'bintype', 'template_kin', 'template_pop']
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'drpall',
+            'drpver', 'dapver', 'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
