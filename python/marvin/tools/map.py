@@ -88,6 +88,11 @@ class Map(object):
         elif maps.data_origin == 'api':
             self._load_map_from_api()
 
+    def __repr__(self):
+
+        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
+                'channel={0.channel!r})>'.format(self))
+
     def _load_map_from_file(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='file'``."""
 
