@@ -46,27 +46,29 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         error = convertIvarToErr(spaxel.spectrum.ivar)
         wave = spaxel.spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spaxel.spectrum.flux)]
+        webspec = [[wave[i], [s, error[i]], [s/2, error[i]*2]] for i, s in enumerate(spaxel.spectrum.flux)]
 
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg
 
 
-def getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564'):
+def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
+              bintype=None, template_kin=None, template_pop=None):
     ''' Get and format a map for the web '''
-    name = '{0}_{1}'.format(category.lower(), channel)
+    name = '{0}_{1}'.format(parameter.lower(), channel)
     webmap = None
     try:
-        maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype='NONE', niter='003')
-        data = maps.getMap(category=category, channel=channel)
+        maps = cube.getMaps(plateifu=cube.plateifu, mode='local',
+                            bintype=bintype, template_kin=template_kin)
+        data = maps.getMap(parameter, channel=channel)
     except Exception as e:
         raise(e)
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
         vals = data.value
-        # ivar = data.ivar TODO
-        # mask = data.mask TODO
+        ivar = data.ivar  # TODO
+        mask = data.mask  # TODO
         # TODO How does highcharts read in values? Pass ivar and mask with webmap.
         webmap = {'values': [list(it) for it in data.value],
                   'ivar': [list(it) for it in data.ivar],
@@ -85,8 +87,8 @@ def buildMapDict(cube, params):
     '''
     mapdict = []
     for param in params:
-        category, channel = param.rsplit('_', 1)
-        webmap, mapmsg = getWebMap(cube, category=category, channel=channel)
+        parameter, channel = param.split(':')
+        webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel)
         mapdict.append({'data': webmap, 'msg': mapmsg})
     return mapdict
 
@@ -150,8 +152,12 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-                #webmap, mapmsg = getWebMap(cube, category='EMLINE_GFLUX', channel='Ha-6564')
-                params = ['emline_gflux_ha-6564', 'emline_gvel_hb-4862', 'emline_gsigma_nii-6549']
+                # temporarily do version stuff
+                if '4' in config.mplver:
+                    params = ['emline_gflux:ha_6564', 'emline_ew:hb_4862', 'emline_gflux:nii_6585']
+                elif '5' in config.mplver:
+                    params = ['emline_gflux:ha_6564', 'emline_sew:hb_4862', 'emline_gflux:nii_6585']
+                # build the uber map dictionary
                 mapdict = buildMapDict(cube, params)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
@@ -161,8 +167,6 @@ class Galaxy(FlaskView):
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
                 self.galaxy['maps'] = mapdict
-                #self.galaxy['map'] = webmap
-                #self.galaxy['mapmsg'] = mapmsg
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)

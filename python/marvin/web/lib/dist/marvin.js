@@ -72,7 +72,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-08-30 14:02:14
+* @Last Modified time: 2016-09-23 01:41:10
 */
 
 //
@@ -99,7 +99,7 @@ var Galaxy = function () {
         this.specdiv = this.maindiv.find('#specview');
         this.imagediv = this.specdiv.find('#imagediv');
         this.mapsdiv = this.specdiv.find('#mapsdiv');
-        //this.mapdiv = this.specdiv.find('#mapdiv1');  // Initializing mapdiv1 could be causing it to not render properly (black background) 
+        this.mapdiv = this.specdiv.find('#mapdiv1');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
         this.webspec = null;
@@ -148,7 +148,7 @@ var Galaxy = function () {
         value: function loadSpaxel(spaxel, title) {
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
-                labels: ['Wavelength', 'Flux'],
+                labels: ['Wavelength', 'Flux', 'Flux2'],
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 xlabel: 'Wavelength [Ångströms]'
@@ -198,6 +198,7 @@ var Galaxy = function () {
             $.each(mapchildren, function (index, child) {
                 var mapdiv = $(child).find('div').first();
                 this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                this.heatmap.mapdiv.highcharts().reflow();
             });
         }
     }, {
@@ -419,7 +420,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-08-30 13:59:35
+* @Last Modified time: 2016-09-23 01:13:51
 */
 
 'use strict';
@@ -447,7 +448,6 @@ var HeatMap = function () {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            //this.forceRedraw(Highcharts);
             this.setColorNoData(this, Highcharts);
         }
     }

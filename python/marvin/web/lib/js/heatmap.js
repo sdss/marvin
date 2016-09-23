@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-08-30 13:59:35
+* @Last Modified time: 2016-09-23 01:13:51
 */
 
 'use strict';
@@ -30,7 +30,6 @@ var HeatMap = function () {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            //this.forceRedraw(Highcharts);
             this.setColorNoData(this, Highcharts);
         }
     }

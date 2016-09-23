@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-08-30 13:59:35
+* @Last Modified time: 2016-09-23 01:13:51
 */
 
 'use strict';
@@ -22,7 +22,6 @@ class HeatMap {
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
-            //this.forceRedraw(Highcharts);
             this.setColorNoData(this, Highcharts);
         }
 
@@ -55,18 +54,18 @@ class HeatMap {
         var max = Math.max.apply(null, range);
         return [min, max];
     }
-    
+
     setNull(x) {
         var values = x.values;
         var ivar = x.ivar;
         var mask = x.mask;
 
         var xyz = Array();
-        
+
         for (var ii=0; ii < values.length; ii++) {
             for (var jj=0; jj < values.length; jj++){
                 var val = values[ii][jj];
-                
+
                 //
                 // TODO change the mask conditional to parse the maskbits in MPL-5
                 //
@@ -81,7 +80,7 @@ class HeatMap {
         };
         return xyz;
     }
-    
+
     setColorNoData(_this, H) {
         H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
             if(value === 'no-data') {
@@ -91,7 +90,7 @@ class HeatMap {
                 return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
         });
     }
-    
+
     forceRedraw(H) {
         H.wrap(H.Chart.prototype, 'redraw', function (p) {
             console.log('redraw!');
