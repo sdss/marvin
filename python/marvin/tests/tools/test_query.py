@@ -107,14 +107,15 @@ class TestQuery(MarvinTest):
         self.assertEqual([], q.joins)
         self.assertEqual(2, r.totalcount)  # MPL-4 count
 
-    def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp'):
+    def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp', allspax=None):
+        classname = 'Clean{0}'.format(classname) if not allspax else classname
         if table:
             key = '{0}.{1}'.format(table, name)
         else:
             key = '{0}'.format(name)
 
         p = '{0} > 25'.format(key)
-        q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'])
+        q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'], allspaxels=allspax)
         r = q.run()
         self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
         self.assertEqual(count, r.totalcount)
@@ -125,34 +126,48 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(231, table='spaxelprop')
+        self._dap_query_1(231, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
+        self._dap_query_1(231, name='haflux', allspax=True)
+
+    def test_dap_query_1_normal_clean(self):
+        self._dap_query_1(231, table='spaxelprop')
+
+    def test_dap_query_1_haflux_clean(self):
         self._dap_query_1(231, name='haflux')
 
     def test_dap_query_1_badshortcut(self):
         errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"
-        self._bad_query_1(errmsg, 231, table='spaxelprop5')
+        self._bad_query_1(errmsg, 231, table='spaxelprop5', allspax=True)
 
     def test_dap_query_1_wrongname(self):
         errmsg = 'spaxelprop5.emline_gluxf_ha does not match any column'
-        self._bad_query_1(errmsg, 231, table='spaxelprop5', name='emline_gluxf_ha')
+        self._bad_query_1(errmsg, 231, table='spaxelprop5', name='emline_gluxf_ha', allspax=True)
 
     def test_dap_query_1_wrongtable(self):
         errmsg = 'prop5.emline_gflux_ha_6564 does not match any column'
-        self._bad_query_1(errmsg, 231, table='prop5')
+        self._bad_query_1(errmsg, 231, table='prop5', allspax=True)
 
     def test_dap_query_1_normal_mpl5(self):
         config.setMPL('MPL-5')
-        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5')
+        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5', allspax=True)
 
     def test_dap_query_1_haflux_mpl5(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, name='haflux', classname='SpaxelProp5', allspax=True)
+
+    def test_dap_query_1_normal_mpl5_clean(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5')
+
+    def test_dap_query_1_haflux_mpl5_clean(self):
         config.setMPL('MPL-5')
         self._dap_query_1(18, name='haflux', classname='SpaxelProp5')
 
     def test_dap_query_1_sp5_mpl5(self):
         config.setMPL('MPL-5')
-        self._dap_query_1(18, table='spaxelprop5', classname='SpaxelProp5')
+        self._dap_query_1(18, table='spaxelprop5', classname='SpaxelProp5', allspax=True)
 
     def test_dap_query_2(self):
         p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'

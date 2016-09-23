@@ -15,7 +15,7 @@ from __future__ import print_function
 import json
 
 import flask
-from flask.ext.classy import route
+from flask_classy import route
 
 from marvin.api import parse_params
 from marvin.tools.rss import RSS

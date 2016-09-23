@@ -10,7 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import flask.ext.classy
+import flask_classy
 from flask import request
 
 import json
@@ -70,7 +70,7 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/<bintype>/<template_kin>/',
+    @flask_classy.route('/<name>/<bintype>/<template_kin>/',
                             methods=['GET', 'POST'], endpoint='getMaps')
     def get(self, name, bintype, template_kin):
         """Returns the parameters needed to initialise a Maps remotely.
@@ -110,7 +110,7 @@ class MapsView(marvin.api.base.BaseView):
 
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/dap_props/<path:path>',
+    @flask_classy.route('/<name>/dap_props/<path:path>',
                             methods=['GET', 'POST'], endpoint='getdap_props')
     @brain.utils.general.parseRoutePath
     def getDAP_props(self, **kwargs):
@@ -144,7 +144,7 @@ class MapsView(marvin.api.base.BaseView):
 
         return json.dumps(self.results)
 
-    @flask.ext.classy.route('/<name>/map/<path:path>',
+    @flask_classy.route('/<name>/map/<path:path>',
                             methods=['GET', 'POST'], endpoint='getmap')
     @brain.utils.general.parseRoutePath
     def getMap(self, **kwargs):

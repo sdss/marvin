@@ -1,5 +1,5 @@
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
-from flask.ext.classy import FlaskView, route
+from flask_classy import FlaskView, route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.core import MarvinError
@@ -43,7 +43,7 @@ class Marvin(FlaskView):
         return 'new test'
 
     def database(self):
-        onecube = marvindb.session.query(datadb.Cube).first()
+        onecube = marvindb.session.query(marvindb.datadb.Cube).first()
         return str(onecube.plate)
 
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')

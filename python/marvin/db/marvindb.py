@@ -88,7 +88,8 @@ class MarvinDB(object):
 
     def _getSpaxelProp(self):
         ''' Get the correct SpaxelProp class given an MPL '''
-        return self.spaxelpropdict[config.mplver]
+        return {'full': self.spaxelpropdict[config.mplver], 'clean':
+                'Clean{0}'.format(self.spaxelpropdict[config.mplver])}
 
     def _setSession(self):
         ''' Sets the database session '''
@@ -127,7 +128,7 @@ class MarvinDB(object):
             if hasattr(model[1], '__tablename__'):
                 # only include the spaxelprop table matching the MPL version
                 if 'SpaxelProp' in keyname:
-                    if keyname == self._getSpaxelProp():
+                    if keyname in self._getSpaxelProp().values():
                         classdict[keyname] = model[1]
                 else:
                     classdict[keyname] = model[1]

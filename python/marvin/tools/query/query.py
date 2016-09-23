@@ -166,11 +166,12 @@ class Query(object):
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
         self._returnparams = None
+        self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm()
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels)
         self._drpver = kwargs.get('drpver', config.drpver)
         self._dapver = kwargs.get('dapver', config.dapver)
 
@@ -308,38 +309,40 @@ class Query(object):
         self.params.extend(returnparams)
 
     def set_defaultparams(self):
-        ''' Loads the default params for a given return type '''
-        # TODO - change mangaid to plateifu once plateifu works in
-        # SQLalchemy_boolean_search and we can figure out how to grab the classes
-        # for hybrid properties
+        ''' Loads the default params for a given return type
+        TODO - change mangaid to plateifu once plateifu works in
 
-        # cube, maps, rss, modelcube - file objects
-        # spaxel, map, rssfiber - derived objects (no file)
-        # return any of our tools
-        assert self.returntype in [None, 'cube', 'spaxel', 'maps', 'rss'], 'Query returntype must be either cube, spaxel, maps, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']  # cube.plate,ifu.name temp until cube.plateifu works
+        cube, maps, rss, modelcube - file objects
+        spaxel, map, rssfiber - derived objects (no file)
+
+        these are also the default params except
+        any query on spaxelprop should return spaxel_index (x/y)
+
+        Minimum parameters to instantiate a Marvin Tool
+        cube - return plateifu/mangaid
+        modelcube - return plateifu/mangaid, bintype, template
+        rss - return plateifu/mangaid
+        maps - return plateifu/mangaid, bintype, template
+        spaxel - return plateifu/mangaid, spaxel x and y
+
+        map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
+        rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
+
+        return any of our tools
+        '''
+        assert self.returntype in [None, 'cube', 'spaxel', 'maps',
+                                   'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']
         if self.returntype == 'spaxel':
-            # this is ok
             self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+        elif self.returntype == 'modelcube':
+            self.defaultparams.extend(['bintype.name', 'template.name'])
         elif self.returntype == 'rss':
-            #
-            self.defaultparams.extend(['rssfiber.fiber.fiberid'])
+            pass
         elif self.returntype == 'maps':
+            self.defaultparams.extend(['bintype.name', 'template.name'])
             # convert this to spaxel x and y
-            self.defaultparams.extend(['spaxelprop.spaxel_index'])
-
-        # these are also the default params except
-        # any query on spaxelprop should return spaxel_index (x/y)
-
-        # Minimum parameters to instantiate a Marvin Tool
-        # cube - return plateifu/mangaid
-        # modelcube - return plateifu/mangaid, bintype, template
-        # rss - return plateifu/mangaid
-        # maps - return plateifu/mangaid, bintype, template
-        # spaxel - return plateifu/mangaid, spaxel x and y
-
-        # map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
-        # rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
+            # self.defaultparams.extend(['spaxelprop.spaxel_index'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)

@@ -98,7 +98,8 @@ class ParamFxnLookupDict(dict):
 
 class ParamFormLookupDict(dict):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self.allspaxels = kwargs.get('allspaxels', None)
         self._init_table_shortcuts()
         self._init_name_shortcuts()
         self._mplver = config.mplver
@@ -119,10 +120,7 @@ class ParamFormLookupDict(dict):
         matches = self._get_matches(keySplits)
 
         # Check DAP Junk keys
-        isdapjunk = any(['mangadapdb.spaxelprop' in m for m in matches])
-        if isdapjunk:
-            keySplits = self._apply_shortcuts(matches[0])
-            matches = self._get_matches(keySplits)
+        matches = self._check_for_junk(matches)
 
         # Return matched key
         if len(matches) == 0:
@@ -137,6 +135,16 @@ class ParamFormLookupDict(dict):
                 '{0} matches multiple parameters in the lookup table: {1}'
                 .format(key, ', '.join(matches)))
 
+    def _check_for_junk(self, matches):
+        ''' check for Junk matches and return the correct key '''
+        isdapjunk = any(['mangadapdb.spaxelprop' in m for m in matches])
+        if isdapjunk:
+            junkmatches = [m for m in matches if (self.allspaxels and 'clean'
+                           not in m) or (not self.allspaxels and 'clean' in m)]
+            keySplits = self._apply_shortcuts(junkmatches[0])
+            matches = self._get_matches(keySplits)
+        return matches
+
     def mapToColumn(self, keys):
         """Returns the model class column in the WFTForm."""
 
@@ -146,7 +154,9 @@ class ParamFormLookupDict(dict):
         columns = []
         for key in keys:
             keySplits = self._apply_shortcuts(key)
-            key = self._get_matches(keySplits)[0]
+            matches = self._get_matches(keySplits)
+            matches = self._check_for_junk(matches)
+            key = matches[0]
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))
@@ -192,12 +202,14 @@ class ParamFormLookupDict(dict):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''
 
         newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
+        spaxname = 'spaxelprop' if self.allspaxels else 'cleanspaxelprop'
         if '4' in config.mplver:
-            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop' for m in newmpls}
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): spaxname for m in newmpls}
+            dapcut.update({'spaxelprop': spaxname})
         else:
             mdigit = config.mplver.split('-')[1]
-            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): 'spaxelprop{0}'.format(mdigit) for m in newmpls}
-            dapcut.update({'spaxelprop': 'spaxelprop{0}'.format(mdigit)})
+            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): '{0}{1}'.format(spaxname, mdigit) for m in newmpls}
+            dapcut.update({'spaxelprop': '{0}{1}'.format(spaxname, mdigit)})
 
         # add junk shortcuts
         junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
@@ -248,13 +260,13 @@ class MarvinForm(object):
         '''
 
         self._modelclasses = marvindb.buildUberClassDict()
-        self._param_form_lookup = ParamFormLookupDict()
+        self._param_form_lookup = ParamFormLookupDict(**kwargs)
         self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
         self._generateFormClasses(self._modelclasses)
         self._generateFxns()
         self.SearchForm = SearchForm
-        self._cleanParams()
+        self._cleanParams(**kwargs)
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.
@@ -320,11 +332,11 @@ class MarvinForm(object):
         dapkeys.sort()
         return dapkeys
 
-    def _cleanParams(self):
+    def _cleanParams(self, **kwargs):
         ''' Clean up the parameter-form lookup dictionary '''
 
         # remove keys for pk, mangadatadb.sample, test_, and cube_header
-        new = ParamFormLookupDict()
+        new = ParamFormLookupDict(**kwargs)
         for k, v in self._param_form_lookup.items():
             if 'pk' not in k and \
                'mangadatadb.sample' not in k and \
