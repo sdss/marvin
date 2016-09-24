@@ -103,6 +103,7 @@ class Results(object):
         self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
         self.paramtocol = None
+        self.objects = None
 
         # Convert remote results to NamedTuple
         if self.mode == 'remote':
@@ -736,7 +737,7 @@ class Results(object):
         '''
 
         # set the desired tool type
-        toollist = ['cube', 'spaxel', 'map', 'rss']
+        toollist = ['cube', 'spaxel', 'maps', 'rss']
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 

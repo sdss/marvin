@@ -210,8 +210,9 @@ class Query(object):
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
-            # this adds spaxel_index into default for query 1 dap zonal query
-            #self._adjust_defaults()
+            # this adds spaxel x, y into default for query 1 dap zonal query
+            self._adjust_defaults()
+            print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -287,10 +288,10 @@ class Query(object):
         '''
         dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
         if any(dapschema):
-            dapcols = ['spaxelprop.spaxel_index']
+            dapcols = ['spaxelprop.x', 'spaxelprop.y']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
-            self.queryparams.extend([self.marvinform._param_form_lookup.mapToColumn(dapcols)])
+            self.queryparams.extend(self.marvinform._param_form_lookup.mapToColumn(dapcols))
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -341,8 +342,7 @@ class Query(object):
             pass
         elif self.returntype == 'maps':
             self.defaultparams.extend(['bintype.name', 'template.name'])
-            # convert this to spaxel x and y
-            # self.defaultparams.extend(['spaxelprop.spaxel_index'])
+            # self.defaultparams.extend(['spaxelprop.x', 'spaxelprop.y'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)
@@ -350,11 +350,9 @@ class Query(object):
     def _create_query_modelclasses(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
         self.params = [item for item in self.params if item in set(self.params)]
-        print('my params', self.params)
         self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
-        print('queryorder', self.queryparams_order)
 
     def get_available_params(self):
         ''' Retrieve the available parameters to query on
@@ -529,7 +527,11 @@ class Query(object):
             name = '{0}.{1}'.format(model.__table__.schema, model.__tablename__)
             if not self._tableInQuery(name):
                 self.joins.append(model.__tablename__)
-                self.query = self.query.join(model)
+                if 'template' not in model.__tablename__:
+                    self.query = self.query.join(model)
+                else:
+                    # assume template_kin only now, TODO deal with template_pop later
+                    self.query = self.query.join(model, marvindb.dapdb.Structure.template_kin)
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
@@ -901,7 +903,8 @@ class Query(object):
 
         # Group the results by main defaultdatadb parameters,
         # so as not to include all spaxels
-        newdefaults = self.marvinform._param_form_lookup.mapToColumn(self.defaultparams)
+        newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
+        newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
         self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
     def _parseFxn(self, fxn):

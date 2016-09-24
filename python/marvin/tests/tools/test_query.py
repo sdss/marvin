@@ -6,6 +6,9 @@ import copy
 from marvin import config, marvindb
 from marvin.core import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
+from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.spaxel import Spaxel
 from marvin.tools.query import Query, doQuery
 from marvin.api.api import Interaction
 
@@ -50,9 +53,10 @@ class TestQuery(MarvinTest):
         p = 'cube.plate==8485 and spaxelprop.emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
         r = q.run()
+        tmp = r.sort('emline_gflux_ha_6564')
         self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
         self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
-        self.assertEqual(26.3447, r.results[0].__getattribute__('emline_gflux_ha_6564'))
+        self.assertEqual(26.2344, r.results[0].__getattribute__('emline_gflux_ha_6564'))
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -181,6 +185,22 @@ class TestQuery(MarvinTest):
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(8, r.totalcount)
+
+    def _query_return_type(self, rt=None):
+
+        if rt == 'cube':
+            tool = Cube
+
+        config.setMPL('MPL-5')
+        p = 'haflux > 25'
+        q = Query(searchfilter=p, returntype=rt)
+        r = q.run()
+        self.assertIsNotNone(r.objects)
+        self.assertEqual(len(r.results), len(r.objects))
+        self.assertEqual(True, isinstance(r.objects[0], tool))
+
+    def test_query_returntype_cube(self):
+        self._query_return_type(rt='cube')
 
 if __name__ == '__main__':
     verbosity = 2
