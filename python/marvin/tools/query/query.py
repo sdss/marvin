@@ -369,7 +369,7 @@ class Query(object):
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
-            mykeys = [k.split('.', 1)[-1] for k in keys if 'pk' not in k]
+            mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
             return mykeys
         elif self.mode == 'remote':
             # Get the query route
