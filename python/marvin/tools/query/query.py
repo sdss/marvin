@@ -291,7 +291,16 @@ class Query(object):
             dapcols = ['spaxelprop.x', 'spaxelprop.y']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
-            self.queryparams.extend(self.marvinform._param_form_lookup.mapToColumn(dapcols))
+            qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
+            self.queryparams.extend(qpdap)
+            self.queryparams_order.extend([q.key for q in qpdap])
+            # oldcols = ['spaxel.x', 'spaxel.y']
+            # if 'spaxel.x' in self.defaultparams:
+            #     for n in oldcols:
+            #         self.defaultparams.remove(n)
+            #         self.params.remove(n)
+            #         self.queryparams.remove(n)
+            #         self.queryparams_order.remove(n.split('.')[1])
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -335,7 +344,8 @@ class Query(object):
                                    'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
         self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']
         if self.returntype == 'spaxel':
-            self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+            pass
+            #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
         elif self.returntype == 'modelcube':
             self.defaultparams.extend(['bintype.name', 'template.name'])
         elif self.returntype == 'rss':
@@ -633,7 +643,9 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self._returnparams}
+            params = {'searchfilter': self.searchfilter,
+                      'params': self._returnparams,
+                      'returntype': self.returntype}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -641,6 +653,7 @@ class Query(object):
             else:
                 res = ii.getData()
                 self.queryparams_order = ii.results['queryparams_order']
+                self.params = ii.results['params']
                 self.query = ii.results['query']
                 count = ii.results['count']
                 totalcount = ii.results['totalcount']
@@ -716,7 +729,8 @@ class Query(object):
         ''' Create the base query session object.  Passes in a list of parameters defined in
             returnparams, filterparams, and defaultparams
         '''
-        self.query = self.session.query(*self.queryparams)
+        labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
+        self.query = self.session.query(*labeledqps)
 
     def _getPipeInfo(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
