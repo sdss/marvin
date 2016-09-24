@@ -112,7 +112,8 @@ class Results(object):
             self._makeNamedTuple()
 
         # Setup columns, and parameters
-        self._setupColumns()
+        if self.count > 0:
+            self._setupColumns()
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -367,6 +368,7 @@ class Results(object):
     def _setupColumns(self):
         ''' Auto sets up all the column/parameter name info '''
         columns = self.getColumns()
+        print(columns)
         self._params = self._reduceNames(columns)
         tmp = self.mapColumnsToParams(inputs=self._params)
         tmp = self.mapParamsToColumns(inputs=self._params)
