@@ -180,7 +180,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                           plate=plate, ifu=ifu, bintype=self.bintype, n=niter,
                           path_type='mangadap')
         else:
-            daptype = '{0}_{1}'.format(self.bintype, self.template_kin)
+            daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
                           path_type='mangadap5')
