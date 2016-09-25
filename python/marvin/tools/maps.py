@@ -125,8 +125,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self.properties = marvin.utils.dap.get_dap_datamodel(self._dapver)
 
     def __repr__(self):
-        return ('<Marvin Maps (plateifu={0.plateifu}, mode={0.mode}, '
-                'data_origin={0.data_origin})>'.format(self))
+        return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
+                'data_origin={0.data_origin!r})>'.format(self))
 
     def __getitem__(self, value):
         """Gets either a spaxel or a map depending on the type on input."""
