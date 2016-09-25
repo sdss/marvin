@@ -54,9 +54,9 @@ class TestQuery(MarvinTest):
         q = Query(searchfilter=p)
         r = q.run()
         tmp = r.sort('emline_gflux_ha_6564')
-        self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
-        self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
-        self.assertEqual(26.2344, r.results[0].__getattribute__('emline_gflux_ha_6564'))
+        self.assertEqual(self.plate, r.getListOf('plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
+        self.assertEqual(26.2344, r.getListOf('emline_gflux_ha_6564')[0])
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -65,8 +65,8 @@ class TestQuery(MarvinTest):
         p = 'cube.plate==8485 and spaxel.x > 5'
         q = Query(searchfilter=p)
         r = q.run()
-        self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
-        self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
+        self.assertEqual(self.plate, r.getListOf('plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertNotIn('dapalias', str(q.query.whereclause))
 
@@ -186,21 +186,44 @@ class TestQuery(MarvinTest):
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
-    def _query_return_type(self, rt=None):
+    def _query_return_type(self, rt=None, mode='local'):
 
         if rt == 'cube':
             tool = Cube
+        elif rt == 'maps':
+            tool = Maps
+        elif rt == 'spaxel':
+            tool = Spaxel
+
+        if mode == 'remote':
+            self._setRemote()
 
         config.setMPL('MPL-5')
         p = 'haflux > 25'
-        q = Query(searchfilter=p, returntype=rt)
+        q = Query(searchfilter=p, returntype=rt, mode=mode)
         r = q.run()
         self.assertIsNotNone(r.objects)
+        self.assertEqual(18, r.count)
         self.assertEqual(len(r.results), len(r.objects))
         self.assertEqual(True, isinstance(r.objects[0], tool))
 
     def test_query_returntype_cube(self):
         self._query_return_type(rt='cube')
+
+    def test_query_returntype_cube_remote(self):
+        self._query_return_type(rt='cube', mode='remote')
+
+    def test_query_returntype_maps(self):
+        self._query_return_type(rt='maps')
+
+    def test_query_returntype_maps_remote(self):
+        self._query_return_type(rt='maps', mode='remote')
+
+    def test_query_returntype_spaxel(self):
+        self._query_return_type(rt='spaxel')
+
+    def test_query_returntype_spaxel_remote(self):
+        self._query_return_type(rt='spaxel', mode='remote')
 
 if __name__ == '__main__':
     verbosity = 2
