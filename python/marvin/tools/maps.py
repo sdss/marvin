@@ -393,9 +393,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
         coordinates.
 
-        If the ``Maps`` object has been initialised with ``load_drp=True``,
-        the spaxels returned will contain the DRP spaxel, otherwise they will
-        be loaded only with DAP parameters.
+        If ``spectrum=True``, the returned |spaxel| will be instantiated with the
+        DRP spectrum of the spaxel for the DRP cube associated with this Maps.
 
         Parameters:
             x,y (int or array):
