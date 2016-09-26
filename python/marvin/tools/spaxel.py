@@ -638,7 +638,7 @@ class Spaxel(object):
                                     mask=model_emline_mask)
 
         self.stellar_continuum = Spectrum(
-            self.model - self.emline - self.emline_base,
+            self.model.flux - self.emline.flux - self.emline_base.flux,
             units='1E-17 erg/s/cm^2/Ang/spaxel',
             wavelength=self.modelcube.wavelength,
             wavelength_unit='Angstrom',

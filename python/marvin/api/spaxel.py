@@ -167,12 +167,12 @@ class SpaxelView(BaseView):
         if spaxel is not None:
 
             self.results['data'] = {
-                'flux_array': spaxel.model_flux.tolist(),
+                'flux_array': spaxel.model_flux.flux.tolist(),
                 'flux_ivar': spaxel.model_flux.ivar.tolist(),
                 'flux_mask': spaxel.model_flux.mask.tolist(),
-                'model_array': spaxel.model.tolist(),
-                'model_emline': spaxel.emline.tolist(),
-                'model_emline_base': spaxel.emline_base.tolist(),
+                'model_array': spaxel.model.flux.tolist(),
+                'model_emline': spaxel.emline.flux.tolist(),
+                'model_emline_base': spaxel.emline_base.flux.tolist(),
                 'model_emline_mask': spaxel.emline.mask.tolist(),
                 'bintype': spaxel.bintype,
                 'template_kin': spaxel.template_kin}
