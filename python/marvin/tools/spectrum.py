@@ -14,6 +14,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 from marvin.core.exceptions import MarvinMissingDependency
+from marvin.core.core import Dotable
 
 try:
     import matplotlib.pyplot as plt
@@ -22,13 +23,13 @@ except ImportError:
     pyplot = None
 
 
-class Spectrum(np.ndarray):
+class Spectrum(Dotable):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
-        value (array-like):
+        flux (array-like):
             The 1-D array contianing the spectrum.
-        value_units (str, optional):
+        flux_units (str, optional):
             The units of the spectrum.
         wavelength (array-like, optional):
             The wavelength solution for ``spectrum``. Must have the same number
@@ -41,47 +42,49 @@ class Spectrum(np.ndarray):
             elements.
         wavelength_unit (str, optional):
             The units of the wavelength solution.
-        is_flux (bool):
-            If ``True``, creates internal properties called ``flux`` and
-            ``flux_units`` pointing to ``value`` and ``value_units``,
-            respectively.
 
     """
 
-    def __new__(cls, input_array, units=None, wavelength=None,
-                wavelength_unit=None, ivar=None, mask=None, **kwargs):
+    def __init__(self, flux, flux_units=None, wavelength_unit=None,
+                 ivar=None, mask=None, wavelength=None):
 
-        obj = np.asarray(input_array).view(cls)
+        tmp_dict = {}
+        tmp_dict['flux'] = np.array(flux)
+        tmp_dict['ivar'] = np.array(ivar) if ivar is not None else None
+        tmp_dict['mask'] = np.array(mask) if mask is not None else None
+        tmp_dict['wavelength'] = np.array(wavelength) \
+            if wavelength is not None else None
 
-        obj.units = units
-        obj.wavelength = np.array(wavelength) if wavelength is not None else wavelength
-        obj.wavelength_unit = wavelength_unit
-        obj.ivar = np.array(ivar) if ivar is not None else ivar
-        obj.mask = np.array(mask) if mask is not None else mask
+        tmp_dict['flux_units'] = flux_units
+        tmp_dict['wavelength_unit'] = wavelength_unit
 
-        return obj
+        Dotable.__init__(self, tmp_dict)
 
-    def __array_finalize__(self, obj):
+        # Performs some checks.
 
-        if obj is None:
-            return
+        assert len(self.flux.shape) == 1, 'spectrum must be 1-D'
 
-        self.units = getattr(obj, 'units', None)
-        self.wavelength = getattr(obj, 'wavelength', None)
-        self.wavelength_unit = getattr(obj, 'wavelength_unit', None)
-        self.ivar = getattr(obj, 'ivar', None)
-        self.mask = getattr(obj, 'mask', None)
+        if self.ivar is not None:
+            assert len(self.ivar.shape) == 1, 'ivar must be 1-D'
+            assert len(self.flux) == len(self.ivar), \
+                'ivar must have the same lenght as the base spectrum'
 
-    def __array_wrap__(self, out_arr, context=None):
+        if self.mask is not None:
+            assert len(self.mask.shape) == 1, 'mask must be 1-D'
+            assert len(self.flux) == len(self.mask), \
+                'mask must have the same lenght as the base spectrum'
 
-        return np.ndarray.__array_wrap__(self, out_arr, context)
+        if self.wavelength is not None:
+            assert len(self.wavelength.shape) == 1, 'wavelength must be 1-D'
+            assert len(self.flux) == len(self.wavelength), \
+                'wavelength must have the same lenght as the base spectrum'
 
     def __repr__(self):
         """Representation for Spectrum."""
 
-        return '<Marvin Spectrum ({0!s})'.format(self)
+        return '<Marvin Spectrum ({0!s})'.format(self.flux)
 
-    def plot(self, array=None, xlim=None, ylim=None, mask_color=None,
+    def plot(self, array='flux', xlim=None, ylim=None, mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
         """Plots a spectrum using matplotlib.
 
@@ -93,7 +96,7 @@ class Spectrum(np.ndarray):
         the plot will be displayed interactivelly.
 
         Parameters:
-            array (None or {ivar', 'mask'}):
+            array ({'flux', 'ivar', 'mask'}):
                 The array to display, defaults to the internal spectrum with
                 which the object was initialised.
             xlim,ylim (tuple-like or None):
@@ -152,12 +155,12 @@ class Spectrum(np.ndarray):
         if not pyplot:
             raise MarvinMissingDependency('matplotlib is not installed.')
 
-        validSpectrum = ['ivar', 'mask']
-        assert array is None or array in validSpectrum, \
-            'array must be one of {0!r}'.format(validSpectrum)
+        array = array.lower()
+        validSpectrum = ['flux', 'ivar', 'mask']
+        assert array in validSpectrum, 'array must be one of {0!r}'.format(validSpectrum)
 
-        if array is None:
-            data = self
+        if array == 'flux':
+            data = self.flux
         elif array == 'ivar':
             data = self.ivar
         elif array == 'mask':
@@ -196,13 +199,12 @@ class Spectrum(np.ndarray):
                 xlabel = ''
 
         if ylabel is None:
-            if array is None:
+            if array == 'flux':
                 ylabel = 'Flux'
-                if self.units is not None:
-                    if self.units.lower() == '1e-17 erg/s/cm^2/ang/spaxel':
-                        ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
-                    else:
-                        ylabel += r' [{0}]'.format(self.flux_units)
+                if self.flux_units == '1e-17 erg/s/cm^2/Ang/spaxel':
+                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
+                elif self.flux_units is not None:
+                    ylabel += r' [{0}]'.format(self.flux_units)
             elif array == 'ivar':
                 ylabel = 'Inverse variance'
             else:

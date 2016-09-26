@@ -190,11 +190,7 @@ class TestGetSpaxel(TestCubeBase):
 
         ext = kwargs.pop('ext', 'flux')
         spectrum = cube.getSpaxel(**kwargs).spectrum
-
-        if ext == 'flux':
-            self.assertAlmostEqual(spectrum[idx], expect, places=5)
-        else:
-            self.assertAlmostEqual(getattr(spectrum, ext)[idx], expect, places=5)
+        self.assertAlmostEqual(spectrum[ext][idx], expect, places=5)
 
     def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, **kwargs):
         """Convenience method to test exceptions raised by getSpaxel."""
@@ -395,7 +391,7 @@ class TestGetSpaxel(TestCubeBase):
         spaxels = cube.getSpaxel(**kwargs)
 
         self.assertEqual(len(spaxels), nCoords)
-        fluxes = np.array([spaxel.spectrum for spaxel in spaxels])
+        fluxes = np.array([spaxel.spectrum.flux for spaxel in spaxels])
 
         assert_allclose(fluxes[:, specIndex], expected, rtol=1e-6)
 

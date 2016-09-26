@@ -214,7 +214,7 @@ class RSSFiber(Spectrum):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         self.mangaid = kwargs.pop('mangaid', None)
         self.plateifu = kwargs.pop('plateifu', None)
@@ -222,13 +222,16 @@ class RSSFiber(Spectrum):
 
         flux_units = '1e-17 erg/s/cm^2/Ang/fiber'
         wavelength_unit = 'Angstrom'
-        kwargs['units'] = flux_units
+        kwargs['flux_units'] = flux_units
         kwargs['wavelength_unit'] = wavelength_unit
+
+        Spectrum.__init__(self, *args, **kwargs)
 
     def __repr__(self):
         """Representation for RSSFiber."""
 
-        return np.ndarray.__repr__(self)
+        return ('<Marvin RSSFiber (mangaid={self.mangaid!r}, plateifu={self.plateifu!r}, '
+                'data_origin={self.data_origin!r})>'.format(self=self))
 
     @classmethod
     def _init_from_hdu(cls, hdulist, index):

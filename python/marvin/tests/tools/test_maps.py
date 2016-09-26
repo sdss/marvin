@@ -166,7 +166,7 @@ class TestMapsDB(TestMapsBase):
         self.assertIsNotNone(spaxel_getitem.spectrum)
         self.assertTrue(len(spaxel_getitem.properties.keys()) > 0)
 
-        self.assertAlmostEqual(spaxel_getitem.spectrum[100], spaxel.spectrum[100])
+        self.assertAlmostEqual(spaxel_getitem.spectrum.flux[100], spaxel.spectrum.flux[100])
 
 
 class TestMapsAPI(TestMapsBase):
