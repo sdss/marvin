@@ -133,7 +133,7 @@ class CubeView(BaseView):
 
         try:
             spaxel = cube.getSpaxel(**kwargs)
-            self.results['data'] = spaxel.spectrum.flux.tolist()
+            self.results['data'] = spaxel.spectrum.tolist()
             self.results['status'] = 1
         except Exception as e:
             self.results['status'] = -1

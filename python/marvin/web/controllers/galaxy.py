@@ -45,7 +45,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         error = convertIvarToErr(spectrum.spectrum.ivar)
         wave = spectrum.spectrum.wavelength
         # make input array for Dygraph
-        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.spectrum.flux)]
+        webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spectrum.spectrum)]
 
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spectrum.x, spectrum.y)
 
