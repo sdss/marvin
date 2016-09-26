@@ -72,7 +72,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-23 01:41:10
+* @Last Modified time: 2016-09-26 17:20:26
 */
 
 //
@@ -146,9 +146,11 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
+            console.log(spaxel[0], spaxel[0].length);
+            var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
-                labels: ['Wavelength', 'Flux', 'Flux2'],
+                labels: labels,
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 xlabel: 'Wavelength [Ångströms]'
