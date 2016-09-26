@@ -20,7 +20,7 @@ __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
 drpTable = {}
 
 
-def getSpaxel(cube=None, maps=None, modelcube=None,
+def getSpaxel(cube=True, maps=True, modelcube=True,
               x=None, y=None, ra=None, dec=None, xyorig=None):
     """Returns the |spaxel| matching certain coordinates.
 
@@ -83,14 +83,14 @@ def getSpaxel(cube=None, maps=None, modelcube=None,
     assert cube or maps or modelcube, \
         'Either cube, maps, or modelcube needs to be specified.'
 
-    assert not cube or isinstance(cube, marvin.tools.cube.Cube), \
-        'cube is not an instance of Cube'
+    assert isinstance(cube, (marvin.tools.cube.Cube, bool)), \
+        'cube is not an instance of Cube or a boolean'
 
-    assert not maps or isinstance(maps, marvin.tools.maps.Maps), \
-        'maps is not an instance of Maps'
+    assert isinstance(maps, (marvin.tools.maps.Maps, bool)), \
+        'maps is not an instance of Maps or a boolean'
 
-    assert not modelcube or isinstance(modelcube, marvin.tools.modelcube.ModelCube), \
-        'modelcube is not an instance of ModelCube'
+    assert isinstance(modelcube, (marvin.tools.modelcube.ModelCube, bool)), \
+        'modelcube is not an instance of ModelCube or a boolean'
 
     # Checks that we have the correct set of inputs.
     if x is not None or y is not None:
@@ -119,15 +119,15 @@ def getSpaxel(cube=None, maps=None, modelcube=None,
     if not xyorig:
         xyorig = marvin.config.xyorig
 
-    if maps:
+    if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
         cube_shape = maps.shape
         plateifu = maps.plateifu
-    elif cube:
+    elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
         cube_shape = cube.shape
         plateifu = cube.plateifu
-    elif modelcube:
+    elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
         cube_shape = modelcube.shape
         plateifu = modelcube.plateifu

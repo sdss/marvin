@@ -238,7 +238,7 @@ class ModelCube(MarvinToolsClass):
 
                 self.data = db_modelcube[0]
 
-            self.header = self.data.file.hdus[0].header
+            self.header = self.data.file.primary_header
             self.shape = self.data.file.cube.shape.shape
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
             self.wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
@@ -308,6 +308,9 @@ class ModelCube(MarvinToolsClass):
             properties (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DAP properties for this spaxel.
+            modelcube (bool):
+                If ``True``, the |spaxel| will be initialised with the
+                corresponding ModelCube data.
 
         Returns:
             spaxels (list):
@@ -319,8 +322,8 @@ class ModelCube(MarvinToolsClass):
 
         """
 
-        kwargs['cube'] = self.cube if spectrum else None
-        kwargs['maps'] = self.maps if properties else None
+        kwargs['cube'] = self.cube if spectrum else False
+        kwargs['maps'] = self.maps if properties else False
         kwargs['modelcube'] = self
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
