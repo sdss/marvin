@@ -319,8 +319,8 @@ class ModelCube(MarvinToolsClass):
 
         """
 
-        kwargs['cube'] = self.cube if spectrum else None
-        kwargs['maps'] = self.maps if properties else None
+        kwargs['cube'] = self.cube if spectrum else False
+        kwargs['maps'] = self.maps if properties else False
         kwargs['modelcube'] = self
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
