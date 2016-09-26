@@ -1,5 +1,5 @@
 import json
-from flask.ext.classy import route
+from flask_classy import route
 from flask import session as current_session, request
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
@@ -7,12 +7,13 @@ from marvin.core import MarvinError
 from marvin.api import parse_params
 
 
-def _getCubes(searchfilter, params=None, start=None, end=None):
+def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None):
     """Run query locally at Utah."""
 
     drpver, dapver = parse_params(request)
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local', drpver=drpver, dapver=dapver)
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params,
+                   mode='local', drpver=drpver, dapver=dapver, returntype=rettype)
     results = r.results
 
     # get a subset
@@ -21,7 +22,7 @@ def _getCubes(searchfilter, params=None, start=None, end=None):
         results = r.getSubset(int(start), limit=chunk)
 
     output = dict(data=results, query=r.showQuery(),
-                  filter=searchfilter, params=params,
+                  filter=searchfilter, params=q.params, returnparams=params,
                   queryparams_order=q.queryparams_order, count=len(results), totalcount=r.count)
     return output
 
@@ -38,9 +39,10 @@ class QueryView(BrainQueryView):
         ''' do a remote query '''
         searchfilter = self.results['inconfig'].get('searchfilter', None)
         params = self.results['inconfig'].get('params', None)
+        rettype = self.results['inconfig'].get('returntype', None)
         print('cube_query', searchfilter, params)
         try:
-            res = _getCubes(searchfilter, params=params)
+            res = _getCubes(searchfilter, params=params, rettype=rettype)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:

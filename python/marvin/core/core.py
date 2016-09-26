@@ -69,13 +69,19 @@ class MarvinToolsClass(object):
         self.data_origin = None
 
         args = [self.filename, self.plateifu, self.mangaid]
-        errmsg = 'Enter filename, plateifu, or mangaid!'
-        assert any(args), errmsg
-        assert sum([bool(arg) for arg in args]) == 1, \
-            'enter only one filename, plateifu, or mangaid.'
+        assert any(args), 'Enter filename, plateifu, or mangaid!'
 
-        if self.mangaid:
-            self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall, drpver=self._drpver)
+        if self.filename:
+            self.plateifu = None
+            self.mangaid = None
+        elif self.plateifu:
+            self.filename = None
+            self.mangaid = None
+        elif self.mangaid:
+            self.filename = None
+            self.plateifu = mangaid2plateifu(self.mangaid,
+                                             drpall=self._drpall,
+                                             drpver=self._drpver)
 
         if self.mode == 'local':
             self._doLocal()

@@ -6,6 +6,9 @@ import copy
 from marvin import config, marvindb
 from marvin.core import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
+from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.spaxel import Spaxel
 from marvin.tools.query import Query, doQuery
 from marvin.api.api import Interaction
 
@@ -50,9 +53,10 @@ class TestQuery(MarvinTest):
         p = 'cube.plate==8485 and spaxelprop.emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
         r = q.run()
-        self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
-        self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
-        self.assertEqual(26.3447, r.results[0].__getattribute__('emline_gflux_ha_6564'))
+        tmp = r.sort('emline_gflux_ha_6564')
+        self.assertEqual(self.plate, r.getListOf('plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
+        self.assertEqual(26.2344, r.getListOf('emline_gflux_ha_6564')[0])
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -61,8 +65,8 @@ class TestQuery(MarvinTest):
         p = 'cube.plate==8485 and spaxel.x > 5'
         q = Query(searchfilter=p)
         r = q.run()
-        self.assertEqual(self.plate, r.results[0].__getattribute__('plate'))
-        self.assertEqual(self.mangaid, r.results[0].__getattribute__('mangaid'))
+        self.assertEqual(self.plate, r.getListOf('plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertNotIn('dapalias', str(q.query.whereclause))
 
@@ -107,14 +111,15 @@ class TestQuery(MarvinTest):
         self.assertEqual([], q.joins)
         self.assertEqual(2, r.totalcount)  # MPL-4 count
 
-    def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp'):
+    def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp', allspax=None):
+        classname = 'Clean{0}'.format(classname) if not allspax else classname
         if table:
             key = '{0}.{1}'.format(table, name)
         else:
             key = '{0}'.format(name)
 
         p = '{0} > 25'.format(key)
-        q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'])
+        q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'], allspaxels=allspax)
         r = q.run()
         self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
         self.assertEqual(count, r.totalcount)
@@ -125,34 +130,48 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(231, table='spaxelprop')
+        self._dap_query_1(231, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
+        self._dap_query_1(231, name='haflux', allspax=True)
+
+    def test_dap_query_1_normal_clean(self):
+        self._dap_query_1(231, table='spaxelprop')
+
+    def test_dap_query_1_haflux_clean(self):
         self._dap_query_1(231, name='haflux')
 
     def test_dap_query_1_badshortcut(self):
         errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"
-        self._bad_query_1(errmsg, 231, table='spaxelprop5')
+        self._bad_query_1(errmsg, 231, table='spaxelprop5', allspax=True)
 
     def test_dap_query_1_wrongname(self):
         errmsg = 'spaxelprop5.emline_gluxf_ha does not match any column'
-        self._bad_query_1(errmsg, 231, table='spaxelprop5', name='emline_gluxf_ha')
+        self._bad_query_1(errmsg, 231, table='spaxelprop5', name='emline_gluxf_ha', allspax=True)
 
     def test_dap_query_1_wrongtable(self):
         errmsg = 'prop5.emline_gflux_ha_6564 does not match any column'
-        self._bad_query_1(errmsg, 231, table='prop5')
+        self._bad_query_1(errmsg, 231, table='prop5', allspax=True)
 
     def test_dap_query_1_normal_mpl5(self):
         config.setMPL('MPL-5')
-        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5')
+        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5', allspax=True)
 
     def test_dap_query_1_haflux_mpl5(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, name='haflux', classname='SpaxelProp5', allspax=True)
+
+    def test_dap_query_1_normal_mpl5_clean(self):
+        config.setMPL('MPL-5')
+        self._dap_query_1(18, table='spaxelprop', classname='SpaxelProp5')
+
+    def test_dap_query_1_haflux_mpl5_clean(self):
         config.setMPL('MPL-5')
         self._dap_query_1(18, name='haflux', classname='SpaxelProp5')
 
     def test_dap_query_1_sp5_mpl5(self):
         config.setMPL('MPL-5')
-        self._dap_query_1(18, table='spaxelprop5', classname='SpaxelProp5')
+        self._dap_query_1(18, table='spaxelprop5', classname='SpaxelProp5', allspax=True)
 
     def test_dap_query_2(self):
         p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'
@@ -166,6 +185,45 @@ class TestQuery(MarvinTest):
         q = Query(searchfilter=p)
         r = q.run()
         self.assertEqual(8, r.totalcount)
+
+    def _query_return_type(self, rt=None, mode='local'):
+
+        if rt == 'cube':
+            tool = Cube
+        elif rt == 'maps':
+            tool = Maps
+        elif rt == 'spaxel':
+            tool = Spaxel
+
+        if mode == 'remote':
+            self._setRemote()
+
+        config.setMPL('MPL-5')
+        p = 'haflux > 25'
+        q = Query(searchfilter=p, returntype=rt, mode=mode)
+        r = q.run()
+        self.assertIsNotNone(r.objects)
+        self.assertEqual(18, r.count)
+        self.assertEqual(len(r.results), len(r.objects))
+        self.assertEqual(True, isinstance(r.objects[0], tool))
+
+    def test_query_returntype_cube(self):
+        self._query_return_type(rt='cube')
+
+    def test_query_returntype_cube_remote(self):
+        self._query_return_type(rt='cube', mode='remote')
+
+    def test_query_returntype_maps(self):
+        self._query_return_type(rt='maps')
+
+    def test_query_returntype_maps_remote(self):
+        self._query_return_type(rt='maps', mode='remote')
+
+    def test_query_returntype_spaxel(self):
+        self._query_return_type(rt='spaxel')
+
+    def test_query_returntype_spaxel_remote(self):
+        self._query_return_type(rt='spaxel', mode='remote')
 
 if __name__ == '__main__':
     verbosity = 2

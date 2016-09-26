@@ -16,7 +16,7 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from flask.ext.classy import route
+from flask_classy import route
 from brain.api.general import BrainGeneralRequestsView
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 import json

@@ -14,7 +14,6 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 from marvin.core.exceptions import MarvinMissingDependency
-from marvin.core.core import Dotable
 
 try:
     import matplotlib.pyplot as plt
@@ -23,14 +22,14 @@ except ImportError:
     pyplot = None
 
 
-class Spectrum(Dotable):
+class Spectrum(object):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
         flux (array-like):
             The 1-D array contianing the spectrum.
-        flux_units (str, optional):
-            The units of the spectrum.
+        units (str, optional):
+            The units of the flux spectrum.
         wavelength (array-like, optional):
             The wavelength solution for ``spectrum``. Must have the same number
             of elements.
@@ -45,20 +44,16 @@ class Spectrum(Dotable):
 
     """
 
-    def __init__(self, flux, flux_units=None, wavelength_unit=None,
+    def __init__(self, flux, units=None, wavelength_unit=None,
                  ivar=None, mask=None, wavelength=None):
 
-        tmp_dict = {}
-        tmp_dict['flux'] = np.array(flux)
-        tmp_dict['ivar'] = np.array(ivar) if ivar is not None else None
-        tmp_dict['mask'] = np.array(mask) if mask is not None else None
-        tmp_dict['wavelength'] = np.array(wavelength) \
-            if wavelength is not None else None
+        self.flux = np.array(flux)
+        self.ivar = np.array(ivar) if ivar is not None else None
+        self.mask = np.array(mask) if mask is not None else None
+        self.wavelength = np.array(wavelength) if wavelength is not None else None
 
-        tmp_dict['flux_units'] = flux_units
-        tmp_dict['wavelength_unit'] = wavelength_unit
-
-        Dotable.__init__(self, tmp_dict)
+        self.units = units
+        self.wavelength_unit = wavelength_unit
 
         # Performs some checks.
 
@@ -201,10 +196,10 @@ class Spectrum(Dotable):
         if ylabel is None:
             if array == 'flux':
                 ylabel = 'Flux'
-                if self.flux_units == '1e-17 erg/s/cm^2/Ang/spaxel':
+                if self.units == '1e-17 erg/s/cm^2/Ang/spaxel':
                     ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
-                elif self.flux_units is not None:
-                    ylabel += r' [{0}]'.format(self.flux_units)
+                elif self.units is not None:
+                    ylabel += r' [{0}]'.format(self.units)
             elif array == 'ivar':
                 ylabel = 'Inverse variance'
             else:

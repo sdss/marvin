@@ -166,11 +166,12 @@ class Query(object):
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
         self._returnparams = None
+        self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm()
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels)
         self._drpver = kwargs.get('drpver', config.drpver)
         self._dapver = kwargs.get('dapver', config.dapver)
 
@@ -209,8 +210,9 @@ class Query(object):
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
-            # this adds spaxel_index into default for query 1 dap zonal query
-            #self._adjust_defaults()
+            # this adds spaxel x, y into default for query 1 dap zonal query
+            self._adjust_defaults()
+            print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -286,10 +288,19 @@ class Query(object):
         '''
         dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
         if any(dapschema):
-            dapcols = ['spaxelprop.spaxel_index']
+            dapcols = ['spaxelprop.x', 'spaxelprop.y']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
-            self.queryparams.extend([self.marvinform._param_form_lookup.mapToColumn(dapcols)])
+            qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
+            self.queryparams.extend(qpdap)
+            self.queryparams_order.extend([q.key for q in qpdap])
+            # oldcols = ['spaxel.x', 'spaxel.y']
+            # if 'spaxel.x' in self.defaultparams:
+            #     for n in oldcols:
+            #         self.defaultparams.remove(n)
+            #         self.params.remove(n)
+            #         self.queryparams.remove(n)
+            #         self.queryparams_order.remove(n.split('.')[1])
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -308,38 +319,40 @@ class Query(object):
         self.params.extend(returnparams)
 
     def set_defaultparams(self):
-        ''' Loads the default params for a given return type '''
-        # TODO - change mangaid to plateifu once plateifu works in
-        # SQLalchemy_boolean_search and we can figure out how to grab the classes
-        # for hybrid properties
+        ''' Loads the default params for a given return type
+        TODO - change mangaid to plateifu once plateifu works in
 
-        # cube, maps, rss, modelcube - file objects
-        # spaxel, map, rssfiber - derived objects (no file)
-        # return any of our tools
-        assert self.returntype in [None, 'cube', 'spaxel', 'maps', 'rss'], 'Query returntype must be either cube, spaxel, maps, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']  # cube.plate,ifu.name temp until cube.plateifu works
+        cube, maps, rss, modelcube - file objects
+        spaxel, map, rssfiber - derived objects (no file)
+
+        these are also the default params except
+        any query on spaxelprop should return spaxel_index (x/y)
+
+        Minimum parameters to instantiate a Marvin Tool
+        cube - return plateifu/mangaid
+        modelcube - return plateifu/mangaid, bintype, template
+        rss - return plateifu/mangaid
+        maps - return plateifu/mangaid, bintype, template
+        spaxel - return plateifu/mangaid, spaxel x and y
+
+        map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
+        rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
+
+        return any of our tools
+        '''
+        assert self.returntype in [None, 'cube', 'spaxel', 'maps',
+                                   'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']
         if self.returntype == 'spaxel':
-            # this is ok
-            self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+            pass
+            #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+        elif self.returntype == 'modelcube':
+            self.defaultparams.extend(['bintype.name', 'template.name'])
         elif self.returntype == 'rss':
-            #
-            self.defaultparams.extend(['rssfiber.fiber.fiberid'])
+            pass
         elif self.returntype == 'maps':
-            # convert this to spaxel x and y
-            self.defaultparams.extend(['spaxelprop.spaxel_index'])
-
-        # these are also the default params except
-        # any query on spaxelprop should return spaxel_index (x/y)
-
-        # Minimum parameters to instantiate a Marvin Tool
-        # cube - return plateifu/mangaid
-        # modelcube - return plateifu/mangaid, bintype, template
-        # rss - return plateifu/mangaid
-        # maps - return plateifu/mangaid, bintype, template
-        # spaxel - return plateifu/mangaid, spaxel x and y
-
-        # map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
-        # rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
+            self.defaultparams.extend(['bintype.name', 'template.name'])
+            # self.defaultparams.extend(['spaxelprop.x', 'spaxelprop.y'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)
@@ -347,11 +360,9 @@ class Query(object):
     def _create_query_modelclasses(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
         self.params = [item for item in self.params if item in set(self.params)]
-        print('my params', self.params)
         self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
-        print('queryorder', self.queryparams_order)
 
     def get_available_params(self):
         ''' Retrieve the available parameters to query on
@@ -368,7 +379,7 @@ class Query(object):
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
-            mykeys = [k.split('.', 1)[-1] for k in keys if 'pk' not in k]
+            mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
             return mykeys
         elif self.mode == 'remote':
             # Get the query route
@@ -526,7 +537,11 @@ class Query(object):
             name = '{0}.{1}'.format(model.__table__.schema, model.__tablename__)
             if not self._tableInQuery(name):
                 self.joins.append(model.__tablename__)
-                self.query = self.query.join(model)
+                if 'template' not in model.__tablename__:
+                    self.query = self.query.join(model)
+                else:
+                    # assume template_kin only now, TODO deal with template_pop later
+                    self.query = self.query.join(model, marvindb.dapdb.Structure.template_kin)
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
@@ -628,7 +643,9 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self._returnparams}
+            params = {'searchfilter': self.searchfilter,
+                      'params': self._returnparams,
+                      'returntype': self.returntype}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -636,6 +653,7 @@ class Query(object):
             else:
                 res = ii.getData()
                 self.queryparams_order = ii.results['queryparams_order']
+                self.params = ii.results['params']
                 self.query = ii.results['query']
                 count = ii.results['count']
                 totalcount = ii.results['totalcount']
@@ -711,7 +729,8 @@ class Query(object):
         ''' Create the base query session object.  Passes in a list of parameters defined in
             returnparams, filterparams, and defaultparams
         '''
-        self.query = self.session.query(*self.queryparams)
+        labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
+        self.query = self.session.query(*labeledqps)
 
     def _getPipeInfo(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
@@ -898,7 +917,8 @@ class Query(object):
 
         # Group the results by main defaultdatadb parameters,
         # so as not to include all spaxels
-        newdefaults = self.marvinform._param_form_lookup.mapToColumn(self.defaultparams)
+        newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
+        newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
         self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
     def _parseFxn(self, fxn):
