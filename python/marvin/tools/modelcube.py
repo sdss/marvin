@@ -238,7 +238,7 @@ class ModelCube(MarvinToolsClass):
 
                 self.data = db_modelcube[0]
 
-            self.header = self.data.file.hdus[0].header
+            self.header = self.data.file.primary_header
             self.shape = self.data.file.cube.shape.shape
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
             self.wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
