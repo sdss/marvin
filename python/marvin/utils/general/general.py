@@ -20,7 +20,8 @@ __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
 drpTable = {}
 
 
-def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=None):
+def getSpaxel(cube=None, maps=None, modelcube=None,
+              x=None, y=None, ra=None, dec=None, xyorig=None):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -40,8 +41,11 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
         maps (:class:`~marvin.tools.maps.Maps` or None or bool)
             As ``cube`` but for the :class:`~marvin.tools.maps.Maps`
             object representing the DAP maps entity. If None, the |spaxel|
-            will be returned without DAP information. At least one of
-            ``cube`` or ``maps`` must not be None.
+            will be returned without DAP information.
+        modelcube (:class:`~marvin.tools.modelcube.ModelCube` or None or bool)
+            As ``cube`` but for the :class:`~marvin.tools.modelcube.ModelCube`
+            object representing the DAP modelcube entity. If None, the |spaxel|
+            will be returned without model information.
         x,y (int or array):
             The spaxel coordinates relative to ``xyorig``. If ``x`` is an
             array of coordinates, the size of ``x`` must much that of
@@ -72,17 +76,21 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
     # circular imports soon.
     import marvin.tools.cube
     import marvin.tools.maps
+    import marvin.tools.modelcube
     import marvin.tools.spaxel
 
     # Checks that the cube and maps data are correct
-    assert cube or maps, \
-        'Either cube or maps needs to be specified.'
+    assert cube or maps or modelcube, \
+        'Either cube, maps, or modelcube needs to be specified.'
 
     assert not cube or isinstance(cube, marvin.tools.cube.Cube), \
         'cube is not an instance of Cube'
 
     assert not maps or isinstance(maps, marvin.tools.maps.Maps), \
         'maps is not an instance of Maps'
+
+    assert not modelcube or isinstance(modelcube, marvin.tools.modelcube.ModelCube), \
+        'modelcube is not an instance of ModelCube'
 
     # Checks that we have the correct set of inputs.
     if x is not None or y is not None:
@@ -115,10 +123,14 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
         ww = maps.wcs if inputMode == 'sky' else None
         cube_shape = maps.shape
         plateifu = maps.plateifu
-    else:
+    elif cube:
         ww = cube.wcs if inputMode == 'sky' else None
         cube_shape = cube.shape
         plateifu = cube.plateifu
+    elif modelcube:
+        ww = modelcube.wcs if inputMode == 'sky' else None
+        cube_shape = modelcube.shape
+        plateifu = modelcube.plateifu
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -127,11 +139,7 @@ def getSpaxel(cube=None, maps=None, x=None, y=None, ra=None, dec=None, xyorig=No
     for ii in range(len(iCube[0])):
         _spaxels.append(
             marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps))
-
-    # Sets the shape of the cube on the spaxels
-    for sp in _spaxels:
-        sp._parent_shape = cube_shape
+                                       cube=cube, maps=maps, modelcube=modelcube))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
