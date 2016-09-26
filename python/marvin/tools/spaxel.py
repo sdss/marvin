@@ -20,7 +20,6 @@ import numpy as np
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
-import marvin.utils.general.dap
 import marvin.utils.general.general
 import marvin.tools.cube
 import marvin.tools.maps
@@ -46,7 +45,9 @@ class Spaxel(object):
         cube_filename (str):
             The path of the data cube file containing the spaxel to load.
         maps_filename (str):
-            The path of the data cube file containing the spaxel to load.
+            The path of the DAP Maps file containing the spaxel to load.
+        modelcube_filename (str):
+            The path of the DAP model cube file containing the spaxel to load.
         mangaid (str):
             The mangaid of the cube/maps of the spaxel to load.
         plateifu (str):
@@ -66,10 +67,12 @@ class Spaxel(object):
             As ``cube`` but populates ``Spaxel.properties`` with a dictionary
             of DAP measurements corresponding to the spaxel in the maps that
             matches ``bintype``, ``template_kin``, and ``template_pop``.
-        logcube (:class:`marvin.tools.maps.LogCube` object or bool)
-            As ``cube`` but populates ``Spaxel.model_spectrum`` with an
-            spectrum of the corresponding spaxel of the DAP logcube that
-            matches ``bintype``, ``template_kin``, and ``template_pop``.
+        modelcube (:class:`marvin.tools.modelcube.ModelCube` object or bool)
+            As ``cube`` but populates ``Spaxel.model_flux``, ``Spaxel.model``,
+            ``Spaxel.redcorr``, ``Spaxel.emline``, ``Spaxel.emline_base``, and
+            ``Spaxel.stellar_continuum`` from the corresponding
+            spaxel of the DAP modelcube that matches ``bintype``,
+            ``template_kin``, and ``template_pop``.
         bintype (str or None):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
@@ -108,17 +111,31 @@ class Spaxel(object):
             from the DAP maps extensions. The keys are a combination of
             category and channel, when applicable, e.g.,
             ``emline_sflux_siii_9533``.
-        model_spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
-            A `Spectrum` object with the DAP model spectrum from the logcube.
+        model_flux (:class:`~marvin.tools.spectrum.Spectrum` object):
+            A `Spectrum` object with the flux of the binned spectrum. Includes
+            ``ivar`` and ``mask``.
+        wavelength (Numpy array):
+            Wavelength vector, in Angstrom.
+        redcorr (Numpy array):
+            Reddening correction applied during the fitting procedures;
+            ``dereddened_flux = model_flux.flux * redcorr``.
+        model (:class:`~marvin.tools.spectrum.Spectrum` object):
+            The best fitting model spectra (sum of the fitted continuum and
+            emission-line models). Includes ``mask``.
+        emline (:class:`~marvin.tools.spectrum.Spectrum` object):
+            The model spectrum with only the emission lines. Includes ``mask``.
+        emline_base (:class:`~marvin.tools.spectrum.Spectrum` object):
+            The bitmask that only applies to the emission-line modeling.
+            Includes ``mask``.
 
     """
 
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'x', 'y', 'cube_filename', 'maps_filename', 'mangaid', 'plateifu',
-            'cube', 'maps', 'logcube', 'bintype', 'template_kin', 'template_pop',
-            'drpall', 'drpver', 'dapver']
+            'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
+            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
+            'template_kin', 'template_pop', 'drpall', 'drpver', 'dapver']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -126,12 +143,19 @@ class Spaxel(object):
 
         self.cube = kwargs.pop('cube', True) or False
         self.maps = kwargs.pop('maps', True) or False
+        self.modelcube = kwargs.pop('modelcube', True) or False
 
-        if not self.cube and not self.maps:
-            raise MarvinError('either cube or maps must be True or a Marvin Cube or Maps object.')
+        if not self.cube and not self.maps and not self.modelcube:
+            raise MarvinError('either cube, maps, or modelcube must be True or '
+                              'a Marvin Cube, Maps, or ModelCube object must be specified.')
 
         self._drpver = kwargs.get('drpver', marvin.config.drpver)
         self._dapver = kwargs.get('dapver', marvin.config.dapver)
+
+        self.bintype = marvin.tools.maps._get_bintype(
+            self._dapver, bintype=kwargs.get('bintype', None))
+        self.template_kin = marvin.tools.maps._get_template_kin(
+            self._dapver, template_kin=kwargs.get('template_kin', None))
 
         self.plateifu = None
         self.mangaid = None
@@ -150,82 +174,144 @@ class Spaxel(object):
         self.spectrum = None
         self.properties = {}
 
+        self.model_flux = None
+        self.redcorr = None
+        self.model = None
+        self.emline = None
+        self.emline_base = None
+        self.stellar_continuum = None
+
+        self.plateifu = kwargs.pop('plateifu', None)
+        self.mangaid = kwargs.pop('plateifu', None)
+
         cube_filename = kwargs.pop('cube_filename', None)
+        self._check_cube(cube_filename)
+
         maps_filename = kwargs.pop('maps_filename', None)
-        mangaid_input = kwargs.pop('mangaid', None)
-        plateifu_input = kwargs.pop('plateifu', None)
+        self._check_maps(maps_filename)
+
+        modelcube_filename = kwargs.pop('modelcube_filename', None)
+        self._check_modelcube(modelcube_filename)
+
+    def _check_cube(self, cube_filename):
+        """Loads the cube and the spectrum."""
 
         # Checks that the cube is correct or load ones if cube == True.
         if not isinstance(self.cube, bool):
             assert isinstance(self.cube, marvin.tools.cube.Cube), \
                 'cube is not an instance of marvin.tools.cube.Cube or a boolean.'
         elif self.cube is True:
-            self.cube = marvin.tools.cube.Cube(filename=cube_filename, mangaid=mangaid_input,
-                                               plateifu=plateifu_input, drpver=self._drpver)
+            self.cube = marvin.tools.cube.Cube(filename=cube_filename, plateifu=self.plateifu,
+                                               mangaid=self.mangaid, drpver=self._drpver)
         else:
             self.cube = None
+            return
 
-        # If we have a cube, loads information from it.
-        if self.cube:
-            self.plateifu = str(self.cube.plateifu)
-            self.mangaid = str(self.cube.mangaid)
-            self._drpver = self.cube._drpver
-            self._parent_shape = self.cube.shape
+        if self.plateifu is not None:
+            assert self.plateifu == self.cube.plateifu, \
+                'input plateifu does not match the cube plateifu. '
+        else:
+            self.plateifu = self.cube.plateifu
 
-            if mangaid_input is not None and mangaid_input != self.mangaid:
-                warnings.warn('input mangaid does not match the cube mangaid. '
-                              'Will use the cube mangaid.', MarvinUserWarning)
+        if self.mangaid is not None:
+            assert self.mangaid == self.cube.mangaid, \
+                'input mangaid does not match the cube mangaid. '
+        else:
+            self.mangaid = self.cube.mangaid
 
-            if plateifu_input is not None and plateifu_input != self.plateifu:
-                warnings.warn('input plateifu does not match the cube plateifu. '
-                              'Will use the cube plateifu.', MarvinUserWarning)
+        self._drpver = self.cube._drpver
+        self._parent_shape = self.cube.shape
 
-            # Loads the spectrum
-            self._load_spectrum()
+        # Loads the spectrum
+        self._load_spectrum()
 
-        # We do the same with the Maps
+    def _check_maps(self, maps_filename):
+        """Loads the cube and the properties."""
+
         if not isinstance(self.maps, bool):
             assert isinstance(self.maps, marvin.tools.maps.Maps), \
                 'maps is not an instance of marvin.tools.maps.Maps or a boolean.'
         elif self.maps is True:
-
-            # Makes sure we call Maps with a filename or with only one of plateifu or mangaid.
-            if maps_filename:
-                pass
-            else:
-                if self.plateifu and self.mangaid:
-                    plateifu_input = self.plateifu
-                    mangaid_input = None
-
             self.maps = marvin.tools.maps.Maps(filename=maps_filename,
-                                               mangaid=mangaid_input,
-                                               plateifu=plateifu_input,
+                                               mangaid=self.mangaid,
+                                               plateifu=self.plateifu,
+                                               bintype=self.bintype,
+                                               template_kin=self.template_kin,
                                                drpver=self._drpver,
                                                dapver=self._dapver)
         else:
             self.maps = None
+            return
 
-        if self.maps:
+        self._drpver = self.maps._drpver
+        self._dapver = self.maps._dapver
 
-            self._dapver = self.maps._dapver
+        if self.plateifu is not None:
+            assert self.plateifu == self.maps.plateifu, \
+                'input plateifu does not match the maps plateifu. '
+        else:
+            self.plateifu = self.maps.plateifu
 
-            # Runs some checks to make sure cube and maps match
-            if self.cube:
-                if (self.cube.plateifu != self.maps.plateifu or
-                        self.cube.mangaid != self.maps.mangaid):
-                    raise MarvinError('plateifu or mangaid from cube does not '
-                                      'match the one in maps.')
-                if self.maps._drpver != self.cube._drpver:
-                    raise MarvinError('maps has drpver={0} while cube has {1}'
-                                      .format(self.maps._drpver, self.cube._drpver))
-            else:
-                self.plateifu = self.maps.plateifu
-                self.mangaid = self.maps.mangaid
-                self._drpver = self.maps._drpver
-                self._parent_shape = self.maps.shape
+        if self.mangaid is not None:
+            assert self.mangaid == self.maps.mangaid, \
+                'input mangaid does not match the maps mangaid. '
+        else:
+            self.mangaid = self.maps.mangaid
 
-            # Loads the properties
-            self._load_properties()
+        self._parent_shape = self.maps.shape
+
+        self.bintype = self.maps.bintype
+        self.template_kin = self.maps.template_kin
+
+        # Loads the properties
+        self._load_properties()
+
+    def _check_modelcube(self, modelcube_filename):
+        """Loads the modelcube and associated arrays."""
+
+        if not isinstance(self.modelcube, bool):
+            assert isinstance(self.modelcube, marvin.tools.modelcube.ModelCube), \
+                'modelcube is not an instance of marvin.tools.modelcube.ModelCube or a boolean.'
+        elif self.modelcube is True:
+
+            if self._is_MPL4():
+                warnings.warn('ModelCube cannot be instantiated for MPL-4.',
+                              MarvinUserWarning)
+                self.modelcube = None
+                return
+
+            self.modelcube = marvin.tools.modelcube.ModelCube(filename=modelcube_filename,
+                                                              mangaid=self.mangaid,
+                                                              plateifu=self.plateifu,
+                                                              bintype=self.bintype,
+                                                              template_kin=self.template_kin,
+                                                              drpver=self._drpver,
+                                                              dapver=self._dapver)
+        else:
+            self.modelcube = None
+            return
+
+        self._drpver = self.modelcube._drpver
+        self._dapver = self.modelcube._dapver
+
+        self.bintype = self.modelcube.bintype
+        self.template_kin = self.modelcube.template_kin
+
+        if self.plateifu is not None:
+            assert self.plateifu == self.modelcube.plateifu, \
+                'input plateifu does not match the modelcube plateifu. '
+        else:
+            self.plateifu = self.modelcube.plateifu
+
+        if self.mangaid is not None:
+            assert self.mangaid == self.modelcube.mangaid, \
+                'input mangaid does not match the modelcube mangaid. '
+        else:
+            self.mangaid = self.modelcube.mangaid
+
+        self._parent_shape = self.modelcube.shape
+
+        self._load_models()
 
     def __repr__(self):
         """Spaxel representation."""
@@ -256,7 +342,7 @@ class Spaxel(object):
             cube_hdu = self.cube.data
 
             self.spectrum = Spectrum(cube_hdu['FLUX'].data[:, self.y, self.x],
-                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
                                      wavelength=cube_hdu['WAVE'].data,
                                      wavelength_unit='Angstrom',
                                      ivar=cube_hdu['IVAR'].data[:, self.y, self.x],
@@ -283,7 +369,7 @@ class Spaxel(object):
                 raise MarvinError('cannot find an spaxel for x={0.x}, y={0.y}'.format(self))
 
             self.spectrum = Spectrum(spaxel.flux,
-                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
                                      wavelength=cube_db.wavelength.wavelength,
                                      wavelength_unit='Angstrom',
                                      ivar=spaxel.ivar,
@@ -297,7 +383,7 @@ class Spaxel(object):
             # Calls the API to retrieve the DRP spectrum information for this spaxel.
 
             routeparams = {'name': self.plateifu,
-                           'path': 'x={0}/y={1}'.format(self.x, self.y)}
+                           'x': self.x, 'y': self.y}
 
             url = marvin.config.urlmap['api']['getSpectrum']['url'].format(**routeparams)
 
@@ -310,7 +396,7 @@ class Spaxel(object):
 
             # Instantiates the spectrum from the returned values from the Interaction
             self.spectrum = Spectrum(data['flux'],
-                                     flux_units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
                                      wavelength=data['wavelength'],
                                      wavelength_unit='Angstrom',
                                      ivar=data['ivar'],
@@ -427,7 +513,9 @@ class Spaxel(object):
             # Calls /api/<name>/properties/<path:path> to retrieve a
             # dictionary with all the properties for this spaxel.
             routeparams = {'name': self.plateifu,
-                           'path': 'x={0}/y={1}'.format(self.x, self.y)}
+                           'x': self.x, 'y': self.y,
+                           'bintype': self.bintype,
+                           'template_kin': self.template_kin}
 
             url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
@@ -451,3 +539,107 @@ class Spaxel(object):
                     description=prop['description'])
 
         self.properties = DictOfProperties(properties)
+
+    def _load_models(self):
+
+        assert self.modelcube, 'a ModelCube is needed to initialise models.'
+
+        if self.modelcube.data_origin == 'file':
+
+            hdus = self.modelcube.data
+            flux_array = hdus['FLUX'].data[:, self.y, self.x]
+            flux_ivar = hdus['IVAR'].data[:, self.y, self.x]
+            flux_mask = hdus['MASK'].data[:, self.y, self.x]
+            model_array = hdus['MODEL'].data[:, self.y, self.x]
+            model_emline = hdus['EMLINE'].data[:, self.y, self.x]
+            model_emline_base = hdus['EMLINE_BASE'].data[:, self.y, self.x]
+            model_emline_mask = hdus['EMLINE_MASK'].data[:, self.y, self.x]
+
+        elif self.modelcube.data_origin == 'db':
+
+            if marvin.marvindb is None:
+                raise MarvinError('there is not a valid DB connection.')
+
+            session = marvin.marvindb.session
+            dapdb = marvin.marvindb.dapdb
+
+            modelcube_db_spaxel = session.query(dapdb.ModelSpaxel).filter(
+                dapdb.ModelSpaxel.modelcube == self.modelcube.data,
+                dapdb.ModelSpaxel.x == self.x, dapdb.ModelSpaxel.y == self.y).one()
+
+            if modelcube_db_spaxel is None:
+                raise MarvinError('cannot find an modelcube spaxel for '
+                                  'x={0.x}, y={0.y}'.format(self))
+
+            flux_array = modelcube_db_spaxel.flux
+            flux_ivar = modelcube_db_spaxel.ivar
+            flux_mask = modelcube_db_spaxel.mask
+            model_array = modelcube_db_spaxel.model
+            model_emline = modelcube_db_spaxel.emline
+            model_emline_base = modelcube_db_spaxel.emline_base
+            model_emline_mask = modelcube_db_spaxel.emline_mask
+
+        elif self.modelcube.data_origin == 'api':
+
+            # Calls /modelcubes/<name>/models/<path:path> to retrieve a
+            # dictionary with all the models for this spaxel.
+            url = marvin.config.urlmap['api']['getModels']['url']
+            url_full = url.format(name=self.plateifu,
+                                  bintype=self.bintype,
+                                  template_kin=self.template_kin,
+                                  x=self.x, y=self.y)
+
+            try:
+                response = api.Interaction(url_full,
+                                           params={'drpver': self._drpver,
+                                                   'dapver': self._dapver})
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote model cube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            flux_array = np.array(data['flux_array'])
+            flux_ivar = np.array(data['flux_ivar'])
+            flux_mask = np.array(data['flux_mask'])
+            model_array = np.array(data['model_array'])
+            model_emline = np.array(data['model_emline'])
+            model_emline_base = np.array(data['model_emline_base'])
+            model_emline_mask = np.array(data['model_emline_mask'])
+
+        # Instantiates the model attributes.
+
+        self.redcorr = Spectrum(self.modelcube.redcorr,
+                                wavelength=self.modelcube.wavelength,
+                                wavelength_unit='Angstrom')
+
+        self.model_flux = Spectrum(flux_array,
+                                   units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                   wavelength=self.modelcube.wavelength,
+                                   wavelength_unit='Angstrom',
+                                   ivar=flux_ivar,
+                                   mask=flux_mask)
+
+        self.model = Spectrum(model_array,
+                              units='1E-17 erg/s/cm^2/Ang/spaxel',
+                              wavelength=self.modelcube.wavelength,
+                              wavelength_unit='Angstrom')
+
+        self.emline = Spectrum(model_emline,
+                               units='1E-17 erg/s/cm^2/Ang/spaxel',
+                               wavelength=self.modelcube.wavelength,
+                               wavelength_unit='Angstrom',
+                               mask=model_emline_mask)
+
+        self.emline_base = Spectrum(model_emline_base,
+                                    units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                    wavelength=self.modelcube.wavelength,
+                                    wavelength_unit='Angstrom',
+                                    mask=model_emline_mask)
+
+        self.stellar_continuum = Spectrum(
+            self.model - self.emline - self.emline_base,
+            units='1E-17 erg/s/cm^2/Ang/spaxel',
+            wavelength=self.modelcube.wavelength,
+            wavelength_unit='Angstrom',
+            mask=model_emline_mask)
