@@ -308,6 +308,9 @@ class ModelCube(MarvinToolsClass):
             properties (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DAP properties for this spaxel.
+            modelcube (bool):
+                If ``True``, the |spaxel| will be initialised with the
+                corresponding ModelCube data.
 
         Returns:
             spaxels (list):
