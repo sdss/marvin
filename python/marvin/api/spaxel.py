@@ -134,3 +134,47 @@ class SpaxelView(BaseView):
             self.results['data'] = {'properties': spaxel_properties}
 
         return json.dumps(self.results)
+
+    @route('/<name>/models/<bintype>/<template_kin>/<x>/<y>/',
+           methods=['GET', 'POST'], endpoint='getModels')
+    def getModels(self, name, x, y, bintype, template_kin):
+        """Returns a dictionary with the models for a spaxel.
+
+        Loads a ModelCube and uses getSpaxel to retrieve the ``(x,y)``
+        spaxel. Returns a dictionary with the models for that spaxel.
+
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            x,y (int):
+                The x/y coordinates of the spaxel (origin is ``lower``).
+            bintype (str):
+                The bintype associated with this model cube. If not defined,
+                the default type of binning will be used.
+            template_kin (str):
+                The template_kin associated with this model cube.
+                If not defined, the default template_kin will be used.
+
+        """
+
+        spaxel, results = _getSpaxel(name, x, y,
+                                     bintype=bintype,
+                                     template_kin=template_kin,
+                                     cube=False, maps=False)
+
+        self.update_results(results)
+
+        if spaxel is not None:
+
+            self.results['data'] = {
+                'flux_array': spaxel.model_flux.tolist(),
+                'flux_ivar': spaxel.model_flux.ivar.tolist(),
+                'flux_mask': spaxel.model_flux.mask.tolist(),
+                'model_array': spaxel.model.tolist(),
+                'model_emline': spaxel.emline.tolist(),
+                'model_emline_base': spaxel.emline_base.tolist(),
+                'model_emline_mask': spaxel.emline.mask.tolist(),
+                'bintype': spaxel.bintype,
+                'template_kin': spaxel.template_kin}
+
+        return json.dumps(self.results)
