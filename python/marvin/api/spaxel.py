@@ -22,10 +22,9 @@ from marvin.tools.spaxel import Spaxel
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
-from brain.utils.general import parseRoutePath
 
 
-def _getSpaxel(name, x, y, with_cube=True, with_maps=False):
+def _getSpaxel(name, x, y, **kwargs):
     """Retrieves a Marvin Spaxel object."""
 
     spaxel = None
@@ -51,7 +50,7 @@ def _getSpaxel(name, x, y, with_cube=True, with_maps=False):
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
         spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu,
-                        drpver=drpver, dapver=dapver, cube=with_cube, maps=with_maps)
+                        drpver=drpver, dapver=dapver, **kwargs)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve Spaxels {0}: {1}'.format(name, str(e))
@@ -64,14 +63,23 @@ class SpaxelView(BaseView):
 
     route_base = '/spaxels/'
 
-    @route('/<name>/spectra/<path:path>/', methods=['GET', 'POST'], endpoint='getSpectrum')
-    @parseRoutePath
-    def spectrum(self, name, x=None, y=None):
-        """Retrieves the spaxel at ``(x, y)`` and returns its spectral data arrays."""
+    @route('/<name>/spectra/<x>/<y>/', methods=['GET', 'POST'], endpoint='getSpectrum')
+    def spectrum(self, name, x, y):
+        """Returns a dictionary with the DRP spectrum for a spaxel.
 
-        assert x is not None and y is not None
+        Loads a DRP Cube and uses getSpaxel to retrieve the ``(x,y)``
+        spaxel. Returns a dictionary with the spectrum for that spaxel.
 
-        spaxel, results = _getSpaxel(name, int(x), int(y), with_cube=True, with_maps=False)
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            x,y (int):
+                The x/y coordinates of the spaxel (origin is ``lower``).
+
+        """
+
+        spaxel, results = _getSpaxel(name, int(x), int(y),
+                                     maps=False, modelcube=False)
 
         self.update_results(results)
 
@@ -80,18 +88,38 @@ class SpaxelView(BaseView):
                                     'ivar': spaxel.spectrum.ivar.tolist(),
                                     'mask': spaxel.spectrum.mask.tolist(),
                                     'wavelength': spaxel.spectrum.wavelength.tolist(),
-                                    'specres': spaxel.specres.tolist()}
+                                    'specres': spaxel.specres.tolist(),
+                                    'bintype': spaxel.bintype,
+                                    'template_kin': spaxel.template_kin}
 
         return json.dumps(self.results)
 
-    @route('/<name>/properties/<path:path>/', methods=['GET', 'POST'], endpoint='getProperties')
-    @parseRoutePath
-    def properties(self, name, x=None, y=None):
-        """Retrieves the spaxel at ``(x, y)`` and returns its DAP properties."""
+    @route('/<name>/properties/<bintype>/<template_kin>/<x>/<y>/',
+           methods=['GET', 'POST'], endpoint='getProperties')
+    def properties(self, name, x, y, bintype, template_kin):
+        """Returns a dictionary with the DAP properties for a spaxel.
 
-        assert x is not None and y is not None
+        Loads a DAP Maps and uses getSpaxel to retrieve the ``(x,y)``
+        spaxel. Returns a dictionary with the properties for that spaxel.
 
-        spaxel, results = _getSpaxel(name, int(x), int(y), with_cube=False, with_maps=True)
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            x,y (int):
+                The x/y coordinates of the spaxel (origin is ``lower``).
+            bintype (str):
+                The bintype associated with this model cube. If not defined,
+                the default type of binning will be used.
+            template_kin (str):
+                The template_kin associated with this model cube.
+                If not defined, the default template_kin will be used.
+
+        """
+
+        spaxel, results = _getSpaxel(name, int(x), int(y),
+                                     bintype=bintype,
+                                     template_kin=template_kin,
+                                     cube=False, modelcube=False)
 
         self.update_results(results)
 

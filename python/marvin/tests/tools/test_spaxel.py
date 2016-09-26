@@ -172,6 +172,21 @@ class TestSpaxelInit(TestSpaxelBase):
         self.assertTrue(len(spaxel.properties) > 0)
         self.assertIsInstance(spaxel.properties, DictOfProperties)
 
+    def test_db_maps_miles(self):
+
+        spaxel = Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True,
+                        plateifu=self.plateifu,
+                        template_kin='MILES-THIN')
+        self.assertEqual(spaxel.maps.template_kin, 'MILES-THIN')
+
+    def test_api_maps_invalid_template(self):
+
+        with self.assertRaises(AssertionError) as cm:
+            Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True,
+                   plateifu=self.plateifu,
+                   template_kin='MILES-TH')
+        self.assertIn('invalid template_kin', str(cm.exception))
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
