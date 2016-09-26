@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-23 13:54:39
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-26 17:40:15
 */
 
 //
@@ -50,11 +50,12 @@ class Galaxy {
 
     // Initialize and Load a DyGraph spectrum
     loadSpaxel(spaxel, title) {
+        var labels = (spaxel[0].length == 3) ? ['Wavelength','Flux', 'Model Fit'] : ['Wavelength','Flux'];
         this.webspec = new Dygraph(this.graphdiv[0],
                   spaxel,
                   {
                     title: title,
-                    labels: ['Wavelength','Flux'],
+                    labels: labels,
                     errorBars: true,
                     ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                     xlabel: 'Wavelength [Ångströms]'
