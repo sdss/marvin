@@ -34,6 +34,7 @@ def create_app(debug=False):
 
     from marvin.api.cube import CubeView
     from marvin.api.maps import MapsView
+    from marvin.api.modelcube import ModelCubeView
     from marvin.api.plate import PlateView
     from marvin.api.rss import RSSView
     from marvin.api.spaxel import SpaxelView
@@ -159,6 +160,7 @@ def create_app(debug=False):
     # API route registration
     CubeView.register(api)
     MapsView.register(api)
+    ModelCubeView.register(api)
     PlateView.register(api)
     RSSView.register(api)
     SpaxelView.register(api)
