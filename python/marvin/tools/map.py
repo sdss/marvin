@@ -166,7 +166,10 @@ class Map(object):
 
         url_full = url.format(
             **{'name': self.maps.plateifu,
-               'path': 'property_name={0}/channel={1}'.format(self.property_name, self.channel)})
+               'property_name': self.property_name,
+               'channel': self.channel,
+               'bintype': self.maps.bintype,
+               'template_kin': self.maps.template_kin})
 
         try:
             response = marvin.api.api.Interaction(url_full,

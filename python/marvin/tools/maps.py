@@ -47,6 +47,50 @@ __TEMPLATES_KIN_DEFAULT__ = 'GAU-MILESHC'
 __all__ = ('Maps')
 
 
+def _is_MPL4(dapver):
+    """Returns True if the dapver version is <= MPL-4."""
+
+    dap_version = distutils.version.StrictVersion(dapver)
+    MPL4_version = distutils.version.StrictVersion('1.1.1')
+
+    return dap_version <= MPL4_version
+
+
+def _get_bintype(dapver, bintype=None):
+    """Checks the bintype and returns the default value if None."""
+
+    if bintype is not None:
+        bintype = bintype.upper()
+        bintypes_check = __BINTYPES_MPL4__.keys() if _is_MPL4(dapver) else __BINTYPES__
+        assert bintype in bintypes_check, ('invalid bintype. bintype must be one of {0}'
+                                           .format(bintypes_check))
+        return bintype
+
+    # Defines the default value depending on the version
+    if _is_MPL4(dapver):
+        return __BINTYPES_MPL4_DEFAULT__
+    else:
+        return __BINTYPES_DEFAULT__
+
+
+def _get_template_kin(dapver, template_kin=None):
+    """Checks the template_kin and returns the default value if None."""
+
+    if template_kin is not None:
+        template_kin = template_kin.upper()
+        templates_check = __TEMPLATES_KIN_MPL4__ if _is_MPL4(dapver) else __TEMPLATES_KIN__
+        assert template_kin in templates_check, ('invalid template_kin. '
+                                                 'template_kin must be one of {0}'
+                                                 .format(templates_check))
+        return template_kin
+
+    # Defines the default value depending on the version
+    if _is_MPL4(dapver):
+        return __TEMPLATES_KIN_MPL4_DEFAULT__
+    else:
+        return __TEMPLATES_KIN_DEFAULT__
+
+
 class Maps(marvin.core.core.MarvinToolsClass):
     """Returns an object representing a DAP Maps file.
 
@@ -104,8 +148,9 @@ class Maps(marvin.core.core.MarvinToolsClass):
             warnings.warn('template_pop is not yet in use. Ignoring value.',
                           marvin.core.exceptions.MarvinUserWarning)
 
-        self.bintype = self._get_bintype(kwargs.pop('bintype', None))
-        self.template_kin = self._get_template_kin(kwargs.pop('template_kin', None))
+        self.bintype = _get_bintype(self._dapver, bintype=kwargs.pop('bintype', None))
+        self.template_kin = _get_template_kin(self._dapver,
+                                              template_kin=kwargs.pop('template_kin', None))
         self.template_pop = None
 
         self.wcs = None
@@ -125,8 +170,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self.properties = marvin.utils.dap.get_dap_datamodel(self._dapver)
 
     def __repr__(self):
-        return ('<Marvin Maps (plateifu={0.plateifu}, mode={0.mode}, '
-                'data_origin={0.data_origin})>'.format(self))
+        return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
+                'data_origin={0.data_origin!r})>'.format(self))
 
     def __getitem__(self, value):
         """Gets either a spaxel or a map depending on the type on input."""
@@ -173,7 +218,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         plate, ifu = self.plateifu.split('-')
 
-        if self._is_MPL4():
+        if _is_MPL4(self._dapver):
             niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template_kin),
                                         __BINTYPES_MPL4__[self.bintype]))
             params = dict(drpver=self._drpver, dapver=self._dapver,
@@ -186,47 +231,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
                           path_type='mangadap5')
 
         return params
-
-    def _is_MPL4(self):
-        """Returns True if the dapver version is <= MPL-4."""
-
-        dap_version = distutils.version.StrictVersion(self._dapver)
-        MPL4_version = distutils.version.StrictVersion('1.1.1')
-
-        return dap_version <= MPL4_version
-
-    def _get_bintype(self, bintype=None):
-        """Checks the bintype and returns the default value if None."""
-
-        if bintype is not None:
-            bintype = bintype.upper()
-            bintypes_check = __BINTYPES_MPL4__.keys() if self._is_MPL4() else __BINTYPES__
-            assert bintype in bintypes_check, ('invalid bintype. bintype must be one of {0}'
-                                               .format(bintypes_check))
-            return bintype
-
-        # Defines the default value depending on the version
-        if self._is_MPL4():
-            return __BINTYPES_MPL4_DEFAULT__
-        else:
-            return __BINTYPES_DEFAULT__
-
-    def _get_template_kin(self, template_kin=None):
-        """Checks the template_kin and returns the default value if None."""
-
-        if template_kin is not None:
-            template_kin = template_kin.upper()
-            templates_check = __TEMPLATES_KIN_MPL4__ if self._is_MPL4() else __TEMPLATES_KIN__
-            assert template_kin in templates_check, ('invalid template_kin. '
-                                                     'template_kin must be one of {0}'
-                                                     .format(templates_check))
-            return template_kin
-
-        # Defines the default value depending on the version
-        if self._is_MPL4():
-            return __TEMPLATES_KIN_MPL4_DEFAULT__
-        else:
-            return __TEMPLATES_KIN_DEFAULT__
 
     def _load_maps_from_file(self, data=None):
         """Loads a MAPS file."""
@@ -272,7 +276,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         # Checks the bintype and template_kin from the header
         header_bintype = self.data[0].header['BINTYPE'].strip().upper()
-        header_template_kin_key = 'TPLKEY' if self._is_MPL4() else 'SCKEY'
+        header_template_kin_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
         header_template_kin = self.data[0].header[header_template_kin_key].strip().upper()
 
         if self.bintype != header_bintype:
@@ -393,9 +397,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
         coordinates.
 
-        If the ``Maps`` object has been initialised with ``load_drp=True``,
-        the spaxels returned will contain the DRP spaxel, otherwise they will
-        be loaded only with DAP parameters.
+        If ``spectrum=True``, the returned |spaxel| will be instantiated with the
+        DRP spectrum of the spaxel for the DRP cube associated with this Maps.
 
         Parameters:
             x,y (int or array):

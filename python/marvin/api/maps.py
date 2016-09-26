@@ -15,7 +15,6 @@ from flask import request
 
 import json
 
-import brain.utils.general
 import marvin.api.base
 from marvin.api import parse_params
 import marvin.core.exceptions
@@ -71,17 +70,19 @@ class MapsView(marvin.api.base.BaseView):
         return json.dumps(self.results)
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/',
-                            methods=['GET', 'POST'], endpoint='getMaps')
+                        methods=['GET', 'POST'], endpoint='getMaps')
     def get(self, name, bintype, template_kin):
         """Returns the parameters needed to initialise a Maps remotely.
 
-        To initialise a Maps we need to return:
-        - mangaid
-        - plateifu
-        - Header with WCS information
-        - Maps shape
-        - bintype
-        - template_kin
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            bintype (str):
+                The bintype associated with this model cube. If not defined,
+                the default type of binning will be used.
+            template_kin (str):
+                The template_kin associated with this model cube.
+                If not defined, the default template_kin will be used.
 
         """
 
@@ -110,62 +111,31 @@ class MapsView(marvin.api.base.BaseView):
 
         return json.dumps(self.results)
 
-    @flask_classy.route('/<name>/dap_props/<path:path>',
-                            methods=['GET', 'POST'], endpoint='getdap_props')
-    @brain.utils.general.parseRoutePath
-    def getDAP_props(self, **kwargs):
-        """Returns a dictionary of DAP parameters for a Maps spaxel.
-
-        Parameters:
-            name (str):
-                The ``plateifu`` or ``mangaid`` of the object.
-            x,y (int):
-                The x/y coordinates of the spaxel (origin is ``lower``).
-            kwargs (dict):
-                Any other parameter to pass for the ``Maps`` initialisation.
-
-        """
-
-        name = kwargs.pop('name')
-        xx = int(kwargs.pop('x'))
-        yy = int(kwargs.pop('y'))
-
-        # Initialises the Maps object
-        maps, results = _getMaps(name, **kwargs)
-        self.update_results(results)
-
-        if maps is None:
-            return json.dumps(self.results)
-
-        dict_of_props = marvin.utils.general.dap.maps_db2dict_of_props(
-            maps.data, xx, yy)
-
-        self.results['data'] = dict_of_props
-
-        return json.dumps(self.results)
-
-    @flask_classy.route('/<name>/map/<path:path>',
-                            methods=['GET', 'POST'], endpoint='getmap')
-    @brain.utils.general.parseRoutePath
-    def getMap(self, **kwargs):
+    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
+                        methods=['GET', 'POST'], endpoint='getmap')
+    def getMap(self, name, bintype, template_kin, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
         Parameters:
             name (str):
                 The ``plateifu`` or ``mangaid`` of the object.
+            bintype (str):
+                The bintype associated with this model cube. If not defined,
+                the default type of binning will be used.
+            template_kin (str):
+                The template_kin associated with this model cube.
+                If not defined, the default template_kin will be used.
             property_name (str):
                 The property_name of the map to be extractred. E.g., `'emline_gflux'`.
             channel (str or None):
                 If the ``property_name`` contains multiple channels, the channel to use,
                 e.g., ``ha_6564'. Otherwise, ``None``.
 
-        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/map/category=emline_gflux/channel=ha_6564/
+        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/map/emline_gflux/ha_6564/
 
         """
 
-        name = kwargs.pop('name')
-        property_name = str(kwargs.pop('property_name'))
-        channel = kwargs.pop('channel', None)
+        kwargs = {'bintype': bintype, 'template_kin': template_kin}
 
         # Initialises the Maps object
         maps, results = _getMaps(name, **kwargs)
@@ -175,7 +145,7 @@ class MapsView(marvin.api.base.BaseView):
             return json.dumps(self.results)
 
         try:
-            mmap = maps.getMap(property_name=property_name, channel=channel)
+            mmap = maps.getMap(property_name=str(property_name), channel=str(channel))
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist()
