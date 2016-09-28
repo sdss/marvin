@@ -76,7 +76,7 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
-            console.log(spaxel[0], spaxel[0].length);
+            console.log('spaxel', spaxel[0], spaxel[0].length);
             var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,

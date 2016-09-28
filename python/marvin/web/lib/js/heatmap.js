@@ -94,18 +94,25 @@ var HeatMap = function () {
             var mask = x.mask;
 
             var xyz = Array();
+            console.log('ivar', ivar);
 
             for (var ii = 0; ii < values.length; ii++) {
                 for (var jj = 0; jj < values.length; jj++) {
                     var val = values[ii][jj];
 
-                    //
-                    // TODO change the mask conditional to parse the maskbits in MPL-5
-                    //
-                    if (mask[ii][jj] === 1) {
+                    var noValue = mask[ii][jj] && Math.pow(2, 0);
+                    var badValue = mask[ii][jj] && Math.pow(2, 5);
+                    var mathError = mask[ii][jj] && Math.pow(2, 6);
+                    var badFit = mask[ii][jj] && Math.pow(2, 7);
+                    var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                    var noData = noValue || badValue || mathError || badFit || doNotUse;
+
+                    var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                    var signalToNoiseThreshold = 1.;
+
+                    if (noData) {
                         val = 'no-data';
-                    } else if (ivar[ii][jj] > 10.) {
-                        // } else if (ivar[ii][jj] === 0) {
+                    } else if (signalToNoise < signalToNoiseThreshold) {
                         val = null;
                     };
                     xyz.push([ii, jj, val]);
@@ -120,14 +127,6 @@ var HeatMap = function () {
                 if (value === 'no-data') {
                     return 'rgba(0,0,0,0)'; // '#A8A8A8';
                 } else return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
-            });
-        }
-    }, {
-        key: 'forceRedraw',
-        value: function forceRedraw(H) {
-            H.wrap(H.Chart.prototype, 'redraw', function (p) {
-                console.log('redraw!');
-                p.apply(this, [].slice.call(arguments, 1));
             });
         }
 
