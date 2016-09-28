@@ -203,7 +203,7 @@ class Cube(MarvinToolsClass):
                     raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
                                        'Unknown exception: {1}'.format(self.plateifu, ee))
 
-            self.header = fits.Header(eval(self.data.hdr[0].header).items())
+            self.header = self.data.header
             self.wcs = WCS(self.data.wcs.makeHeader())
             self.data = self.data
             self.shape = self.data.shape.shape
