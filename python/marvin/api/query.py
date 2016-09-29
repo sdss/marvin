@@ -72,7 +72,7 @@ class QueryView(BrainQueryView):
     def getparamslist(self):
         ''' Retrieve a list of all available input parameters into the query '''
 
-        q = Query()
+        q = Query(mode='local')
         allparams = q.get_available_params()
         self.results['data'] = allparams
         self.results['status'] = 1
