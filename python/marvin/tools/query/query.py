@@ -380,6 +380,8 @@ class Query(object):
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
             mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
+            mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
+                      in k else k for k in mykeys]
             return mykeys
         elif self.mode == 'remote':
             # Get the query route
@@ -468,7 +470,7 @@ class Query(object):
             self._checkParsed()
             self.strfilter = str(parsed)
             self.filterparams.update(parsed.params)
-            filterkeys = [key for key in self.filterparams.keys() if key not in self.params]
+            filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
             self.params.extend(filterkeys)
 
             # print filter
