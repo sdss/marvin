@@ -45,6 +45,7 @@ def create_app(debug=False):
     from marvin.web.controllers.search import search
     from marvin.web.controllers.plate import plate
     from marvin.web.controllers.images import images
+    from marvin.web.controllers.users import users
 
     # ----------------------------------
     # Create App
@@ -174,6 +175,7 @@ def create_app(debug=False):
     app.register_blueprint(search, url_prefix=url_prefix)
     app.register_blueprint(plate, url_prefix=url_prefix)
     app.register_blueprint(images, url_prefix=url_prefix)
+    app.register_blueprint(users, url_prefix=url_prefix)
 
     # Register all custom Jinja filters in the file.
     app.register_blueprint(jinjablue)

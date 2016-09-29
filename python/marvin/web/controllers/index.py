@@ -1,4 +1,5 @@
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
+from flask import current_app, Blueprint, render_template, jsonify
+from flask import session as current_session, request, redirect, url_for
 from flask_classy import FlaskView, route
 from marvin import config, marvindb
 from brain.api.base import processRequest
@@ -6,6 +7,11 @@ from marvin.core import MarvinError
 from marvin.utils.general.general import parseIdentifier
 from wtforms import SelectField, validators
 import json
+from hashlib import md5
+try:
+    from inspection.marvin import Inspection
+except:
+    from brain.core.inspection import Inspection
 
 index = Blueprint("index_page", __name__)
 
@@ -90,5 +96,25 @@ class Marvin(FlaskView):
 
         return jsonify(result=out)
 
+    @route('/login/', methods=['GET', 'POST'], endpoint='login')
+    def login(self):
+        ''' login for trac user '''
+        form = processRequest(request=request)
+        result = {}
+        username = form['username']
+        password = form['password']
+        auth = md5("%s:AS3Trac:%s" % (username.strip(), password.strip())).hexdigest() if username and password else None
+        try:
+            inspection = Inspection(current_session, username=username, auth=auth)
+        except Exception as e:
+            result['status'] = -1
+            result['message'] = e
+            current_session['loginready'] = False
+        else:
+            result = inspection.result()
+            current_session['loginready'] = inspection.ready
+            current_session['name'] = result['membername']
+        print('login result', result)
+        return jsonify(result=result)
 
 Marvin.register(index)
