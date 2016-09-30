@@ -25,8 +25,7 @@ import marvin.tools.maps
 
 from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
-from marvin.tools.maps import (__BINTYPES__, __BINTYPES_DEFAULT__,
-                               __TEMPLATES_KIN__, __TEMPLATES_KIN_DEFAULT__)
+# import marvin.tools.maps
 
 
 class ModelCube(MarvinToolsClass):
@@ -105,13 +104,14 @@ class ModelCube(MarvinToolsClass):
         if kwargs.pop('template_pop', None):
             warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
 
-        self.bintype = kwargs.pop('bintype', __BINTYPES_DEFAULT__)
-        self.template_kin = kwargs.pop('template_kin', __TEMPLATES_KIN_DEFAULT__)
+        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_DEFAULT__)
+        self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
         self.template_pop = None
 
-        assert self.bintype in __BINTYPES__, 'bintype must be on of {0}'.format(__BINTYPES__)
-        assert self.template_kin in __TEMPLATES_KIN__, \
-            'template_kin must be on of {0}'.format(__TEMPLATES_KIN__)
+        assert self.bintype in marvin.tools.maps.__BINTYPES__, \
+            'bintype must be on of {0}'.format(marvin.tools.maps.__BINTYPES__)
+        assert self.template_kin in marvin.tools.maps.__TEMPLATES_KIN__, \
+            'template_kin must be on of {0}'.format(marvin.tools.maps.__TEMPLATES_KIN__)
 
         self.header = None
         self.wcs = None
