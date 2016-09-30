@@ -342,7 +342,7 @@ class Query(object):
         '''
         assert self.returntype in [None, 'cube', 'spaxel', 'maps',
                                    'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
         if self.returntype == 'spaxel':
             pass
             #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
@@ -380,6 +380,8 @@ class Query(object):
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
             mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
+            mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
+                      in k else k for k in mykeys]
             return mykeys
         elif self.mode == 'remote':
             # Get the query route
@@ -468,7 +470,7 @@ class Query(object):
             self._checkParsed()
             self.strfilter = str(parsed)
             self.filterparams.update(parsed.params)
-            filterkeys = [key for key in self.filterparams.keys() if key not in self.params]
+            filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
             self.params.extend(filterkeys)
 
             # print filter

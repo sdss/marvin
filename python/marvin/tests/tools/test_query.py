@@ -85,8 +85,8 @@ class TestQuery(MarvinTest):
 
     def test_Query_queryparams_onlyfilter(self):
         p = 'nsa.z < 0.12 and ifu.name = 19*'
-        params = ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
-        qps = ['mangaid', 'plate', 'name', 'z']
+        params = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
+        qps = ['mangaid', 'plate', 'plateifu', 'name', 'z']
         self._queryparams(p, params, qps)
 
     def _setRemote(self):

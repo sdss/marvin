@@ -23,6 +23,7 @@ import marvin.core.exceptions
 import marvin.utils.general.general
 import marvin.tools.cube
 import marvin.tools.maps
+import marvin.tools.modelcube
 
 from marvin.api import api
 from marvin.core import MarvinError, MarvinUserWarning
@@ -182,7 +183,7 @@ class Spaxel(object):
         self.stellar_continuum = None
 
         self.plateifu = kwargs.pop('plateifu', None)
-        self.mangaid = kwargs.pop('plateifu', None)
+        self.mangaid = kwargs.pop('mangaid', None)
 
         cube_filename = kwargs.pop('cube_filename', None)
         self._check_cube(cube_filename)
