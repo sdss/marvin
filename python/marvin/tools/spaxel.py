@@ -23,6 +23,7 @@ import marvin.core.exceptions
 import marvin.utils.general.general
 import marvin.tools.cube
 import marvin.tools.maps
+import marvin.tools.modelcube
 
 from marvin.api import api
 from marvin.core import MarvinError, MarvinUserWarning
