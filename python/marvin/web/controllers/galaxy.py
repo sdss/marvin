@@ -84,7 +84,7 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
                   'ivar': [list(it) for it in data.ivar],
                   'mask': [list(it) for it in data.mask]}
         # webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
-        mapmsg = "{0}: {1}".format(cube.plateifu, name)
+        mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template_kin)
     return webmap, mapmsg
 
 
