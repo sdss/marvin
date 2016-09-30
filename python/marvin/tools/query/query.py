@@ -342,7 +342,7 @@ class Query(object):
         '''
         assert self.returntype in [None, 'cube', 'spaxel', 'maps',
                                    'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plateifu', 'ifu.name']
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
         if self.returntype == 'spaxel':
             pass
             #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
