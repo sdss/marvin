@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-09-30 18:11:29
+* @Last Modified time: 2016-09-30 18:35:38
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -319,18 +319,16 @@ var Galaxy = function () {
             var params = _this.dapselect.selectpicker('val');
             var keys = ['plateifu', 'params'];
             var form = m.utils.buildForm(keys, _this.plateifu, params);
+            _this.mapmsg.hide();
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
                 if (data.result.status !== -1) {
-                    console.log('success');
                     _this.initHeatmap(data.result.maps);
                 } else {
                     _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
-                    console.log('fail');
                 }
             }).fail(function (data) {
-                console.log('uber fail');
                 _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
             });
         }
@@ -355,6 +353,7 @@ var Galaxy = function () {
         // Reset the Maps selection
         value: function resetMaps(event) {
             var _this = event.data;
+            _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
         }
@@ -487,7 +486,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 18:03:56
+* @Last Modified time: 2016-09-30 18:46:13
 */
 
 'use strict';
@@ -584,19 +583,25 @@ var HeatMap = function () {
                 for (var jj = 0; jj < values.length; jj++) {
                     var val = values[ii][jj];
 
-                    var noValue = mask[ii][jj] && Math.pow(2, 0);
-                    var badValue = mask[ii][jj] && Math.pow(2, 5);
-                    var mathError = mask[ii][jj] && Math.pow(2, 6);
-                    var badFit = mask[ii][jj] && Math.pow(2, 7);
-                    var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                    var noData = noValue || badValue || mathError || badFit || doNotUse;
+                    if (mask !== null) {
+                        var noValue = mask[ii][jj] && Math.pow(2, 0);
+                        var badValue = mask[ii][jj] && Math.pow(2, 5);
+                        var mathError = mask[ii][jj] && Math.pow(2, 6);
+                        var badFit = mask[ii][jj] && Math.pow(2, 7);
+                        var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                        var noData = noValue || badValue || mathError || badFit || doNotUse;
+                    } else {
+                        noData == null;
+                    }
 
-                    var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
-                    var signalToNoiseThreshold = 1.;
+                    if (ivar !== null) {
+                        var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                        var signalToNoiseThreshold = 1.;
+                    }
 
                     if (noData) {
                         val = 'no-data';
-                    } else if (signalToNoise < signalToNoiseThreshold) {
+                    } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
                         val = null;
                     };
                     xyz.push([ii, jj, val]);
@@ -650,7 +655,7 @@ var HeatMap = function () {
             zmax = _getMinMax4[1];
 
 
-            var data = this.data.mask !== null ? this.setNull(this.data) : this.data;
+            var data = this.setNull(this.data);
 
             this.mapdiv.highcharts({
                 chart: {

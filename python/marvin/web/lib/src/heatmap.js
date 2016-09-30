@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 18:03:56
+* @Last Modified time: 2016-09-30 18:46:13
 */
 
 'use strict';
@@ -66,19 +66,25 @@ class HeatMap {
             for (var jj=0; jj < values.length; jj++){
                 var val = values[ii][jj];
 
-                var noValue = (mask[ii][jj] && Math.pow(2, 0));
-                var badValue = (mask[ii][jj] && Math.pow(2, 5));
-                var mathError = (mask[ii][jj] && Math.pow(2, 6));
-                var badFit = (mask[ii][jj] && Math.pow(2, 7));
-                var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
-                var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                if (mask !== null) {
+                    var noValue = (mask[ii][jj] && Math.pow(2, 0));
+                    var badValue = (mask[ii][jj] && Math.pow(2, 5));
+                    var mathError = (mask[ii][jj] && Math.pow(2, 6));
+                    var badFit = (mask[ii][jj] && Math.pow(2, 7));
+                    var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
+                    var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                } else {
+                    noData == null;
+                }
 
-                var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
-                var signalToNoiseThreshold = 1.;
+                if (ivar !== null) {
+                    var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                    var signalToNoiseThreshold = 1.;
+                }
 
                 if (noData) {
                     val = 'no-data';
-                } else if (signalToNoise < signalToNoiseThreshold) {
+                } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
                    val = null;
                 };
                 xyz.push([ii, jj, val]);
@@ -112,7 +118,7 @@ class HeatMap {
         [xymin, xymax] = this.getMinMax(xyrange);
         [zmin, zmax] = this.getMinMax(zrange);
 
-        var data = (this.data.mask !== null) ? this.setNull(this.data) : this.data;
+        var data = this.setNull(this.data);
 
         this.mapdiv.highcharts({
             chart: {

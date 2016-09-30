@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-09-30 18:11:29
+* @Last Modified time: 2016-09-30 18:35:38
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -249,18 +249,16 @@ var Galaxy = function () {
             var params = _this.dapselect.selectpicker('val');
             var keys = ['plateifu', 'params'];
             var form = m.utils.buildForm(keys, _this.plateifu, params);
+            _this.mapmsg.hide();
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
                 if (data.result.status !== -1) {
-                    console.log('success');
                     _this.initHeatmap(data.result.maps);
                 } else {
                     _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
-                    console.log('fail');
                 }
             }).fail(function (data) {
-                console.log('uber fail');
                 _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
             });
         }
@@ -285,6 +283,7 @@ var Galaxy = function () {
         // Reset the Maps selection
         value: function resetMaps(event) {
             var _this = event.data;
+            _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
         }
