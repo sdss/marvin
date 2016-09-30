@@ -426,7 +426,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 00:29:27
+* @Last Modified time: 2016-09-30 10:56:42
 */
 
 'use strict';
@@ -523,25 +523,21 @@ var HeatMap = function () {
                 for (var jj = 0; jj < values.length; jj++) {
                     var val = values[ii][jj];
 
-                    // var noValue = (mask[ii][jj] && Math.pow(2, 0));
-                    // var badValue = (mask[ii][jj] && Math.pow(2, 5));
-                    // var mathError = (mask[ii][jj] && Math.pow(2, 6));
-                    // var badFit = (mask[ii][jj] && Math.pow(2, 7));
-                    // var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
-                    // var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                    var noValue = mask[ii][jj] && Math.pow(2, 0);
+                    var badValue = mask[ii][jj] && Math.pow(2, 5);
+                    var mathError = mask[ii][jj] && Math.pow(2, 6);
+                    var badFit = mask[ii][jj] && Math.pow(2, 7);
+                    var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                    var noData = noValue || badValue || mathError || badFit || doNotUse;
 
-                    // var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
-                    // var signalToNoiseThreshold = 1.;
+                    var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                    var signalToNoiseThreshold = 1.;
 
-                    //console.log('nodata', noData);
                     if (noData) {
                         val = 'no-data';
-                    } else if (ivar[ii][jj] > 10.) {
+                    } else if (signalToNoise < signalToNoiseThreshold) {
                         val = null;
                     };
-                    //} else if (signalToNoise < signalToNoiseThreshold) {
-                    //    val = null;
-                    //};
                     xyz.push([ii, jj, val]);
                 };
             };
