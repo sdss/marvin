@@ -357,9 +357,12 @@ class Results(object):
 
     def _reduceNames(self, columns, under=None):
         ''' reduces the full table.parameter names to non-dotted versions '''
-        fullstr = ','.join(columns)
-        names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
-                    '.'+t.split('.')[1]) == 1 else t for t in columns]
+        # fullstr = ','.join(columns)
+        # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
+        #             '.'+t.split('.')[1]) == 1 else t for t in columns]
+        colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
+        names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
+                    t.split('.')[1]) == 1 else t for t in columns]
         # replace . with _
         if under:
             names = [n if '.' not in n else n.replace('.', '_')for n in names]
@@ -782,6 +785,7 @@ class Results(object):
                             self._getRefName('template.name', dir='partocol')),
                             mode=self.mode) for res in self.results]
         elif tooltype == 'spaxel':
+            print(self._getRefName('cube.mangaid', dir='partocol'))
             self.objects = [Spaxel(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
                             x=res.__getattribute__(
