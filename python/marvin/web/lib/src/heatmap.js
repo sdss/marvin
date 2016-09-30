@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 10:56:42
+* @Last Modified time: 2016-09-30 18:03:56
 */
 
 'use strict';
@@ -112,7 +112,7 @@ class HeatMap {
         [xymin, xymax] = this.getMinMax(xyrange);
         [zmin, zmax] = this.getMinMax(zrange);
 
-        var data = this.setNull(this.data);
+        var data = (this.data.mask !== null) ? this.setNull(this.data) : this.data;
 
         this.mapdiv.highcharts({
             chart: {

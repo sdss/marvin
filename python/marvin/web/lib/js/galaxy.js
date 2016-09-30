@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-09-30 09:39:55
+* @Last Modified time: 2016-09-30 18:11:29
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -36,15 +36,24 @@ var Galaxy = function () {
         this.mapdiv = this.specdiv.find('#mapdiv1');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
+        this.mapmsg = this.specdiv.find('#mapmsg');
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        this.dapmapsbut = $('#dapmapsbut');
+        this.dapselect = $('#dapmapchoices');
+        this.dapselect.selectpicker('deselectAll');
+        this.resetmapsbut = $('#resetmapsbut');
 
         // init some stuff
         this.initFlagPopovers();
+
+        //Event Handlers
+        this.dapmapsbut.on('click', this, this.getDapMaps);
+        this.resetmapsbut.on('click', this, this.resetMaps);
     }
 
     // Test print
@@ -80,7 +89,6 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
-            console.log('spaxel', spaxel[0], spaxel[0].length);
             var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
@@ -133,8 +141,11 @@ var Galaxy = function () {
             var _this = this;
             $.each(mapchildren, function (index, child) {
                 var mapdiv = $(child).find('div').first();
-                this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
-                this.heatmap.mapdiv.highcharts().reflow();
+                mapdiv.empty();
+                if (maps[index] !== undefined) {
+                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                    this.heatmap.mapdiv.highcharts().reflow();
+                }
             });
         }
     }, {
@@ -226,6 +237,56 @@ var Galaxy = function () {
                 // init the specific popover
                 $('#' + popid).popover({ html: true, content: $(listid).html() });
             });
+        }
+    }, {
+        key: 'getDapMaps',
+
+
+        // Get some DAP Maps
+        value: function getDapMaps(event) {
+            var _this = event.data;
+            console.log('getting dap maps', _this.dapselect.selectpicker('val'));
+            var params = _this.dapselect.selectpicker('val');
+            var keys = ['plateifu', 'params'];
+            var form = m.utils.buildForm(keys, _this.plateifu, params);
+
+            // send the form data
+            $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
+                if (data.result.status !== -1) {
+                    console.log('success');
+                    _this.initHeatmap(data.result.maps);
+                } else {
+                    _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+                    console.log('fail');
+                }
+            }).fail(function (data) {
+                console.log('uber fail');
+                _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+            });
+        }
+    }, {
+        key: 'updateMapMsg',
+
+
+        // Update the Map Msg
+        value: function updateMapMsg(mapmsg, status) {
+            this.mapmsg.hide();
+            if (status !== undefined && status === -1) {
+                this.mapmsg.show();
+            }
+            var newmsg = '<strong>' + mapmsg + '</strong>';
+            this.mapmsg.empty();
+            this.mapmsg.html(newmsg);
+        }
+    }, {
+        key: 'resetMaps',
+
+
+        // Reset the Maps selection
+        value: function resetMaps(event) {
+            var _this = event.data;
+            _this.dapselect.selectpicker('deselectAll');
+            _this.dapselect.selectpicker('refresh');
         }
     }]);
 

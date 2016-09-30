@@ -126,13 +126,38 @@
                         </div>
                     </div>
                     <!-- dap dynamic maps -->
-                    {# loop over all maps #}
-                    <div class='row' id='mapsdiv'>
-                        {% for map in maps %}
-                        <div class='col-md-4'>
-                            <div id='mapdiv{{loop.index}}' class='map'></div>
+                    <div id='dapmaps'>
+                        <div class='row'>
+                            <form class='form-inline' id='dapmapform' method='POST' role='form' action="#">
+                              <div class='row'>
+                                <div class='col-md-12 col-md-offset-4'>
+                                    <div class='form-group'>
+                                        <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                        <select class="selectpicker" id='dapmapchoices' multiple data-live-search="true" data-max-options="6">
+                                            {% for dapmap in dapmaps %}
+                                            <option>{{dapmap}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
+                                        <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
+                                    </div>
+                                </div>
+                                <div class='col-md-3'>
+                                <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
+                                </div>
+                              </div>
+                            </form>
                         </div>
-                        {% endfor %}
+
+
+                        {# loop over all maps #}
+                        <div class='row' id='mapsdiv'>
+                            {% for map in maps %}
+                            <div class='col-md-4'>
+                                <div id='mapdiv{{loop.index}}' class='map'></div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
         </div>

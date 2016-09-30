@@ -13,7 +13,8 @@ from __future__ import absolute_import
 from marvin import config
 
 
-__all__ = ('MapsProperty', 'MapsPropertyList', 'dap_datamodel', 'get_dap_datamodel')
+__all__ = ('MapsProperty', 'MapsPropertyList', 'dap_datamodel',
+           'get_dap_datamodel', 'get_dap_maplist', 'get_default_mapset')
 
 
 class MapsPropertyList(list):
@@ -268,3 +269,36 @@ def get_dap_datamodel(dapver=None):
         return dap_datamodel[default_version]
     else:
         return dap_datamodel[dapver]
+
+
+def get_dap_maplist(dapver=None, web=None):
+    ''' Returns a list of all possible maps for dapver '''
+
+    dapdm = get_dap_datamodel(dapver)
+    daplist = []
+
+    for p in dapdm:
+        if p.channels:
+            if web:
+                daplist.extend(['{0}:{1}'.format(p.name, c) for c in p.channels])
+            else:
+                daplist.extend(['{0}_{1}'.format(p.name, c) for c in p.channels])
+        else:
+            daplist.append(p.name)
+
+    return daplist
+
+
+def get_default_mapset(dapver=None):
+    ''' Returns a list of six default maps for display '''
+
+    dapdefaults = {
+        '1.1.1': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
+                  'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718'],
+        '2.0.2': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
+                  'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718']
+    }
+
+    return dapdefaults[dapver]
+
+

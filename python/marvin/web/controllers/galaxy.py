@@ -20,6 +20,7 @@ from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
 from marvin import config
+from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 import os
 import json
 
@@ -81,8 +82,8 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
         mask = data.mask  # TODO
         # TODO How does highcharts read in values? Pass ivar and mask with webmap.
         webmap = {'values': [list(it) for it in data.value],
-                  'ivar': [list(it) for it in data.ivar],
-                  'mask': [list(it) for it in data.mask]}
+                  'ivar': [list(it) for it in data.ivar] if data.ivar is not None else None,
+                  'mask': [list(it) for it in data.mask] if data.mask is not None else None}
         # webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
         mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template_kin)
     return webmap, mapmsg
@@ -96,8 +97,13 @@ def buildMapDict(cube, params):
         NOT GENERALIZED
     '''
     mapdict = []
+    params = params if type(params) == list else [params]
     for param in params:
-        parameter, channel = param.split(':')
+        param = str(param)
+        try:
+            parameter, channel = param.split(':')
+        except ValueError as e:
+            parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel)
         mapdict.append({'data': webmap, 'msg': mapmsg})
     return mapdict
@@ -120,6 +126,7 @@ class Galaxy(FlaskView):
         self.galaxy['cube'] = None
         self.galaxy['image'] = ''
         self.galaxy['spectra'] = 'null'
+        self.galaxy['mapdict'] = None
 
     def index(self):
         ''' Main galaxy page '''
@@ -163,20 +170,26 @@ class Galaxy(FlaskView):
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
                 # temporarily do version stuff
-                if '4' in config.mplver:
-                    params = ['emline_gflux:ha_6564', 'emline_ew:hb_4862', 'emline_gflux:nii_6585']
-                elif '5' in config.mplver:
-                    params = ['emline_gflux:ha_6564', 'emline_sew:hb_4862', 'emline_gflux:nii_6585']
+                #
+                daplist = get_dap_maplist(config.dapver, web=True)
+                dapdefaults = get_default_mapset(config.dapver)
+                # if '4' in config.mplver:
+                #     params = ['emline_gflux:ha_6564', 'emline_ew:hb_4862', 'emline_gflux:nii_6585']
+                # elif '5' in config.mplver:
+                #     params = ['emline_gflux:ha_6564', 'emline_sew:hb_4862', 'emline_gflux:nii_6585']
+
                 # build the uber map dictionary
-                mapdict = buildMapDict(cube, params)
+                mapdict = buildMapDict(cube, dapdefaults)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                self.galaxy['cube'] = cube
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
                 self.galaxy['maps'] = mapdict
+                self.galaxy['dapmaps'] = daplist
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -240,6 +253,29 @@ class Galaxy(FlaskView):
             output = {'specmsg': 'Error: No maptype specified in request', 'status': -1}
             self.galaxy['error'] = output['specmsg']
 
+        return jsonify(result=output)
+
+    @route('updatemaps', methods=['POST'], endpoint='updatemaps')
+    def updateMaps(self):
+        f = processRequest(request=request)
+        params = f.get('params[]', None)
+        # get cube (self.galaxy['cube'] does not work)
+        try:
+            cube = Cube(plateifu=f['plateifu'])
+        except Exception as e:
+            cube = None
+        # Try to make the web maps
+        if not cube:
+            output = {'mapmsg': 'No cube found', 'maps': None, 'status': -1}
+        elif not params:
+            output = {'mapmsg': 'No parameters selected', 'maps': None, 'status': -1}
+        else:
+            try:
+                mapdict = buildMapDict(cube, params)
+            except Exception as e:
+                output = {'mapmsg': e, 'status': -1, 'maps': None}
+            else:
+                output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
 Galaxy.register(galaxy)
