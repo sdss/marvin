@@ -183,7 +183,7 @@ class Spaxel(object):
         self.stellar_continuum = None
 
         self.plateifu = kwargs.pop('plateifu', None)
-        self.mangaid = kwargs.pop('plateifu', None)
+        self.mangaid = kwargs.pop('mangaid', None)
 
         cube_filename = kwargs.pop('cube_filename', None)
         self._check_cube(cube_filename)
