@@ -15,10 +15,11 @@ from __future__ import division
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.utils.general.general import findClosestVector, convertImgCoords, parseIdentifier
+from marvin.utils.general.general import convertImgCoords, parseIdentifier
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
+from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin import config
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 import os
@@ -89,13 +90,19 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
     return webmap, mapmsg
 
 
-def buildMapDict(cube, params):
+def buildMapDict(cube, params, bintemp=None):
     ''' Build a list of dictionaries of maps
 
     params - list of string parameter names in form of category_channel
 
         NOT GENERALIZED
     '''
+    # split the bintemp
+    if bintemp:
+        bintype, temp = bintemp.split('-', 1)
+    else:
+        bintype, temp = (None, None)
+
     mapdict = []
     params = params if type(params) == list else [params]
     for param in params:
@@ -104,7 +111,8 @@ def buildMapDict(cube, params):
             parameter, channel = param.split(':')
         except ValueError as e:
             parameter, channel = (param, None)
-        webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel)
+        webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
+                                   bintype=bintype, template_kin=temp)
         mapdict.append({'data': webmap, 'msg': mapmsg})
     return mapdict
 
@@ -190,6 +198,8 @@ class Galaxy(FlaskView):
                 self.galaxy['mngtarget'] = cube.targetbit
                 self.galaxy['maps'] = mapdict
                 self.galaxy['dapmaps'] = daplist
+                self.galaxy['dapbintemps'] = _get_bintemps(config.dapver)
+                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(config.dapver), _get_template_kin(config.dapver))
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -259,6 +269,8 @@ class Galaxy(FlaskView):
     def updateMaps(self):
         f = processRequest(request=request)
         params = f.get('params[]', None)
+        bintemp = f.get('bintemp', None)
+        current_session['bintemp'] = bintemp
         # get cube (self.galaxy['cube'] does not work)
         try:
             cube = Cube(plateifu=f['plateifu'])
@@ -271,7 +283,7 @@ class Galaxy(FlaskView):
             output = {'mapmsg': 'No parameters selected', 'maps': None, 'status': -1}
         else:
             try:
-                mapdict = buildMapDict(cube, params)
+                mapdict = buildMapDict(cube, params, bintemp=bintemp)
             except Exception as e:
                 output = {'mapmsg': e, 'status': -1, 'maps': None}
             else:

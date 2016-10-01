@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-09-30 18:35:38
+* @Last Modified time: 2016-10-01 14:08:52
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -37,6 +37,7 @@ class Galaxy {
         this.targpops = $('.targpopovers');
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
+        this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
 
@@ -200,8 +201,9 @@ class Galaxy {
         var _this = event.data;
         console.log('getting dap maps', _this.dapselect.selectpicker('val'));
         var params = _this.dapselect.selectpicker('val');
-        var keys = ['plateifu', 'params'];
-        var form = m.utils.buildForm(keys, _this.plateifu, params);
+        var bintemp = _this.dapbt.selectpicker('val');
+        var keys = ['plateifu', 'params', 'bintemp'];
+        var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
         _this.mapmsg.hide();
 
         // send the form data

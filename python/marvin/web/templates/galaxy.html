@@ -128,24 +128,31 @@
                     <!-- dap dynamic maps -->
                     <div id='dapmaps'>
                         <div class='row'>
-                            <form class='form-inline' id='dapmapform' method='POST' role='form' action="#">
-                              <div class='row'>
-                                <div class='col-md-5 col-md-offset-3'>
-                                    <div class='form-group'>
-                                        <label for='setdefaults' class='control-label'>DAP Maps:</label>
-                                        <select class="selectpicker" id='dapmapchoices' multiple data-live-search="true" data-max-options="6">
-                                            {% for dapmap in dapmaps %}
-                                            <option>{{dapmap}}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
-                                        <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
-                                    </div>
+                            <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
+                              <div class="form-group col-md-6 col-md-offset-2">
+                                <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                <div class="input-group">
+                                    <select class="selectpicker" id='dapmapchoices' multiple data-selected-text-format="count" data-live-search="true" data-max-options="6">
+                                        {% for dapmap in dapmaps %}
+                                        <option>{{dapmap}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <select class="selectpicker show-tick" id='dapbtchoices'>
+                                        {% for bt in dapbintemps %}
+                                            {% if bt == session.bintemp %}
+                                            <option selected >{{bt}}</option>
+                                            {% else %}
+                                            <option>{{bt}}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
                                 </div>
-                                <div class='col-md-3'>
-                                <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
-                                </div>
+                                <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
+                                <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
                               </div>
+                                <div class='col-md-3'>
+                                    <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
+                                </div>
                             </form>
                         </div>
 

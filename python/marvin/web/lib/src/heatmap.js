@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 18:46:13
+* @Last Modified time: 2016-10-01 15:05:09
 */
 
 'use strict';
@@ -47,6 +47,15 @@ class HeatMap {
         return [xyrange, zrange];
     }
 
+    // Filter out null and no-data from z (DAP prop) data
+    filterRange(z) {
+        if (z !== undefined && typeof(z) === 'number' && !isNaN(z)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // return the min and max of a range
     getMinMax(range) {
         // var range = (range === undefined) ? this.getRange() : range;
@@ -86,6 +95,12 @@ class HeatMap {
                     val = 'no-data';
                 } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
                    val = null;
+                } else if (ivar === null) {
+                    if (this.title.search('binid') !== -1) {
+                        val = (val == -1 ) ? 'no-data' : val;
+                    } else if (val === 0.0) {
+                        val = 'no-data';
+                    }
                 };
                 xyz.push([ii, jj, val]);
             };
@@ -118,8 +133,13 @@ class HeatMap {
         [xymin, xymax] = this.getMinMax(xyrange);
         [zmin, zmax] = this.getMinMax(zrange);
 
+        // set null data and create new zrange, min, and max
         var data = this.setNull(this.data);
+        zrange = data.map(function(o){return o[2];});
+        zrange = zrange.filter(this.filterRange);
+        [zmin, zmax] = this.getMinMax(zrange);
 
+        // make the highcharts
         this.mapdiv.highcharts({
             chart: {
                 type: 'heatmap',
@@ -153,8 +173,8 @@ class HeatMap {
                 gridLineWidth: 0
             },
             colorAxis: {
-                min: Math.floor(zmin),
-                max: Math.ceil(zmax),
+                min: zmin,
+                max: zmax,
                 minColor: '#00BFFF',
                 maxColor: '#000080',
                 labels: {align: 'right'},

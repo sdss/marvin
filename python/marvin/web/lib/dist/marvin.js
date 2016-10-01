@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-09-30 18:35:38
+* @Last Modified time: 2016-10-01 14:08:52
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -115,6 +115,7 @@ var Galaxy = function () {
         this.targpops = $('.targpopovers');
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
+        this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
 
@@ -317,8 +318,9 @@ var Galaxy = function () {
             var _this = event.data;
             console.log('getting dap maps', _this.dapselect.selectpicker('val'));
             var params = _this.dapselect.selectpicker('val');
-            var keys = ['plateifu', 'params'];
-            var form = m.utils.buildForm(keys, _this.plateifu, params);
+            var bintemp = _this.dapbt.selectpicker('val');
+            var keys = ['plateifu', 'params', 'bintemp'];
+            var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
             _this.mapmsg.hide();
 
             // send the form data
@@ -486,7 +488,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-30 18:46:13
+* @Last Modified time: 2016-10-01 15:05:09
 */
 
 'use strict';
@@ -560,6 +562,18 @@ var HeatMap = function () {
             return [xyrange, zrange];
         }
 
+        // Filter out null and no-data from z (DAP prop) data
+
+    }, {
+        key: 'filterRange',
+        value: function filterRange(z) {
+            if (z !== undefined && typeof z === 'number' && !isNaN(z)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         // return the min and max of a range
 
     }, {
@@ -603,6 +617,12 @@ var HeatMap = function () {
                         val = 'no-data';
                     } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
                         val = null;
+                    } else if (ivar === null) {
+                        if (this.title.search('binid') !== -1) {
+                            val = val == -1 ? 'no-data' : val;
+                        } else if (val === 0.0) {
+                            val = 'no-data';
+                        }
                     };
                     xyz.push([ii, jj, val]);
                 };
@@ -647,16 +667,26 @@ var HeatMap = function () {
             xymin = _getMinMax2[0];
             xymax = _getMinMax2[1];
 
+            // set null data and create new zrange, min, and max
             var _getMinMax3 = this.getMinMax(zrange);
 
             var _getMinMax4 = _slicedToArray(_getMinMax3, 2);
 
             zmin = _getMinMax4[0];
             zmax = _getMinMax4[1];
-
-
             var data = this.setNull(this.data);
+            zrange = data.map(function (o) {
+                return o[2];
+            });
+            zrange = zrange.filter(this.filterRange);
 
+            // make the highcharts
+            var _getMinMax5 = this.getMinMax(zrange);
+
+            var _getMinMax6 = _slicedToArray(_getMinMax5, 2);
+
+            zmin = _getMinMax6[0];
+            zmax = _getMinMax6[1];
             this.mapdiv.highcharts({
                 chart: {
                     type: 'heatmap',
@@ -690,8 +720,8 @@ var HeatMap = function () {
                     gridLineWidth: 0
                 },
                 colorAxis: {
-                    min: Math.floor(zmin),
-                    max: Math.ceil(zmax),
+                    min: zmin,
+                    max: zmax,
                     minColor: '#00BFFF',
                     maxColor: '#000080',
                     labels: { align: 'right' },
