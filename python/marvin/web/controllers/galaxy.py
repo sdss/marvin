@@ -75,7 +75,6 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
                             bintype=bintype, template_kin=template_kin)
         data = maps.getMap(parameter, channel=channel)
     except Exception as e:
-        raise(e)
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
         vals = data.value
@@ -114,6 +113,11 @@ def buildMapDict(cube, params, bintemp=None):
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template_kin=temp)
         mapdict.append({'data': webmap, 'msg': mapmsg})
+
+    anybad = [m['data'] is None for m in mapdict]
+    if any(anybad):
+        raise MarvinError('Could not get map for one of supplied parameters')
+
     return mapdict
 
 
@@ -285,7 +289,7 @@ class Galaxy(FlaskView):
             try:
                 mapdict = buildMapDict(cube, params, bintemp=bintemp)
             except Exception as e:
-                output = {'mapmsg': e, 'status': -1, 'maps': None}
+                output = {'mapmsg': e.message, 'status': -1, 'maps': None}
             else:
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
