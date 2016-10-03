@@ -95,6 +95,13 @@ class MarvinConfig(object):
     def sasurl(self, value):
         bconfig.sasurl = value
 
+    @property
+    def session_id(self):
+        return bconfig.session_id
+
+    @session_id.setter
+    def session_id(self, value):
+        bconfig.session_id = value
 #################################################
 
     @property

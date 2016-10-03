@@ -15,7 +15,7 @@ from __future__ import division
 from brain.api.api import BrainInteraction
 from marvin import config
 
-configkeys = ['mplver', 'drpver', 'dapver']
+configkeys = ['mplver', 'drpver', 'dapver', 'session_id']
 
 
 class Interaction(BrainInteraction):
