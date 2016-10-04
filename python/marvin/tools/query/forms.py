@@ -102,7 +102,6 @@ class ParamFormLookupDict(dict):
         self._mplver = kwargs.get('mplver', config.mplver)
         self._init_table_shortcuts()
         self._init_name_shortcuts()
-        print('param lookup', kwargs.get('mplver', 'no mplver in kwargs'))
 
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""

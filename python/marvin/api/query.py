@@ -7,22 +7,25 @@ from marvin.core import MarvinError
 from marvin.api import parse_params
 
 
-def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None):
+def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
+              limit=None, sort=None, order=None):
     """Run query locally at Utah."""
 
     drpver, dapver = parse_params(request)
     mplver = request.form['mplver'] if 'mplver' in request.form else None
 
     q, r = doQuery(searchfilter=searchfilter, returnparams=params, mplver=mplver,
-                   mode='local', drpver=drpver, dapver=dapver, returntype=rettype)
+                   mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
     results = r.results
 
     # get a subset
+    chunk = None
     if start:
         chunk = int(end)-int(start)
         results = r.getSubset(int(start), limit=chunk)
+    chunk = limit if not chunk else limit
 
-    output = dict(data=results, query=r.showQuery(),
+    output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params,
                   queryparams_order=q.queryparams_order, count=len(results), totalcount=r.count)
     return output
@@ -41,9 +44,14 @@ class QueryView(BrainQueryView):
         searchfilter = self.results['inconfig'].get('searchfilter', None)
         params = self.results['inconfig'].get('params', None)
         rettype = self.results['inconfig'].get('returntype', None)
+        limit = self.results['inconfig'].get('limit', None)
+        sort = self.results['inconfig'].get('sort', None)
+        order = self.results['inconfig'].get('order', None)
+        print('inconfig', self.results['inconfig'])
         print('cube_query', searchfilter, params)
         try:
-            res = _getCubes(searchfilter, params=params, rettype=rettype)
+            res = _getCubes(searchfilter, params=params, rettype=rettype,
+                            limit=limit, sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:
@@ -59,8 +67,14 @@ class QueryView(BrainQueryView):
         params = self.results['inconfig'].get('params', None)
         start = self.results['inconfig'].get('start', None)
         end = self.results['inconfig'].get('end', None)
+        rettype = self.results['inconfig'].get('returntype', None)
+        limit = self.results['inconfig'].get('limit', None)
+        sort = self.results['inconfig'].get('sort', None)
+        order = self.results['inconfig'].get('order', None)
         try:
-            res = _getCubes(searchfilter, params=params, start=int(start), end=int(end))
+            res = _getCubes(searchfilter, params=params, start=int(start),
+                            end=int(end), rettype=rettype, limit=limit,
+                            sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:

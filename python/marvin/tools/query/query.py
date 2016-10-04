@@ -621,7 +621,7 @@ class Query(object):
             self.totalcount = count
             if count > 150:
                 query = self.query.slice(0, self.limit)
-                warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+                warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 query = self.query
 
@@ -635,7 +635,7 @@ class Query(object):
                 res = query.count()
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self)
+                           queryobj=self, totalcount=self.totalcount, chunk=self.limit)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -647,7 +647,10 @@ class Query(object):
 
             params = {'searchfilter': self.searchfilter,
                       'params': self._returnparams,
-                      'returntype': self.returntype}
+                      'returntype': self.returntype,
+                      'mplver': self._mplver,
+                      'limit': self.limit,
+                      'sort': self.sort, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -658,10 +661,11 @@ class Query(object):
                 self.params = ii.results['params']
                 self.query = ii.results['query']
                 count = ii.results['count']
+                chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

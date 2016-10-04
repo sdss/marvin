@@ -576,7 +576,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -640,7 +640,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -703,7 +703,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': start, 'end': end}
+                      'start': start, 'end': end, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
