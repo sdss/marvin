@@ -19,7 +19,7 @@ from __future__ import print_function
 from marvin.db.DatabaseConnection import DatabaseConnection
 from sqlalchemy.orm import relationship, configure_mappers, backref
 from sqlalchemy.inspection import inspect
-from sqlalchemy import case
+from sqlalchemy import case, cast, Float
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import ForeignKeyConstraint, func
 import shutil
@@ -268,17 +268,13 @@ def logmass(parameter):
     @hybrid_property
     def mass(self):
         par = getattr(self, parameter)
-        return math.log10(par) if par > 0. else np.float(0.)
+        return cast(math.log10(par), Float) if par > 0. else np.float(0.)
 
     @mass.expression
     def mass(cls):
         par = getattr(cls, parameter)
-        return case(
-                    [
-                        (par > 0., func.log(par)),
-                        (par == 0., np.float(0.))
-                    ]
-                )
+        return cast(case([(par > 0., func.log(par)),
+                          (par == 0., np.float(0.))]), Float)
 
     return mass
 

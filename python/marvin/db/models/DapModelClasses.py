@@ -14,7 +14,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import case
+from sqlalchemy import case, cast, Float
 import re
 from marvin.db.DatabaseConnection import DatabaseConnection
 import DataModelClasses as datadb
@@ -214,12 +214,8 @@ def HybridRatio(line1, line2):
         else:
             myline1 = getattr(cls, line1)
 
-        return case(
-                    [
-                        (getattr(cls, line2) > 0., myline1/getattr(cls, line2)),
-                        (getattr(cls, line2) == 0., -999.)
-                    ]
-                )
+        return cast(case([(getattr(cls, line2) > 0., myline1/getattr(cls, line2)),
+                          (getattr(cls, line2) == 0., -999.)]), Float)
 
     return hybridRatio
 
