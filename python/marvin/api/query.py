@@ -11,8 +11,9 @@ def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None):
     """Run query locally at Utah."""
 
     drpver, dapver = parse_params(request)
+    mplver = request.form['mplver'] if 'mplver' in request.form else None
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params,
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mplver=mplver,
                    mode='local', drpver=drpver, dapver=dapver, returntype=rettype)
     results = r.results
 

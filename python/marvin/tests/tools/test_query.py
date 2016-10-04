@@ -49,6 +49,65 @@ class TestQuery(MarvinTest):
         q = Query()
         self.assertIsNone(q.query)
 
+    def _query_versions(self, mode='local', mpl=None, versions=None):
+        if not versions:
+            drpver, dapver, mplver = (config.drpver, config.dapver, config.mplver)
+        else:
+            drpver, dapver, mplver = versions
+        p = 'haflux > 25'
+        mpl = mpl if mpl else config.mplver
+
+        if '4' in mpl:
+            name = 'CleanSpaxelProp'
+        else:
+            name = 'CleanSpaxelProp{0}'.format(mpl.split('-')[1])
+
+        if mpl:
+            q = Query(searchfilter=p, mode=mode, mplver=mpl)
+        else:
+            q = Query(searchfilter=p, mode=mode)
+
+        self.assertEqual(q._drpver, drpver)
+        self.assertEqual(q._dapver, dapver)
+        self.assertEqual(q._mplver, mplver)
+        self.assertEqual(q.marvinform._mplver, mplver)
+        self.assertEqual(q.marvinform._param_form_lookup._mplver, mplver)
+        self.assertEqual(q.marvinform._param_form_lookup['spaxelprop.file'].Meta.model.__name__, name)
+
+    def test_query_versions_local(self):
+        self._query_versions(mode='local')
+
+    def test_query_versions_remote(self):
+        self._setRemote()
+        self._query_versions(mode='remote')
+
+    def test_query_versions_local_othermpl(self):
+        vers = ('v2_0_1', '2.0.2', 'MPL-5')
+        self._query_versions(mode='local', mpl='MPL-5', versions=vers)
+
+    def test_query_versions_remote_othermpl(self):
+        self._setRemote()
+        vers = ('v2_0_1', '2.0.2', 'MPL-5')
+        self._query_versions(mode='remote', mpl='MPL-5', versions=vers)
+
+    def test_query_versions_remote_utah(self):
+        self._setRemote(mode='utah')
+        self._query_versions(mode='remote')
+
+    def test_query_versions_local_mpl5(self):
+        config.setMPL('MPL-5')
+        self._query_versions(mode='local')
+
+    def test_query_versions_remote_mpl5(self):
+        config.setMPL('MPL-5')
+        self._setRemote()
+        self._query_versions(mode='remote')
+
+    def test_query_versions_remote_utah_mpl5(self):
+        config.setMPL('MPL-5')
+        self._setRemote(mode='utah')
+        self._query_versions(mode='remote')
+
     def test_Query_drpver_and_dapver(self):
         p = 'cube.plate==8485 and spaxelprop.emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
@@ -89,8 +148,8 @@ class TestQuery(MarvinTest):
         qps = ['mangaid', 'plate', 'plateifu', 'name', 'z']
         self._queryparams(p, params, qps)
 
-    def _setRemote(self):
-        config.sasurl = 'http://localhost:5000/marvin2/'
+    def _setRemote(self, mode='local'):
+        config.switchSasUrl(mode)
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
 

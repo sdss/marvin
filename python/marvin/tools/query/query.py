@@ -73,7 +73,7 @@ def updateConfig(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.query and self.mode == 'local':
-            self.query = self.query.params({'drpver': config.drpver, 'dapver': config.dapver})
+            self.query = self.query.params({'drpver': self._drpver, 'dapver': self._dapver})
         return f(self, *args, **kwargs)
     return wrapper
 
@@ -151,6 +151,8 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
+        self._mplver = kwargs.get('mplver', config.mplver)
+        self._drpver, self._dapver = config.lookUpVersions(self._mplver)
         self.query = None
         self.params = []
         self.filterparams = {}
@@ -171,9 +173,7 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 10))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels)
-        self._drpver = kwargs.get('drpver', config.drpver)
-        self._dapver = kwargs.get('dapver', config.dapver)
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
 
         # set the mode
         if self.mode is None:
