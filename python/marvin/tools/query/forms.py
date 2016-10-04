@@ -15,8 +15,7 @@ from __future__ import division
 from marvin import marvindb, config
 from marvin.core import MarvinError, MarvinUserWarning
 from collections import defaultdict
-from wtforms import StringField, validators, SelectField, SelectMultipleField, IntegerField, ValidationError, SubmitField
-from wtforms.widgets import Select
+from wtforms import StringField, validators, SelectMultipleField, ValidationError, SubmitField
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method

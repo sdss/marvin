@@ -11,7 +11,8 @@ Revision History:
 '''
 
 import numpy
-from psycopg2.extensions import register_adapter, AsIs
+from decimal import Decimal
+from psycopg2.extensions import register_adapter, AsIs, new_type, DECIMAL, register_type
 
 # See:
 # http://rehalcon.blogspot.com/2010/03/sqlalchemy-programmingerror-cant-adapt.html
@@ -28,6 +29,15 @@ uint8 uint16 uint32 uint64 uint128
 float16 float32 float64 float96 float128 float256
 complex32 complex64 complex128 complex192 complex256 complex512
 '''
+
+DEC2FLOAT = new_type(DECIMAL.values, 'DEC2FLOAT', lambda value,
+                     curs: float(value) if value is not None else None)
+register_type(DEC2FLOAT)
+
+
+def adapt_decimal(Decimal):
+    return AsIs(float)
+register_adapter(Decimal, adapt_decimal)
 
 
 def adapt_numpy_int8(numpy_int8):

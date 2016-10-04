@@ -268,13 +268,13 @@ def logmass(parameter):
     @hybrid_property
     def mass(self):
         par = getattr(self, parameter)
-        return cast(math.log10(par), Float) if par > 0. else np.float(0.)
+        return cast(math.log10(par), Float) if par > 0. else 0.
 
     @mass.expression
     def mass(cls):
         par = getattr(cls, parameter)
         return cast(case([(par > 0., func.log(par)),
-                          (par == 0., np.float(0.))]), Float)
+                          (par == 0., 0.)]), Float)
 
     return mass
 
