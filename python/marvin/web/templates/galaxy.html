@@ -9,6 +9,12 @@
 {% block jshead %}
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
+    <script rel='preconnect' src="https://code.highcharts.com/highcharts.js"></script>
+    <script rel='preconnect' src="http://code.highcharts.com/highcharts-more.js"></script>
+    <script rel='preconnect' src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script rel='preconnect' src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script rel='preconnect' src="https://highcharts.github.io/pattern-fill/pattern-fill-v2.js"></script>
+
 {% endblock jshead %}
 
 <!-- Single Galaxy Page -->
@@ -100,22 +106,66 @@
                 </div>
                 <!-- dynamic image and spaxel -->
                 {# Dynamic Interaction #}
-                <div class='row' id='dynamicdiv' style='display:none;'>
-                  <div class='col-md-3'>
-                    <div id='map' class='map' style='width:100%; height:400px;'></div>
-                  </div>
-                  <div class='col-md-9'>
-                    <div id='graphdiv' style="width:100%;"></div>
-                    <div class='row'>
-                        <div class='col-md-5 col-md-offset-1'>
-                          {% if error %}
-                          <p class='alert alert-danger' id='specmsg_error'><strong>{{error}}</strong></p>
-                          {% else %}
-                          <p class='alert alert-danger' id='specmsg' style="display:none;"><strong>{{specmsg}}</strong></p>
-                          {% endif %}
+                <div id='dynamicdiv' style='display:none;'>
+                    <div class='row' id='image-spec'>
+                        <div class='col-md-4'>
+                            <!-- <div id='imagediv' class='map' style='width:100%; height:400px;'></div> -->
+                            <div id='imagediv' style='width:100%; height:400px;'></div>
+                        </div>
+                        <div class='col-md-8'>
+                            <div id='graphdiv' style="width:100%;"></div>
+                            <div class='row'>
+                                <div class='col-md-5 col-md-offset-1'>
+                                    {% if error %}
+                                    <p class='alert alert-danger' id='specmsg_error'><strong>{{error}}</strong></p>
+                                    {% else %}
+                                    <p class='alert alert-danger' id='specmsg' style="display:none;"><strong>{{specmsg}}</strong></p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                  </div>
+                    <!-- dap dynamic maps -->
+                    <div id='dapmaps'>
+                        <div class='row'>
+                            <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
+                              <div class="form-group col-md-6 col-md-offset-2">
+                                <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                <div class="input-group">
+                                    <select class="selectpicker" id='dapmapchoices' multiple data-selected-text-format="count" data-live-search="true" data-max-options="6">
+                                        {% for dapmap in dapmaps %}
+                                        <option>{{dapmap}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <select class="selectpicker show-tick" id='dapbtchoices'>
+                                        {% for bt in dapbintemps %}
+                                            {% if bt == session.bintemp %}
+                                            <option selected >{{bt}}</option>
+                                            {% else %}
+                                            <option>{{bt}}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
+                                <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
+                              </div>
+                                <div class='col-md-3'>
+                                    <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        {# loop over all maps #}
+                        <div class='row' id='mapsdiv'>
+                            {% for map in maps %}
+                            <div class='col-md-4'>
+                                <div id='mapdiv{{loop.index}}' class='map'></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
         </div>
     </div>
@@ -136,11 +186,13 @@
         // toggle interaction on click
         var spaxel = {{spectra|tojson}};
         var galimage = {{image|tojson}};
-        var title = {{specmsg|tojson}};
+        var spectitle = {{specmsg|tojson}};
+        var maps = {{maps|tojson}};
+        console.log('maps', maps);
         $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(spaxel, galimage, title);
+            m.galaxy.toggleInteract(galimage, maps, spaxel, spectitle);
         });
-
     });
 </script>
 {% endblock code %}
+

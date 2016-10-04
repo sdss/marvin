@@ -12,6 +12,7 @@ from __future__ import absolute_import
 
 import distutils.version
 import warnings
+import itertools
 
 import astropy.io.fits
 import astropy.wcs
@@ -89,6 +90,20 @@ def _get_template_kin(dapver, template_kin=None):
         return __TEMPLATES_KIN_MPL4_DEFAULT__
     else:
         return __TEMPLATES_KIN_DEFAULT__
+
+
+def _get_bintemps(dapver):
+    ''' Get a list of all bin-template types for a given MPL '''
+
+    if _is_MPL4(dapver):
+        bins = __BINTYPES_MPL4__.keys()
+        temps = __TEMPLATES_KIN_MPL4__
+    else:
+        bins = __BINTYPES__
+        temps = __TEMPLATES_KIN__
+
+    bintemps = ['-'.join(item) for item in list(itertools.product(bins, temps))]
+    return bintemps
 
 
 class Maps(marvin.core.core.MarvinToolsClass):

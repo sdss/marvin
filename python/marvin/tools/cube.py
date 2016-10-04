@@ -367,7 +367,6 @@ class Cube(MarvinToolsClass):
 
         maps = marvin.tools.maps.Maps(**kwargs)
         maps._cube = self
-
         return maps
 
     def getAperture(self, coords, radius, mode='pix', weight=True,

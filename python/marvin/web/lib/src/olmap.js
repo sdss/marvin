@@ -20,7 +20,7 @@ class OLMap {
         } else {
             this.image = image;
             this.staticimdiv = $('#staticimage')[0];
-            this.mapdiv = $('#map')[0];
+            this.mapdiv = $('#imagediv')[0];
             this.getImageSize();
             this.setProjection();
             this.setView();

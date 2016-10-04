@@ -15,12 +15,15 @@ from __future__ import division
 from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.utils.general.general import findClosestVector, convertImgCoords, parseIdentifier
+from marvin.utils.general.general import convertImgCoords, parseIdentifier
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
+from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin import config
+from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 import os
+import json
 
 try:
     from sdss_access.path import Path
@@ -39,7 +42,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         else:
             spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, modelcube=True)
     except Exception as e:
-        specmsg = 'Could not get spectrum: {0}'.format(e)
+        specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
         # get error and wavelength
         error = convertIvarToErr(spaxel.spectrum.ivar)
@@ -62,6 +65,62 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     return webspec, specmsg
 
 
+def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
+              bintype=None, template_kin=None, template_pop=None):
+    ''' Get and format a map for the web '''
+    name = '{0}_{1}'.format(parameter.lower(), channel)
+    webmap = None
+    try:
+        maps = cube.getMaps(plateifu=cube.plateifu, mode='local',
+                            bintype=bintype, template_kin=template_kin)
+        data = maps.getMap(parameter, channel=channel)
+    except Exception as e:
+        mapmsg = 'Could not get map: {0}'.format(e)
+    else:
+        vals = data.value
+        ivar = data.ivar  # TODO
+        mask = data.mask  # TODO
+        # TODO How does highcharts read in values? Pass ivar and mask with webmap.
+        webmap = {'values': [list(it) for it in data.value],
+                  'ivar': [list(it) for it in data.ivar] if data.ivar is not None else None,
+                  'mask': [list(it) for it in data.mask] if data.mask is not None else None}
+        # webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
+        mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template_kin)
+    return webmap, mapmsg
+
+
+def buildMapDict(cube, params, bintemp=None):
+    ''' Build a list of dictionaries of maps
+
+    params - list of string parameter names in form of category_channel
+
+        NOT GENERALIZED
+    '''
+    # split the bintemp
+    if bintemp:
+        bintype, temp = bintemp.split('-', 1)
+    else:
+        bintype, temp = (None, None)
+
+    mapdict = []
+    params = params if type(params) == list else [params]
+    for param in params:
+        param = str(param)
+        try:
+            parameter, channel = param.split(':')
+        except ValueError as e:
+            parameter, channel = (param, None)
+        webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
+                                   bintype=bintype, template_kin=temp)
+        mapdict.append({'data': webmap, 'msg': mapmsg})
+
+    anybad = [m['data'] is None for m in mapdict]
+    if any(anybad):
+        raise MarvinError('Could not get map for one of supplied parameters')
+
+    return mapdict
+
+
 class Galaxy(FlaskView):
     route_base = '/galaxy'
 
@@ -79,6 +138,7 @@ class Galaxy(FlaskView):
         self.galaxy['cube'] = None
         self.galaxy['image'] = ''
         self.galaxy['spectra'] = 'null'
+        self.galaxy['mapdict'] = None
 
     def index(self):
         ''' Main galaxy page '''
@@ -121,13 +181,29 @@ class Galaxy(FlaskView):
             # Get the initial spectrum
             if cube:
                 webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
+                # temporarily do version stuff
+                #
+                daplist = get_dap_maplist(config.dapver, web=True)
+                dapdefaults = get_default_mapset(config.dapver)
+                # if '4' in config.mplver:
+                #     params = ['emline_gflux:ha_6564', 'emline_ew:hb_4862', 'emline_gflux:nii_6585']
+                # elif '5' in config.mplver:
+                #     params = ['emline_gflux:ha_6564', 'emline_sew:hb_4862', 'emline_gflux:nii_6585']
+
+                # build the uber map dictionary
+                mapdict = buildMapDict(cube, dapdefaults)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                self.galaxy['cube'] = cube
                 self.galaxy['spectra'] = webspec
                 self.galaxy['specmsg'] = specmsg
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
+                self.galaxy['maps'] = mapdict
+                self.galaxy['dapmaps'] = daplist
+                self.galaxy['dapbintemps'] = _get_bintemps(config.dapver)
+                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(config.dapver), _get_template_kin(config.dapver))
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -138,33 +214,84 @@ class Galaxy(FlaskView):
     def getSpaxel(self):
         f = processRequest(request=request)
         print(f)
-        # for now, do this, but TODO - general processRequest to handle lists and not lists
-        try:
-            mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
-        except:
-            mousecoords = None
-        if mousecoords:
-            pixshape = (int(f['imwidth']), int(f['imheight']))
-            if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
-                output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
-                self.galaxy['error'] = output['specmsg']
+
+        maptype = f.get('type', None)
+
+        if maptype == 'optical':
+            # for now, do this, but TODO - general processRequest to handle lists and not lists
+            try:
+                mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
+            except:
+                mousecoords = None
+
+            if mousecoords:
+                pixshape = (int(f['imwidth']), int(f['imheight']))
+                if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
+                    output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
+                    self.galaxy['error'] = output['specmsg']
+                else:
+                    # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
+                    infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
+                    arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
+                    cube = Cube(plateifu=f['plateifu'])
+                    webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                    if not webspec:
+                        self.galaxy['error'] = 'Error: {0}'.format(specmsg)
+                        status = -1
+                    else:
+                        status = 1
+                    print('inside getspaxel', len(webspec))
+                    msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
+                    output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
             else:
-                # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
-                infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
-                arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
+                output = {'specmsg': 'Error getting mouse coords', 'status': -1}
+                self.galaxy['error'] = output['specmsg']
+        elif maptype == 'heatmap':
+            # grab spectrum based on (x, y) coordinates
+            x = int(f.get('x')) if 'x' in f.keys() else None
+            y = int(f.get('y')) if 'y' in f.keys() else None
+            if all([x, y]):
                 cube = Cube(plateifu=f['plateifu'])
-                webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
+                msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                     status = -1
                 else:
                     status = 1
-                msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                 output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
+            else:
+                output = {'specmsg': 'Error: X or Y not specified for map', 'status': -1}
+                self.galaxy['error'] = output['specmsg']
         else:
-            output = {'specmsg': 'Error getting mouse coords', 'status': -1}
+            output = {'specmsg': 'Error: No maptype specified in request', 'status': -1}
             self.galaxy['error'] = output['specmsg']
 
+        return jsonify(result=output)
+
+    @route('updatemaps', methods=['POST'], endpoint='updatemaps')
+    def updateMaps(self):
+        f = processRequest(request=request)
+        params = f.get('params[]', None)
+        bintemp = f.get('bintemp', None)
+        current_session['bintemp'] = bintemp
+        # get cube (self.galaxy['cube'] does not work)
+        try:
+            cube = Cube(plateifu=f['plateifu'])
+        except Exception as e:
+            cube = None
+        # Try to make the web maps
+        if not cube:
+            output = {'mapmsg': 'No cube found', 'maps': None, 'status': -1}
+        elif not params:
+            output = {'mapmsg': 'No parameters selected', 'maps': None, 'status': -1}
+        else:
+            try:
+                mapdict = buildMapDict(cube, params, bintemp=bintemp)
+            except Exception as e:
+                output = {'mapmsg': e.message, 'status': -1, 'maps': None}
+            else:
+                output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
 Galaxy.register(galaxy)
