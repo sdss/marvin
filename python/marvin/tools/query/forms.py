@@ -62,7 +62,7 @@ def formClassFactory(name, model, baseclass):
 
         e.g.
         The ModelClass IFUDesign mapped to mangadatadb.ifu_design sql table gets transformed into
-        WTForm IFUDesignForm, with IFUDesignForm.Meta.model = sdss.internal.database.utah.mangadb.DataModelClasses.IFUDesign
+        WTForm IFUDesignForm, with IFUDesignForm.Meta.model = marvin.db.models.DataModelClasses.IFUDesign
     '''
 
     Meta = type('Meta', (object,), {'model': model})

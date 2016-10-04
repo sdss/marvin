@@ -53,7 +53,7 @@ class MarvinDB(object):
         ''' Try to import the sql alchemy model classes '''
 
         try:
-            import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
+            import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
             print('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
             self.sampledb = None
@@ -61,7 +61,7 @@ class MarvinDB(object):
             self.sampledb = sampledb
 
         try:
-            import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
+            import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
             print('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
             self.datadb = None
@@ -69,7 +69,7 @@ class MarvinDB(object):
             self.datadb = datadb
 
         try:
-            import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
+            import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
             print('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
             self.dapdb = None

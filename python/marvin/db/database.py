@@ -7,7 +7,7 @@
 from __future__ import print_function
 from __future__ import division
 
-from sdss.internal.database.DatabaseConnection import DatabaseConnection
+from DatabaseConnection import DatabaseConnection
 from pgpasslib import getpass
 from marvin import config
 import yaml
