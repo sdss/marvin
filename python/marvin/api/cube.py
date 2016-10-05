@@ -78,12 +78,14 @@ class CubeView(BaseView):
 
         return json.dumps(self.results)
 
+    # TODO: This is not used anymore, so maybe it should be removed.
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
     def getAllSpectra(self, name=None):
         ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing '''
         self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
         return json.dumps(self.results)
 
+    # TODO: This is not used anymore, so maybe it should be removed.
     @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
@@ -113,33 +115,3 @@ class CubeView(BaseView):
             self.results['error'] = 'getSpaxels: {0}'.format(str(e))
 
         return json.dumps(self.results)
-
-
-    # could not figure out this route, always get BuildError when trying to do a url_for('allspectra'), with the defaults path=''
-    # @route('/<name>/spectra/', defaults={'path': ''}, methods=['GET', 'POST'], endpoint='allspectra')
-    @route('/<name>/spectra/<path:path>', methods=['GET', 'POST'], endpoint='getspectra')
-    @parseRoutePath
-    def getSpectra(self, **kwargs):
-        """Returns the flux of the DRP spectrum for a given spaxel."""
-
-        name = kwargs.pop('name')
-
-        # Add ability to grab spectra from fits files
-        cube, res = _getCube(name)
-        self.update_results(res)
-        if not cube:
-            self.results['error'] = 'getSpectrum: No cube: {0}'.format(res['error'])
-            return json.dumps(self.results)
-
-        try:
-            spaxel = cube.getSpaxel(**kwargs)
-            self.results['data'] = spaxel.spectrum.flux.tolist()
-            self.results['status'] = 1
-        except Exception as e:
-            self.results['status'] = -1
-            self.results['error'] = 'getSpaxel: Failed to get spectrum: {0}'.format(str(e))
-
-        return json.dumps(self.results)
-
-
-# CubeView.register(api)
