@@ -41,7 +41,7 @@
                                 <tr><th>IFU Glon, Glat</th><td>{{cubehdr.ifuglon}}</td><td>{{cubehdr.ifuglat}}</td></tr>
                                 <tr><th>SN2 Blue, Red</th><td align='center'>{{cubehdr.bluesn2|float|round(2)}}</td><td align='center'>{{cubehdr.redsn2|float|round(2)}}</td></tr>
                                 <tr><th>Date Observed</th><td colspan='2' align='center'>{{cubehdr['DATE-OBS']}}</td></tr>
-                                <tr><th>DAP Output</th><td colspan='2' align='center'>{{daplink|default(None)}}</td></tr>
+                                <tr><th>DAP Output</th><td colspan='2' align='center'><a target='_blank' data-toggle="tooltip" title="{{daplink|default('None')}}" href='{{daplink|default("#")}}'>DAP URL</a></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -159,11 +159,15 @@
 
                         {# loop over all maps #}
                         <div class='row' id='mapsdiv'>
+                            {% if maps %}
                             {% for map in maps %}
                             <div class='col-md-4'>
                                 <div id='mapdiv{{loop.index}}' class='map'></div>
                             </div>
                             {% endfor %}
+                            {% else %}
+                            <div class='col-md-5 col-md-offset-2'><p class='alert alert-danger' id='mapalert'>{{mapmsg}}</p></div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -188,9 +192,10 @@
         var galimage = {{image|tojson}};
         var spectitle = {{specmsg|tojson}};
         var maps = {{maps|tojson}};
-        console.log('maps', maps);
+        var mapmsg = {{mapmsg|tojson}};
+        console.log('maps', maps, mapmsg);
         $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(galimage, maps, spaxel, spectitle);
+            m.galaxy.toggleInteract(galimage, maps, spaxel, spectitle, mapmsg);
         });
     });
 </script>

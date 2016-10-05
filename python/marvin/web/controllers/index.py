@@ -1,10 +1,9 @@
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
+from flask import current_app, Blueprint, render_template, jsonify
+from flask import session as current_session, request, redirect, url_for
 from flask_classy import FlaskView, route
 from marvin import config, marvindb
 from brain.api.base import processRequest
-from marvin.core import MarvinError
 from marvin.utils.general.general import parseIdentifier
-from wtforms import SelectField, validators
 import json
 
 index = Blueprint("index_page", __name__)
@@ -20,18 +19,16 @@ class Marvin(FlaskView):
         self.base['page'] = 'marvin-main'
 
     def index(self):
-        config.drpver = 'v1_5_1'
-        mangaid = '1-209232'
         current_app.logger.info('Welcome to Marvin Web!')
 
         # get all MPLs
-        mpls = config._mpldict.keys()
-        versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
-        current_session['versions'] = versions
+        # mpls = config._mpldict.keys()
+        # versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
+        # current_session['versions'] = versions
 
         # set default - TODO replace with setGlobalSession
-        if 'currentmpl' not in current_session:
-            current_session['currentmpl'] = config.mplver
+        # if 'currentmpl' not in current_session:
+        #     current_session['currentmpl'] = config.mplver
 
         return render_template("index.html", **self.base)
 
@@ -80,13 +77,16 @@ class Marvin(FlaskView):
         version = f['mplselect']
         print('setting new mpl', version)
         current_session['currentmpl'] = version
-        if 'MPL' in version:
-            config.setMPL(version)
-        elif 'DR' in version:
-            config.setDR(version)
-        else:
-            out['status'] = -1
-            out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
+        drpver, dapver = config.lookUpVersions(version)
+        current_session['drpver'] = drpver
+        current_session['dapver'] = dapver
+        # if 'MPL' in version:
+        #     config.setMPL(version)
+        # elif 'DR' in version:
+        #     config.setDR(version)
+        # else:
+        #     out['status'] = -1
+        #     out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
 
         return jsonify(result=out)
 

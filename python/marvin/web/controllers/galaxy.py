@@ -12,18 +12,18 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, session as current_session, request, jsonify
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.utils.general.general import convertImgCoords, parseIdentifier
+from marvin.utils.general.general import convertImgCoords, parseIdentifier, getDefaultMapPath, getDapRedux
 from brain.utils.general.general import convertIvarToErr
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin import config
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
+from marvin.web.web_utils import parseSession
 import os
-import json
 
 try:
     from sdss_access.path import Path
@@ -131,6 +131,7 @@ class Galaxy(FlaskView):
         self.galaxy['page'] = 'marvin-galaxy'
         self.galaxy['error'] = None
         self.galaxy['specmsg'] = None
+        self.galaxy['mapmsg'] = None
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -138,7 +139,8 @@ class Galaxy(FlaskView):
         self.galaxy['cube'] = None
         self.galaxy['image'] = ''
         self.galaxy['spectra'] = 'null'
-        self.galaxy['mapdict'] = None
+        self.galaxy['maps'] = None
+        self._drpver, self._dapver, self._mplver = parseSession()
 
     def index(self):
         ''' Main galaxy page '''
@@ -154,11 +156,11 @@ class Galaxy(FlaskView):
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
             self.galaxy['idtype'] = idtype
-            galaxyid = {self.galaxy['idtype']: galid, 'drpver': config.drpver}
+            galaxyid = {self.galaxy['idtype']: galid, 'drpver': self._drpver, 'dapver': self._dapver}
 
             # Get cube
             try:
-                print('marvin config', config.mplver, config.drpver, config.dapver)
+                print('marvin config', self._mplver, self._drpver, self._dapver)
                 cube = Cube(**galaxyid)
             except MarvinError as e:
                 self.galaxy['cube'] = None
@@ -166,17 +168,17 @@ class Galaxy(FlaskView):
                 return render_template("galaxy.html", **self.galaxy)
             else:
                 self.galaxy['cube'] = cube
+                self.galaxy['daplink'] = getDapRedux(self._mplver)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
                     sdss_path = Path()
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = sdss_path.url('mangadefault', drpver=cube._drpver, dapver=config.dapver, plate=cube.plate, ifu=cube.ifu)
+                    maplink = getDefaultMapPath(mplver=self._mplver, plate=cube.plate, ifu=cube.ifu, daptype='SPX-GAU-MILESHC', mode='MAPS')
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
                     self.galaxy['image'] = cube.data.image
-                print('image', cube.data.image)
 
             # Get the initial spectrum
             if cube:
@@ -185,13 +187,15 @@ class Galaxy(FlaskView):
                 #
                 daplist = get_dap_maplist(config.dapver, web=True)
                 dapdefaults = get_default_mapset(config.dapver)
-                # if '4' in config.mplver:
-                #     params = ['emline_gflux:ha_6564', 'emline_ew:hb_4862', 'emline_gflux:nii_6585']
-                # elif '5' in config.mplver:
-                #     params = ['emline_gflux:ha_6564', 'emline_sew:hb_4862', 'emline_gflux:nii_6585']
 
                 # build the uber map dictionary
-                mapdict = buildMapDict(cube, dapdefaults)
+                try:
+                    mapdict = buildMapDict(cube, dapdefaults)
+                    mapmsg = None
+                except Exception as e:
+                    mapdict = [{'data': None, 'msg': 'Error'} for m in dapdefaults]
+                    mapmsg = 'Error getting maps: {0}'.format(e)
+
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['cube'] = cube
@@ -201,9 +205,10 @@ class Galaxy(FlaskView):
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
                 self.galaxy['maps'] = mapdict
+                self.galaxy['mapmsg'] = mapmsg
                 self.galaxy['dapmaps'] = daplist
-                self.galaxy['dapbintemps'] = _get_bintemps(config.dapver)
-                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(config.dapver), _get_template_kin(config.dapver))
+                self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
+                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
@@ -213,7 +218,8 @@ class Galaxy(FlaskView):
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         f = processRequest(request=request)
-        print(f)
+        print('spaxelform', f)
+        self._drpver, self._dapver, self._mplver = parseSession()
 
         maptype = f.get('type', None)
 
@@ -233,14 +239,13 @@ class Galaxy(FlaskView):
                     # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
                     infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
                     arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
-                    cube = Cube(plateifu=f['plateifu'])
+                    cube = Cube(plateifu=f['plateifu'], drpver=self._drpver, dapver=self._dapver)
                     webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
                     if not webspec:
                         self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                         status = -1
                     else:
                         status = 1
-                    print('inside getspaxel', len(webspec))
                     msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
                     output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
             else:
@@ -251,7 +256,7 @@ class Galaxy(FlaskView):
             x = int(f.get('x')) if 'x' in f.keys() else None
             y = int(f.get('y')) if 'y' in f.keys() else None
             if all([x, y]):
-                cube = Cube(plateifu=f['plateifu'])
+                cube = Cube(plateifu=f['plateifu'], drpver=self._drpver, dapver=self._dapver)
                 webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
                 msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
                 if not webspec:
@@ -271,13 +276,14 @@ class Galaxy(FlaskView):
 
     @route('updatemaps', methods=['POST'], endpoint='updatemaps')
     def updateMaps(self):
+        self._drpver, self._dapver, self._mplver = parseSession()
         f = processRequest(request=request)
         params = f.get('params[]', None)
         bintemp = f.get('bintemp', None)
         current_session['bintemp'] = bintemp
         # get cube (self.galaxy['cube'] does not work)
         try:
-            cube = Cube(plateifu=f['plateifu'])
+            cube = Cube(plateifu=f['plateifu'], drpver=self._drpver, dapver=self._dapver)
         except Exception as e:
             cube = None
         # Try to make the web maps
