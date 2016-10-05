@@ -4,6 +4,7 @@ from flask_classy import FlaskView, route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
+from marvin.web.web_utils import parseSession
 import json
 
 index = Blueprint("index_page", __name__)
@@ -59,11 +60,12 @@ class Marvin(FlaskView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
+        self._drpver, self._dapver, self._mplver = parseSession()
         cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
                                        marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                            marvindb.datadb.PipelineVersion,
                                                                            marvindb.datadb.IFUDesign).\
-            filter(marvindb.datadb.PipelineVersion.version == config.drpver).all()
+            filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
         out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
