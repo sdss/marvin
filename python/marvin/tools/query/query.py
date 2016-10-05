@@ -170,7 +170,7 @@ class Query(object):
         self._returnparams = None
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
-        self.limit = int(kwargs.get('limit', 10))
+        self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
         self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
@@ -619,7 +619,7 @@ class Query(object):
             # get total count, and if more than 150 results, paginate and only return the first 10
             count = self.query.count()
             self.totalcount = count
-            if count > 150:
+            if count > 1000:
                 query = self.query.slice(0, self.limit)
                 warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:

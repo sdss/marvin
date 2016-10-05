@@ -19,6 +19,6 @@ class BaseView(BrainBaseView):
     '''Super Class for all API Views to handle all global API items of interest'''
 
     def add_config(self):
-        outconfig = {'outconfig': {'drpver': config.drpver, 'mode': config.mode,
-                                   'dapver': config.dapver, 'mplver': config.mplver}}
-        self.update_results(outconfig)
+        utahconfig = {'utahconfig': {'drpver': config.drpver, 'mode': config.mode,
+                                     'dapver': config.dapver, 'mplver': config.mplver}}
+        self.update_results(utahconfig)

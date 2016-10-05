@@ -29,11 +29,37 @@ def configFeatures(app, mode):
 def updateGlobalSession():
     ''' updates the Marvin config with the global Flask session '''
 
-    if 'currentmpl' in current_session:
-        config.setMPL(current_session['currentmpl'])
+    # check if mpl versions in session
+    if 'versions' not in current_session:
+        setGlobalSession()
+
+    # if 'currentmpl' in current_session:
+    #     config.setMPL(current_session['currentmpl'])
 
 
 def setGlobalSession():
+    ''' Sets the global session for Flask '''
+
+    mpls = config._mpldict.keys()
+    versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
+    current_session['versions'] = versions
+
+    if 'currentmpl' not in current_session:
+        current_session['currentmpl'] = config.mplver
+        drpver, dapver = config.lookUpVersions(config.mplver)
+        current_session['drpver'] = drpver
+        current_session['dapver'] = dapver
+
+
+def parseSession():
+    ''' parse the current session for MPL versions '''
+    drpver = current_session['drpver']
+    dapver = current_session['dapver']
+    mplver = current_session['currentmpl']
+    return drpver, dapver, mplver
+
+
+def setGlobalSession_old():
     ''' Set default global session variables '''
 
     if 'currentver' not in current_session:

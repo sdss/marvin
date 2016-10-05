@@ -1,6 +1,7 @@
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
+import os
 from astropy import table
 from scipy.interpolate import griddata
 import warnings
@@ -8,14 +9,20 @@ import marvin
 import PIL
 
 try:
-    from sdss_access import RsyncAccess
+    from sdss_access import RsyncAccess, AccessError
 except ImportError as e:
     RsyncAccess = None
+
+try:
+    from sdss_access.path import Path
+except ImportError as e:
+    Path = None
 
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
-           'downloadList', 'getSpaxel', 'get_drpall_row']
+           'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
+           'getDapRedux']
 
 drpTable = {}
 
@@ -628,6 +635,80 @@ def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center
             return response.getData()
         else:
             raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
+
+
+def getDapRedux(mplver=None):
+    ''' Retrieve SAS url link to the DAP redux directory
+
+    Parameters:
+        mplver (str):
+            The MPL version of the data to download.  Defaults to Marvin config.mplver
+
+    Returns:
+        dapredux (str):
+            The full redux path to the DAP MAPS
+    '''
+
+    if not Path:
+        raise MarvinError('sdss_access is not installed')
+    else:
+        sdss_path = Path()
+
+    mplver = mplver if mplver else marvin.config.mplver
+    drpver, dapver = marvin.config.lookUpVersions(mplver)
+    # hack a url version of MANGA_SPECTRO_ANALYSIS
+    dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
+    dappath = dapdefault.rsplit('/', 2)[0]
+    dapredux = sdss_path.url('', full=dappath)
+    return dapredux
+
+
+def getDefaultMapPath(**kwargs):
+    ''' Retrieve the default Maps path
+
+    Uses sdss_access Path to generate a url download link to the
+    default MAPS file for a given MPL.
+
+    Parameters:
+        mplver (str):
+            The MPL version of the data to download.  Defaults to Marvin config.mplver
+        plate (int):
+            The plate id
+        ifu (int):
+            The ifu number
+        bintype (str):
+            The bintype of the default file to grab. Defaults to MAPS
+        daptype (str):
+            The daptype of the default map to grab.  Defaults to SPX-MILESHC
+
+    Returns:
+        maplink (str):
+            The sas url to download the default maps file
+    '''
+
+    if not Path:
+        raise MarvinError('sdss_access is not installed')
+    else:
+        sdss_path = Path()
+
+    # Get kwargs
+    mplver = kwargs.get('mplver', marvin.config.mplver)
+    drpver, dapver = marvin.config.lookUpVersions(mplver)
+    plate = kwargs.get('plate', None)
+    ifu = kwargs.get('ifu', None)
+    daptype = kwargs.get('daptype', 'SPX-GAU-MILESHC')
+    bintype = kwargs.get('bintype', 'MAPS')
+
+    # get the sdss_path name by MPL
+    if '4' in mplver:
+        name = 'mangadefault'
+    elif '5' in mplver:
+        name = 'mangadap5'
+
+    # construct the url link to default maps file
+    maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=mplver,
+                            plate=plate, ifu=ifu, daptype=daptype, mode=bintype)
+    return maplink
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):

@@ -13,13 +13,13 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, session as current_session, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core import MarvinError
 from marvin.tools.plate import Plate as mPlate
 from marvin.utils.general import getImagesByPlate
-from marvin.web.web_utils import buildImageDict
+from marvin.web.web_utils import buildImageDict, parseSession
 
 plate = Blueprint("plate_page", __name__)
 
@@ -39,6 +39,7 @@ class Plate(FlaskView):
         ''' Do these things before a request to any route '''
         self.plate['plateid'] = None
         self.plate['error'] = None
+        self._drpver, self._dapver, self._mplver = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -53,7 +54,7 @@ class Plate(FlaskView):
 
         self.plate['plateid'] = int(plateid)
         try:
-            plate = mPlate(plateid=plateid, mode='local', nocubes=True)
+            plate = mPlate(plateid=plateid, mode='local', nocubes=True, drpver=self._drpver)
         except MarvinError as e:
             self.plate['error'] = 'Could not grab Plate for id {0}: {1}'.format(plateid, e)
         else:

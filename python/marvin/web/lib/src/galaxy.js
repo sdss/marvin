@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-10-01 14:08:52
+* @Last Modified time: 2016-10-05 13:57:11
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -111,7 +111,7 @@ class Galaxy {
         $.each(mapchildren, function(index, child) {
             var mapdiv = $(child).find('div').first();
             mapdiv.empty();
-            if (maps[index] !== undefined) {
+            if (maps[index] !== undefined && maps[index].data !== null) {
                 this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
                 this.heatmap.mapdiv.highcharts().reflow();
             }
@@ -145,7 +145,7 @@ class Galaxy {
     };
 
     // Toggle the interactive OpenLayers map and Dygraph spectra
-    toggleInteract(image, maps, spaxel, spectitle) {
+    toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
         if (this.togglediv.hasClass('active')){
             // Turning Off
             this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -176,6 +176,10 @@ class Galaxy {
                 this.initHeatmap(maps);
             }
 
+            // possibly update an initial map message
+            if (mapmsg !== null) {
+                this.updateMapMsg(mapmsg, -1);
+            }
         }
     };
 

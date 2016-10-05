@@ -100,7 +100,7 @@ class Results(object):
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = kwargs.get('chunk', 10)
+        self.chunk = kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
