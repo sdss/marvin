@@ -14,7 +14,7 @@ except ImportError as e:
 
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
-           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
+           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row']
 
 drpTable = {}
@@ -574,60 +574,6 @@ def getSpaxelXY(cube, plateifu, x, y):
         raise MarvinError('Could not retrieve cube for plate-ifu {0} at position {1},{2}: Unknown exception: {3}'.format(plateifu, x, y, e))
 
     return spaxel
-
-
-# TODO: getSpaxelAPI is deprecated now.
-def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center'):
-    """Gets and spaxel from a cube using the API.
-
-    Parameters:
-        coord1,coord2 (int):
-            The coordinates (either ra/dec or x/y) of the spaxel to
-            retrieve.
-        mangaid (str):
-            The mangaid of the cube to use.
-        mode ({'pix', 'sky'}):
-            The coordinate mode to use, either ``'pix'`` (default) for x/y
-            coordinates with respect to ``xyorig``, or ``'sky'`` to use
-            celestial coordinates ra/dec.
-        ext ({'flux', 'ivar', 'mask'}):
-            The extension of the spaxel to retrieve.
-        xyorig (str):
-            If ``mode='pix'``, the reference point from which the coordinates
-            are measured. Valid values are ``'center'``, for the centre of the
-            spatial dimensions of the cube, or ``'lower'`` for the lower-left
-            corner.
-
-    Returns:
-        spaxel (array):
-            The spaxel with coordinates ``(coord1, coord2)`` in the cube
-            defined by ``mangaid``, extracted from the extension ``ext``.
-
-    """
-
-    from marvin.api.api import Interaction
-
-    # Parse the variables into right frame
-
-    path = '{0}={1}/{2}={3}/ext={4}/xyorig={5}'.format(
-        'x' if mode == 'pix' else 'ra', coord1,
-        'y' if mode == 'pix' else 'dec', coord2, ext, xyorig)
-
-    routeparams = {'name': mangaid, 'path': path}
-
-    # Get the getSpectrum Route
-    url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
-
-    # Make the API call
-    try:
-        response = Interaction(url)
-    except MarvinError as e:
-        raise MarvinError('Error retrieving response: {0}'.format(e))
-    else:
-        if response.results['status'] == 1:
-            return response.getData()
-        else:
-            raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):
