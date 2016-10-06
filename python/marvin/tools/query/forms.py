@@ -350,5 +350,3 @@ class MarvinForm(object):
 
         # make new dictionary
         self._param_form_lookup = new
-
-

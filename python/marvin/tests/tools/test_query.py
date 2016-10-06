@@ -34,9 +34,9 @@ class TestQuery(MarvinTest):
         pass
 
     def setUp(self):
-        cvars = ['drpver', 'dapver']
-        for var in cvars:
-            config.__setattr__(var, self.initconfig.__getattribute__(var))
+        # cvars = ['drpver', 'dapver']
+        # for var in cvars:
+        #     config.__setattr__(var, self.initconfig.__getattribute__(var))
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
@@ -49,13 +49,13 @@ class TestQuery(MarvinTest):
         q = Query()
         self.assertIsNone(q.query)
 
-    def _query_versions(self, mode='local', mpl=None, versions=None):
-        if not versions:
-            drpver, dapver, mplver = (config.drpver, config.dapver, config.mplver)
-        else:
-            drpver, dapver, mplver = versions
+    def _query_versions(self, mode='local', mpl=None, dr=None):
+        if not mpl and not dr:
+            mpl, dr = (config._mplver, config._drver)
+
+        drpver, dapver = config.lookUpVersions(mplver=mpl, drver=dr)
+
         p = 'haflux > 25'
-        mpl = mpl if mpl else config.mplver
 
         if '4' in mpl:
             name = 'CleanSpaxelProp'
@@ -69,9 +69,9 @@ class TestQuery(MarvinTest):
 
         self.assertEqual(q._drpver, drpver)
         self.assertEqual(q._dapver, dapver)
-        self.assertEqual(q._mplver, mplver)
-        self.assertEqual(q.marvinform._mplver, mplver)
-        self.assertEqual(q.marvinform._param_form_lookup._mplver, mplver)
+        self.assertEqual(q._mplver, mpl)
+        self.assertEqual(q.marvinform._mplver, mpl)
+        self.assertEqual(q.marvinform._param_form_lookup._mplver, mpl)
         self.assertEqual(q.marvinform._param_form_lookup['spaxelprop.file'].Meta.model.__name__, name)
 
     def test_query_versions_local(self):
@@ -83,12 +83,12 @@ class TestQuery(MarvinTest):
 
     def test_query_versions_local_othermpl(self):
         vers = ('v2_0_1', '2.0.2', 'MPL-5')
-        self._query_versions(mode='local', mpl='MPL-5', versions=vers)
+        self._query_versions(mode='local', mpl='MPL-5')
 
     def test_query_versions_remote_othermpl(self):
         self._setRemote()
         vers = ('v2_0_1', '2.0.2', 'MPL-5')
-        self._query_versions(mode='remote', mpl='MPL-5', versions=vers)
+        self._query_versions(mode='remote', mpl='MPL-5')
 
     def test_query_versions_remote_utah(self):
         self._setRemote(mode='utah')
