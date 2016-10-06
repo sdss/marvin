@@ -13,12 +13,9 @@ from __future__ import division
 from marvin.core import MarvinToolsClass
 from marvin.core import MarvinError
 from marvin.tools.cube import Cube
-from marvin.api.api import Interaction
 from marvin import config, marvindb
-import numpy as np
 from astropy.io import fits
 from brain.utils.general import checkPath
-import re
 
 try:
     from sdss_access.path import Path
@@ -157,7 +154,7 @@ class Plate(MarvinToolsClass, list):
         url = config.urlmap['api']['getPlate']['url'].format(**routeparams)
 
         # Make the API call
-        response = Interaction(url)
+        response = self.ToolInteraction(url)
         data = response.getData()
         self._hdr = data['header']
         self.data_origin = 'api'
@@ -187,7 +184,7 @@ class Plate(MarvinToolsClass, list):
             url = config.urlmap['api']['getPlateCubes']['url'].format(**routeparams)
 
             # Make the API call
-            response = Interaction(url)
+            response = self.ToolInteraction(url)
             data = response.getData()
             plateifus = data['plateifus']
             _cubes = [Cube(plateifu=pifu, mode='remote', data_origin='api') for pifu in plateifus]
@@ -254,6 +251,3 @@ class Plate(MarvinToolsClass, list):
             # load the file
             if file:
                 self.filename = file
-
-
-
