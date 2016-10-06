@@ -173,8 +173,8 @@ class Map(object):
 
         try:
             response = marvin.api.api.Interaction(url_full,
-                                                  params={'drpver': self.maps._drpver,
-                                                          'dapver': self.maps._dapver})
+                                                  params={'mplver': self.maps._mplver,
+                                                          'drver': self.maps._drver})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))
