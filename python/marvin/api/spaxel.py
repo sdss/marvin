@@ -30,7 +30,7 @@ def _getSpaxel(name, x, y, **kwargs):
     spaxel = None
     results = {}
 
-    drpver, dapver = parse_params(request)
+    mplver, drver = parse_params(request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -50,7 +50,7 @@ def _getSpaxel(name, x, y, **kwargs):
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
         spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu,
-                        drpver=drpver, dapver=dapver, **kwargs)
+                        mplver=mplver, drver=drver, **kwargs)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve Spaxels {0}: {1}'.format(name, str(e))
@@ -88,9 +88,7 @@ class SpaxelView(BaseView):
                                     'ivar': spaxel.spectrum.ivar.tolist(),
                                     'mask': spaxel.spectrum.mask.tolist(),
                                     'wavelength': spaxel.spectrum.wavelength.tolist(),
-                                    'specres': spaxel.specres.tolist(),
-                                    'bintype': spaxel.bintype,
-                                    'template_kin': spaxel.template_kin}
+                                    'specres': spaxel.specres.tolist()}
 
         return json.dumps(self.results)
 
