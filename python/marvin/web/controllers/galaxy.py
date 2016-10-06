@@ -38,9 +38,9 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     webspec = None
     try:
         if byradec:
-            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, modelcube=True)
+            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, modelcube=True, properties=False)
         else:
-            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, modelcube=True)
+            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, modelcube=True, properties=False)
     except Exception as e:
         specmsg = 'Could not get spaxel: {0}'.format(e)
     else:

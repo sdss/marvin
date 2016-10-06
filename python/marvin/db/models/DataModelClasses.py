@@ -27,10 +27,8 @@ try:
 except ImportError as e:
     Path = None
 
-from marvin.db.DatabaseConnection import DatabaseConnection
+from marvin.db.database import db
 import SampleModelClasses as sampledb
-
-db = DatabaseConnection()
 
 # ========================
 # Define database classes

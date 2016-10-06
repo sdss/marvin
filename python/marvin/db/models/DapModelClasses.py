@@ -16,12 +16,10 @@ from sqlalchemy.types import Integer
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import case, cast, Float
 import re
-from marvin.db.DatabaseConnection import DatabaseConnection
+from marvin.db.database import db
 import DataModelClasses as datadb
 from astropy.io import fits
 import numpy as np
-
-db = DatabaseConnection()
 
 # ========================
 # Define database classes

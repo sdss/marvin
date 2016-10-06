@@ -16,24 +16,25 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from marvin.db.DatabaseConnection import DatabaseConnection
+from marvin.db.database import db
 from sqlalchemy.orm import relationship, configure_mappers, backref
-from sqlalchemy.inspection import inspect
+from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy import case, cast, Float
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import ForeignKeyConstraint, func
 import shutil
 import re
-import numpy as np
 import math
 import itertools
+import inspect
+from marvin.core.caching_query import RelationshipCache
+
 
 try:
     import cStringIO as StringIO
 except ImportError:
     from io import StringIO
 
-db = DatabaseConnection()
 Base = db.Base
 
 
@@ -156,7 +157,7 @@ NSA.mangaTargets = relationship(
     MangaTarget, backref='NSA_objects', secondary=MangaTargetToNSA.__table__)
 
 # Now we create the remaining tables.
-insp = inspect(db.engine)
+insp = sa_inspect(db.engine)
 schemaName = 'mangasampledb'
 allTables = insp.get_table_names(schema=schemaName)
 
@@ -282,3 +283,22 @@ setattr(NSA, 'petro_logmass_el', logmass('petro_mass_el'))
 setattr(NSA, 'sersic_logmass', logmass('sersic_mass'))
 
 configure_mappers()
+
+
+# Caching options.   A set of three RelationshipCache options
+# which can be applied to Query(), causing the "lazy load"
+# of these attributes to be loaded from cache.
+cache_address_bits = RelationshipCache(MangaTarget.NSA_objects, "default")
+
+
+cache_address_bits = RelationshipCache(PostalCode.city, "default").\
+                and_(
+                    RelationshipCache(City.country, "default")
+                ).and_(
+                    RelationshipCache(Address.postal_code, "default")
+                )
+
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
+modelclasses = [xx for xx in elements if isinstance(xx, DeclarativeMeta) and hasattr(xx, '__tablename__')]
+
+

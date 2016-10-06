@@ -15,6 +15,43 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
+from marvin.core import caching_query
+from hashlib import md5
+from dogpile.cache.region import make_region
+import os
+
+# DOGPILE CACHING SETUP
+
+# dogpile cache regions.  A home base for cache configurations.
+regions = {}
+dogroot = os.path.join(os.getenv('MANGA_SCRATCH_DIR'), 'dogpile_data')
+if not os.path.isdir(dogroot):
+    os.makedirs(dogroot)
+
+
+# db hash key
+def md5_key_mangler(key):
+    """Receive cache keys as long concatenated strings;
+    distill them into an md5 hash.
+
+    """
+    return md5(key.encode('ascii')).hexdigest()
+
+# configure the "default" cache region.
+regions['default'] = make_region(
+            # the "dbm" backend needs string-encoded keys
+            key_mangler=md5_key_mangler
+        ).configure(
+        # using type 'file' to illustrate
+        # serialized persistence.  Normally
+        # memcached or similar is a better choice
+        # for caching.
+        'dogpile.cache.dbm',
+        expiration_time=3600,
+        arguments={
+            "filename": os.path.join(dogroot, "cache.dbm")
+        }
+    )
 
 
 def clearSearchPathCallback(dbapi_con, connection_record):
@@ -83,6 +120,7 @@ class DatabaseConnection(object):
             me.metadata.bind = me.engine
             me.Base = declarative_base(bind=me.engine)
             me.Session = scoped_session(sessionmaker(bind=me.engine, autocommit=True,
+                                                     query_cls=caching_query.query_callable(regions),
                                                      expire_on_commit=expire_on_commit))
             # ------------------------------------------------
 

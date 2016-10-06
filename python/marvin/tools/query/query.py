@@ -27,7 +27,7 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
-import re
+import datetime
 import numpy as np
 import warnings
 from functools import wraps
@@ -176,6 +176,8 @@ class Query(object):
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
         self._returnparams = None
+        self._caching = kwargs.get('caching', True)
+        self.verbose = kwargs.get('verbose', None)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 100))
@@ -616,16 +618,20 @@ class Query(object):
 
         if self.mode == 'local':
 
-            # Check if filter params are set and there is a query
-            # if self.filterparams and isinstance(self.query.whereclause, type(None)):
-            #     print('adding conditions')
-            #     self.add_condition()
-
             # Check for adding a sort
             self._sortQuery()
 
+            # Check to add the cache
+            if self._caching:
+                from marvin.core.caching_query import FromCache
+                self.query = self.query.options(FromCache("default"))
+
             # get total count, and if more than 150 results, paginate and only return the first 10
+            start = datetime.datetime.now()
             count = self.query.count()
+            end = datetime.datetime.now()
+            td = (end-start).total_seconds()
+
             self.totalcount = count
             if count > 1000:
                 query = self.query.slice(0, self.limit)
