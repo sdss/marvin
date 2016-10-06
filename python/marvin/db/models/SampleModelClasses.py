@@ -291,14 +291,12 @@ configure_mappers()
 cache_address_bits = RelationshipCache(MangaTarget.NSA_objects, "default")
 
 
-cache_address_bits = RelationshipCache(PostalCode.city, "default").\
-                and_(
-                    RelationshipCache(City.country, "default")
-                ).and_(
-                    RelationshipCache(Address.postal_code, "default")
-                )
+# cache_address_bits = RelationshipCache(PostalCode.city, "default").\
+#                 and_(
+#                     RelationshipCache(City.country, "default")
+#                 ).and_(
+#                     RelationshipCache(Address.postal_code, "default")
+#                 )
 
-from sqlalchemy.ext.declarative.api import DeclarativeMeta
-modelclasses = [xx for xx in elements if isinstance(xx, DeclarativeMeta) and hasattr(xx, '__tablename__')]
 
 
