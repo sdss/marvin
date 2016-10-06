@@ -102,7 +102,7 @@ class TestCube(TestCubeBase):
         config.drpver = None
         params = {'mangaid': self.mangaid, 'mode': 'local'}
         errMsg = 'No Results Found: No row was found for one()'
-        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
+        self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
@@ -120,14 +120,14 @@ class TestCube(TestCubeBase):
         params = {'plateifu': '8485-0923', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
             params['plateifu'])
-        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
+        self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_otherexception(self):
         params = {'plateifu': '84.85-1901', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
             params['plateifu'])
-        self._load_from_db_fail(params, errMsg, errType=RuntimeError)
+        self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     # @skipIfNoDB
     # def test_cube_load_from_local_database_multipleresultsfound(self):

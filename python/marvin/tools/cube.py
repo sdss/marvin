@@ -177,7 +177,7 @@ class Cube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
         else:
             import sqlalchemy
             datadb = mdb.datadb
@@ -194,14 +194,14 @@ class Cube(MarvinToolsClass):
                             mdb.datadb.PipelineVersion.version == self._drpver,
                             datadb.Cube.plate == int(plate), datadb.IFUDesign.name == ifu).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as ee:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                       'Multiple Results Found: {1}'.format(self.plateifu, ee))
+                    raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
+                                      'Multiple Results Found: {1}'.format(self.plateifu, ee))
                 except sqlalchemy.orm.exc.NoResultFound as ee:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                       'No Results Found: {1}'.format(self.plateifu, ee))
+                    raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
+                                      'No Results Found: {1}'.format(self.plateifu, ee))
                 except Exception as ee:
-                    raise RuntimeError('Could not retrieve cube for plate-ifu {0}: '
-                                       'Unknown exception: {1}'.format(self.plateifu, ee))
+                    raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
+                                      'Unknown exception: {1}'.format(self.plateifu, ee))
 
             self.header = self.data.header
             self.wcs = WCS(self.data.wcs.makeHeader())

@@ -123,7 +123,7 @@ class RSS(MarvinToolsClass, list):
         mdb = marvin.marvindb
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
 
         plate, ifudesign = [item.strip() for item in self.plateifu.split('-')]
 
@@ -136,14 +136,14 @@ class RSS(MarvinToolsClass, list):
                     mdb.datadb.IFUDesign.name == ifudesign).all()
 
         except sqlalchemy.orm.exc.NoResultFound as ee:
-            raise RuntimeError('Could not retrieve RSS for plate-ifu {0}: '
-                               'No Results Found: {1}'
-                               .format(self.plateifu, ee))
+            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
+                              'No Results Found: {1}'
+                              .format(self.plateifu, ee))
 
         except Exception as ee:
-            raise RuntimeError('Could not retrieve RSS for plate-ifu {0}: '
-                               'Unknown exception: {1}'
-                               .format(self.plateifu, ee))
+            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
+                              'Unknown exception: {1}'
+                              .format(self.plateifu, ee))
 
         if not self.data:
             raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '

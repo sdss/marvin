@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-09-15 16:00:40
+# @Last Modified time: 2016-10-05 20:07:53
 
 from __future__ import print_function, division, absolute_import
 
@@ -196,7 +196,7 @@ class ModelCube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
 
         else:
 

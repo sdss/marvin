@@ -31,6 +31,7 @@ class Marvin(FlaskView):
         # if 'currentmpl' not in current_session:
         #     current_session['currentmpl'] = config.mplver
 
+        print('inside main index page, rendering template')
         return render_template("index.html", **self.base)
 
     def quote(self):
@@ -60,7 +61,9 @@ class Marvin(FlaskView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
+        print('getting the galid list')
         self._drpver, self._dapver, self._mplver = parseSession()
+        print('galidlist parsed versions', self._drpver, self._dapver, self._mplver)
         cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
                                        marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                            marvindb.datadb.PipelineVersion,

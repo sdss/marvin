@@ -56,6 +56,8 @@ class Plate(FlaskView):
         try:
             plate = mPlate(plateid=plateid, mode='local', nocubes=True, drpver=self._drpver)
         except MarvinError as e:
+            self.plate['plate'] = None
+            self.plate['drpver'] = self._drpver
             self.plate['error'] = 'Could not grab Plate for id {0}: {1}'.format(plateid, e)
         else:
             self.plate['plate'] = plate

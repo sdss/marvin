@@ -678,12 +678,16 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             The DRP version of the data to download.  Defaults to Marvin config.drpver
         dapver (str):
             The DAP version of the data to download.  Defaults to Marvin config.dapver
+        mplver (str):
+            The MPL version of the data to download.  Defaults to Marvin config.mplver
         bintype (str):
             The bin type of the DAP maps to download. Defaults to *
         binmode (str):
             The bin mode of the DAP maps to download. Defaults to *
         n (int):
             The plan id number [1-12] of the DAP maps to download. Defaults to *
+        daptype (str):
+            The daptype of the default map to grab.  Defaults to *
         verbose (bool):
             Turns on verbosity during rsync
     Returns:
@@ -701,6 +705,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     mplver = kwargs.get('mplver', marvin.config.mplver)
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
+    daptype = kwargs.get('daptype', '*')
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
 
@@ -728,7 +733,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'plate':
         name = 'mangaplate'
     elif dltype == 'map':
-        name = 'mangamap'
+        if '4' in mplver:
+            name = 'mangamap'
+        elif '5' in mplver:
+            name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
 
@@ -752,7 +760,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
-                         mpl=mplver, bintype=bintype, n=n, mode=binmode)
+                         mpl=mplver, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream
     try:

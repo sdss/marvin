@@ -308,10 +308,10 @@ class Maps(marvin.core.core.MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
 
         if sqlalchemy is None:
-            raise RuntimeError('sqlalchemy required to access the local DB.')
+            raise MarvinError('sqlalchemy required to access the local DB.')
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
