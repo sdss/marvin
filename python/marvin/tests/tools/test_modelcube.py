@@ -31,8 +31,11 @@ class TestModelCubeBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        marvin.config.switchSasUrl('local')
+
         cls.drpver = 'v2_0_1'
         cls.dapver = '2.0.2'
+        cls.mplver = 'MPL-5'
 
         cls.plate = 8485
         cls.ifu = 1901
@@ -69,6 +72,8 @@ class TestModelCubeInit(TestModelCubeBase):
 
     def _test_init(self, model_cube, bintype='SPX', template_kin='GAU-MILESHC'):
 
+        self.assertEqual(model_cube._mplver, self.mplver)
+        self.assertIsNone(model_cube._drver)
         self.assertEqual(model_cube._drpver, self.drpver)
         self.assertEqual(model_cube._dapver, self.dapver)
         self.assertEqual(model_cube.bintype, bintype)
@@ -81,6 +86,14 @@ class TestModelCubeInit(TestModelCubeBase):
         self.assertIsNotNone(model_cube.redcorr)
 
     def test_init_from_file(self):
+
+        model_cube = ModelCube(filename=self.filename)
+        self.assertEqual(model_cube.data_origin, 'file')
+        self._test_init(model_cube)
+
+    def test_init_from_file_global_mpl4(self):
+
+        marvin.config.setMPL('MPL-4')
 
         model_cube = ModelCube(filename=self.filename)
         self.assertEqual(model_cube.data_origin, 'file')

@@ -30,7 +30,7 @@ def _get_model_cube(name, **kwargs):
     model_cube = None
     results = {}
 
-    drpver, dapver = parse_params(request)
+    mplver, drver = parse_params(request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -50,8 +50,7 @@ def _get_model_cube(name, **kwargs):
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
         model_cube = ModelCube(mangaid=mangaid, plateifu=plateifu,
-                               drpver=drpver, dapver=dapver,
-                               **kwargs)
+                               mplver=mplver, drver=drver, **kwargs)
         results['status'] = 1
     except Exception as err:
         results['error'] = 'Failed to retrieve ModelCube {0}: {1}'.format(name, str(err))
