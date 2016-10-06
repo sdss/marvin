@@ -62,8 +62,8 @@ class Marvin(FlaskView):
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
         print('getting the galid list')
-        self._drpver, self._dapver, self._mplver = parseSession()
-        print('galidlist parsed versions', self._drpver, self._dapver, self._mplver)
+        self._drpver, self._dapver, self._currentver, self._release = parseSession()
+        print('galidlist parsed versions', self._drpver, self._dapver, self._currentver)
         cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
                                        marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                            marvindb.datadb.PipelineVersion,
@@ -81,17 +81,19 @@ class Marvin(FlaskView):
         out = {'status': 1, 'msg': 'Success'}
         version = f['mplselect']
         print('setting new mpl', version)
-        current_session['currentmpl'] = version
-        drpver, dapver = config.lookUpVersions(version)
+        current_session['currentver'] = version
+        drpver, dapver = config.lookUpVersions(mplver=version)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
-        # if 'MPL' in version:
-        #     config.setMPL(version)
-        # elif 'DR' in version:
-        #     config.setDR(version)
-        # else:
-        #     out['status'] = -1
-        #     out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
+        if 'MPL' in version:
+            current_session['mplver'] = version
+            current_session['drver'] = None
+        elif 'DR' in version:
+            current_session['drver'] = version
+            current_session['mplver'] = None
+        else:
+            out['status'] = -1
+            out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
 
         return jsonify(result=out)
 
