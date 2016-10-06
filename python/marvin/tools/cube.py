@@ -20,7 +20,6 @@ import marvin.tools.spaxel
 import marvin.tools.maps
 import marvin.utils.general.general
 
-from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
@@ -50,11 +49,9 @@ class Cube(MarvinToolsClass):
             ``plateifu`` can be used, but not both).
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See :ref:`mode-decision-tree`.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
-        drpver (str):
-            The DRP version to use. Defaults to ``marvin.config.drpver``.
+        mplver,drver (str):
+            The MPL/DR version of the data to use. Only one ``mplver`` or
+            ``drver`` must be defined at the same time.
 
     Return:
         cube:
@@ -65,7 +62,7 @@ class Cube(MarvinToolsClass):
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver', 'dapver']
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'mplver', 'drver']
 
         assert len(args) == 0, 'Cube does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -87,6 +84,13 @@ class Cube(MarvinToolsClass):
             self._load_cube_from_api()
 
         self._init_attributes()
+
+        # Checks that the drpver set in MarvinToolsClass matches the header
+        header_drpver = self.header['VERSDRP3'].strip()
+        header_drpver = 'v1_5_1' if header_drpver == 'v1_5_0' else header_drpver
+        assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
+                                               'and header drpver={1}'.format(self._drpver,
+                                                                              header_drpver))
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -165,10 +169,36 @@ class Cube(MarvinToolsClass):
             warnings.warn('cannot retrieve redshift from drpall.', MarvinUserWarning)
             self.redshift = None
 
-        # Updates the cube _drpver. Fixes a problem in which the nominal drpver for MPL-4 is
-        # v1_5_1 but actually the files contain v1_5_0
-        header_version = self.header['VERSDRP3']
-        self._drpver = 'v1_5_1' if header_version == 'v1_5_0' else header_version
+        # Checks and populates mplver and drver.
+        file_drpver = self.header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpMpl(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if 'DR' in file_ver:
+            file_drver = file_ver
+            file_mplver = None
+        elif 'MPL' in file_ver:
+            file_drver = None
+            file_mplver = file_ver
+        else:
+            raise MarvinError('file version is not MPL or DR.')
+
+        if file_mplver != self._mplver:
+            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
+                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+                          MarvinUserWarning)
+            self._mplver = file_mplver
+
+        if file_drver != self._drver:
+            warnings.warn('mismatch between file drver={0} and object drver={1}. '
+                          'Setting object drver to {0}'.format(file_drver, self._drver),
+                          MarvinUserWarning)
+            self._drver = file_drver
+
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
 
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
@@ -225,7 +255,7 @@ class Cube(MarvinToolsClass):
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
-            response = Interaction(url.format(name=self.plateifu), params={'drpver': self._drpver})
+            response = self.ToolInteraction(url.format(name=self.plateifu))
         except Exception as ee:
             raise MarvinError('found a problem when checking if remote cube '
                               'exists: {0}'.format(str(ee)))
@@ -363,7 +393,7 @@ class Cube(MarvinToolsClass):
         """
 
         if len(kwargs.keys()) == 0 or 'filename' not in kwargs:
-            kwargs.update({'plateifu': self.plateifu, 'drpver': self._drpver})
+            kwargs.update({'plateifu': self.plateifu, 'mplver': self._mplver})
 
         maps = marvin.tools.maps.Maps(**kwargs)
         maps._cube = self
