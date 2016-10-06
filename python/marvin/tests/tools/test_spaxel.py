@@ -29,6 +29,8 @@ class TestSpaxelBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        marvin.config.switchSasUrl('local')
+
         cls.drpver_out = 'v1_5_1'
         cls.dapver_out = '1.1.1'
 

@@ -151,8 +151,16 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
-        self._mplver = kwargs.get('mplver', config.mplver)
-        self._drpver, self._dapver = config.lookUpVersions(self._mplver)
+        self._mplver = kwargs.pop('mplver', None)
+        self._drver = kwargs.pop('drver', None)
+
+        if not self._mplver and not self._drver:
+            self._mplver = config.mplver
+            self._drver = config.drver
+
+        self._drpver, self._dapver = config.lookUpVersions(mplver=self._mplver,
+                                                           drver=self._drver)
+
         self.query = None
         self.params = []
         self.filterparams = {}
@@ -648,9 +656,9 @@ class Query(object):
             params = {'searchfilter': self.searchfilter,
                       'params': self._returnparams,
                       'returntype': self.returntype,
-                      'mplver': self._mplver,
                       'limit': self.limit,
-                      'sort': self.sort, 'order': self.order}
+                      'sort': self.sort, 'order': self.order,
+                      'mplver': self._mplver, 'drver': self._drver}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -953,4 +961,3 @@ class Query(object):
                 newkey = self.marvinform._param_form_lookup._nameShortcuts[key]
                 self._parsed.params.pop(key)
                 self._parsed.params.update({newkey: val})
-

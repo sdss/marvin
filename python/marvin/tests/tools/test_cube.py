@@ -22,8 +22,11 @@ class TestCubeBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.mpl = 'MPL-4'
+
+        config.switchSasUrl('local')
+
         cls.outver = 'v1_5_1'
+        cls.outmplver = 'MPL-4'
         cls.filename = os.path.join(
             os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
             '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
@@ -64,7 +67,7 @@ class TestCubeBase(MarvinTest):
 class TestCube(TestCubeBase):
 
     def test_mpl_version(self):
-        self.assertEqual(config.drpver, self.outver)
+        self.assertEqual(config.mplver, self.outmplver)
 
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
@@ -96,13 +99,6 @@ class TestCube(TestCubeBase):
         with self.assertRaises(errType) as cm:
             Cube(**params)
         self.assertIn(errMsg, str(cm.exception))
-
-    @skipIfNoDB
-    def test_cube_load_from_local_database_nodrpver(self):
-        config.drpver = None
-        params = {'mangaid': self.mangaid, 'mode': 'local'}
-        errMsg = 'No Results Found: No row was found for one()'
-        self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     @skipIfNoDB
     def test_cube_load_from_local_database_nodbconnected(self):
@@ -163,9 +159,9 @@ class TestCube(TestCubeBase):
         # MPL-4 and MPL-5.
 
         config.setMPL('MPL-5')
-        self.assertEqual(config.drpver, 'v2_0_1')
+        self.assertEqual(config.mplver, 'MPL-5')
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        cube = Cube(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
         self.assertEqual(cube._drpver, 'v1_5_1')
         self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
 
@@ -470,9 +466,9 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_remote_drpver_differ_from_global(self):
 
         config.setMPL('MPL-5')
-        self.assertEqual(config.drpver, 'v2_0_1')
+        self.assertEqual(config.mplver, 'MPL-5')
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', drpver='v1_5_1')
+        cube = Cube(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
         expect = 0.62007582
         self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
 

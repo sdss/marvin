@@ -29,6 +29,8 @@ class TestMapsBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        marvin.config.switchSasUrl('local')
+
         cls.drpver_out = 'v1_5_1'
         cls.dapver_out = '1.1.1'
 
@@ -80,6 +82,15 @@ class TestMapsFile(TestMapsBase):
         self.assertIsNotNone(maps.cube)
         self.assertEqual(maps.cube.plateifu, self.plateifu)
         self.assertEqual(maps.cube.mangaid, self.mangaid)
+
+    def test_load_file_mpl4_global_mpl5(self):
+
+        marvin.config.setMPL('MPL-5')
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self.assertEqual(maps._mplver, 'MPL-4')
+        self.assertIsNone(maps._drver)
+        self.assertEqual(maps._drpver, 'v1_5_1')
+        self.assertEqual(maps._dapver, '1.1.1')
 
     def test_get_spaxel_file(self):
 
@@ -138,7 +149,7 @@ class TestMapsDB(TestMapsBase):
 
     def test_get_spaxel_db(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', dapver='1.1.1')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', mplver='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
@@ -193,7 +204,7 @@ class TestMapsAPI(TestMapsBase):
 
     def test_get_spaxel_api(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', dapver='1.1.1')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
@@ -215,8 +226,7 @@ class TestMapsAPI(TestMapsBase):
 
         marvin.config.setMPL('MPL-5')
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
-                                      drpver='v1_5_1', dapver='1.1.1')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))

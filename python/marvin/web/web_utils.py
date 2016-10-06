@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from flask import session as current_session, current_app, request
 from marvin import config, marvindb
+from marvin.utils.general import parseVersion
 from collections import defaultdict
 import re
 
@@ -42,15 +43,17 @@ def setGlobalSession():
     ''' Sets the global session for Flask '''
 
     mpls = config._mpldict.keys()
-    versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
+    versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mplver=mpl))} for mpl in mpls]
     current_session['versions'] = versions
 
     print('I am setting the Global Session')
-    if 'currentmpl' not in current_session:
-        current_session['currentmpl'] = config.mplver
-        drpver, dapver = config.lookUpVersions(config.mplver)
+    if 'currentver' not in current_session:
+        current_session['currentver'] = config.mplver
+        drpver, dapver = config.lookUpVersions(mplver=config.mplver)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
+        current_session['mplver'] = config.mplver
+        current_session['drver'] = config.drver
         print('inside global session vers', drpver, dapver)
 
 
@@ -59,9 +62,12 @@ def parseSession():
     print('parsing the session')
     drpver = current_session['drpver']
     dapver = current_session['dapver']
-    mplver = current_session['currentmpl']
-    print('gotten vers', drpver, dapver, mplver)
-    return drpver, dapver, mplver
+    mplver = current_session['mplver']
+    drver = current_session['drver']
+    currentver = current_session['currentver']
+    release = parseVersion(currentver)
+    print('gotten vers', drpver, dapver, mplver, drver, release, currentver)
+    return drpver, dapver, currentver, release
 
 
 def setGlobalSession_old():

@@ -47,7 +47,7 @@ class Search(FlaskView):
         self.search['results'] = None
         self.search['errmsg'] = None
         self.search['filter'] = None
-        self._drpver, self._dapver, self._mplver = parseSession()
+        self._drpver, self._dapver, self._mplver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):

@@ -39,7 +39,7 @@ class Plate(FlaskView):
         ''' Do these things before a request to any route '''
         self.plate['plateid'] = None
         self.plate['error'] = None
-        self._drpver, self._dapver, self._mplver = parseSession()
+        self._drpver, self._dapver, self._currentver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -53,8 +53,9 @@ class Plate(FlaskView):
         ''' Retrieve info for a given plate id '''
 
         self.plate['plateid'] = int(plateid)
+        pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, self._release: self._currentver}
         try:
-            plate = mPlate(plateid=plateid, mode='local', nocubes=True, drpver=self._drpver)
+            plate = mPlate(**pinputs)
         except MarvinError as e:
             self.plate['plate'] = None
             self.plate['drpver'] = self._drpver

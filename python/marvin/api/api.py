@@ -13,9 +13,8 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
-from marvin import config
 
-configkeys = ['mplver', 'drpver', 'dapver']
+configkeys = ['mplver', 'drver']
 
 
 class Interaction(BrainInteraction):
@@ -55,6 +54,9 @@ class Interaction(BrainInteraction):
 
     def _loadConfigParams(self):
         """Load the local configuration into a parameters dictionary to be sent with the request"""
+
+        from marvin import config
+
         if self.params:
             for k in configkeys:
                 if k not in self.params or self.params[k] is None:

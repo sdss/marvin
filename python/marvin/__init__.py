@@ -19,6 +19,7 @@ else:
 log = initLog(logFilePath)
 
 warnings.simplefilter('once')
+warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 
 
 class MarvinConfig(object):
@@ -27,10 +28,6 @@ class MarvinConfig(object):
     The global configuration of Marvin.
 
     Parameters:
-        drpver (str):
-            The DRP version of the MaNGA data you want to use
-        dapver (str):
-            The DAP version of the MaNGA data you want to use
         mplver (str):
             The MPL version of the MaNGA data you want to use
         download (bool):
@@ -38,16 +35,17 @@ class MarvinConfig(object):
     '''
     def __init__(self):
 
+        self._check_sas_dir()
+
         self._drpall = None
         self._inapp = False
 
         self._urlmap = None
         self._xyorig = None
 
-        self.drpver = None
-        self.dapver = None
-        self.drver = None
-        self.mplver = None
+        self._mplver = None
+        self._drver = None
+
         self.vermode = None
         self.download = False
         self._setDbConfig()
@@ -55,18 +53,39 @@ class MarvinConfig(object):
 
         self.setDefaultDrpAll()
 
+    def _check_sas_dir(self):
+        """Check if $SAS_BASE_DIR is defined. If it is not, creates and defines it."""
+
+        if 'MANGA_SPECTRO_REDUX' in os.environ:
+            return
+
+        if 'SAS_BASE_DIR' not in os.environ:
+            sas_base_dir = os.path.expanduser('~/sas')
+            if not os.path.exists(sas_base_dir):
+                warnings.warn('no SAS_BASE_DIR found. Creating it in {0}.'.format(sas_base_dir),
+                              MarvinUserWarning)
+                os.makedirs(sas_base_dir)
+            os.environ['SAS_BASE_DIR'] = sas_base_dir
+
+        if 'MANGA_SPECTRO_REDUX' not in os.environ:
+            manga_spectro_redux = os.path.join(
+                os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/redux/')
+            if not os.path.exists(manga_spectro_redux):
+                warnings.warn('no MANGA_SPECTRO_REDUX found. Creating it in {0}.'
+                              .format(manga_spectro_redux),  MarvinUserWarning)
+
+                os.makedirs(manga_spectro_redux)
+            os.environ['MANGA_SPECTRO_REDUX'] = manga_spectro_redux
+
     def setDefaultDrpAll(self, drpver=None):
         """Tries to set the default location of drpall."""
 
-        if not drpver and not self.drpver:
-            return
+        if not drpver:
+            drpver, __ = self.lookUpVersions(drver=self.drver, mplver=self.mplver)
+        self.drpall = self._getDrpAllPath(drpver)
 
-        self.drpall = self._getDrpAllPath(drpver=drpver)
-
-    def _getDrpAllPath(self, drpver=None):
-        """Returns the default path for drpall, give a certain `drpver`."""
-
-        drpver = drpver if drpver else self.drpver
+    def _getDrpAllPath(self, drpver):
+        """Returns the default path for drpall, give a certain ``drpver``."""
 
         if 'MANGA_SPECTRO_REDUX' in os.environ and drpver:
             return os.path.join(os.environ['MANGA_SPECTRO_REDUX'], str(drpver),
@@ -94,6 +113,23 @@ class MarvinConfig(object):
     @sasurl.setter
     def sasurl(self, value):
         bconfig.sasurl = value
+
+    @property
+    def mplver(self):
+        return self._mplver
+
+    @mplver.setter
+    def mplver(self):
+        raise MarvinError('mplver cannot be set directly. Use marvin.config.setMPL()')
+
+    @property
+    def drver(self):
+        return self._drver
+
+    @drver.setter
+    def drver(self, value):
+        raise MarvinError('drver cannot be set directly. Use marvin.config.setDR()')
+
 
 #################################################
 
@@ -141,6 +177,7 @@ class MarvinConfig(object):
         if os.path.exists(value):
             self._drpall = value
         else:
+            self._drpall = None
             warnings.warn('path {0} cannot be found. Setting drpall to None.'
                           .format(value), MarvinUserWarning)
 
@@ -152,15 +189,18 @@ class MarvinConfig(object):
         ''' Check the config '''
         # set and sort the base MPL dictionary
         mpldict = {'MPL-5': ('v2_0_1', '2.0.2'), 'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'),
-                   'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None), 'DR13': ('v1_5_4', None)}
+                   'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}  #, 'DR13': ('v1_5_4', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
         # Check the versioning config
-        if not self.mplver or not (self.drpver and self.dapver):
+        if not self.mplver and not self.drver:
             topkey = self._mpldict.keys()[0]
-            log.info('No MPL or DRP/DAP version set. Setting default to {0}'.format(topkey))
-            self.setMPL(topkey)
+            log.info('No MPL or DR version set. Setting default to {0}'.format(topkey))
+            if 'DR' in topkey:
+                self.setDR(topkey)
+            else:
+                self.setMPL(topkey)
 
     def setMPL(self, mplver):
         ''' Set the data version by MPL
@@ -176,11 +216,14 @@ class MarvinConfig(object):
             >>> config.setMPL('MPL-4')
         '''
 
-        m = re.search('MPL-([0-9])', mplver)
-        assert m is not None, 'MPL version must be of form "MPL-[X]"'
-        if m:
-            self.mplver = mplver
-            self.drpver, self.dapver = self.lookUpVersions(mplver)
+        mm = re.search('MPL-([0-9])', mplver)
+        assert mm is not None, 'MPL version must be of form "MPL-[X]"'
+        if mm:
+            self._mplver = mplver
+            self._drver = None
+
+            drpver = self._mpldict[self._mplver][0]
+            self.drpall = self._getDrpAllPath(drpver)
 
     def setDR(self, drver):
         ''' Set the data version by Data Release (DR)
@@ -195,62 +238,43 @@ class MarvinConfig(object):
         Example:
             >>> config.setDR('DR13')
         '''
-        m = re.search('DR1([3-9])', drver)
-        assert m is not None, 'DR version must be of form "DR[XX]"'
-        if m:
-            self.drver = drver
-            self.drpver, self.dapver = self.lookUpVersions(drver)
+        mm = re.search('DR1([3-9])', drver)
+        assert mm is not None, 'DR version must be of form "DR[XX]"'
+        if mm:
+            self._mplver = None
+            self._drver = drver
 
-    def setVersions(self, drpver=None, dapver=None):
-        ''' Set the data version by DRP and DAP versions
+            drpver = self._mpldict[self._drver][0]
+            self.drpall = self._getDrpAllPath(drpver)
 
-        Sets the MPL version globally in the config. When specifying the MPL,
-        the DRP and DAP versions also get set globally.
-
-        Parameters:
-            drpver (str):
-                The DRP version to set, in form of vX_X_X
-            dapver (str):
-                The DAP version to set, in form of X.X.X
-        Example:
-            >>> config.setVersions(drpver='v1_5_1', dapver='1.1.1')
-        '''
-        if drpver:
-            assert type(drpver) == str, 'drpver needs to be a string'
-            drpre = re.search('v([0-9][_]([0-9])[_]([0-9]))', drpver)
-            assert drpre is not None, 'DRP version must be of form "v[X]_[X]_[X]"'
-            if drpre:
-                self.drpver = drpver
-                self.mplver = self.lookUpMpl(drpver)
-
-        if dapver:
-            assert type(dapver) == str, 'dapver needs to be a string'
-            dapre1 = re.search('v([0-9][_]([0-9])[_]([0-9]))', dapver)
-            dapre2 = re.search('([0-9][.]([0-9])[.]([0-9]))', dapver)
-            assert (dapre1 or dapre2) is not None, \
-                'DAP version must be of form "v[X]_[X]_[X]", or [X].[X].[X]'
-            if any([dapre1, dapre2]):
-                self.dapver = dapver
-
-    def lookUpVersions(self, mplver):
-        ''' Retrieve the DRP and DAP versions that make up an MPL
+    def lookUpVersions(self, mplver=None, drver=None):
+        """Retrieve the DRP and DAP versions that make up an MPL/DR
 
         Look up the DRP and DAP version for a specified MPL version.
 
         Parameters:
             mplver (str):
                 The MPL version
+            drver (str):
+                The DR version
+
         Returns:
             drpver (str):
                 The DRP version according to the input MPL version
             dapver (str):
                 The DAP version according to the input MPL version
-        '''
+
+        """
+
+        # Asserts one and only one of mplver or drver are set
+        assert bool(mplver) != bool(drver), 'one and only one of drver or mplver must be set.'
 
         try:
-            drpver, dapver = self._mpldict[mplver]
-        except KeyError as e:
-            raise MarvinError('MPL version {0} not found in lookup table. No associated DRP/DAP versions. Should they be added?  Check for typos.'.format(mplver))
+            drpver, dapver = self._mpldict[mplver or drver]
+        except KeyError as ee:
+            raise MarvinError('MPL/DR version {0} not found in lookup table. '
+                              'No associated DRP/DAP versions. '
+                              'Should they be added?  Check for typos.'.format(mplver or drver))
 
         return drpver, dapver
 
