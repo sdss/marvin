@@ -30,7 +30,7 @@ def _getRSS(name):
     rss = None
     results = {}
 
-    drpver, __ = parse_params(flask.request)
+    mplver, drver = parse_params(flask.request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -49,7 +49,8 @@ def _getRSS(name):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        rss = RSS(mangaid=mangaid, plateifu=plateifu, mode='local', drpver=drpver)
+        rss = RSS(mangaid=mangaid, plateifu=plateifu, mode='local',
+                  mplver=mplver, drver=drver)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve RSS {0}: {1}'.format(name, str(e))
