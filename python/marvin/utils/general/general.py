@@ -275,7 +275,8 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     assert mode in autoModes + ['auto'], 'mode={0} is not valid'.format(mode)
 
-    drpver = drpver if drpver else config.drpver
+    config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+    drpver = drpver if drpver else config_drpver
     drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
 
     if mode == 'drpall':
@@ -781,7 +782,8 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
     if drpall:
         drpall_table = table.Table.read(drpall)
     else:
-        drpver = drpver if drpver else config.drpver
+        config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+        drpver = drpver if drpver else config_drpver
         if drpver not in drpTable:
             drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
             drpTable[drpver] = table.Table.read(drpall)
