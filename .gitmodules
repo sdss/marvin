@@ -10,3 +10,6 @@
 [submodule "python/marvin/extern/sqlalchemy-boolean-search"]
 	path = python/marvin/extern/sqlalchemy-boolean-search
 	url = https://github.com/marvin-manga/sqlalchemy-boolean-search
+[submodule "python/marvin/extern/marvin_brain"]
+	path = python/marvin/extern/marvin_brain
+	url = https://github.com/marvin-manga/marvin_brain
