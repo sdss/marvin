@@ -30,7 +30,7 @@ def _getMaps(name, **kwargs):
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
 
-    drpver, dapver = parse_params(request)
+    mplver, drver = parse_params(request)
 
     # Parses name into either mangaid or plateifu
     try:
@@ -51,7 +51,8 @@ def _getMaps(name, **kwargs):
                 'invalid plateifu or mangaid: {0}'.format(idtype))
 
         maps = marvin.tools.maps.Maps(mangaid=mangaid, plateifu=plateifu,
-                                      mode='local', drpver=drpver, dapver=dapver, **kwargs)
+                                      mode='local', mplver=mplver, drver=drver,
+                                      **kwargs)
         results['status'] = 1
     except Exception as ee:
         maps = None
@@ -93,6 +94,7 @@ class MapsView(marvin.api.base.BaseView):
         if maps is None:
             return json.dumps(self.results)
 
+        header = maps.header.tostring()
         wcs_header = maps.data.cube.wcs.makeHeader().tostring()
         shape = maps.shape
         bintype = maps.bintype
@@ -104,6 +106,7 @@ class MapsView(marvin.api.base.BaseView):
 
         self.results['data'] = {name: {'mangaid': mangaid,
                                        'plateifu': plateifu,
+                                       'header': header,
                                        'wcs': wcs_header,
                                        'shape': shape,
                                        'bintype': bintype,

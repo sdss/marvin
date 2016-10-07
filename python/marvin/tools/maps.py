@@ -12,6 +12,7 @@ from __future__ import absolute_import
 
 import distutils.version
 import warnings
+import itertools
 
 import astropy.io.fits
 import astropy.wcs
@@ -49,6 +50,8 @@ __all__ = ('Maps')
 
 def _is_MPL4(dapver):
     """Returns True if the dapver version is <= MPL-4."""
+
+    assert isinstance(dapver, marvin.utils.six.string_types), 'dapver must be a string'
 
     dap_version = distutils.version.StrictVersion(dapver)
     MPL4_version = distutils.version.StrictVersion('1.1.1')
@@ -91,6 +94,20 @@ def _get_template_kin(dapver, template_kin=None):
         return __TEMPLATES_KIN_DEFAULT__
 
 
+def _get_bintemps(dapver):
+    ''' Get a list of all bin-template types for a given MPL '''
+
+    if _is_MPL4(dapver):
+        bins = __BINTYPES_MPL4__.keys()
+        temps = __TEMPLATES_KIN_MPL4__
+    else:
+        bins = __BINTYPES__
+        temps = __TEMPLATES_KIN__
+
+    bintemps = ['-'.join(item) for item in list(itertools.product(bins, temps))]
+    return bintemps
+
+
 class Maps(marvin.core.core.MarvinToolsClass):
     """Returns an object representing a DAP Maps file.
 
@@ -122,21 +139,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
-        drpver (str):
-            The DRP version to use. Defaults to ``marvin.config.drpver``.
-        dapver (str):
-            The DAP version to use. Defaults to ``marvin.config.dapver``.
+        mplver,drver (str):
+            The MPL/DR version of the data to use. Only one ``mplver`` or
+            ``drver`` must be defined at the same time.
 
     """
 
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'drpall',
-            'drpver', 'dapver', 'bintype', 'template_kin', 'template_pop']
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'mplver',
+            'drver', 'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -153,6 +166,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                                               template_kin=kwargs.pop('template_kin', None))
         self.template_pop = None
 
+        self.header = None
         self.wcs = None
         self.shape = None
         self._cube = None
@@ -168,6 +182,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 'data_origin={0} is not valid'.format(self.data_origin))
 
         self.properties = marvin.utils.dap.get_dap_datamodel(self._dapver)
+
+        self._check_versions(self)
 
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
@@ -188,6 +204,31 @@ class Maps(marvin.core.core.MarvinToolsClass):
             return self.getMap(maps_property.name, channel=channel)
         else:
             raise marvin.core.MarvinError('invalid type for getitem.')
+
+    @staticmethod
+    def _check_versions(instance):
+        """Confirm that drpver and dapver match the ones from the header.
+
+        This is written as a staticmethod because we'll also use if for
+        ModelCube.
+
+        """
+
+        header_drpver = instance.header['VERSDRP3']
+        isMPL4 = False
+        if instance._mplver == 'MPL-4' and header_drpver == 'v1_5_0':
+            header_drpver = 'v1_5_1'
+            isMPL4 = True
+        assert header_drpver == instance._drpver, ('mismatch between maps._drpver={0} '
+                                                   'and header drpver={1}'
+                                                   .format(instance._drpver, header_drpver))
+
+        # MPL-4 does not have VERSDAP
+        if isMPL4:
+            assert 'VERSDAP' not in instance.header, 'mismatch between maps._dapver and header'
+        else:
+            header_dapver = instance.header['VERSDAP']
+            assert header_dapver == instance._dapver, 'mismatch between maps._dapver and header'
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -240,31 +281,10 @@ class Maps(marvin.core.core.MarvinToolsClass):
         else:
             self.data = astropy.io.fits.open(self.filename)
 
-        self.mangaid = self.data[0].header['MANGAID'].strip()
-        self.plateifu = self.data[0].header['PLATEIFU'].strip()
+        self.header = self.data[0].header
 
-        # Check DRP and DAP versions of the file.
-        try:
-            header_drpver = self.data[0].header['VERSDRP3']
-            # There is an inconsistency between the drpver officially considered MPL-4
-            # and the version in the header. We fix it here.
-            if header_drpver == 'v1_5_0':
-                header_drpver = 'v1_5_1'
-            if header_drpver != self._drpver:
-                self._drpver = header_drpver
-        except KeyError:
-            raise marvin.core.exceptions.MarvinError('cannot retrieve DRP version from file.')
-
-        if self._drpver == 'v1_5_1':
-            if self._dapver != '1.1.1':
-                self._dapver = '1.1.1'
-        else:
-            try:
-                header_dapver = self.data[0].header['VERSDAP']
-                if header_dapver != self._dapver:
-                    self._dpver = header_dapver
-            except KeyError:
-                raise marvin.core.exceptions.MarvinError('cannot retrieve DAP version from file.')
+        self.mangaid = self.header['MANGAID'].strip()
+        self.plateifu = self.header['PLATEIFU'].strip()
 
         # We use EMLINE_GFLUX because is present in MPL-4 and 5 and is not expected to go away.
         header = self.data['EMLINE_GFLUX'].header
@@ -273,6 +293,37 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # Takes only the first two axis.
         self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
         self.shape = self.data['EMLINE_GFLUX'].data.shape[-2:]
+
+        # Checks and populates mplver and drver.
+        file_drpver = self.header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpMpl(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if 'DR' in file_ver:
+            file_drver = file_ver
+            file_mplver = None
+        elif 'MPL' in file_ver:
+            file_drver = None
+            file_mplver = file_ver
+        else:
+            raise marvin.core.exceptions.MarvinError('file version is not MPL or DR.')
+
+        if file_mplver != self._mplver:
+            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
+                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+                          marvin.core.exceptions.MarvinUserWarning)
+            self._mplver = file_mplver
+
+        if file_drver != self._drver:
+            warnings.warn('mismatch between file drver={0} and object drver={1}. '
+                          'Setting object drver to {0}'.format(file_drver, self._drver),
+                          marvin.core.exceptions.MarvinUserWarning)
+            self._drver = file_drver
+
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
 
         # Checks the bintype and template_kin from the header
         header_bintype = self.data[0].header['BINTYPE'].strip().upper()
@@ -293,10 +344,10 @@ class Maps(marvin.core.core.MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise marvin.core.exceptions.MarvinError('No db connected')
 
         if sqlalchemy is None:
-            raise RuntimeError('sqlalchemy required to access the local DB.')
+            raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
@@ -332,6 +383,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
             self.data = db_maps_file[0]
 
+        self.header = self.data.primary_header
+
         # Gets the cube header
         cubehdr = self.data.cube.header
 
@@ -354,8 +407,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                               template_kin=self.template_kin)
 
         try:
-            response = marvin.api.api.Interaction(url_full, params={'drpver': self._drpver,
-                                                                    'dapver': self._dapver})
+            response = self.ToolInteraction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when checking if remote maps exists: {0}'.format(str(ee)))
@@ -364,6 +416,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         if self.plateifu not in data:
             raise marvin.core.exceptions.MarvinError('remote maps has a different plateifu!')
+
+        self.header = astropy.io.fits.Header.fromstring(data[self.plateifu]['header'])
 
         # Sets the mangaid
         self.mangaid = data[self.plateifu]['mangaid']
@@ -382,7 +436,9 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         if not self._cube:
             try:
-                cube = marvin.tools.cube.Cube(plateifu=self.plateifu, drpver=self._drpver)
+                cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
+                                              mplver=self._mplver,
+                                              drver=self._drver)
             except Exception as err:
                 raise marvin.core.exceptions.MarvinError(
                     'cannot instantiate a cube for this Maps. Error: {0}'.format(err))

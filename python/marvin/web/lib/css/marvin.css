@@ -6220,6 +6220,9 @@ section h3.section-subheading {
   border-radius: 0px;
   border-color: #3498DB; }
 
+.highcharts-button-symbol {
+  background-color: null; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52

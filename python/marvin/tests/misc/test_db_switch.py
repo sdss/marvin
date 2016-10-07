@@ -14,12 +14,12 @@ from __future__ import absolute_import
 def create_connection(db_name):
     """Creates the connection and import the model classes."""
 
-    from sdss.internal.database.DatabaseConnection import DatabaseConnection
+    from marvin.db.DatabaseConnection import DatabaseConnection
 
     database_connection_string = 'postgresql+psycopg2:///{0}'.format(db_name)
     db = DatabaseConnection(database_connection_string=database_connection_string)
 
-    from sdss.internal.database.utah.mangadb import DataModelClasses as mangaData
+    import marvin.db.models.DataModelClasses as mangaData
 
     return db, mangaData
 

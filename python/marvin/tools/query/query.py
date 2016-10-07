@@ -12,22 +12,20 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.core import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.api import Interaction
-from sqlalchemy import or_, and_, bindparam, between
+from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
-import re
+import datetime
 import numpy as np
 import warnings
 from functools import wraps
@@ -73,7 +71,7 @@ def updateConfig(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.query and self.mode == 'local':
-            self.query = self.query.params({'drpver': config.drpver, 'dapver': config.dapver})
+            self.query = self.query.params({'drpver': self._drpver, 'dapver': self._dapver})
         return f(self, *args, **kwargs)
     return wrapper
 
@@ -151,6 +149,16 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
+        self._mplver = kwargs.pop('mplver', None)
+        self._drver = kwargs.pop('drver', None)
+
+        if not self._mplver and not self._drver:
+            self._mplver = config.mplver
+            self._drver = config.drver
+
+        self._drpver, self._dapver = config.lookUpVersions(mplver=self._mplver,
+                                                           drver=self._drver)
+
         self.query = None
         self.params = []
         self.filterparams = {}
@@ -166,14 +174,14 @@ class Query(object):
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
         self._returnparams = None
+        self._caching = kwargs.get('caching', True)
+        self.verbose = kwargs.get('verbose', None)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
-        self.limit = int(kwargs.get('limit', 10))
+        self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels)
-        self._drpver = kwargs.get('drpver', config.drpver)
-        self._dapver = kwargs.get('dapver', config.dapver)
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
 
         # set the mode
         if self.mode is None:
@@ -342,7 +350,7 @@ class Query(object):
         '''
         assert self.returntype in [None, 'cube', 'spaxel', 'maps',
                                    'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plateifu', 'ifu.name']
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
         if self.returntype == 'spaxel':
             pass
             #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
@@ -608,20 +616,25 @@ class Query(object):
 
         if self.mode == 'local':
 
-            # Check if filter params are set and there is a query
-            # if self.filterparams and isinstance(self.query.whereclause, type(None)):
-            #     print('adding conditions')
-            #     self.add_condition()
-
             # Check for adding a sort
             self._sortQuery()
 
+            # Check to add the cache
+            if self._caching:
+                from marvin.core.caching_query import FromCache
+                self.query = self.query.options(FromCache("default")).\
+                    options(*marvindb.cache_bits)
+
             # get total count, and if more than 150 results, paginate and only return the first 10
+            start = datetime.datetime.now()
             count = self.query.count()
+            end = datetime.datetime.now()
+            td = (end-start).total_seconds()
+
             self.totalcount = count
-            if count > 150:
+            if count > 1000:
                 query = self.query.slice(0, self.limit)
-                warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+                warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 query = self.query
 
@@ -635,7 +648,7 @@ class Query(object):
                 res = query.count()
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self)
+                           queryobj=self, totalcount=self.totalcount, chunk=self.limit)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -647,7 +660,10 @@ class Query(object):
 
             params = {'searchfilter': self.searchfilter,
                       'params': self._returnparams,
-                      'returntype': self.returntype}
+                      'returntype': self.returntype,
+                      'limit': self.limit,
+                      'sort': self.sort, 'order': self.order,
+                      'mplver': self._mplver, 'drver': self._drver}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -658,10 +674,11 @@ class Query(object):
                 self.params = ii.results['params']
                 self.query = ii.results['query']
                 count = ii.results['count']
+                chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
@@ -949,4 +966,3 @@ class Query(object):
                 newkey = self.marvinform._param_form_lookup._nameShortcuts[key]
                 self._parsed.params.pop(key)
                 self._parsed.params.update({newkey: val})
-

@@ -20,6 +20,7 @@
             </div>
         </div>
         <div class='row'>
+            {% if plate %}
             <div class='col-md-4'>
                 <table class='table table-condensed table-bordered table-striped marvin-metatable' id='platemeta'>
                     <tbody>
@@ -32,6 +33,7 @@
                     </tbody>
                 </table>
             </div>
+            {% endif %}
             {# Any errors go here #}
             {% if error %}
             <div class='col-md-6' id='plate_error'>

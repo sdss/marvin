@@ -30,7 +30,7 @@ def register_blueprints(app=None):
 # ================================================================================
 
 
-def create_app(debug=False):
+def create_app(debug=False, local=False):
 
     from marvin.api.cube import CubeView
     from marvin.api.maps import MapsView
@@ -102,7 +102,7 @@ def create_app(debug=False):
 
     # Find which connection to make
     connection = getDbMachine()
-    local = connection == 'local'
+    local = (connection == 'local') or local
 
     # ----------------------------------
     # Set some environment variables

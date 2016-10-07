@@ -15,8 +15,7 @@ from __future__ import division
 from marvin import marvindb, config
 from marvin.core import MarvinError, MarvinUserWarning
 from collections import defaultdict
-from wtforms import StringField, validators, SelectField, SelectMultipleField, IntegerField, ValidationError, SubmitField
-from wtforms.widgets import Select
+from wtforms import StringField, validators, SelectMultipleField, ValidationError, SubmitField
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -62,7 +61,7 @@ def formClassFactory(name, model, baseclass):
 
         e.g.
         The ModelClass IFUDesign mapped to mangadatadb.ifu_design sql table gets transformed into
-        WTForm IFUDesignForm, with IFUDesignForm.Meta.model = sdss.internal.database.utah.mangadb.DataModelClasses.IFUDesign
+        WTForm IFUDesignForm, with IFUDesignForm.Meta.model = marvin.db.models.DataModelClasses.IFUDesign
     '''
 
     Meta = type('Meta', (object,), {'model': model})
@@ -100,18 +99,22 @@ class ParamFormLookupDict(dict):
 
     def __init__(self, **kwargs):
         self.allspaxels = kwargs.get('allspaxels', None)
+        self._mplver = kwargs.get('mplver', config.mplver)
         self._init_table_shortcuts()
         self._init_name_shortcuts()
-        self._mplver = config.mplver
 
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""
 
         # Update shortcuts upon MPL changes
-        if self._mplver != config.mplver:
-            self._init_table_shortcuts()
-            self._init_name_shortcuts()
-            self._mplver = config.mplver
+        # if self._mplver != config.mplver:
+        #     print('changing param form mplver', self._mplver, config.mplver)
+        #     self._init_table_shortcuts()
+        #     self._init_name_shortcuts()
+        #     self._mplver = config.mplver
+        #self._mplver = kwargs.get('mplver', config.mplver)
+        self._init_table_shortcuts()
+        self._init_name_shortcuts()
 
         # Applies shortcuts
         keySplits = self._apply_shortcuts(key)
@@ -203,11 +206,11 @@ class ParamFormLookupDict(dict):
 
         newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
         spaxname = 'spaxelprop' if self.allspaxels else 'cleanspaxelprop'
-        if '4' in config.mplver:
+        if '4' in self._mplver:
             dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): spaxname for m in newmpls}
             dapcut.update({'spaxelprop': spaxname})
         else:
-            mdigit = config.mplver.split('-')[1]
+            mdigit = self._mplver.split('-')[1]
             dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): '{0}{1}'.format(spaxname, mdigit) for m in newmpls}
             dapcut.update({'spaxelprop': '{0}{1}'.format(spaxname, mdigit)})
 
@@ -259,7 +262,8 @@ class MarvinForm(object):
         _param_form_lookup = dictionary of all modelclass parameters of form {'SQLalchemy ModelClass parameter name': WTForm Class}
         '''
 
-        self._modelclasses = marvindb.buildUberClassDict()
+        self._mplver = kwargs.get('mplver', config.mplver)
+        self._modelclasses = marvindb.buildUberClassDict(mplver=self._mplver)
         self._param_form_lookup = ParamFormLookupDict(**kwargs)
         self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
@@ -346,5 +350,3 @@ class MarvinForm(object):
 
         # make new dictionary
         self._param_form_lookup = new
-
-

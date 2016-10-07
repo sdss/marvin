@@ -100,7 +100,7 @@ class Results(object):
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = kwargs.get('chunk', 10)
+        self.chunk = kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
@@ -357,9 +357,12 @@ class Results(object):
 
     def _reduceNames(self, columns, under=None):
         ''' reduces the full table.parameter names to non-dotted versions '''
-        fullstr = ','.join(columns)
-        names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
-                    '.'+t.split('.')[1]) == 1 else t for t in columns]
+        # fullstr = ','.join(columns)
+        # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
+        #             '.'+t.split('.')[1]) == 1 else t for t in columns]
+        colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
+        names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
+                    t.split('.')[1]) == 1 else t for t in columns]
         # replace . with _
         if under:
             names = [n if '.' not in n else n.replace('.', '_')for n in names]
@@ -573,7 +576,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -637,7 +640,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -700,7 +703,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': start, 'end': end}
+                      'start': start, 'end': end, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -782,6 +785,7 @@ class Results(object):
                             self._getRefName('template.name', dir='partocol')),
                             mode=self.mode) for res in self.results]
         elif tooltype == 'spaxel':
+            print(self._getRefName('cube.mangaid', dir='partocol'))
             self.objects = [Spaxel(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
                             x=res.__getattribute__(

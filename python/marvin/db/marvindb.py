@@ -15,6 +15,9 @@ from __future__ import division
 from brain.db.modelGraph import ModelGraph
 from marvin import config
 import inspect
+from marvin.core.caching_query import RelationshipCache
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 __author__ = 'Brian Cherinka'
 
@@ -38,6 +41,9 @@ class MarvinDB(object):
         self._setSession()
         self.testDbConnection()
         self._setModelGraph()
+        self.cache_bits = []
+        if self.db:
+            self._addCache()
 
     def _setupDB(self):
         ''' Try to import the database '''
@@ -53,7 +59,7 @@ class MarvinDB(object):
         ''' Try to import the sql alchemy model classes '''
 
         try:
-            import sdss.internal.database.utah.mangadb.SampleModelClasses as sampledb
+            import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
             print('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
             self.sampledb = None
@@ -61,7 +67,7 @@ class MarvinDB(object):
             self.sampledb = sampledb
 
         try:
-            import sdss.internal.database.utah.mangadb.DataModelClasses as datadb
+            import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
             print('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
             self.datadb = None
@@ -69,7 +75,7 @@ class MarvinDB(object):
             self.datadb = datadb
 
         try:
-            import sdss.internal.database.utah.mangadb.DapModelClasses as dapdb
+            import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
             print('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
             self.dapdb = None
@@ -88,8 +94,8 @@ class MarvinDB(object):
 
     def _getSpaxelProp(self):
         ''' Get the correct SpaxelProp class given an MPL '''
-        return {'full': self.spaxelpropdict[config.mplver], 'clean':
-                'Clean{0}'.format(self.spaxelpropdict[config.mplver])}
+        return {'full': self.spaxelpropdict[self._mplver], 'clean':
+                'Clean{0}'.format(self.spaxelpropdict[self._mplver])}
 
     def _setSession(self):
         ''' Sets the database session '''
@@ -134,8 +140,9 @@ class MarvinDB(object):
                     classdict[keyname] = model[1]
         return classdict
 
-    def buildUberClassDict(self):
+    def buildUberClassDict(self, **kwargs):
         ''' Builds an uber class dictionary from all modelclasses '''
+        self._mplver = kwargs.get('mplver', config.mplver)
         classdict = {}
         models = [self.datadb, self.sampledb, self.dapdb]
         for model in models:
@@ -151,3 +158,22 @@ class MarvinDB(object):
             self.modelgraph = ModelGraph(models)
         else:
             self.modelgraph = None
+
+    def _addCache(self):
+        ''' Initialize dogpile caching for relationships
+
+        Caching options.   A set of three RelationshipCache options
+        which can be applied to Query(), causing the "lazy load"
+        of these attributes to be loaded from cache.
+
+        '''
+
+        if self.datadb:
+            self.cache_bits.append(self.datadb.data_cache)
+
+        if self.sampledb:
+            self.cache_bits.append(self.sampledb.sample_cache)
+
+        if self.dapdb:
+            self.cache_bits.append(self.dapdb.dap_cache)
+

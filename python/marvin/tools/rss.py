@@ -13,13 +13,14 @@
 from __future__ import division
 from __future__ import print_function
 
+import warnings
+
 from astropy.io import fits
 import numpy as np
 
 import marvin
 
-from marvin.api.api import Interaction
-from marvin.core import MarvinToolsClass, MarvinError
+from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
 from marvin.tools.spectrum import Spectrum
 
 
@@ -42,11 +43,9 @@ class RSS(MarvinToolsClass, list):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
-        drpver (str):
-            The DRP version to use. Defaults to ``marvin.config.drpver``.
+        mplver,drver (str):
+            The MPL/DR version of the data to use. Only one ``mplver`` or
+            ``drver`` must be defined at the same time.
 
     Return:
         rss:
@@ -58,7 +57,7 @@ class RSS(MarvinToolsClass, list):
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver']
+            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'mplver', 'drver']
 
         assert len(args) == 0, 'RSS does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -77,6 +76,8 @@ class RSS(MarvinToolsClass, list):
 
         _fibers = self._init_fibers()
         list.__init__(self, _fibers)
+
+        # TODO: check that the drpver of the loaded data matches the one in the object.
 
     def __repr__(self):
         """Representation for RSS."""
@@ -115,6 +116,38 @@ class RSS(MarvinToolsClass, list):
         except Exception as ee:
             raise MarvinError('Could not initialize via filename: {0}'.format(ee))
 
+        # Checks and populates mplver and drver.
+        header = self.data[0].header
+        file_drpver = header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpMpl(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if 'DR' in file_ver:
+            file_drver = file_ver
+            file_mplver = None
+        elif 'MPL' in file_ver:
+            file_drver = None
+            file_mplver = file_ver
+        else:
+            raise MarvinError('file version is not MPL or DR.')
+
+        if file_mplver != self._mplver:
+            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
+                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+                          MarvinUserWarning)
+            self._mplver = file_mplver
+
+        if file_drver != self._drver:
+            warnings.warn('mismatch between file drver={0} and object drver={1}. '
+                          'Setting object drver to {0}'.format(file_drver, self._drver),
+                          MarvinUserWarning)
+            self._drver = file_drver
+
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
+
     def _load_rss_from_db(self):
         """Initialises the RSS object from the DB."""
 
@@ -123,7 +156,7 @@ class RSS(MarvinToolsClass, list):
         mdb = marvin.marvindb
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
 
         plate, ifudesign = [item.strip() for item in self.plateifu.split('-')]
 
@@ -136,14 +169,14 @@ class RSS(MarvinToolsClass, list):
                     mdb.datadb.IFUDesign.name == ifudesign).all()
 
         except sqlalchemy.orm.exc.NoResultFound as ee:
-            raise RuntimeError('Could not retrieve RSS for plate-ifu {0}: '
-                               'No Results Found: {1}'
-                               .format(self.plateifu, ee))
+            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
+                              'No Results Found: {1}'
+                              .format(self.plateifu, ee))
 
         except Exception as ee:
-            raise RuntimeError('Could not retrieve RSS for plate-ifu {0}: '
-                               'Unknown exception: {1}'
-                               .format(self.plateifu, ee))
+            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
+                              'Unknown exception: {1}'
+                              .format(self.plateifu, ee))
 
         if not self.data:
             raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
@@ -157,7 +190,7 @@ class RSS(MarvinToolsClass, list):
         url = marvin.config.urlmap['api']['getRSS']['url'].format(**routeparams)
 
         # Make the API call
-        Interaction(url, params={'drpver': self._drpver})
+        self.ToolInteraction(url)
 
     def _init_fibers(self):
         """Initialises the object as a list of RSSFiber instances."""
@@ -176,7 +209,7 @@ class RSS(MarvinToolsClass, list):
             url = marvin.config.urlmap['api']['getRSSAllFibers']['url'].format(**routeparams)
 
             # Make the API call
-            response = Interaction(url, params={'drpver': self._drpver})
+            response = self.ToolInteraction(url)
             data = response.getData()
 
             wavelength = np.array(data['wavelength'])
@@ -222,7 +255,7 @@ class RSSFiber(Spectrum):
 
         flux_units = '1e-17 erg/s/cm^2/Ang/fiber'
         wavelength_unit = 'Angstrom'
-        kwargs['flux_units'] = flux_units
+        kwargs['units'] = flux_units
         kwargs['wavelength_unit'] = wavelength_unit
 
         Spectrum.__init__(self, *args, **kwargs)

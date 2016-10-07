@@ -29,6 +29,12 @@ except ImportError:
     pyplot = False
 
 
+try:
+    import sqlalchemy
+except ImportError:
+    sqlalchemy = None
+
+
 class Map(object):
     """Describes a single DAP map in a Maps object.
 
@@ -122,27 +128,35 @@ class Map(object):
     def _load_map_from_db(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='db'``."""
 
-        if version.StrictVersion(self.maps._dapver) <= version.StrictVersion('1.1.1'):
-            spaxels = self.maps.data.spaxelprops
-        else:
-            spaxels = self.maps.data.spaxelprops5
+        mdb = marvin.marvindb
 
-        spaxel_index = numpy.array([spaxel.spaxel_index for spaxel in spaxels])
-        spaxel_order = numpy.argsort(spaxel_index)
+        if not mdb.isdbconnected:
+            raise marvin.core.exceptions.MarvinError('No db connected')
+
+        if sqlalchemy is None:
+            raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
+
+        if version.StrictVersion(self.maps._dapver) <= version.StrictVersion('1.1.1'):
+            table = mdb.dapdb.SpaxelProp
+        else:
+            table = mdb.dapdb.SpaxelProp5
 
         fullname_value = self.maps_property.fullname(channel=self.channel)
-        self.value = numpy.array([getattr(spaxel, fullname_value)
-                                  for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+        value = mdb.session.query(getattr(table, fullname_value)).filter(
+            table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
+        self.value = numpy.array(value).reshape(self.shape)
 
         if self.maps_property.ivar:
             fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
-            self.ivar = numpy.array([getattr(spaxel, fullname_ivar)
-                                     for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+            ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
+                table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
+            self.ivar = numpy.array(ivar).reshape(self.shape)
 
         if self.maps_property.mask:
             fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
-            self.mask = numpy.array([getattr(spaxel, fullname_mask)
-                                     for spaxel in spaxels])[spaxel_order].reshape(self.shape)
+            mask = mdb.session.query(getattr(table, fullname_mask)).filter(
+                table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
+            self.mask = numpy.array(mask).reshape(self.shape)
 
         # Gets the header
         hdus = self.maps.data.hdus
@@ -173,8 +187,8 @@ class Map(object):
 
         try:
             response = marvin.api.api.Interaction(url_full,
-                                                  params={'drpver': self.maps._drpver,
-                                                          'dapver': self.maps._dapver})
+                                                  params={'mplver': self.maps._mplver,
+                                                          'drver': self.maps._drver})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))

@@ -7,6 +7,7 @@ import argparse
 # --------------------------
 parser = argparse.ArgumentParser(description='Script to start Marvin-web.')
 parser.add_argument('-d','--debug', help='Launch app in debug mode.',action="store_true",required=False)
+parser.add_argument('-l','--local', help='Launch app in local mode.',action="store_true",required=False)
 parser.add_argument('-p','--port', help='Port to use in debug mode.', default=5000,type=int,required=False)
 parser.add_argument('-r','--rules', help='List registered rules.',action="store_true",default=False,required=False)
 
@@ -17,7 +18,7 @@ args = parser.parse_args()
 # -------------------
 from marvin.web import create_app
 
-app = create_app(debug=args.debug)
+app = create_app(debug=args.debug, local=args.local)
 
 # ------------------------------------
 # register Flask modules (if any) here

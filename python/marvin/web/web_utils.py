@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from flask import session as current_session, current_app, request
 from marvin import config, marvindb
+from marvin.utils.general import parseVersion
 from collections import defaultdict
 import re
 
@@ -29,11 +30,47 @@ def configFeatures(app, mode):
 def updateGlobalSession():
     ''' updates the Marvin config with the global Flask session '''
 
-    if 'currentmpl' in current_session:
-        config.setMPL(current_session['currentmpl'])
+    print('I am updating the Global Session')
+    # check if mpl versions in session
+    if 'versions' not in current_session:
+        setGlobalSession()
+
+    # if 'currentmpl' in current_session:
+    #     config.setMPL(current_session['currentmpl'])
 
 
 def setGlobalSession():
+    ''' Sets the global session for Flask '''
+
+    mpls = config._mpldict.keys()
+    versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mplver=mpl))} for mpl in mpls]
+    current_session['versions'] = versions
+
+    print('I am setting the Global Session')
+    if 'currentver' not in current_session:
+        current_session['currentver'] = config.mplver
+        drpver, dapver = config.lookUpVersions(mplver=config.mplver)
+        current_session['drpver'] = drpver
+        current_session['dapver'] = dapver
+        current_session['mplver'] = config.mplver
+        current_session['drver'] = config.drver
+        print('inside global session vers', drpver, dapver)
+
+
+def parseSession():
+    ''' parse the current session for MPL versions '''
+    print('parsing the session')
+    drpver = current_session['drpver']
+    dapver = current_session['dapver']
+    mplver = current_session['mplver']
+    drver = current_session['drver']
+    currentver = current_session['currentver']
+    release = parseVersion(currentver)
+    print('gotten vers', drpver, dapver, mplver, drver, release, currentver)
+    return drpver, dapver, currentver, release
+
+
+def setGlobalSession_old():
     ''' Set default global session variables '''
 
     if 'currentver' not in current_session:

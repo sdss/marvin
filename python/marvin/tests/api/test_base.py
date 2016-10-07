@@ -42,9 +42,9 @@ class TestBase(unittest.TestCase):
         bv = BaseView()
         bv.add_config()
         desired = {'data': None, 'status': -1, 'error': None,
-                   'outconfig': {'drpver': config.drpver, 'mode': config.mode,
-                                 'dapver': config.dapver,
-                                 'mplver': config.mplver}}
+                   'utahconfig': {'drpver': config.drpver, 'mode': config.mode,
+                                  'dapver': config.dapver,
+                                  'mplver': config.mplver}}
         self.assertDictEqual(bv.results, desired)
 
     def test_after_request_return_response(self):

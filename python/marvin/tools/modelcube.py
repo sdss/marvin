@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-09-15 16:00:40
+# @Last Modified time: 2016-10-05 20:07:53
 
 from __future__ import print_function, division, absolute_import
 
@@ -23,10 +23,7 @@ import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.tools.maps
 
-from marvin.api.api import Interaction
 from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
-from marvin.tools.maps import (__BINTYPES__, __BINTYPES_DEFAULT__,
-                               __TEMPLATES_KIN__, __TEMPLATES_KIN_DEFAULT__)
 
 
 class ModelCube(MarvinToolsClass):
@@ -68,13 +65,9 @@ class ModelCube(MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
-        drpver (str):
-            The DRP version to use. Defaults to ``marvin.config.drpver``.
-        dapver (str):
-            The DAP version to use. Defaults to ``marvin.config.dapver``.
+        mplver,drver (str):
+            The MPL/DR version of the data to use. Only one ``mplver`` or
+            ``drver`` must be defined at the same time.
 
     Return:
         modelcube:
@@ -86,7 +79,7 @@ class ModelCube(MarvinToolsClass):
 
         valid_kwargs = [
             'data', 'cube', 'maps', 'filename', 'mangaid', 'plateifu', 'mode',
-            'drpall', 'drpver', 'dapver', 'bintype', 'template_kin', 'template_pop']
+            'mplver', 'drver', 'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -96,7 +89,7 @@ class ModelCube(MarvinToolsClass):
 
         # Checks that DAP is at least MPL-5
         MPL5 = distutils.version.StrictVersion('2.0.2')
-        if distutils.version.StrictVersion(self._dapver) < MPL5:
+        if self.filename is None and distutils.version.StrictVersion(self._dapver) < MPL5:
             raise MarvinError('ModelCube requires at least dapver=\'2.0.2\'')
 
         self._cube = kwargs.pop('cube', None)
@@ -105,13 +98,14 @@ class ModelCube(MarvinToolsClass):
         if kwargs.pop('template_pop', None):
             warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
 
-        self.bintype = kwargs.pop('bintype', __BINTYPES_DEFAULT__)
-        self.template_kin = kwargs.pop('template_kin', __TEMPLATES_KIN_DEFAULT__)
+        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_DEFAULT__)
+        self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
         self.template_pop = None
 
-        assert self.bintype in __BINTYPES__, 'bintype must be on of {0}'.format(__BINTYPES__)
-        assert self.template_kin in __TEMPLATES_KIN__, \
-            'template_kin must be on of {0}'.format(__TEMPLATES_KIN__)
+        assert self.bintype in marvin.tools.maps.__BINTYPES__, \
+            'bintype must be on of {0}'.format(marvin.tools.maps.__BINTYPES__)
+        assert self.template_kin in marvin.tools.maps.__TEMPLATES_KIN__, \
+            'template_kin must be on of {0}'.format(marvin.tools.maps.__TEMPLATES_KIN__)
 
         self.header = None
         self.wcs = None
@@ -126,6 +120,9 @@ class ModelCube(MarvinToolsClass):
             self._load_modelcube_from_api()
         else:
             raise MarvinError('data_origin={0} is not valid'.format(self.data_origin))
+
+        # Confirm that drpver and dapver match the ones from the header.
+        marvin.tools.maps.Maps._check_versions(self)
 
     def __repr__(self):
         """Representation for ModelCube."""
@@ -189,6 +186,37 @@ class ModelCube(MarvinToolsClass):
         self.plateifu = self.header['PLATEIFU']
         self.mangaid = self.header['MANGAID']
 
+        # Checks and populates mplver and drver.
+        file_drpver = self.header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpMpl(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if 'DR' in file_ver:
+            file_drver = file_ver
+            file_mplver = None
+        elif 'MPL' in file_ver:
+            file_drver = None
+            file_mplver = file_ver
+        else:
+            raise MarvinError('file version is not MPL or DR.')
+
+        if file_mplver != self._mplver:
+            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
+                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+                          MarvinUserWarning)
+            self._mplver = file_mplver
+
+        if file_drver != self._drver:
+            warnings.warn('mismatch between file drver={0} and object drver={1}. '
+                          'Setting object drver to {0}'.format(file_drver, self._drver),
+                          MarvinUserWarning)
+            self._drver = file_drver
+
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
+
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
 
@@ -196,7 +224,7 @@ class ModelCube(MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise MarvinError('No db connected')
 
         else:
 
@@ -255,8 +283,7 @@ class ModelCube(MarvinToolsClass):
                               template_kin=self.template_kin)
 
         try:
-            response = Interaction(url_full,
-                                   params={'drpver': self._drpver, 'dapver': self._dapver})
+            response = self.ToolInteraction(url_full)
         except Exception as ee:
             raise MarvinError('found a problem when checking if remote model cube '
                               'exists: {0}'.format(str(ee)))
@@ -400,8 +427,8 @@ class ModelCube(MarvinToolsClass):
 
             self._cube = marvin.tools.cube.Cube(data=cube_data,
                                                 plateifu=self.plateifu,
-                                                drpall=self._drpall,
-                                                drpver=self._drpver)
+                                                mplver=self._mplver,
+                                                drver=self._drver)
 
         return self._cube
 
@@ -413,8 +440,7 @@ class ModelCube(MarvinToolsClass):
             self._maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
                                                 bintype=self.bintype,
                                                 template_kin=self.template_kin,
-                                                drpall=self._drpall,
-                                                drpver=self._drpver,
-                                                dapver=self._dapver)
+                                                mplver=self._mplver,
+                                                drver=self._drver)
 
         return self._maps
