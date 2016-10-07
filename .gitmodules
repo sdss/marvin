@@ -1,3 +1,6 @@
 [submodule "python/marvin/extern/tree"]
 	path = python/marvin/extern/tree
 	url = https://github.com/marvin-manga/tree.git
+[submodule "python/marvin/extern/sdss_access"]
+	path = python/marvin/extern/sdss_access
+	url = https://github.com/marvin-manga/sdss_access.git
