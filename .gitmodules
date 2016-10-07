@@ -1,0 +1,3 @@
+[submodule "python/marvin/extern/tree"]
+	path = python/marvin/extern/tree
+	url = https://github.com/marvin-manga/tree.git
