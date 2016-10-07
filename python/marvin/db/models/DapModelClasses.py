@@ -97,12 +97,13 @@ class Hdu(Base):
     def header(self):
         '''Returns an astropy header'''
 
-        values = self.header_values
-        values.reverse()
-        keys = [val.keyword.name for val in values]
-        vals = [v.value for v in values]
-        comments = [v.comment for v in values]
-        hdr = fits.Header(zip(keys, vals, comments))
+        session = db.Session.object_session(self)
+        data = session.query(HeaderKeyword.name, HeaderValue.value,
+                             HeaderValue.comment).join(HeaderValue, HduToHeaderValue).filter(
+            HduToHeaderValue.header_value_pk == HeaderValue.pk,
+            HduToHeaderValue.hdu_pk == self.pk).all()
+
+        hdr = fits.Header(data)
         return hdr
 
     def header_to_dict(self):

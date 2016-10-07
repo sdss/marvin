@@ -205,11 +205,12 @@ class Cube(Base, ArrayOps):
     def header(self):
         '''Returns an astropy header'''
 
-        values = self.headervals
-        keys = [val.keyword.label for val in values]
-        vals = [v.value for v in values]
-        comments = [v.comment for v in values]
-        hdr = fits.Header(zip(keys, vals, comments))
+        session = Session.object_session(self)
+        data = session.query(FitsHeaderKeyword.label, FitsHeaderValue.value,
+                             FitsHeaderValue.comment).join(FitsHeaderValue).filter(
+            FitsHeaderValue.cube == self).all()
+
+        hdr = fits.Header(data)
         return hdr
 
     @property
