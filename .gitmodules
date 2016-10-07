@@ -4,3 +4,6 @@
 [submodule "python/marvin/extern/sdss_access"]
 	path = python/marvin/extern/sdss_access
 	url = https://github.com/marvin-manga/sdss_access.git
+[submodule "python/marvin/extern/wtforms-alchemy"]
+	path = python/marvin/extern/wtforms-alchemy
+	url = https://github.com/marvin-manga/wtforms-alchemy
