@@ -26,9 +26,7 @@ import shutil
 import re
 import math
 import itertools
-import inspect
 from marvin.core.caching_query import RelationshipCache
-
 
 try:
     import cStringIO as StringIO
@@ -284,19 +282,7 @@ setattr(NSA, 'sersic_logmass', logmass('sersic_mass'))
 
 configure_mappers()
 
-
-# Caching options.   A set of three RelationshipCache options
-# which can be applied to Query(), causing the "lazy load"
-# of these attributes to be loaded from cache.
-cache_address_bits = RelationshipCache(MangaTarget.NSA_objects, "default")
-
-
-# cache_address_bits = RelationshipCache(PostalCode.city, "default").\
-#                 and_(
-#                     RelationshipCache(City.country, "default")
-#                 ).and_(
-#                     RelationshipCache(Address.postal_code, "default")
-#                 )
-
-
+sample_cache = RelationshipCache(MangaTarget.NSA_objects).\
+               and_(RelationshipCache(MangaTarget.character)).\
+               and_(RelationshipCache(CurrentCatalogue.catalogue))
 

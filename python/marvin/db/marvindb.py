@@ -15,6 +15,9 @@ from __future__ import division
 from brain.db.modelGraph import ModelGraph
 from marvin import config
 import inspect
+from marvin.core.caching_query import RelationshipCache
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 __author__ = 'Brian Cherinka'
 
@@ -38,6 +41,9 @@ class MarvinDB(object):
         self._setSession()
         self.testDbConnection()
         self._setModelGraph()
+        self.cache_bits = []
+        if self.db:
+            self._addCache()
 
     def _setupDB(self):
         ''' Try to import the database '''
@@ -152,3 +158,22 @@ class MarvinDB(object):
             self.modelgraph = ModelGraph(models)
         else:
             self.modelgraph = None
+
+    def _addCache(self):
+        ''' Initialize dogpile caching for relationships
+
+        Caching options.   A set of three RelationshipCache options
+        which can be applied to Query(), causing the "lazy load"
+        of these attributes to be loaded from cache.
+
+        '''
+
+        if self.datadb:
+            self.cache_bits.append(self.datadb.data_cache)
+
+        if self.sampledb:
+            self.cache_bits.append(self.sampledb.sample_cache)
+
+        if self.dapdb:
+            self.cache_bits.append(self.dapdb.dap_cache)
+

@@ -20,6 +20,7 @@ from marvin.db.database import db
 import DataModelClasses as datadb
 from astropy.io import fits
 import numpy as np
+from marvin.core.caching_query import RelationshipCache
 
 # ========================
 # Define database classes
@@ -417,3 +418,16 @@ try:
     configure_mappers()
 except RuntimeError as error:
     print('DapModelClasses, Error during configure_mapper: {0}'.format(error))
+
+dap_cache = RelationshipCache(File.cube).\
+               and_(RelationshipCache(File.filetype)).\
+               and_(RelationshipCache(File.structure)).\
+               and_(RelationshipCache(SpaxelProp.file)).\
+               and_(RelationshipCache(CleanSpaxelProp.file)).\
+               and_(RelationshipCache(SpaxelProp5.file)).\
+               and_(RelationshipCache(CleanSpaxelProp5.file)).\
+               and_(RelationshipCache(ModelCube.file)).\
+               and_(RelationshipCache(ModelSpaxel.modelcube)).\
+               and_(RelationshipCache(RedCorr.modelcube))
+
+

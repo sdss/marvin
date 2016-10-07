@@ -12,19 +12,17 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.core import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.api import Interaction
-from sqlalchemy import or_, and_, bindparam, between
+from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
 import datetime
@@ -624,7 +622,8 @@ class Query(object):
             # Check to add the cache
             if self._caching:
                 from marvin.core.caching_query import FromCache
-                self.query = self.query.options(FromCache("default"))
+                self.query = self.query.options(FromCache("default")).\
+                    options(*marvindb.cache_bits)
 
             # get total count, and if more than 150 results, paginate and only return the first 10
             start = datetime.datetime.now()

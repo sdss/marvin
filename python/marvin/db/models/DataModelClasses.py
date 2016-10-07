@@ -20,6 +20,7 @@ from sqlalchemy import select, func  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method, Comparator
 from sqlalchemy.sql import column
 from marvin.db.ArrayUtils import ARRAY_D
+from marvin.core.caching_query import RelationshipCache
 import numpy as np
 
 try:
@@ -852,3 +853,12 @@ see the error message below for details.
     print("Error value: %s" % sys.exc_info()[1])
     print("Error trace: %s" % sys.exc_info()[2])
     sys.exit(1)
+
+
+data_cache = RelationshipCache(Cube.target).\
+               and_(RelationshipCache(Cube.ifu)).\
+               and_(RelationshipCache(Cube.spaxels)).\
+               and_(RelationshipCache(Cube.wavelength)).\
+               and_(RelationshipCache(IFUDesign.fibers)).\
+               and_(RelationshipCache(Cube.rssfibers))
+
