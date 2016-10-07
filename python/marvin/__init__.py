@@ -1,9 +1,13 @@
 import os
 import re
 import warnings
+from collections import OrderedDict
+
+# Does this so that the implicit module definitions in extern can happen.
+from marvin import extern
+
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
-from collections import OrderedDict
 from brain import bconfig
 from brain.core.core import URLMapDict
 
