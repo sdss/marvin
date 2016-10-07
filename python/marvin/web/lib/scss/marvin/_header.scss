@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-05 13:56:45
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-14 10:57:42
 */
 
 .marvin-main {
@@ -19,6 +19,21 @@
       padding-left: 75px;
     }
 
+}
+
+// Typeaheads - scrolling
+.galidsearch {
+  #scrollable-dropdown-menu .dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  }
+}
+
+#searchtype {
+  .dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  }
 }
 
 .intro-header {

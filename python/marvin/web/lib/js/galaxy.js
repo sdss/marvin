@@ -1,8 +1,12 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-23 13:54:39
+* @Last Modified by:   Brian Cherinka
+<<<<<<< HEAD
+* @Last Modified time: 2016-10-05 13:57:11
+=======
+* @Last Modified time: 2016-09-26 17:40:15
+>>>>>>> upstream/marvin_refactor
 */
 
 //
@@ -27,18 +31,30 @@ var Galaxy = function () {
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
-        this.mapdiv = this.specdiv.find('#map');
+        this.imagediv = this.specdiv.find('#imagediv');
+        this.mapsdiv = this.specdiv.find('#mapsdiv');
+        this.mapdiv = this.specdiv.find('#mapdiv1');
         this.graphdiv = this.specdiv.find('#graphdiv');
         this.specmsg = this.specdiv.find('#specmsg');
+        this.mapmsg = this.specdiv.find('#mapmsg');
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        this.dapmapsbut = $('#dapmapsbut');
+        this.dapselect = $('#dapmapchoices');
+        this.dapbt = $('#dapbtchoices');
+        this.dapselect.selectpicker('deselectAll');
+        this.resetmapsbut = $('#resetmapsbut');
 
         // init some stuff
         this.initFlagPopovers();
+
+        //Event Handlers
+        this.dapmapsbut.on('click', this, this.getDapMaps);
+        this.resetmapsbut.on('click', this, this.resetMaps);
     }
 
     // Test print
@@ -74,10 +90,11 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
+            var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
-                labels: ['Wavelength', 'Flux'],
-                errorBars: true,
+                labels: labels,
+                errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 xlabel: 'Wavelength [Ångströms]'
             });
@@ -117,15 +134,34 @@ var Galaxy = function () {
             this.olmap.map.on('singleclick', this.getSpaxel, this);
         }
     }, {
+        key: 'initHeatmap',
+        value: function initHeatmap(maps) {
+            console.log('initHeatmap', this.mapsdiv);
+            var mapchildren = this.mapsdiv.children('div');
+            console.log('mapchildren', mapchildren);
+            var _this = this;
+            $.each(mapchildren, function (index, child) {
+                var mapdiv = $(child).find('div').first();
+                mapdiv.empty();
+                if (maps[index] !== undefined && maps[index].data !== null) {
+                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                    this.heatmap.mapdiv.highcharts().reflow();
+                }
+            });
+        }
+    }, {
         key: 'getSpaxel',
 
 
-        // Retrieves a new Spaxel from the server based on a given mouse position
+        // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
         value: function getSpaxel(event) {
-            var map = event.map;
-            var mousecoords = event.coordinate;
-            var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords'];
-            var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords);
+            var mousecoords = event.coordinate === undefined ? null : event.coordinate;
+            var divid = $(event.target).parents('div').first().attr('id');
+            var maptype = divid !== undefined && divid.search('highcharts') !== -1 ? 'heatmap' : 'optical';
+            var x = event.point === undefined ? null : event.point.x;
+            var y = event.point === undefined ? null : event.point.y;
+            var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
+            var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords, maptype, x, y);
             var _this = this;
 
             // send the form data
@@ -144,7 +180,7 @@ var Galaxy = function () {
 
 
         // Toggle the interactive OpenLayers map and Dygraph spectra
-        value: function toggleInteract(spaxel, image, title) {
+        value: function toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
             if (this.togglediv.hasClass('active')) {
                 // Turning Off
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
@@ -160,15 +196,24 @@ var Galaxy = function () {
 
                 // check for empty divs
                 var specempty = this.graphdiv.is(':empty');
+                var imageempty = this.imagediv.is(':empty');
                 var mapempty = this.mapdiv.is(':empty');
                 // load the spaxel if the div is initially empty;
                 if (this.graphdiv !== undefined && specempty) {
-                    this.loadSpaxel(spaxel, title);
+                    this.loadSpaxel(spaxel, spectitle);
                 }
-
+                // load the image if div is empty
+                if (imageempty) {
+                    this.initOpenLayers(image);
+                }
                 // load the map if div is empty
                 if (mapempty) {
-                    this.initOpenLayers(image);
+                    this.initHeatmap(maps);
+                }
+
+                // possibly update an initial map message
+                if (mapmsg !== null) {
+                    this.updateMapMsg(mapmsg, -1);
                 }
             }
         }
@@ -198,6 +243,56 @@ var Galaxy = function () {
                 // init the specific popover
                 $('#' + popid).popover({ html: true, content: $(listid).html() });
             });
+        }
+    }, {
+        key: 'getDapMaps',
+
+
+        // Get some DAP Maps
+        value: function getDapMaps(event) {
+            var _this = event.data;
+            console.log('getting dap maps', _this.dapselect.selectpicker('val'));
+            var params = _this.dapselect.selectpicker('val');
+            var bintemp = _this.dapbt.selectpicker('val');
+            var keys = ['plateifu', 'params', 'bintemp'];
+            var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
+            _this.mapmsg.hide();
+
+            // send the form data
+            $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
+                if (data.result.status !== -1) {
+                    _this.initHeatmap(data.result.maps);
+                } else {
+                    _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+                }
+            }).fail(function (data) {
+                _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+            });
+        }
+    }, {
+        key: 'updateMapMsg',
+
+
+        // Update the Map Msg
+        value: function updateMapMsg(mapmsg, status) {
+            this.mapmsg.hide();
+            if (status !== undefined && status === -1) {
+                this.mapmsg.show();
+            }
+            var newmsg = '<strong>' + mapmsg + '</strong>';
+            this.mapmsg.empty();
+            this.mapmsg.html(newmsg);
+        }
+    }, {
+        key: 'resetMaps',
+
+
+        // Reset the Maps selection
+        value: function resetMaps(event) {
+            var _this = event.data;
+            _this.mapmsg.hide();
+            _this.dapselect.selectpicker('deselectAll');
+            _this.dapselect.selectpicker('refresh');
         }
     }]);
 

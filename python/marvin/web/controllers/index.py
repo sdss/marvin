@@ -1,10 +1,10 @@
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
-from flask.ext.classy import FlaskView, route
+from flask import current_app, Blueprint, render_template, jsonify
+from flask import session as current_session, request, redirect, url_for
+from flask_classy import FlaskView, route
 from marvin import config, marvindb
 from brain.api.base import processRequest
-from marvin.core import MarvinError
 from marvin.utils.general.general import parseIdentifier
-from wtforms import SelectField, validators
+from marvin.web.web_utils import parseSession
 import json
 
 index = Blueprint("index_page", __name__)
@@ -20,19 +20,18 @@ class Marvin(FlaskView):
         self.base['page'] = 'marvin-main'
 
     def index(self):
-        config.drpver = 'v1_5_1'
-        mangaid = '1-209232'
         current_app.logger.info('Welcome to Marvin Web!')
 
         # get all MPLs
-        mpls = config._mpldict.keys()
-        versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
-        current_session['versions'] = versions
+        # mpls = config._mpldict.keys()
+        # versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
+        # current_session['versions'] = versions
 
         # set default - TODO replace with setGlobalSession
-        if 'currentmpl' not in current_session:
-            current_session['currentmpl'] = config.mplver
+        # if 'currentmpl' not in current_session:
+        #     current_session['currentmpl'] = config.mplver
 
+        print('inside main index page, rendering template')
         return render_template("index.html", **self.base)
 
     def quote(self):
@@ -43,7 +42,7 @@ class Marvin(FlaskView):
         return 'new test'
 
     def database(self):
-        onecube = marvindb.session.query(datadb.Cube).first()
+        onecube = marvindb.session.query(marvindb.datadb.Cube).first()
         return str(onecube.plate)
 
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')
@@ -62,11 +61,14 @@ class Marvin(FlaskView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
+        print('getting the galid list')
+        self._drpver, self._dapver, self._currentver, self._release = parseSession()
+        print('galidlist parsed versions', self._drpver, self._dapver, self._currentver)
         cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
                                        marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                            marvindb.datadb.PipelineVersion,
                                                                            marvindb.datadb.IFUDesign).\
-            filter(marvindb.datadb.PipelineVersion.version == config.drpver).all()
+            filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
         out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
@@ -79,11 +81,16 @@ class Marvin(FlaskView):
         out = {'status': 1, 'msg': 'Success'}
         version = f['mplselect']
         print('setting new mpl', version)
-        current_session['currentmpl'] = version
+        current_session['currentver'] = version
+        drpver, dapver = config.lookUpVersions(mplver=version)
+        current_session['drpver'] = drpver
+        current_session['dapver'] = dapver
         if 'MPL' in version:
-            config.setMPL(version)
+            current_session['mplver'] = version
+            current_session['drver'] = None
         elif 'DR' in version:
-            config.setDR(version)
+            current_session['drver'] = version
+            current_session['mplver'] = None
         else:
             out['status'] = -1
             out['msg'] = 'version {0} is neither an MPL or DR'.format(version)

@@ -4,7 +4,6 @@ from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
 import flask_jsglue as jsg
-from flask_cors import CORS
 import flask_profiler
 from inspect import getmembers, isfunction
 from brain.utils.general.general import getDbMachine
@@ -31,10 +30,11 @@ def register_blueprints(app=None):
 # ================================================================================
 
 
-def create_app(debug=False):
+def create_app(debug=False, local=False):
 
     from marvin.api.cube import CubeView
     from marvin.api.maps import MapsView
+    from marvin.api.modelcube import ModelCubeView
     from marvin.api.plate import PlateView
     from marvin.api.rss import RSSView
     from marvin.api.spaxel import SpaxelView
@@ -53,7 +53,6 @@ def create_app(debug=False):
     app.debug = debug
     jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
     jsglue = jsg.JSGlue(app)
-    CORS(app, origins='*')
 
     # Logger
     app.logger.addHandler(log)
@@ -102,7 +101,7 @@ def create_app(debug=False):
 
     # Find which connection to make
     connection = getDbMachine()
-    local = connection == 'local'
+    local = (connection == 'local') or local
 
     # ----------------------------------
     # Set some environment variables
@@ -161,6 +160,7 @@ def create_app(debug=False):
     # API route registration
     CubeView.register(api)
     MapsView.register(api)
+    ModelCubeView.register(api)
     PlateView.register(api)
     RSSView.register(api)
     SpaxelView.register(api)

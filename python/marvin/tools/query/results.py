@@ -1,16 +1,18 @@
 from __future__ import print_function
 from marvin.core import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.rss import RSS
+from marvin.tools.modelcube import ModelCube
+from marvin.tools.spaxel import Spaxel
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList
 from marvin.api.api import Interaction
 import warnings
 import json
-import copy
 import os
-from pprint import pformat
 from functools import wraps
-from astropy.table import Table, Column
+from astropy.table import Table
 from collections import OrderedDict, namedtuple
 
 try:
@@ -98,15 +100,20 @@ class Results(object):
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = kwargs.get('chunk', 10)
+        self.chunk = kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
         self.paramtocol = None
+        self.objects = None
 
         # Convert remote results to NamedTuple
         if self.mode == 'remote':
             self._makeNamedTuple()
+
+        # Setup columns, and parameters
+        if self.count > 0:
+            self._setupColumns()
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -289,12 +296,13 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
+        ntnames = self._reduceNames(self._queryobj.params, under=True)
         try:
-            nt = namedtuple('NamedTuple', self._queryobj.queryparams_order)
+            nt = namedtuple('NamedTuple', ntnames)
         except ValueError as e:
             raise MarvinError('Cannot created NamedTuple from remote Results: {0}'.format(e))
 
-        qpo = self._queryobj.queryparams_order
+        qpo = ntnames
 
         def keys(self):
             return qpo
@@ -347,18 +355,41 @@ class Results(object):
             raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
         return self.columns
 
-    def mapColumnsToParams(self, col=None):
+    def _reduceNames(self, columns, under=None):
+        ''' reduces the full table.parameter names to non-dotted versions '''
+        # fullstr = ','.join(columns)
+        # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
+        #             '.'+t.split('.')[1]) == 1 else t for t in columns]
+        colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
+        names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
+                    t.split('.')[1]) == 1 else t for t in columns]
+        # replace . with _
+        if under:
+            names = [n if '.' not in n else n.replace('.', '_')for n in names]
+        return names
+
+    def _setupColumns(self):
+        ''' Auto sets up all the column/parameter name info '''
+        columns = self.getColumns()
+        print(columns)
+        self._params = self._reduceNames(columns)
+        tmp = self.mapColumnsToParams(inputs=self._params)
+        tmp = self.mapParamsToColumns(inputs=self._params)
+
+    def mapColumnsToParams(self, col=None, inputs=None):
         ''' Map the columns names from results to the original parameter names '''
         columns = self.getColumns()
+        params = self._params if self.mode == 'local' else self._queryobj.params
         if not self.coltoparam:
-            self.coltoparam = OrderedDict(zip(columns, self._queryobj.params))
+            self.coltoparam = OrderedDict(zip(columns, params))
         return self.coltoparam[col] if col else self.coltoparam.values()
 
-    def mapParamsToColumns(self, param=None):
+    def mapParamsToColumns(self, param=None, inputs=None):
         ''' Map original parameter names to the column names '''
         columns = self.getColumns()
+        params = self._params if self.mode == 'local' else self._queryobj.params
         if not self.paramtocol:
-            self.paramtocol = OrderedDict(zip(self._queryobj.params, columns))
+            self.paramtocol = OrderedDict(zip(params, columns))
         return self.paramtocol[param] if param else self.paramtocol.values()
 
     def getListOf(self, name=None, to_json=False):
@@ -545,7 +576,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -609,7 +640,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -672,7 +703,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': start, 'end': end}
+                      'start': start, 'end': end, 'limit': self._queryobj.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -736,11 +767,41 @@ class Results(object):
         '''
 
         # set the desired tool type
-        toollist = ['cube', 'spaxel', 'map', 'rss']
+        toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
-            self.objects = [Cube(mangaid=res.__getattribute__('mangaid'), mode=self.mode) for res in self.results]
-
+            self.objects = [Cube(mangaid=res.__getattribute__(
+                            self._getRefName('cube.mangaid', dir='partocol')),
+                            mode=self.mode) for res in self.results]
+        elif tooltype == 'maps':
+            self.objects = [Maps(mangaid=res.__getattribute__(
+                            self._getRefName('cube.mangaid', dir='partocol')),
+                            bintype=res.__getattribute__(
+                            self._getRefName('bintype.name', dir='partocol')),
+                            template_kin=res.__getattribute__(
+                            self._getRefName('template.name', dir='partocol')),
+                            mode=self.mode) for res in self.results]
+        elif tooltype == 'spaxel':
+            print(self._getRefName('cube.mangaid', dir='partocol'))
+            self.objects = [Spaxel(mangaid=res.__getattribute__(
+                            self._getRefName('cube.mangaid', dir='partocol')),
+                            x=res.__getattribute__(
+                            self._getRefName('spaxelprop.x', dir='partocol')),
+                            y=res.__getattribute__(
+                            self._getRefName('spaxelprop.y', dir='partocol')))
+                            for res in self.results]
+        elif tooltype == 'rss':
+            self.objects = [RSS(mangaid=res.__getattribute__(
+                            self._getRefName('cube.mangaid', dir='partocol')),
+                            mode=self.mode) for res in self.results]
+        elif tooltype == 'modelcube':
+            self.objects = [ModelCube(mangaid=res.__getattribute__(
+                            self._getRefName('cube.mangaid', dir='partocol')),
+                            bintype=res.__getattribute__(
+                            self._getRefName('bintype.name', dir='partocol')),
+                            template_kin=res.__getattribute__(
+                            self._getRefName('template.name', dir='partocol')),
+                            mode=self.mode) for res in self.results]

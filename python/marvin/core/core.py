@@ -15,6 +15,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 import marvin
+import marvin.api.api
 from marvin.core import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
@@ -56,24 +57,46 @@ class MarvinToolsClass(object):
 
         """
 
+        self.data = kwargsGet(kwargs, 'data', None)
+
         self.filename = kwargsGet(kwargs, 'filename', None)
         self.mangaid = kwargsGet(kwargs, 'mangaid', None)
         self.plateifu = kwargsGet(kwargs, 'plateifu', None)
+
         self.mode = kwargsGet(kwargs, 'mode', marvin.config.mode)
+
+        self._mplver = kwargsGet(kwargs, 'mplver', None)
+        self._drver = kwargsGet(kwargs, 'drver', None)
+
+        if not self._mplver and not self._drver:
+            self._mplver = marvin.config.mplver
+            self._drver = marvin.config.drver
+
+        assert bool(self._mplver) != bool(self._drver), ('one and only one of drver or mplver '
+                                                         'must be set.')
+
         self._drpall = kwargsGet(kwargs, 'drpall', marvin.config.drpall)
-        self._drpver = kwargsGet(kwargs, 'drpver', marvin.config.drpver)
-        self._dapver = kwargsGet(kwargs, 'dapver', marvin.config.dapver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
+
         self._forcedownload = kwargsGet(kwargs, 'download', marvin.config.download)
-        self._dapver = kwargsGet(kwargs, 'drpver', marvin.config.dapver)
+
         self.data_origin = None
 
         args = [self.filename, self.plateifu, self.mangaid]
-        errmsg = 'Enter filename, plateifu, or mangaid!'
-        assert any(args), errmsg
-        assert sum([bool(arg) for arg in args]) == 1, errmsg
+        assert any(args), 'Enter filename, plateifu, or mangaid!'
 
-        if self.mangaid:
-            self.plateifu = mangaid2plateifu(self.mangaid, drpall=self._drpall, drpver=self._drpver)
+        if self.filename:
+            self.plateifu = None
+            self.mangaid = None
+        elif self.plateifu:
+            self.filename = None
+            self.mangaid = None
+        elif self.mangaid:
+            self.filename = None
+            self.plateifu = mangaid2plateifu(self.mangaid,
+                                             drpall=self._drpall,
+                                             drpver=self._drpver)
 
         if self.mode == 'local':
             self._doLocal()
@@ -138,7 +161,7 @@ class MarvinToolsClass(object):
             self.mode = 'remote'
             self.data_origin = 'api'
 
-    def download(self, pathType, url=None, **pathParams):
+    def download(self, pathType, **pathParams):
         ''' Download using sdss_access Rsync '''
         if not RsyncAccess:
             raise MarvinError('sdss_access is not installed')
@@ -169,6 +192,12 @@ class MarvinToolsClass(object):
 
         return fullpath
 
+    def ToolInteraction(self, url, params=None):
+        """Runs an Interaction and passes self._mplver and self._drver."""
+
+        params = params or {'mplver': self._mplver, 'drver': self._drver}
+        return marvin.api.api.Interaction(url, params=params)
+
 
 class Dotable(dict):
     """A custom dict class that allows dot access to nested dictionaries.
@@ -180,8 +209,8 @@ class Dotable(dict):
 
     __getattr__ = dict.__getitem__
 
-    def __init__(self, d):
-        self.update(**dict((k, self.parse(v)) for k, v in d.iteritems()))
+    # def __init__(self, d):
+    #     dict.__init__(self, ((k, self.parse(v)) for k, v in d.iteritems()))
 
     @classmethod
     def parse(cls, v):
@@ -198,7 +227,7 @@ class DotableCaseInsensitive(Dotable):
 
     def _match(self, list_of_keys, value):
 
-        lower_values = map(str.lower, list_of_keys)
+        lower_values = [str(xx).lower() for xx in list_of_keys]
         if value.lower() in lower_values:
             return list_of_keys[lower_values.index(value.lower())]
         else:

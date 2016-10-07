@@ -13,7 +13,7 @@
 from __future__ import print_function
 from __future__ import division
 import json
-from flask.ext.classy import route
+from flask_classy import route
 from marvin.tools.plate import Plate
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError

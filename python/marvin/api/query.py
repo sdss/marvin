@@ -1,25 +1,31 @@
 import json
-from flask.ext.classy import route
-from flask import session as current_session
-from flask_cors import cross_origin
+from flask_classy import route
+from flask import session as current_session, request
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
 from marvin.core import MarvinError
+from marvin.api import parse_params
 
 
-def _getCubes(searchfilter, params=None, start=None, end=None):
+def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
+              limit=None, sort=None, order=None):
     """Run query locally at Utah."""
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mode='local')
+    mplver, drver = parse_params(request)
+
+    q, r = doQuery(searchfilter=searchfilter, returnparams=params, mplver=mplver, drver=drver,
+                   mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
     results = r.results
 
     # get a subset
+    chunk = None
     if start:
         chunk = int(end)-int(start)
         results = r.getSubset(int(start), limit=chunk)
+    chunk = limit if not chunk else limit
 
-    output = dict(data=results, query=r.showQuery(),
-                  filter=searchfilter, params=params,
+    output = dict(data=results, query=r.showQuery(), chunk=limit,
+                  filter=searchfilter, params=q.params, returnparams=params,
                   queryparams_order=q.queryparams_order, count=len(results), totalcount=r.count)
     return output
 
@@ -36,9 +42,15 @@ class QueryView(BrainQueryView):
         ''' do a remote query '''
         searchfilter = self.results['inconfig'].get('searchfilter', None)
         params = self.results['inconfig'].get('params', None)
+        rettype = self.results['inconfig'].get('returntype', None)
+        limit = self.results['inconfig'].get('limit', None)
+        sort = self.results['inconfig'].get('sort', None)
+        order = self.results['inconfig'].get('order', None)
+        print('inconfig', self.results['inconfig'])
         print('cube_query', searchfilter, params)
         try:
-            res = _getCubes(searchfilter, params=params)
+            res = _getCubes(searchfilter, params=params, rettype=rettype,
+                            limit=limit, sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:
@@ -54,8 +66,14 @@ class QueryView(BrainQueryView):
         params = self.results['inconfig'].get('params', None)
         start = self.results['inconfig'].get('start', None)
         end = self.results['inconfig'].get('end', None)
+        rettype = self.results['inconfig'].get('returntype', None)
+        limit = self.results['inconfig'].get('limit', None)
+        sort = self.results['inconfig'].get('sort', None)
+        order = self.results['inconfig'].get('order', None)
         try:
-            res = _getCubes(searchfilter, params=params, start=int(start), end=int(end))
+            res = _getCubes(searchfilter, params=params, start=int(start),
+                            end=int(end), rettype=rettype, limit=limit,
+                            sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
         else:
@@ -64,44 +82,11 @@ class QueryView(BrainQueryView):
 
         return json.dumps(self.results)
 
-    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
-    @cross_origin(allow_headers=['Content-Type'])
-    def webtable(self):
-        ''' Do a query for Bootstrap Table interaction in Marvin web '''
-
-        # set parameters
-        searchvalue = current_session.get('searchvalue', self.results['inconfig'].get('searchvalue', None))
-        returnparams = current_session.get('returnparams', self.results['inconfig'].get('returnparams', None))
-        print('webtable', searchvalue, self.results['inconfig'])
-        limit = self.results['inconfig'].get('limit', 10)
-        offset = self.results['inconfig'].get('offset', None)
-        order = self.results['inconfig'].get('order', None)
-        sort = self.results['inconfig'].get('sort', None)
-        search = self.results['inconfig'].get('search', None)
-
-        # exit if no searchvalue is found
-        if not searchvalue:
-            output = json.dumps({'webtable_error': 'No searchvalue found'})
-            return output
-
-        # do query
-        q, res = doQuery(searchfilter=searchvalue, limit=limit, order=order, sort=sort, returnparams=returnparams)
-        # get subset on a given page
-        results = res.getSubset(offset, limit=limit)
-        # get keys
-        cols = res.mapColumnsToParams()
-        # create output
-        rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        print('webtable output', output)
-        output = json.dumps(output)
-        return output
-
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     def getparamslist(self):
         ''' Retrieve a list of all available input parameters into the query '''
 
-        q = Query()
+        q = Query(mode='local')
         allparams = q.get_available_params()
         self.results['data'] = allparams
         self.results['status'] = 1

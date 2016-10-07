@@ -14,9 +14,11 @@ import os
 import unittest
 
 import astropy.io.fits
+import numpy as np
 
 import marvin
 import marvin.tests
+import marvin.tools.map
 import marvin.tools.maps
 import marvin.tools.spaxel
 
@@ -26,6 +28,8 @@ class TestMapsBase(marvin.tests.MarvinTest):
 
     @classmethod
     def setUpClass(cls):
+
+        marvin.config.switchSasUrl('local')
 
         cls.drpver_out = 'v1_5_1'
         cls.dapver_out = '1.1.1'
@@ -73,51 +77,47 @@ class TestMapsFile(TestMapsBase):
 
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self._assert_maps(maps)
-        self.assertIsInstance(maps.data, astropy.io.fits.HDUList)
-        self.assertIsNotNone(maps.data)
-
-        self.assertTrue(maps.bintype, 'NONE')
-        self.assertTrue(maps.template_kin, 'MIUSCAT-THIN')
-
-    def test_load_from_file_with_drp(self):
-
-        maps = marvin.tools.maps.Maps(filename=self.filename_default,
-                                      load_drp=True)
-        self._assert_maps(maps)
         self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, astropy.io.fits.HDUList)
         self.assertIsNotNone(maps.cube)
         self.assertEqual(maps.cube.plateifu, self.plateifu)
         self.assertEqual(maps.cube.mangaid, self.mangaid)
 
-    def test_get_spaxel(self):
+    def test_load_file_mpl4_global_mpl5(self):
+
+        marvin.config.setMPL('MPL-5')
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self.assertEqual(maps._mplver, 'MPL-4')
+        self.assertIsNone(maps._drver)
+        self.assertEqual(maps._drpver, 'v1_5_1')
+        self.assertEqual(maps._dapver, '1.1.1')
+
+    def test_get_spaxel_file(self):
 
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertIsNone(spaxel.spectrum)
+        self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
-    def test_get_spaxel_with_drp(self):
+    def test_get_spaxel_test2_file(self):
 
-        maps = marvin.tools.maps.Maps(filename=self.filename_default,
-                                      load_drp=True)
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
-    def test_get_spaxel_with_drp_no_db(self):
+    def test_get_spaxel_no_db(self):
         """Tests getting an spaxel if there is no DB."""
 
         marvin.marvindb.session = None
 
-        maps = marvin.tools.maps.Maps(filename=self.filename_default,
-                                      load_drp=True)
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
@@ -133,33 +133,24 @@ class TestMapsDB(TestMapsBase):
         self._assert_maps(maps)
         self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
+        self.assertIsNotNone(maps.cube)
+        self.assertEqual(maps.cube.plateifu, self.plateifu)
+        self.assertEqual(maps.cube.mangaid, self.mangaid)
 
     def test_load_full_from_db(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
-                                      bintype='none', niter=23, mode='local')
+                                      bintype='none', template_kin='MILES-THIN', mode='local')
         self._assert_maps(maps)
         self.assertIsNotNone(maps.data)
         self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
         self.assertTrue(maps.bintype, 'NONE')
         self.assertTrue(maps.template_kin, 'MILES-THIN')
 
-    def test_load_default_from_db_with_drp(self):
+    def test_get_spaxel_db(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local',
-                                      load_drp=True)
-        self._assert_maps(maps)
-        self.assertIsNotNone(maps.data)
-        self.assertIsInstance(maps.data, marvin.marvindb.dapdb.File)
-        self.assertIsNotNone(maps.cube)
-        self.assertEqual(maps.cube.plateifu, self.plateifu)
-        self.assertEqual(maps.cube.mangaid, self.mangaid)
-
-    def test_get_spaxel(self):
-
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local',
-                                      dapver='1.1.1')
-        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', mplver='MPL-4')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertIsNone(spaxel.spectrum)
@@ -167,73 +158,132 @@ class TestMapsDB(TestMapsBase):
 
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
-    def test_get_spaxel_with_drp(self):
+    def test_get_spaxel_test2_db(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local',
-                                      load_drp=True)
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         spaxel = maps.getSpaxel(x=5, y=5)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
+    def test_get_spaxel_getitem(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+        spaxel_getitem = maps[15, 8]
+
+        self.assertTrue(isinstance(spaxel_getitem, marvin.tools.spaxel.Spaxel))
+        self.assertIsNotNone(spaxel_getitem.spectrum)
+        self.assertTrue(len(spaxel_getitem.properties.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel_getitem.spectrum.flux[100], spaxel.spectrum.flux[100])
+
 
 class TestMapsAPI(TestMapsBase):
-
-    # TODO: API tests don't work if the default MPL is not MPL-4 as right
-    # now it's not possible to change teh MPL used by the remote server.
 
     def test_load_default_from_api(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self._assert_maps(maps)
         self.assertIsNone(maps.data)
-        self.assertEqual(maps.data_origin, 'api')
+        self.assertIsNotNone(maps.cube)
+        self.assertEqual(maps.cube.data_origin, 'db')
+        self.assertEqual(maps.cube.plateifu, self.plateifu)
+        self.assertEqual(maps.cube.mangaid, self.mangaid)
 
     def test_load_full_from_api(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
-                                      bintype='none', niter=23, mode='remote')
+                                      bintype='none', template_kin='MILES-THIN', mode='remote')
         self._assert_maps(maps)
         self.assertIsNone(maps.data)
         self.assertEqual(maps.data_origin, 'api')
         self.assertTrue(maps.bintype, 'NONE')
         self.assertTrue(maps.template_kin, 'MILES-THIN')
 
-    def test_load_default_from_api_with_drp(self):
+    def test_get_spaxel_api(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
-                                      load_drp=True)
-        self._assert_maps(maps)
-        self.assertIsNone(maps.data)
-        self.assertIsNotNone(maps.cube)
-        self.assertEqual(maps.cube.data_origin, 'api')
-        self.assertEqual(maps.cube.plateifu, self.plateifu)
-        self.assertEqual(maps.cube.mangaid, self.mangaid)
-
-    def test_get_spaxel(self):
-
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
-                                      dapver='1.1.1')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertEqual(spaxel.data_origin, 'api')
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
+
+    def test_get_spaxel_test2_api(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        spaxel = maps.getSpaxel(x=5, y=5)
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+    def test_get_spaxel_drp_differ_from_global_api(self):
+
+        marvin.config.setMPL('MPL-5')
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
         self.assertIsNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
-    def test_get_spaxel_with_drp(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote',
-                                      load_drp=True)
-        spaxel = maps.getSpaxel(x=5, y=5)
+class TestGetMap(TestMapsBase):
 
-        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
-        self.assertEqual(spaxel.data_origin, 'api')
-        self.assertIsNotNone(spaxel.spectrum)
-        self.assertTrue(len(spaxel.properties.keys()) > 0)
+    def test_getmap_from_db(self):
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
+        self.assertEqual(maps.data_origin, 'db')
+
+        map_db = maps.getMap('specindex', channel='fe5406')
+        self.assertIsInstance(map_db, marvin.tools.map.Map)
+        self.assertIsInstance(map_db.header, astropy.io.fits.Header)
+        self.assertEqual(map_db.header['C01'], 'D4000')
+
+    def test_getmap_from_file(self):
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self.assertEqual(maps.data_origin, 'file')
+
+        map_file = maps.getMap('specindex', channel='fe5406')
+        self.assertIsInstance(map_file, marvin.tools.map.Map)
+        self.assertIsInstance(map_file.header, astropy.io.fits.Header)
+        self.assertEqual(map_file.header['C01'], 'D4000')
+
+    def test_getmap_compare_db_file(self):
+
+        maps_file = marvin.tools.maps.Maps(filename=self.filename_default)
+        maps_db = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
+
+        residuals = (maps_file.getMap('emline_gflux', channel='oi_6365').value -
+                     maps_db.getMap('emline_gflux', channel='oi_6365').value)
+
+        self.assertAlmostEqual(np.sum(residuals), 0.0, places=5)
+
+    def test_getmap_from_api(self):
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(maps.data_origin, 'api')
+
+        map_api = maps.getMap('specindex', channel='fe5406')
+        self.assertIsInstance(map_api, marvin.tools.map.Map)
+        self.assertIsInstance(map_api.header, astropy.io.fits.Header)
+        self.assertEqual(map_api.header['C01'], 'D4000')
+
+    def test_getmap_getitem(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
+
+        map_getitem = maps['specindex_fe5406']
+        self.assertIsInstance(map_getitem, marvin.tools.map.Map)
+
+        map_getitem_no_channel = maps['binid']
+        self.assertIsInstance(map_getitem_no_channel, marvin.tools.map.Map)
 
 
 if __name__ == '__main__':

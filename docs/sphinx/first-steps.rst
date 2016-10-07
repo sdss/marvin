@@ -62,7 +62,7 @@ Now let's play with a Marvin Cube
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
     # look at some meta-data
-    cc.ra, cc.dec, cc.hdr['SRVYMODE']
+    cc.ra, cc.dec, cc.header['SRVYMODE']
     (232.544703894, 48.6902009334, 'MaNGA dither')
 
     # look at the quality and target bits

@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-16 10:51:44
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-14 10:29:12
 */
 
 'use strict';
@@ -71,6 +71,7 @@ class Search {
         typediv.typeahead(
         {
         showHintOnFocus: true,
+        items: 'all',
         source:this.queryparams.ttAdapter(),
         updater: function(item) {
             // used to updated the input box with selected option

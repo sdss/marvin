@@ -11,13 +11,13 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import current_app, Blueprint, render_template, session as current_session, request, redirect, url_for, jsonify
-from flask.ext.classy import FlaskView, route
+from flask import Blueprint, render_template, session as current_session, request
+from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core import MarvinError
 from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
-import os
+from marvin.web.web_utils import parseSession
 import random
 import json
 
@@ -47,6 +47,7 @@ class Search(FlaskView):
         self.search['results'] = None
         self.search['errmsg'] = None
         self.search['filter'] = None
+        self._drpver, self._dapver, self._mplver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -57,7 +58,7 @@ class Search(FlaskView):
 
         # set the marvin form
         searchform = self.mf.SearchForm(form)
-        q = Query()
+        q = Query(mplver=self._mplver)
         allparams = q.get_available_params()
         searchform.returnparams.choices = [(k.lower(), k) for k in allparams]
 
@@ -74,7 +75,10 @@ class Search(FlaskView):
             returnparams = form.getlist('returnparams', None)
             # Get the returnparams from the autocomplete input
             parambox = form.get('parambox', None)
-            parambox = parambox.split(',')[:-1] if parambox else None
+            if parambox:
+                parms = parambox.split(',')
+                parms = parms if parms[-1].strip() else parms[:-1]
+                parambox = parms if parambox else None
             # Select the one that is not none
             returnparams = returnparams if returnparams else parambox if parambox else None
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
@@ -82,7 +86,7 @@ class Search(FlaskView):
             if searchform.validate():
                 # try the query
                 try:
-                    q, res = doQuery(searchfilter=searchvalue, returnparams=returnparams)
+                    q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver, returnparams=returnparams)
                 except MarvinError as e:
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
@@ -104,9 +108,44 @@ class Search(FlaskView):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''
-        q = Query()
+        q = Query(mplver=self._mplver)
         allparams = q.get_available_params()
         output = json.dumps(allparams)
+        return output
+
+    @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
+    def webtable(self):
+        ''' Do a query for Bootstrap Table interaction in Marvin web '''
+
+        form = processRequest(request=request, raw=True)
+
+        # set parameters
+        searchvalue = current_session.get('searchvalue', None)
+        returnparams = current_session.get('returnparams', None)
+        print('webtable', searchvalue, returnparams, self._mplver)
+        limit = form.get('limit', 10)
+        offset = form.get('offset', None)
+        order = form.get('order', None)
+        sort = form.get('sort', None)
+        search = form.get('search', None)
+
+        # exit if no searchvalue is found
+        if not searchvalue:
+            output = json.dumps({'webtable_error': 'No searchvalue found'})
+            return output
+
+        # do query
+        q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver,
+                         limit=limit, order=order, sort=sort, returnparams=returnparams)
+        # get subset on a given page
+        results = res.getSubset(offset, limit=limit)
+        # get keys
+        cols = res.mapColumnsToParams()
+        # create output
+        rows = res.getDictOf(format_type='listdict')
+        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+        print('webtable output', output)
+        output = json.dumps(output)
         return output
 
 Search.register(search)

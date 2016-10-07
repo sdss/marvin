@@ -10,7 +10,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import distutils.version
 import warnings
+import itertools
 
 import astropy.io.fits
 import astropy.wcs
@@ -22,133 +24,211 @@ import marvin.core.exceptions
 import marvin.tools.cube
 import marvin.tools.map
 import marvin.utils.general.general
-import marvin.utils.general.dap
+import marvin.utils.dap
+import marvin.utils.six
 
 try:
     import sqlalchemy
-except:
+except ImportError:
     sqlalchemy = None
+
+
+# The values in the bintypes dictionary for MPL-4 are the execution plan id
+# for each bintype.
+__BINTYPES_MPL4__ = {'NONE': 3, 'RADIAL': 7, 'STON': 1}
+__BINTYPES_MPL4_DEFAULT__ = 'NONE'
+__BINTYPES__ = ['ALL', 'NRE', 'SPX', 'VOR10']
+__BINTYPES_DEFAULT__ = 'SPX'
+
+__TEMPLATES_KIN_MPL4__ = ['M11-STELIB-ZSOL', 'MIUSCAT-THIN', 'MILES-THIN']
+__TEMPLATES_KIN_MPL4_DEFAULT__ = 'MIUSCAT-THIN'
+__TEMPLATES_KIN__ = ['GAU-MILESHC']
+__TEMPLATES_KIN_DEFAULT__ = 'GAU-MILESHC'
+
+__all__ = ('Maps')
+
+
+def _is_MPL4(dapver):
+    """Returns True if the dapver version is <= MPL-4."""
+
+    assert isinstance(dapver, marvin.utils.six.string_types), 'dapver must be a string'
+
+    dap_version = distutils.version.StrictVersion(dapver)
+    MPL4_version = distutils.version.StrictVersion('1.1.1')
+
+    return dap_version <= MPL4_version
+
+
+def _get_bintype(dapver, bintype=None):
+    """Checks the bintype and returns the default value if None."""
+
+    if bintype is not None:
+        bintype = bintype.upper()
+        bintypes_check = __BINTYPES_MPL4__.keys() if _is_MPL4(dapver) else __BINTYPES__
+        assert bintype in bintypes_check, ('invalid bintype. bintype must be one of {0}'
+                                           .format(bintypes_check))
+        return bintype
+
+    # Defines the default value depending on the version
+    if _is_MPL4(dapver):
+        return __BINTYPES_MPL4_DEFAULT__
+    else:
+        return __BINTYPES_DEFAULT__
+
+
+def _get_template_kin(dapver, template_kin=None):
+    """Checks the template_kin and returns the default value if None."""
+
+    if template_kin is not None:
+        template_kin = template_kin.upper()
+        templates_check = __TEMPLATES_KIN_MPL4__ if _is_MPL4(dapver) else __TEMPLATES_KIN__
+        assert template_kin in templates_check, ('invalid template_kin. '
+                                                 'template_kin must be one of {0}'
+                                                 .format(templates_check))
+        return template_kin
+
+    # Defines the default value depending on the version
+    if _is_MPL4(dapver):
+        return __TEMPLATES_KIN_MPL4_DEFAULT__
+    else:
+        return __TEMPLATES_KIN_DEFAULT__
+
+
+def _get_bintemps(dapver):
+    ''' Get a list of all bin-template types for a given MPL '''
+
+    if _is_MPL4(dapver):
+        bins = __BINTYPES_MPL4__.keys()
+        temps = __TEMPLATES_KIN_MPL4__
+    else:
+        bins = __BINTYPES__
+        temps = __TEMPLATES_KIN__
+
+    bintemps = ['-'.join(item) for item in list(itertools.product(bins, temps))]
+    return bintemps
 
 
 class Maps(marvin.core.core.MarvinToolsClass):
     """Returns an object representing a DAP Maps file.
 
     Parameters:
+        data (``HDUList``, SQLAlchemy object, or None):
+            An astropy ``HDUList`` or a SQLAlchemy object of a maps, to
+            be used for initialisation. If ``None``, the normal mode will
+            be used (see :ref:`mode-decision-tree`).
         filename (str):
-            The path of the file containing the data cube to load.
+            The path of the data cube file containing the spaxel to load.
         mangaid (str):
-            The mangaid of the data cube to load.
+            The mangaid of the spaxel to load.
         plateifu (str):
-            The plate-ifu of the data cube to load (either ``mangaid`` or
+            The plate-ifu of the spaxel to load (either ``mangaid`` or
             ``plateifu`` can be used, but not both).
         mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See :doc:`mode-decision-tree>`.
-        drpall (str):
-            The path to the drpall file to use. Defaults to
-            ``marvin.config.drpall``.
-        drpver (str):
-            The DRP version to use. Defaults to ``marvin.config.drpver``.
-        dapver (str):
-            The DAP version to use. Defaults to ``marvin.config.dapver``.
+            The load mode to use. See :ref:`mode-decision-tree`.
         bintype (str or None):
-            The binning type of the DAP MAPS file to use. The default value is
-            ``'NONE'``
-        niter (int or None):
-            The iteration number of the DAP map.
-        load_drp (bool):
-            If ``True`` (default), loads the DRP cube for this map. Spaxels
-            extracted from the map will be loaded with the DRP spectrum.
+            The binning type. For MPL-4, one of the following: ``'NONE',
+            'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
+            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
+            (defaults to ``'ALL'``).
+        template_kin (str or None):
+            The template use for kinematics. For MPL-4, one of
+            ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
+            defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
+            option in ``'GAU-MILESHC'`` (``None`` defaults to it).
+        template_pop (str or None):
+            A placeholder for a future version in which stellar populations
+            are fitted using a different template that ``template_kin``. It
+            has no effect for now.
+        mplver,drver (str):
+            The MPL/DR version of the data to use. Only one ``mplver`` or
+            ``drver`` must be defined at the same time.
 
     """
 
     def __init__(self, *args, **kwargs):
 
-        # TODO: We want to be able to open a Maps from the names of its
-        # template, bintype, etc, instead of using niter, which is not very
-        # informative.
-
-        # TODO: this is not the nicest implementation possible, but we do want
-        # to avoid the user using wrong keywords without getting alerted.
-        # Python 3 allows to do "def __init__(self, *args, kw1=None, kw2=None, **kwargs)"
-        list_of_valid_kwargs = [
-            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'drpver',
-            'dapver', 'bintype', 'niter', 'load_drp']
+        valid_kwargs = [
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'mplver',
+            'drver', 'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
-            assert kw in list_of_valid_kwargs, 'keyword {0} is not valid'.format(kw)
-
-        self.bintype = kwargs.pop('bintype', None)
-        self.niter = kwargs.pop('niter', None)
-        self._load_drp = kwargs.pop('load_drp', None)
-
-        # Either bintype and niter are None, or they have values
-        assert ((self.bintype is None and self.niter is None) or
-                (self.bintype is not None and self.niter is not None)), \
-            'bintype and niter must be both None or both not None'
-
-        self.wcs = None
-        self.data = None
-        self.cube = None
-        self.wcs = None
-        self.shape = None
-        self.template_kin = None
-        self._categories = None
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
         super(Maps, self).__init__(*args, **kwargs)
 
+        if kwargs.pop('template_pop', None):
+            warnings.warn('template_pop is not yet in use. Ignoring value.',
+                          marvin.core.exceptions.MarvinUserWarning)
+
+        self.bintype = _get_bintype(self._dapver, bintype=kwargs.pop('bintype', None))
+        self.template_kin = _get_template_kin(self._dapver,
+                                              template_kin=kwargs.pop('template_kin', None))
+        self.template_pop = None
+
+        self.header = None
+        self.wcs = None
+        self.shape = None
+        self._cube = None
+
         if self.data_origin == 'file':
-            self._load_maps_from_file()
+            self._load_maps_from_file(data=self.data)
         elif self.data_origin == 'db':
-            self._load_maps_from_db()
+            self._load_maps_from_db(data=self.data)
         elif self.data_origin == 'api':
             self._load_maps_from_api()
         else:
             raise marvin.core.exceptions.MarvinError(
                 'data_origin={0} is not valid'.format(self.data_origin))
 
-        # Loads the cube
-        if self._load_drp:
-            try:
-                self._load_drp_cube(**kwargs)
-            except Exception as ee:
-                warnings.warn('failed loading DRP cube for Maps with plateifu={0}. '
-                              'Error message is: {1}'.format(self.plateifu, str(ee)),
-                              marvin.core.exceptions.MarvinUserWarning)
+        self.properties = marvin.utils.dap.get_dap_datamodel(self._dapver)
+
+        self._check_versions(self)
 
     def __repr__(self):
-        return ('<Marvin Maps (plateifu={0.plateifu}, mode={0.mode}, '
-                'data_origin={0.data_origin})>'.format(self))
+        return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
+                'data_origin={0.data_origin!r})>'.format(self))
 
-    def _getPathParams(self):
-        """Returns a dictionary with the paramters of the Maps file.
+    def __getitem__(self, value):
+        """Gets either a spaxel or a map depending on the type on input."""
 
-        The parameters that define a Maps file depend on whether it is a
-        ``mangamap`` or a ``mangadefault``. If ``bintype`` and ``niter``
-        have been defined in the initilisatation of the object, we return
-        the parameters of a ``mangamap``, otherwise the ones for a
-        ``mangadefault``.
+        if isinstance(value, tuple):
+            assert len(value) == 2, 'slice must have two elements.'
+            x, y = value
+            return self.getSpaxel(x=x, y=y, xyorig='lower')
+        elif isinstance(value, marvin.utils.six.string_types):
+            parsed_property = self.properties.get(value)
+            if parsed_property is None:
+                raise marvin.core.MarvinError('invalid property')
+            maps_property, channel = parsed_property
+            return self.getMap(maps_property.name, channel=channel)
+        else:
+            raise marvin.core.MarvinError('invalid type for getitem.')
 
-        The output of this class is mostly intended to be used by
-        :func:`Maps._getFullPath` and :func:`Maps.download`.
+    @staticmethod
+    def _check_versions(instance):
+        """Confirm that drpver and dapver match the ones from the header.
+
+        This is written as a staticmethod because we'll also use if for
+        ModelCube.
 
         """
 
-        plate, ifu = self.plateifu.split('-')
+        header_drpver = instance.header['VERSDRP3']
+        isMPL4 = False
+        if instance._mplver == 'MPL-4' and header_drpver == 'v1_5_0':
+            header_drpver = 'v1_5_1'
+            isMPL4 = True
+        assert header_drpver == instance._drpver, ('mismatch between maps._drpver={0} '
+                                                   'and header drpver={1}'
+                                                   .format(instance._drpver, header_drpver))
 
-        if self.bintype and self.niter:
-            path_type = 'mangamap'
-            params = dict(drpver=self._drpver, dapver=self._dapver,
-                          plate=plate, ifu=ifu, bintype=self.bintype,
-                          n=self.niter, mode='CUBE')
+        # MPL-4 does not have VERSDAP
+        if isMPL4:
+            assert 'VERSDAP' not in instance.header, 'mismatch between maps._dapver and header'
         else:
-            path_type = 'mangadefault'
-            params = dict(drpver=self._drpver, dapver=self._dapver,
-                          plate=plate, ifu=ifu, mode='CUBE')
-
-        params['path_type'] = path_type
-
-        return params
+            header_dapver = instance.header['VERSDAP']
+            assert header_dapver == instance._dapver, 'mismatch between maps._dapver and header'
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -158,7 +238,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return super(Maps, self)._getFullPath(path_type, **params)
 
-    def download(self, **kwargs):
+    def download(self):
         """Downloads the cube using sdss_access - Rsync"""
 
         if not self.plateifu:
@@ -169,32 +249,94 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return super(Maps, self).download(path_type, **params)
 
-    def _load_maps_from_file(self):
+    def _getPathParams(self):
+        """Returns a dictionary with the paramters of the Maps file.
+
+        The output of this class is mostly intended to be used by
+        :func:`Maps._getFullPath` and :func:`Maps.download`.
+
+        """
+
+        plate, ifu = self.plateifu.split('-')
+
+        if _is_MPL4(self._dapver):
+            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template_kin),
+                                        __BINTYPES_MPL4__[self.bintype]))
+            params = dict(drpver=self._drpver, dapver=self._dapver,
+                          plate=plate, ifu=ifu, bintype=self.bintype, n=niter,
+                          path_type='mangadap')
+        else:
+            daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
+            params = dict(drpver=self._drpver, dapver=self._dapver,
+                          plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
+                          path_type='mangadap5')
+
+        return params
+
+    def _load_maps_from_file(self, data=None):
         """Loads a MAPS file."""
 
-        self.data = astropy.io.fits.open(self.filename)
-        self.mangaid = self.data[0].header['MANGAID'].strip()
-        self.plateifu = self.data[0].header['PLATEIFU'].strip()
+        if data is not None:
+            assert isinstance(data, astropy.io.fits.HDUList), 'data is not a HDUList.'
+        else:
+            self.data = astropy.io.fits.open(self.filename)
 
-        # Loads WCS and shape from the first N-dimensional extension.
-        # TODO: this may break if the datamodel changes. There may be a better
-        # way of implementing this.
-        for ext in self.data:
-            header = ext.header
-            if 'NAXIS' in header and header['NAXIS'] >= 2:
-                naxis = header['NAXIS']
-                wcs_pre = astropy.wcs.WCS(header)
-                # Takes only the first two axis.
-                self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
-                self.shape = ext.data.shape[-2:]
+        self.header = self.data[0].header
 
-        # Sets the bintype from the header
-        self.bintype = self.data[0].header['BINTYPE']
+        self.mangaid = self.header['MANGAID'].strip()
+        self.plateifu = self.header['PLATEIFU'].strip()
 
-        # Sets the template
-        self.template_kin = self.data[0].header['TPLKEY'].upper()
+        # We use EMLINE_GFLUX because is present in MPL-4 and 5 and is not expected to go away.
+        header = self.data['EMLINE_GFLUX'].header
+        naxis = header['NAXIS']
+        wcs_pre = astropy.wcs.WCS(header)
+        # Takes only the first two axis.
+        self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
+        self.shape = self.data['EMLINE_GFLUX'].data.shape[-2:]
 
-    def _load_maps_from_db(self):
+        # Checks and populates mplver and drver.
+        file_drpver = self.header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpMpl(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if 'DR' in file_ver:
+            file_drver = file_ver
+            file_mplver = None
+        elif 'MPL' in file_ver:
+            file_drver = None
+            file_mplver = file_ver
+        else:
+            raise marvin.core.exceptions.MarvinError('file version is not MPL or DR.')
+
+        if file_mplver != self._mplver:
+            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
+                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+                          marvin.core.exceptions.MarvinUserWarning)
+            self._mplver = file_mplver
+
+        if file_drver != self._drver:
+            warnings.warn('mismatch between file drver={0} and object drver={1}. '
+                          'Setting object drver to {0}'.format(file_drver, self._drver),
+                          marvin.core.exceptions.MarvinUserWarning)
+            self._drver = file_drver
+
+        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
+                                                                  drver=self._drver)
+
+        # Checks the bintype and template_kin from the header
+        header_bintype = self.data[0].header['BINTYPE'].strip().upper()
+        header_template_kin_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
+        header_template_kin = self.data[0].header[header_template_kin_key].strip().upper()
+
+        if self.bintype != header_bintype:
+            self.bintype = header_bintype
+
+        if self.template_kin != header_template_kin:
+            self.template_kin = header_template_kin
+
+    def _load_maps_from_db(self, data=None):
         """Loads the ``mangadap.File`` object for this Maps."""
 
         mdb = marvin.marvindb
@@ -202,50 +344,46 @@ class Maps(marvin.core.core.MarvinToolsClass):
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise RuntimeError('No db connected')
+            raise marvin.core.exceptions.MarvinError('No db connected')
 
         if sqlalchemy is None:
-            raise RuntimeError('sqlalchemy required to access the local DB.')
+            raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
 
-        version_query = mdb.session.query(mdb.dapdb.File).join(
-            mdb.datadb.PipelineInfo,
-            mdb.datadb.PipelineVersion).filter(
-                mdb.datadb.PipelineVersion.version == self._dapver).from_self()
+        if data is not None:
+            assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
+        else:
 
-        # Runs the query if we are selecting a default map.
-        if self.bintype is None and self.niter is None:
-            # TODO: for now I am hardcoding  the values for MPL-4. This will
-            # need to change when we implement MPL-5 (JSG).
-            self.niter = '013'
-            self.bintype = 'NONE'
+            datadb = mdb.datadb
+            dapdb = mdb.dapdb
+            # Initial query for version
+            version_query = mdb.session.query(dapdb.File).join(
+                datadb.PipelineInfo,
+                datadb.PipelineVersion).filter(
+                    datadb.PipelineVersion.version == self._dapver).from_self()
 
-        # Splits niter into its parts.
-        niter_str = str('{0:>03}'.format(self.niter))
-        __, template_kin_id, execution_plan_id = [ii for ii in niter_str]
+            # Query for maps parameters
+            db_maps_file = version_query.join(
+                datadb.Cube,
+                datadb.IFUDesign).filter(
+                    datadb.Cube.plate == plate,
+                    datadb.IFUDesign.name == str(ifu)).from_self().join(
+                        dapdb.FileType).filter(dapdb.FileType.value == 'MAPS').join(
+                            dapdb.Structure, dapdb.BinType).join(
+                                dapdb.Template,
+                                dapdb.Structure.template_kin_pk == dapdb.Template.pk).filter(
+                                    dapdb.BinType.name == self.bintype,
+                                    dapdb.Template.name == self.template_kin).all()
 
-        db_maps_file = version_query.join(
-            mdb.datadb.Cube,
-            mdb.datadb.IFUDesign).filter(
-                mdb.datadb.Cube.plate == plate,
-                mdb.datadb.IFUDesign.name == str(ifu)).from_self().join(
-                    mdb.dapdb.Structure,
-                    mdb.dapdb.BinType,
-                    mdb.dapdb.ExecutionPlan).join(
-                        mdb.dapdb.Template,
-                        mdb.dapdb.Structure.template_kin_pk == mdb.dapdb.Template.pk).filter(
-                            sqlalchemy.func.upper(mdb.dapdb.BinType.name) ==
-                            sqlalchemy.func.upper(self.bintype),
-                            mdb.dapdb.ExecutionPlan.id == execution_plan_id,
-                            mdb.dapdb.Template.id == template_kin_id).all()
+            if len(db_maps_file) > 1:
+                raise marvin.core.exceptions.MarvinError(
+                    'more than one Maps file found for this combination of parameters.')
+            elif len(db_maps_file) == 0:
+                raise marvin.core.exceptions.MarvinError(
+                    'no Maps file found for this combination of parameters.')
 
-        if len(db_maps_file) > 1:
-            raise marvin.core.exceptions.MarvinError(
-                'more than one Maps file found for this combination of parameters.')
-        elif len(db_maps_file) == 0:
-            raise marvin.core.exceptions.MarvinError(
-                'no Maps file found for this combination of parameters.')
+            self.data = db_maps_file[0]
 
-        self.data = db_maps_file[0]
+        self.header = self.data.primary_header
 
         # Gets the cube header
         cubehdr = self.data.cube.header
@@ -256,43 +394,30 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # Gets the shape from the associated cube.
         self.shape = self.data.cube.shape.shape
 
-        # Defines the bintype and template.
-        self.bintype = self.data.structure.bintype.name.upper()
-        self.template_kin = self.data.structure.template_kin.name.upper()
-
         # Creates the WCS from the cube's WCS header
-        # TODO: I'm assuming the cube WCS is the same as the maps. That might
-        # not be true (JSG)
         self.wcs = astropy.wcs.WCS(self.data.cube.wcs.makeHeader())
 
     def _load_maps_from_api(self):
         """Loads a Maps object from remote."""
 
-        # TODO: here we are hardcoding the default maps. We should find a better
-        # way to handle this.
-
         url = marvin.config.urlmap['api']['getMaps']['url']
 
         url_full = url.format(name=self.plateifu,
-                              bintype=self.bintype if self.bintype else 'NONE',
-                              niter=self.niter if self.niter else '13')
+                              bintype=self.bintype,
+                              template_kin=self.template_kin)
 
         try:
-            response = marvin.api.api.Interaction(url_full)
+            response = self.ToolInteraction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
-                'found a problem when checking if remote maps exists: {0}'
-                .format(str(ee)))
+                'found a problem when checking if remote maps exists: {0}'.format(str(ee)))
 
         data = response.getData()
 
         if self.plateifu not in data:
-            raise marvin.core.exceptions.MarvinError(
-                'remote maps has a different plateifu!')
+            raise marvin.core.exceptions.MarvinError('remote maps has a different plateifu!')
 
-        # TODO: replace self.data with a property that returns an error for
-        # Maps initialised from remote.
-        self.data = None
+        self.header = astropy.io.fits.Header.fromstring(data[self.plateifu]['header'])
 
         # Sets the mangaid
         self.mangaid = data[self.plateifu]['mangaid']
@@ -300,35 +425,36 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # Gets the shape from the associated cube.
         self.shape = data[self.plateifu]['shape']
 
-        # Defines the bintype and template.
-        self.bintype = data[self.plateifu]['bintype']
-        self.template_kin = data[self.plateifu]['template_kin']
-
         # Sets the WCS
         self.wcs = data[self.plateifu]['wcs']
 
         return
 
-    def _load_drp_cube(self, **kwargs):
-        """Loads the DRP cube associated to this maps file."""
+    @property
+    def cube(self):
+        """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""
 
-        drpver = kwargs.get('drpver', None)
-        drpall = kwargs.get('drpall', None)
+        if not self._cube:
+            try:
+                cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
+                                              mplver=self._mplver,
+                                              drver=self._drver)
+            except Exception as err:
+                raise marvin.core.exceptions.MarvinError(
+                    'cannot instantiate a cube for this Maps. Error: {0}'.format(err))
+            self._cube = cube
 
-        self.cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
-                                           drpver=drpver, drpall=drpall,
-                                           mode=self.mode)
+        return self._cube
 
-    def getSpaxel(self, **kwargs):
+    def getSpaxel(self, spectrum=True, modelcube=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
         coordinates.
 
-        If the ``Maps`` object has been initialised with ``load_drp=True``,
-        the spaxels returned will contain the DRP spaxel, otherwise they will
-        be loaded only with DAP parameters.
+        If ``spectrum=True``, the returned |spaxel| will be instantiated with the
+        DRP spectrum of the spaxel for the DRP cube associated with this Maps.
 
         Parameters:
             x,y (int or array):
@@ -345,6 +471,13 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
+            spectrum (bool):
+                If ``True``, the |spaxel| will be initialised with the
+                corresponding DRP spectrum.
+            modelcube (bool):
+                If ``True``, the |spaxel| will be initialised with the
+                corresponding ModelCube data.
+
 
         Returns:
             spaxels (list):
@@ -356,41 +489,44 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
-        kwargs['cube_object'] = self.cube
-        kwargs['maps_object'] = self
+        kwargs['cube'] = self.cube if spectrum else False
+        kwargs['maps'] = self
+        kwargs['modelcube'] = modelcube
 
         return marvin.utils.general.general.getSpaxel(**kwargs)
 
-    def getMap(self, category, channel=None):
+    def getMap(self, property_name, channel=None):
         """Retrieves a :class:`~marvin.tools.map.Map` object.
 
         Parameters:
-            category (str):
-                The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+            property_name (str):
+                The property of the map to be extractred.
+                E.g., `'emline_gflux'`.
             channel (str or None):
-                If the ``category`` contains multiple channels, the channel to use,
-                e.g., ``Ha-6564'. Otherwise, ``None``.
+                If the ``property`` contains multiple channels,
+                the channel to use, e.g., ``ha_6564'. Otherwise, ``None``.
 
         """
 
-        return marvin.tools.map.Map(self, category, channel=channel)
+        return marvin.tools.map.Map(self, property_name, channel=channel)
 
-    def getMapRatio(self, category, channel_1, channel_2):
+    def getMapRatio(self, property_name, channel_1, channel_2):
         """Returns a ratio :class:`~marvin.tools.map.Map`.
 
-        For a given ``category``, returns a :class:`~marvin.tools.map.Map`
+        For a given ``property_name``, returns a :class:`~marvin.tools.map.Map`
         which is the ratio of ``channel_1/channel_2``.
 
         Parameters:
-            category (str):
-                The category of the map to be extractred. E.g., `'EMLINE_GFLUX'`.
+            property_name (str):
+                The property_name of the map to be extractred.
+                E.g., `'emline_gflux'`.
             channel_1,channel_2 (str):
                 The channels to use.
 
         """
 
-        map_1 = self.getMap(category, channel=channel_1)
-        map_2 = self.getMap(category, channel=channel_2)
+        map_1 = self.getMap(property_name, channel=channel_1)
+        map_2 = self.getMap(property_name, channel=channel_2)
 
         map_1.value /= map_2.value
 
@@ -400,21 +536,5 @@ class Maps(marvin.core.core.MarvinToolsClass):
         map_1.mask &= map_2.mask
 
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
-        map_1.unit = map_1.channel
 
         return map_1
-
-    @property
-    def categories(self):
-        """Returns a list of categories for this :class:`Maps`."""
-
-        if self._categories is None:
-
-            if self.data_origin == 'file':
-                hdu = self.data
-            else:
-                hdu = None
-
-            self._categories = marvin.utils.general.dap.list_categories(hdu=hdu)
-
-        return self._categories

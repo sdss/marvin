@@ -2,11 +2,11 @@
 
 .. _marvin-query-examples:
 
-Example Queries
-===============
+Example Filter Conditions
+=========================
 
-Find galaxies
--------------
+Return Galaxies
+---------------
 
 ...below a redshift of 0.1::
 
@@ -20,12 +20,18 @@ Find galaxies
 
     ifu.name = 127*
 
-...that contain any spaxel with an Halpha flux > 25::
+...with Halpha flux > 25 in more than 20% of their good spaxels::
 
-    emline_type.name == Ha and emline_parameter.name == GFLUX and emline.value > 25
+    npergood(emline_gflux_ha_6564 > 25) >= 20
 
-...that contain any spaxel with a velocity > 250 km/s::
 
-    stellar_kin_parameter.name == vel and stellar_kin.value > 250
+Return Spaxels
+--------------
+
+...that have an Halpha flux > 25::
+
+    emline_gflux_ha_6564 > 25
 
 End
+
+

@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-11 14:47:29
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-09 16:52:45
 */
 
 'use strict';
@@ -63,6 +63,7 @@ var Table = function () {
                 method: 'post',
                 contentType: "application/x-www-form-urlencoded",
                 data: data.rows,
+                totalRows: data.total,
                 columns: cols,
                 url: url,
                 search: true,
@@ -116,7 +117,7 @@ var Table = function () {
             });
 
             // Load new options
-            this.table.bootstrapTable('refreshOptions', { 'columns': cols });
+            this.table.bootstrapTable('refreshOptions', { 'columns': cols, 'totalRows': results.total });
 
             return results;
         }

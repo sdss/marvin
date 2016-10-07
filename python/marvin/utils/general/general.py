@@ -1,6 +1,7 @@
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
+import os
 from astropy import table
 from scipy.interpolate import griddata
 import warnings
@@ -8,20 +9,26 @@ import marvin
 import PIL
 
 try:
-    from sdss_access import RsyncAccess
+    from sdss_access import RsyncAccess, AccessError
 except ImportError as e:
     RsyncAccess = None
 
+try:
+    from sdss_access.path import Path
+except ImportError as e:
+    Path = None
+
 # General utilities
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
-           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY', 'getSpaxelAPI',
-           'downloadList', 'getSpaxel']
+           'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
+           'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
+           'getDapRedux', 'parseVersion']
 
-drpTable = None
+drpTable = {}
 
 
-def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
-              ra=None, dec=None, xyorig='center'):
+def getSpaxel(cube=True, maps=True, modelcube=True,
+              x=None, y=None, ra=None, dec=None, xyorig=None):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -34,15 +41,18 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     both of them.
 
     Parameters:
-        cube_object (:class:`~marvin.tools.cube.Cube` or None)
+        cube (:class:`~marvin.tools.cube.Cube` or None or bool)
             A :class:`~marvin.tools.cube.Cube` object with th DRP cube
             data from which the spaxel spectrum will be extracted. If None,
             the |spaxel| object(s) returned won't contain spectral information.
-        maps_object (:class:`~marvin.tools.maps.Maps` or None)
-            As ``cube_object`` but for the :class:`~marvin.tools.maps.Maps`
+        maps (:class:`~marvin.tools.maps.Maps` or None or bool)
+            As ``cube`` but for the :class:`~marvin.tools.maps.Maps`
             object representing the DAP maps entity. If None, the |spaxel|
-            will be returned without DAP information. At least one of
-            ``cube_object`` or ``maps_object`` must not be None.
+            will be returned without DAP information.
+        modelcube (:class:`~marvin.tools.modelcube.ModelCube` or None or bool)
+            As ``cube`` but for the :class:`~marvin.tools.modelcube.ModelCube`
+            object representing the DAP modelcube entity. If None, the |spaxel|
+            will be returned without model information.
         x,y (int or array):
             The spaxel coordinates relative to ``xyorig``. If ``x`` is an
             array of coordinates, the size of ``x`` must much that of
@@ -53,10 +63,11 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
             coordinates, the size of ``ra`` must much that of ``dec``.
         xyorig ({'center', 'lower'}):
             The reference point from which ``x`` and ``y`` are measured.
-            Valid values are ``'center'`` (default), for the centre of the
+            Valid values are ``'center'``, for the centre of the
             spatial dimensions of the cube, or ``'lower'`` for the
             lower-left corner. This keyword is ignored if ``ra`` and
-            ``dec`` are defined.
+            ``dec`` are defined. ``xyorig`` defaults to
+            ``marvin.config.xyorig.``
 
     Returns:
         spaxels (list):
@@ -72,17 +83,21 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
     # circular imports soon.
     import marvin.tools.cube
     import marvin.tools.maps
+    import marvin.tools.modelcube
     import marvin.tools.spaxel
 
     # Checks that the cube and maps data are correct
-    assert cube_object is not None or maps_object is not None, \
-        'Either cube_object or maps_object needs to be specified.'
+    assert cube or maps or modelcube, \
+        'Either cube, maps, or modelcube needs to be specified.'
 
-    assert cube_object is None or isinstance(cube_object, marvin.tools.cube.Cube), \
-        'cube_object is not an instance of Cube'
+    assert isinstance(cube, (marvin.tools.cube.Cube, bool)), \
+        'cube is not an instance of Cube or a boolean'
 
-    assert maps_object is None or isinstance(maps_object, marvin.tools.maps.Maps), \
-        'maps_object is not an instance of Maps'
+    assert isinstance(maps, (marvin.tools.maps.Maps, bool)), \
+        'maps is not an instance of Maps or a boolean'
+
+    assert isinstance(modelcube, (marvin.tools.modelcube.ModelCube, bool)), \
+        'modelcube is not an instance of ModelCube or a boolean'
 
     # Checks that we have the correct set of inputs.
     if x is not None or y is not None:
@@ -109,28 +124,29 @@ def getSpaxel(cube_object=None, maps_object=None, x=None, y=None,
         raise ValueError('You need to specify either (x, y) or (ra, dec)')
 
     if not xyorig:
-        xyorig = 'center'
+        xyorig = marvin.config.xyorig
 
-    # TODO: cube_object does not have wcs or shape if initialised from API.
-    # Fix this in the initialisation of Cube.
-    if maps_object:
-        ww = maps_object.wcs if inputMode == 'sky' else None
-        cubeShape = maps_object.shape
-        plateifu = maps_object.plateifu
-    else:
-        ww = cube_object.wcs if inputMode == 'sky' else None
-        cubeShape = cube_object.shape
-        plateifu = cube_object.plateifu
+    if isinstance(maps, marvin.tools.maps.Maps):
+        ww = maps.wcs if inputMode == 'sky' else None
+        cube_shape = maps.shape
+        plateifu = maps.plateifu
+    elif isinstance(cube, marvin.tools.cube.Cube):
+        ww = cube.wcs if inputMode == 'sky' else None
+        cube_shape = cube.shape
+        plateifu = cube.plateifu
+    elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
+        ww = modelcube.wcs if inputMode == 'sky' else None
+        cube_shape = modelcube.shape
+        plateifu = modelcube.plateifu
 
-    iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cubeShape,
+    iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
 
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel._initFromData(
-                plateifu, jCube[0][ii], iCube[0][ii],
-                cube=cube_object, maps=maps_object))
+            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
+                                       cube=cube, maps=maps, modelcube=modelcube))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -251,7 +267,6 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     """
 
-    global drpTable
     from marvin import config, marvindb
     from marvin.api.api import Interaction
 
@@ -260,7 +275,8 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     assert mode in autoModes + ['auto'], 'mode={0} is not valid'.format(mode)
 
-    drpver = drpver if drpver else config.drpver
+    config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+    drpver = drpver if drpver else config_drpver
     drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
 
     if mode == 'drpall':
@@ -269,12 +285,12 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
             raise ValueError('no drpall file can be found.')
 
         # Loads the drpall table if it was not cached from a previos session.
-        if not drpTable:
-            drpTable = table.Table.read(drpall)
+        if drpver not in drpTable:
+            drpTable[drpver] = table.Table.read(drpall)
 
-        mangaids = np.array([mm.strip() for mm in drpTable['mangaid']])
+        mangaids = np.array([mm.strip() for mm in drpTable[drpver]['mangaid']])
 
-        plateifus = drpTable[np.where(mangaids == mangaid)]
+        plateifus = drpTable[drpver][np.where(mangaids == mangaid)]
 
         if len(plateifus) > 1:
             warnings.warn('more than one plate-ifu found for mangaid={0}. '
@@ -534,6 +550,30 @@ def parseIdentifier(galid):
     return idtype
 
 
+def parseVersion(currentver):
+    ''' Determine if a string version in an MPL and DR
+
+    Parses a string version id and determines whether it is a
+    MPL version or a DR version
+
+    Parameters:
+        currentver (str):
+            The string of a Marvin version to parse
+
+    Returns:
+        vertype (str):
+            String indicating either mpl, dr, or None
+
+    '''
+    if 'MPL' in currentver:
+        vertype = 'mplver'
+    elif 'DR' in currentver:
+        vertype = 'drver'
+    else:
+        vertype = None
+    return vertype
+
+
 def getSpaxelXY(cube, plateifu, x, y):
     """Gets and spaxel from a cube in the DB.
 
@@ -568,57 +608,78 @@ def getSpaxelXY(cube, plateifu, x, y):
     return spaxel
 
 
-def getSpaxelAPI(coord1, coord2, mangaid, mode='pix', ext='flux', xyorig='center'):
-    """Gets and spaxel from a cube using the API.
+def getDapRedux(mplver=None):
+    ''' Retrieve SAS url link to the DAP redux directory
 
     Parameters:
-        coord1,coord2 (int):
-            The coordinates (either ra/dec or x/y) of the spaxel to
-            retrieve.
-        mangaid (str):
-            The mangaid of the cube to use.
-        mode ({'pix', 'sky'}):
-            The coordinate mode to use, either ``'pix'`` (default) for x/y
-            coordinates with respect to ``xyorig``, or ``'sky'`` to use
-            celestial coordinates ra/dec.
-        ext ({'flux', 'ivar', 'mask'}):
-            The extension of the spaxel to retrieve.
-        xyorig (str):
-            If ``mode='pix'``, the reference point from which the coordinates
-            are measured. Valid values are ``'center'``, for the centre of the
-            spatial dimensions of the cube, or ``'lower'`` for the lower-left
-            corner.
+        mplver (str):
+            The MPL version of the data to download.  Defaults to Marvin config.mplver
 
     Returns:
-        spaxel (array):
-            The spaxel with coordinates ``(coord1, coord2)`` in the cube
-            defined by ``mangaid``, extracted from the extension ``ext``.
+        dapredux (str):
+            The full redux path to the DAP MAPS
+    '''
 
-    """
-
-    from marvin.api.api import Interaction
-
-    # Parse the variables into right frame
-
-    path = '{0}={1}/{2}={3}/ext={4}/xyorig={5}'.format(
-        'x' if mode == 'pix' else 'ra', coord1,
-        'y' if mode == 'pix' else 'dec', coord2, ext, xyorig)
-
-    routeparams = {'name': mangaid, 'path': path}
-
-    # Get the getSpectrum Route
-    url = marvin.config.urlmap['api']['getspectra']['url'].format(**routeparams)
-
-    # Make the API call
-    try:
-        response = Interaction(url)
-    except MarvinError as e:
-        raise MarvinError('Error retrieving response: {0}'.format(e))
+    if not Path:
+        raise MarvinError('sdss_access is not installed')
     else:
-        if response.results['status'] == 1:
-            return response.getData()
-        else:
-            raise MarvinError('Could not retrieve spaxels remotely: {0}'.format(response.results['error']))
+        sdss_path = Path()
+
+    mplver = mplver if mplver else marvin.config.mplver
+    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    # hack a url version of MANGA_SPECTRO_ANALYSIS
+    dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
+    dappath = dapdefault.rsplit('/', 2)[0]
+    dapredux = sdss_path.url('', full=dappath)
+    return dapredux
+
+
+def getDefaultMapPath(**kwargs):
+    ''' Retrieve the default Maps path
+
+    Uses sdss_access Path to generate a url download link to the
+    default MAPS file for a given MPL.
+
+    Parameters:
+        mplver /drver (str):
+            The DR version of the data to download.  Defaults to Marvin config.mplver/drver
+        plate (int):
+            The plate id
+        ifu (int):
+            The ifu number
+        bintype (str):
+            The bintype of the default file to grab. Defaults to MAPS
+        daptype (str):
+            The daptype of the default map to grab.  Defaults to SPX-MILESHC
+
+    Returns:
+        maplink (str):
+            The sas url to download the default maps file
+    '''
+
+    if not Path:
+        raise MarvinError('sdss_access is not installed')
+    else:
+        sdss_path = Path()
+
+    # Get kwargs
+    mplver = kwargs.get('mplver', marvin.config.mplver)
+    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    plate = kwargs.get('plate', None)
+    ifu = kwargs.get('ifu', None)
+    daptype = kwargs.get('daptype', 'SPX-GAU-MILESHC')
+    bintype = kwargs.get('bintype', 'MAPS')
+
+    # get the sdss_path name by MPL
+    if '4' in mplver:
+        name = 'mangadefault'
+    elif '5' in mplver:
+        name = 'mangadap5'
+
+    # construct the url link to default maps file
+    maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=mplver,
+                            plate=plate, ifu=ifu, daptype=daptype, mode=bintype)
+    return maplink
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):
@@ -638,16 +699,16 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             Indicated the type of object to download.  Can be any of
             plate, cube, mastar, rss, map, or default (default map).
             If not specified, the dltype defaults to cube.
-        drpver (str):
-            The DRP version of the data to download.  Defaults to Marvin config.drpver
-        dapver (str):
-            The DAP version of the data to download.  Defaults to Marvin config.dapver
+        mplver (str):
+            The MPL version of the data to download.  Defaults to Marvin config.mplver
         bintype (str):
             The bin type of the DAP maps to download. Defaults to *
         binmode (str):
             The bin mode of the DAP maps to download. Defaults to *
         n (int):
             The plan id number [1-12] of the DAP maps to download. Defaults to *
+        daptype (str):
+            The daptype of the default map to grab.  Defaults to *
         verbose (bool):
             Turns on verbosity during rsync
     Returns:
@@ -660,11 +721,11 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]
     verbose = kwargs.get('verbose', None)
     as_url = kwargs.get('as_url', None)
-    drpver = kwargs.get('drpver', marvin.config.drpver)
-    dapver = kwargs.get('dapver', marvin.config.dapver)
     mplver = kwargs.get('mplver', marvin.config.mplver)
+    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
+    daptype = kwargs.get('daptype', '*')
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
 
@@ -692,7 +753,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'plate':
         name = 'mangaplate'
     elif dltype == 'map':
-        name = 'mangamap'
+        if '4' in mplver:
+            name = 'mangamap'
+        elif '5' in mplver:
+            name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
 
@@ -716,7 +780,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
-                         mpl=mplver, bintype=bintype, n=n, mode=binmode)
+                         mpl=mplver, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream
     try:
@@ -727,3 +791,26 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
     rsync_access.commit(limit=limit)
+
+
+def get_drpall_row(plateifu, drpver=None, drpall=None):
+    """Returns a row from drpall matching the plateifu."""
+
+    from marvin import config
+
+    if drpall:
+        drpall_table = table.Table.read(drpall)
+    else:
+        config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+        drpver = drpver if drpver else config_drpver
+        if drpver not in drpTable:
+            drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+            drpTable[drpver] = table.Table.read(drpall)
+        drpall_table = drpTable[drpver]
+
+    row = drpall_table[drpall_table['plateifu'] == plateifu]
+
+    if len(row) != 1:
+        raise ValueError('{0} results found for {1} in drpall table'.format(len(row), plateifu))
+
+    return row[0]

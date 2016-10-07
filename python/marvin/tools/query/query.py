@@ -12,26 +12,26 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.core import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
+from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.query.results import Results
 from marvin.tools.query.forms import MarvinForm
 from marvin.api.api import Interaction
-from sqlalchemy import or_, and_, bindparam, between
+from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from operator import le, ge, gt, lt, eq, ne
 from collections import defaultdict
-import re
+import datetime
+import numpy as np
 import warnings
 from functools import wraps
 
 __all__ = ['Query', 'doQuery']
-opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq}
+opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
 
 
 # Boom. Tree dictionary.
@@ -71,7 +71,7 @@ def updateConfig(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.query and self.mode == 'local':
-            self.query = self.query.params({'drpver': config.drpver, 'dapver': config.dapver})
+            self.query = self.query.params({'drpver': self._drpver, 'dapver': self._dapver})
         return f(self, *args, **kwargs)
     return wrapper
 
@@ -149,6 +149,16 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
+        self._mplver = kwargs.pop('mplver', None)
+        self._drver = kwargs.pop('drver', None)
+
+        if not self._mplver and not self._drver:
+            self._mplver = config.mplver
+            self._drver = config.drver
+
+        self._drpver, self._dapver = config.lookUpVersions(mplver=self._mplver,
+                                                           drver=self._drver)
+
         self.query = None
         self.params = []
         self.filterparams = {}
@@ -164,13 +174,14 @@ class Query(object):
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
         self._returnparams = None
+        self._caching = kwargs.get('caching', True)
+        self.verbose = kwargs.get('verbose', None)
+        self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
-        self.limit = int(kwargs.get('limit', 10))
+        self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm()
-        #self._start = kwargs.get('start', None)
-        #self._chunk = kwargs.get('chunk', None)
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
 
         # set the mode
         if self.mode is None:
@@ -188,24 +199,28 @@ class Query(object):
         # get return type
         self.returntype = kwargs.get('returntype', None)
 
+        # set default parameters
+        self.set_defaultparams()
+
         # get user-defined input parameters
         returnparams = kwargs.get('returnparams', None)
         if returnparams:
             self.set_returnparams(returnparams)
 
-        # set default parameters
-        self.set_defaultparams()
-
         # if searchfilter is set then set the parameters
         searchfilter = kwargs.get('searchfilter', None)
         if searchfilter:
             self.set_filter(searchfilter=searchfilter)
+            self._isdapquery = self._checkInFilter(name='dapdb')
 
         # Don't do anything if nothing specified
         allnot = [not searchfilter, not returnparams]
         if not all(allnot) and self.mode == 'local':
             # create query parameter ModelClasses
             self._create_query_modelclasses()
+            # this adds spaxel x, y into default for query 1 dap zonal query
+            self._adjust_defaults()
+            print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -216,6 +231,10 @@ class Query(object):
 
             # add PipelineInfo
             self._addPipeline()
+
+            # check if query if a dap query
+            if self._isdapquery:
+                self._buildDapQuery()
 
     def __repr__(self):
         return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
@@ -238,6 +257,59 @@ class Query(object):
         else:
             self.mode = 'remote'
 
+    def _checkInFilter(self, name='dapdb'):
+        ''' Check if the given name is in the schema of any of the filter params '''
+
+        fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
+        fparams = [fparams] if type(fparams) != list else fparams
+        inschema = [name in c.class_.__table__.schema for c in fparams]
+        return True if any(inschema) else False
+
+    def _check_shortcuts_in_filter(self, strfilter):
+        ''' Check for shortcuts in string filter
+
+            Replaces shortcuts in string searchfilter
+            with the full tables and names.
+
+            is there a better way?
+        '''
+        # table shortcuts
+        # for key in self.marvinform._param_form_lookup._tableShortcuts.keys():
+        #     #if key in strfilter:
+        #     if re.search('{0}.[a-z]'.format(key), strfilter):
+        #         strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._tableShortcuts[key])
+
+        # name shortcuts
+        for key in self.marvinform._param_form_lookup._nameShortcuts.keys():
+            if key in strfilter:
+                strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
+        return strfilter
+
+    def _adjust_defaults(self):
+        ''' Adjust the default parameters to include necessary parameters
+
+        For any query involving DAP DB, always return the spaxel index
+        TODO: change this to spaxel x and y
+
+        TODO: change this entirely
+
+        '''
+        dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
+        if any(dapschema):
+            dapcols = ['spaxelprop.x', 'spaxelprop.y']
+            self.defaultparams.extend(dapcols)
+            self.params.extend(dapcols)
+            qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
+            self.queryparams.extend(qpdap)
+            self.queryparams_order.extend([q.key for q in qpdap])
+            # oldcols = ['spaxel.x', 'spaxel.y']
+            # if 'spaxel.x' in self.defaultparams:
+            #     for n in oldcols:
+            #         self.defaultparams.remove(n)
+            #         self.params.remove(n)
+            #         self.queryparams.remove(n)
+            #         self.queryparams_order.remove(n.split('.')[1])
+
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
 
@@ -255,18 +327,40 @@ class Query(object):
         self.params.extend(returnparams)
 
     def set_defaultparams(self):
-        ''' Loads the default params for a given return type '''
-        # TODO - change mangaid to plateifu once plateifu works in
-        # SQLalchemy_boolean_search and we can figure out how to grab the classes
-        # for hybrid properties
-        assert self.returntype in [None, 'cube', 'spaxel', 'map', 'rss'], 'Query returntype must be either cube, spaxel, map, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plate', 'ifu.name']  # cube.plate,ifu.name temp until cube.plateifu works
+        ''' Loads the default params for a given return type
+        TODO - change mangaid to plateifu once plateifu works in
+
+        cube, maps, rss, modelcube - file objects
+        spaxel, map, rssfiber - derived objects (no file)
+
+        these are also the default params except
+        any query on spaxelprop should return spaxel_index (x/y)
+
+        Minimum parameters to instantiate a Marvin Tool
+        cube - return plateifu/mangaid
+        modelcube - return plateifu/mangaid, bintype, template
+        rss - return plateifu/mangaid
+        maps - return plateifu/mangaid, bintype, template
+        spaxel - return plateifu/mangaid, spaxel x and y
+
+        map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
+        rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
+
+        return any of our tools
+        '''
+        assert self.returntype in [None, 'cube', 'spaxel', 'maps',
+                                   'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
+        self.defaultparams = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
         if self.returntype == 'spaxel':
-            self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
-        elif self.returntype == 'rssfiber':
-            self.defaultparams.extend(['rssfiber.fiber.fiberid'])
-        elif self.returntype == 'map':
             pass
+            #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
+        elif self.returntype == 'modelcube':
+            self.defaultparams.extend(['bintype.name', 'template.name'])
+        elif self.returntype == 'rss':
+            pass
+        elif self.returntype == 'maps':
+            self.defaultparams.extend(['bintype.name', 'template.name'])
+            # self.defaultparams.extend(['spaxelprop.x', 'spaxelprop.y'])
 
         # add to main set of params
         self.params.extend(self.defaultparams)
@@ -274,11 +368,9 @@ class Query(object):
     def _create_query_modelclasses(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
         self.params = [item for item in self.params if item in set(self.params)]
-        print('my params', self.params)
         self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
-        print('queryorder', self.queryparams_order)
 
     def get_available_params(self):
         ''' Retrieve the available parameters to query on
@@ -295,7 +387,9 @@ class Query(object):
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
-            mykeys = [k.split('.', 1)[-1] for k in keys if 'pk' not in k]
+            mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
+            mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
+                      in k else k for k in mykeys]
             return mykeys
         elif self.mode == 'remote':
             # Get the query route
@@ -370,6 +464,7 @@ class Query(object):
         if searchfilter:
             # if params is a string, then parse and filter
             if type(searchfilter) == str or type(searchfilter) == unicode:
+                searchfilter = self._check_shortcuts_in_filter(searchfilter)
                 try:
                     parsed = parse_boolean_search(searchfilter)
                 except BooleanSearchException as e:
@@ -380,9 +475,10 @@ class Query(object):
             # update the parameters dictionary
             self.searchfilter = searchfilter
             self._parsed = parsed
+            self._checkParsed()
             self.strfilter = str(parsed)
             self.filterparams.update(parsed.params)
-            filterkeys = [key for key in self.filterparams.keys() if key not in self.params]
+            filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
             self.params.extend(filterkeys)
 
             # print filter
@@ -451,11 +547,18 @@ class Query(object):
             name = '{0}.{1}'.format(model.__table__.schema, model.__tablename__)
             if not self._tableInQuery(name):
                 self.joins.append(model.__tablename__)
-                self.query = self.query.join(model)
+                if 'template' not in model.__tablename__:
+                    self.query = self.query.join(model)
+                else:
+                    # assume template_kin only now, TODO deal with template_pop later
+                    self.query = self.query.join(model, marvindb.dapdb.Structure.template_kin)
 
     def build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
-        self.filter = self._parsed.filter(self._modellist)
+        try:
+            self.filter = self._parsed.filter(self._modellist)
+        except BooleanSearchException as e:
+            raise MarvinError('Your boolean expression could not me mapped to model: {0}'.format(e))
 
     def update_params(self, param):
         ''' Update the input parameters '''
@@ -513,20 +616,25 @@ class Query(object):
 
         if self.mode == 'local':
 
-            # Check if filter params are set and there is a query
-            # if self.filterparams and isinstance(self.query.whereclause, type(None)):
-            #     print('adding conditions')
-            #     self.add_condition()
-
             # Check for adding a sort
             self._sortQuery()
 
+            # Check to add the cache
+            if self._caching:
+                from marvin.core.caching_query import FromCache
+                self.query = self.query.options(FromCache("default")).\
+                    options(*marvindb.cache_bits)
+
             # get total count, and if more than 150 results, paginate and only return the first 10
+            start = datetime.datetime.now()
             count = self.query.count()
+            end = datetime.datetime.now()
+            td = (end-start).total_seconds()
+
             self.totalcount = count
-            if count > 150:
+            if count > 1000:
                 query = self.query.slice(0, self.limit)
-                warnings.warn('Results contain more than 150 entries.  Only returning first 10', MarvinUserWarning)
+                warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 query = self.query
 
@@ -540,7 +648,7 @@ class Query(object):
                 res = query.count()
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self)
+                           queryobj=self, totalcount=self.totalcount, chunk=self.limit)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -550,7 +658,12 @@ class Query(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self._returnparams}
+            params = {'searchfilter': self.searchfilter,
+                      'params': self._returnparams,
+                      'returntype': self.returntype,
+                      'limit': self.limit,
+                      'sort': self.sort, 'order': self.order,
+                      'mplver': self._mplver, 'drver': self._drver}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -558,12 +671,14 @@ class Query(object):
             else:
                 res = ii.getData()
                 self.queryparams_order = ii.results['queryparams_order']
+                self.params = ii.results['params']
                 self.query = ii.results['query']
                 count = ii.results['count']
+                chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
@@ -633,7 +748,8 @@ class Query(object):
         ''' Create the base query session object.  Passes in a list of parameters defined in
             returnparams, filterparams, and defaultparams
         '''
-        self.query = self.session.query(*self.queryparams)
+        labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
+        self.query = self.session.query(*labeledqps)
 
     def _getPipeInfo(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
@@ -642,7 +758,7 @@ class Query(object):
 
         # bindparam values
         bindname = 'drpver' if pipename.lower() == 'drp' else 'dapver'
-        bindvalue = config.drpver if pipename.lower() == 'drp' else config.dapver
+        bindvalue = self._drpver if pipename.lower() == 'drp' else self._dapver
 
         # class names
         if pipename.lower() == 'drp':
@@ -700,90 +816,153 @@ class Query(object):
         return isin
 
     # ------------------------------------------------------
-    #  DAP Query - unnesting, subqueries, etc go below here
+    #  DAP Specific Query Modifiers - subqueries, etc go below here
     #  -----------------------------------------------------
 
-    #
-    '''
-    Check all the parameters for ARRAY or not ARRAY (unnesting vs not)
-    Do the Query on all non-arrays and make it a subquery
-    then unnest the arrays using the subquery (only unnest the specified arrays)
-    then do the unnesting filtering
-    '''
-
-    def _unnestTable(self):
-        ''' Subquery - unnest a table
-
-            Builds a new table with unnested arrays for use in future queries
-
+    def _buildDapQuery(self):
+        ''' Builds a DAP zonal query
         '''
 
-        # NEED in HERE
-        # list of Query params - ModelClasses
-        # joins for the query parameters
-        # filter conditions
-        #
+        # get the appropriate Junk (SpaxelProp) ModelClass
+        self._junkclass = self.marvinform.\
+            _param_form_lookup['spaxelprop.file'].Meta.model
 
-        default_unnested_qp = ['cube_shape.indices', 'binid.index', 'cube.pk']
+        # get good spaxels
+        # bingood = self.getGoodSpaxels()
+        # self.query = self.query.\
+        #     join(bingood, bingood.c.binfile == marvindb.dapdb.Junk.file_pk)
 
-        makejoinlist
-
-        self.unnested = self.session.query(dapdb.EmLine.pk.label('pk'), dapdb.File.pk.label('filepk'),
-                                           datadb.Cube.pk.label('cubepk'), dapdb.Structure.pk.label('spk'),
-                                           func.unnest(dapdb.EmLine.value).label('val'), func.unnest(dapdb.BinId.index).label('binid'),
-                                           datadb.CubeShape.size.label('size'), func.unnest(datadb.CubeShape.indices).label('arrind')).\
-            join(dapdb.File, dapdb.Structure, dapdb.EmLineType, dapdb.EmLineParameter, datadb.Cube, datadb.CubeShape, dapdb.BinId).\
-            subquery('unnest', with_labels=True)
+        # check for additional modifier criteria
+        if self._parsed.functions:
+            # loop over all functions
+            for fxn in self._parsed.functions:
+                # look up the function name in the marvinform dictionary
+                try:
+                    methodname = self.marvinform._param_fxn_lookup[fxn.fxnname]
+                except KeyError as e:
+                    self.reset()
+                    raise MarvinError('Could not set function: {0}'.format(e))
+                else:
+                    # run the method
+                    methodcall = self.__getattribute__(methodname)
+                    methodcall(fxn)
 
     def getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
 
-            Counts the number of good spaxels from a prior unnested subquery
-            where BinId != -1
-        '''
-        if not isinstance(self.unnested, type(None)):
-            bincount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.binid).label('binidcount')).\
-                filter(self.unnested.c.binid != -1).group_by(self.unnested.c.pk).subquery('goodcount', with_labels=True)
-        else:
-            raise MarvinError('Cannot create subquery to count good spaxels.  No unnested table exists!')
+        Counts the number of good spaxels with binid != -1
+        Uses the junk.bindid_pk != 9999 since this is known and set.
+        Removes need to join to the binid table
 
+        Returns:
+            bincount (subquery):
+                An SQLalchemy subquery to be joined into the main query object
+        '''
+        bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
+                                      func.count(self._junkclass.pk).label('goodcount')).\
+            filter(self._junkclass.binid != -1).\
+            group_by(self._junkclass.file_pk).subquery('bingood',
+                                                           with_labels=True)
         return bincount
 
-    def getCountOf(self, value):
-        ''' Subquery - Counts the number of
+    def getCountOf(self, expression):
+        ''' Subquery - Counts spaxels satisfying an expression
 
-            Counts the number of rows from a prior unnested subquery
-            that satisfy the input condition
+        Counts the number of spaxels of a given
+        parameter above a certain value.
 
-            TODO - change the operand
+        Parameters:
+            expression (str):
+                The filter expression to parse
+
+        Returns:
+            valcount (subquery):
+                An SQLalchemy subquery to be joined into the main query object
+
+        Example:
+            >>> expression = 'junk.emline_gflux_ha_6564 >= 25'
         '''
 
-        if not isinstance(self.unnested, type(None)):
-            valcount = self.session.query(self.unnested.c.pk, func.count(self.unnested.c.val).label('valcount')).\
-                filter(self.unnested.c.binid != -1, self.unnested.c.val > value).group_by(self.unnested.c.pk).\
-                subquery('goodvalcount', with_labels=True)
-        else:
-            raise MarvinError('Cannot create subquery to count rows.  No unnested table exists!')
+        # parse the expression into name, operator, value
+        param, ops, value = self._parseExpression(expression)
+        # look up the InstrumentedAttribute, Operator, and convert Value
+        attribute = self.marvinform._param_form_lookup.mapToColumn(param)
+        op = opdict[ops]
+        value = float(value)
+        # Build the subquery
+        valcount = self.session.query(self._junkclass.file_pk.label('valfile'),
+                                      (func.count(self._junkclass.pk)).label('valcount')).\
+            filter(op(attribute, value)).\
+            group_by(self._junkclass.file_pk).subquery('goodhacount', with_labels=True)
 
         return valcount
 
-    def getPercent(self, value, percent):
-        ''' Final Query
+    def getPercent(self, fxn, **kwargs):
+        ''' Query - Computes count comparisons
 
-            Final Query step for retriving the Cube that have x% spaxels with Parameter Operand Value.
+        Retrieves the number of objects that have satisfy a given expression
+        in x% of good spaxels.  Expression is of the form
+        Parameter Operand Value. This function is mapped to
+        the "npergood" filter name.
+
+        Syntax: fxnname(expression) operator value
+
+        Parameters:
+            fxn (str):
+                The function condition used in the query filter
+
+        Example:
+            >>> fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            >>> Syntax: npergood() - function name
+            >>>         npergood(expression) operator value
+            >>>
+            >>> Select objects that have Ha flux > 25 in more than
+            >>> 20% of their (good) spaxels.
         '''
 
-        self._unnestTable()
+        # parse the function into name, condition, operator, and value
+        name, condition, ops, value = self._parseFxn(fxn)
+        percent = float(value)/100.
+        op = opdict[ops]
+
+        # Retrieve the necessary subqueries
         bincount = self.getGoodSpaxels()
-        valcount = self.getCountOf(value)
+        valcount = self.getCountOf(condition)
 
-        q = self.session.query(self.unnested.c.cubepk).join(valcount, valcount.c.unnest_pk == self.unnested.c.pk).\
-            join(bincount, bincount.c.unnest_pk == self.unnested.c.pk).\
-            filter(valcount.c.valcount >= percent*bincount.c.binidcount).group_by(self.unnested.c.cubepk)
+        # Join to the main query
+        self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
+            join(valcount, valcount.c.valfile == self._junkclass.file_pk).\
+            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))
 
-        return q.all()
+        # Group the results by main defaultdatadb parameters,
+        # so as not to include all spaxels
+        newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
+        newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
+        self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
+    def _parseFxn(self, fxn):
+        ''' Parse a fxn condition '''
+        return fxn.fxnname, fxn.fxncond, fxn.op, fxn.value
 
+    def _parseExpression(self, expr):
+        ''' Parse an expression '''
+        return expr.fullname, expr.op, expr.value
 
+    def _checkParsed(self):
+        ''' Check the boolean parsed object
 
+            check for function conditions vs normal.  This should be moved
+            into SQLalchemy Boolean Search
+        '''
 
+        # Triggers for only one filter and it is a function condition
+        if hasattr(self._parsed, 'fxn'):
+            self._parsed.functions = [self._parsed]
+
+        # Checks for shortcut names and replaces them in params
+        # now redundant after pre-check on searchfilter
+        for key, val in self._parsed.params.items():
+            if key in self.marvinform._param_form_lookup._nameShortcuts.keys():
+                newkey = self.marvinform._param_form_lookup._nameShortcuts[key]
+                self._parsed.params.pop(key)
+                self._parsed.params.update({newkey: val})
