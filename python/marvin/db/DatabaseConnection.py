@@ -25,8 +25,8 @@ import os
 # dogpile cache regions.  A home base for cache configurations.
 regions = {}
 
-dogpath = os.getenv('MANGA_SCRATCH_DIR')
-if os.path.isdir(dogpath):
+dogpath = os.environ.get('MANGA_SCRATCH_DIR', None)
+if dogpath and os.path.isdir(dogpath):
     dogpath = dogpath
 else:
     dogpath = os.path.expanduser('~')
