@@ -130,7 +130,12 @@ class MarvinConfig(object):
     def drver(self, value):
         raise MarvinError('drver cannot be set directly. Use marvin.config.setDR()')
 
+    def session_id(self):
+        return bconfig.session_id
 
+    @session_id.setter
+    def session_id(self, value):
+        bconfig.session_id = value
 #################################################
 
     @property

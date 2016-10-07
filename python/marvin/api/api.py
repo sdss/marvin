@@ -14,7 +14,11 @@ from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
 
+<<<<<<< 76cb53c407a8eee40eed16280f67e7ffb8b3ae12
 configkeys = ['mplver', 'drver']
+=======
+configkeys = ['mplver', 'drpver', 'dapver', 'session_id']
+>>>>>>> testing login
 
 
 class Interaction(BrainInteraction):
