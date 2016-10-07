@@ -24,7 +24,14 @@ import os
 
 # dogpile cache regions.  A home base for cache configurations.
 regions = {}
-dogroot = os.path.join(os.getenv('MANGA_SCRATCH_DIR'), 'dogpile_data')
+
+dogpath = os.getenv('MANGA_SCRATCH_DIR')
+if os.path.isdir(dogpath):
+    dogpath = dogpath
+else:
+    dogpath = os.path.expanduser('~')
+
+dogroot = os.path.join(dogpath, 'dogpile_data')
 if not os.path.isdir(dogroot):
     os.makedirs(dogroot)
 
