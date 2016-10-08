@@ -94,8 +94,8 @@ class MarvinDB(object):
 
     def _getSpaxelProp(self):
         ''' Get the correct SpaxelProp class given an MPL '''
-        return {'full': self.spaxelpropdict[self._mplver], 'clean':
-                'Clean{0}'.format(self.spaxelpropdict[self._mplver])}
+        return {'full': self.spaxelpropdict[self._release], 'clean':
+                'Clean{0}'.format(self.spaxelpropdict[self._release])}
 
     def _setSession(self):
         ''' Sets the database session '''
@@ -142,7 +142,7 @@ class MarvinDB(object):
 
     def buildUberClassDict(self, **kwargs):
         ''' Builds an uber class dictionary from all modelclasses '''
-        self._mplver = kwargs.get('mplver', config.mplver)
+        self._release = kwargs.get('release', config.release)
         classdict = {}
         models = [self.datadb, self.sampledb, self.dapdb]
         for model in models:
@@ -176,4 +176,3 @@ class MarvinDB(object):
 
         if self.dapdb:
             self.cache_bits.append(self.dapdb.dap_cache)
-

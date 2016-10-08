@@ -62,10 +62,10 @@ def getDir3d(inputid, mode=None):
     if idtype == 'plate':
         plateid = inputid
     elif idtype == 'plateifu':
-        plateid, ifu = inputid.split('-')
+        plateid, __ = inputid.split('-')
 
-    mplver = marvin.config.mplver
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = marvin.config.release
+    drpver, __ = marvin.config.lookUpVersions(release=release)
     drpstrict = StrictVersion(drpver.strip('v').replace('_', '.'))
     verstrict = StrictVersion('1.5.4')
 
@@ -82,7 +82,7 @@ def getDir3d(inputid, mode=None):
 # General image utilities
 @checkPath
 @setMode
-def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None, mplver=None):
+def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get a list of N random images from SAS
 
     Retrieve a random set of images from either your local filesystem SAS
@@ -102,16 +102,16 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
             Convert the list of images to use the SAS url
         verbose (bool):
             Turns on verbosity during rsync
-        mplver (str):
-            The MPL version of the images to return
+        release (str):
+            The release version of the images to return
 
     Returns:
         listofimages (list):
             The list of images
 
     '''
-    mplver = mplver if mplver else marvin.config.mplver
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = release if release else marvin.config.release
+    drpver, __ = marvin.config.lookUpVersions(release=release)
     rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose)
 
     if mode == 'local':
@@ -139,7 +139,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 
 @checkPath
 @setMode
-def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=None, mplver=None):
+def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get all images belonging to a given plate ID
 
     Retrieve all images belonging to a given plate ID from either your local filesystem SAS
@@ -159,8 +159,8 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
             Convert the list of images to use the SAS url
         verbose (bool):
             Turns on verbosity during rsync
-        mplver (str):
-            The MPL version of the images to return
+        release (str):
+            The release version of the images to return
 
     Returns:
         listofimages (list):
@@ -174,8 +174,8 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     rsync_access = RsyncAccess(label='marvin_getplate', verbose=verbose)
 
     # setup marvin inputs
-    mplver = mplver if mplver else marvin.config.mplver
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = release if release else marvin.config.release
+    drpver, __ = marvin.config.lookUpVersions(release=release)
     dir3d = getDir3d(plateid, mode=mode)
 
     if mode == 'local':
@@ -203,7 +203,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 
 @checkPath
 @setMode
-def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=None, mplver=None):
+def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get all images from a list of ids
 
     Retrieve a list of images from either your local filesystem SAS
@@ -223,8 +223,8 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
             Convert the list of images to use the SAS url
         verbose (bool):
             Turns on verbosity during rsync
-        mplver (str):
-            The MPL version of the images to return
+        release (str):
+            The release version of the images to return
 
     Returns:
         listofimages (list):
@@ -248,8 +248,8 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
         inputlist = newlist
 
     # setup Rsync Access
-    mplver = mplver if mplver else marvin.config.mplver
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = release if release else marvin.config.release
+    drpver, __ = marvin.config.lookUpVersions(release=release)
     rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose)
 
     if mode == 'local':
@@ -283,5 +283,3 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
             rsync_access.commit()
         else:
             return listofimages
-
-

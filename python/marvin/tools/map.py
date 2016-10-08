@@ -187,8 +187,7 @@ class Map(object):
 
         try:
             response = marvin.api.api.Interaction(url_full,
-                                                  params={'mplver': self.maps._mplver,
-                                                          'drver': self.maps._drver})
+                                                  params={'release': self.maps._release})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))

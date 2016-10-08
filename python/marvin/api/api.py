@@ -14,7 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
 
-configkeys = ['mplver', 'drver']
+configkeys = ['release']
 
 
 class Interaction(BrainInteraction):

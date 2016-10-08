@@ -65,19 +65,9 @@ class MarvinToolsClass(object):
 
         self.mode = kwargsGet(kwargs, 'mode', marvin.config.mode)
 
-        self._mplver = kwargsGet(kwargs, 'mplver', None)
-        self._drver = kwargsGet(kwargs, 'drver', None)
-
-        if not self._mplver and not self._drver:
-            self._mplver = marvin.config.mplver
-            self._drver = marvin.config.drver
-
-        assert bool(self._mplver) != bool(self._drver), ('one and only one of drver or mplver '
-                                                         'must be set.')
-
+        self._release = kwargsGet(kwargs, 'release', marvin.config.release)
         self._drpall = kwargsGet(kwargs, 'drpall', marvin.config.drpall)
-        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
-                                                                  drver=self._drver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
         self._forcedownload = kwargsGet(kwargs, 'download', marvin.config.download)
 
@@ -193,9 +183,9 @@ class MarvinToolsClass(object):
         return fullpath
 
     def ToolInteraction(self, url, params=None):
-        """Runs an Interaction and passes self._mplver and self._drver."""
+        """Runs an Interaction and passes self._release."""
 
-        params = params or {'mplver': self._mplver, 'drver': self._drver}
+        params = params or {'release': self._release}
         return marvin.api.api.Interaction(url, params=params)
 
 

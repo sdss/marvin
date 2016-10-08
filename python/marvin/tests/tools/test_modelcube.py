@@ -35,7 +35,7 @@ class TestModelCubeBase(marvin.tests.MarvinTest):
 
         cls.drpver = 'v2_0_1'
         cls.dapver = '2.0.2'
-        cls.mplver = 'MPL-5'
+        cls.release = 'MPL-5'
 
         cls.plate = 8485
         cls.ifu = 1901
@@ -72,8 +72,7 @@ class TestModelCubeInit(TestModelCubeBase):
 
     def _test_init(self, model_cube, bintype='SPX', template_kin='GAU-MILESHC'):
 
-        self.assertEqual(model_cube._mplver, self.mplver)
-        self.assertIsNone(model_cube._drver)
+        self.assertEqual(model_cube._release, self.release)
         self.assertEqual(model_cube._drpver, self.drpver)
         self.assertEqual(model_cube._dapver, self.dapver)
         self.assertEqual(model_cube.bintype, bintype)

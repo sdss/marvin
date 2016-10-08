@@ -65,9 +65,8 @@ class ModelCube(MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
-        mplver,drver (str):
-            The MPL/DR version of the data to use. Only one ``mplver`` or
-            ``drver`` must be defined at the same time.
+        release (str):
+            The MPL/DR version of the data to use.
 
     Return:
         modelcube:
@@ -79,7 +78,7 @@ class ModelCube(MarvinToolsClass):
 
         valid_kwargs = [
             'data', 'cube', 'maps', 'filename', 'mangaid', 'plateifu', 'mode',
-            'mplver', 'drver', 'bintype', 'template_kin', 'template_pop']
+            'release', 'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -186,36 +185,20 @@ class ModelCube(MarvinToolsClass):
         self.plateifu = self.header['PLATEIFU']
         self.mangaid = self.header['MANGAID']
 
-        # Checks and populates mplver and drver.
+        # Checks and populates release.
         file_drpver = self.header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
 
-        file_ver = marvin.config.lookUpMpl(file_drpver)
+        file_ver = marvin.config.lookUpRelease(file_drpver)
         assert file_ver is not None, 'cannot find file version.'
 
-        if 'DR' in file_ver:
-            file_drver = file_ver
-            file_mplver = None
-        elif 'MPL' in file_ver:
-            file_drver = None
-            file_mplver = file_ver
-        else:
-            raise MarvinError('file version is not MPL or DR.')
+        if file_ver != self._release:
+            warnings.warn('mismatch between file version={0} and object release={1}. '
+                          'Setting object release to {0}'.format(file_ver, self._release),
+                          marvin.core.exceptions.MarvinUserWarning)
+            self._release = file_ver
 
-        if file_mplver != self._mplver:
-            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
-                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
-                          MarvinUserWarning)
-            self._mplver = file_mplver
-
-        if file_drver != self._drver:
-            warnings.warn('mismatch between file drver={0} and object drver={1}. '
-                          'Setting object drver to {0}'.format(file_drver, self._drver),
-                          MarvinUserWarning)
-            self._drver = file_drver
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
-                                                                  drver=self._drver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
@@ -427,8 +410,7 @@ class ModelCube(MarvinToolsClass):
 
             self._cube = marvin.tools.cube.Cube(data=cube_data,
                                                 plateifu=self.plateifu,
-                                                mplver=self._mplver,
-                                                drver=self._drver)
+                                                release=self._release)
 
         return self._cube
 
@@ -440,7 +422,6 @@ class ModelCube(MarvinToolsClass):
             self._maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
                                                 bintype=self.bintype,
                                                 template_kin=self.template_kin,
-                                                mplver=self._mplver,
-                                                drver=self._drver)
+                                                release=self._release)
 
         return self._maps

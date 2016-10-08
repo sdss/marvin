@@ -30,7 +30,7 @@ def _getSpaxel(name, x, y, **kwargs):
     spaxel = None
     results = {}
 
-    mplver, drver = parse_params(request)
+    release = parse_params(request)
 
     # parse name into either mangaid or plateifu
     try:
@@ -50,7 +50,7 @@ def _getSpaxel(name, x, y, **kwargs):
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
         spaxel = Spaxel(x=x, y=y, mangaid=mangaid, plateifu=plateifu,
-                        mplver=mplver, drver=drver, **kwargs)
+                        release=release, **kwargs)
         results['status'] = 1
     except Exception as e:
         results['error'] = 'Failed to retrieve Spaxels {0}: {1}'.format(name, str(e))

@@ -30,7 +30,7 @@ def _getMaps(name, **kwargs):
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
 
-    mplver, drver = parse_params(request)
+    release = parse_params(request)
 
     # Parses name into either mangaid or plateifu
     try:
@@ -51,8 +51,7 @@ def _getMaps(name, **kwargs):
                 'invalid plateifu or mangaid: {0}'.format(idtype))
 
         maps = marvin.tools.maps.Maps(mangaid=mangaid, plateifu=plateifu,
-                                      mode='local', mplver=mplver, drver=drver,
-                                      **kwargs)
+                                      mode='local', release=release, **kwargs)
         results['status'] = 1
     except Exception as ee:
         maps = None
