@@ -493,7 +493,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-01 15:05:09
+* @Last Modified time: 2016-10-07 15:48:43
 */
 
 'use strict';
