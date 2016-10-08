@@ -263,7 +263,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                                         __BINTYPES_MPL4__[self.bintype]))
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, bintype=self.bintype, n=niter,
-                          path_type='mangadap')
+                          path_type='mangamap')
         else:
             daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
             params = dict(drpver=self._drpver, dapver=self._dapver,
