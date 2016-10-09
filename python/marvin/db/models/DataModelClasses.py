@@ -343,7 +343,7 @@ class Cube(Base, ArrayOps):
 
         """
 
-        session = db.Session()
+        session = Session.object_session(self)
         spaxels = session.query(getattr(Spaxel, extension)).filter(
             Spaxel.cube_pk == self.pk).order_by(Spaxel.x, Spaxel.y).all()
 
@@ -841,4 +841,3 @@ data_cache = RelationshipCache(Cube.target).\
                and_(RelationshipCache(Cube.wavelength)).\
                and_(RelationshipCache(IFUDesign.fibers)).\
                and_(RelationshipCache(Cube.rssfibers))
-
