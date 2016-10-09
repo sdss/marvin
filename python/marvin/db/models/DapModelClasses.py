@@ -315,7 +315,7 @@ class ModelCube(Base):
 
         """
 
-        session = Session.object_session(self)
+        session = db.Session.object_session(self)
         spaxels = session.query(getattr(ModelSpaxel, extension)).filter(
             ModelSpaxel.modelcube_pk == self.pk).order_by(ModelSpaxel.x, ModelSpaxel.y).all()
 
