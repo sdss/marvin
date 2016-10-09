@@ -336,7 +336,8 @@ class Cube(MarvinToolsClass):
 
         return finaltargs
 
-    def getSpaxel(self, properties=True, modelcube=False, **kwargs):
+    def getSpaxel(self, x=None, y=None, ra=None, dec=None,
+                  properties=True, modelcube=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -380,7 +381,7 @@ class Cube(MarvinToolsClass):
         kwargs['maps'] = properties
         kwargs['modelcube'] = modelcube
 
-        return marvin.utils.general.general.getSpaxel(**kwargs)
+        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.

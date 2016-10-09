@@ -302,7 +302,8 @@ class ModelCube(MarvinToolsClass):
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
 
-    def getSpaxel(self, spectrum=True, properties=True, **kwargs):
+    def getSpaxel(self, x=None, y=None, ra=None, dec=None,
+                  spectrum=True, properties=True, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -353,7 +354,7 @@ class ModelCube(MarvinToolsClass):
         kwargs['maps'] = self.maps if properties else False
         kwargs['modelcube'] = self
 
-        return marvin.utils.general.general.getSpaxel(**kwargs)
+        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
     def _return_extension(self, extension):
 
