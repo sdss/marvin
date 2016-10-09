@@ -209,7 +209,7 @@ class Map(object):
 
     def plot(self, array='value', xlim=None, ylim=None, zlim=None,
              xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
-             figure=None, return_figure=False):
+             figure=None, return_figure=False, show_masked=False):
         """Plot a map using matplotlib.
 
         Returns a |axes|_ object with a representation of this map.
@@ -220,9 +220,9 @@ class Map(object):
         the plot will be displayed interactivelly.
 
         Parameters:
-            array ({'value', 'ivar', 'mask'}):
-                The array to display, either the data itself, the inverse
-                variance or the mask.
+            array ({'value', 'ivar'}):
+                The array to display, either the data itself or the inverse
+                variance.
             xlim,ylim (tuple-like or None):
                 The range to display for the x- and y-axis, respectively,
                 defined as a tuple of two elements ``[xmin, xmax]``. If
@@ -248,6 +248,9 @@ class Map(object):
             return_figure (bool):
                 If ``True``, the matplotlib Figure object used will be returned
                 along with the axes object.
+            show_masked (bool):
+                By default, masked values are not shown.
+                If ``show_masked=True``, all spaxels are shown.
 
         Returns:
             ax (`matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_):
@@ -258,7 +261,7 @@ class Map(object):
         Example:
 
           >>> maps = Maps(plateifu='8485-1901')
-          >>> ha_map = maps.getMap(category='emline_gflux', channel='ha-6564')
+          >>> ha_map = maps.getMap('emline_gflux', channel='ha_6564')
           >>> ha_map.plot()
 
         .. |axes| replace:: matplotlib.axes
@@ -273,15 +276,13 @@ class Map(object):
                 'matplotlib is not installed.')
 
         array = array.lower()
-        validExensions = ['value', 'ivar', 'mask']
+        validExensions = ['value', 'ivar']
         assert array in validExensions, 'array must be one of {0!r}'.format(validExensions)
 
         if array == 'value':
             data = self.value
         elif array == 'ivar':
             data = self.ivar
-        elif array == 'mask':
-            data = self.mask
 
         fig = plt.figure() if figure is None else figure
         ax = fig.add_subplot(111)
@@ -301,6 +302,9 @@ class Map(object):
 
         if cmap is None:
             cmap = plt.cm.coolwarm_r
+
+        if show_masked is False:
+            data = numpy.ma.array(data, mask=(self.mask > 0))
 
         imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
 
