@@ -356,17 +356,6 @@ class TestGetSpaxel(TestCubeBase):
         if errMsg2:
             self.assertIn(errMsg2, str(cm.exception))
 
-    def test_getSpaxel_remote_fail_nourlmap(self):
-
-        self.assertIsNotNone(config.urlmap)
-        config.urlmap = URLMapDict()
-
-        with self.assertRaises(BrainError) as cm:
-            Cube(mangaid=self.mangaid, mode='remote')
-
-        self.assertIn('No URL Map found', str(cm.exception))
-        self.assertIn('Cannot make remote call', str(cm.exception))
-
     def test_getSpaxel_remote_fail_badresponse(self):
 
         config.sasurl = 'http://www.averywrongurl.com'
