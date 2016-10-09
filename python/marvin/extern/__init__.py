@@ -24,7 +24,7 @@ def _import_module(name, relpath):
 
 # Imports the external packages (some of them don't have __init__ in the right places and can
 # not be imported normally).
-sdss_access = _import_module('sdss_access', 'sdss_access/python/')
+# sdss_access = _import_module('sdss_access', 'sdss_access/python/')
 sqlalchemy_boolean_search = _import_module(
     'sqlalchemy_boolean_search', 'sqlalchemy-boolean-search/')
 wtforms_alchemy = _import_module('wtforms_alchemy', 'wtforms-alchemy/')
