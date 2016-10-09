@@ -34,9 +34,6 @@ def updateGlobalSession():
     if 'versions' not in current_session:
         setGlobalSession()
 
-    # if 'currentmpl' in current_session:
-    #     config.setMPL(current_session['currentmpl'])
-
 
 def setGlobalSession():
     ''' Sets the global session for Flask '''
@@ -59,12 +56,9 @@ def parseSession():
     print('parsing the session')
     drpver = current_session['drpver']
     dapver = current_session['dapver']
-    mplver = current_session['mplver']
-    drver = current_session['drver']
-    currentver = current_session['currentver']
-    release = currentver
-    print('gotten vers', drpver, dapver, mplver, drver, release, currentver)
-    return drpver, dapver, currentver, release
+    release = current_session['currentver']
+    print('gotten vers', drpver, dapver, release)
+    return drpver, dapver, release
 
 
 def setGlobalSession_old():
@@ -115,15 +109,6 @@ def getDAPVersion():
     versions = [v.version for v in vers]
 
     return versions+['NA']
-
-
-def setMPLVersion(mplver):
-    ''' set the versions based on MPL '''
-
-    mpl = getMPL(mplver)
-    drpver, dapver = mpl.split(':')[1].strip().split(', ')
-    current_session['currentver'] = drpver
-    current_session['currentdapver'] = dapver if dapver != 'NA' else None
 
 
 def setGlobalVersion():

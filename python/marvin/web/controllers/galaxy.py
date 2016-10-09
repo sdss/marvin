@@ -140,7 +140,7 @@ class Galaxy(FlaskView):
         self.galaxy['image'] = ''
         self.galaxy['spectra'] = 'null'
         self.galaxy['maps'] = None
-        self._drpver, self._dapver, self._currentver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
 
     def index(self):
         ''' Main galaxy page '''
@@ -156,11 +156,11 @@ class Galaxy(FlaskView):
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
             self.galaxy['idtype'] = idtype
-            galaxyid = {self.galaxy['idtype']: galid, self._release: self._currentver}
+            galaxyid = {self.galaxy['idtype']: galid, 'release': self._release}
 
             # Get cube
             try:
-                print('marvin config', self._currentver, self._dapver, self._dapver)
+                print('marvin config', self._release, self._dapver, self._dapver)
                 cube = Cube(**galaxyid)
             except MarvinError as e:
                 self.galaxy['cube'] = None
@@ -168,14 +168,14 @@ class Galaxy(FlaskView):
                 return render_template("galaxy.html", **self.galaxy)
             else:
                 self.galaxy['cube'] = cube
-                self.galaxy['daplink'] = getDapRedux(self._currentver)
+                self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
                     sdss_path = Path()
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = getDefaultMapPath(mplver=self._currentver, plate=cube.plate, ifu=cube.ifu, daptype='SPX-GAU-MILESHC', mode='MAPS')
+                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype='SPX-GAU-MILESHC', mode='MAPS')
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
                     self.galaxy['image'] = cube.data.image
@@ -219,8 +219,8 @@ class Galaxy(FlaskView):
     def getSpaxel(self):
         f = processRequest(request=request)
         print('spaxelform', f)
-        self._drpver, self._dapver, self._currentver, self._release = parseSession()
-        cubeinputs = {'plateifu': f['plateifu'], self._release: self._currentver}
+        self._drpver, self._dapver, self._release = parseSession()
+        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
         maptype = f.get('type', None)
 
         if maptype == 'optical':
@@ -277,9 +277,9 @@ class Galaxy(FlaskView):
 
     @route('updatemaps', methods=['POST'], endpoint='updatemaps')
     def updateMaps(self):
-        self._drpver, self._dapver, self._currentver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
         f = processRequest(request=request)
-        cubeinputs = {'plateifu': f['plateifu'], self._release: self._currentver}
+        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
         params = f.get('params[]', None)
         bintemp = f.get('bintemp', None)
         current_session['bintemp'] = bintemp
