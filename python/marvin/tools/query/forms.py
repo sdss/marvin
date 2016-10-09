@@ -99,7 +99,7 @@ class ParamFormLookupDict(dict):
 
     def __init__(self, **kwargs):
         self.allspaxels = kwargs.get('allspaxels', None)
-        self._mplver = kwargs.get('mplver', config.mplver)
+        self._release = kwargs.get('release', config.release)
         self._init_table_shortcuts()
         self._init_name_shortcuts()
 
@@ -206,11 +206,11 @@ class ParamFormLookupDict(dict):
 
         newmpls = [m for m in config._mpldict.keys() if m >= 'MPL-4']
         spaxname = 'spaxelprop' if self.allspaxels else 'cleanspaxelprop'
-        if '4' in self._mplver:
+        if '4' in self._release:
             dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): spaxname for m in newmpls}
             dapcut.update({'spaxelprop': spaxname})
         else:
-            mdigit = self._mplver.split('-')[1]
+            mdigit = self._release.split('-')[1]
             dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): '{0}{1}'.format(spaxname, mdigit) for m in newmpls}
             dapcut.update({'spaxelprop': '{0}{1}'.format(spaxname, mdigit)})
 
@@ -262,8 +262,8 @@ class MarvinForm(object):
         _param_form_lookup = dictionary of all modelclass parameters of form {'SQLalchemy ModelClass parameter name': WTForm Class}
         '''
 
-        self._mplver = kwargs.get('mplver', config.mplver)
-        self._modelclasses = marvindb.buildUberClassDict(mplver=self._mplver)
+        self._release = kwargs.get('release', config.release)
+        self._modelclasses = marvindb.buildUberClassDict(release=self._release)
         self._param_form_lookup = ParamFormLookupDict(**kwargs)
         self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()

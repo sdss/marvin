@@ -87,8 +87,7 @@ class TestMapsFile(TestMapsBase):
 
         marvin.config.setMPL('MPL-5')
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
-        self.assertEqual(maps._mplver, 'MPL-4')
-        self.assertIsNone(maps._drver)
+        self.assertEqual(maps._release, 'MPL-4')
         self.assertEqual(maps._drpver, 'v1_5_1')
         self.assertEqual(maps._dapver, '1.1.1')
 
@@ -149,7 +148,7 @@ class TestMapsDB(TestMapsBase):
 
     def test_get_spaxel_db(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', mplver='MPL-4')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local', release='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
@@ -204,7 +203,7 @@ class TestMapsAPI(TestMapsBase):
 
     def test_get_spaxel_api(self):
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', release='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
@@ -226,7 +225,7 @@ class TestMapsAPI(TestMapsBase):
 
         marvin.config.setMPL('MPL-5')
 
-        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', release='MPL-4')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower', spectrum=False)
 
         self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))

@@ -149,15 +149,8 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
-        self._mplver = kwargs.pop('mplver', None)
-        self._drver = kwargs.pop('drver', None)
-
-        if not self._mplver and not self._drver:
-            self._mplver = config.mplver
-            self._drver = config.drver
-
-        self._drpver, self._dapver = config.lookUpVersions(mplver=self._mplver,
-                                                           drver=self._drver)
+        self._release = kwargs.pop('release', config.release)
+        self._drpver, self._dapver = config.lookUpVersions(release=self._release)
 
         self.query = None
         self.params = []
@@ -181,7 +174,7 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
 
         # set the mode
         if self.mode is None:
@@ -664,7 +657,7 @@ class Query(object):
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
-                      'mplver': self._mplver, 'drver': self._drver}
+                      'release': self._release}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:

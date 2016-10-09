@@ -47,7 +47,7 @@ class Search(FlaskView):
         self.search['results'] = None
         self.search['errmsg'] = None
         self.search['filter'] = None
-        self._drpver, self._dapver, self._mplver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -58,7 +58,7 @@ class Search(FlaskView):
 
         # set the marvin form
         searchform = self.mf.SearchForm(form)
-        q = Query(mplver=self._mplver)
+        q = Query(release=self._release)
         allparams = q.get_available_params()
         searchform.returnparams.choices = [(k.lower(), k) for k in allparams]
 
@@ -86,7 +86,7 @@ class Search(FlaskView):
             if searchform.validate():
                 # try the query
                 try:
-                    q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver, returnparams=returnparams)
+                    q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams)
                 except MarvinError as e:
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
@@ -108,7 +108,7 @@ class Search(FlaskView):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''
-        q = Query(mplver=self._mplver)
+        q = Query(release=self._release)
         allparams = q.get_available_params()
         output = json.dumps(allparams)
         return output
@@ -122,7 +122,7 @@ class Search(FlaskView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        print('webtable', searchvalue, returnparams, self._mplver)
+        print('webtable', searchvalue, returnparams, self._release)
         limit = form.get('limit', 10)
         offset = form.get('offset', None)
         order = form.get('order', None)
@@ -135,7 +135,7 @@ class Search(FlaskView):
             return output
 
         # do query
-        q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver,
+        q, res = doQuery(searchfilter=searchvalue, release=self._release,
                          limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)

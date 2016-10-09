@@ -47,8 +47,7 @@ class MarvinConfig(object):
         self._urlmap = None
         self._xyorig = None
 
-        self._mplver = None
-        self._drver = None
+        self._release = None
 
         self.vermode = None
         self.download = False
@@ -85,7 +84,7 @@ class MarvinConfig(object):
         """Tries to set the default location of drpall."""
 
         if not drpver:
-            drpver, __ = self.lookUpVersions(drver=self.drver, mplver=self.mplver)
+            drpver, __ = self.lookUpVersions(self.release)
         self.drpall = self._getDrpAllPath(drpver)
 
     def _getDrpAllPath(self, drpver):
@@ -119,6 +118,21 @@ class MarvinConfig(object):
         bconfig.sasurl = value
 
     @property
+    def release(self):
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        value = value.upper()
+        if value not in self._mpldict:
+            raise MarvinError('trying to set an invalid release version. Valid releases are: {0}'
+                              .format(', '.join(sorted(self._mpldict.keys()))))
+        self._release = value
+
+        drpver = self._mpldict[self.release][0]
+        self.drpall = self._getDrpAllPath(drpver)
+
+    @property
     def session_id(self):
         return bconfig.session_id
 
@@ -126,21 +140,6 @@ class MarvinConfig(object):
     def session_id(self, value):
         bconfig.session_id = value
 
-    @property
-    def mplver(self):
-        return self._mplver
-
-    @mplver.setter
-    def mplver(self):
-        raise MarvinError('mplver cannot be set directly. Use marvin.config.setMPL()')
-
-    @property
-    def drver(self):
-        return self._drver
-
-    @drver.setter
-    def drver(self, value):
-        raise MarvinError('drver cannot be set directly. Use marvin.config.setDR()')
 
 #################################################
 
@@ -199,75 +198,61 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         # set and sort the base MPL dictionary
-        mpldict = {'MPL-5': ('v2_0_1', '2.0.2'), 'MPL-4': ('v1_5_1', '1.1.1'), 'MPL-3': ('v1_3_3', 'v1_0_0'),
-                   'MPL-2': ('v1_2_0', None), 'MPL-1': ('v1_0_0', None)}  #, 'DR13': ('v1_5_4', None)}
+        mpldict = {'MPL-5': ('v2_0_1', '2.0.2'),
+                   'MPL-4': ('v1_5_1', '1.1.1'),
+                   'MPL-3': ('v1_3_3', 'v1_0_0'),
+                   'MPL-2': ('v1_2_0', None),
+                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
         # Check the versioning config
-        if not self.mplver and not self.drver:
+        if not self.release:
             topkey = self._mpldict.keys()[0]
-            log.info('No MPL or DR version set. Setting default to {0}'.format(topkey))
-            if 'DR' in topkey:
-                self.setDR(topkey)
-            else:
-                self.setMPL(topkey)
+            log.info('No release version set. Setting default to {0}'.format(topkey))
+            self.release = topkey
 
-    def setMPL(self, mplver):
-        ''' Set the data version by MPL
-
-        Sets the MPL version globally in the config. When specifying the MPL,
-        the DRP and DAP versions also get set globally.
+    def setRelease(self, version):
+        """Set the release version.
 
         Parameters:
-            mplver (str):
-                The MPL version to set, in form of MPL-X
+            version (str):
+                The MPL/DR version to set, in form of MPL-X or DRXX.
 
         Example:
-            >>> config.setMPL('MPL-4')
-        '''
+            >>> config.setRelease('MPL-4')
+            >>> config.setRelease('DR13')
+
+        """
+
+        version = version.upper()
+        self.release = version
+
+    def setMPL(self, mplver):
+        """As :func:`setRelease` but check that the version is and MPL."""
 
         mm = re.search('MPL-([0-9])', mplver)
         assert mm is not None, 'MPL version must be of form "MPL-[X]"'
-        if mm:
-            self._mplver = mplver
-            self._drver = None
 
-            drpver = self._mpldict[self._mplver][0]
-            self.drpall = self._getDrpAllPath(drpver)
+        if mm:
+            self.setRelease(mplver)
 
     def setDR(self, drver):
-        ''' Set the data version by Data Release (DR)
+        """As :func:`setRelease` but check that the version is and MPL."""
 
-        Sets the DR version globally in the config. When specifying the DR,
-        the DRP and DAP versions also get set globally.
-
-        Parameters:
-            drver (str):
-                The DR version to set, in form of DRXX
-
-        Example:
-            >>> config.setDR('DR13')
-        '''
         mm = re.search('DR1([3-9])', drver)
         assert mm is not None, 'DR version must be of form "DR[XX]"'
+
         if mm:
-            self._mplver = None
-            self._drver = drver
+            self.setRelease(drver)
 
-            drpver = self._mpldict[self._drver][0]
-            self.drpall = self._getDrpAllPath(drpver)
-
-    def lookUpVersions(self, mplver=None, drver=None):
-        """Retrieve the DRP and DAP versions that make up an MPL/DR
-
-        Look up the DRP and DAP version for a specified MPL version.
+    def lookUpVersions(self, release=None):
+        """Retrieve the DRP and DAP versions that make up a release version.
 
         Parameters:
-            mplver (str):
-                The MPL version
-            drver (str):
-                The DR version
+            release (str or None):
+                The release version. If ``None``, uses the currently set
+                ``release`` value.
 
         Returns:
             drpver (str):
@@ -277,40 +262,39 @@ class MarvinConfig(object):
 
         """
 
-        # Asserts one and only one of mplver or drver are set
-        assert bool(mplver) != bool(drver), 'one and only one of drver or mplver must be set.'
+        release = release or self.release
 
         try:
-            drpver, dapver = self._mpldict[mplver or drver]
-        except KeyError as ee:
+            drpver, dapver = self._mpldict[release]
+        except KeyError:
             raise MarvinError('MPL/DR version {0} not found in lookup table. '
                               'No associated DRP/DAP versions. '
-                              'Should they be added?  Check for typos.'.format(mplver or drver))
+                              'Should they be added?  Check for typos.'.format(release))
 
         return drpver, dapver
 
-    def lookUpMpl(self, drpver):
-        ''' Retrieve the MPL version for a given DRP version
-
-        Look up the MPL version for a specified DRP version.
+    def lookUpRelease(self, drpver):
+        """Retrieve the release version for a given DRP version
 
         Parameters:
             drpver (str):
                 The DRP version to use
         Returns:
-            mplver (str):
-                The MPL version according to the input DRP version
-        '''
+            release (str):
+                The release version according to the input DRP version
+        """
 
         # Flip the mpldict
         verdict = {val[0]: key for key, val in self._mpldict.items()}
 
         try:
-            mplver = verdict[drpver]
-        except KeyError as e:
-            raise MarvinError('DRP version {0} not found in lookup table. No associated MPL version. Should one be added?  Check for typos.'.format(drpver))
+            release = verdict[drpver]
+        except KeyError:
+            raise MarvinError('DRP version {0} not found in lookup table. '
+                              'No associated MPL version. Should one be added?  '
+                              'Check for typos.'.format(drpver))
 
-        return mplver
+        return release
 
     def switchSasUrl(self, sasmode='utah', ngrokid=None):
         ''' Switches the SAS url config attribute

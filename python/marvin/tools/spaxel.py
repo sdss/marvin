@@ -88,9 +88,8 @@ class Spaxel(object):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
-        mplver,drver (str):
-            The MPL/DR version of the data to use. Only one ``mplver`` or
-            ``drver`` must be defined at the same time.
+        release (str):
+            The MPL/DR version of the data to use.
 
     Attributes:
         spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
@@ -132,7 +131,7 @@ class Spaxel(object):
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
             'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
-            'template_kin', 'template_pop', 'mplver', 'drver']
+            'template_kin', 'template_pop', 'release']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -147,20 +146,10 @@ class Spaxel(object):
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
 
         # Checks versions
-        input_mplver = kwargs.pop('mplver', None)
-        input_drver = kwargs.pop('drver', None)
+        input_release = kwargs.pop('release', marvin.config.release)
+        self._release = self._check_version(input_release)
 
-        if not input_mplver and not input_drver:
-            input_mplver = marvin.config.mplver
-            input_drver = marvin.config.drver
-
-        assert bool(input_mplver) != bool(input_drver), ('one and only one of '
-                                                         'drver or mplver must be set.')
-
-        self._mplver, self._drver = self._check_version(input_mplver, input_drver)
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
-                                                                  drver=self._drver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
         self.plateifu = None
         self.mangaid = None
@@ -211,44 +200,40 @@ class Spaxel(object):
         modelcube_filename = kwargs.pop('modelcube_filename', None)
         self._check_modelcube(modelcube_filename)
 
-    def _check_version(self, mplver, drver):
+    def _check_version(self, input_release):
 
         has_cube = isinstance(self.cube, marvin.tools.cube.Cube)
         has_maps = isinstance(self.maps, marvin.tools.maps.Maps)
         has_modelcube = isinstance(self.modelcube, marvin.tools.modelcube.ModelCube)
 
         if not has_cube and not has_maps and not has_modelcube:
-            return mplver, drver
+            return input_release
 
         if has_cube and has_maps:
 
-            assert self.cube._mplver == self.maps._mplver
-            assert self.cube._drver == self.maps._drver
+            assert self.cube._release == self.maps._release
 
             if has_modelcube:
-                assert self.cube._mplver == self.modelcube._mplver
-                assert self.cube._drver == self.modelcube._drver
+                assert self.cube._release == self.modelcube._release
 
-            return self.cube._mplver, self.cube._drver
+            return self.cube._release
 
         if has_cube and has_modelcube:
-            assert self.cube._mplver == self.modelcube._mplver
-            assert self.cube._drver == self.modelcube._drver
-            return self.cube._mplver, self.cube._drver
+            assert self.cube._release == self.modelcube._release
+            return self.cube._release
 
         if has_maps and has_modelcube:
-            assert self.maps._mplver == self.modelcube._mplver
-            assert self.maps._drver == self.modelcube._drver
-            return self.maps._mplver, self.maps._drver
+            assert self.maps._release == self.modelcube._release
+            return self.maps._release
 
         if has_cube:
-            return self.cube._mplver, self.cube._drver
+            return self.cube._release
 
         if has_maps:
-            return self.maps._mplver, self.maps._drver
+            return self.maps._release
 
         if has_modelcube:
-            return self.modelcube._mplver, self.modelcube._drver
+            return self.modelcube._release
 
     def _check_cube(self, cube_filename):
         """Loads the cube and the spectrum."""
@@ -261,7 +246,7 @@ class Spaxel(object):
             self.cube = marvin.tools.cube.Cube(filename=cube_filename,
                                                plateifu=self.plateifu,
                                                mangaid=self.mangaid,
-                                               mplver=self._mplver, drver=self._drver)
+                                               release=self._release)
         else:
             self.cube = None
             return
@@ -295,7 +280,7 @@ class Spaxel(object):
                                                plateifu=self.plateifu,
                                                bintype=self.bintype,
                                                template_kin=self.template_kin,
-                                               mplver=self._mplver, drver=self._drver)
+                                               release=self._release)
         else:
             self.maps = None
             return
@@ -339,8 +324,7 @@ class Spaxel(object):
                                                               plateifu=self.plateifu,
                                                               bintype=self.bintype,
                                                               template_kin=self.template_kin,
-                                                              mplver=self._mplver,
-                                                              drver=self._drver)
+                                                              release=self._release)
         else:
             self.modelcube = None
             return
@@ -438,8 +422,7 @@ class Spaxel(object):
             url = marvin.config.urlmap['api']['getSpectrum']['url'].format(**routeparams)
 
             # Make the API call
-            response = api.Interaction(url, params={'mplver': self._mplver,
-                                                    'drver': self._drver})
+            response = api.Interaction(url, params={'release': self._release})
 
             # Temporarily stores the arrays prior to subclassing from np.array
             data = response.getData()
@@ -570,8 +553,7 @@ class Spaxel(object):
             url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
             # Make the API call
-            response = api.Interaction(url, params={'mplver': self._mplver,
-                                                    'drver': self._drver})
+            response = api.Interaction(url, params={'release': self._release})
 
             # Temporarily stores the arrays prior to subclassing from np.array
             data = response.getData()
@@ -640,8 +622,7 @@ class Spaxel(object):
                                   x=self.x, y=self.y)
 
             try:
-                response = api.Interaction(url_full, params={'mplver': self._mplver,
-                                                             'drver': self._drver})
+                response = api.Interaction(url_full, params={'release': self._release})
             except Exception as ee:
                 raise MarvinError('found a problem when checking if remote model cube '
                                   'exists: {0}'.format(str(ee)))

@@ -139,17 +139,16 @@ class Maps(marvin.core.core.MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
-        mplver,drver (str):
-            The MPL/DR version of the data to use. Only one ``mplver`` or
-            ``drver`` must be defined at the same time.
+        release (str):
+            The MPL/DR version of the data to use.
 
     """
 
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'mplver',
-            'drver', 'bintype', 'template_kin', 'template_pop']
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'release',
+            'bintype', 'template_kin', 'template_pop']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -216,7 +215,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         header_drpver = instance.header['VERSDRP3']
         isMPL4 = False
-        if instance._mplver == 'MPL-4' and header_drpver == 'v1_5_0':
+        if instance._release == 'MPL-4' and header_drpver == 'v1_5_0':
             header_drpver = 'v1_5_1'
             isMPL4 = True
         assert header_drpver == instance._drpver, ('mismatch between maps._drpver={0} '
@@ -294,36 +293,20 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
         self.shape = self.data['EMLINE_GFLUX'].data.shape[-2:]
 
-        # Checks and populates mplver and drver.
+        # Checks and populates release.
         file_drpver = self.header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
 
-        file_ver = marvin.config.lookUpMpl(file_drpver)
+        file_ver = marvin.config.lookUpRelease(file_drpver)
         assert file_ver is not None, 'cannot find file version.'
 
-        if 'DR' in file_ver:
-            file_drver = file_ver
-            file_mplver = None
-        elif 'MPL' in file_ver:
-            file_drver = None
-            file_mplver = file_ver
-        else:
-            raise marvin.core.exceptions.MarvinError('file version is not MPL or DR.')
-
-        if file_mplver != self._mplver:
-            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
-                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+        if file_ver != self._release:
+            warnings.warn('mismatch between file version={0} and object release={1}. '
+                          'Setting object release to {0}'.format(file_ver, self._release),
                           marvin.core.exceptions.MarvinUserWarning)
-            self._mplver = file_mplver
+            self._release = file_ver
 
-        if file_drver != self._drver:
-            warnings.warn('mismatch between file drver={0} and object drver={1}. '
-                          'Setting object drver to {0}'.format(file_drver, self._drver),
-                          marvin.core.exceptions.MarvinUserWarning)
-            self._drver = file_drver
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
-                                                                  drver=self._drver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
         # Checks the bintype and template_kin from the header
         header_bintype = self.data[0].header['BINTYPE'].strip().upper()
@@ -437,8 +420,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if not self._cube:
             try:
                 cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
-                                              mplver=self._mplver,
-                                              drver=self._drver)
+                                              release=self._release)
             except Exception as err:
                 raise marvin.core.exceptions.MarvinError(
                     'cannot instantiate a cube for this Maps. Error: {0}'.format(err))

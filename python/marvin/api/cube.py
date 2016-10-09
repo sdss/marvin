@@ -21,7 +21,7 @@ def _getCube(name):
     ''' Retrieve a cube using marvin tools '''
 
     # Gets the drpver from the request
-    mplver, drver = parse_params(request)
+    release = parse_params(request)
 
     cube = None
     results = {}
@@ -43,8 +43,7 @@ def _getCube(name):
         else:
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
-        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local',
-                    mplver=mplver, drver=drver)
+        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', release=release)
         results['status'] = 1
     except Exception as ee:
         results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))

@@ -43,9 +43,8 @@ class RSS(MarvinToolsClass, list):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
-        mplver,drver (str):
-            The MPL/DR version of the data to use. Only one ``mplver`` or
-            ``drver`` must be defined at the same time.
+        release (str):
+            The MPL/DR version of the data to use.
 
     Return:
         rss:
@@ -57,7 +56,7 @@ class RSS(MarvinToolsClass, list):
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'mplver', 'drver']
+            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'release']
 
         assert len(args) == 0, 'RSS does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -116,37 +115,20 @@ class RSS(MarvinToolsClass, list):
         except Exception as ee:
             raise MarvinError('Could not initialize via filename: {0}'.format(ee))
 
-        # Checks and populates mplver and drver.
-        header = self.data[0].header
-        file_drpver = header['VERSDRP3']
+        # Checks and populates release.
+        file_drpver = self.data[0].header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
 
-        file_ver = marvin.config.lookUpMpl(file_drpver)
+        file_ver = marvin.config.lookUpRelease(file_drpver)
         assert file_ver is not None, 'cannot find file version.'
 
-        if 'DR' in file_ver:
-            file_drver = file_ver
-            file_mplver = None
-        elif 'MPL' in file_ver:
-            file_drver = None
-            file_mplver = file_ver
-        else:
-            raise MarvinError('file version is not MPL or DR.')
-
-        if file_mplver != self._mplver:
-            warnings.warn('mismatch between file mplver={0} and object mplver={1}. '
-                          'Setting object mplver to {0}'.format(file_mplver, self._mplver),
+        if file_ver != self._release:
+            warnings.warn('mismatch between file version={0} and object release={1}. '
+                          'Setting object release to {0}'.format(file_ver, self._release),
                           MarvinUserWarning)
-            self._mplver = file_mplver
+            self._release = file_ver
 
-        if file_drver != self._drver:
-            warnings.warn('mismatch between file drver={0} and object drver={1}. '
-                          'Setting object drver to {0}'.format(file_drver, self._drver),
-                          MarvinUserWarning)
-            self._drver = file_drver
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(mplver=self._mplver,
-                                                                  drver=self._drver)
+        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
     def _load_rss_from_db(self):
         """Initialises the RSS object from the DB."""
