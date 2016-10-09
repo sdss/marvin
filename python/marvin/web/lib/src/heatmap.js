@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-07 15:48:43
+* @Last Modified time: 2016-10-08 21:29:01
 */
 
 'use strict';
@@ -94,7 +94,7 @@ class HeatMap {
                 if (noData) {
                     val = 'no-data';
                 } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
-                   val = null;
+                   var g = null;
                 } else if (ivar === null) {
                     if (this.title.search('binid') !== -1) {
                         val = (val == -1 ) ? 'no-data' : val;
@@ -127,17 +127,21 @@ class HeatMap {
         //var range  = this.getXRange();
         var xyrange, zrange;
         [xyrange, zrange]  = this.getRange();
+        console.log('old zrange', zrange);
 
         // get the min and max of the ranges
         var xymin, xymax, zmin, zmax;
         [xymin, xymax] = this.getMinMax(xyrange);
         [zmin, zmax] = this.getMinMax(zrange);
+        console.log('old zminmax', zmin, zmax);
 
         // set null data and create new zrange, min, and max
         var data = this.setNull(this.data);
         zrange = data.map(function(o){return o[2];});
         zrange = zrange.filter(this.filterRange);
         [zmin, zmax] = this.getMinMax(zrange);
+        console.log('new zrange', zrange);
+        console.log('new zminmax', zmin, zmax);
 
         // make the highcharts
         this.mapdiv.highcharts({
