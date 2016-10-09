@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-18 09:49:24
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-09-28 16:12:28
 */
 
 // Javascript code for general things
@@ -13,6 +13,12 @@ class Utils {
 
     // Constructor
     constructor() {
+
+    // login handlers
+    $('#login-user').on('keyup', this, this.submitLogin); // submit login on keypress
+    $('#login-pass').on('keyup', this, this.submitLogin); // submit login on keypress
+    $('#login-drop').on('hide.bs.dropdown', this, this.resetLogin); //reset login on dropdown hide
+
     }
 
     // Print
@@ -60,6 +66,51 @@ class Utils {
     // Initialize tooltips
     initToolTips() {
         $('[data-toggle="tooltip"]').tooltip();
+    };
+
+    // Login function
+    login() {
+        var form = $('#loginform').serialize();
+        var _this = this;
+
+      $.post(Flask.url_for('index_page.login'), form, 'json')
+          .done(function(data){
+              if (data.result.status < 0) {
+                  // bad submit
+                  _this.resetLogin();
+              } else {
+                  // good submit
+                  if (data.result.message !== ''){
+                      var stat = (data.result.status === 0) ? 'danger' : 'success';
+                      var htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result.message + "</h4></div>";
+                      $('#loginmessage').html(htmlstr);
+                  }
+                  if (data.result.status === 1){
+                      location.reload(true);
+                  }
+
+              }
+          })
+          .fail(function(data){
+            alert('Bad login attempt');
+          });
+    };
+
+    // Reset Login
+    resetLogin() {
+        $('#loginform').trigger('reset');
+        $('#loginmessage').empty();
+    };
+
+    // Submit Login on Keyups
+    submitLogin(event) {
+        var _this = event.data;
+        // login
+        if(event.keyCode == 13){
+            if ($('#login-user').val() && $('#login-pass').val()) {
+                _this.login();
+            }
+        }
     };
 }
 

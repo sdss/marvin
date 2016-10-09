@@ -19,8 +19,9 @@ CREATE SCHEMA mangadatadb;
 SET search_path TO mangadatadb;
 
 CREATE TABLE mangadatadb.cube (pk serial PRIMARY KEY NOT NULL, plate INTEGER, mangaid TEXT, designid INTEGER,
-					pipeline_info_pk INTEGER, wavelength_pk INTEGER, ifudesign_pk INTEGER,
-					specres numeric[], xfocal numeric, yfocal numeric, ra DOUBLE PRECISION, dec DOUBLE PRECISION);
+					pipeline_info_pk INTEGER, wavelength_pk INTEGER, ifudesign_pk INTEGER, manga_target_pk integer,
+					specres numeric[], xfocal double precision, yfocal double precision, ra DOUBLE PRECISION,
+					dec DOUBLE PRECISION, cube_shape_pk INTEGER);
 
 CREATE INDEX q3c_cube_idx ON mangadatadb.cube (functions.q3c_ang2ipix(ra, dec));
 
@@ -29,15 +30,11 @@ CREATE TABLE mangadatadb.cart (pk serial PRIMARY KEY NOT NULL, id INTEGER);
 CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, cart_pk INTEGER);
 
 CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux numeric[],
-				ivar numeric[], mask INTEGER[], xpos numeric[],
-				ypos numeric[], exposure_no INTEGER, mjd INTEGER, exposure_pk INTEGER, cube_pk INTEGER);
+				ivar double precision[], mask INTEGER[], xpos double precision[],
+				ypos double precision[], exposure_no INTEGER, mjd INTEGER, exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER);
 
-CREATE INDEX CONCURRENTLY rssfib_idx ON mangadatadb.rssfiber using GIN(flux,ivar,mask,xpos,ypos);
-
-CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux numeric[], ivar numeric[],
-				mask numeric[], cube_pk INTEGER, x INTEGER, y INTEGER);
-
-CREATE INDEX CONCURRENTLY spaxel_idx ON mangadatadb.spaxel using GIN(flux,ivar,mask);
+CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux numeric[], ivar double precision[],
+				mask integer[], cube_pk INTEGER, x INTEGER, y INTEGER);
 
 CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength numeric[],
 				bintype TEXT);
@@ -68,47 +65,52 @@ CREATE TABLE mangadatadb.ifu_to_block (pk serial PRIMARY KEY NOT NULL, ifudesign
 CREATE TABLE mangadatadb.slitblock (pk serial PRIMARY KEY NOT NULL, blockid INTEGER, specblockid INTEGER, nfiber INTEGER);
 
 CREATE TABLE mangadatadb.fibers (pk serial PRIMARY KEY NOT NULL, fiberid INTEGER, specfibid INTEGER, fnum INTEGER,
-	ring INTEGER, dist_mm numeric,xpmm numeric, ypmm numeric, fiber_type_pk INTEGER, target_type_pk INTEGER, ifudesign_pk INTEGER);
+	ring INTEGER, dist_mm double precision,xpmm double precision, ypmm double precision, fiber_type_pk INTEGER,
+	target_type_pk INTEGER, ifudesign_pk INTEGER);
 
 CREATE TABLE mangadatadb.fiber_type (pk serial PRIMARY KEY NOT NULL, label TEXT);
 CREATE TABLE mangadatadb.target_type (pk serial PRIMARY KEY NOT NULL, label TEXT);
 
-CREATE TABLE mangadatadb.sample (pk serial PRIMARY KEY NOT NULL, manga_tileid INTEGER, ifu_ra numeric, ifu_dec numeric,
-	target_ra numeric, target_dec numeric, iauname TEXT, ifudesignsize INTEGER, ifutargetsize INTEGER,
-	ifudesignwrongsize INTEGER, field INTEGER, run INTEGER, nsa_redshift numeric, nsa_zdist numeric,
-	nsa_absmag_F numeric,nsa_absmag_N numeric,nsa_absmag_u numeric,nsa_absmag_g numeric,
-	nsa_absmag_r numeric,nsa_absmag_i numeric,nsa_absmag_z numeric,nsa_mstar numeric,
-	nsa_vdisp numeric, nsa_inclination numeric, nsa_petro_th50 numeric,nsa_petroflux_F numeric,
-	nsa_petroflux_N numeric,nsa_petroflux_u numeric,nsa_petroflux_g numeric,nsa_petroflux_r numeric,
-	nsa_petroflux_i numeric,nsa_petroflux_z numeric,nsa_petroflux_ivar_F numeric,nsa_petroflux_ivar_N numeric,
-	nsa_petroflux_ivar_u numeric,nsa_petroflux_ivar_g numeric,nsa_petroflux_ivar_r numeric,
-	nsa_petroflux_ivar_i numeric,nsa_petroflux_ivar_z numeric,nsa_sersic_ba numeric, nsa_sersic_n numeric,
-	nsa_sersic_phi numeric,nsa_sersic_th50 numeric, nsa_sersicflux_F numeric,nsa_sersicflux_N numeric,
-	nsa_sersicflux_u numeric,nsa_sersicflux_g numeric,nsa_sersicflux_r numeric,nsa_sersicflux_i numeric,
-	nsa_sersicflux_z numeric,nsa_sersicflux_ivar_F numeric,nsa_sersicflux_ivar_N numeric,
-	nsa_sersicflux_ivar_u numeric,nsa_sersicflux_ivar_g numeric,nsa_sersicflux_ivar_r numeric,
-	nsa_sersicflux_ivar_i numeric,nsa_sersicflux_ivar_z numeric, cube_pk INTEGER, nsa_version TEXT, nsa_id BIGINT,
-	nsa_id100 BIGINT,nsa_ba numeric, nsa_phi numeric, nsa_mstar_el numeric, nsa_petro_th50_el numeric,
-	nsa_petroflux_el_F numeric,nsa_petroflux_el_N numeric,nsa_petroflux_el_u numeric,
-	nsa_petroflux_el_g numeric,nsa_petroflux_el_r numeric,nsa_petroflux_el_i numeric,
-	nsa_petroflux_el_z numeric,nsa_petroflux_el_ivar_F numeric,nsa_petroflux_el_ivar_N numeric,
-	nsa_petroflux_el_ivar_u numeric,nsa_petroflux_el_ivar_g numeric,nsa_petroflux_el_ivar_r numeric,
-	nsa_petroflux_el_ivar_i numeric,nsa_petroflux_el_ivar_z numeric,nsa_absmag_el_F numeric,
-	nsa_absmag_el_N numeric,nsa_absmag_el_u numeric,nsa_absmag_el_g numeric,nsa_absmag_el_r numeric,
-	nsa_absmag_el_i numeric,nsa_absmag_el_z numeric,nsa_amivar_el_F numeric,nsa_amivar_el_N numeric,
-	nsa_amivar_el_u numeric,nsa_amivar_el_g numeric,nsa_amivar_el_r numeric,nsa_amivar_el_i numeric,
-	nsa_amivar_el_z numeric,nsa_extinction_F numeric,nsa_extinction_N numeric,nsa_extinction_u numeric,
-	nsa_extinction_g numeric,nsa_extinction_r numeric,nsa_extinction_i numeric,nsa_extinction_z numeric);
+CREATE TABLE mangadatadb.sample (pk serial PRIMARY KEY NOT NULL, manga_tileid INTEGER, ifu_ra double precision, ifu_dec double precision,
+	target_ra double precision, target_dec double precision, iauname TEXT, ifudesignsize INTEGER, ifutargetsize INTEGER,
+	ifudesignwrongsize INTEGER, field INTEGER, run INTEGER, nsa_redshift double precision, nsa_zdist double precision,
+	nsa_absmag_F double precision,nsa_absmag_N double precision,nsa_absmag_u double precision,nsa_absmag_g double precision,
+	nsa_absmag_r double precision,nsa_absmag_i double precision,nsa_absmag_z double precision,nsa_mstar double precision,
+	nsa_vdisp double precision, nsa_inclination double precision, nsa_petro_th50 double precision,nsa_petroflux_F double precision,
+	nsa_petroflux_N double precision,nsa_petroflux_u double precision,nsa_petroflux_g double precision,nsa_petroflux_r double precision,
+	nsa_petroflux_i double precision,nsa_petroflux_z double precision,nsa_petroflux_ivar_F double precision,nsa_petroflux_ivar_N double precision,
+	nsa_petroflux_ivar_u double precision,nsa_petroflux_ivar_g double precision,nsa_petroflux_ivar_r double precision,
+	nsa_petroflux_ivar_i double precision,nsa_petroflux_ivar_z double precision,nsa_sersic_ba double precision, nsa_sersic_n double precision,
+	nsa_sersic_phi double precision,nsa_sersic_th50 double precision, nsa_sersicflux_F double precision,nsa_sersicflux_N double precision,
+	nsa_sersicflux_u double precision,nsa_sersicflux_g double precision,nsa_sersicflux_r double precision,nsa_sersicflux_i double precision,
+	nsa_sersicflux_z double precision,nsa_sersicflux_ivar_F double precision,nsa_sersicflux_ivar_N double precision,
+	nsa_sersicflux_ivar_u double precision,nsa_sersicflux_ivar_g double precision,nsa_sersicflux_ivar_r double precision,
+	nsa_sersicflux_ivar_i double precision,nsa_sersicflux_ivar_z double precision, cube_pk INTEGER, nsa_version TEXT, nsa_id BIGINT,
+	nsa_id100 BIGINT,nsa_ba double precision, nsa_phi double precision, nsa_mstar_el double precision, nsa_petro_th50_el double precision,
+	nsa_petroflux_el_F double precision,nsa_petroflux_el_N double precision,nsa_petroflux_el_u double precision,
+	nsa_petroflux_el_g double precision,nsa_petroflux_el_r double precision,nsa_petroflux_el_i double precision,
+	nsa_petroflux_el_z double precision,nsa_petroflux_el_ivar_F double precision,nsa_petroflux_el_ivar_N double precision,
+	nsa_petroflux_el_ivar_u double precision,nsa_petroflux_el_ivar_g double precision,nsa_petroflux_el_ivar_r double precision,
+	nsa_petroflux_el_ivar_i double precision,nsa_petroflux_el_ivar_z double precision,nsa_absmag_el_F double precision,
+	nsa_absmag_el_N double precision,nsa_absmag_el_u double precision,nsa_absmag_el_g double precision,nsa_absmag_el_r double precision,
+	nsa_absmag_el_i double precision,nsa_absmag_el_z double precision,nsa_amivar_el_F double precision,nsa_amivar_el_N double precision,
+	nsa_amivar_el_u double precision,nsa_amivar_el_g double precision,nsa_amivar_el_r double precision,nsa_amivar_el_i double precision,
+	nsa_amivar_el_z double precision,nsa_extinction_F double precision,nsa_extinction_N double precision,nsa_extinction_u double precision,
+	nsa_extinction_g double precision,nsa_extinction_r double precision,nsa_extinction_i double precision,nsa_extinction_z double precision);
 
 CREATE TABLE mangadatadb.wcs (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, ctype3 TEXT, crpix3 INTEGER, crval3 numeric, cd3_3 numeric,
 	cunit3 TEXT, crpix1 numeric, crpix2 numeric, crval1 numeric, crval2 numeric, cd1_1 numeric, cd2_2 numeric, ctype1 TEXT, ctype2 TEXT,
-	cunit1 TEXT, cunit2 TEXT, hduclass TEXT, hduclas1 TEXT, hduclas2 TEXT, errdata TEXT, qualdata TEXT, extname TEXT);
+	cunit1 TEXT, cunit2 TEXT, hduclass TEXT, hduclas1 TEXT, hduclas2 TEXT, errdata TEXT, qualdata TEXT, extname TEXT, naxis1 integer,
+	naxis2 integer, naxis3 integer);
+
+CREATE TABLE mangadatadb.cube_shape (pk serial PRIMARY KEY NOT NULL, size INTEGER, total INTEGER, indices integer[][]);
 
 INSERT INTO mangadatadb.fiber_type VALUES (0, 'IFU'),(1,'SKY');
 INSERT INTO mangadatadb.target_type VALUES (0, 'science'),(1,'sky'),(2,'standard');
 INSERT INTO mangadatadb.cart VALUES (0, '1'),(1, '2'),(2, '3'),(3, '4'),(4, '5'),(5,'6');
 INSERT INTO mangadatadb.pipeline_name VALUES (0,'DOS'), (1, 'DRP'), (2, 'DAP');
-INSERT INTO mangadatadb.pipeline_version VALUES (0,'trunk'),(1,'v1_0_0'),(2,'v1_1_2');
+INSERT INTO mangadatadb.pipeline_version VALUES (0,'trunk'),(1,'v1_0_0'),(2,'v1_1_2'), (3, 'v1_3_3'), (4, 'v1_5_1'),
+	(5, 'v1_5_4'), (6, '1.1.1'), (7, 'v1_2_0');
 INSERT INTO mangadatadb.pipeline_stage VALUES (0,'DOS'),(1,'DRP-2d'), (2,'DRP-3d'), (3, 'DAP-Block1');
 INSERT INTO mangadatadb.pipeline_completion_status VALUES (0,'Queued'), (1,'Transferred'),(2, 'Started'),
 	(3, 'Running'),(4,'Done'), (5, 'Fault'), (6, 'Redo');
@@ -1583,6 +1585,16 @@ ALTER TABLE ONLY mangadatadb.cube
     FOREIGN KEY (ifudesign_pk) REFERENCES mangadatadb.ifudesign(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
+ALTER TABLE ONLY mangadatadb.cube
+    ADD CONSTRAINT manga_target_fk
+    FOREIGN KEY (manga_target_pk) REFERENCES mangasampledb.manga_target(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadatadb.cube
+    ADD CONSTRAINT cube_shape_fk
+    FOREIGN KEY (cube_shape_pk) REFERENCES mangadatadb.cube_shape(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
 ALTER TABLE ONLY mangadatadb.wcs
     ADD CONSTRAINT cube_fk
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
@@ -1593,6 +1605,10 @@ ALTER TABLE ONLY mangadatadb.rssfiber
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
+ALTER TABLE ONLY mangadatadb.rssfiber
+    ADD CONSTRAINT fibers_fk
+    FOREIGN KEY (fibers_pk) REFERENCES mangadatadb.fibers(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY mangadatadb.spaxel
     ADD CONSTRAINT cube_fk
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
@@ -1668,28 +1684,22 @@ ALTER TABLE ONLY mangadatadb.cart_to_cube
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
-/* test rss table with flux as json*/
+/* Indexes */
+CREATE INDEX CONCURRENTLY wavelength_pk_idx ON mangadatadb.cube using BTREE(wavelength_pk);
+CREATE INDEX CONCURRENTLY pipelineinfo_pk_idx ON mangadatadb.cube using BTREE(pipeline_info_pk);
+CREATE INDEX CONCURRENTLY ifudesign_pk_idx ON mangadatadb.cube using BTREE(ifudesign_pk);
+CREATE INDEX CONCURRENTLY manga_target_pk_idx ON mangadatadb.cube using BTREE(manga_target_pk);
+CREATE INDEX CONCURRENTLY cube_shape_pk_idx ON mangadatadb.cube using BTREE(cube_shape_pk);
+CREATE INDEX CONCURRENTLY rssfib_cube_pk_idx ON mangadatadb.rssfiber using BTREE(cube_pk);
+CREATE INDEX CONCURRENTLY fibers_pk_idx ON mangadatadb.rssfiber using BTREE(fibers_pk);
+CREATE INDEX CONCURRENTLY spaxel_cube_pk_idx ON mangadatadb.spaxel using BTREE(cube_pk);
+CREATE INDEX CONCURRENTLY spaxel_x_idx ON mangadatadb.spaxel using BTREE(x);
+CREATE INDEX CONCURRENTLY spaxel_y_idx ON mangadatadb.spaxel using BTREE(y);
+CREATE INDEX CONCURRENTLY wcs_cube_pk_idx ON mangadatadb.wcs using BTREE(cube_pk);
+CREATE INDEX CONCURRENTLY fitshead_cube_pk_idx ON mangadatadb.fits_header_value using BTREE(cube_pk);
+CREATE INDEX CONCURRENTLY fits_header_keyword_pk_idx ON mangadatadb.fits_header_value using BTREE(fits_header_keyword_pk);
+CREATE INDEX CONCURRENTLY pipeline_version_pk_idx ON mangadatadb.pipeline_info using BTREE(pipeline_version_pk);
 
-CREATE TABLE mangadatadb.test_rssfiber (pk serial PRIMARY KEY NOT NULL, flux REAL[], flux_json JSON,
-				ivar REAL[], mask INTEGER[], xpos REAL[],
-				ypos REAL[], exposure_no INTEGER, mjd INTEGER, exposure_pk INTEGER, cube_pk INTEGER);
-
-CREATE INDEX CONCURRENTLY test_rssfib_idx ON mangadatadb.test_rssfiber using GIN(flux,ivar,mask,xpos,ypos);
-
-ALTER TABLE ONLY mangadatadb.test_rssfiber
-    ADD CONSTRAINT cube_fk
-    FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-CREATE TABLE mangadatadb.test_spaxel (pk serial PRIMARY KEY NOT NULL, flux REAL[], ivar REAL[],
-				mask INTEGER[], cube_pk INTEGER, flux_json JSON);
-
-CREATE INDEX CONCURRENTLY test_spaxel_idx ON mangadatadb.test_spaxel using GIN(flux,ivar,mask);
-
-ALTER TABLE ONLY mangadatadb.test_spaxel
-    ADD CONSTRAINT cube_fk
-    FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
 
 /* Functions related to MaNGA Data DB */
 SET search_path TO functions;
@@ -1727,6 +1737,15 @@ BEGIN
 	return result;
 END; $$;
 
+CREATE OR REPLACE FUNCTION rest_wavelength(nsaz double precision) returns numeric[]
+    LANGUAGE plpgsql STABLE
+    AS $$
+
+DECLARE result numeric[];
+BEGIN
+	select array_agg(f) from (select unnest(w.wavelength)/(1+nsaz) as f from mangadatadb.wavelength as w) as g into result;
+	return result;
+END; $$;
 
 
 
