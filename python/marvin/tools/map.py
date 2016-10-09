@@ -220,9 +220,9 @@ class Map(object):
         the plot will be displayed interactivelly.
 
         Parameters:
-            array ({'value', 'ivar'}):
-                The array to display, either the data itself or the inverse
-                variance.
+            array ({'value', 'ivar', 'mask'}):
+                The array to display, either the data itself, the inverse
+                variance, or the mask.
             xlim,ylim (tuple-like or None):
                 The range to display for the x- and y-axis, respectively,
                 defined as a tuple of two elements ``[xmin, xmax]``. If
@@ -276,13 +276,15 @@ class Map(object):
                 'matplotlib is not installed.')
 
         array = array.lower()
-        validExensions = ['value', 'ivar']
+        validExensions = ['value', 'ivar', 'mask']
         assert array in validExensions, 'array must be one of {0!r}'.format(validExensions)
 
         if array == 'value':
             data = self.value
         elif array == 'ivar':
             data = self.ivar
+        elif array == 'mask':
+            data = self.mask
 
         fig = plt.figure() if figure is None else figure
         ax = fig.add_subplot(111)
@@ -303,7 +305,7 @@ class Map(object):
         if cmap is None:
             cmap = plt.cm.coolwarm_r
 
-        if show_masked is False:
+        if show_masked is False and array != 'mask':
             data = numpy.ma.array(data, mask=(self.mask > 0))
 
         imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
