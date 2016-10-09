@@ -18,6 +18,7 @@ import numpy
 
 import marvin
 import marvin.api.api
+import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 
@@ -205,6 +206,44 @@ class Map(object):
         self.header = fits.Header(data['header'])
 
         return
+
+    def save(self, path, overwrite=False):
+        """Pickles the map to a file.
+
+        This method will fail if the map is associated to a Maps loaded
+        from the db.
+
+        Parameters:
+            path (str):
+                The path of the file to which the ``Map`` will be saved.
+                Unlike for other Marvin Tools that derive from
+                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
+                mandatory for ``Map`` given that the there is no default
+                path for a given spaxel.
+            overwrite (bool):
+                If True, and the ``path`` already exists, overwrites it.
+                Otherwise it will fail.
+
+        Returns:
+            path (str):
+                The realpath to which the file has been saved.
+
+        """
+
+        return marvin.core.marvin_pickle.save(self, path=path, overwrite=overwrite)
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        """Restores a Map object from a pickled file.
+
+        If ``delete=True``, the pickled file will be removed after it has been
+        unplickled. Note that, for map objes instantiated from a Maps object
+        with ``data_origin='file'``, the original file must exists and be
+        in the same path as when the object was first created.
+
+        """
+
+        return marvin.core.marvin_pickle.restore(path, delete=delete)
 
     def plot(self, array='value', xlim=None, ylim=None, zlim=None,
              xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
