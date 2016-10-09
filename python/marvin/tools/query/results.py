@@ -11,6 +11,7 @@ from marvin.api.api import Interaction
 import warnings
 import json
 import os
+import datetime
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
@@ -99,6 +100,8 @@ class Results(object):
         self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
+        self._runtime = kwargs.get('runtime', None)
+        self.query_runtime = self._getRunTime() if self._runtime is not None else None
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
         self.chunk = kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
@@ -133,6 +136,13 @@ class Results(object):
             return self.query
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
+
+    def _getRunTime(self):
+        ''' Sets the query runtime as a datetime timedelta object '''
+        if type(self._runtime) == dict:
+            return datetime.timedelta(**self._runtime)
+        else:
+            return self._runtime
 
     def download(self, images=False, limit=None):
         ''' Download results via sdss_access

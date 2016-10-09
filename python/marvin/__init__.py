@@ -128,6 +128,14 @@ class MarvinConfig(object):
         drpver = self._mpldict[self.release][0]
         self.drpall = self._getDrpAllPath(drpver)
 
+    @property
+    def session_id(self):
+        return bconfig.session_id
+
+    @session_id.setter
+    def session_id(self, value):
+        bconfig.session_id = value
+
 
 #################################################
 
@@ -139,7 +147,7 @@ class MarvinConfig(object):
             try:
                 response = Interaction('api/general/getroutemap', request_type='get')
             except Exception as e:
-                warnings.warn('cannot retrieve URLMap. Remote functionality will not work.',
+                warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
                 self._urlmap = URLMapDict()
             else:

@@ -621,8 +621,6 @@ class Query(object):
             # get total count, and if more than 150 results, paginate and only return the first 10
             start = datetime.datetime.now()
             count = self.query.count()
-            end = datetime.datetime.now()
-            td = (end-start).total_seconds()
 
             self.totalcount = count
             if count > 1000:
@@ -640,8 +638,11 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
+            end = datetime.datetime.now()
+            self.runtime = (end-start)
+
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self, totalcount=self.totalcount, chunk=self.limit)
+                           queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -669,9 +670,10 @@ class Query(object):
                 count = ii.results['count']
                 chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
+                runtime = ii.results['runtime']
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount, chunk=chunk)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

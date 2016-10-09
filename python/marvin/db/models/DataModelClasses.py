@@ -776,26 +776,6 @@ class MaskBit(Base):
     def __repr__(self):
         return '<MaskBit (pk={0},flag={1}, bit={2}, label={3})'.format(self.pk, self.flag, self.bit, self.label)
 
-
-# =======
-# Test Tables
-# =======
-class TestRssFiber(Base):
-    __tablename__ = 'test_rssfiber'
-    __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
-
-    def __repr__(self):
-        return '<TestRssFiber (pk={0})>'.format(self.pk)
-
-
-class TestSpaxel(Base):
-    __tablename__ = 'test_spaxel'
-    __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
-
-    def __repr__(self):
-        return '<TestSpaxel (pk={0})>'.format(self.pk)
-
-
 # ========================
 # Define relationships
 # ========================
@@ -827,7 +807,6 @@ fks = insp.get_foreign_keys(RssFiber.__table__.name, schema='mangadatadb')
 if fks:
     RssFiber.cube = relationship(Cube, backref='rssfibers')
     RssFiber.fiber = relationship(Fibers, backref='rssfibers')
-TestRssFiber.cube = relationship(Cube, backref='testrssfibers')
 
 PipelineInfo.name = relationship(PipelineName, backref="pipeinfo")
 PipelineInfo.stage = relationship(PipelineStage, backref="pipeinfo")
