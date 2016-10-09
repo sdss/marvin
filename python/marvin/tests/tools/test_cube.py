@@ -230,7 +230,7 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_file_flux_x_y(self):
         """Tests getSpaxel from a file cube with x, y inputs."""
 
-        expect = -0.10531016
+        expect = -0.062497504
         self._test_getSpaxel(self.cubeFromFile, 10, expect, x=10, y=5)
 
     def test_getSpaxel_file_flux_x_y_lower(self):
@@ -306,7 +306,7 @@ class TestGetSpaxel(TestCubeBase):
 
     @skipIfNoDB
     def test_getSpaxel_db_flux_x_y(self):
-        expect = -0.10531016
+        expect = -0.062497499999999997
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 10, expect, x=10, y=5)
 
@@ -336,7 +336,7 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_x_y_success(self):
 
-        expect = -0.10531
+        expect = -0.062497499999999997
         self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
     def test_getSpaxel_remote_ra_dec_success(self):
@@ -453,7 +453,7 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_global_xyorig_center(self):
         config.xyorig = 'center'
-        expect = -0.10531
+        expect = -0.062497499999999997
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 10, expect, x=10, y=5)
 

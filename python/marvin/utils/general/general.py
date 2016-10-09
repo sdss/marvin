@@ -216,7 +216,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         if xyorig == 'center':
             yMid, xMid = shape / 2.
             xCube = np.round(xMid + x)
-            yCube = np.round(yMid - y)
+            yCube = np.round(yMid + y)
         elif xyorig == 'lower':
             xCube = np.round(x)
             yCube = np.round(y)
