@@ -14,13 +14,19 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
+
+import os
+import warnings
+
+import astropy.io.fits
+
 import marvin
 import marvin.api.api
+import marvin_pickle
+
 from marvin.core import MarvinUserWarning, MarvinError, MarvinMissingDependency
-from marvin.utils.general import mangaid2plateifu
 from marvin.utils.db import testDbConnection
-import warnings
-import os
+from marvin.utils.general import mangaid2plateifu
 
 try:
     from sdss_access.path import Path
@@ -31,6 +37,7 @@ try:
     from sdss_access import RsyncAccess
 except ImportError:
     RsyncAccess = None
+
 
 __all__ = ['MarvinToolsClass']
 
@@ -60,6 +67,9 @@ class MarvinToolsClass(object):
         self.data = kwargsGet(kwargs, 'data', None)
 
         self.filename = kwargsGet(kwargs, 'filename', None)
+        if self.filename:
+            self.filename = os.path.realpath(os.path.expanduser(self.filename))
+
         self.mangaid = kwargsGet(kwargs, 'mangaid', None)
         self.plateifu = kwargsGet(kwargs, 'plateifu', None)
 
@@ -95,7 +105,7 @@ class MarvinToolsClass(object):
         elif self.mode == 'auto':
             try:
                 self._doLocal()
-            except:
+            except Exception:
                 warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
                 self._doRemote()
 
@@ -151,7 +161,7 @@ class MarvinToolsClass(object):
             self.mode = 'remote'
             self.data_origin = 'api'
 
-    def download(self, pathType, **pathParams):
+    def download(self, pathType=None, **pathParams):
         ''' Download using sdss_access Rsync '''
         if not RsyncAccess:
             raise MarvinError('sdss_access is not installed')
@@ -164,7 +174,7 @@ class MarvinToolsClass(object):
             paths = rsync_access.get_paths()
             self.filename = paths[0]  # doing this for single files, may need to change
 
-    def _getFullPath(self, pathType, url=None, **pathParams):
+    def _getFullPath(self, pathType=None, url=None, **pathParams):
         """Returns the full path of the file in the tree."""
 
         if not Path:
@@ -188,6 +198,54 @@ class MarvinToolsClass(object):
         params = params or {'release': self._release}
         return marvin.api.api.Interaction(url, params=params)
 
+    def __getstate__(self):
+
+        if self.data_origin == 'db':
+            raise MarvinError('objects with data_origin=\'db\' cannot be saved.')
+
+        odict = self.__dict__.copy()
+        del odict['data']
+
+        return odict
+
+    def __setstate__(self, idict):
+
+        data = None
+        if idict['data_origin'] == 'file':
+            try:
+                data = astropy.io.fits.open(idict['filename'])
+            except Exception as ee:
+                warnings.warn('there was a problem reloading the FITS object: {0}. '
+                              'The object has been unpickled but not all the functionality '
+                              'will be available.'.format(str(ee)), MarvinUserWarning)
+
+        self.__dict__.update(idict)
+        self.data = data
+
+    def save(self, path=None, overwrite=False):
+        """Pickles the object.
+
+        If ``path=None``, uses the default location of the file in the tree
+        but changes the extension of the file to ``.mpf``. Returns the path
+        of the saved pickle file.
+
+        """
+
+        return marvin_pickle.save(self, path=path, overwrite=overwrite)
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        """Restores a MarvinToolsClass object from a pickled file.
+
+        If ``delete=True``, the pickled file will be removed after it has been
+        unplickled. Note that, for objects with ``data_origin='file'``, the
+        original file must exists and be in the same path as when the object
+        was first created.
+
+        """
+
+        return marvin_pickle.restore(path, delete=delete)
+
 
 class Dotable(dict):
     """A custom dict class that allows dot access to nested dictionaries.
@@ -197,7 +255,11 @@ class Dotable(dict):
 
     """
 
-    __getattr__ = dict.__getitem__
+    def __getattr__(self, value):
+        if '__' in value:
+            return dict.__getattr__(self, value)
+        else:
+            return self.__getitem__(value)
 
     # def __init__(self, d):
     #     dict.__init__(self, ((k, self.parse(v)) for k, v in d.iteritems()))
@@ -224,6 +286,8 @@ class DotableCaseInsensitive(Dotable):
             return False
 
     def __getattr__(self, value):
+        if '__' in value:
+            return super(DotableCaseInsensitive, self).__getattr__(value)
         return self.__getitem__(value)
 
     def __getitem__(self, value):

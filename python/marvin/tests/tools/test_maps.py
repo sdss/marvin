@@ -37,9 +37,11 @@ class TestMapsBase(marvin.tests.MarvinTest):
         cls.plate = 8485
         cls.mangaid = '1-209232'
         cls.plateifu = '8485-1901'
+        cls.ifu = cls.plateifu.split('-')[1]
         cls.filename_default = os.path.join(
             os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver_out, cls.dapver_out,
-            'default', str(cls.plate), 'mangadap-{0}-default.fits.gz'.format(cls.plateifu))
+            'full', str(cls.plate), str(cls.ifu),
+            'manga-{0}-LOGCUBE_MAPS-NONE-013.fits.gz'.format(cls.plateifu))
 
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
@@ -283,6 +285,98 @@ class TestGetMap(TestMapsBase):
 
         map_getitem_no_channel = maps['binid']
         self.assertIsInstance(map_getitem_no_channel, marvin.tools.map.Map)
+
+
+class TestPickling(TestMapsBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickling_file(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self.assertEqual(maps.data_origin, 'file')
+        self.assertIsInstance(maps, marvin.tools.maps.Maps)
+        self.assertIsNotNone(maps.data)
+
+        path = maps.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename_default[0:-7] + 'mpf'))
+        self.assertIsNotNone(maps.data)
+
+        maps = None
+        self.assertIsNone(maps)
+
+        maps_restored = marvin.tools.maps.Maps.restore(path)
+        self.assertEqual(maps_restored.data_origin, 'file')
+        self.assertIsInstance(maps_restored, marvin.tools.maps.Maps)
+        self.assertIsNotNone(maps_restored.data)
+
+        mm = maps_restored.getMap('emline_gflux', channel='ha_6564')
+        self.assertIsInstance(mm, marvin.tools.map.Map)
+
+    def test_pickling_file_custom_path(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+
+        test_path = '~/test.mpf'
+        path = maps.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        maps_restored = marvin.tools.maps.Maps.restore(path, delete=True)
+        self.assertEqual(maps_restored.data_origin, 'file')
+        self.assertIsInstance(maps_restored, marvin.tools.maps.Maps)
+        self.assertIsNotNone(maps_restored.data)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickling_db(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
+
+        with self.assertRaises(marvin.core.exceptions.MarvinError) as ee:
+            maps.save()
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickling_api(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(maps.data_origin, 'api')
+        self.assertIsInstance(maps, marvin.tools.maps.Maps)
+        self.assertIsNone(maps.data)
+
+        path = maps.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename_default[0:-7] + 'mpf'))
+
+        maps = None
+        self.assertIsNone(maps)
+
+        maps_restored = marvin.tools.maps.Maps.restore(path)
+        self.assertEqual(maps_restored.data_origin, 'api')
+        self.assertIsInstance(maps_restored, marvin.tools.maps.Maps)
+        self.assertIsNone(maps_restored.data)
+        self.assertEqual(maps_restored.header['VERSDRP3'], 'v1_5_0')
 
 
 if __name__ == '__main__':

@@ -147,7 +147,7 @@ class MarvinConfig(object):
     def urlmap(self):
         """Retrieves the URLMap the first time it is needed."""
 
-        if self._urlmap is None:
+        if self._urlmap is None or (isinstance(self._urlmap, dict) and len(self._urlmap) == 0):
             try:
                 response = Interaction('api/general/getroutemap', request_type='get')
             except Exception as e:

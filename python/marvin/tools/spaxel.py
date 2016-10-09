@@ -20,6 +20,7 @@ import numpy as np
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
+import marvin.core.marvin_pickle
 import marvin.utils.general.general
 import marvin.tools.cube
 import marvin.tools.maps
@@ -234,6 +235,44 @@ class Spaxel(object):
 
         if has_modelcube:
             return self.modelcube._release
+
+    def save(self, path, overwrite=False):
+        """Pickles the spaxel to a file.
+
+        This method will fail if any of ``cube``, ``maps``, or ``modelcube``
+        has ``data_origin='db'``.
+
+        Parameters:
+            path (str):
+                The path of the file to which the ``Spaxel`` will be saved.
+                Unlike for other Marvin Tools that derive from
+                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
+                mandatory for ``Spaxel`` given that the there is no default
+                path for a given spaxel.
+            overwrite (bool):
+                If True, and the ``path`` already exists, overwrites it.
+                Otherwise it will fail.
+
+        Returns:
+            path (str):
+                The realpath to which the file has been saved.
+
+        """
+
+        return marvin.core.marvin_pickle.save(self, path=path, overwrite=overwrite)
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        """Restores a Spaxel object from a pickled file.
+
+        If ``delete=True``, the pickled file will be removed after it has been
+        unplickled. Note that, for objects with ``data_origin='file'``, the
+        original file must exists and be in the same path as when the object
+        was first created.
+
+        """
+
+        return marvin.core.marvin_pickle.restore(path, delete=delete)
 
     def _check_cube(self, cube_filename):
         """Loads the cube and the spectrum."""

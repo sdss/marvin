@@ -13,11 +13,14 @@ from __future__ import absolute_import
 import os
 import unittest
 
+import astropy.io.fits
+
 import marvin
 import marvin.tests
 import marvin.tools.cube
 import marvin.tools.maps
 
+from marvin.core.exceptions import MarvinError
 from marvin.tools.analysis_props import DictOfProperties
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.spectrum import Spectrum
@@ -188,6 +191,107 @@ class TestSpaxelInit(TestSpaxelBase):
                    plateifu=self.plateifu,
                    template_kin='MILES-TH')
         self.assertIn('invalid template_kin', str(cm.exception))
+
+
+class TestPickling(TestSpaxelBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            full_fp = os.path.realpath(os.path.expanduser(fp))
+            if os.path.exists(full_fp):
+                os.remove(full_fp)
+
+    def test_pickling_db_fails(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
+        spaxel = cube.getSpaxel(x=1, y=3)
+
+        spaxel_path = '~/test_spaxel.mpf'
+        self._files_created.append(spaxel_path)
+        with self.assertRaises(MarvinError) as ee:
+            spaxel.save(spaxel_path)
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.', str(ee.exception))
+
+    def test_pickling_only_cube_file(self):
+
+        cube = marvin.tools.cube.Cube(filename=self.filename_cube)
+        maps = marvin.tools.maps.Maps(filename=self.filename_maps_default)
+
+        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, modelcube=False)
+
+        spaxel_path = '~/test_spaxel.mpf'
+        self._files_created.append(spaxel_path)
+
+        path_saved = spaxel.save(spaxel_path)
+        self.assertTrue(os.path.exists(path_saved))
+        self.assertTrue(os.path.realpath(os.path.expanduser(spaxel_path)), path_saved)
+
+        del spaxel
+
+        spaxel_restored = marvin.tools.spaxel.Spaxel.restore(spaxel_path)
+        self.assertIsNotNone(spaxel_restored)
+        self.assertIsInstance(spaxel_restored, marvin.tools.spaxel.Spaxel)
+
+        self.assertIsNotNone(spaxel_restored.cube)
+        self.assertTrue(spaxel_restored.cube.data_origin == 'file')
+        self.assertIsInstance(spaxel_restored.cube.data, astropy.io.fits.HDUList)
+
+        self.assertIsNotNone(spaxel_restored.maps)
+        self.assertTrue(spaxel_restored.maps.data_origin == 'file')
+        self.assertIsInstance(spaxel_restored.maps.data, astropy.io.fits.HDUList)
+
+    def test_pickling_all_api(self):
+
+        marvin.config.marvindb = None
+        marvin.config.switchSasUrl('local')
+        marvin.config.setMPL('MPL-5')
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu, mode='remote')
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        modelcube = marvin.tools.modelcube.ModelCube(plateifu=self.plateifu, mode='remote')
+
+        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, modelcube=modelcube)
+
+        self.assertEqual(spaxel.cube.data_origin, 'api')
+        self.assertEqual(spaxel.maps.data_origin, 'api')
+        self.assertEqual(spaxel.modelcube.data_origin, 'api')
+
+        spaxel_path = '~/test_spaxel_api.mpf'
+        self._files_created.append(spaxel_path)
+
+        path_saved = spaxel.save(spaxel_path)
+        self.assertTrue(os.path.exists(path_saved))
+        self.assertTrue(os.path.realpath(os.path.expanduser(spaxel_path)), path_saved)
+
+        del spaxel
+
+        spaxel_restored = marvin.tools.spaxel.Spaxel.restore(spaxel_path)
+        self.assertIsNotNone(spaxel_restored)
+        self.assertIsInstance(spaxel_restored, marvin.tools.spaxel.Spaxel)
+
+        self.assertIsNotNone(spaxel_restored.cube)
+        self.assertIsInstance(spaxel_restored.cube, marvin.tools.cube.Cube)
+        self.assertTrue(spaxel_restored.cube.data_origin == 'api')
+        self.assertIsNone(spaxel_restored.cube.data)
+        self.assertEqual(spaxel_restored.cube.header['VERSDRP3'], 'v2_0_1')
+
+        self.assertIsNotNone(spaxel_restored.maps)
+        self.assertIsInstance(spaxel_restored.maps, marvin.tools.maps.Maps)
+        self.assertTrue(spaxel_restored.maps.data_origin == 'api')
+        self.assertIsNone(spaxel_restored.maps.data)
+
+        self.assertIsNotNone(spaxel_restored.modelcube)
+        self.assertIsInstance(spaxel_restored.modelcube, marvin.tools.modelcube.ModelCube)
+        self.assertTrue(spaxel_restored.modelcube.data_origin == 'api')
+        self.assertIsNone(spaxel_restored.modelcube.data)
 
 
 if __name__ == '__main__':

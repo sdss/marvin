@@ -6,6 +6,8 @@ import unittest
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 
+from astropy.io import fits
+
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
 from marvin.core import MarvinError
@@ -26,9 +28,9 @@ class TestCubeBase(MarvinTest):
 
         cls.outver = 'v1_5_1'
         cls.outrelease = 'MPL-4'
-        cls.filename = os.path.join(
+        cls.filename = os.path.realpath(os.path.join(
             os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
-            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz'))
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
@@ -488,6 +490,95 @@ class TestWCS(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote')
         self.assertIsInstance(cube.wcs, wcs.WCS)
         self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+
+class TestPickling(TestCubeBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickling_file(self):
+
+        cube = Cube(filename=self.filename)
+        self.assertEqual(cube.data_origin, 'file')
+        self.assertIsInstance(cube, Cube)
+        self.assertIsNotNone(cube.data)
+
+        path = cube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+        self.assertIsNotNone(cube.data)
+
+        cube = None
+        self.assertIsNone(cube)
+
+        cube_restored = Cube.restore(path)
+        self.assertEqual(cube_restored.data_origin, 'file')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNotNone(cube_restored.data)
+
+    def test_pickling_file_custom_path(self):
+
+        cube = Cube(filename=self.filename)
+
+        test_path = '~/test.mpf'
+        path = cube.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        cube_restored = Cube.restore(path, delete=True)
+        self.assertEqual(cube_restored.data_origin, 'file')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNotNone(cube_restored.data)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickling_db(self):
+
+        cube = Cube(plateifu=self.plateifu)
+
+        with self.assertRaises(MarvinError) as ee:
+            cube.save()
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickling_api(self):
+
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(cube.data_origin, 'api')
+        self.assertIsInstance(cube, Cube)
+        self.assertIsNone(cube.data)
+
+        path = cube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+
+        cube = None
+        self.assertIsNone(cube)
+
+        cube_restored = Cube.restore(path)
+        self.assertEqual(cube_restored.data_origin, 'api')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNone(cube_restored.data)
+        self.assertEqual(cube_restored.header['VERSDRP3'], 'v1_5_0')
 
 
 if __name__ == '__main__':
