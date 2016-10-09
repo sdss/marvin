@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-28 16:21:17
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-09-28 16:35:30
+# @Last Modified time: 2016-10-08 21:38:27
 
 from __future__ import print_function, division, absolute_import
 from flask import current_app, Blueprint, render_template, jsonify
@@ -18,11 +18,6 @@ from marvin.core import MarvinError
 from marvin.utils.general.general import parseIdentifier
 from wtforms import SelectField, validators
 import json
-from hashlib import md5
-try:
-    from inspection.marvin import Inspection
-except:
-    from marvin.web.inspection import Inspection
 
 users = Blueprint("users_page", __name__)
 
