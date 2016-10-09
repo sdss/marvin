@@ -128,6 +128,7 @@ class MarvinConfig(object):
         drpver = self._mpldict[self.release][0]
         self.drpall = self._getDrpAllPath(drpver)
 
+    @property
     def session_id(self):
         return bconfig.session_id
 

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-07 15:48:43
+* @Last Modified time: 2016-10-08 21:29:01
 */
 
 'use strict';
@@ -130,7 +130,7 @@ var HeatMap = function () {
                     if (noData) {
                         val = 'no-data';
                     } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
-                        val = null;
+                        var g = null;
                     } else if (ivar === null) {
                         if (this.title.search('binid') !== -1) {
                             val = val == -1 ? 'no-data' : val;
@@ -165,13 +165,16 @@ var HeatMap = function () {
             //var range  = this.getXRange();
             var xyrange, zrange;
 
-            // get the min and max of the ranges
             var _getRange = this.getRange();
 
             var _getRange2 = _slicedToArray(_getRange, 2);
 
             xyrange = _getRange2[0];
             zrange = _getRange2[1];
+
+            console.log('old zrange', zrange);
+
+            // get the min and max of the ranges
             var xymin, xymax, zmin, zmax;
 
             var _getMinMax = this.getMinMax(xyrange);
@@ -181,26 +184,33 @@ var HeatMap = function () {
             xymin = _getMinMax2[0];
             xymax = _getMinMax2[1];
 
-            // set null data and create new zrange, min, and max
             var _getMinMax3 = this.getMinMax(zrange);
 
             var _getMinMax4 = _slicedToArray(_getMinMax3, 2);
 
             zmin = _getMinMax4[0];
             zmax = _getMinMax4[1];
+
+            console.log('old zminmax', zmin, zmax);
+
+            // set null data and create new zrange, min, and max
             var data = this.setNull(this.data);
             zrange = data.map(function (o) {
                 return o[2];
             });
             zrange = zrange.filter(this.filterRange);
 
-            // make the highcharts
             var _getMinMax5 = this.getMinMax(zrange);
 
             var _getMinMax6 = _slicedToArray(_getMinMax5, 2);
 
             zmin = _getMinMax6[0];
             zmax = _getMinMax6[1];
+
+            console.log('new zrange', zrange);
+            console.log('new zminmax', zmin, zmax);
+
+            // make the highcharts
             this.mapdiv.highcharts({
                 chart: {
                     type: 'heatmap',
