@@ -201,6 +201,95 @@ class TestGetSpaxel(TestModelCubeBase):
         self.assertEqual(len(spaxel.properties), 0)
 
 
+class TestPickling(TestModelCubeBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickling_file(self):
+
+        modelcube = ModelCube(filename=self.filename)
+        self.assertEqual(modelcube.data_origin, 'file')
+        self.assertIsInstance(modelcube, ModelCube)
+        self.assertIsNotNone(modelcube.data)
+
+        path = modelcube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+        self.assertIsNotNone(modelcube.data)
+
+        modelcube = None
+        self.assertIsNone(modelcube)
+
+        modelcube_restored = ModelCube.restore(path)
+        self.assertEqual(modelcube_restored.data_origin, 'file')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNotNone(modelcube_restored.data)
+
+    def test_pickling_file_custom_path(self):
+
+        modelcube = ModelCube(filename=self.filename)
+
+        test_path = '~/test.mpf'
+        path = modelcube.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        modelcube_restored = ModelCube.restore(path, delete=True)
+        self.assertEqual(modelcube_restored.data_origin, 'file')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNotNone(modelcube_restored.data)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickling_db(self):
+
+        modelcube = ModelCube(plateifu=self.plateifu)
+
+        with self.assertRaises(MarvinError) as ee:
+            modelcube.save()
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickling_api(self):
+
+        modelcube = ModelCube(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(modelcube.data_origin, 'api')
+        self.assertIsInstance(modelcube, ModelCube)
+        self.assertIsNone(modelcube.data)
+
+        path = modelcube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+
+        modelcube = None
+        self.assertIsNone(modelcube)
+
+        modelcube_restored = ModelCube.restore(path)
+        self.assertEqual(modelcube_restored.data_origin, 'api')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNone(modelcube_restored.data)
+        self.assertEqual(modelcube_restored.header['VERSDRP3'], 'v2_0_1')
+
+
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
     verbosity = 2
