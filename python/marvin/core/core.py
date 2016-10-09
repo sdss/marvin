@@ -197,7 +197,11 @@ class Dotable(dict):
 
     """
 
-    __getattr__ = dict.__getitem__
+    def __getattr__(self, value):
+        if '__' in value:
+            return dict.__getattr__(self, value)
+        else:
+            return self.__getitem__(value)
 
     # def __init__(self, d):
     #     dict.__init__(self, ((k, self.parse(v)) for k, v in d.iteritems()))
@@ -224,6 +228,8 @@ class DotableCaseInsensitive(Dotable):
             return False
 
     def __getattr__(self, value):
+        if '__' in value:
+            return super(DotableCaseInsensitive, self).__getattr__(value)
         return self.__getitem__(value)
 
     def __getitem__(self, value):
