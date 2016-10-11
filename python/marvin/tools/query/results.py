@@ -109,6 +109,8 @@ class Results(object):
         self.coltoparam = None
         self.paramtocol = None
         self.objects = None
+        self.sortcol = None
+        self.order = None
 
         # Convert remote results to NamedTuple
         if self.mode == 'remote':
@@ -123,7 +125,7 @@ class Results(object):
             self.convertToTool()
 
     def __repr__(self):
-        return ('Results(results={0}, \nquery={1}, \ncount={2}, \nmode={3}'.format(self.results[0:5], repr(self.query), self.count, self.mode))
+        return ('Marvin Results(results={0}, \nquery={1}, \ncount={2}, \nmode={3}'.format(self.results[0], repr(self.query), self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
@@ -215,11 +217,33 @@ class Results(object):
                 >>>  (u'4-3988', u'1901', -9999.0),
                 >>>  (u'4-4602', u'1901', -9999.0)]
         '''
-
         refname = self._getRefName(name, dir='partocol')
-        reverse = True if order == 'desc' else False
-        sortedres = sorted(self.results, key=lambda row: row.__getattribute__(refname), reverse=reverse)
-        self.results = sortedres
+        self.sortcol = refname
+        self.order = order
+
+        if self.mode == 'local':
+            reverse = True if order == 'desc' else False
+            sortedres = sorted(self.results, key=lambda row: row.__getattribute__(refname), reverse=reverse)
+            self.results = sortedres
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['querycubes']['url']
+
+            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
+                      'sort': refname, 'order': order, 'limit': self._queryobj.limit}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query Sort call failed: {0}'.format(e))
+            else:
+                self.results = ii.getData()
+                self._makeNamedTuple()
+                sortedres = self.results
+
         return sortedres
 
     def toTable(self):
@@ -586,7 +610,8 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit,
+                      'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -650,7 +675,8 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit}
+                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit,
+                      'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -713,7 +739,8 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': start, 'end': end, 'limit': self._queryobj.limit}
+                      'start': start, 'end': end, 'limit': self._queryobj.limit,
+                      'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:

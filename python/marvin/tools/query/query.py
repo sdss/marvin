@@ -230,7 +230,7 @@ class Query(object):
                 self._buildDapQuery()
 
     def __repr__(self):
-        return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
+        return ('Marvin Query(mode={0}, limit={1}, sort={2}, order={3})'
                 .format(repr(self.mode), self.limit, self.sort, repr(self.order)))
 
     def _doLocal(self):
