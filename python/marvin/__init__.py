@@ -1,6 +1,7 @@
 import os
 import re
 import warnings
+import sys
 from collections import OrderedDict
 
 # Does this so that the implicit module definitions in extern can happen.
@@ -53,6 +54,8 @@ class MarvinConfig(object):
         self.download = False
         self._setDbConfig()
         self._checkConfig()
+        self._plantTree()
+        self._checkSDSSAccess()
 
         self.setDefaultDrpAll()
 
@@ -322,6 +325,42 @@ class MarvinConfig(object):
         config.db = None
         from marvin import marvindb
         marvindb.forceDbOff()
+
+    def _addExternal(self, name):
+        ''' Adds an external product into the path '''
+        assert type(name) == str, 'name must be a string'
+        externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
+        extern_envvar = '{0}_DIR'.format(name.upper())
+        os.environ[extern_envvar] = externdir
+        pypath = os.path.join(externdir, 'python')
+        if os.path.isdir(pypath):
+            sys.path.append(pypath)
+        else:
+            warnings.warn('Python path for external product {0} does not exist'.format(name))
+
+    def _plantTree(self):
+        ''' Sets up the sdss tree product root '''
+        if 'TREE_DIR' not in os.environ:
+            # set up tree using marvin's extern package
+            self._addExternal('tree')
+            try:
+                from tree.tree import Tree
+            except ImportError:
+                self._tree = None
+            else:
+                self._tree = Tree(key='MANGA')
+
+    def _checkSDSSAccess(self):
+        ''' Checks the client sdss_access setup '''
+        if 'SDSS_ACCESS_DIR' not in os.environ:
+            # set up sdss_access using marvin's extern package
+            self._addExternal('sdss_access')
+            try:
+                from sdss_access.path import Path
+            except ImportError:
+                Path = None
+            else:
+                self._sdss_access_isloaded = True
 
 config = MarvinConfig()
 config._checkConfig()
