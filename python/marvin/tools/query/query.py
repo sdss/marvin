@@ -28,6 +28,9 @@ from collections import defaultdict
 import datetime
 import numpy as np
 import warnings
+import os
+import cPickle
+from marvin.core import marvin_pickle
 from functools import wraps
 
 __all__ = ['Query', 'doQuery']
@@ -394,6 +397,76 @@ class Query(object):
             else:
                 mykeys = ii.getData()
                 return mykeys
+
+    def save(self, path=None, overwrite=False):
+        ''' Save the query as a pickle object
+
+        Parameters:
+            path (str):
+                Filepath and name of the pickled object
+            overwrite (bool):
+                Set this to overwrite an existing pickled file
+
+        Returns:
+            path (str):
+                The filepath and name of the pickled object
+
+        '''
+        self.session = None
+        self.marvinform = None
+        self._modelgraph = None
+
+        sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
+        # set the path
+        if not path:
+            path = os.path.expanduser('~/marvin_query_{0}.mpf'.format(sf))
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path+'.mpf')
+
+        path = os.path.realpath(path)
+
+        if os.path.isdir(path):
+            raise MarvinError('path must be a full route, including the filename.')
+
+        if os.path.exists(path) and not overwrite:
+            warnings.warn('file already exists. Not overwriting.', MarvinUserWarning)
+            return
+
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        try:
+            cPickle.dump(self, open(path, 'w'))
+        except Exception as ee:
+            if os.path.exists(path):
+                os.remove(path)
+            raise MarvinError('Error found while pickling: {0}'.format(str(ee)))
+
+        return path
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        ''' Restore a pickled object
+
+        Parameters:
+            path (str):
+                The filename and path to the pickled object
+
+            delete (bool):
+                Turn this on to delete the pickled fil upon restore
+
+        Returns:
+            Query (instance):
+                The instantiated Marvin Query class
+        '''
+        obj = marvin_pickle.restore(path, delete=delete)
+        obj._modelgraph = marvindb.modelgraph
+        obj.session = marvindb.session
+        obj.marvinform = MarvinForm(allspaxels=obj.allspaxels, release=obj._release)
+        return obj
 
     def set_filter(self, searchfilter=None):
         ''' Parses a filter string and adds it into the query.

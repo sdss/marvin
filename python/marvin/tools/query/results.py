@@ -12,9 +12,11 @@ import warnings
 import json
 import os
 import datetime
+import cPickle
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
+from marvin.core import marvin_pickle
 
 try:
     import pandas as pd
@@ -96,14 +98,13 @@ class Results(object):
 
         self.results = kwargs.get('results', None)
         self._queryobj = kwargs.get('queryobj', None)
-        self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
-        self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
+        self._updateQueryObj(**kwargs)
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
         self._runtime = kwargs.get('runtime', None)
         self.query_runtime = self._getRunTime() if self._runtime is not None else None
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = kwargs.get('chunk', 100)
+        self.chunk = self.limit if self.limit else kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
         self.coltoparam = None
@@ -123,6 +124,15 @@ class Results(object):
         # Auto convert to Marvin Object
         if self.returntype:
             self.convertToTool()
+
+    def _updateQueryObj(self, **kwargs):
+        ''' update parameters using the _queryobj '''
+        self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
+        self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
+        self.searchfilter = self._queryobj.searchfilter if self._queryobj else kwargs.get('searchfilter', None)
+        self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', None)
+        self.limit = self._queryobj.limit if self._queryobj else kwargs.get('limit', None)
+        self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
 
     def __repr__(self):
         return ('Marvin Results(results={0}, \nquery={1}, \ncount={2}, \nmode={3}'.format(self.results[0], repr(self.query), self.count, self.mode))
@@ -233,8 +243,8 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'sort': refname, 'order': order, 'limit': self._queryobj.limit}
+            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+                      'sort': refname, 'order': order, 'limit': self.limit}
             try:
                 ii = Interaction(route=url, params=params)
             except MarvinError as e:
@@ -330,11 +340,13 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
-        ntnames = self._reduceNames(self._queryobj.params, under=True)
+        ntnames = self._reduceNames(self._params, under=True)
         try:
             nt = namedtuple('NamedTuple', ntnames)
         except ValueError as e:
             raise MarvinError('Cannot created NamedTuple from remote Results: {0}'.format(e))
+        else:
+            globals()[nt.__name__] = nt
 
         qpo = ntnames
 
@@ -342,6 +354,72 @@ class Results(object):
             return qpo
         nt.keys = keys
         self.results = [nt(*r) for r in self.results]
+
+    def save(self, path=None, overwrite=False):
+        ''' Save the results as a pickle object
+
+        Parameters:
+            path (str):
+                Filepath and name of the pickled object
+            overwrite (bool):
+                Set this to overwrite an existing pickled file
+
+        Returns:
+            path (str):
+                The filepath and name of the pickled object
+
+        '''
+
+        # set Marvin query object to None, in theory this could be pickled as well
+        self._queryobj = None
+
+        sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
+        # set the path
+        if not path:
+            path = os.path.expanduser('~/marvin_results_{0}.mpf'.format(sf))
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path+'.mpf')
+
+        path = os.path.realpath(path)
+
+        if os.path.isdir(path):
+            raise MarvinError('path must be a full route, including the filename.')
+
+        if os.path.exists(path) and not overwrite:
+            warnings.warn('file already exists. Not overwriting.', MarvinUserWarning)
+            return
+
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        try:
+            cPickle.dump(self, open(path, 'w'))
+        except Exception as ee:
+            if os.path.exists(path):
+                os.remove(path)
+            raise MarvinError('Error found while pickling: {0}'.format(str(ee)))
+
+        return path
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        ''' Restore a pickled Results object
+
+        Parameters:
+            path (str):
+                The filename and path to the pickled object
+
+            delete (bool):
+                Turn this on to delete the pickled fil upon restore
+
+        Returns:
+            Results (instance):
+                The instantiated Marvin Results class
+        '''
+        return marvin_pickle.restore(path, delete=delete)
 
     def toJson(self):
         ''' Output the results as a JSON object
@@ -413,7 +491,7 @@ class Results(object):
     def mapColumnsToParams(self, col=None, inputs=None):
         ''' Map the columns names from results to the original parameter names '''
         columns = self.getColumns()
-        params = self._params if self.mode == 'local' else self._queryobj.params
+        params = self._params if self.mode == 'local' else self._params
         if not self.coltoparam:
             self.coltoparam = OrderedDict(zip(columns, params))
         return self.coltoparam[col] if col else self.coltoparam.values()
@@ -421,7 +499,7 @@ class Results(object):
     def mapParamsToColumns(self, param=None, inputs=None):
         ''' Map original parameter names to the column names '''
         columns = self.getColumns()
-        params = self._params if self.mode == 'local' else self._queryobj.params
+        params = self._params if self.mode == 'local' else self._params
         if not self.paramtocol:
             self.paramtocol = OrderedDict(zip(params, columns))
         return self.paramtocol[param] if param else self.paramtocol.values()
@@ -609,8 +687,8 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit,
+            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+                      'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
@@ -674,8 +752,8 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': newstart, 'end': newend, 'limit': self._queryobj.limit,
+            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+                      'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
@@ -738,8 +816,8 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self._queryobj.searchfilter, 'params': self._queryobj._returnparams,
-                      'start': start, 'end': end, 'limit': self._queryobj.limit,
+            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+                      'start': start, 'end': end, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             try:
                 ii = Interaction(route=url, params=params)
