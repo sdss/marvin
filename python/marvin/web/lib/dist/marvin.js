@@ -493,7 +493,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-11 13:13:52
+* @Last Modified time: 2016-10-11 15:23:38
 */
 
 'use strict';
@@ -617,7 +617,7 @@ var HeatMap = function () {
                     }
 
                     if (ivar !== null) {
-                        var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                        var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
                         var signalToNoiseThreshold = 1.;
                     }
 
@@ -634,7 +634,7 @@ var HeatMap = function () {
                         val = null;
                     } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
                         // for data that is low S/N
-                        var g = null; //val = 'low-sn';
+                        val = null; //val = 'low-sn';
                     } else if (ivar === null) {
                         // for data with no mask or no inverse variance extensions
                         if (this.title.search('binid') !== -1) {
