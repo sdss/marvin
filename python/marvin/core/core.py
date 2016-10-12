@@ -24,7 +24,7 @@ import marvin
 import marvin.api.api
 import marvin_pickle
 
-from marvin.core import MarvinUserWarning, MarvinError, MarvinMissingDependency
+from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.db import testDbConnection
 from marvin.utils.general import mangaid2plateifu
 

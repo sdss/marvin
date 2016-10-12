@@ -10,7 +10,7 @@ from astropy.io import fits
 
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 
 import numpy as np

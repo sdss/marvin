@@ -3,7 +3,7 @@ from flask_classy import route
 from flask import request
 from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.api import parse_params
 
 

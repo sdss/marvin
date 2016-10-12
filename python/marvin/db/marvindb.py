@@ -15,9 +15,6 @@ from __future__ import division
 from brain.db.modelGraph import ModelGraph
 from marvin import config
 import inspect
-from marvin.core.caching_query import RelationshipCache
-from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 __author__ = 'Brian Cherinka'
 

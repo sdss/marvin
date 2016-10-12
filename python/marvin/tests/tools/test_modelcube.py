@@ -19,7 +19,7 @@ from astropy.wcs import WCS
 import marvin
 import marvin.tests
 
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube

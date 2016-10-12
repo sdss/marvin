@@ -1,6 +1,7 @@
 import os
 import re
 import warnings
+import sys
 from collections import OrderedDict
 
 # Does this so that the implicit module definitions in extern can happen.
@@ -39,8 +40,6 @@ class MarvinConfig(object):
     '''
     def __init__(self):
 
-        self._check_sas_dir()
-
         self._drpall = None
         self._inapp = False
 
@@ -51,34 +50,44 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
+
+        self._plantTree()
+        self._checkSDSSAccess()
+        self._check_manga_dirs()
         self._setDbConfig()
         self._checkConfig()
-
         self.setDefaultDrpAll()
 
-    def _check_sas_dir(self):
-        """Check if $SAS_BASE_DIR is defined. If it is not, creates and defines it."""
+    def _checkPaths(self, name):
+        ''' Check for the necessary path existence.
 
-        if 'MANGA_SPECTRO_REDUX' in os.environ:
-            return
+            This should only run if someone already has TREE_DIR installed
+            but somehow does not have a SAS_BASE_DIR, MANGA_SPECTRO_REDUX, or
+            MANGA_SPECTRO_ANALYSIS directory
+        '''
 
-        if 'SAS_BASE_DIR' not in os.environ:
-            sas_base_dir = os.path.expanduser('~/sas')
-            if not os.path.exists(sas_base_dir):
-                warnings.warn('no SAS_BASE_DIR found. Creating it in {0}.'.format(sas_base_dir),
-                              MarvinUserWarning)
-                os.makedirs(sas_base_dir)
-            os.environ['SAS_BASE_DIR'] = sas_base_dir
+        name = name.upper()
+        if name not in os.environ:
+            if name == 'SAS_BASE_DIR':
+                path_dir = os.path.expanduser('~/sas')
+            elif name == 'MANGA_SPECTRO_REDUX':
+                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/redux')
+            elif name == 'MANGA_SPECTRO_ANALYSIS':
+                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/analysis')
 
-        if 'MANGA_SPECTRO_REDUX' not in os.environ:
-            manga_spectro_redux = os.path.join(
-                os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/redux/')
-            if not os.path.exists(manga_spectro_redux):
-                warnings.warn('no MANGA_SPECTRO_REDUX found. Creating it in {0}.'
-                              .format(manga_spectro_redux),  MarvinUserWarning)
+            if not os.path.exists(path_dir):
+                warnings.warng('no {0}_DIR found. Creating it in {1}'.format(name, path_dir))
+                os.makedirs(path_dir)
+            os.environ[name] = path_dir
 
-                os.makedirs(manga_spectro_redux)
-            os.environ['MANGA_SPECTRO_REDUX'] = manga_spectro_redux
+    def _check_manga_dirs(self):
+        """Check if $SAS_BASE_DIR and MANGA dirs are defined.
+           If they are not, creates and defines them.
+        """
+
+        self._checkPaths('SAS_BASE_DIR')
+        self._checkPaths('MANGA_SPECTRO_REDUX')
+        self._checkPaths('MANGA_SPECTRO_ANALYSIS')
 
     def setDefaultDrpAll(self, drpver=None):
         """Tries to set the default location of drpall."""
@@ -323,8 +332,43 @@ class MarvinConfig(object):
         from marvin import marvindb
         marvindb.forceDbOff()
 
+    def _addExternal(self, name):
+        ''' Adds an external product into the path '''
+        assert type(name) == str, 'name must be a string'
+        externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
+        extern_envvar = '{0}_DIR'.format(name.upper())
+        os.environ[extern_envvar] = externdir
+        pypath = os.path.join(externdir, 'python')
+        if os.path.isdir(pypath):
+            sys.path.append(pypath)
+        else:
+            warnings.warn('Python path for external product {0} does not exist'.format(name))
+
+    def _plantTree(self):
+        ''' Sets up the sdss tree product root '''
+        if 'TREE_DIR' not in os.environ:
+            # set up tree using marvin's extern package
+            self._addExternal('tree')
+            try:
+                from tree.tree import Tree
+            except ImportError:
+                self._tree = None
+            else:
+                self._tree = Tree(key='MANGA')
+
+    def _checkSDSSAccess(self):
+        ''' Checks the client sdss_access setup '''
+        if 'SDSS_ACCESS_DIR' not in os.environ:
+            # set up sdss_access using marvin's extern package
+            self._addExternal('sdss_access')
+            try:
+                from sdss_access.path import Path
+            except ImportError:
+                Path = None
+            else:
+                self._sdss_access_isloaded = True
+
 config = MarvinConfig()
-config._checkConfig()
 
 # Inits the Database session and ModelClasses
 from marvin.db.marvindb import MarvinDB

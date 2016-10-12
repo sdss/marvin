@@ -12,7 +12,7 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb

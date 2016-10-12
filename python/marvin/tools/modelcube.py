@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-10-05 20:07:53
+# @Last Modified time: 2016-10-11 20:01:40
 
 from __future__ import print_function, division, absolute_import
 
@@ -23,7 +23,8 @@ import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.tools.maps
 
-from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.core.core import MarvinToolsClass
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 
 class ModelCube(MarvinToolsClass):

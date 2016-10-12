@@ -20,7 +20,9 @@ import numpy as np
 
 import marvin
 
-from marvin.core import MarvinToolsClass, MarvinError, MarvinUserWarning
+from marvin.core.core import MarvinToolsClass
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+
 from marvin.tools.spectrum import Spectrum
 
 
