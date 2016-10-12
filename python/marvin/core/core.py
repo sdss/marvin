@@ -34,7 +34,6 @@ except ImportError:
     Path = None
 
 try:
-    print('sdss_access_dir', os.getenv('SDSS_ACCESS_DIR'))
     from sdss_access import RsyncAccess
 except ImportError:
     RsyncAccess = None
