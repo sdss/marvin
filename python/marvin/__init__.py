@@ -40,7 +40,7 @@ class MarvinConfig(object):
     '''
     def __init__(self):
 
-        self._check_sas_dir()
+        #self._check_sas_dir()
 
         self._drpall = None
         self._inapp = False
@@ -52,11 +52,11 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
-        self._setDbConfig()
-        self._checkConfig()
+
         self._plantTree()
         self._checkSDSSAccess()
-
+        self._setDbConfig()
+        self._checkConfig()
         self.setDefaultDrpAll()
 
     def _check_sas_dir(self):
@@ -350,6 +350,8 @@ class MarvinConfig(object):
             else:
                 self._tree = Tree(key='MANGA')
 
+            print('tree is set', self._tree)
+
     def _checkSDSSAccess(self):
         ''' Checks the client sdss_access setup '''
         if 'SDSS_ACCESS_DIR' not in os.environ:
@@ -362,8 +364,9 @@ class MarvinConfig(object):
             else:
                 self._sdss_access_isloaded = True
 
+            print('sdss_access is set', self._sdss_access_isloaded, os.environ['SDSS_ACCESS_DIR'])
+
 config = MarvinConfig()
-config._checkConfig()
 
 # Inits the Database session and ModelClasses
 from marvin.db.marvindb import MarvinDB

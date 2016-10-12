@@ -15,7 +15,7 @@ from __future__ import division
 from flask import Blueprint, render_template, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general import getRandomImages
 from marvin.web.web_utils import buildImageDict, parseSession
 

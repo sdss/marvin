@@ -1,5 +1,5 @@
 from __future__ import print_function
-from marvin.core import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS

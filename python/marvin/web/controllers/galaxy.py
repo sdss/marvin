@@ -17,10 +17,9 @@ from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.utils.general.general import convertImgCoords, parseIdentifier, getDefaultMapPath, getDapRedux
 from brain.utils.general.general import convertIvarToErr
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
-from marvin import config
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 import os

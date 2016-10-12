@@ -20,7 +20,7 @@ import marvin.tools.spaxel
 import marvin.tools.maps
 import marvin.utils.general.general
 
-from marvin.core import MarvinToolsClass
+from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 try:

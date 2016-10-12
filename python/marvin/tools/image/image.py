@@ -11,7 +11,7 @@
 
 
 from __future__ import print_function, division
-from marvin.core import MarvinToolsClass
+from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin import config
 import numpy as np

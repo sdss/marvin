@@ -10,8 +10,8 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinToolsClass
-from marvin.core import MarvinError
+from marvin.core.core import MarvinToolsClass
+from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin import config, marvindb
 from astropy.io import fits

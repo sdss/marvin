@@ -4,7 +4,7 @@ from __future__ import print_function, division, absolute_import
 import unittest
 import copy
 from marvin import config, marvindb
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps

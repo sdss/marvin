@@ -27,7 +27,7 @@ import marvin.tools.maps
 import marvin.tools.modelcube
 
 from marvin.api import api
-from marvin.core import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
 
