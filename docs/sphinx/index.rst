@@ -40,6 +40,9 @@ acknowledge the members of the Marvin team personally in your acknowledgements. 
    first-steps
    general
 
+:doc:`known_issues`
+^^^^^^^^^^^^^^^^^^^
+
 :doc:`tools`
 ^^^^^^^^^^^^
 
@@ -56,7 +59,6 @@ acknowledge the members of the Marvin team personally in your acknowledgements. 
 :doc:`web`
 ^^^^^^^^^^
 
-|
 
 Tutorials
 =========

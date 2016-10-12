@@ -40,6 +40,13 @@
                 </div>
             </form>
 
+            <!-- Links to some Docs -->
+            {# Links to Whats New and Known Issues #}
+            <div class='nav navbar-nav btn-group' id='links' role='group'>
+                <a class='navbar-btn btn btn-info' target='_blank' href='https://api.sdss.org/doc/manga/marvin/refactor/whats-new.html'>What's New</a>
+                <a class='navbar-btn btn btn-danger' target='_blank' href='https://api.sdss.org/doc/manga/marvin/refactor/known_issues.html'>Known Issues</a>
+            </div>
+
             <!-- Login / User Prefs -->
             {% if not session.loginready %}
                 <!-- Login -->
