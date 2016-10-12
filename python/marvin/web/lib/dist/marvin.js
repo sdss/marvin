@@ -372,7 +372,7 @@ var Galaxy = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:54:56
+* @Last Modified time: 2016-10-12 16:44:53
 */
 
 'use strict';
@@ -478,6 +478,8 @@ var Header = function () {
                 // reload the current page, this re-instantiates a new Header with new version info from session
                 if (data.result.status == 1) {
                     fxn();
+                    _this.galids.clearPrefetchCache();
+                    _this.galids.initialize();
                 } else {
                     alert('Failed to set the versions! ' + data.result.msg);
                 }

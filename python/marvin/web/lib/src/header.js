@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:54:56
+* @Last Modified time: 2016-10-12 16:44:53
 */
 
 'use strict';
@@ -54,7 +54,7 @@ class Header {
         // initialize the bloodhound suggestion engine
         this.galids.initialize();
 
-        typediv.typeahead('destroy')
+        typediv.typeahead('destroy');
         typediv.typeahead(
         {
         showHintOnFocus: true,
@@ -88,6 +88,8 @@ class Header {
             // reload the current page, this re-instantiates a new Header with new version info from session
             if (data.result.status == 1) {
                 fxn();
+                _this.galids.clearPrefetchCache();
+                _this.galids.initialize();
             } else {
                 alert('Failed to set the versions! '+data.result.msg);
             }
