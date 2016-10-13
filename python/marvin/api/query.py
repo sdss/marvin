@@ -92,3 +92,22 @@ class QueryView(BrainQueryView):
         self.results['status'] = 1
         output = json.dumps(self.results)
         return output
+
+    @route('/cleanup/', methods=['GET', 'POST'], endpoint='cleanupqueries')
+    def cleanup(self):
+        ''' Clean up idle server-side queries or retrieve the list of them '''
+        task = self.results['inconfig'].get('task', None)
+        if task == 'clean':
+            q = Query(mode='local')
+            q._cleanUpQueries()
+            res = {'status': 1, 'data': 'clean success'}
+        elif task == 'getprocs':
+            q = Query(mode='local')
+            procs = q._getIdleProcesses()
+            procs = [{k: v for k, v in y.items()} for y in procs]
+            res = {'status': 1, 'data': procs}
+        else:
+            res = {'status': -1, 'data': None, 'error': 'Task is None or not in [clean, getprocs]'}
+        self.update_results(res)
+        output = json.dumps(self.results)
+        return output

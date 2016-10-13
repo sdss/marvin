@@ -733,7 +733,9 @@ class Query(object):
                       'release': self._release}
             try:
                 ii = Interaction(route=url, params=params)
-            except MarvinError as e:
+            except Exception as e:
+                # if a remote query fails for any reason, then try to clean them up
+                self._cleanUpQueries()
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
@@ -747,6 +749,83 @@ class Query(object):
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
+
+    def _cleanUpQueries(self):
+        ''' Attempt to clean up idle queries on the server
+
+        This is a hack to try to kill all idl processes on the server.
+        Using pg_terminate_backend and pg_stat_activity it terminates all
+        transactions that are in an idle, or idle in transaction, state
+        that have running for > 1 minute, and whose application_name is
+        not psql, and the process is not the one initiating the terminate.
+
+        The rank part ranks the processes and originally killed all > 1, to
+        leave one alive as a warning to the others.  I've changed this to 0
+        to kill everything.
+
+        I think this will sometimes also leave a newly orphaned idle
+        ROLLBACK transaction.  Not sure why.
+
+        '''
+        if self.mode == 'local':
+            sql = ("with inactive as (select p.pid, rank() over (partition by \
+                   p.client_addr order by p.backend_start ASC) as rank from \
+                   pg_stat_activity as p where p.application_name !~ 'psql' \
+                   and p.state ilike '%idle%' and p.pid <> pg_backend_pid() and \
+                   current_timestamp-p.state_change > interval '1 minutes') \
+                   select pg_terminate_backend(pid) from inactive where rank > 0;")
+            self.session.expire_all()
+            self.session.expunge_all()
+            res = self.session.execute(sql)
+            tmp = res.fetchall()
+            self.session.close()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['cleanupqueries']['url']
+
+            params = {'task': 'clean', 'release': self._release}
+
+            try:
+                ii = Interaction(route=url, params=params)
+            except Exception as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                res = ii.getData()
+
+    def _getIdleProcesses(self):
+        ''' Get a list of all idle processes on server
+
+        This grabs a list of all processes in a state of
+        idle, or idle in transaction using pg_stat_activity
+        and returns the process id, the state, and the query
+
+        '''
+        if self.mode == 'local':
+            sql = ("select p.pid,p.state,p.query from pg_stat_activity as p \
+                   where p.state ilike '%idle%';")
+            res = self.session.execute(sql)
+            procs = res.fetchall()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['cleanupqueries']['url']
+
+            params = {'task': 'getprocs', 'release': self._release}
+
+            try:
+                ii = Interaction(route=url, params=params)
+            except Exception as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                procs = ii.getData()
+        return procs
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''
