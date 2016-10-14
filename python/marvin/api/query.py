@@ -67,9 +67,9 @@ class QueryView(BrainQueryView):
         start = self.results['inconfig'].get('start', None)
         end = self.results['inconfig'].get('end', None)
         rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', None)
+        limit = self.results['inconfig'].get('limit', 100)
         sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', None)
+        order = self.results['inconfig'].get('order', 'asc')
         try:
             res = _getCubes(searchfilter, params=params, start=int(start),
                             end=int(end), rettype=rettype, limit=limit,
