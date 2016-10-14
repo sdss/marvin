@@ -711,8 +711,12 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
+            # get the runtime
             end = datetime.datetime.now()
             self.runtime = (end-start)
+            # close the session and engine
+            self.session.close()
+            marvindb.db.engine.dispose()
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
                            queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
@@ -746,6 +750,9 @@ class Query(object):
                 chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
                 runtime = ii.results['runtime']
+                # close the session and engine
+                self.session.close()
+                marvindb.db.engine.dispose()
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
@@ -779,6 +786,7 @@ class Query(object):
             res = self.session.execute(sql)
             tmp = res.fetchall()
             self.session.close()
+            marvindb.db.engine.dispose()
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
