@@ -37,17 +37,21 @@ class QueryView(BrainQueryView):
     curl -X POST --data "searchfilter=nsa_redshift<0.1" http://sas.sdss.org/marvin2/api/query/cubes/
     """
 
+    def __init__(self):
+        self._limit = 100
+        self._order = 'asc'
+
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
         ''' do a remote query '''
         searchfilter = self.results['inconfig'].get('searchfilter', None)
         params = self.results['inconfig'].get('params', None)
         rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', None)
+        limit = self.results['inconfig'].get('limit', 100)
         sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', None)
+        order = self.results['inconfig'].get('order', 'asc')
         print('inconfig', self.results['inconfig'])
-        print('cube_query', searchfilter, params)
+        print('cube_query', searchfilter, params, self._limit)
         try:
             res = _getCubes(searchfilter, params=params, rettype=rettype,
                             limit=limit, sort=sort, order=order)
