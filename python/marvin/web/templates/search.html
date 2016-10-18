@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% set active_page = active_page|default("search") %}
+{% from 'macros.html' import infopopup %}
 
 {% block body %}
     <!-- Natural Language Search Box -->
@@ -52,10 +53,14 @@
             {% if results %}
                 <div class='well' id='search_results'>
                     <div class='row' id='search_results_msg'>
-                        <div class='col-md-10'>
+                        <div class='col-md-3'>
                             <h3>Search results</h3>
                             <h4>Using filter: {{filter}}</h4>
                             <h5>Total Count: {{count}}, Showing Results: {{reslen}}</h5>
+                        </div>
+                        {# Info PopUp #}
+                        <div class='col-md-7 infopop' id='marvinquery'>
+                        {{infopopup('See how to do it in Marvin', 'Marvin Query - start iPython', querystring, 'marvinquery', 'warning')}}
                         </div>
                     </div>
                 </div>

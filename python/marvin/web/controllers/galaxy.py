@@ -208,6 +208,13 @@ class Galaxy(FlaskView):
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
+                # TODO - make this general - see also search.py for querystr
+                self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
+                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16,16]<br></samp></html>".format(cube.plateifu))
+                self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
+                    Cube(plateifu='{0}')<br># get maps<br>maps=cube.getMaps()<br># or another way <br>\
+                    from marvin.tools.maps import Maps<br>maps = Maps(plateifu='{0}')<br># get an emission \
+                    line map<br>haflux = maps.getMap('emline_gflux', channel='ha_6564')<br></samp></html>".format(cube.plateifu))
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)

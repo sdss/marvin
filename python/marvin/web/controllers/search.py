@@ -26,7 +26,8 @@ search = Blueprint("search_page", __name__)
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000']
+    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000', 'haflux > 25',
+               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
     q = random.choice(samples)
     return q
 
@@ -100,6 +101,15 @@ class Search(FlaskView):
                         output = None
                     self.search['results'] = output
                     self.search['reslen'] = len(res.results)
+                    if returnparams:
+                        returnparams = [str(r) for r in returnparams]
+                    rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
+                    qstr = ', returnparams=returnparams' if returnparams else ''
+                    self.search['querystring'] = ("<html><samp>from marvin import \
+                        config<br>from marvin.tools.query import Query<br>config.mode='remote'<br>\
+                        filter='{0}'<br> {1}\
+                        q = Query(searchfilter=filter{2})<br>\
+                        r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
 
         return render_template('search.html', **self.search)
 

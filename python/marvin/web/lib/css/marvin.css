@@ -6071,7 +6071,7 @@ a.list-group-item-danger.active:hover, a.list-group-item-danger.active:focus {
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:57:42
+* @Last Modified time: 2016-10-14 14:31:22
 */
 .marvin-main nav.navbar-default {
   margin-bottom: 0px;
@@ -6188,6 +6188,9 @@ section h3.section-subheading {
   font-weight: 400;
   letter-spacing: 2px; }
 
+.infopop .popover {
+  max-width: 100%; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 10:40:57
@@ -6206,16 +6209,16 @@ section h3.section-subheading {
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-09 13:02:19
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-10-17 18:48:53
 */
 .marvinflag {
   border-radius: 50px; }
 
-.galinfo .popover-title {
+.flagalert .popover-title {
   background-color: #3498DB;
   color: #fff; }
-.galinfo .popover-content {
+.flagalert .popover-content {
   padding: 0px;
   border-radius: 0px;
   border-color: #3498DB; }
