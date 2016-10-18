@@ -383,10 +383,14 @@ class Query(object):
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
+            rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
+            # simplify the spaxelprop list down to one set
             mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
             mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
                       in k else k for k in mykeys]
-            return mykeys
+            # replace table names with shortcut names
+            newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
+            return newkeys
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['getparams']['url']

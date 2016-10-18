@@ -106,13 +106,7 @@ class ParamFormLookupDict(dict):
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""
 
-        # Update shortcuts upon MPL changes
-        # if self._mplver != config.mplver:
-        #     print('changing param form mplver', self._mplver, config.mplver)
-        #     self._init_table_shortcuts()
-        #     self._init_name_shortcuts()
-        #     self._mplver = config.mplver
-        #self._mplver = kwargs.get('mplver', config.mplver)
+        # Init the shortcuts
         self._init_table_shortcuts()
         self._init_name_shortcuts()
 
@@ -172,7 +166,9 @@ class ParamFormLookupDict(dict):
     def _init_table_shortcuts(self):
         ''' initialize the table shortcuts '''
 
-        self._tableShortcuts = {'ifu': 'ifudesign'}
+        self._tableShortcuts = {'ifu': 'ifudesign', 'cube_header_keyword': 'fits_header_keyword',
+                                'cube_header_value': 'fits_header_value', 'maps_header_keyword': 'header_keyword',
+                                'maps_header_value': 'header_value'}
         self._set_junk_shortcuts()
 
     def _init_name_shortcuts(self):
