@@ -21,7 +21,7 @@ query and returns the results.  To see how to handle your results, go to :ref:`m
 Filters
 -------
 
-See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.
+See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.  See the :ref:`marvin-query-examples` for examples of how to write MaNGA specific filter strings.
 
 |
 

@@ -162,14 +162,20 @@ the six emission line gflux maps [OIId, Hb, OIII5008, NII6585, Ha, SII6718].  Th
 `HighCharts <http://www.highcharts.com/>`_ javascript library.
 
 * **Map Dropdown**: Choose up to 6 maps from the dropdown list.  Click the Get Maps button to display them.
+
 * **Bin-Template Selection**: Choose a binning and template option from the dropdown list.
+
 * **Select Spaxel**: Click on an individual Spaxel to display it in the above Spectrum Viewer.
+
 * **Hover**: Hover over a Spaxel to see the spaxel x and y, and the value of the map at the particular point
+
 * **ColorAxis**: The color axis (right-side) is mapped to the min and max of the data series, after masked values
   have taken into account.
+
 * **Map Colors**: The map colors are defined as follows:
+
   * Grey = Values with the "NoCoverage" maskbit set, or for MPL-4, a mask value of 1.
-  * Hatched area = Values with
+  * Hatched area = Values with mask bits (5,6,7,or 30) set or low S/N (S/N ratio < 1)
   * One-Tone Blue = All maps that have all values >= 0 (e.g. emission line flux maps)
   * Two-Tone Blue-to-Red = All maps that have a minimum value < 0 (e.g. velocity maps)
 

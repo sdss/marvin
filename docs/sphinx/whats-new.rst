@@ -30,3 +30,21 @@ The major improvements and additions in this release:
   * Interactive spectrum selection from the galaxy image.
 
   * An image roulette if you are feeling lucky.
+
+What's New in Marvin Beta (November 2016)
+=========================================
+
+* New Marvin Tools (Maps, Bin, ModelCube)
+
+* Pickling of Marvin Tools, Queries, and Results (i.e. local save and restore)
+
+* DAP Spaxel ("Zonal") Queries
+
+* Dynamic DAP Map display in the web, with point-and-click spaxel
+
+* For MPL-5+, display of model fits in spectrum view in the web
+
+
+
+
+
