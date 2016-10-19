@@ -40,6 +40,7 @@ class QueryView(BrainQueryView):
     def __init__(self):
         self._limit = 100
         self._order = 'asc'
+        self.results = {}
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
