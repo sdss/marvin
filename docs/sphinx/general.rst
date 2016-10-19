@@ -22,10 +22,9 @@ several attributes that control how you interact with MaNGA data.
     Setting this attribute to True tells Marvin that whenever you don't have a file locally, to use
     sdss_access to download it via rsync.  See :ref:`marvin-download-objects` below.
 
-* **version attributes**:
-    The Config class has three attributes referencing the version of MaNGA data you are working with: **mplver**,
-    **drpver**, and **dapver**.  You can set these versions manually but to avoid versions conflicts, it is
-    recommended to always use one of the conveneince functions provided.  See :ref:`marvin-set-versions` below.
+* **release**:
+    The Config class has a single attribute referencing the version of MaNGA data you are working with.
+    **release** refers to either MaNGA Product Launches (MPLs), e.g. "MPL-5", or Data Releases (DRs), e.g. "DR13".  See :ref:`marvin-set-versions` below, to see how to set the version of the data you want.
 
 * **db**:
     This attribute lets Marvin know if you have a database that it can be connected to.  If you have no database, this
@@ -54,21 +53,31 @@ Marvin Modes
 
 Setting Versions
 ----------------
-You can globally control the version of the data you want to access using several convienence methods in the :ref:`marvin-config-class` class.
+You can globally control the version of the data you want to access using several convienence methods in the :ref:`marvin-config-class` class. Setting the release will also internally set up the appropriate DRP and DAP versions.
+
+:py:meth:`~marvin.Config.setRelease`: main method to set the release version (e.g. MPL-5 or DR13).  Accepts either MPL or DR strings.
+
+::
+
+    from marvin import config
+    config.setRelease('MPL-5')
+
+You can also individually set MPLs or DRs separately with similar methods.
 
 :py:meth:`~marvin.Config.setMPL`: set the version using the MPL designation (e.g. MPL-4)
 
 ::
 
     from marvin import config
-    config.setMPL('MPL-4') # sets the global version to MPL-4; also sets the DRP and DAP versions to v1_5_1 and 1.1.1, respectively
+    config.setMPL('MPL-4') # sets the global version to MPL-4
 
-:func:`setVersions <marvin.Config.setVersions>`: set the version using the DRP and DAP versions (e.g. v1_5_1, 1.1.1)
+:py:meth:`~marvin.Config.setDR`: set the version using the DR designation (e.g. DR13)
 
 ::
 
     from marvin import config
-    config.setVersions(drpver='v1_5_1', dapver='1.1.1') # sets the global DRP and DAP versions; also sets the MPL version to MPL-4
+    config.setDR('DR13') # sets the global version to DR13
+
 
 .. _marvin-download-objects:
 
