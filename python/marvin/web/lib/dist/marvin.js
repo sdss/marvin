@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-10-05 13:57:11
+* @Last Modified time: 2016-10-19 13:25:42
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -818,7 +818,7 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-14 13:13:40
+* @Last Modified time: 2016-10-19 13:29:00
 */
 
 'use strict';
@@ -835,7 +835,7 @@ var Marvin = function Marvin(options) {
     // set up utility functions
     this.utils = new Utils();
     this.utils.print();
-    this.utils.initPopOvers();
+    this.utils.initInfoPopOvers();
     this.utils.initToolTips();
 
     // load the header
@@ -1290,7 +1290,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-28 16:12:28
+* @Last Modified time: 2016-10-19 13:29:32
 */
 
 // Javascript code for general things
@@ -1365,12 +1365,12 @@ var Utils = function () {
             }
         }
 
-        // Initialize Pop-Overs
+        // Initialize Info Pop-Overs
 
     }, {
-        key: 'initPopOvers',
-        value: function initPopOvers() {
-            $('[data-toggle="popover"]').popover();
+        key: 'initInfoPopOvers',
+        value: function initInfoPopOvers() {
+            $('.infopop [data-toggle="popover"]').popover();
         }
     }, {
         key: 'initToolTips',
