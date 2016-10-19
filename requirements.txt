@@ -1,0 +1,13 @@
+numpy
+astropy
+--pre sqlalchemy
+networkx
+matplotlib
+pillow
+requests
+requests-futures
+dogpile.cache
+wtforms
+validators
+intervals
+coveralls

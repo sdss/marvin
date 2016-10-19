@@ -107,7 +107,7 @@ Via Config
     from marvin.tools.cube import Cube
 
     # set config attributes and turn on global downloads
-    config.setMPL('MPL-4')
+    config.setRelease('MPL-4')
     config.mode = 'local'
     config.download = True
 
@@ -160,7 +160,7 @@ Via Explicit Call
     # Import the downloadList utility function
     from marvin import config
     from marvin.utils.general import downloadList
-    config.setMPL('MPL-4')
+    config.setRelease('MPL-4')
 
     # Make a list of plate-IFUs
     gallist = ['8485-1901', '7443-12701']

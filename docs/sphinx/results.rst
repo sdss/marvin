@@ -23,7 +23,7 @@ and get the Results
     r.totalcount
     1219
 
-    # print results
+    # print results.
     r.results
     [NamedTuple(mangaid=u'1-22286', plate=7992, name=u'12704', z=0.099954180419445),
      NamedTuple(mangaid=u'1-22298', plate=7992, name=u'12702', z=0.0614774264395237),
@@ -38,7 +38,7 @@ and get the Results
 
 
 .. _marvin-results-singlestep:
- 
+
 Alternatively, you can perform it in a single step
 
 .. code-block:: python
@@ -47,11 +47,11 @@ Alternatively, you can perform it in a single step
     q, r = doQuery(searchfilter='nsa.z < 0.1')
 
 
-|
+.. _marvin-results-view:
 
 Viewing Results
 ---------------
-Basics
+The query results are stored in the r.results attribute.  This returns a list of `NamedTuples <https://docs.python.org/2/library/collections.html#collections.namedtuple>`_.
 
 .. code-block:: python
 
@@ -87,11 +87,28 @@ or to view the Full Column Names
     print(fullnames)
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
+Query Time
+^^^^^^^^^^
+
+The total runtime of your query that produced the results is saved as a Python `datetime.timedelta <https://docs.python.org/2/library/datetime.html#timedelta-objects>`_ object.
+
+.. code-block:: python
+
+    # see the runtime as a timedelta object broken into [days, seconds, microseconds]
+    print(r.query_runtime)
+    datetime.timedelta(0, 0, 19873)
+
+    # see the total runtime in seconds
+    print(r.query_runtime.total_seconds())
+    0.019873
+
+.. _marvin-results-pages:
+
 Get Next/Previous Chunks in List
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For results over 150 objects, Marvin automatically paginates results in groups
-of 10. If you have the returntype attribute specified, then you will also
+For results over 1000 objects, Marvin automatically paginates results in groups
+of 100. If you have the returntype attribute specified, then you will also
 generate the new Marvin Tools for the new chunk.  You can view the next or
 previous chunk with
 
@@ -122,7 +139,7 @@ You can also specify a chunk value
      NamedTuple(mangaid=u'1-22662', plate=7992, name=u'6104', z=0.027131162583828),
      NamedTuple(mangaid=u'1-22970', plate=7992, name=u'3703', z=0.0564263463020325)]
 
-
+.. _marvin-results-subset:
 
 Get Subset
 ^^^^^^^^^^
@@ -157,19 +174,6 @@ subset
      NamedTuple(mangaid=u'1-25593', plate=7990, name=u'6104', z=0.0261989794671535),
      NamedTuple(mangaid=u'1-25609', plate=7990, name=u'9102', z=0.0291846375912428)]
 
-
-.. Get All
-.. ^^^^^^^
-.. You get all of the results with
-.. 
-.. .. code-block:: python
-.. 
-..     r.getAll()
-.. 
-.. When operating Marvin in remote mode, all of the results are always returned.
-
-|
-
 .. _marvin-results-downlaod:
 
 Downloading Results
@@ -182,7 +186,6 @@ determined by the returntype parameter, which defaults to cube if not specified.
 
     r.download()
 
-|
 
 .. _marvin-results-sort:
 
@@ -330,8 +333,8 @@ To Astropy Table
 
     r.toTable()
     <Table length=10>
-    mangaid  plate   name          z       
-    unicode7 int64 unicode5     float64    
+    mangaid  plate   name          z
+    unicode7 int64 unicode5     float64
     -------- ----- -------- ---------------
      1-22286  7992    12704 0.0999541804194
      1-22298  7992    12702 0.0614774264395

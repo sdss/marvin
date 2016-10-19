@@ -16,14 +16,12 @@ When in local mode, queries will assume you have a database to query on.  You pr
 primarily work in remote mode.  Querying while in remote mode will trigger a Marvin-API request to the Marvin at Utah where it performs your
 query and returns the results.  To see how to handle your results, go to :ref:`marvin-results`.
 
-|
 
 Filters
 -------
 
 See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.  See the :ref:`marvin-query-examples` for examples of how to write MaNGA specific filter strings.
 
-|
 
 Return Parameters
 -----------------
@@ -35,7 +33,6 @@ Queries will return a set of default parameters no matter what.  If you want to 
     print q.params
     ['cube.mangaid', 'cube.plate', 'ifu.name', 'nsa.z']
 
-|
 
 Return Type
 -----------
@@ -45,7 +42,6 @@ The results of your Query by default might not be in the format you desire.  Ins
 
 **NOTE**: This is time intensive.  Depending on the size of your results, this conversion may take awhile.  Be wary.
 
-|
 
 Simple Query
 ------------
@@ -54,55 +50,67 @@ Simple Query from initialization
 
 .. code-block:: python
 
+    # import the query class
     from marvin.tools.query import Query
+
+    # make a new query that searches for all galaxies with NSA z < 0.1
     q = Query(searchfilter='nsa.z < 0.1')
+
+    # to see the parameters your query will return
+    q.params
+    [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', u'nsa.z']
+
+    # run the query
     q.run()
 
-or in steps
+    # let's also return the RA and Dec of each cube
+    returnparams = ['cube.ra', 'cube.dec']
+    q = Query(seachfilter='nsa.z < 0.1', returnparams=returnparams)
+
+    q.params
+    [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', u'cube.ra', u'cube.dec', u'nsa.z']
+
+
+Get the :ref:`marvin-results` from a query.
 
 .. code-block:: python
 
-    searchfilter = 'nsa.z < 0.1'
-    q = Query()
-    q.set_filter(searchfilter=searchfilter)
-    q._create_query_modelclasses()
-    q._join_tables()
-    q.add_condition()
-    q.run()
-
-Get Results
-
-.. code-block:: python
-
+    # run your query and return a Marvin Results object
     r = q.run()
+
+    # the actual results are stored in r.results as a list of NamedTuples
     r.results
 
-Returns
+which returns a list of `NamedTuples <https://docs.python.org/2/library/collections.html#collections.namedtuple>`_.
 
 .. code-block:: python
 
-    [(u'1-24099', 7991, u'1902', u'1902', 0.0281657855957747),
-     (u'1-38103', 8082, u'1901', u'1901', 0.0285587850958109),
-     (u'1-38157', 8083, u'1901', u'1901', 0.037575539201498),
-     (u'1-38347', 8083, u'1902', u'1902', 0.036589004099369),
-     (u'1-43214', 8135, u'1902', u'1902', 0.117997065186501),
-     (u'1-43629', 8143, u'1901', u'1901', 0.031805731356144),
-     (u'1-43663', 8140, u'1902', u'1902', 0.0407325178384781),
-     (u'1-43679', 8140, u'1901', u'1901', 0.0286782365292311),
-     (u'1-43717', 8137, u'1902', u'1902', 0.0314487814903259),
-     (u'1-44047', 8143, u'1902', u'1902', 0.04137859120965)]
+    [NamedTuple(mangaid=u'1-22286', plate=7992, plateifu=u'7992-12704', name=u'12704', z=0.099954180419445),
+     NamedTuple(mangaid=u'1-22298', plate=7992, plateifu=u'7992-12702', name=u'12702', z=0.0614774264395237),
+     NamedTuple(mangaid=u'1-22333', plate=7992, plateifu=u'7992-3704', name=u'3704', z=0.0366250574588776),
+     NamedTuple(mangaid=u'1-22347', plate=7992, plateifu=u'7992-3701', name=u'3701', z=0.0437936186790466),
+     NamedTuple(mangaid=u'1-22383', plate=7992, plateifu=u'7992-3702', name=u'3702', z=0.0542150922119617),
+     NamedTuple(mangaid=u'1-22412', plate=7992, plateifu=u'7992-9101', name=u'9101', z=0.0190997123718262),
+     NamedTuple(mangaid=u'1-22414', plate=7992, plateifu=u'7992-6103', name=u'6103', z=0.0922721400856972),
+     NamedTuple(mangaid=u'1-22438', plate=7992, plateifu=u'7992-1901', name=u'1901', z=0.016383046284318),
+     NamedTuple(mangaid=u'1-22662', plate=7992, plateifu=u'7992-6104', name=u'6104', z=0.027131162583828),
+     NamedTuple(mangaid=u'1-22970', plate=7992, plateifu=u'7992-3703', name=u'3703', z=0.0564263463020325)]
 
-Do it all at once
+Do it all at once using the doQuery method.  doQuery accepts all the same arguments and keywords as Query.
 
 .. code-block:: python
 
+    # import it
     from marvin.tools.query import doQuery
+
+    # run the query and retrieve the results in one step
     q, r = doQuery(searchfilter='nsa.z < 0.1')
+
+    # look at results
     r.results
 
 See :ref:`marvin-query-examples` for examples of different types of queries.  When you want to perform a new query or update an old query, currently, you must start a fresh query, or run ```q.reset()```.
 
-|
 
 Show Query
 ----------
@@ -142,3 +150,48 @@ From the Query object (if in local mode)
 See :ref:`marvin-query-examples` for examples of different types of queries.
 
 Queries produce results.  Go to :ref:`marvin-results` to see how to handle your query results.
+
+
+Saving and Restoring Your Queries
+---------------------------------
+
+Using `Python pickling <https://docs.python.org/2/library/pickle.html>`_, Marvin can save your queries locally, and restore them later for use again.
+
+Saving
+^^^^^^
+
+.. code-block:: python
+
+    # make a query
+    f = 'nsa.sersic_logmass < 11 and nsa.z < 0.1'
+    q = Query(searchfilter=f)
+    print(q)
+    Marvin Query(mode='remote', limit=100, sort=None, order='asc')
+
+    # save it for later
+    q.save('myquery')
+    '/Users/Brian/myquery.mpf'
+
+Restoring
+^^^^^^^^^
+
+Restoring is a Marvin Query class method.  That means you run it from the class itself after import.
+
+.. code-block:: python
+
+    # import the Query class
+    from marvin.tools.query import Query
+
+    # Load a saved query from a pickle file
+    newq = Query.restore('/Users/Brian/myquery.mpf')
+
+    # Your query is now loaded
+    print(newq)
+    Marvin Query(mode='remote', limit=100, sort=None, order='asc')
+    newq.searchfilter
+    'sersic_logmass >= 9.5 and sersic_logmass < 11 and sersic_n < 2'
+
+
+End
+
+
