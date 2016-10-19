@@ -8,6 +8,11 @@ To painlessly install Marvin:
 
     pip install marvin
 
+Alternatively, you can clone this git repo and run python setup install:
+
+    git clone https://github.com/marvin-manga/marvin.git
+    python setup.py install
+
 What is Marvin?
 ---------------
 
