@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-10-19 22:29:26
+# @Last Modified time: 2016-10-19 22:39:19
 #
 # This is the Marvin setup
 #
@@ -29,10 +29,6 @@ setup(name=NAME,
       url='https://github.com/marvin-manga/marvin',
       packages=['marvin'],
       package_dir={'marvin': 'python/marvin'},
-      install_requires=[
-          'SQLAlchemy>=1.0',
-          'WTForms>=1.0.4',
-      ],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
