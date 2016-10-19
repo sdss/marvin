@@ -1,3 +1,4 @@
+# Tools
 numpy
 astropy
 --pre sqlalchemy
@@ -11,3 +12,15 @@ wtforms
 validators
 intervals
 coveralls
+
+# Web
+flask
+flask-classy
+flask-jsglue
+flask-featureflags
+flask-profiler
+flask-restful
+flask-sqlalchemy
+pgpasslib
+psycopg2
+

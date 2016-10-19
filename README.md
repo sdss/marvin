@@ -23,12 +23,10 @@ Marvin-web, provides an easily accesible interface for searching the MaNGA data
 and visual exploration of individual MaNGA galaxies or of the entire sample. The
 python package, in particular Marvin-tools, allows users to easily and
 efficiently interact with the MaNGA data via local files, files retrieved from
-the `Science Archive Server <https://sas.sdss.org>`_, or data directly grabbed
+the [Science Archive Server](https://sas.sdss.org), or data directly grabbed
 from the database.  The tools come mainly in the form of convenience functions
 and classes for interacting with the data. An additional tool is a powerful
 query functionality that uses the API to query the MaNGA databases and return
 the search results to your python session. Marvin-API is the critical link that
 allows Marvin-tools and Marvin-web to interact with the databases, which enables
 users to harness the statistical power of the MaNGA data set.
-
-

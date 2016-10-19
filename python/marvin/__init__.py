@@ -1,3 +1,11 @@
+# Licensed under a 3-clause BSD style license
+"""
+Marvin is a package intended to simply the access, exploration, and visualization of
+the MaNGA dataset for SDSS-IV.  It provides a suite of Python tools, a web interface,
+and a REST-like API, under tools/, web/, and api/, respectively.  Core functionality
+of Marvin stems from Marvin's Brain.
+"""
+
 import os
 import re
 import warnings

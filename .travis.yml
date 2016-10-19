@@ -1,4 +1,9 @@
+# Travis config file
+#  - this is used for auto-testing everything on every git push
+# ==================
+
 language: python
+
 python:
   - "2.6"
   - "2.7"
@@ -8,10 +13,19 @@ python:
   - "3.5"
   - "pypy"
   - "pypy3"
+
+branches:
+only:
+  - master
+  - marvin_refactor
+
 # command to install dependencies
-install: "pip install --upgrade -r requirements.txt"
+install:
+  - pip install --upgrade -r requirements.txt --quiet
+
 # command to run tests
 script:
   - coverage run --source=marvin setup.py test
-after_success: 
+
+after_success:
   - coveralls
