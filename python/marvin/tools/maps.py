@@ -53,6 +53,9 @@ def _is_MPL4(dapver):
 
     assert isinstance(dapver, marvin.utils.six.string_types), 'dapver must be a string'
 
+    if 'v' in dapver:
+        dapver = dapver.strip('v').replace('_', '.')
+
     dap_version = distutils.version.StrictVersion(dapver)
     MPL4_version = distutils.version.StrictVersion('1.1.1')
 

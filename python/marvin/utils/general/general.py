@@ -653,6 +653,8 @@ def getDefaultMapPath(**kwargs):
         name = 'mangadefault'
     elif '5' in release:
         name = 'mangadap5'
+    else:
+        return None
 
     # construct the url link to default maps file
     maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,
