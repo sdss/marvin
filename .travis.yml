@@ -21,7 +21,7 @@ only:
 
 # command to install dependencies
 install:
-  - pip install --upgrade -r requirements.txt --quiet
+  - pip install -r requirements.txt --quiet
 
 # command to run tests
 script:
