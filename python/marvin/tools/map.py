@@ -219,7 +219,7 @@ class Map(object):
                 Unlike for other Marvin Tools that derive from
                 :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
                 mandatory for ``Map`` given that the there is no default
-                path for a given spaxel.
+                path for a given map.
             overwrite (bool):
                 If True, and the ``path`` already exists, overwrites it.
                 Otherwise it will fail.
@@ -229,6 +229,10 @@ class Map(object):
                 The realpath to which the file has been saved.
 
         """
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path+'.mpf')
 
         return marvin.core.marvin_pickle.save(self, path=path, overwrite=overwrite)
 

@@ -340,7 +340,9 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
+        print('cols', self._params)
         ntnames = self._reduceNames(self._params, under=True)
+        print('ntnames', ntnames)
         try:
             nt = namedtuple('NamedTuple', ntnames)
         except ValueError as e:
@@ -353,6 +355,8 @@ class Results(object):
         def keys(self):
             return qpo
         nt.keys = keys
+        print('keys', keys())
+        print(self.results[0])
         self.results = [nt(*r) for r in self.results]
 
     def save(self, path=None, overwrite=False):
