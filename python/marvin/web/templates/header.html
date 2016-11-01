@@ -40,13 +40,21 @@
                 </div>
             </form>
 
+            <!-- Links to some Docs -->
+            {# Links to Whats New and Known Issues #}
+            <div class='nav navbar-nav btn-group' id='links' role='group'>
+                <a class='navbar-btn btn btn-info' target='_blank' href='https://api.sdss.org/doc/manga/marvin/refactor/whats-new.html'>What's New</a>
+                <a class='navbar-btn btn btn-danger' target='_blank' href='https://api.sdss.org/doc/manga/marvin/refactor/known_issues.html'>Known Issues</a>
+                <a class='navbar-btn btn btn-warning' target='_blank' href='https://api.sdss.org/doc/manga/marvin/refactor/getinvolved.html'>Get Involved</a>
+            </div>
+
             <!-- Login / User Prefs -->
-            {% if not session.login %}
+            {% if not session.loginready %}
                 <!-- Login -->
                 {# Login #}
                 <div class='navbar-login'>
                   <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
+                    <li id='login-drop' class="dropdown">
                       <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sign-in fa-fw" aria-hidden="true"></i><b>Login</b> <span class="caret"></span></a>
                         <ul id="login-dp" class="dropdown-menu">
                             <li>
@@ -61,11 +69,11 @@
                 {# User Preferences Post Login #}
                 <div class='navbar-userprefs'>
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, User <b class="caret"></b></a>
+                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{session.name}} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="/user/preferences"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> Preferences</a></li>
+                                <li><a href="{{url_for('users_page.User:preferences')}}"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> Preferences</a></li>
                                 <li class="divider"></li>
-                                <li><a href="/auth/logout"><i class="fa fa-sign-out fa-fw" aria-hidden="true"></i> Logout</a></li>
+                                <li><a href="#"><i class="fa fa-sign-out fa-fw" aria-hidden="true"></i> Logout</a></li>
                             </ul>
                         </li>
                     </ul>

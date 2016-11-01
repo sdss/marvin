@@ -124,13 +124,15 @@ The Galaxy page includes:
 
 * **interactive spectrum display**.
 
+* **interactive map display**.
 
 .. _web-spectrum:
 
 Spectrum Display
 ^^^^^^^^^^^^^^^^
 
-Enable the spectrum display by clicking on the Map/Spec View box.
+Enable the spectrum display by clicking on the Map/Spec View box.  The spectrum display uses the
+`DyGraphs <http://dygraphs.com/>`_ javascript library.
 
 * **Select Spectrum**: Click on the image to show the spectrum of the spaxel at
   a particular location (default is central spaxel), which is indicated by the
@@ -145,6 +147,39 @@ Enable the spectrum display by clicking on the Map/Spec View box.
 
 * **Spectrum features**:
 
-  * solid line: spectrum
+  * green solid line: spectrum
+  * blue solid line: model fits (unbinned: SPX-MILESHC) (for MPLs >= 5)
   * shaded region: 1-sigma error range
-  * cursor coordinates: wavelength and flux value
+  * cursor coordinates: wavelength, flux, and modelfit value
+
+.. _web-maps:
+
+Map Display
+^^^^^^^^^^^
+
+Enable the map display by clicking on the Map/Spec View box.  This displays a series of six maps.  Default maps are
+the six emission line gflux maps [OIId, Hb, OIII5008, NII6585, Ha, SII6718].  These maps are generated using the
+`HighCharts <http://www.highcharts.com/>`_ javascript library.
+
+* **Map Dropdown**: Choose up to 6 maps from the dropdown list.  Click the Get Maps button to display them.
+
+* **Bin-Template Selection**: Choose a binning and template option from the dropdown list.
+
+* **Select Spaxel**: Click on an individual Spaxel to display it in the above Spectrum Viewer.
+
+* **Hover**: Hover over a Spaxel to see the spaxel x and y, and the value of the map at the particular point
+
+* **ColorAxis**: The color axis (right-side) is mapped to the min and max of the data series, after masked values
+  have taken into account.
+
+* **Map Colors**: The map colors are defined as follows:
+
+  * Grey = Values with the "NoCoverage" maskbit set, or for MPL-4, a mask value of 1.
+  * Hatched area = Values with mask bits (5,6,7,or 30) set or low S/N (S/N ratio < 1)
+  * One-Tone Blue = All maps that have all values >= 0 (e.g. emission line flux maps)
+  * Two-Tone Blue-to-Red = All maps that have a minimum value < 0 (e.g. velocity maps)
+
+
+
+
+

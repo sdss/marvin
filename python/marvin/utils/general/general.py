@@ -1,7 +1,6 @@
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from astropy import wcs
 import numpy as np
-import os
 from astropy import table
 from scipy.interpolate import griddata
 import warnings
@@ -22,7 +21,7 @@ except ImportError as e:
 __all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'parseVersion']
+           'getDapRedux']
 
 drpTable = {}
 
@@ -216,7 +215,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         if xyorig == 'center':
             yMid, xMid = shape / 2.
             xCube = np.round(xMid + x)
-            yCube = np.round(yMid - y)
+            yCube = np.round(yMid + y)
         elif xyorig == 'lower':
             xCube = np.round(x)
             yCube = np.round(y)
@@ -275,7 +274,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     assert mode in autoModes + ['auto'], 'mode={0} is not valid'.format(mode)
 
-    config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+    config_drpver, __ = config.lookUpVersions()
     drpver = drpver if drpver else config_drpver
     drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
 
@@ -550,30 +549,6 @@ def parseIdentifier(galid):
     return idtype
 
 
-def parseVersion(currentver):
-    ''' Determine if a string version in an MPL and DR
-
-    Parses a string version id and determines whether it is a
-    MPL version or a DR version
-
-    Parameters:
-        currentver (str):
-            The string of a Marvin version to parse
-
-    Returns:
-        vertype (str):
-            String indicating either mpl, dr, or None
-
-    '''
-    if 'MPL' in currentver:
-        vertype = 'mplver'
-    elif 'DR' in currentver:
-        vertype = 'drver'
-    else:
-        vertype = None
-    return vertype
-
-
 def getSpaxelXY(cube, plateifu, x, y):
     """Gets and spaxel from a cube in the DB.
 
@@ -608,12 +583,13 @@ def getSpaxelXY(cube, plateifu, x, y):
     return spaxel
 
 
-def getDapRedux(mplver=None):
+def getDapRedux(release=None):
     ''' Retrieve SAS url link to the DAP redux directory
 
     Parameters:
-        mplver (str):
-            The MPL version of the data to download.  Defaults to Marvin config.mplver
+        release (str):
+            The release version of the data to download.
+            Defaults to Marvin config.release.
 
     Returns:
         dapredux (str):
@@ -625,8 +601,8 @@ def getDapRedux(mplver=None):
     else:
         sdss_path = Path()
 
-    mplver = mplver if mplver else marvin.config.mplver
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = release or marvin.config.release
+    drpver, dapver = marvin.config.lookUpVersions(release=release)
     # hack a url version of MANGA_SPECTRO_ANALYSIS
     dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
     dappath = dapdefault.rsplit('/', 2)[0]
@@ -641,8 +617,9 @@ def getDefaultMapPath(**kwargs):
     default MAPS file for a given MPL.
 
     Parameters:
-        mplver /drver (str):
-            The DR version of the data to download.  Defaults to Marvin config.mplver/drver
+        release (str):
+            The release version of the data to download.
+            Defaults to Marvin config.release.
         plate (int):
             The plate id
         ifu (int):
@@ -663,21 +640,24 @@ def getDefaultMapPath(**kwargs):
         sdss_path = Path()
 
     # Get kwargs
-    mplver = kwargs.get('mplver', marvin.config.mplver)
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = kwargs.get('release', marvin.config.release)
+    drpver, dapver = marvin.config.lookUpVersions(release=release)
     plate = kwargs.get('plate', None)
     ifu = kwargs.get('ifu', None)
     daptype = kwargs.get('daptype', 'SPX-GAU-MILESHC')
     bintype = kwargs.get('bintype', 'MAPS')
 
     # get the sdss_path name by MPL
-    if '4' in mplver:
+    # TODO: this is likely to break in future MPL/DRs. Just a heads up.
+    if '4' in release:
         name = 'mangadefault'
-    elif '5' in mplver:
+    elif '5' in release:
         name = 'mangadap5'
+    else:
+        return None
 
     # construct the url link to default maps file
-    maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=mplver,
+    maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,
                             plate=plate, ifu=ifu, daptype=daptype, mode=bintype)
     return maplink
 
@@ -699,8 +679,9 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             Indicated the type of object to download.  Can be any of
             plate, cube, mastar, rss, map, or default (default map).
             If not specified, the dltype defaults to cube.
-        mplver (str):
-            The MPL version of the data to download.  Defaults to Marvin config.mplver
+        release (str):
+            The MPL/DR version of the data to download.
+            Defaults to Marvin config.release.
         bintype (str):
             The bin type of the DAP maps to download. Defaults to *
         binmode (str):
@@ -721,8 +702,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]
     verbose = kwargs.get('verbose', None)
     as_url = kwargs.get('as_url', None)
-    mplver = kwargs.get('mplver', marvin.config.mplver)
-    drpver, dapver = marvin.config.lookUpVersions(mplver=mplver)
+    release = kwargs.get('release', marvin.config.release)
+    drpver, dapver = marvin.config.lookUpVersions(release=release)
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
     daptype = kwargs.get('daptype', '*')
@@ -753,9 +734,9 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'plate':
         name = 'mangaplate'
     elif dltype == 'map':
-        if '4' in mplver:
+        if '4' in release:
             name = 'mangamap'
-        elif '5' in mplver:
+        elif '5' in release:
             name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
@@ -780,7 +761,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
-                         mpl=mplver, bintype=bintype, n=n, mode=binmode, daptype=daptype)
+                         mpl=relase, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream
     try:
@@ -801,7 +782,7 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
     if drpall:
         drpall_table = table.Table.read(drpall)
     else:
-        config_drpver, __ = config.lookUpVersions(mplver=config.mplver, drver=config.drver)
+        config_drpver, __ = config.lookUpVersions()
         drpver = drpver if drpver else config_drpver
         if drpver not in drpTable:
             drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-01 15:05:09
+* @Last Modified time: 2016-10-11 15:23:38
 */
 
 'use strict';
@@ -81,24 +81,40 @@ class HeatMap {
                     var mathError = (mask[ii][jj] && Math.pow(2, 6));
                     var badFit = (mask[ii][jj] && Math.pow(2, 7));
                     var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
-                    var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                    //var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                    var noData = noValue;
+                    var badData = (badValue || mathError || badFit || doNotUse);
                 } else {
                     noData == null;
+                    badData == null;
                 }
 
                 if (ivar !== null) {
-                    var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                    var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
                     var signalToNoiseThreshold = 1.;
                 }
 
+                // value types
+                // val=no-data => gray color
+                // val=null => hatch area
+                // val=low-sn => nothing at the moment
+
                 if (noData) {
+                    // for data that is outside the range "nocov" mask
                     val = 'no-data';
+                } else if (badData) {
+                    // for data that is bad - masked in some way
+                    val = null;
                 } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
-                   val = null;
+                    // for data that is low S/N
+                   val = null ; //val = 'low-sn';
                 } else if (ivar === null) {
+                    // for data with no mask or no inverse variance extensions
                     if (this.title.search('binid') !== -1) {
+                        // for binid extension only, set -1 values to no data
                         val = (val == -1 ) ? 'no-data' : val;
                     } else if (val === 0.0) {
+                        // set zero values to no-data
                         val = 'no-data';
                     }
                 };
@@ -110,8 +126,13 @@ class HeatMap {
 
     setColorNoData(_this, H) {
         H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
-            if(value === 'no-data') {
+            if (value === 'no-data') {
+                // make gray color
                 return 'rgba(0,0,0,0)';  // '#A8A8A8';
+            }
+            else if (value === 'low-sn') {
+                // make light blue with half-opacity == muddy blue-gray
+                return 'rgba(0,191,255,0.5)'; //'#7fffd4';
             }
             else
                 return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
@@ -138,6 +159,8 @@ class HeatMap {
         zrange = data.map(function(o){return o[2];});
         zrange = zrange.filter(this.filterRange);
         [zmin, zmax] = this.getMinMax(zrange);
+        console.log('new zrange', zrange);
+        console.log('new zminmax', zmin, zmax);
 
         // make the highcharts
         this.mapdiv.highcharts({
@@ -175,8 +198,9 @@ class HeatMap {
             colorAxis: {
                 min: zmin,
                 max: zmax,
-                minColor: '#00BFFF',
+                minColor: (zmin >= 0.0) ? '#00BFFF' : '#ff3030',
                 maxColor: '#000080',
+                //stops: [[0, '#ff3030'], [0.5, '#f8f8ff'], [1, '#000080']],
                 labels: {align: 'right'},
                 reversed: false
             },

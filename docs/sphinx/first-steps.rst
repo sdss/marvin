@@ -4,7 +4,7 @@
 First Steps
 ===========
 
-Now that you have installed Marvin, it's time to take your first steps.  
+Now that you have installed Marvin, it's time to take your first steps.
 
 *Side Note*: If you are **new to Python**, we recommend that you check out the `AstroBetter Python <http://www.astrobetter.com/wiki/python>`_ page and `Practical Python for Astronomers <http://python4astronomers.github.io/>`_.  You can also find many general Python tutorials on Google or try typing any specific question you have into Google. If Google returns a link to a similar question asked on `Stack Overflow <http://stackoverflow.com/>`_, then definitely start there.
 
@@ -26,20 +26,20 @@ Let's import Marvin
 .. code-block:: python
 
     import marvin
-    INFO: No MPL or DRP/DAP version set. Setting default to MPL-4
+    INFO: No release version set. Setting default to MPL-5
 
-    marvin.config.mplver, marvin.config.drpver, marvin.config.dapver
-    MPL-4 v1_5_1 1.1.1
+    marvin.config.release
+    MPL-5
 
-On intial import, Marvin will set the default data version to use as MPL-4.  You can change the version of MaNGA data using the Marvin :ref:`marvin-config-class`.
+On intial import, Marvin will set the default data version to use the latest MPL available.  You can change the version of MaNGA data using the Marvin :ref:`marvin-config-class`.
 
 .. code-block:: python
 
     from marvin import config
-    config.setMPL('MPL-3')
+    config.setRelease('MPL-4')
 
-    config.mplver, config.drpver, config.dapver
-    MPL-3 v1_3_3 v1_0_0
+    config.release
+    MPL-4
 
 
 |
@@ -78,17 +78,17 @@ Now let's play with a Marvin Cube
     spax
     <Marvin Spaxel (x=10, y=10)>
 
-    spax.drp.wavelength
+    spax.spectrum.wavelength
     array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
             10349.03843826,  10351.42166679,  10353.80544415])
 
-    spax.drp.flux
+    spax.spectrum.flux
     array([-0.00318646,  0.00827731,  0.01482985, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # plot the spectrum (you may need matplotlib.pyplot.ion() for interactive display)
-    spax.drp.plot()
-    
+    spax.spectrum.plot()
+
     # save plot to Downloads directory
     import os
     import matplotlib.pyplot as plt
@@ -137,7 +137,7 @@ Now let's play with a Marvin Query
      NamedTuple(mangaid=u'1-43663', plate=8140, name=u'1902', z=0.0407325178384781),
      NamedTuple(mangaid=u'1-43679', plate=8140, name=u'1901', z=0.0286782365292311)]
 
-    # NamedTuples can be accessed using dotted syntax or like normal tuples
+    # NamedTuples can be accessed using dotted syntax (for unique column names) or like normal tuples
     r.results[0].mangaid
     u'1-22438'
 

@@ -16,7 +16,7 @@ from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tools.plate import Plate as mPlate
 from marvin.utils.general import getImagesByPlate
 from marvin.web.web_utils import buildImageDict, parseSession
@@ -39,7 +39,7 @@ class Plate(FlaskView):
         ''' Do these things before a request to any route '''
         self.plate['plateid'] = None
         self.plate['error'] = None
-        self._drpver, self._dapver, self._currentver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -52,8 +52,9 @@ class Plate(FlaskView):
     def get(self, plateid):
         ''' Retrieve info for a given plate id '''
 
+        print('plate page', self._drpver, self._dapver, self._release)
         self.plate['plateid'] = int(plateid)
-        pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, self._release: self._currentver}
+        pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
             plate = mPlate(**pinputs)
         except MarvinError as e:
@@ -69,7 +70,7 @@ class Plate(FlaskView):
         # Get images for plate
         imfiles = None
         try:
-            imfiles = getImagesByPlate(plateid=plateid, as_url=True, mode='local')
+            imfiles = getImagesByPlate(plateid=plateid, as_url=True, mode='local', release=self._release)
         except MarvinError as e:
             self.plate['error'] = 'Error: could not get images for plate {0}: {1}'.format(plateid, e)
         else:

@@ -6,6 +6,11 @@ from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
 import json
+from hashlib import md5
+try:
+    from inspection.marvin import Inspection
+except:
+    from brain.core.inspection import Inspection
 
 index = Blueprint("index_page", __name__)
 
@@ -22,16 +27,6 @@ class Marvin(FlaskView):
     def index(self):
         current_app.logger.info('Welcome to Marvin Web!')
 
-        # get all MPLs
-        # mpls = config._mpldict.keys()
-        # versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(mpl))} for mpl in mpls]
-        # current_session['versions'] = versions
-
-        # set default - TODO replace with setGlobalSession
-        # if 'currentmpl' not in current_session:
-        #     current_session['currentmpl'] = config.mplver
-
-        print('inside main index page, rendering template')
         return render_template("index.html", **self.base)
 
     def quote(self):
@@ -62,8 +57,8 @@ class Marvin(FlaskView):
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
         print('getting the galid list')
-        self._drpver, self._dapver, self._currentver, self._release = parseSession()
-        print('galidlist parsed versions', self._drpver, self._dapver, self._currentver)
+        self._drpver, self._dapver, self._release = parseSession()
+        print('galidlist parsed versions', self._drpver, self._dapver, self._release)
         cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
                                        marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                            marvindb.datadb.PipelineVersion,
@@ -82,20 +77,31 @@ class Marvin(FlaskView):
         version = f['mplselect']
         print('setting new mpl', version)
         current_session['currentver'] = version
-        drpver, dapver = config.lookUpVersions(mplver=version)
+        drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
-        if 'MPL' in version:
-            current_session['mplver'] = version
-            current_session['drver'] = None
-        elif 'DR' in version:
-            current_session['drver'] = version
-            current_session['mplver'] = None
-        else:
-            out['status'] = -1
-            out['msg'] = 'version {0} is neither an MPL or DR'.format(version)
 
         return jsonify(result=out)
 
+    @route('/login/', methods=['GET', 'POST'], endpoint='login')
+    def login(self):
+        ''' login for trac user '''
+        form = processRequest(request=request)
+        result = {}
+        username = form['username']
+        password = form['password']
+        auth = md5("%s:AS3Trac:%s" % (username.strip(), password.strip())).hexdigest() if username and password else None
+        try:
+            inspection = Inspection(current_session, username=username, auth=auth)
+        except Exception as e:
+            result['status'] = -1
+            result['message'] = e
+            current_session['loginready'] = False
+        else:
+            result = inspection.result()
+            current_session['loginready'] = inspection.ready
+            current_session['name'] = result['membername']
+        print('login result', result)
+        return jsonify(result=result)
 
 Marvin.register(index)

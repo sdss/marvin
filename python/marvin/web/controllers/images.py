@@ -15,7 +15,7 @@ from __future__ import division
 from flask import Blueprint, render_template, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general import getRandomImages
 from marvin.web.web_utils import buildImageDict, parseSession
 
@@ -35,7 +35,7 @@ class Random(FlaskView):
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
         self.random['error'] = None
-        self._drpver, self._dapver, self._mplver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -48,7 +48,7 @@ class Random(FlaskView):
         # Get random images ; parse out thumbnails ; construct plate-IFUs
         imfiles = None
         try:
-            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'], mode='local', mplver=self._mplver)
+            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'], mode='local', release=self._release)
         except MarvinError as e:
             self.random['error'] = 'Error: could not get images: {0}'.format(e)
         else:

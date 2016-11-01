@@ -18,6 +18,7 @@ import numpy
 
 import marvin
 import marvin.api.api
+import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 
@@ -187,8 +188,7 @@ class Map(object):
 
         try:
             response = marvin.api.api.Interaction(url_full,
-                                                  params={'mplver': self.maps._mplver,
-                                                          'drver': self.maps._drver})
+                                                  params={'release': self.maps._release})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))
@@ -207,9 +207,51 @@ class Map(object):
 
         return
 
+    def save(self, path, overwrite=False):
+        """Pickles the map to a file.
+
+        This method will fail if the map is associated to a Maps loaded
+        from the db.
+
+        Parameters:
+            path (str):
+                The path of the file to which the ``Map`` will be saved.
+                Unlike for other Marvin Tools that derive from
+                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
+                mandatory for ``Map`` given that the there is no default
+                path for a given map.
+            overwrite (bool):
+                If True, and the ``path`` already exists, overwrites it.
+                Otherwise it will fail.
+
+        Returns:
+            path (str):
+                The realpath to which the file has been saved.
+
+        """
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path+'.mpf')
+
+        return marvin.core.marvin_pickle.save(self, path=path, overwrite=overwrite)
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        """Restores a Map object from a pickled file.
+
+        If ``delete=True``, the pickled file will be removed after it has been
+        unplickled. Note that, for map objes instantiated from a Maps object
+        with ``data_origin='file'``, the original file must exists and be
+        in the same path as when the object was first created.
+
+        """
+
+        return marvin.core.marvin_pickle.restore(path, delete=delete)
+
     def plot(self, array='value', xlim=None, ylim=None, zlim=None,
              xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
-             figure=None, return_figure=False):
+             figure=None, return_figure=False, show_masked=False):
         """Plot a map using matplotlib.
 
         Returns a |axes|_ object with a representation of this map.
@@ -222,7 +264,7 @@ class Map(object):
         Parameters:
             array ({'value', 'ivar', 'mask'}):
                 The array to display, either the data itself, the inverse
-                variance or the mask.
+                variance, or the mask.
             xlim,ylim (tuple-like or None):
                 The range to display for the x- and y-axis, respectively,
                 defined as a tuple of two elements ``[xmin, xmax]``. If
@@ -248,6 +290,9 @@ class Map(object):
             return_figure (bool):
                 If ``True``, the matplotlib Figure object used will be returned
                 along with the axes object.
+            show_masked (bool):
+                By default, masked values are not shown.
+                If ``show_masked=True``, all spaxels are shown.
 
         Returns:
             ax (`matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_):
@@ -258,7 +303,7 @@ class Map(object):
         Example:
 
           >>> maps = Maps(plateifu='8485-1901')
-          >>> ha_map = maps.getMap(category='emline_gflux', channel='ha-6564')
+          >>> ha_map = maps.getMap('emline_gflux', channel='ha_6564')
           >>> ha_map.plot()
 
         .. |axes| replace:: matplotlib.axes
@@ -301,6 +346,9 @@ class Map(object):
 
         if cmap is None:
             cmap = plt.cm.coolwarm_r
+
+        if show_masked is False and array != 'mask':
+            data = numpy.ma.array(data, mask=(self.mask > 0))
 
         imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
 

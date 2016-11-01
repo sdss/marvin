@@ -6,15 +6,16 @@ import unittest
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 
+from astropy.io import fits
+
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 
 import numpy as np
 from numpy.testing import assert_allclose
 
-from astropy.io import fits
 from astropy import wcs
 
 
@@ -26,10 +27,10 @@ class TestCubeBase(MarvinTest):
         config.switchSasUrl('local')
 
         cls.outver = 'v1_5_1'
-        cls.outmplver = 'MPL-4'
-        cls.filename = os.path.join(
+        cls.outrelease = 'MPL-4'
+        cls.filename = os.path.realpath(os.path.join(
             os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
-            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz'))
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
@@ -67,7 +68,7 @@ class TestCubeBase(MarvinTest):
 class TestCube(TestCubeBase):
 
     def test_mpl_version(self):
-        self.assertEqual(config.mplver, self.outmplver)
+        self.assertEqual(config.release, self.outrelease)
 
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
@@ -159,9 +160,9 @@ class TestCube(TestCubeBase):
         # MPL-4 and MPL-5.
 
         config.setMPL('MPL-5')
-        self.assertEqual(config.mplver, 'MPL-5')
+        self.assertEqual(config.release, 'MPL-5')
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
+        cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
         self.assertEqual(cube._drpver, 'v1_5_1')
         self.assertEqual(cube.header['VERSDRP3'].strip(), 'v1_5_0')
 
@@ -230,7 +231,7 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_file_flux_x_y(self):
         """Tests getSpaxel from a file cube with x, y inputs."""
 
-        expect = -0.10531016
+        expect = -0.062497504
         self._test_getSpaxel(self.cubeFromFile, 10, expect, x=10, y=5)
 
     def test_getSpaxel_file_flux_x_y_lower(self):
@@ -306,7 +307,7 @@ class TestGetSpaxel(TestCubeBase):
 
     @skipIfNoDB
     def test_getSpaxel_db_flux_x_y(self):
-        expect = -0.10531016
+        expect = -0.062497499999999997
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 10, expect, x=10, y=5)
 
@@ -336,7 +337,7 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_x_y_success(self):
 
-        expect = -0.10531
+        expect = -0.062497499999999997
         self._test_getSpaxel_remote(10, expect, x=10, y=5)
 
     def test_getSpaxel_remote_ra_dec_success(self):
@@ -354,17 +355,6 @@ class TestGetSpaxel(TestCubeBase):
         self.assertIn(errMsg1, str(cm.exception))
         if errMsg2:
             self.assertIn(errMsg2, str(cm.exception))
-
-    def test_getSpaxel_remote_fail_nourlmap(self):
-
-        self.assertIsNotNone(config.urlmap)
-        config.urlmap = URLMapDict()
-
-        with self.assertRaises(BrainError) as cm:
-            Cube(mangaid=self.mangaid, mode='remote')
-
-        self.assertIn('No URL Map found', str(cm.exception))
-        self.assertIn('Cannot make remote call', str(cm.exception))
 
     def test_getSpaxel_remote_fail_badresponse(self):
 
@@ -453,7 +443,7 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_global_xyorig_center(self):
         config.xyorig = 'center'
-        expect = -0.10531
+        expect = -0.062497499999999997
         cube = Cube(mangaid=self.mangaid)
         self._test_getSpaxel(cube, 10, expect, x=10, y=5)
 
@@ -466,9 +456,9 @@ class TestGetSpaxel(TestCubeBase):
     def test_getSpaxel_remote_drpver_differ_from_global(self):
 
         config.setMPL('MPL-5')
-        self.assertEqual(config.mplver, 'MPL-5')
+        self.assertEqual(config.release, 'MPL-5')
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', mplver='MPL-4')
+        cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
         expect = 0.62007582
         self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
 
@@ -489,6 +479,95 @@ class TestWCS(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote')
         self.assertIsInstance(cube.wcs, wcs.WCS)
         self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+
+
+class TestPickling(TestCubeBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickling_file(self):
+
+        cube = Cube(filename=self.filename)
+        self.assertEqual(cube.data_origin, 'file')
+        self.assertIsInstance(cube, Cube)
+        self.assertIsNotNone(cube.data)
+
+        path = cube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+        self.assertIsNotNone(cube.data)
+
+        cube = None
+        self.assertIsNone(cube)
+
+        cube_restored = Cube.restore(path)
+        self.assertEqual(cube_restored.data_origin, 'file')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNotNone(cube_restored.data)
+
+    def test_pickling_file_custom_path(self):
+
+        cube = Cube(filename=self.filename)
+
+        test_path = '~/test.mpf'
+        path = cube.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        cube_restored = Cube.restore(path, delete=True)
+        self.assertEqual(cube_restored.data_origin, 'file')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNotNone(cube_restored.data)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickling_db(self):
+
+        cube = Cube(plateifu=self.plateifu)
+
+        with self.assertRaises(MarvinError) as ee:
+            cube.save()
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickling_api(self):
+
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(cube.data_origin, 'api')
+        self.assertIsInstance(cube, Cube)
+        self.assertIsNone(cube.data)
+
+        path = cube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+
+        cube = None
+        self.assertIsNone(cube)
+
+        cube_restored = Cube.restore(path)
+        self.assertEqual(cube_restored.data_origin, 'api')
+        self.assertIsInstance(cube_restored, Cube)
+        self.assertIsNone(cube_restored.data)
+        self.assertEqual(cube_restored.header['VERSDRP3'], 'v1_5_0')
 
 
 if __name__ == '__main__':

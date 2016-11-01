@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-10-05 13:57:11
+* @Last Modified time: 2016-10-19 13:25:42
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -372,7 +372,7 @@ var Galaxy = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:54:56
+* @Last Modified time: 2016-10-12 16:44:53
 */
 
 'use strict';
@@ -478,6 +478,8 @@ var Header = function () {
                 // reload the current page, this re-instantiates a new Header with new version info from session
                 if (data.result.status == 1) {
                     fxn();
+                    _this.galids.clearPrefetchCache();
+                    _this.galids.initialize();
                 } else {
                     alert('Failed to set the versions! ' + data.result.msg);
                 }
@@ -493,7 +495,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-01 15:05:09
+* @Last Modified time: 2016-10-11 15:23:38
 */
 
 'use strict';
@@ -608,24 +610,40 @@ var HeatMap = function () {
                         var mathError = mask[ii][jj] && Math.pow(2, 6);
                         var badFit = mask[ii][jj] && Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                        var noData = noValue || badValue || mathError || badFit || doNotUse;
+                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                        var noData = noValue;
+                        var badData = badValue || mathError || badFit || doNotUse;
                     } else {
                         noData == null;
+                        badData == null;
                     }
 
                     if (ivar !== null) {
-                        var signalToNoise = val * Math.sqrt(ivar[ii][jj]);
+                        var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
                         var signalToNoiseThreshold = 1.;
                     }
 
+                    // value types
+                    // val=no-data => gray color
+                    // val=null => hatch area
+                    // val=low-sn => nothing at the moment
+
                     if (noData) {
+                        // for data that is outside the range "nocov" mask
                         val = 'no-data';
-                    } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
+                    } else if (badData) {
+                        // for data that is bad - masked in some way
                         val = null;
+                    } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
+                        // for data that is low S/N
+                        val = null; //val = 'low-sn';
                     } else if (ivar === null) {
+                        // for data with no mask or no inverse variance extensions
                         if (this.title.search('binid') !== -1) {
+                            // for binid extension only, set -1 values to no data
                             val = val == -1 ? 'no-data' : val;
                         } else if (val === 0.0) {
+                            // set zero values to no-data
                             val = 'no-data';
                         }
                     };
@@ -639,7 +657,11 @@ var HeatMap = function () {
         value: function setColorNoData(_this, H) {
             H.wrap(H.ColorAxis.prototype, 'toColor', function (proceed, value, point) {
                 if (value === 'no-data') {
+                    // make gray color
                     return 'rgba(0,0,0,0)'; // '#A8A8A8';
+                } else if (value === 'low-sn') {
+                    // make light blue with half-opacity == muddy blue-gray
+                    return 'rgba(0,191,255,0.5)'; //'#7fffd4';
                 } else return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
             });
         }
@@ -685,13 +707,17 @@ var HeatMap = function () {
             });
             zrange = zrange.filter(this.filterRange);
 
-            // make the highcharts
             var _getMinMax5 = this.getMinMax(zrange);
 
             var _getMinMax6 = _slicedToArray(_getMinMax5, 2);
 
             zmin = _getMinMax6[0];
             zmax = _getMinMax6[1];
+
+            console.log('new zrange', zrange);
+            console.log('new zminmax', zmin, zmax);
+
+            // make the highcharts
             this.mapdiv.highcharts({
                 chart: {
                     type: 'heatmap',
@@ -727,8 +753,9 @@ var HeatMap = function () {
                 colorAxis: {
                     min: zmin,
                     max: zmax,
-                    minColor: '#00BFFF',
+                    minColor: zmin >= 0.0 ? '#00BFFF' : '#ff3030',
                     maxColor: '#000080',
+                    //stops: [[0, '#ff3030'], [0.5, '#f8f8ff'], [1, '#000080']],
                     labels: { align: 'right' },
                     reversed: false
                 },
@@ -790,31 +817,55 @@ var HeatMap = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-18 09:50:10
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-10-20 22:51:56
 */
 
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Marvin = function Marvin(options) {
-    _classCallCheck(this, Marvin);
+var Marvin = function () {
+    function Marvin(options) {
+        _classCallCheck(this, Marvin);
 
-    // set options
-    //_.defaults(options, {fruit: "strawberry"})
-    this.options = options;
+        // set options
+        //_.defaults(options, {fruit: "strawberry"})
+        this.options = options;
 
-    // set up utility functions
-    this.utils = new Utils();
-    this.utils.print();
-    //this.utils.initPopOvers();
-    this.utils.initToolTips();
+        // set up utility functions
+        this.utils = new Utils();
+        this.utils.print();
+        this.utils.initInfoPopOvers();
+        this.utils.initToolTips();
 
-    // load the header
-    this.header = new Header();
-    this.header.print();
-};
+        // load the header
+        this.header = new Header();
+        this.header.print();
+
+        // setup raven
+        this.setupRaven();
+    }
+
+    // sets the Sentry raven for monitoring
+
+
+    _createClass(Marvin, [{
+        key: 'setupRaven',
+        value: function setupRaven() {
+            Raven.config('https://98bc7162624049ffa3d8d9911e373430@sentry.io/107924', {
+                release: '0.2.0b1',
+                // we highly recommend restricting exceptions to a domain in order to filter out clutter
+                whitelistUrls: ['/(sas|api)\.sdss\.org/marvin/', '/(sas|api)\.sdss\.org/marvin2/'],
+                includePaths: ['/https?:\/\/((sas|api)\.)?sdss\.org/marvin', '/https?:\/\/((sas|api)\.)?sdss\.org/marvin2']
+            }).install();
+        }
+    }]);
+
+    return Marvin;
+}();
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
@@ -1262,8 +1313,8 @@ var Table = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-05-18 09:49:24
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-10-19 13:29:32
 */
 
 // Javascript code for general things
@@ -1279,6 +1330,11 @@ var Utils = function () {
     // Constructor
     function Utils() {
         _classCallCheck(this, Utils);
+
+        // login handlers
+        $('#login-user').on('keyup', this, this.submitLogin); // submit login on keypress
+        $('#login-pass').on('keyup', this, this.submitLogin); // submit login on keypress
+        $('#login-drop').on('hide.bs.dropdown', this, this.resetLogin); //reset login on dropdown hide
     }
 
     // Print
@@ -1333,12 +1389,12 @@ var Utils = function () {
             }
         }
 
-        // Initialize Pop-Overs
+        // Initialize Info Pop-Overs
 
     }, {
-        key: 'initPopOvers',
-        value: function initPopOvers() {
-            $('[data-toggle="popover"]').popover();
+        key: 'initInfoPopOvers',
+        value: function initInfoPopOvers() {
+            $('.infopop [data-toggle="popover"]').popover();
         }
     }, {
         key: 'initToolTips',
@@ -1347,6 +1403,57 @@ var Utils = function () {
         // Initialize tooltips
         value: function initToolTips() {
             $('[data-toggle="tooltip"]').tooltip();
+        }
+    }, {
+        key: 'login',
+
+
+        // Login function
+        value: function login() {
+            var form = $('#loginform').serialize();
+            var _this = this;
+
+            $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
+                if (data.result.status < 0) {
+                    // bad submit
+                    _this.resetLogin();
+                } else {
+                    // good submit
+                    if (data.result.message !== '') {
+                        var stat = data.result.status === 0 ? 'danger' : 'success';
+                        var htmlstr = "<div class='alert alert-" + stat + "' role='alert'><h4>" + data.result.message + "</h4></div>";
+                        $('#loginmessage').html(htmlstr);
+                    }
+                    if (data.result.status === 1) {
+                        location.reload(true);
+                    }
+                }
+            }).fail(function (data) {
+                alert('Bad login attempt');
+            });
+        }
+    }, {
+        key: 'resetLogin',
+
+
+        // Reset Login
+        value: function resetLogin() {
+            $('#loginform').trigger('reset');
+            $('#loginmessage').empty();
+        }
+    }, {
+        key: 'submitLogin',
+
+
+        // Submit Login on Keyups
+        value: function submitLogin(event) {
+            var _this = event.data;
+            // login
+            if (event.keyCode == 13) {
+                if ($('#login-user').val() && $('#login-pass').val()) {
+                    _this.login();
+                }
+            }
         }
     }]);
 

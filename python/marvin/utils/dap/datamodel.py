@@ -299,6 +299,6 @@ def get_default_mapset(dapver=None):
                   'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718']
     }
 
-    return dapdefaults[dapver]
+    return dapdefaults[dapver] if dapver in dapdefaults else []
 
 

@@ -19,7 +19,7 @@ from astropy.wcs import WCS
 import marvin
 import marvin.tests
 
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
@@ -35,7 +35,7 @@ class TestModelCubeBase(marvin.tests.MarvinTest):
 
         cls.drpver = 'v2_0_1'
         cls.dapver = '2.0.2'
-        cls.mplver = 'MPL-5'
+        cls.release = 'MPL-5'
 
         cls.plate = 8485
         cls.ifu = 1901
@@ -72,8 +72,7 @@ class TestModelCubeInit(TestModelCubeBase):
 
     def _test_init(self, model_cube, bintype='SPX', template_kin='GAU-MILESHC'):
 
-        self.assertEqual(model_cube._mplver, self.mplver)
-        self.assertIsNone(model_cube._drver)
+        self.assertEqual(model_cube._release, self.release)
         self.assertEqual(model_cube._drpver, self.drpver)
         self.assertEqual(model_cube._dapver, self.dapver)
         self.assertEqual(model_cube.bintype, bintype)
@@ -200,6 +199,95 @@ class TestGetSpaxel(TestModelCubeBase):
         self.assertIsNone(spaxel.spectrum)
         self.assertIsNone(spaxel.maps)
         self.assertEqual(len(spaxel.properties), 0)
+
+
+class TestPickling(TestModelCubeBase):
+
+    def setUp(self):
+        super(TestPickling, self).setUp()
+        self._files_created = []
+
+    def tearDown(self):
+
+        super(TestPickling, self).tearDown()
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickling_file(self):
+
+        modelcube = ModelCube(filename=self.filename)
+        self.assertEqual(modelcube.data_origin, 'file')
+        self.assertIsInstance(modelcube, ModelCube)
+        self.assertIsNotNone(modelcube.data)
+
+        path = modelcube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+        self.assertIsNotNone(modelcube.data)
+
+        modelcube = None
+        self.assertIsNone(modelcube)
+
+        modelcube_restored = ModelCube.restore(path)
+        self.assertEqual(modelcube_restored.data_origin, 'file')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNotNone(modelcube_restored.data)
+
+    def test_pickling_file_custom_path(self):
+
+        modelcube = ModelCube(filename=self.filename)
+
+        test_path = '~/test.mpf'
+        path = modelcube.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        modelcube_restored = ModelCube.restore(path, delete=True)
+        self.assertEqual(modelcube_restored.data_origin, 'file')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNotNone(modelcube_restored.data)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickling_db(self):
+
+        modelcube = ModelCube(plateifu=self.plateifu)
+
+        with self.assertRaises(MarvinError) as ee:
+            modelcube.save()
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickling_api(self):
+
+        modelcube = ModelCube(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(modelcube.data_origin, 'api')
+        self.assertIsInstance(modelcube, ModelCube)
+        self.assertIsNone(modelcube.data)
+
+        path = modelcube.save()
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(os.path.realpath(path),
+                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+
+        modelcube = None
+        self.assertIsNone(modelcube)
+
+        modelcube_restored = ModelCube.restore(path)
+        self.assertEqual(modelcube_restored.data_origin, 'api')
+        self.assertIsInstance(modelcube_restored, ModelCube)
+        self.assertIsNone(modelcube_restored.data)
+        self.assertEqual(modelcube_restored.header['VERSDRP3'], 'v2_0_1')
 
 
 if __name__ == '__main__':

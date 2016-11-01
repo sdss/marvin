@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 18:52:50
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:57:42
+* @Last Modified time: 2016-10-14 14:31:22
 */
 
 .marvin-main {
@@ -165,4 +165,8 @@ section h3.section-subheading {
     font-size: 14px;
     font-weight: 400;
     letter-spacing: 2px;
+}
+
+.infopop .popover {
+    max-width: 100%;
 }

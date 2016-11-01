@@ -4,7 +4,7 @@ from __future__ import print_function, division, absolute_import
 import unittest
 import copy
 from marvin import config, marvindb
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
@@ -17,6 +17,9 @@ class TestQuery(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
+
+        config.switchSasUrl('local')
+
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
@@ -49,29 +52,28 @@ class TestQuery(MarvinTest):
         q = Query()
         self.assertIsNone(q.query)
 
-    def _query_versions(self, mode='local', mpl=None, dr=None):
-        if not mpl and not dr:
-            mpl, dr = (config._mplver, config._drver)
+    def _query_versions(self, mode='local', release=None):
 
-        drpver, dapver = config.lookUpVersions(mplver=mpl, drver=dr)
+        release = config.release
+        drpver, dapver = config.lookUpVersions(release=release)
 
         p = 'haflux > 25'
 
-        if '4' in mpl:
+        if '4' in release:
             name = 'CleanSpaxelProp'
         else:
-            name = 'CleanSpaxelProp{0}'.format(mpl.split('-')[1])
+            name = 'CleanSpaxelProp{0}'.format(release.split('-')[1])
 
-        if mpl:
-            q = Query(searchfilter=p, mode=mode, mplver=mpl)
+        if release:
+            q = Query(searchfilter=p, mode=mode, release=release)
         else:
             q = Query(searchfilter=p, mode=mode)
 
         self.assertEqual(q._drpver, drpver)
         self.assertEqual(q._dapver, dapver)
-        self.assertEqual(q._mplver, mpl)
-        self.assertEqual(q.marvinform._mplver, mpl)
-        self.assertEqual(q.marvinform._param_form_lookup._mplver, mpl)
+        self.assertEqual(q._release, release)
+        self.assertEqual(q.marvinform._release, release)
+        self.assertEqual(q.marvinform._param_form_lookup._release, release)
         self.assertEqual(q.marvinform._param_form_lookup['spaxelprop.file'].Meta.model.__name__, name)
 
     def test_query_versions_local(self):
@@ -83,12 +85,12 @@ class TestQuery(MarvinTest):
 
     def test_query_versions_local_othermpl(self):
         vers = ('v2_0_1', '2.0.2', 'MPL-5')
-        self._query_versions(mode='local', mpl='MPL-5')
+        self._query_versions(mode='local', release='MPL-5')
 
     def test_query_versions_remote_othermpl(self):
         self._setRemote()
         vers = ('v2_0_1', '2.0.2', 'MPL-5')
-        self._query_versions(mode='remote', mpl='MPL-5')
+        self._query_versions(mode='remote', release='MPL-5')
 
     def test_query_versions_remote_utah(self):
         self._setRemote(mode='utah')

@@ -37,7 +37,10 @@ def filtergaltype(context, value):
 @jinjablue.app_template_filter()
 def allclose(context, value, newvalue):
     ''' Do a numpy allclose comparison between the two values '''
-    return np.allclose(float(value), float(newvalue), 1e-7)
+    try:
+        return np.allclose(float(value), float(newvalue), 1e-7)
+    except Exception as e:
+        return False
 
 
 @jinja2.contextfilter

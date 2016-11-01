@@ -315,7 +315,7 @@ class ModelCube(Base):
 
         """
 
-        session = db.Session()
+        session = db.Session.object_session(self)
         spaxels = session.query(getattr(ModelSpaxel, extension)).filter(
             ModelSpaxel.modelcube_pk == self.pk).order_by(ModelSpaxel.x, ModelSpaxel.y).all()
 
@@ -430,5 +430,3 @@ dap_cache = RelationshipCache(File.cube).\
                and_(RelationshipCache(ModelCube.file)).\
                and_(RelationshipCache(ModelSpaxel.modelcube)).\
                and_(RelationshipCache(RedCorr.modelcube))
-
-

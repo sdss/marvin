@@ -6,6 +6,7 @@ from flask_restful import Api
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
+from raven.contrib.flask import Sentry
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
@@ -45,6 +46,7 @@ def create_app(debug=False, local=False):
     from marvin.web.controllers.search import search
     from marvin.web.controllers.plate import plate
     from marvin.web.controllers.images import images
+    from marvin.web.controllers.users import users
 
     # ----------------------------------
     # Create App
@@ -76,9 +78,9 @@ def create_app(debug=False, local=False):
 
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
-        # dsn = 'https://989c330efbc346c7916e97b4edbf6b80:ae563b713f744429a8fd5ce55727b66d@app.getsentry.com/52254'
-        # app.config['SENTRY_DSN'] = dsn
-        # sentry = Sentry(app, logging=True, level=logging.ERROR)
+        dsn = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
+        app.config['SENTRY_DSN'] = dsn
+        sentry = Sentry(app, logging=True, level=log.ERROR)
 
         # --------------------------------------
         # Configuration when running under uWSGI
@@ -174,6 +176,7 @@ def create_app(debug=False, local=False):
     app.register_blueprint(search, url_prefix=url_prefix)
     app.register_blueprint(plate, url_prefix=url_prefix)
     app.register_blueprint(images, url_prefix=url_prefix)
+    app.register_blueprint(users, url_prefix=url_prefix)
 
     # Register all custom Jinja filters in the file.
     app.register_blueprint(jinjablue)

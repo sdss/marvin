@@ -52,18 +52,19 @@
 {% macro login() %}
      <div class="row">
             <div class="col-md-12">
-                 <form class="form" role="form" method="post" action="login" accept-charset="UTF-8" id="login-nav">
+                 <form class="form" role="form" method="post" action='login' accept-charset="UTF-8" id="loginform">
                         <div class="form-group">
                              <label class="sr-only" for="login-user">Username</label>
-                             <input type="text" class="form-control" id="login-user" placeholder="Username" required>
+                             <input type="text" class="form-control" id="login-user" name='username' placeholder="Username" required>
                         </div>
                         <div class="form-group">
                              <label class="sr-only" for="login-pass">Password</label>
-                             <input type="password" class="form-control" id="login-pass" placeholder="Password" required>
+                             <input type="password" class="form-control" id="login-pass" name='password' placeholder="Password" required>
                              <div class="help-block text-right"><a href="">Forget your password?</a></div>
                         </div>
+                        <div id='loginmessage'></div>
                         <div class="form-group">
-                             <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+                             <button type="button" onclick='m.utils.login()' class="btn btn-primary btn-block">Sign in</button>
                         </div>
                  </form>
             </div>
@@ -125,5 +126,13 @@
       </div>
       {{listgroup(mylist, id)}}
   </div>
+{% endmacro %}
+
+{# Info PopUp #}
+{% macro infopopup(text, title, inner, id, alert='warning', place='right') %}
+{#<div class='col-md-{{col}} infopop' id='{{id}}'>#}
+    <button type="button" class="btn btn-{{alert}}" data-html='true' data-toggle="popover"
+    data-placement="{{place}}" data-container='#{{id}}' title="{{title}}" data-content="{{inner}}">{{text}}</button>
+{#</div>#}
 {% endmacro %}
 

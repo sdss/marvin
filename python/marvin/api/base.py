@@ -19,6 +19,5 @@ class BaseView(BrainBaseView):
     '''Super Class for all API Views to handle all global API items of interest'''
 
     def add_config(self):
-        utahconfig = {'utahconfig': {'mode': config.mode, 'mplver': config.mplver,
-                                     'drver': config.drver}}
+        utahconfig = {'utahconfig': {'mode': config.mode, 'release': config.release}}
         self.update_results(utahconfig)

@@ -14,7 +14,7 @@ from __future__ import print_function, division
 from flask import Blueprint, render_template, session as current_session, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.core import MarvinError
+from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
 from marvin.web.web_utils import parseSession
@@ -26,7 +26,8 @@ search = Blueprint("search_page", __name__)
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000']
+    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000', 'haflux > 25',
+               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
     q = random.choice(samples)
     return q
 
@@ -47,7 +48,7 @@ class Search(FlaskView):
         self.search['results'] = None
         self.search['errmsg'] = None
         self.search['filter'] = None
-        self._drpver, self._dapver, self._mplver, self._release = parseSession()
+        self._drpver, self._dapver, self._release = parseSession()
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -58,7 +59,7 @@ class Search(FlaskView):
 
         # set the marvin form
         searchform = self.mf.SearchForm(form)
-        q = Query(mplver=self._mplver)
+        q = Query(release=self._release)
         allparams = q.get_available_params()
         searchform.returnparams.choices = [(k.lower(), k) for k in allparams]
 
@@ -86,7 +87,7 @@ class Search(FlaskView):
             if searchform.validate():
                 # try the query
                 try:
-                    q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver, returnparams=returnparams)
+                    q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams)
                 except MarvinError as e:
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
@@ -100,6 +101,15 @@ class Search(FlaskView):
                         output = None
                     self.search['results'] = output
                     self.search['reslen'] = len(res.results)
+                    if returnparams:
+                        returnparams = [str(r) for r in returnparams]
+                    rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
+                    qstr = ', returnparams=returnparams' if returnparams else ''
+                    self.search['querystring'] = ("<html><samp>from marvin import \
+                        config<br>from marvin.tools.query import Query<br>config.mode='remote'<br>\
+                        filter='{0}'<br> {1}\
+                        q = Query(searchfilter=filter{2})<br>\
+                        r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
 
         return render_template('search.html', **self.search)
 
@@ -108,7 +118,7 @@ class Search(FlaskView):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''
-        q = Query(mplver=self._mplver)
+        q = Query(release=self._release)
         allparams = q.get_available_params()
         output = json.dumps(allparams)
         return output
@@ -122,7 +132,7 @@ class Search(FlaskView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        print('webtable', searchvalue, returnparams, self._mplver)
+        print('webtable', searchvalue, returnparams, self._release)
         limit = form.get('limit', 10)
         offset = form.get('offset', None)
         order = form.get('order', None)
@@ -135,7 +145,7 @@ class Search(FlaskView):
             return output
 
         # do query
-        q, res = doQuery(searchfilter=searchvalue, mplver=self._mplver,
+        q, res = doQuery(searchfilter=searchvalue, release=self._release,
                          limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
         results = res.getSubset(offset, limit=limit)

@@ -12,7 +12,7 @@
 
 from __future__ import print_function
 from __future__ import division
-from marvin.core import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
@@ -28,6 +28,9 @@ from collections import defaultdict
 import datetime
 import numpy as np
 import warnings
+import os
+import cPickle
+from marvin.core import marvin_pickle
 from functools import wraps
 
 __all__ = ['Query', 'doQuery']
@@ -149,15 +152,8 @@ class Query(object):
 
     def __init__(self, *args, **kwargs):
 
-        self._mplver = kwargs.pop('mplver', None)
-        self._drver = kwargs.pop('drver', None)
-
-        if not self._mplver and not self._drver:
-            self._mplver = config.mplver
-            self._drver = config.drver
-
-        self._drpver, self._dapver = config.lookUpVersions(mplver=self._mplver,
-                                                           drver=self._drver)
+        self._release = kwargs.pop('release', config.release)
+        self._drpver, self._dapver = config.lookUpVersions(release=self._release)
 
         self.query = None
         self.params = []
@@ -181,7 +177,7 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels, mplver=self._mplver)
+        self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
 
         # set the mode
         if self.mode is None:
@@ -237,7 +233,7 @@ class Query(object):
                 self._buildDapQuery()
 
     def __repr__(self):
-        return ('Query(mode={0}, limit={1}, sort={2}, order={3})'
+        return ('Marvin Query(mode={0}, limit={1}, sort={2}, order={3})'
                 .format(repr(self.mode), self.limit, self.sort, repr(self.order)))
 
     def _doLocal(self):
@@ -387,10 +383,14 @@ class Query(object):
         if self.mode == 'local':
             keys = self.marvinform._param_form_lookup.keys()
             keys.sort()
+            rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
+            # simplify the spaxelprop list down to one set
             mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
             mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
                       in k else k for k in mykeys]
-            return mykeys
+            # replace table names with shortcut names
+            newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
+            return newkeys
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['getparams']['url']
@@ -401,6 +401,76 @@ class Query(object):
             else:
                 mykeys = ii.getData()
                 return mykeys
+
+    def save(self, path=None, overwrite=False):
+        ''' Save the query as a pickle object
+
+        Parameters:
+            path (str):
+                Filepath and name of the pickled object
+            overwrite (bool):
+                Set this to overwrite an existing pickled file
+
+        Returns:
+            path (str):
+                The filepath and name of the pickled object
+
+        '''
+        self.session = None
+        self.marvinform = None
+        self._modelgraph = None
+
+        sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
+        # set the path
+        if not path:
+            path = os.path.expanduser('~/marvin_query_{0}.mpf'.format(sf))
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path+'.mpf')
+
+        path = os.path.realpath(path)
+
+        if os.path.isdir(path):
+            raise MarvinError('path must be a full route, including the filename.')
+
+        if os.path.exists(path) and not overwrite:
+            warnings.warn('file already exists. Not overwriting.', MarvinUserWarning)
+            return
+
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        try:
+            cPickle.dump(self, open(path, 'w'))
+        except Exception as ee:
+            if os.path.exists(path):
+                os.remove(path)
+            raise MarvinError('Error found while pickling: {0}'.format(str(ee)))
+
+        return path
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        ''' Restore a pickled object
+
+        Parameters:
+            path (str):
+                The filename and path to the pickled object
+
+            delete (bool):
+                Turn this on to delete the pickled fil upon restore
+
+        Returns:
+            Query (instance):
+                The instantiated Marvin Query class
+        '''
+        obj = marvin_pickle.restore(path, delete=delete)
+        obj._modelgraph = marvindb.modelgraph
+        obj.session = marvindb.session
+        obj.marvinform = MarvinForm(allspaxels=obj.allspaxels, release=obj._release)
+        return obj
 
     def set_filter(self, searchfilter=None):
         ''' Parses a filter string and adds it into the query.
@@ -628,8 +698,6 @@ class Query(object):
             # get total count, and if more than 150 results, paginate and only return the first 10
             start = datetime.datetime.now()
             count = self.query.count()
-            end = datetime.datetime.now()
-            td = (end-start).total_seconds()
 
             self.totalcount = count
             if count > 1000:
@@ -647,8 +715,15 @@ class Query(object):
             elif qmode == 'count':
                 res = query.count()
 
+            # get the runtime
+            end = datetime.datetime.now()
+            self.runtime = (end-start)
+            # close the session and engine
+            self.session.close()
+            marvindb.db.engine.dispose()
+
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self, totalcount=self.totalcount, chunk=self.limit)
+                           queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -663,10 +738,12 @@ class Query(object):
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
-                      'mplver': self._mplver, 'drver': self._drver}
+                      'release': self._release}
             try:
                 ii = Interaction(route=url, params=params)
-            except MarvinError as e:
+            except Exception as e:
+                # if a remote query fails for any reason, then try to clean them up
+                self._cleanUpQueries()
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
@@ -676,9 +753,91 @@ class Query(object):
                 count = ii.results['count']
                 chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
+                runtime = ii.results['runtime']
+                # close the session and engine
+                self.session.close()
+                marvindb.db.engine.dispose()
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount, chunk=chunk)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
+
+    def _cleanUpQueries(self):
+        ''' Attempt to clean up idle queries on the server
+
+        This is a hack to try to kill all idl processes on the server.
+        Using pg_terminate_backend and pg_stat_activity it terminates all
+        transactions that are in an idle, or idle in transaction, state
+        that have running for > 1 minute, and whose application_name is
+        not psql, and the process is not the one initiating the terminate.
+
+        The rank part ranks the processes and originally killed all > 1, to
+        leave one alive as a warning to the others.  I've changed this to 0
+        to kill everything.
+
+        I think this will sometimes also leave a newly orphaned idle
+        ROLLBACK transaction.  Not sure why.
+
+        '''
+        if self.mode == 'local':
+            sql = ("with inactive as (select p.pid, rank() over (partition by \
+                   p.client_addr order by p.backend_start ASC) as rank from \
+                   pg_stat_activity as p where p.application_name !~ 'psql' \
+                   and p.state ilike '%idle%' and p.pid <> pg_backend_pid() and \
+                   current_timestamp-p.state_change > interval '1 minutes') \
+                   select pg_terminate_backend(pid) from inactive where rank > 0;")
+            self.session.expire_all()
+            self.session.expunge_all()
+            res = self.session.execute(sql)
+            tmp = res.fetchall()
+            self.session.close()
+            marvindb.db.engine.dispose()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['cleanupqueries']['url']
+
+            params = {'task': 'clean', 'release': self._release}
+
+            try:
+                ii = Interaction(route=url, params=params)
+            except Exception as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                res = ii.getData()
+
+    def _getIdleProcesses(self):
+        ''' Get a list of all idle processes on server
+
+        This grabs a list of all processes in a state of
+        idle, or idle in transaction using pg_stat_activity
+        and returns the process id, the state, and the query
+
+        '''
+        if self.mode == 'local':
+            sql = ("select p.pid,p.state,p.query from pg_stat_activity as p \
+                   where p.state ilike '%idle%';")
+            res = self.session.execute(sql)
+            procs = res.fetchall()
+        elif self.mode == 'remote':
+            # Fail if no route map initialized
+            if not config.urlmap:
+                raise MarvinError('No URL Map found.  Cannot make remote call')
+
+            # Get the query route
+            url = config.urlmap['api']['cleanupqueries']['url']
+
+            params = {'task': 'getprocs', 'release': self._release}
+
+            try:
+                ii = Interaction(route=url, params=params)
+            except Exception as e:
+                raise MarvinError('API Query call failed: {0}'.format(e))
+            else:
+                procs = ii.getData()
+        return procs
 
     def _sortQuery(self):
         ''' Sort the query by a given parameter '''

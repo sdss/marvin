@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist %}
+{% from 'macros.html' import download, panellist, infopopup %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -65,7 +65,7 @@
                     </div>
                     <!-- MaNGA Target Flags -->
                     {# MaNGA Target Flags #}
-                    <div class='col-md-2'>
+                    <div class='col-md-2 flagalert'>
                           <div class="panel panel-info" id='panel_targetflag'>
                               <div class="panel-heading">
                                   <h3 class="panel-title">MaNGA Target</h3>
@@ -82,7 +82,14 @@
                                 {% endfor %}
                               </div>
                           </div>
+                          <div class='btn-group-vertical'>
                           <button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>
+                          </div>
+                    </div>
+                    <div class='col-md-5'>
+                          <div class='infopop' id='marvincube'>
+                          {{infopopup('Use this cube in Marvin', 'Marvin Cube - start iPython', cubestr, 'marvincube', 'info')}}
+                          </div>
                     </div>
                     {{panellist('Quality Flags', quality[2], 'drp3quality')}}
                 </div>
@@ -150,10 +157,18 @@
                                 <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
                                 <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
                               </div>
-                                <div class='col-md-3'>
-                                    <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
+                                <div class='col-md-2'>
+                                      <div class='infopop' id='marvinmaps'>
+                                      {{infopopup('Use maps in Marvin', 'Marvin Maps - start iPython', mapstr, 'marvinmaps', 'success', 'left')}}
+                                      </div>
                                 </div>
                             </form>
+                        </div>
+
+                        <div class='row'>
+                            <div class='col-md-3 col-md-offset-3'>
+                                <p class='alert alert-danger' id='mapmsg' style="display:none;"><strong>{{mapmsg}}</strong></p>
+                            </div>
                         </div>
 
 
