@@ -1,0 +1,138 @@
+{# General Macros #}
+
+{# Drop-down download cube/rss button #}
+{% macro dropdownload(id, target) %}
+
+  <div class="btn-group" role="group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+      Download All ...
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" id='{{id}}' role="menu" >
+      <li><a id='cube' data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>Cubes</a></li>
+      <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>RSS</a></li>
+      {% if session['currentver'] >= 'v1_5_0' %}
+            <li><a id='maps'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>MAPS</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+{% endmacro %}
+
+{# Rsync Modal window #}
+{% macro rsyncmodal() %}
+
+    {# Rsync command modal #}
+    <div id='rsynclink' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='rsynclabel' aria-hidden='true'>
+        <div class='modal-dialog'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Your Rsync Link</h4>
+                </div>
+                <div class='modal-body'>
+                    <input type='text' class='form-control' id='rsyncbox'/>
+                </div>
+            </div>
+        </div>
+    </div> {# end rsync modal #}
+
+{% endmacro %}
+
+{# Galaxy Search by Plate, Plate-IFU, MaNGA-ID #}
+{% macro galidsearch(id) %}
+    <form class="navbar-form navbar-left galidsearch" role="form" id='{{id}}' action="{{url_for('index_page.galidselect')}}" method="post">
+        <div class='form-group form-inline galids' id='scrollable-dropdown-menu'>
+            <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid' val='' autocomplete='off' data-provide='typeahead'/>
+        </div>
+    </form>
+{% endmacro %}
+
+{# Login Form #}
+{% macro login() %}
+     <div class="row">
+            <div class="col-md-12">
+                 <form class="form" role="form" method="post" action='login' accept-charset="UTF-8" id="loginform">
+                        <div class="form-group">
+                             <label class="sr-only" for="login-user">Username</label>
+                             <input type="text" class="form-control" id="login-user" name='username' placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                             <label class="sr-only" for="login-pass">Password</label>
+                             <input type="password" class="form-control" id="login-pass" name='password' placeholder="Password" required>
+                             <div class="help-block text-right"><a href="">Forget your password?</a></div>
+                        </div>
+                        <div id='loginmessage'></div>
+                        <div class="form-group">
+                             <button type="button" onclick='m.utils.login()' class="btn btn-primary btn-block">Sign in</button>
+                        </div>
+                 </form>
+            </div>
+            <div class="bottom text-center">
+                New here ? <a href="#"><b>Join Us</b></a>
+            </div>
+     </div>
+{% endmacro %}
+
+{# Login Modal Window #}
+{% macro loginmodal() %}
+  <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header" align="center">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  </button>
+                  <img class="img-responsive img-circle" id="img_logo" src="{{url_for('static',filename='images/marvin_face.png')}}" alt='Marvin Face'>
+              </div>
+
+              <div class='modal-body'>
+                  {{login()}}
+              </div>
+
+          </div>
+      </div>
+  </div>
+{% endmacro %}
+
+{# Download Button for Single Galaxy #}
+{% macro download(id, links) %}
+  <div class="btn-group marvin-download-singles" id='{{id}}'>
+    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a href="{{links.cube|default('#')}}">Cube</a></li>
+      <li><a href="{{links.rss|default('#')}}">RSS</a></li>
+      <li><a href="{{links.map|default('#')}}">Default MAPS</a></li>
+    </ul>
+  </div>
+{% endmacro %}
+
+{# List Group #}
+{% macro listgroup(mylist, id) %}
+  <ul class="list-group" id='list_{{id}}'>
+    {% for item in mylist %}
+    <li class="list-group-item" id='{{item|lower}}'>{{item}}</li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{# Panel With List Group #}
+{% macro panellist(title, mylist, id) %}
+  <div class="panel panel-info hide" id='panel_{{id}}'>
+      <div class="panel-heading">
+          <h3 class="panel-title">{{title|default('Panel Title')}}</h3>
+      </div>
+      {{listgroup(mylist, id)}}
+  </div>
+{% endmacro %}
+
+{# Info PopUp #}
+{% macro infopopup(text, title, inner, id, alert='warning', place='right') %}
+{#<div class='col-md-{{col}} infopop' id='{{id}}'>#}
+    <button type="button" class="btn btn-{{alert}}" data-html='true' data-toggle="popover"
+    data-placement="{{place}}" data-container='#{{id}}' title="{{title}}" data-content="{{inner}}">{{text}}</button>
+{#</div>#}
+{% endmacro %}
+

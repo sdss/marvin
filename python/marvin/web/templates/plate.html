@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+{% endblock jshead %}
+
+<!-- Single Galaxy Page -->
+{% block body %}
+
+{% if plateid %}
+    <!-- Plate MetaData -->
+    {# Plate MetaData #}
+    <div class='well'>
+        <div class='row'>
+            <div class='col-md-10'>
+                <h1>Plate ID: {{plateid|default(None)}} <small>Version: {{drpver|default('Unknown')}}</small></h1>
+            </div>
+        </div>
+        <div class='row'>
+            {% if plate %}
+            <div class='col-md-4'>
+                <table class='table table-condensed table-bordered table-striped marvin-metatable' id='platemeta'>
+                    <tbody>
+                        <tr><th>Type</th><td colspan='2' align='center'>{{'Stellar' if plate.isbright else 'Galaxy'}} Plate</td></tr>
+                        <tr><th>Plate Type, Survey Mode</th><td>{{plate.platetype}}</td><td>{{plate.surveymode}}</td></tr>
+                        <tr><th>Design ID</th><td colspan='2' align='center'>{{plate.designid}}</td></tr>
+                        <tr><th>Date Observed</th><td colspan='2' align='center'>{{plate.dateobs}}</td></tr>
+                        <tr><th>RA, Dec</th><td>{{plate.ra}}</td><td>{{plate.dec}}</td></tr>
+                        <tr><th>Data Link</th><td colspan='2' align='center'><a target='_blank' data-toggle="tooltip" title="{{sasurl|default('None')}}" href='{{sasurl|default("#")}}'>SAS URL</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {# Any errors go here #}
+            {% if error %}
+            <div class='col-md-6' id='plate_error'>
+                <div class='alert alert-danger' role='alert'>
+                    <p>{{error}}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Galaxy Images -->
+    {# Galaxy Images #}
+    {% if images %}
+    <div class='well plateimages' id='plateims_{{plateid}}'>
+        <div class='row'>
+            <div class='col-md-10'>
+                <h1>Galaxy Images <small>Click for more info</small></h1>
+            </div>
+        </div>
+        <div class='row'>
+        {% for image in images %}
+            <div class="col-xs-6 col-md-1">
+                {% set ifuname = (image.name|split('-'))[1] %}
+                <div class='caption'>
+                    <h4>{{ifuname}}</h4>
+                </div>
+                <a class="thumbnail ifuims" id='{{image.name}}' target='_blank' href="{{url_for('galaxy_page.Galaxy:get',galid=image.name)}}"><img class='img-responsive' src="{{image.image}}" alt="Image {{loop.index0}}"></a>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+    <div class='well'>
+        <div class='row'>
+            <h3>Sigh...no plate specified!</h3>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+
+{% endblock code %}

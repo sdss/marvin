@@ -1,62 +1,82 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+/__pycache__
+bin/__pycache__
+bin/flask_profiler.sql
+docs/sphinx/_build
+docs/sphinx/flask_profiler.sql
+etc/node_modules
+python/__pycache__
+python/marvin/__pycache__
+python/marvin/api/__pycache__
+python/marvin/db/__pycache__
+python/marvin/tools/__pycache__
+python/marvin/utils/__pycache__
+python/marvin/utils/db/__pycache__
+python/marvin/utils/general/__pycache__
+python/marvin/web/__pycache__
+python/marvin/web/controllers/__pycache__
+python/marvin/web/templates/__pycache__
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-#Ipython Notebook
-.ipynb_checkpoints
+docs/sphinx/_build
+etc/node_modules
+python/marvin/web/lib/.sass-cache
+python/marvin/web/lib/node_modules
+python/marvin/web/static/node_modules
+!python/marvin/web/lib
+bin/flask_profiler.sql
+bin/logs
+docs/logs
+docs/sphinx/_static/logs
+docs/sphinx/api/brain/logs
+docs/sphinx/api/logs
+docs/sphinx/jupyter/.ipynb_checkpoints
+docs/sphinx/flask_profiler.sql
+docs/sphinx/jupyter/.ipynb_checkpoints
+docs/sphinx/logs
+docs/sphinx/tools/logs
+docs/sphinx/tutorials/logs
+etc/logs
+/logs
+python/logs
+python/marvin/api/logs
+python/marvin/core/logs
+python/marvin/db/logs
+python/marvin/db/sql/logs
+python/marvin/extern/logs
+python/marvin/logs
+python/marvin/tests/api/logs
+python/marvin/tests/db/logs
+python/marvin/tests/logs
+python/marvin/tests/tools/logs
+python/marvin/tests/utils/logs
+python/marvin/tools/image/logs
+python/marvin/tools/logs
+python/marvin/tools/query/logs
+python/marvin/utils/db/logs
+python/marvin/utils/general/logs
+python/marvin/utils/logs
+python/marvin/web/configuration/logs
+python/marvin/web/controllers/logs
+python/marvin/web/lib/bootstrap/fonts/bootstrap/logs
+python/marvin/web/lib/bootstrap/fonts/logs
+python/marvin/web/lib/bootstrap/logs
+python/marvin/web/lib/css/logs
+python/marvin/web/lib/dist/logs
+python/marvin/web/lib/images/logs
+python/marvin/web/lib/js/logs
+python/marvin/web/lib/logs
+python/marvin/web/lib/scss/bootstrap/fonts/bootstrap/logs
+python/marvin/web/lib/scss/bootstrap/fonts/logs
+python/marvin/web/lib/scss/bootstrap/images/logs
+python/marvin/web/lib/scss/bootstrap/logs
+python/marvin/web/lib/scss/bootstrap/stylesheets/bootstrap/logs
+python/marvin/web/lib/scss/bootstrap/stylesheets/bootstrap/mixins/logs
+python/marvin/web/lib/scss/bootstrap/stylesheets/logs
+python/marvin/web/lib/scss/flatly/logs
+python/marvin/web/lib/scss/logs
+python/marvin/web/lib/scss/marvin/logs
+python/marvin/web/lib/src/logs
+python/marvin/web/logs
+python/marvin/web/static/images/logs
+python/marvin/web/static/logs
+python/marvin/web/templates/logs
+python/marvin/web/uwsgi_conf_files/logs

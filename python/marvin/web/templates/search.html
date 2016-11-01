@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default("search") %}
+{% from 'macros.html' import infopopup %}
+
+{% block body %}
+    <!-- Natural Language Search Box -->
+    {# Search Box #}
+    <div class='well'>
+        <div class='row'>
+
+            <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
+              <div class='row'>
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <div>{{searchform.returnparams.label}}: {{searchform.returnparams(class_='form-control selectpicker multiple')}}</div>
+                    </div>
+                </div>
+
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <div id='searchtype'>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead')}}</div>
+                    </div>
+                </div>
+
+                <div class='col-md-6'>
+                  <div class='form-group'>
+                    <div>{{searchform.searchbox.label}}: {{searchform.searchbox(class_='form-control', placeholder=placeholder)}}</div>
+                  </div>
+                </div>
+                <div>{{searchform.submit(class_='form-control hide')}}</div>
+              </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Form Validation Errors -->
+    {# Search Validation Errors #}
+    {% if searchform.errors %}
+        <div class='formerrors well alert-danger'>
+            <h3 class='text-danger'>Form Validation Errors: Please try again!</h3>
+            <ul class="errors text-danger">
+                {% for field_name, field_errors in searchform.errors|dictsort if field_errors %}
+                    {% for error in field_errors %}
+                        <li>{{ searchform[field_name].label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <!-- Search Results -->
+        {% if formparams %}
+            {# Search Results #}
+            {% if results %}
+                <div class='well' id='search_results'>
+                    <div class='row' id='search_results_msg'>
+                        <div class='col-md-3'>
+                            <h3>Search results</h3>
+                            <h4>Using filter: {{filter}}</h4>
+                            <h5>Total Count: {{count}}, Showing Results: {{reslen}}</h5>
+                        </div>
+                        {# Info PopUp #}
+                        <div class='col-md-7 infopop' id='marvinquery'>
+                        {{infopopup('See how to do it in Marvin', 'Marvin Query - start iPython', querystring, 'marvinquery', 'warning')}}
+                        </div>
+                    </div>
+                </div>
+                <!-- Table -->
+                {# Table #}
+                <div class='table-responsive' id='searchtablediv'>
+                    <table id='searchtable'></table>
+                </div>
+            {% else %}
+                {% if errmsg %}
+                    <div class='well'>
+                        <div class='row text-danger'>
+                            <h3>Search Error</h3>
+                            <h4>{{errmsg}}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class='well'>
+                        <div class='row'>
+                            <h3>Search results</h3>
+                            <h4>Using filter: {{filter}}</h4>
+                            <h4>No results found</h4>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script type='text/javascript'>
+    $(function() {
+        m.table = new Table($('#searchtable'));
+        m.table.print();
+        // Set up query typeahead
+        m.search = new Search();
+        m.search.initTypeahead('#searchform .typeahead', '#searchform');
+        // Load Search Results if any
+        var res = {{results|tojson}};
+        var url = Flask.url_for('search_page.webtable')
+        if (res) {
+            m.table.initTable(url, res);
+        };
+    });
+</script>
+{% endblock code %}

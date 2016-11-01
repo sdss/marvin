@@ -1,0 +1,26 @@
+# Tools
+numpy
+astropy
+sqlalchemy --install-option="--pre"
+networkx
+matplotlib
+pillow
+requests
+requests-futures
+dogpile.cache
+wtforms
+validators
+intervals
+coveralls
+
+# Web
+flask
+flask-classy
+flask-jsglue
+flask-featureflags
+flask-profiler
+flask-restful
+flask-sqlalchemy
+pgpasslib
+psycopg2
+
