@@ -10,25 +10,48 @@
 #
 # This is the Marvin setup
 #
-from setuptools import setup
+
+from setuptools import setup, find_packages
 import os
-import sys
+
+
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
+data_files = []
+
+
+def add_data_file(directory):
+    extern_path = os.path.join(os.path.dirname(__file__), directory)
+    for root, __, filenames in os.walk(extern_path):
+        for filename in filenames:
+            data_files.append(os.path.join('..', root.lstrip('python/'), filename))
+
+add_data_file('python/marvin/extern/')
+add_data_file('python/marvin/web/configuration/')
+add_data_file('python/marvin/web/lib/')
+add_data_file('python/marvin/web/static/')
+add_data_file('python/marvin/web/templates/')
+add_data_file('python/marvin/web/uwsgi_conf_files/')
+
 
 NAME = 'marvin'
-
-VERSION = '0.2.0b1'
+VERSION = '2.0-pre'
 
 setup(name=NAME,
       version=VERSION,
       license='BSD3',
       description='Toolsuite for dealing with the MaNGA dataset',
-      long_description=__doc__,
+      long_description=read('README.md'),
       author='The Marvin Developers',
       author_email='havok2063@hotmail.com',
       keywords='marvin manga astronomy MaNGA',
-      url='https://github.com/marvin-manga/marvin',
-      packages=['marvin'],
-      package_dir={'marvin': 'python/marvin'},
+      url='https://github.com/sdss/marvin',
+      packages=find_packages(where='python', exclude=['extern']),
+      package_dir={'': 'python/'},
+      package_data={'': data_files},
+      scripts=['bin/run_marvin'],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
@@ -50,5 +73,3 @@ setup(name=NAME,
           'Topic :: Software Development :: User Interfaces',
       ],
       )
-
-
