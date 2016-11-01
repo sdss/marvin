@@ -36,6 +36,4 @@ API
 Web
 ^^^
 
-* **Object ID Autocomplete** - The auto-complete dropdown list of object identifiers (plate, plate-ifu, mangaid) does not update when changing the MPL version on the web.
-
 Additionally, see a list of Marvin Issues on the github repo here (add link)
