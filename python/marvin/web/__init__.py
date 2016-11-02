@@ -10,11 +10,11 @@ from raven.contrib.flask import Sentry
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
-from raven.contrib.flask import Sentry
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.web_utils import updateGlobalSession
 import sys
 import os
+import logging
 
 
 # ================================================================================
@@ -24,9 +24,9 @@ def register_blueprints(app=None):
     Register the code associated with each URL paths. Manually add each new
     controller file you create here.
     '''
-    from .controllers.index import index_page
+    from marvin.web.controllers.index import index
 
-    app.register_blueprint(index_page)
+    app.register_blueprint(index)
 
 # ================================================================================
 
@@ -80,7 +80,7 @@ def create_app(debug=False, local=False):
         # Set up getsentry.com logging - only use when in production
         dsn = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
         app.config['SENTRY_DSN'] = dsn
-        sentry = Sentry(app, logging=True, level=log.ERROR)
+        sentry = Sentry(app, logging=True, level=logging.ERROR)
 
         # --------------------------------------
         # Configuration when running under uWSGI

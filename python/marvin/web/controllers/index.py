@@ -61,11 +61,11 @@ class Marvin(FlaskView):
             out = ['', '', '']
             current_app.logger.info('ERROR: Problem with marvindb.datadb.  Cannot build galaxy id auto complete list.')
         else:
-            cubes = marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
-                                           marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
-                                                                               marvindb.datadb.PipelineVersion,
-                                                                               marvindb.datadb.IFUDesign).\
-                filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
+            cubes = (marvindb.session.query(marvindb.datadb.Cube.plate, marvindb.datadb.Cube.mangaid,
+                                            marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
+                                                                                marvindb.datadb.PipelineVersion,
+                                                                                marvindb.datadb.IFUDesign).
+                     filter(marvindb.datadb.PipelineVersion.version == self._drpver).all())
             out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
