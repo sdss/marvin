@@ -37,7 +37,7 @@ add_data_file('python/marvin/web/uwsgi_conf_files/')
 data_files.append('../marvin/db/dbconfig.ini')
 
 
-NAME = 'manga-marvin'
+NAME = 'sdss-marvin'
 VERSION = '2.0-beta0'
 
 setup(name=NAME,
