@@ -38,7 +38,7 @@ data_files.append('../marvin/db/dbconfig.ini')
 
 
 NAME = 'manga-marvin'
-VERSION = '2.0-pre'
+VERSION = '2.0-beta0'
 
 setup(name=NAME,
       version=VERSION,
