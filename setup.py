@@ -34,9 +34,10 @@ add_data_file('python/marvin/web/lib/')
 add_data_file('python/marvin/web/static/')
 add_data_file('python/marvin/web/templates/')
 add_data_file('python/marvin/web/uwsgi_conf_files/')
+data_files.append('../marvin/db/dbconfig.ini')
 
 
-NAME = 'marvin'
+NAME = 'manga-marvin'
 VERSION = '2.0-pre'
 
 setup(name=NAME,
