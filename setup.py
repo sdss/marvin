@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-10-19 22:39:19
+# @Last Modified time: 2016-11-02 22:45:37
 #
 # This is the Marvin setup
 #
@@ -42,7 +42,7 @@ install_requires = [line.strip() for line in open(requirements_file)
                     if not line.strip().startswith('#') and line.strip() != '']
 
 NAME = 'sdss-marvin'
-VERSION = '2.0-beta0'
+VERSION = '2.0b0'
 
 setup(name=NAME,
       version=VERSION,
