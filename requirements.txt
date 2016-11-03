@@ -2,6 +2,7 @@
 numpy
 scipy
 astropy
+pandas
 sqlalchemy
 sqlalchemy-utils
 networkx

@@ -263,7 +263,7 @@ def get_dap_datamodel(dapver=None):
     """Returns the correct DAP datamodel for dapver."""
 
     if not dapver:
-        dapver = config.dapver
+        __, dapver = config.lookUpVersions(config.release)
 
     if dapver not in dap_datamodel:
         return dap_datamodel[default_version]

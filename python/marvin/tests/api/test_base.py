@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import print_function, division, absolute_import
-import copy
 import unittest
 from marvin import config
 from marvin.api.base import BaseView
@@ -11,12 +10,20 @@ class TestBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.initconfig = copy.deepcopy(config)
+        #cls.initconfig = copy.deepcopy(config)
+        cls.init_sasurl = config.sasurl
+        cls.init_mode = config.mode
+        cls.init_urlmap = config.urlmap
+        cls.init_release = config.release
 
     def setUp(self):
-        cvars = ['mode', 'drpver', 'dapver', 'mplver']
-        for var in cvars:
-            config.__setattr__(var, self.initconfig.__getattribute__(var))
+        # cvars = ['mode', 'drpver', 'dapver', 'mplver']
+        # for var in cvars:
+        #     config.__setattr__(var, self.initconfig.__getattribute__(var))
+        config.sasurl = self.init_sasurl
+        config.mode = self.init_mode
+        config.urlmap = self.init_urlmap
+        config.setMPL('MPL-4')
 
     def test_reset_results(self):
         bv = BaseView()
@@ -42,9 +49,7 @@ class TestBase(unittest.TestCase):
         bv = BaseView()
         bv.add_config()
         desired = {'data': None, 'status': -1, 'error': None,
-                   'utahconfig': {'drpver': config.drpver, 'mode': config.mode,
-                                  'dapver': config.dapver,
-                                  'mplver': config.mplver}}
+                   'utahconfig': {'release': config.release, 'mode': config.mode}}
         self.assertDictEqual(bv.results, desired)
 
     def test_after_request_return_response(self):
