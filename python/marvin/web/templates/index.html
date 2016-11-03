@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+{% from 'macros.html' import galidsearch %}
+
+{% block body %}
+
+    <!-- Splash Page -->
+    {# Splash Page #}
+    <div class="intro-header">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="intro-message">
+                        <h1>{{intro}}</h1>
+                        <h3>"I know. Wretched, isn’t it?"</h3>
+                        <hr class="intro-divider">
+                        <div class='row maingaliddiv' id='maingalidsearch'>
+                            <div class='col-md-12 col-md-offset-4 col-sm-offset-3'>
+                                {{galidsearch('mainform')}}
+                            </div>
+                        </div>
+                        <hr class="intro-divider">
+                        <ul class="list-inline intro-social-buttons">
+                            <li>
+                                <a class="btn btn-default btn-lg" onclick='m.utils.scrollTo("#about")'><i class="fa fa-info fa-fw" aria-hidden="true"></i> <span class="network-name">About</span></a>
+                            </li>
+                            <li>
+                                <a href="{{url_for('images_page.Random:index')}}" class="btn btn-default btn-lg"><i class="fa fa-camera-retro fa-fw" aria-hidden="true"></i> <span class="network-name">Image Roulette</span></a>
+                            </li>
+                            <li>
+                                <a href="https://api.sdss.org/doc/manga/marvin/refactor/" target='_blank' class="btn btn-default btn-lg"><i class="fa fa-question-circle-o fa-fw" aria-hidden="true"></i> <span class="network-name">Help</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.container -->
+
+    </div>
+    <!-- /.intro-header -->
+
+    <!-- About Section -->
+    {# About Section #}
+    <section id='about'>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">About</h2>
+                    <h3 class="section-subheading text-muted">Marvin is the ultimate tool to visualise and analyse MaNGA data</h3>
+                </div>
+            </div>
+            <div class="row text-center">
+                <a href='https://api.sdss.org/doc/manga/marvin/refactor/web.html' target='_blank'>
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fa fa-circle fa-stack-2x text-primary" aria-hidden="true"></i>
+                        <i class="fa fa-desktop fa-stack-1x fa-inverse" aria-hidden="true"></i>
+                    </span>
+                    <h4 class="service-heading">Web</h4>
+                    <p class="text-muted">Newly redesigned to be sleak, simple, and sexy. The Web is your front-end experience to search,
+                    explore, and visualize the MaNGA dataset.</p>
+                </div>
+                </a>
+                <a href='https://api.sdss.org/doc/manga/marvin/refactor/api.html' target='_blank'>
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fa fa-circle fa-stack-2x text-primary" aria-hidden="true"></i>
+                        <i class="fa fa-exchange fa-stack-1x fa-inverse" aria-hidden="true"></i>
+                    </span>
+                    <h4 class="service-heading">API</h4>
+                    <p class="text-muted">Brings the specfic data you want directly to you.  The API allows you to access the data remotely and integrate it directly into workflow scripts. </p>
+                </div>
+                </a>
+                <a href='https://api.sdss.org/doc/manga/marvin/refactor/tools.html' target='_blank'>
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fa fa-circle fa-stack-2x text-primary" aria-hidden="true"></i>
+                        <i class="fa fa-gavel fa-stack-1x fa-inverse" aria-hidden="true"></i>
+                    </span>
+                    <h4 class="service-heading">Tools</h4>
+                    <p class="text-muted">A complete Python suite of tools designed to give you complete progammatic
+                    control over the MaNGA dataset in a convienent way. </p>
+                </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    {# Team Section #}
+    <section id="team" class="bg-light-gray">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">The Builders</h2>
+                    <h3 class="section-subheading text-muted">Marvin was painstakingly built by: </h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="team-member">
+                        <img src="{{url_for('static', filename='images/brian.jpg')}}" class="img-responsive img-circle" alt="">
+                        <h4>Brian Cherinka</h4>
+                        <p class="text-muted">Lead Developer</p>
+                        <ul class="list-inline social-buttons">
+                            <li><a href="https://twitter.com/havok2063"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="https://github.com/havok2063"><i class="fa fa-github" aria-hidden="true"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="team-member">
+                        <img src="{{url_for('static', filename='images/brett.jpg')}}" class="img-responsive img-circle" alt="">
+                        <h4>Brett Andrews</h4>
+                        <p class="text-muted">Lead Developer</p>
+                        <ul class="list-inline social-buttons">
+                            <li><a href="https://twitter.com/galchemst"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="http://www.pitt.edu/~andrewsb/index.html"><i class="fa fa-fighter-jet" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="https://github.com/bretthandrews"><i class="fa fa-github" aria-hidden="true"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="team-member">
+                        <img src="{{url_for('static', filename='images/jose.jpg')}}" class="img-responsive img-circle" alt="">
+                        <h4>José Sánchez-Gallego</h4>
+                        <p class="text-muted">Lead Developer</p>
+                        <ul class="list-inline social-buttons">
+                            <li><a href="https://twitter.com/AlbireoX"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="https://github.com/albireox"><i class="fa fa-github" aria-hidden="true"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="team-member">
+                        <img src="{{url_for('static', filename='images/joel.jpg')}}" class="img-responsive img-circle" alt="">
+                        <h4>Joel Brownstein</h4>
+                        <p class="text-muted">Lead Developer</p>
+                        <ul class="list-inline social-buttons">
+                            <li><a href="https://twitter.com/joelbrownstein"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="https://faculty.utah.edu/~joelbrownstein"><i class="fa fa-university" aria-hidden="true"></i></a>
+                            </li>
+                            <li><a href="https://bitbucket.org/joelbrownstein/"><i class="fa fa-bitbucket" aria-hidden="true"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <p class="large text-muted">We are the members of the SDSS MaNGA survey working to create the very best experience
+                    for large sample IFU data access, exploration, and visualization. </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script type='text/javascript'>
+    $(function() {
+        m.header.initTypeahead('#mainform .typeahead', '#mainform');
+    });
+</script>
+{% endblock code %}

@@ -27,7 +27,6 @@ proc ModulesHelp {{ }} {{
 #
 set product {name}
 set version {version}
-set inspection_version trunk
 # conflict $product
 #
 # The line below is another part of the Modules help system.  You can
@@ -43,8 +42,10 @@ module-whatis "Sets up $product/$version in your environment."
 # A mandatory dependency is a module load command followed by a prereq
 # command.  An optional dependency is not followed by a prereq statement.
 #
-#module load sdss4tools
-#prereq sdss4tools
+
+module load marvin_brain
+prereq marvin_brain
+
 #
 # ENVIRONMENT SECTION
 #
@@ -65,16 +66,18 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 {needs_bin}prepend-path PATH $PRODUCT_DIR/bin
 {needs_python}prepend-path PYTHONPATH $PRODUCT_DIR/lib/{pyversion}/site-packages
-{needs_trunk_python}prepend-path PYTHONPATH $PRODUCT_DIR/python/$product
+{needs_trunk_python}prepend-path PYTHONPATH $PRODUCT_DIR/python
 {needs_ld_lib}prepend-path LD_LIBRARY_PATH $PRODUCT_DIR/lib
 {needs_idl}prepend-path IDL_PATH +$PRODUCT_DIR/pro
 #
 # Add any non-standard Module code below this point.
 #
 module unload sdss_python_module
-module load sdss_python_module/briandev
-prereq sdss_python_module/briandev
-module load inspection/$inspection_version
+module load sdss_python_module/marvin
+module unload tree
+module load tree/sdsswork
+module load sdss_access
+module load inspection/trunk
 
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/uwsgi_conf_files/uwsgi_marvin_utah.ini
 setenv SAS_URL                                  https://sas.sdss.org

@@ -1,0 +1,29 @@
+# Tools
+numpy
+scipy
+astropy
+sqlalchemy
+sqlalchemy-utils
+networkx
+matplotlib
+pillow
+requests
+requests-futures
+dogpile.cache
+wtforms
+wtforms-components
+validators
+intervals
+coveralls
+
+# Web
+flask
+flask-classy
+flask-jsglue
+flask-featureflags
+flask-profiler
+flask-restful
+flask-sqlalchemy
+raven
+pgpasslib
+psycopg2

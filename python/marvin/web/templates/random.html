@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+{% endblock jshead %}
+
+<!-- Single Galaxy Page -->
+{% block body %}
+
+    <div id="random_images">
+        {% if error %}
+        <div class='row' id='random_error'>
+            <div class='col-md-6 col-md-offset-2'>
+                <div class='alert alert-danger' role='alert'>
+                    <p>{{error}}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <!-- Slider -->
+        <div class="row">
+            <!-- Thumbnail View -->
+            {# Thumbnail View #}
+            <div class="col-sm-6" id="slider-thumbs">
+                <!-- Bottom switcher of slider -->
+                <ul class="hide-bullets">
+                    {% for im in images %}
+                        <li class="col-sm-3">
+                            <a class="thumbnail" id="carousel-selector-{{loop.index0}}"><img src="{{im.thumb}}" alt="Image {{loop.index0}}"></a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- Large Image Carousel -->
+            {# Large Image Carousel #}
+            <div class="col-sm-6">
+                <div class="col-xs-12" id="slider">
+                    <!-- Top part of the slider -->
+                    <div class="row">
+                        <div class="col-sm-12" id="carousel-bounding-box">
+                            <div class="carousel slide" id="myCarousel">
+                                <!-- Carousel items -->
+                                <div class="carousel-inner">
+                                    {% for im in images %}
+                                        <div class="item {{'active' if loop.index0 == 0 else ''}}" data-slide-number="{{loop.index0}}">
+                                            <a href="{{url_for('galaxy_page.Galaxy:get',galid=im.name)}}" target='_blank'><img src="{{im.image}}" alt="Image {{loop.index0}}"></a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <!-- Carousel nav -->
+                                <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                                    <span class="glyphicon glyphicon-chevron-left"></span>
+                                </a>
+                                <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--/Slider-->
+        </div>
+
+    </div>
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script text='type/javascript'>
+    $(function() {
+        var randomcar = new Carousel('#myCarousel', '[id^=carousel-selector-]');
+    });
+</script>
+{% endblock code %}

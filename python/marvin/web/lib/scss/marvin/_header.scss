@@ -1,0 +1,172 @@
+/*
+* @Author: Brian Cherinka
+* @Date:   2016-04-28 18:52:50
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-10-14 14:31:22
+*/
+
+.marvin-main {
+    nav.navbar-default {
+        margin-bottom: 0px;
+        padding-left: 15px;
+    }
+
+    div.container-fluid {
+        padding: 0px;
+    }
+
+    .maingaliddiv {
+      padding-left: 75px;
+    }
+
+}
+
+// Typeaheads - scrolling
+.galidsearch {
+  #scrollable-dropdown-menu .dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  }
+}
+
+#searchtype {
+  .dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  }
+}
+
+.intro-header {
+    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 200px;
+    text-align: center;
+    color: #f8f8f8;
+    background: url('../../static/images/sdss_marvin.png') no-repeat center center;
+    background-size: cover;
+    background-position: right bottom;
+}
+
+.intro-message {
+    position: relative;
+    padding-top: 20%;
+    padding-bottom: 20%;
+}
+
+.intro-message > h1 {
+    margin: 0;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+    font-size: 5em;
+}
+
+.intro-divider {
+    width: 400px;
+    border-top: 1px solid #f8f8f8;
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+}
+
+.intro-message > h3 {
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+}
+
+@media(max-width:767px) {
+    .intro-message {
+        padding-bottom: 15%;
+    }
+
+    .intro-message > h1 {
+        font-size: 3em;
+    }
+
+    ul.intro-social-buttons > li {
+        display: block;
+        margin-bottom: 20px;
+        padding: 0;
+    }
+
+    ul.intro-social-buttons > li:last-child {
+        margin-bottom: 0;
+    }
+
+    .intro-divider {
+        width: 100%;
+    }
+
+    .marvin-main .maingaliddiv {
+      padding-left: 0px;
+    }
+
+}
+
+// general
+.img-centered {
+  margin: 0 auto;
+}
+.bg-light-gray {
+  background-color: #f7f7f7;
+}
+.bg-darkest-gray {
+  background-color: #222222;
+}
+
+//about section
+
+section {
+  padding: 100px 0;
+}
+section h2.section-heading {
+  font-size: 40px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+section h3.section-subheading {
+  font-size: 16px;
+  font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-transform: none;
+  font-style: italic;
+  font-weight: 400;
+  margin-bottom: 75px;
+}
+@media (min-width: 768px) {
+  section {
+    padding: 150px 0;
+  }
+}
+.service-heading {
+  margin: 15px 0;
+  text-transform: none;
+}
+
+// teams
+#team {
+    //background-color: #f8f8f8;
+    .team-member {
+      text-align: center;
+      margin-bottom: 50px;
+
+      img {
+        margin: 0 auto;
+        border: 7px solid white;
+      }
+
+      h4 {
+        margin-top: 25px;
+        margin-bottom: 0;
+        text-transform: none;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
+}
+
+.network-name {
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 2px;
+}
+
+.infopop .popover {
+    max-width: 100%;
+}

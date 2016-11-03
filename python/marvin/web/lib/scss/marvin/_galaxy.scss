@@ -1,0 +1,37 @@
+/*
+* @Author: Brian Cherinka
+* @Date:   2016-05-08 15:31:05
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-10-19 13:27:07
+*/
+
+.marvinflag {
+    border-radius: 50px;
+}
+
+.flagalert {
+
+    .popover-title {
+        background-color: #3498DB;
+        color: #fff;
+    }
+
+    .popover-content {
+      padding: 0px;
+      border-radius:0px;
+      border-color:#3498DB;
+    }
+}
+
+.highcharts-button-symbol {
+    background-color: null;
+}
+
+.map {
+    //height:100% !important;
+    //width:100% !important;
+    //position:absolute;
+    //position: relative;
+    //overflow: hidden;
+    //padding-bottom:100%;
+}

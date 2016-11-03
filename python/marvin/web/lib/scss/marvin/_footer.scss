@@ -1,0 +1,94 @@
+/*
+* @Author: Brian Cherinka
+* @Date:   2016-04-28 00:05:52
+* @Last Modified by:   Brian
+* @Last Modified time: 2016-06-17 17:22:48
+*/
+
+@import '../flatly/variables';
+
+$contact-text: #fff !default;
+$brian: #00aff0 !default;
+$brett: #bb0000 !default;
+$jose: #291D4F !default;
+$joel: #00D607 !default;
+
+// Mixins
+// -----
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+     -moz-border-radius: $radius;
+      -ms-border-radius: $radius;
+          border-radius: $radius;
+}
+
+@mixin transition($seconds) {
+    -webkit-transition:all $seconds ease;
+       -moz-transition:all $seconds ease;
+        -ms-transition:all $seconds ease;
+         -o-transition:all $seconds ease;
+            transition:all $seconds ease;
+}
+
+// Display
+
+footer{
+    margin-top:20px;
+    a { @include transition(.3s) };
+
+    .fa {
+        font-size:24px;
+        margin-right:5px;
+    }
+
+    .row-first {
+        margin-bottom:10px;
+        margin-top:8px;
+    }
+    .title-contact {
+        margin-top:32px;
+        display:grid;
+        color:$contact-text;
+    }
+    .contact-email {
+        margin-top:14px;
+        display:grid;
+    }
+
+    .quick-contact {
+        color:$contact-text;
+        background-color:$brand-primary;
+        text-align:center;
+    }
+
+    .contact {
+        a {
+            @include border-radius(2px);
+            display: block;
+            background-color: rgba(255,255,255,0.25);
+            font-size:20px;
+            text-align:center;
+            color:$contact-text;
+            padding:7px
+        }
+        a:hover {
+            background-color:rgba(255,255,255,0.85);
+            text-decoration:none;
+        }
+        a.brian:hover,.fa-eye {
+            color:$brian;
+        }
+        a.brett:hover,.fa-fighter-jet {
+            color:$brett;
+        }
+        a.jose:hover,.fa-paw {
+            color:$jose;
+        }
+        a.joel:hover,.fa-university {
+            color:$joel;
+        }
+    }
+}
+
+
+

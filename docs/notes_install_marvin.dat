@@ -1,0 +1,31 @@
+- Install modules (https://trac.sdss.org/wiki/Software/modules)
+    - Use sdss4_getmodules.
+
+- Install sdss4tools (https://trac.sdss.org/wiki/Software/sdss4install)
+    - Export $SDSS4_PRODUCT_ROOT
+    - Use bootstrap
+
+- Export $SAS_BASE_DIR to the location of your local SAS.
+- Load sdss4tools.
+
+- sdss4install sdss/tree trunk
+- sdss4install sdss/sdss_access trunk
+- sdss4install sdss/sdss_python_module branches/marvin
+- sdss4install manga/marvin_brain trunk
+- sdss4install manga/marvin branches/marvin_refactor
+
+- Make .modules with "module load marvin". Source it.
+
+- Python modules:
+    - numpy
+    - astropy
+    - sqlalchemy
+    - networkx
+    - [matplotlib]
+    - pillow
+    - requests
+    - git clone https://github.com/havok2063/SQLAlchemy-boolean-search.git
+        - python setup.py install
+    - pip install wtforms
+    - git clone https://github.com/havok2063/wtforms-alchemy.git
+        - python setup.py install
