@@ -1,5 +1,6 @@
 # Tools
 numpy
+scipy
 astropy
 sqlalchemy
 sqlalchemy-utils
@@ -23,5 +24,6 @@ flask-featureflags
 flask-profiler
 flask-restful
 flask-sqlalchemy
+raven
 pgpasslib
 psycopg2
