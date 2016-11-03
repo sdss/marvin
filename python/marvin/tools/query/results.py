@@ -355,7 +355,7 @@ class Results(object):
         def keys(self):
             return qpo
         nt.keys = keys
-        print('keys', keys())
+        print('keys', keys(self))
         print(self.results[0])
         self.results = [nt(*r) for r in self.results]
 

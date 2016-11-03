@@ -1,16 +1,21 @@
 # Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is developed and maintained by the MaNGA team.
 
+[![Build Status](https://travis-ci.org/sdss/marvin.svg?branch=master)](https://travis-ci.org/sdss/marvin)
+[![Coverage Status](https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master)](https://coveralls.io/github/sdss/marvin?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/sdss-marvin.svg)]()
+[![PyPI](https://img.shields.io/pypi/dm/sdss-marvin.svg)]()
+
 Installation
 ------------
 
 To painlessly install Marvin:
 
-    pip install marvin
+    pip install sdss-marvin
 
 Alternatively, you can clone this git repo and run python setup install:
 
-    git clone https://github.com/marvin-manga/marvin.git
+    git clone https://github.com/sdss/marvin
     python setup.py install
 
 What is Marvin?
@@ -19,7 +24,7 @@ What is Marvin?
 Marvin is a complete ecosystem designed for overcoming the challenge of
 searching, accessing, and visualizing the MaNGA data. It consists of a
 three-pronged approach of a web app, a python package, and an API. The web app,
-Marvin-web, provides an easily accesible interface for searching the MaNGA data
+Marvin-web, provides an easily accessible interface for searching the MaNGA data
 and visual exploration of individual MaNGA galaxies or of the entire sample. The
 python package, in particular Marvin-tools, allows users to easily and
 efficiently interact with the MaNGA data via local files, files retrieved from

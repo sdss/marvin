@@ -1,7 +1,9 @@
 # Tools
 numpy
+scipy
 astropy
-sqlalchemy --install-option="--pre"
+sqlalchemy
+sqlalchemy-utils
 networkx
 matplotlib
 pillow
@@ -9,6 +11,7 @@ requests
 requests-futures
 dogpile.cache
 wtforms
+wtforms-components
 validators
 intervals
 coveralls
@@ -21,6 +24,6 @@ flask-featureflags
 flask-profiler
 flask-restful
 flask-sqlalchemy
+raven
 pgpasslib
 psycopg2
-

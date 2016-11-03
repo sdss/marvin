@@ -84,7 +84,7 @@ class MarvinConfig(object):
                 path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/analysis')
 
             if not os.path.exists(path_dir):
-                warnings.warng('no {0}_DIR found. Creating it in {1}'.format(name, path_dir))
+                warnings.warn('no {0}_DIR found. Creating it in {1}'.format(name, path_dir))
                 os.makedirs(path_dir)
             os.environ[name] = path_dir
 
