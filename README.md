@@ -1,7 +1,10 @@
 # Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is developed and maintained by the MaNGA team.
 
-|Build Status| |Version Status| |Downloads|
+[![Travis branch](https://img.shields.io/travis/sdss/marvin/master.svg)]()
+[![Coveralls branch](https://img.shields.io/coveralls/sdss/marvin/master.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/sdss-marvin.svg)]()
+[![PyPI](https://img.shields.io/pypi/dm/sdss-marvin.svg)]()
 
 Installation
 ------------
@@ -32,12 +35,3 @@ query functionality that uses the API to query the MaNGA databases and return
 the search results to your python session. Marvin-API is the critical link that
 allows Marvin-tools and Marvin-web to interact with the databases, which enables
 users to harness the statistical power of the MaNGA data set.
-
-.. |Build Status| image:: https://travis-ci.org/sdss/marvin.png?branch=master
-   :target: https://travis-ci.org/sdss/marvin
-
-.. |Version Status| image:: https://img.shields.io/pypi/v/sdss-marvin.svg
-   :target: https://pypi.python.org/pypi/sdss-marvin/
-
-.. |Downloads| image:: https://img.shields.io/pypi/dm/sdss-marvin.svg
-   :target: https://pypi.python.org/pypi/sdss-marvin/
