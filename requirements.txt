@@ -1,7 +1,7 @@
 # Tools
 numpy
 astropy
-sqlalchemy --install-option="--pre"
+sqlalchemy
 sqlalchemy-utils
 networkx
 matplotlib
