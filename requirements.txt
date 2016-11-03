@@ -1,7 +1,8 @@
 # Tools
 numpy
 astropy
-sqlalchemy
+sqlalchemy --install-option="--pre"
+sqlalchemy-utils
 networkx
 matplotlib
 pillow
