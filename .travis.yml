@@ -17,7 +17,6 @@ python:
 branches:
 only:
   - master
-  - marvin_refactor
 
 # command to install dependencies
 install:
