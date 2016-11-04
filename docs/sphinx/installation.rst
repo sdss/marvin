@@ -2,6 +2,11 @@
 Installation
 ============
 
+Updated Installation:
+    pip install sdss-marvin
+
+Old Installation:
+
 Marvin requires installing some dependencies before you can start using it.
 In the future we hope this process will be mostly automatic but, for now,
 please follow this instructions to install Marvin.
