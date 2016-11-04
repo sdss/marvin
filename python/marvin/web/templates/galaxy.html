@@ -83,8 +83,11 @@
                                 {% endfor %}
                               </div>
                           </div>
+
                           <div class='btn-group-vertical'>
-                          <button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>
+                          {#<button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>#}
+
+                          <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170">
                           </div>
                     </div>
                     <div class='col-md-5'>
@@ -175,7 +178,7 @@
 
                         {# loop over all maps #}
                         <div class='row' id='mapsdiv'>
-                            {% if maps %}
+                            {#{% if maps %}
                             {% for map in maps %}
                             <div class='col-md-4'>
                                 <div id='mapdiv{{loop.index}}' class='map'></div>
@@ -183,7 +186,14 @@
                             {% endfor %}
                             {% else %}
                             <div class='col-md-5 col-md-offset-2'><p class='alert alert-danger' id='mapalert'>{{mapmsg}}</p></div>
-                            {% endif %}
+                            {% endif %}#}
+
+                            {# this is for forcing the 6 map divs to load blank #}
+                            {% for i in range(6) %}
+                            <div class='col-md-4'>
+                                <div id='mapdiv{{loop.index}}' class='map'></div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -201,18 +211,9 @@
 <script type='text/javascript'>
     var galaxy = {};
     $(function() {
-        m.galaxy = new Galaxy();
+        var toggleon = {{toggleon|tojson}};
+        m.galaxy = new Galaxy(undefined, toggleon);
         m.galaxy.print();
-        // toggle interaction on click
-        var spaxel = {{spectra|tojson}};
-        var galimage = {{image|tojson}};
-        var spectitle = {{specmsg|tojson}};
-        var maps = {{maps|tojson}};
-        var mapmsg = {{mapmsg|tojson}};
-        console.log('maps', maps, mapmsg);
-        $('#toggleinteract').on('click', m.galaxy, function() {
-            m.galaxy.toggleInteract(galimage, maps, spaxel, spectitle, mapmsg);
-        });
     });
 </script>
 {% endblock code %}

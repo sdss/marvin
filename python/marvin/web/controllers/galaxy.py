@@ -181,30 +181,12 @@ class Galaxy(FlaskView):
 
             # Get the initial spectrum
             if cube:
-                webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-                # temporarily do version stuff
-                #
                 daplist = get_dap_maplist(self._dapver, web=True)
-                dapdefaults = get_default_mapset(self._dapver)
-
-                # build the uber map dictionary
-                try:
-                    mapdict = buildMapDict(cube, dapdefaults)
-                    mapmsg = None
-                except Exception as e:
-                    mapdict = [{'data': None, 'msg': 'Error'} for m in dapdefaults]
-                    mapmsg = 'Error getting maps: {0}'.format(e)
-
-                if not webspec:
-                    self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                 self.galaxy['cube'] = cube
-                self.galaxy['spectra'] = webspec
-                self.galaxy['specmsg'] = specmsg
+                self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                self.galaxy['maps'] = mapdict
-                self.galaxy['mapmsg'] = mapmsg
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
@@ -221,10 +203,58 @@ class Galaxy(FlaskView):
 
         return render_template("galaxy.html", **self.galaxy)
 
+    @route('initdyamic', methods=['POST'], endpoint='initdynamic')
+    def initDynamic(self):
+        ''' Route to run when the dynamic toggle is initialized
+            This creates the web spectrum and dap heatmaps
+        '''
+        f = processRequest(request=request)
+        self._drpver, self._dapver, self._release = parseSession()
+
+        # turning toggle on
+        current_session['toggleon'] = f['toggleon']
+
+        # get the cube
+        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
+        cube = Cube(**cubeinputs)
+        output = {'specstatus': -1, 'mapstatus': -1}
+
+        # get web spectrum
+        webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
+
+        daplist = get_dap_maplist(self._dapver, web=True)
+        dapdefaults = get_default_mapset(self._dapver)
+
+        # build the uber map dictionary
+        try:
+            mapdict = buildMapDict(cube, dapdefaults)
+            mapmsg = None
+        except Exception as e:
+            mapdict = [{'data': None, 'msg': 'Error'} for m in dapdefaults]
+            mapmsg = 'Error getting maps: {0}'.format(e)
+        else:
+            output['mapstatus'] = 1
+
+        if not webspec:
+            output['error'] = 'Error: {0}'.format(specmsg)
+        else:
+            output['specstatus'] = 1
+
+        sdss_path = Path()
+        output['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
+        output['spectra'] = webspec
+        output['specmsg'] = specmsg
+        output['maps'] = mapdict
+        output['mapmsg'] = mapmsg
+        output['dapmaps'] = daplist
+        output['dapbintemps'] = _get_bintemps(self._dapver)
+        current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
+
+        return jsonify(result=output)
+
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         f = processRequest(request=request)
-        print('spaxelform', f)
         self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
         maptype = f.get('type', None)
