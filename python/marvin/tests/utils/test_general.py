@@ -53,12 +53,12 @@ class TestConvertCoords(TestCase):
                   [0.4, 0.25]]
 
         expected = [[17, 17],
-                    [14, 22],
-                    [16, 12],
-                    [22, 18],
-                    [7, 27],
-                    [27, 7],
-                    [14, 18],
+                    [20, 22],
+                    [18, 12],
+                    [12, 18],
+                    [27, 27],
+                    [7,  7],
+                    [20, 18],
                     [17, 17]]
 
         cubeCoords = convertCoords(coords, mode='pix', shape=self.testShape)

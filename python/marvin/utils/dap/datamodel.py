@@ -297,6 +297,8 @@ def get_default_mapset(dapver=None):
                   'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718'],
         '2.0.2': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
                   'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718']
+        # '1.1.1': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008'],
+        # '2.0.2': ['stellar_vel', 'emline_gflux:ha_6564', 'emline_gflux:oiii_5008']
     }
 
     return dapdefaults[dapver] if dapver in dapdefaults else []

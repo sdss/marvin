@@ -1,5 +1,5 @@
-What's New in Marvin Beta (November 2016)
-=========================================
+What's New in Marvin 2.0 Beta (November 2016)
+=============================================
 
 * New Marvin Tools (Maps, Bin, ModelCube)
 
@@ -13,8 +13,8 @@ What's New in Marvin Beta (November 2016)
 
 * Versions simplified from mpl, drp, dap down to release
 
-What's New in Marvin 2.0 (June 2016)
-====================================
+What's New in Marvin 2.0 Alpha (June 2016)
+==========================================
 
 Marvin 2.0 is a complete overhaul of Marvin 1.0, converting Marvin into a full suite of interaction tools.
 
