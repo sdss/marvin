@@ -14,7 +14,7 @@ If you use Marvin for work/research presented in a publication (whether directly
     *This research made use of Marvin, a core Python package + web framework for MaNGA data, developed by Brian Cherinka,
     José Sánchez-Gallego, and Brett Andrews. (MaNGA Collaboration, 2016).*
 
-If you wish, you can also include a link to https://api.sdss.org/doc/manga/marvin/refactor in addition to the above text.
+If you wish, you can also include a link to https://api.sdss.org/doc/manga/marvin in addition to the above text.
 
 In Presentations
 ^^^^^^^^^^^^^^^^
