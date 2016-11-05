@@ -131,6 +131,7 @@ class Galaxy(FlaskView):
         self.galaxy['error'] = None
         self.galaxy['specmsg'] = None
         self.galaxy['mapmsg'] = None
+        self.galaxy['toggleon'] = 'false'
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
