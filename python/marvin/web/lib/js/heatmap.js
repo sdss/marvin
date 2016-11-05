@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 00:38:24
+* @Last Modified time: 2016-11-05 15:07:00
 */
 
 'use strict';
@@ -222,13 +222,14 @@ var HeatMap = function () {
                 quantLow = 5;
                 quantHigh = 95;
             };
-            console.log('zlohi', zQuantLow, zQuantHigh);
-            console.log('range', range);
-            if (quantLow > 0) {
-                zQuantLow = math.quantileSeq(range, quantLow / 100);
-            }
-            if (quantHigh < 100) {
-                zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+
+            if (range.length > 0) {
+                if (quantLow > 0) {
+                    zQuantLow = math.quantileSeq(range, quantLow / 100);
+                }
+                if (quantHigh < 100) {
+                    zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+                }
             }
             return [zQuantLow, zQuantHigh];
         }
