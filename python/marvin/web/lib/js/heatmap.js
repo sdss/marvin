@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-11 15:23:38
+* @Last Modified time: 2016-11-05 00:38:24
 */
 
 'use strict';
@@ -222,6 +222,8 @@ var HeatMap = function () {
                 quantLow = 5;
                 quantHigh = 95;
             };
+            console.log('zlohi', zQuantLow, zQuantHigh);
+            console.log('range', range);
             if (quantLow > 0) {
                 zQuantLow = math.quantileSeq(range, quantLow / 100);
             }

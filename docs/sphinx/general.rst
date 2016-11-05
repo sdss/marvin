@@ -99,6 +99,20 @@ SAS as specified by the ``$SAS_BASE_DIR`` environment variable.
 * **Via Explicit Call**:
     Calling the downloadList utility function
 
+Authentication
+^^^^^^^^^^^^^^
+Downloading with sdss_access requires authentication to the SAS, using a .netrc file placed in your local home directory.
+::
+
+    # create a .netrc file if you do not already have one
+    cd ~/
+    touch .netrc
+
+    # using a text editor, place the following text inside your .netrc file.
+    machine data.sdss.org
+        login sdss
+        password replace_with_sdss_password
+
 Via Config
 ^^^^^^^^^^
 ::

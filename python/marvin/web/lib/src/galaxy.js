@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-11-04 18:52:43
+* @Last Modified time: 2016-11-05 14:53:52
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -34,6 +34,7 @@ class Galaxy {
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
+        this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
@@ -204,6 +205,7 @@ class Galaxy {
                 // make the form
                 var keys = ['plateifu', 'toggleon'];
                 var form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
+                _this.toggleload.show();
 
                 $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')
                     .done(function(data) {
@@ -216,6 +218,7 @@ class Galaxy {
 
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
+                        _this.toggleload.hide();
 
                         // Try to load the spaxel
                         if (data.result.specstatus !== -1) {
@@ -233,8 +236,9 @@ class Galaxy {
 
                     })
                     .fail(function(data) {
-                        _this.updateSpecMsg('Error: '+spectitle, data.result.specstatus);
-                        _this.updateMapMsg('Error: '+mapmsg, data.result.mapstatus);
+                        _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.specstatus);
+                        _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.mapstatus);
+                        _this.toggleload.hide();
                     });
             }
         }
@@ -308,18 +312,22 @@ class Galaxy {
         var keys = ['plateifu', 'params', 'bintemp'];
         var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
         _this.mapmsg.hide();
+        $(this).button('loading');
 
         // send the form data
         $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
             .done(function(data) {
                 if (data.result.status !== -1) {
+                    _this.dapmapsbut.button('reset');
                     _this.initHeatmap(data.result.maps);
                 } else {
                     _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
+                    _this.dapmapsbut.button('reset');
                 }
             })
             .fail(function(data) {
                 _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
+                _this.dapmapsbut.button('reset');
             });
     };
 

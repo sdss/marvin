@@ -4,7 +4,7 @@
 Known Issues in Marvin
 ======================
 
-Here are a list of known issues in the latest release of Marvin.
+Here are a list of known issues in the latest release of Marvin.  If you have find an issue or bug not listed here, please let us know.
 
 FYIs
 ----

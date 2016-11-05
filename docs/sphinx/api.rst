@@ -11,7 +11,7 @@ Marvin makes this easy for you in two ways:
 1. The Marvin API wraps this functionality into an :ref:`marvin-interaction-class`, making it easy for you to make these calls if you want.
 2. All Marvin Tools have an API call built in when interacting in 'remote' mode, that uses the :ref:`marvin-interaction-class` already, so you don't have to.
 
-With the Marvin API, you can build your own application, website, or scripts very easily, and forego the rest of Marvin, if so desired.
+With the Marvin API, you can build your own application, website, or scripts very easily, and forego the rest of Marvin, if so desired.  Currently all API requests will timeout after 5 minutes.
 
 .. _marvin-urlmap:
 
@@ -46,6 +46,23 @@ Usage
     u'/marvin2/api/cubes/{name}/'
 
 Some urls require parameters passed to them. Others do not.  Urls with curly braces {} in them indicate an input parameter. For example, in the above url, ```{name}``` means a parameter called name must be passed into the url. See how to pass in parameters in the examples below.
+
+.. _marvin-authentication:
+
+Authentication
+--------------
+
+The use of the API requires authentication.  To authenticate, you will need to have a .netrc file in your local home directory.  Inside the .netrc file,
+::
+
+    # create a .netrc file if you do not already have one
+    cd ~/
+    touch .netrc
+
+    # using a text editor, place the following text inside your .netrc file.
+    machine api.sdss.org
+        login sdss
+        password replace_with_sdss_password
 
 .. _marvin-interaction-class:
 

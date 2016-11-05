@@ -41,6 +41,15 @@ class Interaction(BrainInteraction):
         request_type (str):
             the method type of the API call, can be either "get" or "post" (default: post)
 
+        auth (str):
+            the authentication method used for the API.  Currently set as default to use
+            netrc authentication.
+
+        timeout (float|tuple):
+            A float or tuple of floats indicating the request timeout limit in seconds.
+            If the server has not sent a respsonse by the time limit, an exception is raised.
+            See http://docs.python-requests.org/en/master/user/advanced/#timeouts
+
     Returns:
         results (dict):
             The results of the API call

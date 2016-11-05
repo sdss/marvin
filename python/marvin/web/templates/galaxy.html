@@ -87,7 +87,10 @@
                           <div class='btn-group-vertical'>
                           {#<button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>#}
 
+                          <div class='input-group' id='toggle-grp'>
                           <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170">
+                          <span class="input-group-addon info" style="display: none;" id="toggle-load"><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...</span>
+                          </div>
                           </div>
                     </div>
                     <div class='col-md-5'>
@@ -158,7 +161,7 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <button type="button" id='dapmapsbut' class="btn btn-warning">Get Maps</button>
+                                <button type="button" id='dapmapsbut' class="btn btn-warning" data-loading-text="<i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...">Get Maps</button>
                                 <button type="button" id='resetmapsbut' class="btn btn-info">Reset Selection</button>
                               </div>
                                 <div class='col-md-2'>

@@ -13,6 +13,8 @@ What's New in Marvin 2.0 Beta (November 2016)
 
 * Versions simplified from mpl, drp, dap down to release
 
+* API :ref:`marvin-authentication`
+
 What's New in Marvin 2.0 Alpha (June 2016)
 ==========================================
 
