@@ -33,6 +33,11 @@ def updateGlobalSession():
     # check if mpl versions in session
     if 'versions' not in current_session:
         setGlobalSession()
+    elif 'drpver' not in current_session or \
+         'dapver' not in current_session:
+        drpver, dapver = config.lookUpVersions(release=config.release)
+        current_session['drpver'] = drpver
+        current_session['dapver'] = dapver
 
 
 def setGlobalSession():
