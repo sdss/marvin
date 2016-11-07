@@ -16,6 +16,7 @@ import itertools
 
 import astropy.io.fits
 import astropy.wcs
+import numpy as np
 
 import marvin
 import marvin.api.api
@@ -23,6 +24,7 @@ import marvin.core.core
 import marvin.core.exceptions
 import marvin.tools.cube
 import marvin.tools.map
+import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap
 import marvin.utils.six
@@ -524,3 +526,56 @@ class Maps(marvin.core.core.MarvinToolsClass):
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
 
         return map_1
+
+    def get_bin_spaxels(self, binid, load=False, only_list=False):
+        """Returns the list of spaxels belonging to a given ``binid``.
+
+        If ``load=True``, the spaxel objects are loaded. Otherwise, they can be
+        initiated by doing ``Spaxel.load()``. If ``only_list=True``, the method
+        will return just a tuple containing the x and y coordinates of the spaxels.
+
+        """
+
+        if self.data_origin == 'file':
+            spaxel_coords = zip(*np.where(self.data['BINID'].T == binid))
+
+        elif self.data_origin == 'db':
+            mdb = marvin.marvindb
+            spaxel_coords = mdb.session.query(mdb.dapdb.SpaxelProp5.x,
+                                              mdb.dapdb.SpaxelProp5.y).join(mdb.dapdb.File).filter(
+                mdb.dapdb.SpaxelProp5.binid == 100,
+                mdb.dapdb.File.pk == self.data.pk).order_by(
+                    mdb.dapdb.SpaxelProp5.x,
+                    mdb.dapdb.SpaxelProp5.y).all()
+
+        elif self.data_origin == 'api':
+            url = marvin.config.urlmap['api']['getbinspaxels']['url']
+
+            url_full = url.format(name=self.plateifu,
+                                  bintype=self.bintype,
+                                  template_kin=self.template_kin,
+                                  binid=binid)
+
+            try:
+                response = self.ToolInteraction(url_full)
+            except Exception as ee:
+                raise marvin.core.exceptions.MarvinError(
+                    'found a problem requesting the spaxels for binid={0}: {1}'
+                    .format(binid, str(ee)))
+
+            response = response.getData()
+            spaxel_coords = response['spaxel']
+
+        if len(spaxel_coords) == 0:
+            if only_list:
+                return [(), ()]
+            else:
+                return []
+        else:
+            if only_list:
+                return tuple([tuple(cc) for cc in spaxel_coords])
+
+        spaxels = [marvin.tools.spaxel.Spaxel(x=cc[0], y=cc[1], maps=self, load=load)
+                   for cc in spaxel_coords]
+
+        return spaxels
