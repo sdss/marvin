@@ -54,13 +54,15 @@ class Bin(object):
     def _load_spaxels(self, **kwargs):
         """Creates a list of unloaded spaxels for this binid."""
 
+        load_spaxels = kwargs.pop('load_spaxels', False)
+
         self.spaxel_coords = self._maps.get_bin_spaxels(self.binid, only_list=True)
 
         if len(self.spaxel_coords) == 0:
             raise MarvinError('there are no spaxels associated with binid={0}.'.format(self.binid))
         else:
             self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps,
-                                   modelcube=self._modelcube, load=False, **kwargs)
+                                   modelcube=self._modelcube, load=load_spaxels, **kwargs)
                             for cc in self.spaxel_coords]
 
     def _load_data(self, **kwargs):
