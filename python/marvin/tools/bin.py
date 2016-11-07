@@ -25,14 +25,11 @@ class Bin(object):
         self._maps, self._modelcube = self._get_dap_objects(**kwargs)
         self.binid = binid
 
-        spaxel_coords = self._maps.get_bin_spaxels(binid, only_list=True)
+        self._load_spaxels(**kwargs)
+        self._load_data(**kwargs)
 
-        if len(spaxel_coords) == 0:
-            self.spaxels = []
-        else:
-            self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps,
-                                   modelcube=self._modelcube, load=False, **kwargs)
-                            for cc in spaxel_coords]
+    def __repr__(self):
+        return '<Marvin Bin (binid={0}, n_spaxels={1})>'.format(self.binid, len(self.spaxels))
 
     def _get_dap_objects(self, **kwargs):
         """Gets the Maps and ModelCube object."""
@@ -53,3 +50,37 @@ class Bin(object):
             modelcube = False
 
         return maps, modelcube
+
+    def _load_spaxels(self, **kwargs):
+        """Creates a list of unloaded spaxels for this binid."""
+
+        self.spaxel_coords = self._maps.get_bin_spaxels(self.binid, only_list=True)
+
+        if len(self.spaxel_coords) == 0:
+            raise MarvinError('there are no spaxels associated with binid={0}.'.format(self.binid))
+        else:
+            self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps,
+                                   modelcube=self._modelcube, load=False, **kwargs)
+                            for cc in self.spaxel_coords]
+
+    def _load_data(self, **kwargs):
+        """Loads one of the spaxels to get the DAP properties for the binid."""
+
+        assert len(self.spaxel_coords) > 0
+
+        sample_coords = self.spaxel_coords[0]
+        sample_spaxel = Spaxel(x=sample_coords[0], y=sample_coords[1],
+                               cube=True, maps=self._maps, modelcube=self._modelcube,
+                               load=True, **kwargs)
+
+        self.specres = sample_spaxel.specres
+        self.specresd = sample_spaxel.specresd
+        self.spectrum = sample_spaxel.spectrum
+        self.properties = sample_spaxel.properties
+
+        self.model_flux = sample_spaxel.model_flux
+        self.redcorr = sample_spaxel.redcorr
+        self.model = sample_spaxel.model
+        self.emline = sample_spaxel.emline
+        self.emline_base = sample_spaxel.emline_base
+        self.stellar_continuum = sample_spaxel.stellar_continuum
