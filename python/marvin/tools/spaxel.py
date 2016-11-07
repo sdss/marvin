@@ -91,6 +91,10 @@ class Spaxel(object):
             has no effect for now.
         release (str):
             The MPL/DR version of the data to use.
+        load (bool):
+            If ``True``, the spaxel data is loaded on initialisation. Otherwise,
+            only the metadata is created. The spectra and properties can be then
+            loaded by calling ``Spaxel.load()``.
 
     Attributes:
         spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
@@ -132,7 +136,7 @@ class Spaxel(object):
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
             'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
-            'template_kin', 'template_pop', 'release']
+            'template_kin', 'template_pop', 'release', 'load']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -164,6 +168,8 @@ class Spaxel(object):
 
         assert self.x is not None and self.y is not None, 'Spaxel requires x and y to initialise.'
 
+        self.loaded = False
+
         self.specres = None
         self.specresd = None
         self.spectrum = None
@@ -175,12 +181,10 @@ class Spaxel(object):
         self.emline = None
         self.emline_base = None
         self.stellar_continuum = None
+        self._parent_shape = None
 
         self.plateifu = kwargs.pop('plateifu', None)
         self.mangaid = kwargs.pop('mangaid', None)
-
-        cube_filename = kwargs.pop('cube_filename', None)
-        self._check_cube(cube_filename)
 
         self.bintype = None
         self.template_kin = None
@@ -195,11 +199,12 @@ class Spaxel(object):
             self.template_kin = marvin.tools.maps._get_template_kin(
                 self._dapver, template_kin=kwargs.get('template_kin', None))
 
-        maps_filename = kwargs.pop('maps_filename', None)
-        self._check_maps(maps_filename)
+        self.__cube_filename = kwargs.pop('cube_filename', None)
+        self.__maps_filename = kwargs.pop('maps_filename', None)
+        self.__modelcube_filename = kwargs.pop('modelcube_filename', None)
 
-        modelcube_filename = kwargs.pop('modelcube_filename', None)
-        self._check_modelcube(modelcube_filename)
+        if kwargs.pop('load', True):
+            self.load()
 
     def _check_version(self, input_release):
 
@@ -235,6 +240,15 @@ class Spaxel(object):
 
         if has_modelcube:
             return self.modelcube._release
+
+    def load(self):
+        """Loads the spaxel data."""
+
+        self._check_cube()
+        self._check_maps()
+        self._check_modelcube()
+
+        self.loaded = True
 
     def save(self, path, overwrite=False):
         """Pickles the spaxel to a file.
@@ -274,7 +288,7 @@ class Spaxel(object):
 
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    def _check_cube(self, cube_filename):
+    def _check_cube(self):
         """Loads the cube and the spectrum."""
 
         # Checks that the cube is correct or load ones if cube == True.
@@ -282,7 +296,7 @@ class Spaxel(object):
             assert isinstance(self.cube, marvin.tools.cube.Cube), \
                 'cube is not an instance of marvin.tools.cube.Cube or a boolean.'
         elif self.cube is True:
-            self.cube = marvin.tools.cube.Cube(filename=cube_filename,
+            self.cube = marvin.tools.cube.Cube(filename=self.__cube_filename,
                                                plateifu=self.plateifu,
                                                mangaid=self.mangaid,
                                                release=self._release)
@@ -307,14 +321,14 @@ class Spaxel(object):
         # Loads the spectrum
         self._load_spectrum()
 
-    def _check_maps(self, maps_filename):
+    def _check_maps(self):
         """Loads the cube and the properties."""
 
         if not isinstance(self.maps, bool):
             assert isinstance(self.maps, marvin.tools.maps.Maps), \
                 'maps is not an instance of marvin.tools.maps.Maps or a boolean.'
         elif self.maps is True:
-            self.maps = marvin.tools.maps.Maps(filename=maps_filename,
+            self.maps = marvin.tools.maps.Maps(filename=self.__maps_filename,
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
                                                bintype=self.bintype,
@@ -344,7 +358,7 @@ class Spaxel(object):
         # Loads the properties
         self._load_properties()
 
-    def _check_modelcube(self, modelcube_filename):
+    def _check_modelcube(self):
         """Loads the modelcube and associated arrays."""
 
         if not isinstance(self.modelcube, bool):
@@ -358,7 +372,7 @@ class Spaxel(object):
                 self.modelcube = None
                 return
 
-            self.modelcube = marvin.tools.modelcube.ModelCube(filename=modelcube_filename,
+            self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
                                                               mangaid=self.mangaid,
                                                               plateifu=self.plateifu,
                                                               bintype=self.bintype,
@@ -389,6 +403,9 @@ class Spaxel(object):
 
     def __repr__(self):
         """Spaxel representation."""
+
+        if not self.loaded:
+            return '<Marvin Spaxel (x={0.x:d}, y={0.y:d}, loaded=False)'.format(self)
 
         # Gets the coordinates relative to the centre of the cube/maps.
         yMid, xMid = np.array(self._parent_shape) / 2.
