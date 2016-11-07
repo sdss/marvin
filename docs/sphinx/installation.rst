@@ -3,6 +3,29 @@ Installation
 ============
 
 Updated Installation:
+::
+    
+    pip install sdss-marvin
+    
+Alternatively, you can clone this git repo and run python setup install::
+
+    git clone https://github.com/sdss/marvin
+    cd marvin
+    git submodule init
+    git submodule update
+    python setup.py install
+
+If `pip install sdss-marvin` does not install Marvin's dependencies::
+
+    wget https://raw.githubusercontent.com/sdss/marvin/master/requirements.txt
+    pip install -r requirements.txt
+    pip install sdss-marvin
+
+If you don't have `wget`, you can try::
+
+    git clone https://github.com/sdss/marvin
+    cd marvin
+    pip install -r requirements.txt
     pip install sdss-marvin
 
 Old Installation:
