@@ -158,3 +158,41 @@ class MapsView(marvin.api.base.BaseView):
             self.results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
 
         return json.dumps(self.results)
+
+    @flask_classy.route('/<name>/<bintype>/<template_kin>/spaxels/<binid>',
+                        methods=['GET', 'POST'], endpoint='getbinspaxels')
+    def getBinSpaxels(self, name, bintype, template_kin, binid):
+        """Returns a list of x and y indices for spaxels belonging to ``binid``.
+
+        Parameters:
+            name (str):
+                The ``plateifu`` or ``mangaid`` of the object.
+            bintype (str):
+                The bintype associated with this model cube. If not defined,
+                the default type of binning will be used.
+            template_kin (str):
+                The template_kin associated with this model cube.
+                If not defined, the default template_kin will be used.
+            binid (int):
+                The binid to which the spaxels belong.
+
+        e.g., https://api.sdss.org/marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/spaxels/112/
+
+        """
+
+        kwargs = {'bintype': bintype, 'template_kin': template_kin}
+
+        # Initialises the Maps object
+        maps, results = _getMaps(name, **kwargs)
+        self.update_results(results)
+
+        if maps is None:
+            return json.dumps(self.results)
+
+        try:
+            self.results['data'] = {}
+        except Exception as ee:
+            self.results['error'] = ('Failed to get spaxels for binid={0}: {1}'
+                                     .format(binid, str(ee)))
+
+        return json.dumps(self.results)
