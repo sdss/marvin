@@ -28,3 +28,4 @@ flask-sqlalchemy
 raven
 pgpasslib
 psycopg2
+pyyaml

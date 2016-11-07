@@ -11,6 +11,14 @@ New Options
 
 **Updated Mild Pain Installation**::
 
+If `pip install sdss-marvin` does not install Marvin's dependencies::
+
+    wget https://raw.githubusercontent.com/sdss/marvin/master/requirements.txt
+    pip install -r requirements.txt
+    pip install sdss-marvin
+
+If you don't have `wget`, you can try::
+
     git clone https://github.com/sdss/marvin
     cd marvin
     pip install -r requirements.txt
