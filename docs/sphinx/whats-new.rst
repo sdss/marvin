@@ -1,6 +1,8 @@
 What's New in Marvin 2.0 Beta (November 2016)
 =============================================
 
+* Brand new painless installation (pip install sdss-marvin)
+
 * New Marvin Tools (Maps, Bin, ModelCube)
 
 * Pickling of Marvin Tools, Queries, and Results (i.e. local save and restore)

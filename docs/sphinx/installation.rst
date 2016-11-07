@@ -2,10 +2,32 @@
 Installation
 ============
 
-Updated Installation:
+New Options
+-----------
+
+**Updated Painless Installation**::
+
     pip install sdss-marvin
 
-Old Installation:
+**Updated Mild Pain Installation**::
+
+    git clone https://github.com/sdss/marvin
+    cd marvin
+    pip install -r requirements.txt
+    pip install sdss-marvin
+
+**Updated Developer Installation (Medium Pain)**::
+
+    git clone https://github.com/sdss/marvin
+    cd marvin
+    git submodule init
+    git submodule update
+    python setup.py install
+
+Old Options
+-----------
+
+**Old Extremely Painful Installation (Outdated)**:
 
 Marvin requires installing some dependencies before you can start using it.
 In the future we hope this process will be mostly automatic but, for now,
