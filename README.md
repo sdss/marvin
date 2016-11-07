@@ -16,7 +16,11 @@ To painlessly install Marvin:
 Alternatively, you can clone this git repo and run python setup install:
 
     git clone https://github.com/sdss/marvin
+    cd marvin
+    git submodule init
+    git submodule update
     python setup.py install
+
 
 What is Marvin?
 ---------------
