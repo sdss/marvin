@@ -131,7 +131,7 @@ The Galaxy page includes:
 Spectrum Display
 ^^^^^^^^^^^^^^^^
 
-Enable the spectrum display by clicking on the Map/Spec View box.  The spectrum display uses the
+Enable the spectrum display by toggling on the Map/Spec View box.  The spectrum display uses the
 `DyGraphs <http://dygraphs.com/>`_ javascript library.
 
 * **Select Spectrum**: Click on the image to show the spectrum of the spaxel at
@@ -157,27 +157,33 @@ Enable the spectrum display by clicking on the Map/Spec View box.  The spectrum 
 Map Display
 ^^^^^^^^^^^
 
-Enable the map display by clicking on the red Map/Spec View box.  This displays a series of six maps.  Default maps are
-the six emission line gflux maps [OIId, Hb, OIII5008, NII6585, Ha, SII6718].  These maps are generated using the
+Enable the map display by toggling the red Map/Spec View box.  This displays a series of three maps by default,
+with the ability to select up to six maps.  The default maps loaded are the stellar velocity map, the Ha emission line
+flux map, and the d4000 spectral index map.  All maps are generated using the
 `HighCharts <http://www.highcharts.com/>`_ javascript library.
 
 * **Selecting Maps**: Choose Analysis Properties and Binning-Stellar Template combinations to show.
-  * **Analysis Property Dropdown**: Choose up to 6 properties. *Default properties are emission line flux (Gaussian fit) maps for [OII], Hbeta, [OIII]5008, [NII]6585, Halpha, and [SII]6718.*
+
+  * **Analysis Property Dropdown**: Choose up to 6 properties. *Default properties are the Halpha emission line flux (Gaussian fit), the stellar velocity, and the d4000 spectral index maps*
   * **Binning Scheme--Stellar Template Dropdown**: Choose a binning and stellar template set combination. *Default is SPX-GAU-MILESHC (i.e., spaxel binning (i.e., no binning) with the MILESHC stellar template set).*
   * **Get Maps**: Click to display maps.
   * **Reset Selection**: Clear your selected Analysis Properties (Binning Scheme and Stellar Template combination will remain the same.).
-  
+
 * **Map Color Schemes**:
+
   * **No Data and Bad Data**
+
     * Grey = Values with the "NoCoverage" maskbit set, or for MPL-4, a mask value of 1.
     * Hatched area = Values with mask bits (5,6,7,or 30) set or low S/N (S/N ratio < 1).
 
   * **Color Maps**
+
     * CIE Lab Linear L* (Black-Green-White) = Default color map for sequential values (e.g., emission line fluxes).
     * Inferno (Indigo-Red-White) = Alternative color map for sequential values.
     * Blue-White-Red = Diverging color map with Blue and Red symmetrically diverging from the midpoint color White.
-    
+
   * **Color Axis**
+
     * The color axes are restricted to the following percentile ranges of the unmasked data to best display the relative patterns within each map without being skewed by outliers.
       * Velocity: 10-90th percentiles
       * Velocity dispersion: 10-90th percentiles
