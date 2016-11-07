@@ -293,10 +293,14 @@ def get_default_mapset(dapver=None):
     ''' Returns a list of six default maps for display '''
 
     dapdefaults = {
-        '1.1.1': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
-                  'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718'],
-        '2.0.2': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
-                  'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718']
+        # 6 defaults
+        # '1.1.1': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
+        #           'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718'],
+        # '2.0.2': ['emline_gflux:oiid_3728', 'emline_gflux:hb_4862', 'emline_gflux:oiii_5008',
+        #           'emline_gflux:ha_6564', 'emline_gflux:nii_6585', 'emline_gflux:sii_6718']
+        # 3 defaults
+        '1.1.1': ['stellar_vel', 'emline_gflux:ha_6564', 'specindex:d4000'],
+        '2.0.2': ['stellar_vel', 'emline_gflux:ha_6564', 'specindex:d4000']
     }
 
     return dapdefaults[dapver] if dapver in dapdefaults else []

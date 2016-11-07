@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-10-19 13:25:42
+* @Last Modified time: 2016-11-05 14:53:52
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -94,10 +94,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Galaxy = function () {
 
     // Constructor
-    function Galaxy(plateifu) {
+    function Galaxy(plateifu, toggleon) {
         _classCallCheck(this, Galaxy);
 
         this.setPlateIfu(plateifu);
+        this.toggleon = toggleon;
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
@@ -111,6 +112,8 @@ var Galaxy = function () {
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
         this.togglediv = $('#toggleinteract');
+        this.toggleload = $('#toggle-load');
+        this.togglediv.bootstrapToggle('off');
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
         this.dapmapsbut = $('#dapmapsbut');
@@ -121,10 +124,12 @@ var Galaxy = function () {
 
         // init some stuff
         this.initFlagPopovers();
+        //this.checkToggle();
 
         //Event Handlers
         this.dapmapsbut.on('click', this, this.getDapMaps);
         this.resetmapsbut.on('click', this, this.resetMaps);
+        this.togglediv.on('change', this, this.initDynamic);
     }
 
     // Test print
@@ -246,19 +251,127 @@ var Galaxy = function () {
             });
         }
     }, {
-        key: 'toggleInteract',
+        key: 'checkToggle',
 
+
+        // check the toggle preference on initial page load
+        // eventually for user preferences
+        value: function checkToggle() {
+            if (this.toggleon) {
+                this.toggleOn();
+            } else {
+                this.toggleOff();
+            }
+        }
+
+        // toggle the display button on
+
+    }, {
+        key: 'toggleOn',
+        value: function toggleOn() {
+            // eventually this should include the ajax stuff inside initDynamic - for after user preferences implemented
+            this.toggleon = true;
+            //this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
+            //this.togglediv.button('complete');
+            this.staticdiv.hide();
+            this.dynamicdiv.show();
+        }
+
+        // toggle the display button off
+
+    }, {
+        key: 'toggleOff',
+        value: function toggleOff() {
+            this.toggleon = false;
+            //this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
+            //this.togglediv.button('reset');
+            this.dynamicdiv.hide();
+            this.staticdiv.show();
+        }
+    }, {
+        key: 'testTogg',
+        value: function testTogg(event) {
+            var _this = event.data;
+            console.log('toggling', _this.togglediv.prop('checked'), _this.togglediv.hasClass('active'));
+        }
+
+        // Initialize the Dynamic Galaxy Interaction upon toggle - makes loading an AJAX request
+
+    }, {
+        key: 'initDynamic',
+        value: function initDynamic(event) {
+
+            var _this = event.data;
+
+            if (!_this.togglediv.prop('checked')) {
+                // Turning Off
+                _this.toggleOff();
+            } else {
+                // Turning On
+                _this.toggleOn();
+
+                // check for empty divs
+                var specempty = _this.graphdiv.is(':empty');
+                var imageempty = _this.imagediv.is(':empty');
+                var mapempty = _this.mapdiv.is(':empty');
+
+                // send the request if the dynamic divs are empty
+                if (imageempty) {
+                    // make the form
+                    var keys = ['plateifu', 'toggleon'];
+                    var form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
+                    _this.toggleload.show();
+
+                    $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json').done(function (data) {
+
+                        var image = data.result.image;
+                        var spaxel = data.result.spectra;
+                        var spectitle = data.result.specmsg;
+                        var maps = data.result.maps;
+                        var mapmsg = data.result.mapmsg;
+
+                        // Load the Galaxy Image
+                        _this.initOpenLayers(image);
+                        _this.toggleload.hide();
+
+                        // Try to load the spaxel
+                        if (data.result.specstatus !== -1) {
+                            _this.loadSpaxel(spaxel, spectitle);
+                        } else {
+                            _this.updateSpecMsg('Error: ' + spectitle, data.result.specstatus);
+                        }
+
+                        // Try to load the Maps
+                        if (data.result.mapstatus !== -1) {
+                            _this.initHeatmap(maps);
+                        } else {
+                            _this.updateMapMsg('Error: ' + mapmsg, data.result.mapstatus);
+                        }
+                    }).fail(function (data) {
+                        _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.specstatus);
+                        _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.mapstatus);
+                        _this.toggleload.hide();
+                    });
+                }
+            }
+        }
 
         // Toggle the interactive OpenLayers map and Dygraph spectra
+        // DEPRECATED - REMOVE
+
+    }, {
+        key: 'toggleInteract',
         value: function toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
             if (this.togglediv.hasClass('active')) {
                 // Turning Off
+                this.toggleon = false;
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
                 this.togglediv.button('reset');
                 this.dynamicdiv.hide();
                 this.staticdiv.show();
             } else {
                 // Turning On
+                this.toggleon = true;
                 this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
                 this.togglediv.button('complete');
                 this.staticdiv.hide();
@@ -327,16 +440,20 @@ var Galaxy = function () {
             var keys = ['plateifu', 'params', 'bintemp'];
             var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
             _this.mapmsg.hide();
+            $(this).button('loading');
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
                 if (data.result.status !== -1) {
+                    _this.dapmapsbut.button('reset');
                     _this.initHeatmap(data.result.maps);
                 } else {
                     _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+                    _this.dapmapsbut.button('reset');
                 }
             }).fail(function (data) {
                 _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
+                _this.dapmapsbut.button('reset');
             });
         }
     }, {
@@ -495,7 +612,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-11 15:23:38
+* @Last Modified time: 2016-11-05 15:07:00
 */
 
 'use strict';
@@ -715,11 +832,14 @@ var HeatMap = function () {
                 quantLow = 5;
                 quantHigh = 95;
             };
-            if (quantLow > 0) {
-                zQuantLow = math.quantileSeq(range, quantLow / 100);
-            }
-            if (quantHigh < 100) {
-                zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+
+            if (range.length > 0) {
+                if (quantLow > 0) {
+                    zQuantLow = math.quantileSeq(range, quantLow / 100);
+                }
+                if (quantHigh < 100) {
+                    zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+                }
             }
             return [zQuantLow, zQuantHigh];
         }

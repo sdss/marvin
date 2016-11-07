@@ -4,13 +4,15 @@
 Known Issues in Marvin
 ======================
 
-Here are a list of known issues in the latest release of Marvin.
+Here are a list of known issues in the latest release of Marvin.  If you have find an issue or bug not listed here, please let us know.
 
 FYIs
 ----
 
 Tools
 ^^^^^
+
+* **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
 API
 ^^^
@@ -36,4 +38,4 @@ API
 Web
 ^^^
 
-Additionally, see a list of Marvin Issues on the github repo here (add link)
+Additionally, see a list of Marvin Issues on the Github repo: `Issues <https://github.com/sdss/marvin/issues>`_

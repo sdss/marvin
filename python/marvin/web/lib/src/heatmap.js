@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-11 15:23:38
+* @Last Modified time: 2016-11-05 15:07:00
 */
 
 'use strict';
@@ -138,9 +138,9 @@ class HeatMap {
                 return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
         });
     }
-    
-    setColorMapHex(cmap){     
-               
+
+    setColorMapHex(cmap){
+
         var linearLabHex = ['#040404', '#0a0308', '#0d040b', '#10050e', '#120510', '#150612',
         '#160713', '#180815', '#1a0816', '#1b0918', '#1c0a19', '#1e0b1a', '#1f0c1b', '#200c1c',
         '#210d1d', '#230e1f', '#240e20', '#250f20', '#260f21', '#271022', '#281123', '#291124',
@@ -174,7 +174,7 @@ class HeatMap {
         '#f8eae0', '#f7ebe1', '#f7ece5', '#f7eee7', '#f7efe8', '#f8f0eb', '#f8f2ed', '#f7f3ef',
         '#f8f4f1', '#f8f6f4', '#f8f7f6', '#f8f8f8', '#f9f9f9', '#fbfbfb', '#fcfcfc', '#fdfdfd',
         '#fefefe', '#ffffff'];
-        
+
         var infernoHex = ['#000004', '#010005',  '#010106',  '#010108',  '#02010a',  '#02020c',
         '#02020e',  '#030210',  '#040312',  '#040314',  '#050417',  '#060419',  '#07051b',
         '#08051d',  '#09061f',  '#0a0722',  '#0b0724',  '#0c0826',  '#0d0829',  '#0e092b',
@@ -246,7 +246,7 @@ class HeatMap {
         '#991027', '#960f27', '#930e26', '#900d26', '#8d0c25', '#8a0b25', '#870a24', '#840924',
         '#810823', '#7f0823', '#7c0722', '#790622', '#760521', '#730421', '#700320', '#6d0220',
         '#6a011f', '#67001f'];
-        
+
         if (cmap === "linearLab") {
             return linearLabHex;
         } else if (cmap === "inferno") {
@@ -257,17 +257,17 @@ class HeatMap {
             return ["#000000", "#FFFFFF"];
         };
     }
-    
+
     setColorStops(cmap){
         var colorHex = this.setColorMapHex(cmap);
         var stopLocations = colorHex.length;
-        var colormap = new Array(stopLocations);    
+        var colormap = new Array(stopLocations);
         for (var ii = 0; ii < stopLocations; ii++) {
             colormap[ii] = [ii / (stopLocations - 1), colorHex[ii]];
         };
         return colormap;
     }
-    
+
     quantileClip(range){
         var quantLow, quantHigh, zQuantLow, zQuantHigh;
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
@@ -277,11 +277,14 @@ class HeatMap {
         } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
             [quantLow, quantHigh] = [5, 95];
         };
-        if (quantLow > 0) { 
-            zQuantLow = math.quantileSeq(range, quantLow / 100);
-        }
-        if (quantHigh < 100) {
-            zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+
+        if (range.length > 0) {
+            if (quantLow > 0) {
+                zQuantLow = math.quantileSeq(range, quantLow / 100);
+            }
+            if (quantHigh < 100) {
+                zQuantHigh = math.quantileSeq(range, quantHigh / 100);
+            }
         }
         return [zQuantLow, zQuantHigh]
     }
@@ -307,8 +310,8 @@ class HeatMap {
         zrange = zrange.filter(this.filterRange);
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
-        
-        
+
+
         if (this.title.toLowerCase().indexOf("vel") >= 0) {
             var cmap = "RdBu";
             // make velocity maps symmetric
