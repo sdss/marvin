@@ -340,9 +340,7 @@ class Results(object):
 
     def _makeNamedTuple(self):
         ''' '''
-        print('cols', self._params)
         ntnames = self._reduceNames(self._params, under=True)
-        print('ntnames', ntnames)
         try:
             nt = namedtuple('NamedTuple', ntnames)
         except ValueError as e:
@@ -355,8 +353,6 @@ class Results(object):
         def keys(self):
             return qpo
         nt.keys = keys
-        print('keys', keys(self))
-        print(self.results[0])
         self.results = [nt(*r) for r in self.results]
 
     def save(self, path=None, overwrite=False):
@@ -487,25 +483,26 @@ class Results(object):
     def _setupColumns(self):
         ''' Auto sets up all the column/parameter name info '''
         columns = self.getColumns()
-        print(columns)
-        self._params = self._reduceNames(columns)
-        tmp = self.mapColumnsToParams(inputs=self._params)
-        tmp = self.mapParamsToColumns(inputs=self._params)
+        redcol = self._reduceNames(columns)
+        tmp = self.mapColumnsToParams(inputs=redcol)
+        tmp = self.mapParamsToColumns(inputs=redcol)
 
     def mapColumnsToParams(self, col=None, inputs=None):
         ''' Map the columns names from results to the original parameter names '''
         columns = self.getColumns()
-        params = self._params if self.mode == 'local' else self._params
+        #params = self._params if self.mode == 'local' else self._params
+        cols = columns if not inputs else inputs
         if not self.coltoparam:
-            self.coltoparam = OrderedDict(zip(columns, params))
+            self.coltoparam = OrderedDict(zip(cols, self._params))
         return self.coltoparam[col] if col else self.coltoparam.values()
 
     def mapParamsToColumns(self, param=None, inputs=None):
         ''' Map original parameter names to the column names '''
         columns = self.getColumns()
-        params = self._params if self.mode == 'local' else self._params
+        #params = self._params if self.mode == 'local' else self._params
+        cols = columns if not inputs else inputs
         if not self.paramtocol:
-            self.paramtocol = OrderedDict(zip(params, columns))
+            self.paramtocol = OrderedDict(zip(self._params, cols))
         return self.paramtocol[param] if param else self.paramtocol.values()
 
     def getListOf(self, name=None, to_json=False):
@@ -904,7 +901,6 @@ class Results(object):
                             self._getRefName('template.name', dir='partocol')),
                             mode=self.mode) for res in self.results]
         elif tooltype == 'spaxel':
-            print(self._getRefName('cube.mangaid', dir='partocol'))
             self.objects = [Spaxel(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
                             x=res.__getattribute__(

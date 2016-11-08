@@ -1097,6 +1097,7 @@ class Query(object):
         # so as not to include all spaxels
         newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
         newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
+        self.params = newdefs
         self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
     def _parseFxn(self, fxn):

@@ -111,12 +111,12 @@ class TestQuery(MarvinTest):
         self._query_versions(mode='remote')
 
     def test_Query_drpver_and_dapver(self):
-        p = 'cube.plate==8485 and spaxelprop.emline_gflux_ha_6564>25'
+        p = 'cube.plate==8485 and emline_gflux_ha_6564>25'
         q = Query(searchfilter=p)
         r = q.run()
         tmp = r.sort('emline_gflux_ha_6564')
-        self.assertEqual(self.plate, r.getListOf('plate')[0])
-        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
+        self.assertEqual(self.plate, r.getListOf('cube.plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('cube.mangaid')[0])
         self.assertEqual(26.2344, r.getListOf('emline_gflux_ha_6564')[0])
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
@@ -126,8 +126,8 @@ class TestQuery(MarvinTest):
         p = 'cube.plate==8485 and spaxel.x > 5'
         q = Query(searchfilter=p)
         r = q.run()
-        self.assertEqual(self.plate, r.getListOf('plate')[0])
-        self.assertEqual(self.mangaid, r.getListOf('mangaid')[0])
+        self.assertEqual(self.plate, r.getListOf('cube.plate')[0])
+        self.assertEqual(self.mangaid, r.getListOf('cube.mangaid')[0])
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertNotIn('dapalias', str(q.query.whereclause))
 
@@ -191,10 +191,10 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(231, table='spaxelprop', allspax=True)
+        self._dap_query_1(244, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
-        self._dap_query_1(231, name='haflux', allspax=True)
+        self._dap_query_1(244, name='haflux', allspax=True)
 
     def test_dap_query_1_normal_clean(self):
         self._dap_query_1(231, table='spaxelprop')
