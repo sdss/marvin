@@ -13,14 +13,6 @@ To painlessly install Marvin:
 
     pip install sdss-marvin
 
-Alternatively, you can clone this git repo and run python setup install:
-
-    git clone https://github.com/sdss/marvin
-    cd marvin
-    git submodule init
-    git submodule update
-    python setup.py install
-
 If `pip install sdss-marvin` does not install Marvin's dependencies:
 
     wget https://raw.githubusercontent.com/sdss/marvin/master/requirements.txt
@@ -34,6 +26,13 @@ If you don't have `wget`, you can try:
     pip install -r requirements.txt
     pip install sdss-marvin
 
+Alternatively, you can clone this git repo and run python setup install:
+
+    git clone https://github.com/sdss/marvin
+    cd marvin
+    git submodule init
+    git submodule update
+    python setup.py install
 
 What is Marvin?
 ---------------
