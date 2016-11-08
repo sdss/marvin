@@ -192,6 +192,26 @@ class TestSpaxelInit(TestSpaxelBase):
                    template_kin='MILES-TH')
         self.assertIn('invalid template_kin', str(cm.exception))
 
+    def test_load_false(self):
+
+        spaxel = Spaxel(plateifu=self.plateifu, x=15, y=16, load=False)
+
+        self.assertFalse(spaxel.loaded)
+        self.assertTrue(spaxel.cube)
+        self.assertTrue(spaxel.maps)
+        self.assertTrue(spaxel.modelcube)
+        self.assertEqual(len(spaxel.properties), 0)
+        self.assertIsNone(spaxel.spectrum)
+
+        spaxel.load()
+
+        self.assertIsInstance(spaxel.cube, marvin.tools.cube.Cube)
+        self.assertIsInstance(spaxel.maps, marvin.tools.maps.Maps)
+
+        self.assertIsInstance(spaxel.spectrum, Spectrum)
+        self.assertTrue(len(spaxel.properties) > 0)
+        self.assertIsInstance(spaxel.properties, DictOfProperties)
+
 
 class TestPickling(TestSpaxelBase):
 
