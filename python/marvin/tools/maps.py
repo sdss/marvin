@@ -560,16 +560,19 @@ class Maps(marvin.core.core.MarvinToolsClass):
         """
 
         if self.data_origin == 'file':
-            spaxel_coords = zip(*np.where(self.data['BINID'].T == binid))
+            spaxel_coords = zip(*np.where(self.data['BINID'].data.T == binid))
 
         elif self.data_origin == 'db':
             mdb = marvin.marvindb
-            spaxel_coords = mdb.session.query(mdb.dapdb.SpaxelProp5.x,
-                                              mdb.dapdb.SpaxelProp5.y).join(mdb.dapdb.File).filter(
-                mdb.dapdb.SpaxelProp5.binid == 100,
-                mdb.dapdb.File.pk == self.data.pk).order_by(
-                    mdb.dapdb.SpaxelProp5.x,
-                    mdb.dapdb.SpaxelProp5.y).all()
+
+            if _is_MPL4(self._dapver):
+                table = mdb.dapdb.SpaxelProp
+            else:
+                table = mdb.dapdb.SpaxelProp5
+
+            spaxel_coords = mdb.session.query(table.x, table.y).join(mdb.dapdb.File).filter(
+                table.binid == binid, mdb.dapdb.File.pk == self.data.pk).order_by(
+                    table.x, table.y).all()
 
         elif self.data_origin == 'api':
             url = marvin.config.urlmap['api']['getbinspaxels']['url']
@@ -587,7 +590,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                     .format(binid, str(ee)))
 
             response = response.getData()
-            spaxel_coords = response['spaxel']
+            spaxel_coords = response['spaxels']
 
         if len(spaxel_coords) == 0:
             if only_list:

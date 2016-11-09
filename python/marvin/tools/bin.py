@@ -28,6 +28,10 @@ class Bin(object):
         self._maps, self._modelcube = self._get_dap_objects(**kwargs)
         self.binid = binid
 
+        # Drops some keyword that could make spaxel load fail.
+        kwargs.pop('bintype', None)
+        kwargs.pop('mode', None)
+
         self._load_spaxels(**kwargs)
         self._load_data(**kwargs)
 
@@ -38,19 +42,25 @@ class Bin(object):
         """Gets the Maps and ModelCube object."""
 
         try:
-            maps = Maps(**kwargs)
+            kwargs_maps = kwargs.copy()
+            kwargs_maps.pop('modelcube_filename', None)
+            kwargs_maps['filename'] = kwargs_maps.pop('maps_filename', None)
+            maps = Maps(**kwargs_maps)
         except MarvinError as ee:
             raise MarvinError('failed to open a Maps: {0}'.format(str(ee)))
 
-        self.plateifu = self._maps.plateifu
-        self.mangaid = self._maps.mangaid
+        self.plateifu = maps.plateifu
+        self.mangaid = maps.mangaid
 
         if _is_MPL4(maps._dapver):
             return maps, None
 
         try:
-            modelcube = ModelCube(**kwargs)
-        except MarvinError:
+            kwargs_modelcube = kwargs.copy()
+            kwargs_modelcube.pop('maps_filename', None)
+            kwargs_modelcube['filename'] = kwargs_modelcube.pop('modelcube_filename', None)
+            modelcube = ModelCube(**kwargs_modelcube)
+        except Exception:
             warnings.warn('cannot open a ModelCube for this combination of '
                           'parameters. Some fetures will not be available.', MarvinUserWarning)
             modelcube = False
@@ -67,11 +77,15 @@ class Bin(object):
         if len(self.spaxel_coords) == 0:
             raise MarvinError('there are no spaxels associated with binid={0}.'.format(self.binid))
         else:
+
+            if 'plateifu' not in kwargs:
+                kwargs['plateifu'] = self._maps.plateifu
+
             modelcube_for_spaxel = False if not self._modelcube else self._modelcube.get_unbinned()
-            kwargs_copy = kwargs.copy()
-            kwargs_copy.pop('bintype', None)
             self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps.get_unbinned(),
-                                   modelcube=modelcube_for_spaxel, load=load_spaxels, **kwargs_copy)
+                                   modelcube=modelcube_for_spaxel,
+                                   load=load_spaxels,
+                                   **kwargs)
                             for cc in self.spaxel_coords]
 
     def _load_data(self, **kwargs):
@@ -80,6 +94,10 @@ class Bin(object):
         assert len(self.spaxel_coords) > 0
 
         sample_coords = self.spaxel_coords[0]
+
+        if 'plateifu' not in kwargs:
+            kwargs['plateifu'] = self._maps.plateifu
+
         sample_spaxel = Spaxel(x=sample_coords[0], y=sample_coords[1],
                                cube=True, maps=self._maps, modelcube=self._modelcube,
                                load=True, allow_binned=True, **kwargs)

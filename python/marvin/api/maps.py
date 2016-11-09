@@ -191,6 +191,7 @@ class MapsView(marvin.api.base.BaseView):
 
         try:
             self.results['data'] = {}
+            self.results['data']['spaxels'] = maps.get_bin_spaxels(binid, only_list=True)
         except Exception as ee:
             self.results['error'] = ('Failed to get spaxels for binid={0}: {1}'
                                      .format(binid, str(ee)))
