@@ -22,14 +22,14 @@ class Bin(object):
     """A class to interface with a bin.
 
     This class represents a bin of spaxels in a MaNGA DAP
-    `:class:~marvin.tools.maps.Maps` or
-    `:class:~marvin.tools.modelcube.ModelCube`.
+    :class:`~marvin.tools.maps.Maps` or
+    :class:`~marvin.tools.modelcube.ModelCube`.
     By definition, a bin is identified by a ``binid`` and can correspond to a
     binned or unbinned MAPS, although in the latter case there is no formal
     difference between a bin and a spaxel.
 
     When a bin is instantiated, a list of its contituent
-    `:class:~marvin.tools.spaxel.Spaxel` is created. ``Spaxel`` objects are
+    :class:`~marvin.tools.spaxel.Spaxel` is created. ``Spaxel`` objects are
     created unloaded for efficiency, but they can be loaded by doing, for
     example for the first spaxel, ``bin.spaxels[0].load()``.
 
@@ -41,22 +41,22 @@ class Bin(object):
             The binid of the requested bin.
         extra_kwargs:
             Any other keyword parameter necessary to instantiate the
-            `:class:~marvin.tools.maps.Maps`, the
-            `:class:~marvin.tools.modelcube.ModelCube`, or the
-            `:class:~marvin.tools.spaxel.Spaxel` related to this bin. Refer to
+            :class:`~marvin.tools.maps.Maps`, the
+            :class:`~marvin.tools.modelcube.ModelCube`, or the
+            :class:`~marvin.tools.spaxel.Spaxel` related to this bin. Refer to
             the documentation of those classes for details on the available
             keywords.
 
     Attributes:
         spaxels (list):
-            A list of `:class:~marvin.tools.spaxel.Spaxel` objects that form
+            A list of :class:`~marvin.tools.spaxel.Spaxel` objects that form
             the bin. The spaxels are created unloaded.
         properties (dict):
-            Same as the `:class:~marvin.tools.maps.Maps` properties for a
+            Same as the :class:`~marvin.tools.maps.Maps` properties for a
             given spaxel, but in this case for the bin.
         modelcube_attributes:
             All the attributes derived for a given spaxel from the
-            `:class:~marvin.tools.modelcube.ModelCube`, but in this case for
+            :class:`~marvin.tools.modelcube.ModelCube`, but in this case for
             the bin. If a modelcube is not available or it is not instantiated,
             these attributes will be ``None``.
 
