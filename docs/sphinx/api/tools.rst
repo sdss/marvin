@@ -25,6 +25,17 @@ Plate
    :show-inheritance:
 
 
+.. _marvin-tools-bin:
+
+Bin
+---
+
+.. automodule:: marvin.tools.bin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. _marvin-tools-spaxel:
 
 Spaxel
@@ -77,6 +88,14 @@ Map
 ---
 
 .. automodule:: marvin.tools.map
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Model Cube
+----------
+
+.. automodule:: marvin.tools.modelcube
    :members:
    :undoc-members:
    :show-inheritance:
