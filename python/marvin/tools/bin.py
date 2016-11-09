@@ -113,3 +113,11 @@ class Bin(object):
         self.emline = sample_spaxel.emline
         self.emline_base = sample_spaxel.emline_base
         self.stellar_continuum = sample_spaxel.stellar_continuum
+
+    def load_all(self):
+        """Loads all the spaxels that for this bin."""
+
+        for spaxel in self.spaxels:
+            spaxel.load()
+
+        return
