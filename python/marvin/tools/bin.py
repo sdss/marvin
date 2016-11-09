@@ -22,6 +22,9 @@ class Bin(object):
 
     def __init__(self, binid, **kwargs):
 
+        self.plateifu = None
+        self.mangaid = None
+
         self._maps, self._modelcube = self._get_dap_objects(**kwargs)
         self.binid = binid
 
@@ -38,6 +41,9 @@ class Bin(object):
             maps = Maps(**kwargs)
         except MarvinError as ee:
             raise MarvinError('failed to open a Maps: {0}'.format(str(ee)))
+
+        self.plateifu = self._maps.plateifu
+        self.mangaid = self._maps.mangaid
 
         if _is_MPL4(maps._dapver):
             return maps, None
