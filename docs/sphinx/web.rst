@@ -131,7 +131,7 @@ The Galaxy page includes:
 Spectrum Display
 ^^^^^^^^^^^^^^^^
 
-Enable the spectrum display by clicking on the Map/Spec View box.  The spectrum display uses the
+Enable the spectrum display by toggling on the Map/Spec View box.  The spectrum display uses the
 `DyGraphs <http://dygraphs.com/>`_ javascript library.
 
 * **Select Spectrum**: Click on the image to show the spectrum of the spaxel at
@@ -157,29 +157,44 @@ Enable the spectrum display by clicking on the Map/Spec View box.  The spectrum 
 Map Display
 ^^^^^^^^^^^
 
-Enable the map display by clicking on the Map/Spec View box.  This displays a series of six maps.  Default maps are
-the six emission line gflux maps [OIId, Hb, OIII5008, NII6585, Ha, SII6718].  These maps are generated using the
+Enable the map display by toggling the red Map/Spec View box.  This displays a series of three maps by default,
+with the ability to select up to six maps.  The default maps loaded are the stellar velocity map, the Ha emission line
+flux map, and the d4000 spectral index map.  All maps are generated using the
 `HighCharts <http://www.highcharts.com/>`_ javascript library.
 
-* **Map Dropdown**: Choose up to 6 maps from the dropdown list.  Click the Get Maps button to display them.
+* **Selecting Maps**: Choose Analysis Properties and Binning-Stellar Template combinations to show.
 
-* **Bin-Template Selection**: Choose a binning and template option from the dropdown list.
+  * **Analysis Property Dropdown**: Choose up to 6 properties. *Default properties are the Halpha emission line flux (Gaussian fit), the stellar velocity, and the d4000 spectral index maps*
+  * **Binning Scheme--Stellar Template Dropdown**: Choose a binning and stellar template set combination. *Default is SPX-GAU-MILESHC (i.e., spaxel binning (i.e., no binning) with the MILESHC stellar template set).*
+  * **Get Maps**: Click to display maps.
+  * **Reset Selection**: Clear your selected Analysis Properties (Binning Scheme and Stellar Template combination will remain the same.).
 
-* **Select Spaxel**: Click on an individual Spaxel to display it in the above Spectrum Viewer.
+* **Map Color Schemes**:
 
-* **Hover**: Hover over a Spaxel to see the spaxel x and y, and the value of the map at the particular point
+  * **No Data and Bad Data**
 
-* **ColorAxis**: The color axis (right-side) is mapped to the min and max of the data series, after masked values
-  have taken into account.
+    * Grey = Values with the "NoCoverage" maskbit set, or for MPL-4, a mask value of 1.
+    * Hatched area = Values with mask bits (5,6,7,or 30) set or low S/N (S/N ratio < 1).
 
-* **Map Colors**: The map colors are defined as follows:
+  * **Color Maps**
 
-  * Grey = Values with the "NoCoverage" maskbit set, or for MPL-4, a mask value of 1.
-  * Hatched area = Values with mask bits (5,6,7,or 30) set or low S/N (S/N ratio < 1)
-  * One-Tone Blue = All maps that have all values >= 0 (e.g. emission line flux maps)
-  * Two-Tone Blue-to-Red = All maps that have a minimum value < 0 (e.g. velocity maps)
+    * CIE Lab Linear L* (Black-Green-White) = Default color map for sequential values (e.g., emission line fluxes).
+    * Inferno (Indigo-Red-White) = Alternative color map for sequential values.
+    * Blue-White-Red = Diverging color map with Blue and Red symmetrically diverging from the midpoint color White.
 
+  * **Color Axis**
 
+    * The color axes are restricted to the following percentile ranges of the unmasked data to best display the relative patterns within each map without being skewed by outliers.
+      * Velocity: 10-90th percentiles
+      * Velocity dispersion: 10-90th percentiles
+      * Emission line flux: 5-95th percentiles
+      * Other: min-max
+
+* **Hover**: Hover over a Spaxel to show its (x, y) coordinates and value (also indicated by an arrow next to the color axis).
+
+* **Show Spectrum**: Click on an individual Spaxel to display it in the above Spectrum Viewer.
+
+* **Saving a Map**: Click on the menu dropdown (three horizontal lines) just to the upper right of each map and select file format (PNG, JPG, PDF, SVG).
 
 
 
