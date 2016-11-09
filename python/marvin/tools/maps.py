@@ -16,6 +16,7 @@ import itertools
 
 import astropy.io.fits
 import astropy.wcs
+import numpy as np
 
 import marvin
 import marvin.api.api
@@ -23,6 +24,7 @@ import marvin.core.core
 import marvin.core.exceptions
 import marvin.tools.cube
 import marvin.tools.map
+import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap
 import marvin.utils.six
@@ -36,9 +38,9 @@ except ImportError:
 # The values in the bintypes dictionary for MPL-4 are the execution plan id
 # for each bintype.
 __BINTYPES_MPL4__ = {'NONE': 3, 'RADIAL': 7, 'STON': 1}
-__BINTYPES_MPL4_DEFAULT__ = 'NONE'
+__BINTYPES_MPL4_UNBINNED__ = 'NONE'
 __BINTYPES__ = ['ALL', 'NRE', 'SPX', 'VOR10']
-__BINTYPES_DEFAULT__ = 'SPX'
+__BINTYPES_UNBINNED__ = 'SPX'
 
 __TEMPLATES_KIN_MPL4__ = ['M11-STELIB-ZSOL', 'MIUSCAT-THIN', 'MILES-THIN']
 __TEMPLATES_KIN_MPL4_DEFAULT__ = 'MIUSCAT-THIN'
@@ -74,9 +76,9 @@ def _get_bintype(dapver, bintype=None):
 
     # Defines the default value depending on the version
     if _is_MPL4(dapver):
-        return __BINTYPES_MPL4_DEFAULT__
+        return __BINTYPES_MPL4_UNBINNED__
     else:
-        return __BINTYPES_DEFAULT__
+        return __BINTYPES_UNBINNED__
 
 
 def _get_template_kin(dapver, template_kin=None):
@@ -201,11 +203,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
         elif isinstance(value, marvin.utils.six.string_types):
             parsed_property = self.properties.get(value)
             if parsed_property is None:
-                raise marvin.core.MarvinError('invalid property')
+                raise marvin.core.exceptions.MarvinError('invalid property')
             maps_property, channel = parsed_property
             return self.getMap(maps_property.name, channel=channel)
         else:
-            raise marvin.core.MarvinError('invalid type for getitem.')
+            raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
 
     @staticmethod
     def _check_versions(instance):
@@ -476,7 +478,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         """
 
         kwargs['cube'] = self.cube if spectrum else False
-        kwargs['maps'] = self
+        kwargs['maps'] = self.get_unbinned()
         kwargs['modelcube'] = modelcube
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
@@ -524,3 +526,82 @@ class Maps(marvin.core.core.MarvinToolsClass):
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
 
         return map_1
+
+    def is_binned(self):
+        """Returns True if the Maps is not unbinned."""
+
+        if _is_MPL4(self._dapver):
+            return self.bintype != __BINTYPES_MPL4_UNBINNED__
+        else:
+            return self.bintype != __BINTYPES_UNBINNED__
+
+    def get_unbinned(self):
+        """Returns a version of ``self`` corresponding to the unbinned Maps."""
+
+        if _is_MPL4(self._dapver):
+            unbinned_name = __BINTYPES_MPL4_UNBINNED__
+        else:
+            unbinned_name = __BINTYPES_UNBINNED__
+
+        if self.bintype == unbinned_name:
+            return self
+        else:
+            return Maps(plateifu=self.plateifu, release=self._release, bintype=unbinned_name,
+                        template_kin=self.template_kin, template_pop=self.template_pop,
+                        mode=self.mode)
+
+    def get_bin_spaxels(self, binid, load=False, only_list=False):
+        """Returns the list of spaxels belonging to a given ``binid``.
+
+        If ``load=True``, the spaxel objects are loaded. Otherwise, they can be
+        initiated by doing ``Spaxel.load()``. If ``only_list=True``, the method
+        will return just a tuple containing the x and y coordinates of the spaxels.
+
+        """
+
+        if self.data_origin == 'file':
+            spaxel_coords = zip(*np.where(self.data['BINID'].data.T == binid))
+
+        elif self.data_origin == 'db':
+            mdb = marvin.marvindb
+
+            if _is_MPL4(self._dapver):
+                table = mdb.dapdb.SpaxelProp
+            else:
+                table = mdb.dapdb.SpaxelProp5
+
+            spaxel_coords = mdb.session.query(table.x, table.y).join(mdb.dapdb.File).filter(
+                table.binid == binid, mdb.dapdb.File.pk == self.data.pk).order_by(
+                    table.x, table.y).all()
+
+        elif self.data_origin == 'api':
+            url = marvin.config.urlmap['api']['getbinspaxels']['url']
+
+            url_full = url.format(name=self.plateifu,
+                                  bintype=self.bintype,
+                                  template_kin=self.template_kin,
+                                  binid=binid)
+
+            try:
+                response = self.ToolInteraction(url_full)
+            except Exception as ee:
+                raise marvin.core.exceptions.MarvinError(
+                    'found a problem requesting the spaxels for binid={0}: {1}'
+                    .format(binid, str(ee)))
+
+            response = response.getData()
+            spaxel_coords = response['spaxels']
+
+        if len(spaxel_coords) == 0:
+            if only_list:
+                return [(), ()]
+            else:
+                return []
+        else:
+            if only_list:
+                return tuple([tuple(cc) for cc in spaxel_coords])
+
+        spaxels = [marvin.tools.spaxel.Spaxel(x=cc[0], y=cc[1], maps=self, load=load)
+                   for cc in spaxel_coords]
+
+        return spaxels

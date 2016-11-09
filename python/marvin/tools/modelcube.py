@@ -98,7 +98,7 @@ class ModelCube(MarvinToolsClass):
         if kwargs.pop('template_pop', None):
             warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
 
-        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_DEFAULT__)
+        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_UNBINNED__)
         self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
         self.template_pop = None
 
@@ -335,8 +335,8 @@ class ModelCube(MarvinToolsClass):
         """
 
         kwargs['cube'] = self.cube if spectrum else False
-        kwargs['maps'] = self.maps if properties else False
-        kwargs['modelcube'] = self
+        kwargs['maps'] = self.maps.get_unbinned() if properties else False
+        kwargs['modelcube'] = self.get_unbinned()
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
@@ -427,3 +427,26 @@ class ModelCube(MarvinToolsClass):
                                                 release=self._release)
 
         return self._maps
+
+    def is_binned(self):
+        """Returns True if the ModelCube is not unbinned."""
+
+        if marvin.tools.maps._is_MPL4(self._dapver):
+            return self.bintype != marvin.tools.maps.__BINTYPES_MPL4_UNBINNED__
+        else:
+            return self.bintype != marvin.tools.maps.__BINTYPES_UNBINNED__
+
+    def get_unbinned(self):
+        """Returns a version of ``self`` corresponding to the unbinned ModelCube."""
+
+        if marvin.tools.maps._is_MPL4(self._dapver):
+            unbinned_name = marvin.tools.maps.__BINTYPES_MPL4_UNBINNED__
+        else:
+            unbinned_name = marvin.tools.maps.__BINTYPES_UNBINNED__
+
+        if self.bintype == unbinned_name:
+            return self
+        else:
+            return ModelCube(plateifu=self.plateifu, release=self._release, bintype=unbinned_name,
+                             template_kin=self.template_kin, template_pop=self.template_pop,
+                             mode=self.mode)

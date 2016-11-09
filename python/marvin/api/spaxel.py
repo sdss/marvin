@@ -92,9 +92,9 @@ class SpaxelView(BaseView):
 
         return json.dumps(self.results)
 
-    @route('/<name>/properties/<bintype>/<template_kin>/<x>/<y>/',
+    @route('/<name>/properties/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getProperties')
-    def properties(self, name, x, y, bintype, template_kin):
+    def properties(self, name, x, y, template_kin):
         """Returns a dictionary with the DAP properties for a spaxel.
 
         Loads a DAP Maps and uses getSpaxel to retrieve the ``(x,y)``
@@ -105,9 +105,6 @@ class SpaxelView(BaseView):
                 The ``plateifu`` or ``mangaid`` of the object.
             x,y (int):
                 The x/y coordinates of the spaxel (origin is ``lower``).
-            bintype (str):
-                The bintype associated with this model cube. If not defined,
-                the default type of binning will be used.
             template_kin (str):
                 The template_kin associated with this model cube.
                 If not defined, the default template_kin will be used.
@@ -115,7 +112,6 @@ class SpaxelView(BaseView):
         """
 
         spaxel, results = _getSpaxel(name, int(x), int(y),
-                                     bintype=bintype,
                                      template_kin=template_kin,
                                      cube=False, modelcube=False)
 
@@ -133,9 +129,9 @@ class SpaxelView(BaseView):
 
         return json.dumps(self.results)
 
-    @route('/<name>/models/<bintype>/<template_kin>/<x>/<y>/',
+    @route('/<name>/models/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getModels')
-    def getModels(self, name, x, y, bintype, template_kin):
+    def getModels(self, name, x, y, template_kin):
         """Returns a dictionary with the models for a spaxel.
 
         Loads a ModelCube and uses getSpaxel to retrieve the ``(x,y)``
@@ -146,9 +142,6 @@ class SpaxelView(BaseView):
                 The ``plateifu`` or ``mangaid`` of the object.
             x,y (int):
                 The x/y coordinates of the spaxel (origin is ``lower``).
-            bintype (str):
-                The bintype associated with this model cube. If not defined,
-                the default type of binning will be used.
             template_kin (str):
                 The template_kin associated with this model cube.
                 If not defined, the default template_kin will be used.
@@ -156,7 +149,6 @@ class SpaxelView(BaseView):
         """
 
         spaxel, results = _getSpaxel(name, x, y,
-                                     bintype=bintype,
                                      template_kin=template_kin,
                                      cube=False, maps=False)
 
