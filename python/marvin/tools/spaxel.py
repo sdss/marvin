@@ -252,6 +252,9 @@ class Spaxel(object):
     def load(self):
         """Loads the spaxel data."""
 
+        if self.loaded:
+            return
+
         self._check_cube()
         self._check_maps()
         self._check_modelcube()
