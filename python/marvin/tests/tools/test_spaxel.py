@@ -212,6 +212,16 @@ class TestSpaxelInit(TestSpaxelBase):
         self.assertTrue(len(spaxel.properties) > 0)
         self.assertIsInstance(spaxel.properties, DictOfProperties)
 
+    def test_fails_unbinned_maps(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10',
+                                      release='MPL-5')
+
+        with self.assertRaises(MarvinError) as cm:
+            Spaxel(x=15, y=16, plateifu=self.plateifu, maps=maps)
+
+        self.assertIn('cannot instantiate a Spaxel from a binned Maps.', str(cm.exception))
+
 
 class TestPickling(TestSpaxelBase):
 

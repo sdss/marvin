@@ -75,11 +75,6 @@ class Spaxel(object):
             ``Spaxel.stellar_continuum`` from the corresponding
             spaxel of the DAP modelcube that matches ``bintype``,
             ``template_kin``, and ``template_pop``.
-        bintype (str or None):
-            The binning type. For MPL-4, one of the following: ``'NONE',
-            'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
-            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
-            (defaults to ``'ALL'``).
         template_kin (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
@@ -135,7 +130,7 @@ class Spaxel(object):
 
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
-            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
+            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube',
             'template_kin', 'template_pop', 'release', 'load']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
@@ -331,12 +326,15 @@ class Spaxel(object):
             self.maps = marvin.tools.maps.Maps(filename=self.__maps_filename,
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
-                                               bintype=self.bintype,
                                                template_kin=self.template_kin,
                                                release=self._release)
         else:
             self.maps = None
             return
+
+        # Checks the bintype
+        if self.maps.is_binned():
+            raise MarvinError('cannot instantiate a Spaxel from a binned Maps.')
 
         if self.plateifu is not None:
             assert self.plateifu == self.maps.plateifu, \
@@ -375,12 +373,15 @@ class Spaxel(object):
             self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
                                                               mangaid=self.mangaid,
                                                               plateifu=self.plateifu,
-                                                              bintype=self.bintype,
                                                               template_kin=self.template_kin,
                                                               release=self._release)
         else:
             self.modelcube = None
             return
+
+        # Checks the bintype
+        if self.modelcube.is_binned():
+            raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
 
         self.bintype = self.modelcube.bintype
         self.template_kin = self.modelcube.template_kin

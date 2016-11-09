@@ -125,6 +125,19 @@ class TestMapsFile(TestMapsBase):
         self.assertIsNotNone(spaxel.spectrum)
         self.assertTrue(len(spaxel.properties.keys()) > 0)
 
+    def test_get_spaxel_binned_maps(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10',
+                                      release='MPL-5')
+        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+
+        self.assertTrue(isinstance(spaxel, marvin.tools.spaxel.Spaxel))
+        self.assertIsNotNone(spaxel.spectrum)
+        self.assertTrue(len(spaxel.properties.keys()) > 0)
+
+        self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 0.00031520479546875247)
+        self.assertEqual(spaxel.bintype, 'SPX')
+
 
 class TestMapsDB(TestMapsBase):
 
