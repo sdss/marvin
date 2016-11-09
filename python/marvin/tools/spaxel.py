@@ -39,7 +39,10 @@ class Spaxel(object):
     spectrum, the DAP maps properties, and the model spectrum from the DAP
     logcube. A ``Spaxel`` can be initialised with all or only part of that
     information, and either from a file, a database, or remotely via the
-    Marvin API.
+    Marvin API. By definition a Marvin Spaxel is expected to be unbinned, i.e.,
+    derived from a Maps and ModelCube that are unbinned themselves. For binned
+    properties use ``Bin``. This behaviour can be overridden by using the
+    ``allow_binned`` keyword.
 
     Parameters:
         x,y (int):
@@ -75,6 +78,11 @@ class Spaxel(object):
             ``Spaxel.stellar_continuum`` from the corresponding
             spaxel of the DAP modelcube that matches ``bintype``,
             ``template_kin``, and ``template_pop``.
+        bintype (str or None):
+            The binning type. For MPL-4, one of the following: ``'NONE',
+            'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
+            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
+            (defaults to ``'ALL'``). Only allowed if ``allow_binned=True.```
         template_kin (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
@@ -90,6 +98,9 @@ class Spaxel(object):
             If ``True``, the spaxel data is loaded on initialisation. Otherwise,
             only the metadata is created. The spectra and properties can be then
             loaded by calling ``Spaxel.load()``.
+        allow_binned (bool):
+            If True, allows the spaxel to be instantiated from a binned combination
+            of Maps and ModelCube.
 
     Attributes:
         spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
@@ -130,12 +141,14 @@ class Spaxel(object):
 
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
-            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube',
-            'template_kin', 'template_pop', 'release', 'load']
+            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
+            'template_kin', 'template_pop', 'release', 'load', 'allow_binned']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+
+        self.__allow_binned = kwargs.pop('allow_binned', False)
 
         self.cube = kwargs.pop('cube', True) or False
         self.maps = kwargs.pop('maps', True) or False
@@ -333,7 +346,7 @@ class Spaxel(object):
             return
 
         # Checks the bintype
-        if self.maps.is_binned():
+        if self.maps.is_binned() and self.__allow_binned is False:
             raise MarvinError('cannot instantiate a Spaxel from a binned Maps.')
 
         if self.plateifu is not None:
@@ -380,7 +393,7 @@ class Spaxel(object):
             return
 
         # Checks the bintype
-        if self.modelcube.is_binned():
+        if self.modelcube.is_binned() and self.__allow_binned is False:
             raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
 
         self.bintype = self.modelcube.bintype

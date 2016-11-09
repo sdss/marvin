@@ -61,8 +61,11 @@ class Bin(object):
         if len(self.spaxel_coords) == 0:
             raise MarvinError('there are no spaxels associated with binid={0}.'.format(self.binid))
         else:
-            self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps,
-                                   modelcube=self._modelcube, load=load_spaxels, **kwargs)
+            modelcube_for_spaxel = False if not self._modelcube else self._modelcube.get_unbinned()
+            kwargs_copy = kwargs.copy()
+            kwargs_copy.pop('bintype', None)
+            self.spaxels = [Spaxel(x=cc[0], y=cc[1], cube=True, maps=self._maps.get_unbinned(),
+                                   modelcube=modelcube_for_spaxel, load=load_spaxels, **kwargs_copy)
                             for cc in self.spaxel_coords]
 
     def _load_data(self, **kwargs):
@@ -73,7 +76,7 @@ class Bin(object):
         sample_coords = self.spaxel_coords[0]
         sample_spaxel = Spaxel(x=sample_coords[0], y=sample_coords[1],
                                cube=True, maps=self._maps, modelcube=self._modelcube,
-                               load=True, **kwargs)
+                               load=True, allow_binned=True, **kwargs)
 
         self.specres = sample_spaxel.specres
         self.specresd = sample_spaxel.specresd
