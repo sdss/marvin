@@ -66,5 +66,5 @@ class AnalysisProperty(object):
 
     def __repr__(self):
 
-        return ('<AnalysisProperty ({0.name}, {0.channel}, value={0.value} '
+        return ('<AnalysisProperty (name={0.name}, channels={0.channel}, value={0.value} '
                 'ivar={0.ivar}, mask={0.mask})>'.format(self))
