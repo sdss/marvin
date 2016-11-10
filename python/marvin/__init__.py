@@ -388,3 +388,13 @@ from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
+
+
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    dist = get_distribution('sdss-marvin')
+except DistributionNotFound:
+    __version__ = 'Please install this project with setup.py'
+else:
+    __version__ = dist.version
