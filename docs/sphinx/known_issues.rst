@@ -38,5 +38,10 @@ Tools
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
+Web
+^^^
+
+* **Autocomplete Galaxy ID list** - Upon intitial page load, this may initially crash and fail to load a list.  A list of possible ids should
+appear after navigating to a new page.
 
 Additionally, see a list of Marvin Issues on the Github repo: `Issues <https://github.com/sdss/marvin/issues>`_
