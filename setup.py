@@ -38,11 +38,11 @@ data_files.append('../marvin/db/dbconfig.ini')
 
 
 requirements_file = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-install_requires = [line.strip() for line in open(requirements_file)
+install_requires = [line.strip().replace('==', '>=') for line in open(requirements_file)
                     if not line.strip().startswith('#') and line.strip() != '']
 
 NAME = 'sdss-marvin'
-VERSION = '2.0b0'
+VERSION = '1.99.1'
 
 setup(name=NAME,
       version=VERSION,
