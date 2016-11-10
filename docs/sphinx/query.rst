@@ -191,7 +191,6 @@ Restoring is a Marvin Query class method.  That means you run it from the class 
     newq.searchfilter
     'sersic_logmass >= 9.5 and sersic_logmass < 11 and sersic_n < 2'
 
-
 End
 
 

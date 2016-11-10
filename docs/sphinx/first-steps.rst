@@ -124,6 +124,13 @@ Now let's play with a Marvin Query
     r.totalcount
     151
 
+    # How long did my query take?
+    r.query_runtime
+    datetime.timedelta(0, 0, 204274)  # a Python datetime timedelta object (days, seconds, microseconds)
+    # see total seconds
+    r.query_runtime.total_seconds()
+    0.204274
+
     # Results are returned in chunks of 10 by default
     r.results
     [NamedTuple(mangaid=u'1-22438', plate=7992, name=u'1901', z=0.016383046284318),

@@ -847,7 +847,7 @@ class Results(object):
         self.results = self.query.all()
         return self.results
 
-    def convertToTool(self, tooltype=None):
+    def convertToTool(self, tooltype=None, limit=None):
         ''' Converts the list of results into Marvin Tool objects
 
             Creates a list of Marvin Tool objects from a set of query results.
@@ -860,6 +860,9 @@ class Results(object):
                     The requested Marvin Tool object that the results are converted into.
                     Overrides the returntype parameter.  If not set, defaults
                     to the returntype parameter.
+                limit (int):
+                    Limit the number of results you convert to Marvin tools.  Useful
+                    for extremely large result sets.  Default is None.
 
             Example:
                 >>> # Get the results from some query
@@ -891,7 +894,7 @@ class Results(object):
         if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
-                            mode=self.mode) for res in self.results]
+                            mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
             self.objects = [Maps(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
@@ -899,7 +902,7 @@ class Results(object):
                             self._getRefName('bintype.name', dir='partocol')),
                             template_kin=res.__getattribute__(
                             self._getRefName('template.name', dir='partocol')),
-                            mode=self.mode) for res in self.results]
+                            mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'spaxel':
             self.objects = [Spaxel(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
@@ -907,11 +910,11 @@ class Results(object):
                             self._getRefName('spaxelprop.x', dir='partocol')),
                             y=res.__getattribute__(
                             self._getRefName('spaxelprop.y', dir='partocol')))
-                            for res in self.results]
+                            for res in self.results[0:limit]]
         elif tooltype == 'rss':
             self.objects = [RSS(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
-                            mode=self.mode) for res in self.results]
+                            mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
             self.objects = [ModelCube(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid', dir='partocol')),
@@ -919,4 +922,4 @@ class Results(object):
                             self._getRefName('bintype.name', dir='partocol')),
                             template_kin=res.__getattribute__(
                             self._getRefName('template.name', dir='partocol')),
-                            mode=self.mode) for res in self.results]
+                            mode=self.mode) for res in self.results[0:limit]]

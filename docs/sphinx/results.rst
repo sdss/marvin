@@ -301,11 +301,16 @@ You can convert your results to a variety of forms.
 
 To Marvin Tool
 ^^^^^^^^^^^^^^
-You can convert directly to Marvin Tools objects.  Available objects are Cube, Spaxel, RSS, and MAPS.  To successfully convert to
+You can convert directly to Marvin Tools objects.  Available objects are Cube, Spaxel, RSS, Maps, ModelCube.  To successfully convert to
 a particular Marvin object, the results must contain the minimum default information needed to uniquely create that object.  The new
-Tools are stored in a separate Results attribute called 'objects'.
+Tools are stored in a separate Results attribute called **objects**.
 
-For example, a Cube object needs at least a plate-IFU, or manga-id.  A Spaxel needs a plate-IFU or manga-ID, and a X and Y position.
+Conversion names: 'cube', 'maps', 'spaxel', 'rss', 'modelcube'
+
+Minimum Default Parameters:
+ * Cube and RSS objects: needs at least a mangaid.
+ * Spaxel object: needs a mangaID, and a X and Y position.
+ * Maps and ModelCube objects: need a mangaid, a bintype, and a template
 
 .. code-block:: python
 
@@ -325,6 +330,7 @@ For example, a Cube object needs at least a plate-IFU, or manga-id.  A Spaxel ne
      <Marvin Cube (plateifu='7995-1901', mode='remote', data_origin='api')>,
      <Marvin Cube (plateifu='7995-1902', mode='remote', data_origin='api')>,
      <Marvin Cube (plateifu='8000-1901', mode='remote', data_origin='api')>]
+
 
 To Astropy Table
 ^^^^^^^^^^^^^^^^

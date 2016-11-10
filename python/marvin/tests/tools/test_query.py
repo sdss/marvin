@@ -271,6 +271,17 @@ class TestQuery(MarvinTest):
     def test_query_returntype_cube(self):
         self._query_return_type(rt='cube')
 
+    def test_results_returntype_cube_limit(self):
+        config.setMPL('MPL-5')
+        p = 'haflux > 25'
+        q = Query(searchfilter=p)
+        r = q.run()
+        r.convertToTool('cube', limit=5)
+        self.assertIsNotNone(r.objects)
+        self.assertEqual(18, r.count)
+        self.assertEqual(5, len(r.objects))
+        self.assertEqual(True, isinstance(r.objects[0], Cube))
+
     def test_query_returntype_cube_remote(self):
         self._query_return_type(rt='cube', mode='remote')
 
