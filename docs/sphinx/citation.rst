@@ -8,7 +8,7 @@ Acknowledging and Citing Marvin
 
 In Publications
 ^^^^^^^^^^^^^^^
-`GNU Modules <http://modules.sourceforge.net>`_
+
 If you use Marvin for work/research presented in a publication (whether directly, or as a dependency to another package), we ask that you cite the `Marvin Software <https://zenodo.org/record/166031>`_. We provide the following as a standard acknowledgment you can use if there is not a specific place to cite the DOI:
 
     *This research made use of Marvin, a core Python package and web framework for MaNGA data, developed by Brian Cherinka,
