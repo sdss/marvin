@@ -25,6 +25,7 @@ Web
 
 * **Point-and-Click Model Fits** - On the individual galaxy page, the modelfits shown in the point-and-click display is from the unbinned MODELCUBE FITS files, i.e. SPX-MILESHC.
 * **Dynamic DAP Maps** - For the DAP map display on the individual galaxy page, you can only choose one binning-template option for all the selected maps.
+* **MPL-3 and below** - Marvin web does not yet fully support loading of Cubes from MPL-3 and below.
 
 
 Bugs
