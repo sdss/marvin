@@ -20,9 +20,6 @@ Tools
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
-API
-^^^
-
 Web
 ^^^
 
@@ -40,10 +37,5 @@ Tools
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
-API
-^^^
-
-Web
-^^^
 
 Additionally, see a list of Marvin Issues on the Github repo: `Issues <https://github.com/sdss/marvin/issues>`_
