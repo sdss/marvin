@@ -227,7 +227,7 @@ class Results(object):
                 >>>  (u'4-3988', u'1901', -9999.0),
                 >>>  (u'4-4602', u'1901', -9999.0)]
         '''
-        refname = self._getRefName(name, dir='partocol')
+        refname = self._getRefName(name)
         self.sortcol = refname
         self.order = order
 
@@ -492,18 +492,26 @@ class Results(object):
         columns = self.getColumns()
         #params = self._params if self.mode == 'local' else self._params
         cols = columns if not inputs else inputs
-        if not self.coltoparam:
-            self.coltoparam = OrderedDict(zip(cols, self._params))
-        return self.coltoparam[col] if col else self.coltoparam.values()
+        if cols:
+            if not self.coltoparam:
+                self.coltoparam = OrderedDict(zip(cols, self._params))
+            mapping = self.coltoparam[col] if col else self.coltoparam.values()
+        else:
+            mapping = None
+        return mapping
 
     def mapParamsToColumns(self, param=None, inputs=None):
         ''' Map original parameter names to the column names '''
         columns = self.getColumns()
         #params = self._params if self.mode == 'local' else self._params
         cols = columns if not inputs else inputs
-        if not self.paramtocol:
-            self.paramtocol = OrderedDict(zip(self._params, cols))
-        return self.paramtocol[param] if param else self.paramtocol.values()
+        if cols:
+            if not self.paramtocol:
+                self.paramtocol = OrderedDict(zip(self._params, cols))
+            mapping = self.paramtocol[param] if param else self.paramtocol.values()
+        else:
+            mapping = None
+        return mapping
 
     def getListOf(self, name=None, to_json=False):
         ''' Extract a list of a single parameter from results
@@ -532,7 +540,7 @@ class Results(object):
         assert name, 'Must specify a column name'
 
         # get reference name
-        refname = self._getRefName(name, dir='partocol')
+        refname = self._getRefName(name)
         if not refname:
             raise MarvinError('Name {0} not a property in results.  Try another.'.format(refname))
 
@@ -596,24 +604,30 @@ class Results(object):
         tmp = self.mapColumnsToParams()
         tmp = self.mapParamsToColumns()
 
+        if self.mode == 'local':
+            lookup = OrderedDict(zip(keys, keys))
+        elif self.mode == 'remote':
+            lookup = self.coltoparam
+
         # Format results
         if format_type == 'listdict':
-            output = [{self.coltoparam[k]: res.__getattribute__(k) for k in keys} for res in self.results]
+            output = [{lookup[k]: res.__getattribute__(k) for k in keys} for res in self.results]
         elif format_type == 'dictlist':
-            output = {self.coltoparam[k]: [res.__getattribute__(k) for res in self.results] for k in keys}
+            output = {lookup[k]: [res.__getattribute__(k) for res in self.results] for k in keys}
         else:
             raise MarvinError('No output.  Check your input format_type.')
 
         # Test if name is in results
         if name:
-            refname = self._getRefName(name, dir='coltopar')
-
+            refname = self._getRefName(name)
+            print('refname', refname)
             if refname:
                 # Format results
+                newname = lookup[refname]
                 if format_type == 'listdict':
-                    output = [{refname: i[refname]} for i in output]
+                    output = [{newname: i[newname]} for i in output]
                 elif format_type == 'dictlist':
-                    output = output[refname]
+                    output = {newname: output[newname]}
                 else:
                     output = None
             else:
@@ -624,21 +638,24 @@ class Results(object):
 
         return output
 
-    def _getRefName(self, name, dir='coltopar'):
-        ''' Get the appropriate reference column / parameter name '''
-        assert dir in ['coltopar', 'partocol'], 'Reference direction can only be coltopar or partocol'
-        keys = self.getColumns()
-        pars = self.mapColumnsToParams()
-        tmp = self.mapParamsToColumns()
-        nameinkeys = name in keys if keys and name else None
-        nameinpars = name in pars if pars and name else None
+    def _getRefName(self, name):
+        ''' Get the appropriate reference column / parameter name
 
-        if dir == 'coltopar':
-            # coltopar - convert column names to parameter names
-            refname = self.coltoparam[name] if nameinkeys else name if nameinpars else None
-        elif dir == 'partocol':
-            # partocol - convert parameter names to column names
-            refname = name if nameinkeys else self.paramtocol[name] if nameinpars else None
+        This converts an input name into the respective column name
+        '''
+        cols = self.getColumns()
+
+        if name in cols:
+            # name already in the list of column names
+            refname = name
+        else:
+            if not self.coltoparam:
+                pars = self.mapColumnsToParams()
+            if not self.paramtocol:
+                tmp = self.mapParamsToColumns()
+
+            refname = self.coltoparam[name] if name in self.coltoparam else \
+                self.paramtocol[name] if name in self.paramtocol else None
 
         return refname
 
@@ -893,33 +910,33 @@ class Results(object):
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid', dir='partocol')),
+                            self._getRefName('cube.mangaid')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
             self.objects = [Maps(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid', dir='partocol')),
+                            self._getRefName('cube.mangaid')),
                             bintype=res.__getattribute__(
-                            self._getRefName('bintype.name', dir='partocol')),
+                            self._getRefName('bintype.name')),
                             template_kin=res.__getattribute__(
-                            self._getRefName('template.name', dir='partocol')),
+                            self._getRefName('template.name')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'spaxel':
             self.objects = [Spaxel(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid', dir='partocol')),
+                            self._getRefName('cube.mangaid')),
                             x=res.__getattribute__(
-                            self._getRefName('spaxelprop.x', dir='partocol')),
+                            self._getRefName('spaxelprop.x')),
                             y=res.__getattribute__(
-                            self._getRefName('spaxelprop.y', dir='partocol')))
+                            self._getRefName('spaxelprop.y')))
                             for res in self.results[0:limit]]
         elif tooltype == 'rss':
             self.objects = [RSS(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid', dir='partocol')),
+                            self._getRefName('cube.mangaid')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
             self.objects = [ModelCube(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid', dir='partocol')),
+                            self._getRefName('cube.mangaid')),
                             bintype=res.__getattribute__(
-                            self._getRefName('bintype.name', dir='partocol')),
+                            self._getRefName('bintype.name')),
                             template_kin=res.__getattribute__(
-                            self._getRefName('template.name', dir='partocol')),
+                            self._getRefName('template.name')),
                             mode=self.mode) for res in self.results[0:limit]]
