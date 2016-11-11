@@ -27,5 +27,5 @@ Flask-RESTful==0.3.5
 Flask-SQLAlchemy==2.1
 raven==5.24.2
 pgpasslib==1.1.0
-psycopg2==2.6.2
+# psycopg2==2.6.2
 PyYAML==3.11

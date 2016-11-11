@@ -49,6 +49,9 @@ class MarvinDB(object):
         except RuntimeError as e:
             print('RuntimeError raised: Problem importing db: {0}'.format(e))
             self.db = None
+        except ImportError as e:
+            print('ImportError raised: Problem importing db: {0}'.format(e))
+            self.db = None
         else:
             self.db = db
 
