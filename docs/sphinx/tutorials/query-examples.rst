@@ -20,6 +20,10 @@ Return Galaxies
 
     ifu.name = 127*
 
+...with g-r color < 0.2::
+
+    g_r < 0.2
+
 ...with Halpha flux > 25 in more than 20% of their good spaxels::
 
     npergood(emline_gflux_ha_6564 > 25) >= 20
