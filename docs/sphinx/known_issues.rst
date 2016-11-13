@@ -20,6 +20,8 @@ Tools
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
+* **getAperture** - `Cube.getAperture()` is currently broken due to a change in `photutils`. This will be fixed and improved in a future version.
+
 Web
 ^^^
 
