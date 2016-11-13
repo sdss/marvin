@@ -333,7 +333,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if self.bintype != header_bintype:
             self.bintype = header_bintype
 
-
         if self.template_kin != header_template_kin:
             self.template_kin = header_template_kin
 
