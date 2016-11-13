@@ -87,7 +87,6 @@ class Bin(object):
             kwargs_maps = kwargs.copy()
             kwargs_maps.pop('modelcube_filename', None)
             kwargs_maps['filename'] = kwargs_maps.pop('maps_filename', None)
-            print(kwargs_maps)
             maps = Maps(**kwargs_maps)
         except MarvinError as ee:
             raise MarvinError('failed to open a Maps: {0}'.format(str(ee)))
