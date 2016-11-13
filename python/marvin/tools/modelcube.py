@@ -85,6 +85,13 @@ class ModelCube(MarvinToolsClass):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
+        if kwargs.pop('template_pop', None):
+            warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
+
+        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_UNBINNED__)
+        self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
+        self.template_pop = None
+
         super(ModelCube, self).__init__(*args, **kwargs)
 
         # Checks that DAP is at least MPL-5
@@ -94,13 +101,6 @@ class ModelCube(MarvinToolsClass):
 
         self._cube = kwargs.pop('cube', None)
         self._maps = kwargs.pop('maps', None)
-
-        if kwargs.pop('template_pop', None):
-            warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
-
-        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_UNBINNED__)
-        self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
-        self.template_pop = None
 
         assert self.bintype in marvin.tools.maps.__BINTYPES__, \
             'bintype must be on of {0}'.format(marvin.tools.maps.__BINTYPES__)

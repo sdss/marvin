@@ -87,6 +87,7 @@ class Bin(object):
             kwargs_maps = kwargs.copy()
             kwargs_maps.pop('modelcube_filename', None)
             kwargs_maps['filename'] = kwargs_maps.pop('maps_filename', None)
+            print(kwargs_maps)
             maps = Maps(**kwargs_maps)
         except MarvinError as ee:
             raise MarvinError('failed to open a Maps: {0}'.format(str(ee)))
@@ -101,6 +102,8 @@ class Bin(object):
             kwargs_modelcube = kwargs.copy()
             kwargs_modelcube.pop('maps_filename', None)
             kwargs_modelcube['filename'] = kwargs_modelcube.pop('modelcube_filename', None)
+            kwargs_modelcube['plateifu'] = (self.plateifu if kwargs_modelcube['filename'] is None
+                                            else None)
             modelcube = ModelCube(**kwargs_modelcube)
         except Exception:
             warnings.warn('cannot open a ModelCube for this combination of '

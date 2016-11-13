@@ -159,12 +159,18 @@ class Maps(marvin.core.core.MarvinToolsClass):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
+        # For now, we set bintype and template_kin to the kwarg values, so that
+        # they can be used by getFullPath.
+        self.bintype = kwargs.get('bintype', None)
+        self.template_kin = kwargs.get('template_kin', None)
+
         super(Maps, self).__init__(*args, **kwargs)
 
         if kwargs.pop('template_pop', None):
             warnings.warn('template_pop is not yet in use. Ignoring value.',
                           marvin.core.exceptions.MarvinUserWarning)
 
+        # We set the bintype  and template_kin again, now using the DAP version
         self.bintype = _get_bintype(self._dapver, bintype=kwargs.pop('bintype', None))
         self.template_kin = _get_template_kin(self._dapver,
                                               template_kin=kwargs.pop('template_kin', None))
@@ -263,14 +269,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         plate, ifu = self.plateifu.split('-')
 
+        bintype = _get_bintype(self._dapver, bintype=self.bintype)
+        template_kin = _get_template_kin(self._dapver, template_kin=self.template_kin)
+
         if _is_MPL4(self._dapver):
-            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template_kin),
-                                        __BINTYPES_MPL4__[self.bintype]))
+            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(template_kin),
+                                        __BINTYPES_MPL4__[bintype]))
             params = dict(drpver=self._drpver, dapver=self._dapver,
-                          plate=plate, ifu=ifu, bintype=self.bintype, n=niter,
+                          plate=plate, ifu=ifu, bintype=bintype, n=niter,
                           path_type='mangamap')
         else:
-            daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
+            daptype = '{0}-{1}'.format(bintype, template_kin)
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
                           path_type='mangadap5')
