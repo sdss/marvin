@@ -324,11 +324,15 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         # Checks the bintype and template_kin from the header
         header_bintype = self.data[0].header['BINTYPE'].strip().upper()
+        if header_bintype == 'NONE' and not _is_MPL4(self._dapver):
+            header_bintype = 'SPX'
+
         header_template_kin_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
         header_template_kin = self.data[0].header[header_template_kin_key].strip().upper()
 
         if self.bintype != header_bintype:
             self.bintype = header_bintype
+
 
         if self.template_kin != header_template_kin:
             self.template_kin = header_template_kin
