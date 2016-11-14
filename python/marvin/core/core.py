@@ -127,12 +127,13 @@ class MarvinToolsClass(object):
 
             dbStatus = testDbConnection(marvin.marvindb.session)
 
-            if dbStatus['good']:
+            if marvin.marvindb.db:
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:
-                warnings.warn('DB connection failed with error: {0}.'.format(dbStatus['error']),
-                              MarvinUserWarning)
+                # TODO - fix verbosity later, check for more advanced db failures
+                #warnings.warn('DB connection failed with error: {0}.'.format(dbStatus['error']),
+                #              MarvinUserWarning)
 
                 fullpath = self._getFullPath()
 
