@@ -151,7 +151,7 @@ class MapsView(marvin.api.base.BaseView):
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist()
-            self.results['data']['mask'] = mmap.ivar.tolist()
+            self.results['data']['mask'] = mmap.mask.tolist()
             self.results['data']['unit'] = mmap.unit
             self.results['data']['header'] = {key: mmap.header[key] for key in mmap.header}
         except Exception as ee:
