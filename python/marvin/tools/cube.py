@@ -61,7 +61,7 @@ class Cube(MarvinToolsClass):
     def __init__(self, *args, **kwargs):
 
         valid_kwargs = [
-            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'release']
+            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'release', 'drpall']
 
         assert len(args) == 0, 'Cube does not accept arguments, only keywords.'
         for kw in kwargs:
