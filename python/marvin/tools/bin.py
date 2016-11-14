@@ -78,7 +78,9 @@ class Bin(object):
         self._load_data(**kwargs)
 
     def __repr__(self):
-        return '<Marvin Bin (binid={0}, n_spaxels={1})>'.format(self.binid, len(self.spaxels))
+        return ('<Marvin Bin (binid={0}, n_spaxels={1}, bintype={2}, template_kin={3})>'
+                .format(self.binid, len(self.spaxels), self._maps.bintype,
+                        self._maps.template_kin))
 
     def _get_dap_objects(self, **kwargs):
         """Gets the Maps and ModelCube object."""
