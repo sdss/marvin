@@ -127,9 +127,10 @@ class ModelCube(MarvinToolsClass):
     def __repr__(self):
         """Representation for ModelCube."""
 
-        return ('<Marvin ModelCube (plateifu={0}, mode={1}, data_origin={2})>'
+        return ('<Marvin ModelCube (plateifu={0}, mode={1}, data_origin={2}, bintype={3}, '
+                'template_kin={4})>'
                 .format(repr(self.plateifu), repr(self.mode),
-                        repr(self.data_origin)))
+                        repr(self.data_origin), repr(self.bintype), repr(self.template_kin)))
 
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
