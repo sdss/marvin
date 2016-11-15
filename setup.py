@@ -13,10 +13,21 @@
 
 from setuptools import setup, find_packages
 import os
+import warnings
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
+def convert_md_to_rst(fp):
+    try:
+        import pypandoc
+        output = pypandoc.convert_file(fp, 'rst')
+        return output
+    except ImportError:
+        warnings.warn('cannot import pypandoc.', UserWarning)
+        return open(fp).read()
 
 
 data_files = []
@@ -50,7 +61,7 @@ setup(name=NAME,
       version=VERSION,
       license='BSD3',
       description='Toolsuite for dealing with the MaNGA dataset',
-      long_description=read('README.md'),
+      long_description=convert_md_to_rst('README.md'),
       author='The Marvin Developers',
       author_email='havok2063@hotmail.com',
       keywords='marvin manga astronomy MaNGA',
