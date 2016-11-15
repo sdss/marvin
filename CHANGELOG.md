@@ -3,6 +3,7 @@
 ## [2.0.5] - not yet released
 ### Added:
 - Added netrc configuration to installation documentation.
+- Added netrc check on init.
 
 ### Fixed:
 - Added mask to model spaxel.
