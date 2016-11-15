@@ -654,7 +654,7 @@ class Spaxel(object):
             hdus = self.modelcube.data
             flux_array = hdus['FLUX'].data[:, self.y, self.x]
             flux_ivar = hdus['IVAR'].data[:, self.y, self.x]
-            flux_mask = hdus['MASK'].data[:, self.y, self.x]
+            mask = hdus['MASK'].data[:, self.y, self.x]
             model_array = hdus['MODEL'].data[:, self.y, self.x]
             model_emline = hdus['EMLINE'].data[:, self.y, self.x]
             model_emline_base = hdus['EMLINE_BASE'].data[:, self.y, self.x]
@@ -678,7 +678,7 @@ class Spaxel(object):
 
             flux_array = modelcube_db_spaxel.flux
             flux_ivar = modelcube_db_spaxel.ivar
-            flux_mask = modelcube_db_spaxel.mask
+            mask = modelcube_db_spaxel.mask
             model_array = modelcube_db_spaxel.model
             model_emline = modelcube_db_spaxel.emline
             model_emline_base = modelcube_db_spaxel.emline_base
@@ -704,7 +704,7 @@ class Spaxel(object):
 
             flux_array = np.array(data['flux_array'])
             flux_ivar = np.array(data['flux_ivar'])
-            flux_mask = np.array(data['flux_mask'])
+            mask = np.array(data['flux_mask'])
             model_array = np.array(data['model_array'])
             model_emline = np.array(data['model_emline'])
             model_emline_base = np.array(data['model_emline_base'])
@@ -721,12 +721,13 @@ class Spaxel(object):
                                    wavelength=self.modelcube.wavelength,
                                    wavelength_unit='Angstrom',
                                    ivar=flux_ivar,
-                                   mask=flux_mask)
+                                   mask=mask)
 
         self.model = Spectrum(model_array,
                               units='1E-17 erg/s/cm^2/Ang/spaxel',
                               wavelength=self.modelcube.wavelength,
-                              wavelength_unit='Angstrom')
+                              wavelength_unit='Angstrom',
+                              mask=mask)
 
         self.emline = Spectrum(model_emline,
                                units='1E-17 erg/s/cm^2/Ang/spaxel',
