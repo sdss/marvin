@@ -229,6 +229,8 @@ class Cube(MarvinToolsClass):
                 if len(nsaobjs) > 1:
                     warnings.warn('more than one NSA target found for this cube.',
                                   MarvinUserWarning)
+                elif not nsaobjs:
+                    warnings.warn('no NSA target found for this cube', MarvinUserWarning)
                 else:
                     self.redshift = nsaobjs[0].z
 
