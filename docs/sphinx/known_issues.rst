@@ -14,13 +14,13 @@ Tools
 
 * **Python 3 compatibility** - Marvin should be generally compatible with Python 3 but beware that at this point we have not run systematic tests to confirm it. It is our intention, however, to make Marvin totally Python 3 compatible as soon as possible and we will appreciate users reporting issues and problems that they found while using Marvin with Python 3 (in this case, please remember to specify the version of Python 3 you were using).
 
-* **Coordinates** - Although we have made significant effort to test them, spaxel selection from coordinates (both indices and spherical) should not be considered science-grade yet. +/- 1 pixel offsets around the real position position are not unexpected, and the behaviour of ``getSpaxel`` may not be consistent in all access mode (file vs API). This is especially true in case of spaxel indices measured from the centre of the cube. When doing science analysis on the data please be careful and, if possible, double check the retrieved values independently. If you find any discrepancy between the values retreived and the ones you expect, `file and issue <https://github.com/sdss/marvin/issues>`_.
+* **Coordinates** - Although we have made significant effort to test them, spaxel selection from coordinates (both indices and spherical) should not be considered science-grade yet. +/- 1 pixel offsets around the real position position are not unexpected, and the behaviour of :func:`~marvin.tools.cube.Cube.getSpaxel()` may not be consistent in all access mode (file vs API). This is especially true in case of spaxel indices measured from the centre of the cube. When doing science analysis on the data please be careful and, if possible, double check the retrieved values independently. If you find any discrepancy between the values retreived and the ones you expect, `file and issue <https://github.com/sdss/marvin/issues>`_.
 
 * **Ivar propagation in ratio maps** - Inverse variation propagation in the ratio maps may be incorrect and should be checked carefully before using them for any science-grade purpose.
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
-* **getAperture** - `Cube.getAperture()` is currently broken due to a change in `photutils`. This will be fixed and improved in a future version.
+* **getAperture** - :func:`~marvin.tools.cube.Cube.getAperture()` is currently broken due to a change in ``photutils``. This will be fixed and improved in a future version.
 
 Web
 ^^^
