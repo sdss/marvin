@@ -153,7 +153,13 @@ class ParamFormLookupDict(dict):
             keySplits = self._apply_shortcuts(key)
             matches = self._get_matches(keySplits)
             matches = self._check_for_junk(matches)
-            key = matches[0]
+            if len(matches) == 0:
+                raise KeyError('{0} does not match any column.'.format(key))
+            elif len(matches) == 1:
+                key = matches[0]
+            else:
+                raise KeyError('{0} matches multiple parameters \
+                    in the lookup table: {1}'.format(key, ', '.join(matches)))
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))
