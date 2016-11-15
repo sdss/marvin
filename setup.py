@@ -35,6 +35,8 @@ add_data_file('python/marvin/web/static/')
 add_data_file('python/marvin/web/templates/')
 add_data_file('python/marvin/web/uwsgi_conf_files/')
 data_files.append('../marvin/db/dbconfig.ini')
+data_files.append('../../requirements.txt')
+data_files.append('../../README.md')
 
 
 requirements_file = os.path.join(os.path.dirname(__file__), 'requirements.txt')
