@@ -6,6 +6,9 @@
 
 ### Fixed:
 - Added mask to model spaxel.
+- Bug in Cube tool when a galaxy loaded from db does not have NSA info; no failure with redshift
+- Two bugs in index.py on KeyErrors: Sentry issues 181369719,181012809
+- Bug on plate web page preventing meta-data from rendering
 
 ## [The dark ages] - multiple versions not logged.
 
