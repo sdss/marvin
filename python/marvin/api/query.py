@@ -1,10 +1,10 @@
 import json
 from flask_classy import route
 from flask import request
-from brain.api.query import BrainQueryView
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api import parse_params
+from marvin.api.base import BaseView
 
 
 def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
@@ -13,8 +13,12 @@ def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
 
     release = parse_params(request)
 
-    q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
-                   mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+    try:
+        q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
+                       mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+    except Exception as e:
+        raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
+
     results = r.results
 
     # get a subset
@@ -30,17 +34,16 @@ def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
     return output
 
 
-class QueryView(BrainQueryView):
+class QueryView(BaseView):
     """Class describing API calls related to queries.
 
     example query post:
     curl -X POST --data "searchfilter=nsa_redshift<0.1" http://sas.sdss.org/marvin2/api/query/cubes/
     """
 
-    def __init__(self):
-        self._limit = 100
-        self._order = 'asc'
-        self.results = {}
+    def index(self):
+        self.results['data'] = 'this is a query!'
+        return json.dumps(self.results)
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     def cube_query(self):
@@ -52,7 +55,7 @@ class QueryView(BrainQueryView):
         sort = self.results['inconfig'].get('sort', None)
         order = self.results['inconfig'].get('order', 'asc')
         print('inconfig', self.results['inconfig'])
-        print('cube_query', searchfilter, params, self._limit)
+        print('cube_query', searchfilter, params, limit)
         try:
             res = _getCubes(searchfilter, params=params, rettype=rettype,
                             limit=limit, sort=sort, order=order)
