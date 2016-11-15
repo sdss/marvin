@@ -4,7 +4,7 @@ Marvin is the ultimate tool to visualise and analyse MaNGA data. It is developed
 [![Build Status](https://travis-ci.org/sdss/marvin.svg?branch=master)](https://travis-ci.org/sdss/marvin)
 [![Coverage Status](https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master)](https://coveralls.io/github/sdss/marvin?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/sdss-marvin.svg)](https://pypi.python.org/pypi/sdss-marvin)
-[![PyPI](https://img.shields.io/pypi/dm/sdss-marvin.svg)](https://pypi.python.org/pypi/sdss-marvin)
+[![PyPI_download](https://img.shields.io/pypi/dm/sdss-marvin.svg)](https://pypi.python.org/pypi/sdss-marvin)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.166414.svg)](https://doi.org/10.5281/zenodo.166414)
 
 Installation
