@@ -1,6 +1,15 @@
 # Marvin's Change Log
 
-## [1.90.0] - not yet released
+## [2.0.5] - not yet released
+### Added:
+- Added netrc configuration to installation documentation.
+
+### Fixed:
+- Added mask to model spaxel.
+
+## [The dark ages] - multiple versions not logged.
+
+## [1.90.0]
 ### Changed
 - Full refactoring of Marvin 1.0
 - Refactored web
