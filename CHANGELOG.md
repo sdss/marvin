@@ -12,6 +12,7 @@
 - Bug on plate web page preventing meta-data from rendering
 - Fixed installation in Python 3.
 - Fixed long_description in setup.py to work with PyPI.
+- Fixed a problem that made marvin always use the modules in extern
 
 ## [The dark ages] - multiple versions not logged.
 
