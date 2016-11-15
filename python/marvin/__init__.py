@@ -65,6 +65,7 @@ class MarvinConfig(object):
         self._check_manga_dirs()
         self._setDbConfig()
         self._checkConfig()
+        self._check_netrc()
         self.setDefaultDrpAll()
 
     def _checkPaths(self, name):
@@ -88,6 +89,23 @@ class MarvinConfig(object):
                 warnings.warn('no {0}_DIR found. Creating it in {1}'.format(name, path_dir))
                 os.makedirs(path_dir)
             os.environ[name] = path_dir
+
+    def _check_netrc(self):
+        """Makes sure there is a valid netrc."""
+
+        netrc_path = os.path.join(os.environ['HOME'], '.netrc')
+
+        if not os.path.exists(netrc_path):
+            warnings.warn('cannot find a .netrc file in your HOME directory. '
+                          'Remote functionality may not work. Go to '
+                          'https://api.sdss.org/doc/manga/marvin/api.html#marvin-authentication '
+                          'for more information.', MarvinUserWarning)
+            return
+
+        if oct(os.stat(netrc_path).st_mode)[-3:] != '600':
+            warnings.warn('your .netrc file has not 600 permissions. Please fix it by '
+                          'running chmod 600 ~/.netrc. Authentication will not work with '
+                          'permissions different from 600.')
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
