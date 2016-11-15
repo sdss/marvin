@@ -9,6 +9,8 @@
 - Bug in Cube tool when a galaxy loaded from db does not have NSA info; no failure with redshift
 - Two bugs in index.py on KeyErrors: Sentry issues 181369719,181012809
 - Bug on plate web page preventing meta-data from rendering
+- Fixed installation in Python 3.
+- Fixed long_description in setup.py to work with PyPI.
 
 ## [The dark ages] - multiple versions not logged.
 
