@@ -17,6 +17,31 @@ New Options
     git submodule update
     python setup.py install
 
+Set up your netrc
+-----------------
+
+While Marvin is now publicly available, not all MaNGA data is so. As a result,
+you need to add some configuration to allow you to access propietary data. To
+do that, create and edit a file in your home called ``.netrc`` an copy
+these lines inside::
+
+    machine api.sdss.org
+       login sdss
+       password <password>
+
+    machine data.sdss.org
+       login sdss
+       password <password>
+
+and replace ``<password>`` with the default SDSS data password. Finally, run
+``chmod 600 ~/.netrc`` to make the file only accessible to your user. To test that
+the configuration has been successfully applied, start a python session and run::
+
+    import marvin
+    print(marvin.config.urlmap)
+
+If the result is not ``None`` your Marvin is up and running!
+
 Old Options
 -----------
 
