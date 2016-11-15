@@ -44,8 +44,13 @@ class Marvin(FlaskView):
     def galidselect(self):
         ''' Route that handle the Navbar plate/galaxy id search form '''
         f = processRequest(request=request)
-        galid = f['galid']
-        idtype = parseIdentifier(galid)
+        galid = f.get('galid', None)
+        if not galid:
+            # if not galid return main page
+            return redirect(url_for('index_page.Marvin:index'))
+        else:
+            idtype = parseIdentifier(galid)
+        # check the idtype
         if idtype == 'plateifu' or idtype == 'mangaid':
             return redirect(url_for('galaxy_page.Galaxy:get', galid=galid))
         elif idtype == 'plate':
@@ -102,7 +107,7 @@ class Marvin(FlaskView):
         else:
             result = inspection.result()
             current_session['loginready'] = inspection.ready
-            current_session['name'] = result['membername']
+            current_session['name'] = result.get('membername', None)
         print('login result', result)
         return jsonify(result=result)
 
