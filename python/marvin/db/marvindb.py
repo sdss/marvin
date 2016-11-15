@@ -13,7 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.db.modelGraph import ModelGraph
-from marvin import config
+from marvin import config, log
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -47,10 +47,10 @@ class MarvinDB(object):
         try:
             from marvin.db.database import db
         except RuntimeError as e:
-            print('RuntimeError raised: Problem importing db: {0}'.format(e))
+            log.debug('RuntimeError raised: Problem importing db: {0}'.format(e))
             self.db = None
         except ImportError as e:
-            print('ImportError raised: Problem importing db: {0}'.format(e))
+            log.debug('ImportError raised: Problem importing db: {0}'.format(e))
             self.db = None
         else:
             self.db = db
@@ -61,7 +61,7 @@ class MarvinDB(object):
         try:
             import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
-            print('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
+            log.debug('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
             self.sampledb = None
         else:
             self.sampledb = sampledb
@@ -69,7 +69,7 @@ class MarvinDB(object):
         try:
             import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
-            print('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
+            log.debug('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
             self.datadb = None
         else:
             self.datadb = datadb
@@ -77,7 +77,7 @@ class MarvinDB(object):
         try:
             import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
-            print('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
+            log.debug('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
             self.dapdb = None
             self.spaxelpropdict = None
         else:
