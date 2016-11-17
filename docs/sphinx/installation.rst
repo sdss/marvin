@@ -2,6 +2,10 @@
 Installation
 ============
 
+.. warning:: Marvin does not work well with the system Python in OSX. Please, make sure you are using a supported Python installation before following these instructions. Good installations include `Anaconda <https://www.continuum.io/downloads>`_, `Miniconda <http://conda.pydata.org/miniconda.html>`_, or `homebrew <http://brew.sh/>`_. After installing one of these distribution, make sure you are actually using it by running ``which python`` and ``which pip``.
+
+.. warning:: Marvin does not yet work with Python 3. Make sure you are using Python 2.
+
 New Options
 -----------
 
