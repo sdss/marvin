@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.0.5] - not yet released
+## [2.0.5] - 2016/11/17
 ### Added:
 - Added netrc configuration to installation documentation.
 - Added netrc check on init.
