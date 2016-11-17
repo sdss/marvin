@@ -256,9 +256,12 @@ class Query(object):
     def _checkInFilter(self, name='dapdb'):
         ''' Check if the given name is in the schema of any of the filter params '''
 
-        fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
-        fparams = [fparams] if type(fparams) != list else fparams
-        inschema = [name in c.class_.__table__.schema for c in fparams]
+        if self.mode == 'local':
+            fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
+            fparams = [fparams] if type(fparams) != list else fparams
+            inschema = [name in c.class_.__table__.schema for c in fparams]
+        elif self.mode == 'remote':
+            inschema = []
         return True if any(inschema) else False
 
     def _check_shortcuts_in_filter(self, strfilter):
@@ -719,8 +722,8 @@ class Query(object):
             end = datetime.datetime.now()
             self.runtime = (end-start)
             # close the session and engine
-            self.session.close()
-            marvindb.db.engine.dispose()
+            #self.session.close()
+            #marvindb.db.engine.dispose()
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
                            queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
@@ -744,6 +747,7 @@ class Query(object):
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
                 self._cleanUpQueries()
+                print('query remote fail', config._traceback)
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
@@ -755,8 +759,8 @@ class Query(object):
                 totalcount = ii.results['totalcount']
                 runtime = ii.results['runtime']
                 # close the session and engine
-                self.session.close()
-                marvindb.db.engine.dispose()
+                #self.session.close()
+                #marvindb.db.engine.dispose()
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
@@ -789,8 +793,8 @@ class Query(object):
             self.session.expunge_all()
             res = self.session.execute(sql)
             tmp = res.fetchall()
-            self.session.close()
-            marvindb.db.engine.dispose()
+            #self.session.close()
+            #marvindb.db.engine.dispose()
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:

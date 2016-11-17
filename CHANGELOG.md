@@ -1,5 +1,9 @@
 # Marvin's Change Log
 
+## [2.0.6] - 2016/11/17
+### Fixed:
+- Bug in Queries with dap query check running in remote mode.  Param form is empty.
+
 ## [2.0.5] - 2016/11/17
 ### Added:
 - Added netrc configuration to installation documentation.

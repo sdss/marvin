@@ -119,6 +119,9 @@ class MarvinDB(object):
         self.db = None
         self.session = None
         self.isdbconnected = False
+        self.datadb = None
+        self.dapdb = None
+        self.sampledb = None
 
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
