@@ -1,5 +1,9 @@
 # Marvin's Change Log
 
+## [2.0.7] - 2016/11/18
+### Fixed:
+- Fixed issue #97
+
 ## [2.0.6] - 2016/11/17
 ### Fixed:
 - Bug in Queries with dap query check running in remote mode.  Param form is empty.
