@@ -55,7 +55,7 @@ install_requires = [line.strip().replace('==', '>=') for line in open(requiremen
                     if not line.strip().startswith('#') and line.strip() != '']
 
 NAME = 'sdss-marvin'
-VERSION = '2.0.7'
+VERSION = '2.0.8'
 
 setup(name=NAME,
       version=VERSION,

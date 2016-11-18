@@ -333,7 +333,9 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
     elif mode == 'remote':
 
         try:
-            response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
+            # response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
+            url = marvin.config.urlmap['api']['mangaid2plateifu']['url']
+            response = Interaction(url.format(mangaid=mangaid))
         except MarvinError as e:
             raise MarvinError('API call to mangaid2plateifu failed: {0}'.format(e))
         else:

@@ -17,16 +17,14 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 from flask_classy import route
-from marvin.api.base import BaseView
+from brain.api.general import BrainGeneralRequestsView
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 import json
 
 
-class GeneralRequestsView(BaseView):
+class GeneralRequestsView(BrainGeneralRequestsView):
 
-    route_base = '/mangaid2plateifu/'
-
-    @route('/<mangaid>/', endpoint='mangaid2plateifu')
+    @route('/mangaid2plateifu/<mangaid>/', endpoint='mangaid2plateifu', methods=['GET', 'POST'])
     def mangaid2plateifu(self, mangaid):
 
         try:

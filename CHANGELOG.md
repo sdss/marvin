@@ -1,8 +1,12 @@
 # Marvin's Change Log
 
+## [2.0.8] - 2016/11/18
+### Fixed:
+- Now really fixing #98
+
 ## [2.0.7] - 2016/11/18
 ### Fixed:
-- Fixed issue #97
+- Fixed issue #98
 
 ## [2.0.6] - 2016/11/17
 ### Fixed:
