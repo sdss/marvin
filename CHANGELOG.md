@@ -1,5 +1,12 @@
 # Marvin's Change Log
 
+## [2.0.9] - 2016/11/19
+### Added:
+- Docs now use `marvin.__version__`.
+### Fixed:
+- Fixed #100, #103: problem with getMap for propperties without ivar.
+- Fixed #101: problem with marvin query.
+
 ## [2.0.8] - 2016/11/18
 ### Fixed:
 - Now really fixing #98
