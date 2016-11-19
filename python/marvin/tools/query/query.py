@@ -747,7 +747,6 @@ class Query(object):
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
                 self._cleanUpQueries()
-                print('query remote fail', config._traceback)
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
