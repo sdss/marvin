@@ -49,6 +49,11 @@ class TestMapsBase(marvin.tests.MarvinTest):
 
         cls.marvindb_session = marvin.marvindb.session
 
+        cls.filename_mpl5_spx = os.path.join(
+            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
+            'SPX-GAU-MILESHC', str(cls.plate), str(cls.ifu),
+            'manga-{0}-MAPS-SPX-GAU-MILESHC.fits.gz'.format(cls.plateifu))
+
     @classmethod
     def tearDownClass(cls):
         pass
@@ -298,6 +303,24 @@ class TestGetMap(TestMapsBase):
 
         map_getitem_no_channel = maps['binid']
         self.assertIsInstance(map_getitem_no_channel, marvin.tools.map.Map)
+
+    def test_getmap_noivar_file(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx)
+        maps_ellcoo = maps['spx_ellcoo_elliptical_radius']
+        self.assertIsNone(maps_ellcoo.ivar)
+
+    def test_getmap_noivar_db(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5')
+        maps_ellcoo = maps['spx_ellcoo_elliptical_radius']
+        self.assertIsNone(maps_ellcoo.ivar)
+
+    def test_getmap_noivar_api(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5', mode='remote')
+        maps_ellcoo = maps['spx_ellcoo_elliptical_radius']
+        self.assertIsNone(maps_ellcoo.ivar)
 
 
 class TestPickling(TestMapsBase):

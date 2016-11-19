@@ -150,8 +150,8 @@ class MapsView(marvin.api.base.BaseView):
             mmap = maps.getMap(property_name=str(property_name), channel=str(channel))
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
-            self.results['data']['ivar'] = mmap.ivar.tolist()
-            self.results['data']['mask'] = mmap.mask.tolist()
+            self.results['data']['ivar'] = mmap.ivar.tolist() if mmap.ivar is not None else None
+            self.results['data']['mask'] = mmap.mask.tolist() if mmap.mask is not None else None
             self.results['data']['unit'] = mmap.unit
             self.results['data']['header'] = {key: mmap.header[key] for key in mmap.header}
         except Exception as ee:

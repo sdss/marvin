@@ -200,8 +200,8 @@ class Map(object):
                 'something went wrong. Error is: {0}'.format(response.results['error']))
 
         self.value = numpy.array(data['value'])
-        self.ivar = numpy.array(data['ivar'])
-        self.mask = numpy.array(data['mask'])
+        self.ivar = numpy.array(data['ivar']) if data['ivar'] is not None else None
+        self.mask = numpy.array(data['mask']) if data['mask'] is not None else None
         self.unit = data['unit']
         self.header = fits.Header(data['header'])
 
