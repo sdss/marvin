@@ -2,7 +2,14 @@
 Installation
 ============
 
-.. warning:: Marvin does not work well with the system Python in OSX. Please, make sure you are using a supported Python installation before following these instructions. Good installations include `Anaconda <https://www.continuum.io/downloads>`_, `Miniconda <http://conda.pydata.org/miniconda.html>`_, or `homebrew <http://brew.sh/>`_. After installing one of these distribution, make sure you are actually using it by running ``which python`` and ``which pip``.
+.. warning::
+    Marvin does not work well with the system Python in OSX.
+    Please, make sure you are using a supported Python installation before
+    following these instructions. Good installations include
+    `Anaconda <https://www.continuum.io/downloads>`_,
+    `Miniconda <http://conda.pydata.org/miniconda.html>`_, or
+    `homebrew <http://brew.sh/>`_. After installing one of these distribution,
+    make sure you are actually using it by running ``which python`` and ``which pip``.
 
 .. warning:: Marvin does not yet work with Python 3. Make sure you are using Python 2.
 
@@ -108,8 +115,8 @@ of compiling ``modules``. If everything works you will get a message ending in :
     tcshrc users will need to add: source <path-to-modules>/init/csh to the .tcshrc file
 
 You must add the corresponding ``source`` statement to your ``.bashrc``, ``.profile``, or
-``.cshrc`` file (likely located in your ``HOME`` directory). If you open a new terminal and write ``module`` you should get the help
-page for the command.
+``.cshrc`` file (likely located in your ``HOME`` directory). If you open a new terminal and
+write ``module`` you should get the help page for the command.
 
 |
 
