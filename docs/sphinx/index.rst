@@ -31,6 +31,14 @@ If you are using Marvin in any way (Web, API, or Tools) to do your science, plea
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
+:doc:`known_issues`
+^^^^^^^^^^^^^^^^^^^
+
+|
+
+Marvin Primer
+=============
+
 .. toctree::
    :titlesonly:
 
@@ -39,11 +47,11 @@ If you are using Marvin in any way (Web, API, or Tools) to do your science, plea
    first-steps
    general
 
-:doc:`known_issues`
-^^^^^^^^^^^^^^^^^^^
+
+|
 
 :doc:`tools`
-^^^^^^^^^^^^
+============
 
 .. toctree::
    :titlesonly:
@@ -54,10 +62,13 @@ If you are using Marvin in any way (Web, API, or Tools) to do your science, plea
    tools/cube
 
 :doc:`api`
-^^^^^^^^^^
-:doc:`web`
-^^^^^^^^^^
+==========
 
+
+:doc:`web`
+==========
+
+|
 
 Tutorials
 =========
