@@ -1,4 +1,6 @@
 
+|
+
 .. warning::
     Marvin does not work well with the system Python in OSX.
     Please, make sure you are using a supported Python installation before
@@ -96,7 +98,7 @@ Installation Frequently Asked Questions
 ---------------------------------------
 
 How do I update marvin?
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Just do ``pip install --upgrade sdss-marvin``. Marvin will get updated to the latest
 version, along with all the dependencies. If you want to update marvin but keep other
@@ -105,7 +107,7 @@ packages in their currrent versions, do
 update dependencies if marvin does need it.
 
 How to test that marvin has been installed correctly
-----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Marvin is built to have you started with minimum configuration on your part. This means that
 marvin is likely to import but maybe not all features will be available. Here are a few commands
@@ -120,8 +122,12 @@ If you get a dictionary with API routes, marvin is connecting correctly to the A
 Utah and you can use the remote features. However, if you get ``None``, you may want to
 check the steps in :ref:`setup-netrc`.
 
-After installing marvin I get this error: Python is not installed as a framework. The Mac OS X backend will not be able to function correctly if Python is not installed as a framework.
------------------------------------------------------------------------------------------
+Matplotlib backend problems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some uses have reported that after installing marvin they get an error such as: **Python is not
+installed as a framework. The Mac OS X backend will not be able to function correctly if
+Python is not installed as a framework.**
 
 This problem is caused by matplotlib not being able to use the MacOS backend if you are using
 anaconda. Follow `these instructions
