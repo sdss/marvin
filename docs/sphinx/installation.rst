@@ -87,7 +87,7 @@ to use the ``drpall`` file for MPL-5, it will try to find it in
 If ``$SAS_BASE_DIR`` is not defined, marvin will assume that the base directory is ``$HOME/sas``.
 You can also define your custom ``$MANGA_SPECTRO_REDUX`` and ``$MANGA_SPECTRO_ANALYSIS`` to
 point to the redux and analysis data directories, respectively. As a general advice, if you are
-not using other codes that require setting those environment variables, you only want to
+not using other products that require setting those environment variables, you only want to
 define ``$SAS_BASE_DIR`` (or not define it and assume the data will be stored in ``$HOME/sas``).
 
 |
