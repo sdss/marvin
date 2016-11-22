@@ -12,7 +12,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from distutils.version import StrictVersion
 import sys
 import os
 
@@ -20,10 +19,7 @@ import os
 import sphinx_bootstrap_theme
 import marvin
 
-try:
-    marvin_version = StrictVersion(marvin.__version__)
-except ValueError:
-    marvin_version = 'latest-dev'
+marvin_version = marvin.__version__
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
