@@ -30,6 +30,8 @@ developed and maintained by the MaNGA team.  Check out the
 If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
+|
+
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
@@ -46,6 +48,7 @@ Marvin Primer
 
    overview
    installation
+   Frequently Asked Questions <faq>
    first-steps
    general
 
