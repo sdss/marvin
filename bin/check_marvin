@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2016-11-22 07:47:00
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2016-11-22 08:42:54
+#
+# This is a script to check various Python and Marvin paths
+
+from __future__ import print_function, division
+import os
+import sys
+import numpy
+import matplotlib
+
+# Check the Python system version
+print('\nSystem Checks')
+sysver = sys.version
+ispy2 = '2.7' in sysver
+print('Is Python 2.7? {0}'.format(ispy2))
+ispy3 = '3.5' in sysver
+print('Is Python 3.5? {0}'.format(ispy3))
+if ispy3:
+    raise RuntimeError('Python 3 not yet supported by Marvin.  Use Python 2.7')
+
+# Anaconda checks
+print('\nDistribution Checks')
+isconda = 'Anaconda' in sysver or 'Miniconda' in sysver
+print('Is Python from Anaconda or Miniconda? {0}'.format(isconda))
+
+if isconda:
+    isnumpyconda = 'conda' in numpy.__file__
+    ismatplotlibconda = 'conda' in matplotlib.__file__
+    print('Is Numpy from Anaconda or Miniconda? {0}'.format(isnumpyconda))
+    print('Is Matplotlib from Anaconda or Miniconda? {0}'.format(ismatplotlibconda))
+
+print('\nPackage Checks')
+mplbackend = matplotlib.get_backend()
+print('Your Matplotlib backend is {0}'.format(mplbackend))
+
+# netrc path
+print('\nNetrc Checks')
+netrc = os.path.join(os.path.expanduser('~'), '.netrc')
+isnet = os.path.isfile(netrc)
+print('Have a .netrc file? {0}'.format(isnet))
+if isnet:
+    goodnet = oct(os.stat(netrc).st_mode)[-3:] == '600'
+    print('Netrc with permissions 600? {0}'.format(goodnet))
+
+#  Marvin Checks
+print('\nMarvin Checks')
+try:
+    import marvin
+except Exception as e:
+    traceback = sys.exc_info()[2]
+    raise ImportError('Marvin cannot be imported! {0}\n{1}'.format(e, traceback))
+else:
+    marvinmode = marvin.config.mode is not None
+    print('Marvin imported? {0}'.format(marvinmode))
+    marvinmap = True if marvin.config.urlmap else False
+    print('Does Marvin have a URLMap for API use? {0}'.format(marvinmap))
+
+
