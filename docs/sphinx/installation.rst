@@ -1,25 +1,50 @@
 
+|
+
+.. admonition:: Warning
+    :class: custom-warning
+
+    Marvin does not work well with the system Python in OSX.
+    Please, make sure you are using a supported Python installation before
+    following these instructions. Good installations include
+    `Anaconda <https://www.continuum.io/downloads>`_,
+    `Miniconda <http://conda.pydata.org/miniconda.html>`_, or
+    `homebrew <http://brew.sh/>`_. After installing one of these distribution,
+    make sure you are actually using it by running ``which python`` and ``which pip``.
+
+.. warning::
+    :class: custom-warning
+
+    Marvin does not yet work with Python 3. Make sure you are using Python 2.
+
+|
+
+.. _marvin-installation:
+
 Installation
 ============
 
-.. warning:: Marvin does not work well with the system Python in OSX. Please, make sure you are using a supported Python installation before following these instructions. Good installations include `Anaconda <https://www.continuum.io/downloads>`_, `Miniconda <http://conda.pydata.org/miniconda.html>`_, or `homebrew <http://brew.sh/>`_. After installing one of these distribution, make sure you are actually using it by running ``which python`` and ``which pip``.
-
-.. warning:: Marvin does not yet work with Python 3. Make sure you are using Python 2.
-
-New Options
------------
-
-**Updated Painless Installation**::
+**Painless Installation**::
 
     pip install sdss-marvin
 
-**Updated Developer Installation (Medium Pain)**::
+**or to upgrade an existing Marvin installation**::
+
+    pip install --upgrade sdss-marvin
+
+**Developer Installation (Medium Pain)**::
 
     git clone https://github.com/sdss/marvin
     cd marvin
     git submodule init
     git submodule update
     python setup.py install
+
+If you experience problem after the intallation, check the :ref:`marvin-faq`.
+
+|
+
+.. _setup-netrc:
 
 Set up your netrc
 -----------------
@@ -38,244 +63,60 @@ these lines inside::
        password <password>
 
 and replace ``<password>`` with the default SDSS data password. Finally, run
-``chmod 600 ~/.netrc`` to make the file only accessible to your user. To test that
-the configuration has been successfully applied, start a python session and run::
-
-    import marvin
-    print(marvin.config.urlmap)
-
-If the result is not ``None`` your Marvin is up and running!
-
-Old Options
------------
-
-**Old Extremely Painful Installation (Outdated)**:
-
-Marvin requires installing some dependencies before you can start using it.
-In the future we hope this process will be mostly automatic but, for now,
-please follow this instructions to install Marvin.
-
-The full list of dependencies includes:
-
-* Python 2.7 (the final Marvin version will be Python 3-compatible)
-* GNU Modules
-* tree
-* sdss_access
-* sdss_python_module
-* marvin_brain
-* numpy
-* astropy
-* sqlalchemy
-* networkx
-* matplotlib (optional, needed for plotting)
-* pillow
-* requests
-* wtforms
-* SQLAlchemy-boolean-search (custom fork)
-* wtforms-alchemy (custom fork)
-* validators
-* intervals
-
-.. flask_cors
-
-.. flask_cors
+``chmod 600 ~/.netrc`` to make the file only accessible to your user.
 
 |
 
-Getting modules
----------------
+.. _marvin-sdss-depends:
 
-`GNU Modules <http://modules.sourceforge.net>`_ is a powerful tool to control
-what software versions are installed in your computer, and to setup their
-environment variables. SDSS software is configured to be used with ``modules``.
-For a full tutorial on ``modules`` and how to install it manually you can visit
-`this <https://trac.sdss.org/wiki/Software/modules>`_ page.
+Marvin dependencies on SDSS software
+------------------------------------
 
-To use `sdss4tools <https://trac.sdss.org/browser/repo/sdss/sdss4tools?order=name>`_
-to install ``modules``, run the following command on a fresh terminal ::
+Marvin depends on three pieces of SDSS-wide software:
 
-    svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4_getmodules
+* `https://github.com/sdss/marvin_brain <marvin_brain>`_: contains some core functionality, such as the API call framework, the basic web server, etc.
+* `https://github.com/sdss/tree <tree>`_: defines the structure of the Science Archive Sever, relative paths to data products, etc.
+* `https://github.com/sdss/sdss_access <sdss_access>`_: tools for efficiently accessing data files, rsyncing data, etc.
 
-Then run ::
-
-    ./sdss4_getmodules -m <path-to-modules>
-
-where ``<path-to-modules>`` must be the path to the empty or non-existent directory
-where you want to install the ``modules`` package. ``sdss4_getmodules`` will take care
-of compiling ``modules``. If everything works you will get a message ending in ::
-
-    bash users will need to add: source <path-to-modules>/init/bash to the .bashrc file
-    tcshrc users will need to add: source <path-to-modules>/init/csh to the .tcshrc file
-
-You must add the corresponding ``source`` statement to your ``.bashrc``, ``.profile``, or
-``.cshrc`` file (likely located in your ``HOME`` directory). If you open a new terminal and write ``module`` you should get the help
-page for the command.
+For convenience, marvin includes these products as external libraries. This means that
+you most likely do not need to worry about any of these products. However, if any
+of these libraries is already installed in your system (i.e., you have defined
+``$MARVIN_BRAIN_DIR``, ``$TREE_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
+wide products instead of its own versions. This is useful for development but note that
+it can also lead to confusions about what version marvin is using.
 
 |
 
-sdss4install
-------------
+.. _marvin-sasdir:
 
-``sdss4install`` is a tool that lives in ``sdss4tools`` that helps significantly
-to download, configure, and make available SDSS software. To install ``sdss4tool``
-you can use the ``bootstrap`` installation script. First, create a directory where you
-want to store SDSS sofware and export that path ::
+Local SAS directory structure
+-----------------------------
 
-    mkdir -p ~/software/sdss
-    export SDSS4_PRODUCT_ROOT=~/software/sdss
+By default, marvin will look for data files in a directory structure that mirrors the
+`Science Archive Server <https://data.sdss.org/sas>`_. Data downloaded via marvin will
+also be stored according to that structure. The root of this directory structure is
+defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
+to use the ``drpall`` file for MPL-5, it will try to find it in
+``$SAS_BASE_DIR/mangawork/manga/spectro/redux/v2_0_1/drpall-v2_0_1.fits``.
 
-(note that you do not need to add SDSS4_PRODUCT_ROOT to your ``.bashrc``). Then
-download and run the script ::
-
-    svn export https://svn.sdss.org/public/repo/sdss/sdss4tools/trunk/bin/sdss4bootstrap
-    ./sdss4bootstrap -l
-
-Next, edit your ``.bashrc`` or ``.cshrc`` file to include ::
-
-    module use $SDSS4_PRODUCT_ROOT/repo/modulefiles
-
-If you now run ``module avail`` in a new terminal you will get a list containing
-``sdss4tools``. Now you are ready to install more SDSS software by just
-using the ``sdss4install`` command.
-
-Before we continue, let's make sure SVN has the right permissions to access the private
-repositories. For that, run ::
-
-    module load sdss4tools
-    sdss4auth
-
-which will prompt you for your trac username and password. When it asks you to store the
-credentials say yes and make sure to run ::
-
-    chmod g-rwX,o-rwX ~/.subversion
-
-to ensure that your subversion directory only accesible by you.
+If ``$SAS_BASE_DIR`` is not defined, marvin will assume that the base directory is ``$HOME/sas``.
+You can also define your custom ``$MANGA_SPECTRO_REDUX`` and ``$MANGA_SPECTRO_ANALYSIS`` to
+point to the redux and analysis data directories, respectively. As a general advice, if you are
+not using other products that require setting those environment variables, you only want to
+define ``$SAS_BASE_DIR`` (or not define it and assume the data will be stored in ``$HOME/sas``).
 
 |
 
-SDSS packages
--------------
-
-Marvin depends on a few SDSS packages. First, create a directory that will act as
-your local SAS. This directory will follow the same structure as the remote SAS and will
-be used for local and downloaded data. For example ::
-
-    mkdir -p ~/sdss/sas
-    export SAS_BASE_DIR=~/sdss/sas
-
-Let's load ``sdss4tools`` so that you can use ``sdss4install`` to install the dependencies ::
-
-    module load sdss4tools
-
-The following commands should install all the necessary dependencies in your selected
-``SDSS4_PRODUCT_ROOT``. At some point you may be asked for your SDSS Trac username and
-password ::
-
-    sdss4install sdss/tree trunk
-    sdss4install sdss/sdss_access trunk
-    sdss4install sdss/sdss_python_module branches/marvin
-    sdss4install manga/marvin_brain trunk
-    sdss4install manga/marvin branches/marvin_alpha
-
-The last line actually installs Marvin from the
-`marvin_refactor <https://trac.sdss.org/browser/repo/manga/marvin/branches/marvin_refactor>`_
-branch. If you now do a ``module avail`` you should get something like ::
-
-    ------------------------------ /home/albireo/software/modulefiles ------------------------
-    marvin/marvin_refactor    sdss_python_module/marvin tree/dr12       tree/dr9
-    marvin_brain/trunk        tree/bosswork             tree/dr13       tree/sdsswork(default)
-    sdss4tools/0.2.6(default) tree/dr10                 tree/dr7
-    sdss_access/trunk         tree/dr11                 tree/dr8
-
-Doing ``module load marvin`` will setup all the necessary environment variables
-that Marvin needs to work. (Also, you can ignore the errors about 'dust' and
-'inspection/trunk'.) However, you may not want to do that every time you want to
-work with Marvin. To have ``modules`` load Marvin for each new terminal you can
-create a file containing ``modules`` commands ::
-
-    cat > ~/.modules <<EOL
-    module load sdss4tools
-    module load marvin
-    EOL
-
-and edit your ``.bashrc`` or ``.cshrc`` to source it ::
-
-    source ~/.modules
-
-The lines in ``.modules`` will load ``sdss4tools`` and ``marvin`` for each new terminal.
-
-|
-
-Python packages
----------------
-
-In addition to SDSS software, Marvin depends on a few Python libraries. These can easily
-be installed with `pip <https://pip.pypa.io/en/stable/>`_. If your system does not have
-``pip``, you can install it following these
-`instructions <https://pip.pypa.io/en/stable/installing/>`_. Most packages can also
-be installed with `easy_install <https://pypi.python.org/pypi/setuptools>`_.
-
-With ``pip`` run the following commands and make sure they finish without errors. You may need to use ``sudo`` to run these commands. Also, some modern versions of Mac OSX do
-not allow to install these products even with ``sudo``. If that is your case, try using
-``pip install --user <package>``::
-
-    pip install --upgrade numpy
-    pip install --upgrade astropy
-    pip install --upgrade sqlalchemy
-    pip install --upgrade networkx
-    pip install --upgrade matplotlib
-    pip install --upgrade requests
-    pip install --upgrade pillow
-    pip install --upgrade wtforms
-    pip install --upgrade Flask
-    pip install --upgrade validators
-    pip install --upgrade intervals
-
-The ``--upgrade`` flag will make sure you are running the latest versions of the
-packages. Additionally, Marvin requires installing two forks of Python packages.
-Those forks will eventually be merged into Marvin, but during active development
-they live in GitHub repositories. To install ``SQLAlchemy-boolean-search`` do ::
-
-    git clone https://github.com/havok2063/SQLAlchemy-boolean-search.git
-    cd SQLAlchemy-boolean-search
-    python setup.py install
-
-You may need ``sudo`` for the last command. Once the library is installed you can
-remove the ``SQLAlchemy-boolean-search`` directory. Similarly, for ``wtforms-alchemy`` do ::
-
-    git clone https://github.com/havok2063/wtforms-alchemy.git
-    cd wtforms-alchemy
-    python setup.py install
-
-You should now be ready to use Marvin!
-
-|
-
-Testing the installation
-------------------------
-
-Let's do a quick check to make sure Marvin is working. In a fresh terminal do ::
-
-    python
-    >>> import marvin
-    >>> marvin.config.mode
-    'auto'
-
-You may get a few warnings and info messages after ``import marvin``. That's ok,
-we'll deal with them later. Congratulations, you have finished the Marvin installation!
-Now go on to :ref:`marvin-first-steps`!
-
-|
+.. _marvin-install-ipython:
 
 Using IPython
 -------------
 
 If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
 `IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
-between history, colour coding, etc. It's also especialyl useful if you plan to use Matplotlib,
-as IPython comes with default interactive plotting. To install it, follow the instructions in
-the webpage, or simply do ::
+between history, color coding, etc. It's also especially useful if you plan to use Matplotlib,
+as IPython comes with default interactive plotting. If you installed Python via the Anaconda or Miniconda
+distributions, then you already have IPython installed.  Just run ``ipython`` in your terminal.  If you
+need to install it, do ``pip install jupyter``.
 
-    pip install jupyter
-
-And just run ``ipython`` in your terminal.
+|

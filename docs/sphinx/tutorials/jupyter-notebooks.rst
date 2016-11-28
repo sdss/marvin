@@ -4,6 +4,25 @@
 Jupyter Notebooks
 =================
 
+Shanghai Workshop Tutorials
+---------------------------
+
+These notebooks were designed and used for the MaNGA Meeting and School in Shanghai in November 2016.  These are composed of
+bits and pieces of the other notebooks, are a bit longer, with some additional material not yet covered in their own invididual notebooks.
+
+Marvin Tools
+^^^^^^^^^^^^
+This notebook covers some basics of :ref:`marvin-tools` features, including Cube, Spaxel, Maps, ModelCube, and Bin.
+
+:download:`Shanghai Demo Tools <../jupyter/Shanghai_Demo_Tools.ipynb>`
+
+Marvin Queries
+^^^^^^^^^^^^^^
+This notebook covers some basics of :ref:`marvin-query`, how to construct them, use them in your workflow, and convert the results
+into Marvin Tools to utilize their functionality.
+
+:download:`Shanghai Demo Queries <../jupyter/Shanghai_Demo_Queries.ipynb>`
+
 First Steps Notebook
 --------------------
 

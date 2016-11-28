@@ -1,5 +1,16 @@
 # Marvin's Change Log
 
+## [2.0.10] - not yet released
+### Added:
+- Restructured documentation index page.
+- Improved installation documentation:
+    - Removed old installation text
+    - Added section on marvin SDSS dependencies and SAS_BASE_DIR
+    - Added section for FAQ about installation
+
+### Changed:
+- When marvin is running from source (not dist), `marvin.__version__` is `dev`.
+
 ## [2.0.9] - 2016/11/19
 ### Added:
 - Docs now use `marvin.__version__`.

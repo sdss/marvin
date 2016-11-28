@@ -413,6 +413,6 @@ from pkg_resources import get_distribution, DistributionNotFound
 try:
     dist = get_distribution('sdss-marvin')
 except DistributionNotFound:
-    __version__ = 'Please install this project with setup.py'
+    __version__ = 'dev'
 else:
     __version__ = dist.version

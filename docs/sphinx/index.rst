@@ -24,26 +24,39 @@ Marvin Docs
 Welcome to Marvin's documentation!
 ----------------------------------
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
-developed and maintained by the MaNGA team.  Check out the `Marvin Github <https://github.com/sdss/marvin>`_ page.
+developed and maintained by the MaNGA team.  Check out the
+`Marvin Github <https://github.com/sdss/marvin>`_ page.
 
-If you are using Marvin in any way (Web, API, or Tools) to do your science, please remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
+If you are using Marvin in any way (Web, API, or Tools) to do your science, please
+remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
+
+|
 
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
+
+:doc:`known_issues`
+^^^^^^^^^^^^^^^^^^^
+
+|
+
+Marvin Primer
+=============
 
 .. toctree::
    :titlesonly:
 
    overview
    installation
+   Frequently Asked Questions <faq>
    first-steps
    general
 
-:doc:`known_issues`
-^^^^^^^^^^^^^^^^^^^
+
+|
 
 :doc:`tools`
-^^^^^^^^^^^^
+============
 
 .. toctree::
    :titlesonly:
@@ -54,10 +67,13 @@ If you are using Marvin in any way (Web, API, or Tools) to do your science, plea
    tools/cube
 
 :doc:`api`
-^^^^^^^^^^
-:doc:`web`
-^^^^^^^^^^
+==========
 
+
+:doc:`web`
+==========
+
+|
 
 Tutorials
 =========
