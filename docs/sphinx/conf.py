@@ -15,11 +15,18 @@
 import sys
 import os
 
+from distutils.version import StrictVersion
+
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
 
-marvin_version = marvin.__version__
+
+try:
+    StrictVersion(marvin.__version__)
+    marvin_version = marvin.__version__
+except ValueError:
+    marvin_version = 'dev'
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
