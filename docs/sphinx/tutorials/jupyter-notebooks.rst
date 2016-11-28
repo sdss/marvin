@@ -11,6 +11,16 @@ This notebook takes you through the examples listed on the Marvin :ref:`marvin-f
 
 :download:`First Steps Notebook <../jupyter/first-steps.ipynb>`
 
+
+Tools Primer
+------------
+
+This notebook demonstrates some ot the :ref:`marvin-tools` features. The notebook was first
+developed for a Marvin Live Demo at the MaNGA Shanghai meeting in November 2016.
+
+:download:`Shanghai Demo Tools Notebook <../jupyter/Shanghai_Demo_Tools.ipynb>`
+
+
 My First Query
 --------------
 
