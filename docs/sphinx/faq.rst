@@ -10,7 +10,7 @@ Frequently Asked Questions and known issues
 -------------------------------------------
 
 How do I update marvin?
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Just do ``pip install --upgrade sdss-marvin``. Marvin will get updated to the latest
 version, along with all the dependencies. If you want to update marvin but keep other
@@ -18,8 +18,17 @@ packages in their currrent versions, do
 ``pip install --upgrade --upgrade-strategy only-if-needed sdss-marvin``. This will only
 update dependencies if marvin does need it.
 
+
+Permissions Error
+^^^^^^^^^^^^^^^^^
+If your Marvin installation fails at any point during the pip install process with permissions problems,
+try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew distribution will not require
+permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
+you are not using the Mac OSX system version of Python.
+
+
 How to test that marvin has been installed correctly
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin is built to have you started with minimum configuration on your part. This means that
 marvin is likely to import but maybe not all features will be available. Here are a few commands
@@ -34,15 +43,30 @@ If you get a dictionary with API routes, marvin is connecting correctly to the A
 Utah and you can use the remote features. However, if you get ``None``, you may want to
 check the steps in :ref:`setup-netrc`.
 
-Matplotlib backend problems
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Marvin Remote Access Problems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some uses have reported that after installing marvin they get an error such as: **Python is not
-installed as a framework. The Mac OS X backend will not be able to function correctly if
+If the above test crashes, or you attempt to use a Marvin Tool remotely, and you see this error::
+
+    AttributeError: 'Extensions' object has no attribute 'get_extension_for_class'
+
+This is an issue with the Urllib and Requests python package.  See `this Issue <https://github.com/sdss/marvin/issues/102>`_ for an
+ongoing discussion if this problem has been solved.
+
+
+Matplotlib backend problems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some users have reported that after installing marvin they get an error such as:
+
+**Python is not installed as a framework. The Mac OS X backend will not be able to function correctly if
 Python is not installed as a framework.**
 
 This problem is caused by matplotlib not being able to use the MacOS backend if you are using
-anaconda. Follow `these instructions
+Anaconda. You need to switch your matplolib backend to ``Agg`` or ``TkAgg``.  Follow `these instructions
 <http://stackoverflow.com/questions/21784641/installation-issue-with-matplotlib-python>`_ to fix
 the problem. If you do want to use the MacOS backend, consider installing Python using
 `homebrew <http://brew.sh/>`_.
+
+
+

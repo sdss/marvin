@@ -28,6 +28,10 @@ Installation
 
     pip install sdss-marvin
 
+**or to upgrade an existing Marvin installation**::
+
+    pip install --upgrade sdss-marvin
+
 **Developer Installation (Medium Pain)**::
 
     git clone https://github.com/sdss/marvin
@@ -63,6 +67,8 @@ and replace ``<password>`` with the default SDSS data password. Finally, run
 
 |
 
+.. _marvin-sdss-depends:
+
 Marvin dependencies on SDSS software
 ------------------------------------
 
@@ -81,6 +87,8 @@ it can also lead to confusions about what version marvin is using.
 
 |
 
+.. _marvin-sasdir:
+
 Local SAS directory structure
 -----------------------------
 
@@ -96,5 +104,19 @@ You can also define your custom ``$MANGA_SPECTRO_REDUX`` and ``$MANGA_SPECTRO_AN
 point to the redux and analysis data directories, respectively. As a general advice, if you are
 not using other products that require setting those environment variables, you only want to
 define ``$SAS_BASE_DIR`` (or not define it and assume the data will be stored in ``$HOME/sas``).
+
+|
+
+.. _marvin-install-ipython:
+
+Using IPython
+-------------
+
+If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
+`IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
+between history, color coding, etc. It's also especially useful if you plan to use Matplotlib,
+as IPython comes with default interactive plotting. If you installed Python via the Anaconda or Miniconda
+distributions, then you already have IPython installed.  Just run ``ipython`` in your terminal.  If you
+need to install it, do ``pip install jupyter``.
 
 |
