@@ -5,6 +5,7 @@ from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api import parse_params
 from marvin.api.base import BaseView
+from marvin.utils.db import get_traceback
 
 
 def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
@@ -61,6 +62,7 @@ class QueryView(BaseView):
                             limit=limit, sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
+            self.results['traceback'] = get_traceback(asstring=True)
         else:
             self.results['status'] = 1
             self.update_results(res)
@@ -84,6 +86,7 @@ class QueryView(BaseView):
                             sort=sort, order=order)
         except MarvinError as e:
             self.results['error'] = str(e)
+            self.results['traceback'] = get_traceback(asstring=True)
         else:
             self.results['status'] = 1
             self.update_results(res)

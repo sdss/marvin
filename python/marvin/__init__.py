@@ -176,6 +176,13 @@ class MarvinConfig(object):
     def session_id(self, value):
         bconfig.session_id = value
 
+    @property
+    def _traceback(self):
+        return bconfig.traceback
+
+    @_traceback.setter
+    def _traceback(self, value):
+        bconfig.traceback = value
 
 #################################################
 

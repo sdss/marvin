@@ -4,6 +4,7 @@ from __future__ import print_function, division, absolute_import
 import unittest
 import copy
 from marvin import config, marvindb
+from marvin import bconfig
 from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 from marvin.tools.cube import Cube
@@ -31,6 +32,7 @@ class TestQuery(MarvinTest):
         cls.init_mode = config.mode
         cls.init_sasurl = config.sasurl
         cls.init_urlmap = config.urlmap
+        cls.init_traceback = config._traceback
 
     @classmethod
     def tearDownClass(cls):
@@ -43,6 +45,7 @@ class TestQuery(MarvinTest):
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
+        config._traceback = self.init_traceback
         config.setMPL('MPL-4')
 
     def tearDown(self):
@@ -154,6 +157,7 @@ class TestQuery(MarvinTest):
         config.switchSasUrl(mode)
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
+        config.mode='remote'
 
     def test_Query_remote_mpl4(self):
         self._setRemote()
@@ -171,6 +175,30 @@ class TestQuery(MarvinTest):
         r = q.run()
         self.assertEqual([], q.joins)
         self.assertEqual(2, r.totalcount)  # MPL-4 count
+
+    def _fail_query(self, errmsg, tracemsg, *args, **kwargs):
+        with self.assertRaises(MarvinError) as cm:
+            q = Query(**kwargs)
+            r = q.run()
+        self.assertIn(errmsg, str(cm.exception))
+        self.assertIsNotNone(config._traceback)
+        self.assertIsNotNone(bconfig.traceback)
+        self.assertIn(tracemsg, config._traceback)
+
+    def test_Query_remote_fail_traceback(self):
+        self._setRemote(mode='local')
+        p = 'nsa.z < 0.1'
+        rt = 'nsa.hello'
+        errmsg = 'nsa.hello does not match any column'
+        tracemsg = 'Query failed with'
+        self._fail_query(errmsg, tracemsg, searchfilter=p, returnparams=rt)
+
+    def test_Query_remote_no_traceback(self):
+        self._setRemote(mode='local')
+        p = 'nsa.z < 0.1'
+        q = Query(searchfilter=p)
+        r = q.run()
+        self.assertIsNone(config._traceback)
 
     def _dap_query_1(self, count, table=None, name='emline_gflux_ha_6564', classname='SpaxelProp', allspax=None):
         classname = 'Clean{0}'.format(classname) if not allspax else classname
@@ -191,10 +219,10 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(244, table='spaxelprop', allspax=True)
+        self._dap_query_1(231, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
-        self._dap_query_1(244, name='haflux', allspax=True)
+        self._dap_query_1(231, name='haflux', allspax=True)
 
     def test_dap_query_1_normal_clean(self):
         self._dap_query_1(231, table='spaxelprop')
