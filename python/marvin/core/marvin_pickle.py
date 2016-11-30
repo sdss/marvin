@@ -66,7 +66,8 @@ def save(obj, path=None, overwrite=False):
         os.makedirs(dirname)
 
     try:
-        pickle.dump(obj, open(path, 'w'))
+        with open(path, 'wb') as fout:
+            pickle.dump(obj, fout)
     except Exception as ee:
         if os.path.exists(path):
             os.remove(path)
@@ -96,7 +97,8 @@ def restore(path, delete=False):
         raise MarvinError('the path does not exists.')
 
     try:
-        obj = pickle.load(open(path))
+        with open(path, 'rb') as fin:
+            obj = pickle.load(fin)
     except Exception as ee:
         raise MarvinError('something went wrong unplicking the object: {0}'
                           .format(str(ee)))
