@@ -89,6 +89,7 @@ setup(name=NAME,
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'Topic :: Scientific/Engineering :: Astronomy',
           'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: Software Development :: User Interfaces',
+          'Topic :: Software Development :: User Interfaces'
+          #,
       ],
       )
