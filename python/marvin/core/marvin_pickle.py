@@ -10,8 +10,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-# TODO: adapt this to PY3.
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
 import warnings
 
 import os
@@ -63,7 +66,7 @@ def save(obj, path=None, overwrite=False):
         os.makedirs(dirname)
 
     try:
-        cPickle.dump(obj, open(path, 'w'))
+        pickle.dump(obj, open(path, 'w'))
     except Exception as ee:
         if os.path.exists(path):
             os.remove(path)
@@ -93,7 +96,7 @@ def restore(path, delete=False):
         raise MarvinError('the path does not exists.')
 
     try:
-        obj = cPickle.load(open(path))
+        obj = pickle.load(open(path))
     except Exception as ee:
         raise MarvinError('something went wrong unplicking the object: {0}'
                           .format(str(ee)))
