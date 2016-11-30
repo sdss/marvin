@@ -162,7 +162,7 @@ class MarvinConfig(object):
         value = value.upper()
         if value not in self._mpldict:
             raise MarvinError('trying to set an invalid release version. Valid releases are: {0}'
-                              .format(', '.join(sorted(self._mpldict.keys()))))
+                              .format(', '.join(sorted(list(self._mpldict)))))
         self._release = value
 
         drpver = self._mpldict[self.release][0]
@@ -251,7 +251,7 @@ class MarvinConfig(object):
 
         # Check the versioning config
         if not self.release:
-            topkey = self._mpldict.keys()[0]
+            topkey = list(self._mpldict)[0]
             log.info('No release version set. Setting default to {0}'.format(topkey))
             self.release = topkey
 
