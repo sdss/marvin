@@ -138,16 +138,16 @@ class TestResults(unittest.TestCase):
             self.assertEqual(list, type(output))
             self.assertEqual(dict, type(output[0]))
             if name is not None:
-                self.assertEqual([name], output[0].keys())
+                self.assertEqual([name], list(output[0]))
             else:
-                self.assertEqual(set(self.columns), set(output[0].keys()))
+                self.assertEqual(set(self.columns), set(output[0]))
         elif ftype == 'dictlist':
             self.assertEqual(dict, type(output))
             self.assertEqual(list, type(output.get('cube.mangaid')))
             if name is not None:
                 self.assertEqual([name], output.keys())
             else:
-                self.assertEqual(set(self.columns), set(output.keys()))
+                self.assertEqual(set(self.columns), set(output)
 
     def test_get_dict_local(self):
         self._get_dict()

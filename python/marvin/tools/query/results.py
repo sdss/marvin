@@ -12,11 +12,15 @@ import warnings
 import json
 import os
 import datetime
-import cPickle
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 try:
     import pandas as pd
@@ -396,7 +400,7 @@ class Results(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'))
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -462,7 +466,7 @@ class Results(object):
                 >>> [u'mangaid', u'name', u'nsa.z']
         '''
         try:
-            self.columns = self.results[0].keys() if self.results else None
+            self.columns = list(self.results[0].keys()) if self.results else None
         except Exception as e:
             raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
         return self.columns

@@ -81,7 +81,7 @@ class ParamFxnLookupDict(dict):
     def __getitem__(self, key):
 
         lowkey = key.lower()
-        mykeys = self.keys()
+        mykeys = list(self.keys())
 
         inkey = lowkey in mykeys
         if not inkey:

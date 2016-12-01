@@ -29,9 +29,13 @@ import datetime
 import numpy as np
 import warnings
 import os
-import cPickle
 from marvin.core import marvin_pickle
 from functools import wraps
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 __all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
@@ -384,7 +388,7 @@ class Query(object):
                 a list of all of the available queryable parameters
         '''
         if self.mode == 'local':
-            keys = self.marvinform._param_form_lookup.keys()
+            keys = list(self.marvinform._param_form_lookup.keys())
             keys.sort()
             rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
             # simplify the spaxelprop list down to one set
@@ -446,7 +450,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'))
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -581,7 +585,7 @@ class Query(object):
     def _validateForms(self):
         ''' Validate all the data in the forms '''
 
-        formkeys = self.myforms.keys()
+        formkeys = list(self.myforms.keys())
         isgood = [form.validate() for form in self.myforms.values()]
         if not all(isgood):
             inds = np.where(np.invert(isgood))[0]

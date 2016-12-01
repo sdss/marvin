@@ -43,7 +43,7 @@ def updateGlobalSession():
 def setGlobalSession():
     ''' Sets the global session for Flask '''
 
-    mpls = config._mpldict.keys()
+    mpls = list(config._mpldict.keys())
     versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(release=mpl))} for mpl in mpls]
     current_session['versions'] = versions
 
