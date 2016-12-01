@@ -862,12 +862,14 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
     if mode == 'auto':
         log.debug('get_nsa_data: running auto mode mode.')
         try:
-            nsa_data = get_nsa_data(mangaid, mode='local', source=source)
+            nsa_data = get_nsa_data(mangaid, mode='local', source=source,
+                                    drpver=drpver, drpall=drpall)
             return nsa_data
         except MarvinError as ee:
             log.debug('get_nsa_data: local mode failed with error %s', str(ee))
             try:
-                nsa_data = get_nsa_data(mangaid, mode='remote', source=source)
+                nsa_data = get_nsa_data(mangaid, mode='remote', source=source,
+                                        drpver=drpver, drpall=drpall)
                 return nsa_data
             except MarvinError as ee:
                 raise MarvinError('get_nsa_data: failed to get NSA data for mangaid=%r in '
