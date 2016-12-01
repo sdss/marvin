@@ -590,7 +590,7 @@ class Query(object):
         if not all(isgood):
             inds = np.where(np.invert(isgood))[0]
             for index in inds:
-                self._errors.append(self.myforms.values()[index].errors)
+                self._errors.append(list(self.myforms.values())[index].errors)
             raise MarvinError('Parameters failed to validate: {0}'.format(self._errors))
 
     def add_condition(self):

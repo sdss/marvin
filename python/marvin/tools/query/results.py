@@ -499,7 +499,7 @@ class Results(object):
         if cols:
             if not self.coltoparam:
                 self.coltoparam = OrderedDict(zip(cols, self._params))
-            mapping = self.coltoparam[col] if col else self.coltoparam.values()
+            mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
         else:
             mapping = None
         return mapping
@@ -512,7 +512,7 @@ class Results(object):
         if cols:
             if not self.paramtocol:
                 self.paramtocol = OrderedDict(zip(self._params, cols))
-            mapping = self.paramtocol[param] if param else self.paramtocol.values()
+            mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
         else:
             mapping = None
         return mapping
