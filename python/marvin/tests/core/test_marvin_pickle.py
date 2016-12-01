@@ -17,7 +17,7 @@ import marvin.core.marvin_pickle
 
 
 class TestMarvinPickle(marvin.tests.MarvinTest):
-    """Test Dotable dictionary class."""
+    """Test marvin_pickle class."""
 
     @classmethod
     def setUpClass(cls):

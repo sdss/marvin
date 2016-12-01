@@ -22,7 +22,7 @@ import astropy.io.fits
 
 import marvin
 import marvin.api.api
-import marvin.core.marvin_pickle
+from marvin.core import marvin_pickle
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.db import testDbConnection

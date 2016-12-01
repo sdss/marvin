@@ -6,9 +6,7 @@
 # Created by Brett Andrews on 30 Nov 2016.
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import division, print_function, absolute_import
 
 import unittest
 
@@ -22,13 +20,33 @@ class TestCoreDotable(marvin.tests.MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-        cls.normalDict = dict(a=7, b=[10, 2])
-        cls.dotableDict = marvin.core.core.Dotable(cls.normalDict)
+        cls.normalDict = dict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])
 
     def testDotable(self):
-        self.assertIsEqual(self.dotableDict['a'], self.dotableDict.a)
+        self.dotableDict = marvin.core.core.Dotable(self.normalDict)
+        self.assertEqual(self.dotableDict['A'], self.dotableDict.A)
         self.assertListEqual(self.dotableDict['b'], self.dotableDict.b)
+        self.assertEqual(self.dotableDict['C'], self.dotableDict.C)
+        self.assertListEqual(self.dotableDict['d'], self.dotableDict.d)
 
+    def testDotableCaseInsensitive(self):
+        self.dotableCI = marvin.core.core.DotableCaseInsensitive(self.normalDict)
+        self.assertEqual(self.dotableCI['A'], self.dotableCI.A)
+        self.assertEqual(self.dotableCI['a'], self.dotableCI.a)
+        self.assertEqual(self.dotableCI['A'], self.dotableCI.a)
+        self.assertEqual(self.dotableCI['a'], self.dotableCI.A)
+        self.assertListEqual(self.dotableCI['b'], self.dotableCI.b)
+        self.assertListEqual(self.dotableCI['B'], self.dotableCI.B)
+        self.assertListEqual(self.dotableCI['b'], self.dotableCI.B)
+        self.assertListEqual(self.dotableCI['B'], self.dotableCI.b)
+        self.assertEqual(self.dotableCI['C'], self.dotableCI.C)
+        self.assertEqual(self.dotableCI['c'], self.dotableCI.c)
+        self.assertEqual(self.dotableCI['C'], self.dotableCI.c)
+        self.assertEqual(self.dotableCI['c'], self.dotableCI.C)
+        self.assertListEqual(self.dotableCI['d'], self.dotableCI.d)
+        self.assertListEqual(self.dotableCI['D'], self.dotableCI.D)
+        self.assertListEqual(self.dotableCI['d'], self.dotableCI.D)
+        self.assertListEqual(self.dotableCI['D'], self.dotableCI.d)
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
