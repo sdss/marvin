@@ -16,6 +16,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
+from collections import OrderedDict
 from unittest import TestCase
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -141,10 +142,12 @@ class TestGetNSAData(TestCase):
         marvin.config.db = self.config_db
 
     def _test_nsa(self, data):
+        self.assertIsInstance(data, OrderedDict)
         self.assertIn('profmean_ivar', data.keys())
         self.assertEqual(data['profmean_ivar'][0][0], 18.5536117553711)
 
     def _test_drpall(self, data):
+        self.assertIsInstance(data, OrderedDict)
         self.assertNotIn('profmean_ivar', data.keys())
         self.assertIn('iauname', data.keys())
         self.assertEqual(data['iauname'], 'J153010.73+484124.8')

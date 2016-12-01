@@ -907,7 +907,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
 
             drpall_row = get_drpall_row(plateifu, drpall=drpall, drpver=drpver)
 
-            nsa_data = {}
+            nsa_data = collections.OrderedDict()
             for col in drpall_row.colnames:
                 if col.startswith('nsa_'):
                     value = drpall_row[col]
@@ -932,6 +932,6 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
             raise MarvinError('API call to {0} failed: {1}'.format(request_name, str(ee)))
         else:
             if response.results['status'] == 1:
-                return response.getData()
+                return collections.OrderedDict(response.getData())
             else:
                 raise MarvinError('get_nsa_data: %s', response['error'])
