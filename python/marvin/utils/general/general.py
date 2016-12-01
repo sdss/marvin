@@ -1,11 +1,19 @@
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from astropy import wcs
-import numpy as np
-from astropy import table
-from scipy.interpolate import griddata
+
+import collections
+import os
 import warnings
-import marvin
+
+import numpy as np
 import PIL
+from scipy.interpolate import griddata
+
+from astropy import wcs
+from astropy import table
+
+import marvin
+from marvin import log
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from brain.core.exceptions import BrainError
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -17,11 +25,12 @@ try:
 except ImportError as e:
     Path = None
 
+
 # General utilities
-__all__ = ['convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
+__all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux']
+           'getDapRedux', 'get_nsa_data')
 
 drpTable = {}
 
@@ -797,3 +806,132 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
         raise ValueError('{0} results found for {1} in drpall table'.format(len(row), plateifu))
 
     return row[0]
+
+
+def _db_row_to_dict(row, remove_columns=False):
+    """Converts a DB object to a dictionary."""
+
+    columns = row.__table__.columns.keys()
+    row_dict = collections.OrderedDict()
+
+    for col in columns:
+        if remove_columns and col in remove_columns:
+            continue
+        row_dict[col] = getattr(row, col)
+
+    return row_dict
+
+
+def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
+    """Returns a dictionary of NSA data from the DB or from the drpall file.
+
+    Parameters:
+        mangaid (str):
+            The mangaid of the target for which the NSA information will be returned.
+        source ({'nsa', 'drpall'}):
+            The data source. If ``source='nsa'``, the full NSA catalogue from the DB will
+            be used. If ``source='drpall'``, the subset of NSA columns included in the drpall
+            file will be returned.
+        mode ({'auto', 'local', 'remote'}):
+            See :ref:`mode-decision-tree`.
+        drpver (str or None):
+            The version of the DRP to use, if ``source='drpall'``. If ``None``, uses the
+            version set by ``marvin.config.release``.
+        drpall (str or None):
+            A path to the drpall file to use if ``source='drpall'``. If not defined, the
+            default drpall file matching ``drpver`` will be used.
+
+    Returns:
+        nsa_data (dict):
+            A dictionary containing the columns and values from the NSA catalogue for
+            ``mangaid``.
+
+    """
+
+    from marvin import config, marvindb
+
+    valid_modes = ['auto', 'local', 'remote']
+    assert mode in valid_modes, 'mode must be one of {0}'.format(valid_modes)
+
+    valid_sources = ['nsa', 'drpall']
+    assert source in valid_sources, 'source must be one of {0}'.format(valid_sources)
+
+    log.debug('get_nsa_data: getting NSA data for mangaid=%r with source=%r, mode=%r',
+              mangaid, source, mode)
+
+    if mode == 'auto':
+        log.debug('get_nsa_data: running auto mode mode.')
+        try:
+            nsa_data = get_nsa_data(mangaid, mode='local', source=source)
+            return nsa_data
+        except MarvinError as ee:
+            log.debug('get_nsa_data: local mode failed with error %s', str(ee))
+            try:
+                nsa_data = get_nsa_data(mangaid, mode='remote', source=source)
+                return nsa_data
+            except MarvinError as ee:
+                raise MarvinError('get_nsa_data: failed to get NSA data for mangaid=%r in '
+                                  'auto mode with with error: %s', mangaid, str(ee))
+
+    elif mode == 'local':
+
+        if source == 'nsa':
+
+            if config.db is not None:
+
+                session = marvindb.session
+                sampledb = marvindb.sampledb
+
+                nsa_row = session.query(sampledb.NSA).join(sampledb.MangaTargetToNSA,
+                                                           sampledb.MangaTarget).filter(
+                    sampledb.MangaTarget.mangaid == mangaid).all()
+
+                if len(nsa_row) == 1:
+                    return _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk'])
+                elif len(nsa_row) > 1:
+                    warnings.warn('get_nsa_data: multiple NSA rows found for mangaid={0}. '
+                                  'Using the first one.'.format(mangaid), MarvinUserWarning)
+                    return _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk'])
+                elif len(nsa_row) == 0:
+                    raise MarvinError('get_nsa_data: cannot find NSA row for mangaid={0}'
+                                      .format(mangaid))
+
+            else:
+
+                raise MarvinError('get_nsa_data: cannot find a valid DB connection.')
+
+        elif source == 'drpall':
+
+            plateifu = mangaid2plateifu(mangaid, drpver=drpver, drpall=drpall, mode='drpall')
+            log.debug('get_nsa_data: found plateifu=%r for mangaid=%r', plateifu, mangaid)
+
+            drpall_row = get_drpall_row(plateifu, drpall=drpall, drpver=drpver)
+
+            nsa_data = {}
+            for col in drpall_row.colnames:
+                if col.startswith('nsa_'):
+                    value = drpall_row[col]
+                    if isinstance(value, np.ndarray):
+                        value = value.tolist()
+                    nsa_data[col[4:]] = value
+
+            return nsa_data
+
+    elif mode == 'remote':
+
+        from marvin.api.api import Interaction
+
+        try:
+            if source == 'nsa':
+                request_name = 'nsa_full'
+            else:
+                request_name = 'nsa_drpall'
+            url = marvin.config.urlmap['api'][request_name]['url']
+            response = Interaction(url.format(mangaid=mangaid))
+        except MarvinError as ee:
+            raise MarvinError('API call to {0} failed: {1}'.format(request_name, str(ee)))
+        else:
+            if response.results['status'] == 1:
+                return response.getData()
+            else:
+                raise MarvinError('get_nsa_data: %s', response['error'])
