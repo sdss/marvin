@@ -17,6 +17,9 @@
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
 
+### Fixed:
+- Issue #115: drpall does not get updated when a tool sets a custom release.
+
 ## [2.0.9] - 2016/11/19
 ### Added:
 - Docs now use `marvin.__version__`.

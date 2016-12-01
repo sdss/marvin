@@ -76,8 +76,9 @@ class MarvinToolsClass(object):
         self.mode = kwargsGet(kwargs, 'mode', marvin.config.mode)
 
         self._release = kwargsGet(kwargs, 'release', marvin.config.release)
-        self._drpall = kwargsGet(kwargs, 'drpall', marvin.config.drpall)
+
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+        self._drpall = kwargsGet(kwargs, 'drpall', marvin.config._getDrpAllPath(self._drpver))
 
         self._forcedownload = kwargsGet(kwargs, 'download', marvin.config.download)
 
