@@ -40,6 +40,10 @@ Tools
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
+* The elliptical Petrosian colours that can be used for querying (e.g., ``petroth50_el_g_r``)
+  are incorrect as they are calculated using ``petroth50_el``, which is the half-light radius and not the flux (!).
+  This will be fixed in marvin 2.0.10, but beware if you are using a previous version.
+
 Web
 ^^^
 
