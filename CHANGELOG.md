@@ -7,12 +7,14 @@
     - Removed old installation text
     - Added section on marvin SDSS dependencies and SAS_BASE_DIR
     - Added section for FAQ about installation
+    - Added web browser cache issue into FAQ
 - Added traceback info in the API calls
     - Added traceback attribute in Brain config
     - Added hidden _traceback attribute in Marvin config
     - Only implemented in two Query API calls at the moment
     - Added a few tests for traceback
     - see usage in cube_query in marvin/api/query.py
+- Added the Ha_to_Hb ratio the DAP ModelClasses
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
