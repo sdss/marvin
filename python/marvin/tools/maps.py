@@ -146,17 +146,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
             has no effect for now.
         nsa_source ({'auto', 'drpall', 'nsa'}):
             Defines how the NSA data for this object should loaded when
-            ``Cube.nsa`` is first called. If ``drpall``, the drpall file will
+            ``Maps.nsa`` is first called. If ``drpall``, the drpall file will
             be used (note that this will only contain a subset of all the NSA
             information); if ``nsa``, the full set of data from the DB will be
             retrieved. If the drpall file or a database are not available, a
             remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the ``Cube`` object has been
-            instantiated. If the cube has ``Cube.data_origin='file'``,
+            source will depend on how the ``Maps`` object has been
+            instantiated. If the cube has ``Maps.data_origin='file'``,
             the drpall file will be used (as it is more likely that the user
             has that file in their system). Otherwise, ``nsa_source='nsa'``
             will be assumed. This behaviour can be modified during runtime by
-            modifying the ``Cube.nsa_mode`` with one of the valid values.
+            modifying the ``Maps.nsa_mode`` with one of the valid values.
         release (str):
             The MPL/DR version of the data to use.
 
