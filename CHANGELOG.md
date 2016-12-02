@@ -25,7 +25,7 @@
 - Docs now use `marvin.__version__`.
 
 ### Fixed:
-- Fixed #100, #103: problem with getMap for propperties without ivar.
+- Fixed #100, #103: problem with getMap for properties without ivar.
 - Fixed #101: problem with marvin query.
 
 ## [2.0.8] - 2016/11/18
