@@ -45,7 +45,7 @@ class ArrayOps(object):
 
     @property
     def cols(self):
-        return self.__table__.columns._data.keys()
+        return list(self.__table__.columns._data.keys())
 
     @property
     def collist(self):
@@ -80,11 +80,11 @@ class ArrayOps(object):
         endnum = type(end) == int or type(end) == float
         opdict = {'=': eq, '<': lt, '<=': le, '>': gt, '>=': ge, '!=': ne}
         if start in opdict.keys() or end in opdict.keys():
-            opind = opdict.keys().index(start) if start in opdict.keys() else opdict.keys().index(end)
+            opind = list(opdict.keys()).index(start) if start in opdict.keys() else list(opdict.keys()).index(end)
             if start in opdict.keys():
-                start = opdict[opdict.keys()[opind]]
+                start = opdict[list(opdict.keys())[opind]]
             if end in opdict.keys():
-                end = opdict[opdict.keys()[opind]]
+                end = opdict[list(opdict.keys())[opind]]
 
         # Get matching index
         self.idx = self.matchIndex(name=name)
