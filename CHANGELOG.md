@@ -19,6 +19,8 @@
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
+- Issue #107: missing os library under save function of Map class
+
 
 ## [2.0.9] - 2016/11/19
 ### Added:
@@ -28,17 +30,21 @@
 - Fixed #100, #103: problem with getMap for properties without ivar.
 - Fixed #101: problem with marvin query.
 
+
 ## [2.0.8] - 2016/11/18
 ### Fixed:
 - Now really fixing #98
+
 
 ## [2.0.7] - 2016/11/18
 ### Fixed:
 - Fixed issue #98
 
+
 ## [2.0.6] - 2016/11/17
 ### Fixed:
 - Bug in Queries with dap query check running in remote mode.  Param form is empty.
+
 
 ## [2.0.5] - 2016/11/17
 ### Added:
@@ -54,7 +60,9 @@
 - Fixed long_description in setup.py to work with PyPI.
 - Fixed a problem that made marvin always use the modules in extern
 
+
 ## [The dark ages] - multiple versions not logged.
+
 
 ## [1.90.0]
 ### Changed

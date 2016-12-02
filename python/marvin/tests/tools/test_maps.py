@@ -414,6 +414,45 @@ class TestPickling(TestMapsBase):
         self.assertIsNone(maps_restored.data)
         self.assertEqual(maps_restored.header['VERSDRP3'], 'v1_5_0')
 
+    def _test_pickle_map(self, maps, data_origin):
+
+        ha_map = maps['emline_gflux_ha_6564']
+
+        test_path = '~/test_map_ha.mpf'
+        path = ha_map.save(path=test_path)
+        self._files_created.append(path)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+
+        map_ha_restored = marvin.tools.map.Map.restore(path, delete=True)
+        self.assertIsNotNone(map_ha_restored.maps)
+        self.assertEqual(map_ha_restored.maps.data_origin, data_origin)
+        self.assertIsInstance(map_ha_restored, marvin.tools.map.Map)
+        self.assertIsNotNone(map_ha_restored.value)
+
+        self.assertFalse(os.path.exists(path))
+
+    def test_pickle_map_file(self):
+        maps = marvin.tools.maps.Maps(filename=self.filename_default)
+        self._test_pickle_map(maps, 'file')
+
+    def test_pickle_map_db(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
+        ha_map = maps['emline_gflux_ha_6564']
+        test_path = '~/test_map_ha.mpf'
+
+        with self.assertRaises(marvin.core.exceptions.MarvinError) as ee:
+            ha_map.save(test_path)
+
+        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
+                      str(ee.exception))
+
+    def test_pickle_map_remote(self):
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
+        self._test_pickle_map(maps, 'api')
+
 
 if __name__ == '__main__':
     # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
