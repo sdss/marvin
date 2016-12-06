@@ -26,7 +26,7 @@ import marvin_pickle
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.db import testDbConnection
-from marvin.utils.general import mangaid2plateifu
+from marvin.utils.general import mangaid2plateifu, get_nsa_data
 
 try:
     from sdss_access.path import Path
@@ -79,6 +79,11 @@ class MarvinToolsClass(object):
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
         self._drpall = kwargsGet(kwargs, 'drpall', marvin.config._getDrpAllPath(self._drpver))
+
+        self._nsa = None
+        self.nsa_source = kwargs.pop('nsa_source', 'auto')
+        assert self.nsa_source in ['auto', 'nsa', 'drpall'], \
+            'nsa_source must be one of auto, nsa, or drpall'
 
         self._forcedownload = kwargsGet(kwargs, 'download', marvin.config.download)
 
@@ -247,6 +252,27 @@ class MarvinToolsClass(object):
         """
 
         return marvin_pickle.restore(path, delete=delete)
+
+    @property
+    def nsa(self):
+        """Returns the contents of the NSA catalogue for this target."""
+
+        if self._nsa is None:
+
+            if self.nsa_source == 'auto':
+                if self.data_origin == 'file':
+                    nsa_source = 'drpall'
+                else:
+                    nsa_source = 'nsa'
+            else:
+                nsa_source = self.nsa_source
+
+            self._nsa = get_nsa_data(self.mangaid, mode='auto',
+                                     source=nsa_source,
+                                     drpver=self._drpver,
+                                     drpall=self._drpall)
+
+        return self._nsa
 
 
 class Dotable(dict):

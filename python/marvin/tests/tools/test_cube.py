@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import collections
 import os
 import unittest
 
@@ -177,6 +178,58 @@ class TestCube(TestCubeBase):
     def test_cube_remote_redshift(self):
         cube = Cube(plateifu=self.plateifu, mode='remote')
         self.assertAlmostEqual(cube.redshift, 0.0407447)
+
+    def _test_nsa(self, nsa_data, mode='nsa'):
+        self.assertIsInstance(nsa_data, collections.OrderedDict)
+        if mode == 'drpall':
+            self.assertNotIn('profmean_ivar', nsa_data.keys())
+        self.assertIn('zdist', nsa_data.keys())
+        self.assertAlmostEqual(nsa_data['zdist'], 0.041201399999999999)
+
+    def test_nsa_file_auto(self):
+        cube = Cube(filename=self.filename)
+        self.assertEqual(cube.nsa_source, 'auto')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_file_nsa(self):
+        cube = Cube(filename=self.filename, nsa_source='nsa')
+        self.assertEqual(cube.nsa_source, 'nsa')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_file_drpall(self):
+        cube = Cube(plateifu=self.plateifu, nsa_source='drpall')
+        self.assertEqual(cube.nsa_source, 'drpall')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_db_auto(self):
+        cube = Cube(plateifu=self.plateifu)
+        self.assertEqual(cube.nsa_source, 'auto')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_db_nsa(self):
+        cube = Cube(plateifu=self.plateifu, nsa_source='nsa')
+        self.assertEqual(cube.nsa_source, 'nsa')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_db_drpall(self):
+        cube = Cube(plateifu=self.plateifu, nsa_source='drpall')
+        self.assertEqual(cube.nsa_source, 'drpall')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_remote_auto(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        self.assertEqual(cube.nsa_source, 'auto')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_remote_nsa(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote', nsa_source='nsa')
+        self.assertEqual(cube.nsa_source, 'nsa')
+        self._test_nsa(cube.nsa)
+
+    def test_nsa_remote_drpall(self):
+        cube = Cube(plateifu=self.plateifu, mode='remote', nsa_source='drpall')
+        self.assertEqual(cube.nsa_source, 'drpall')
+        self._test_nsa(cube.nsa)
 
 
 class TestGetSpaxel(TestCubeBase):

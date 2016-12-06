@@ -45,6 +45,19 @@ class RSS(MarvinToolsClass, list):
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
+        nsa_source ({'auto', 'drpall', 'nsa'}):
+            Defines how the NSA data for this object should loaded when
+            ``RSS.nsa`` is first called. If ``drpall``, the drpall file will
+            be used (note that this will only contain a subset of all the NSA
+            information); if ``nsa``, the full set of data from the DB will be
+            retrieved. If the drpall file or a database are not available, a
+            remote API call will be attempted. If ``nsa_source='auto'``, the
+            source will depend on how the ``RSS`` object has been
+            instantiated. If the cube has ``RSS.data_origin='file'``,
+            the drpall file will be used (as it is more likely that the user
+            has that file in their system). Otherwise, ``nsa_source='nsa'``
+            will be assumed. This behaviour can be modified during runtime by
+            modifying the ``RSS.nsa_mode`` with one of the valid values.
         release (str):
             The MPL/DR version of the data to use.
 
@@ -57,8 +70,8 @@ class RSS(MarvinToolsClass, list):
 
     def __init__(self, *args, **kwargs):
 
-        valid_kwargs = [
-            'filename', 'mangaid', 'plateifu', 'mode', 'drpall', 'release']
+        valid_kwargs = ['filename', 'mangaid', 'plateifu', 'mode',
+                        'drpall', 'release', 'nsa_source']
 
         assert len(args) == 0, 'RSS does not accept arguments, only keywords.'
         for kw in kwargs:
