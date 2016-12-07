@@ -92,7 +92,8 @@ class TestBinInit(TestBinBase):
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename)
 
         self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertFalse(bb._modelcube)
+        self.assertIsNotNone(bb._modelcube)
+        self.assertEqual(bb._modelcube.data_origin, 'db')
 
         self._check_bin_data(bb)
 
