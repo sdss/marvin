@@ -16,24 +16,38 @@ Revision history:
 
 from __future__ import division
 from __future__ import print_function
-from marvin.db.database import db
-from sqlalchemy.orm import relationship, configure_mappers, backref
-from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy import case, cast, Float
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy import ForeignKeyConstraint, func
-import shutil
-import re
-import math
+
 import itertools
-from marvin.core.caching_query import RelationshipCache
+import math
+import re
+import shutil
+
+import numpy as np
 
 try:
     import cStringIO as StringIO
 except ImportError:
     from io import StringIO
 
+from sqlalchemy import case, cast, Float
+from sqlalchemy import ForeignKeyConstraint, func
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.orm import relationship, configure_mappers, backref
+
+from marvin.core.caching_query import RelationshipCache
+from marvin.db.database import db
+
+
 Base = db.Base
+
+
+# The softening parameter for asinh magnitudes
+bb = {'u':	1.4e-10,
+      'g':	0.9e-10,
+      'r':	1.2e-10,
+      'i':	1.8e-10,
+      'z':	7.4e-10}
 
 
 def cameliseClassname(tableName):
@@ -189,24 +203,41 @@ for tableName in allTables:
             secondary=newRelationalClass.__table__)
 
 
-def HybridProperty(parameter, index=None):
+def HybridMag(flux_parameter, band, index=None):
+    """Returns a hybrid property describing an asinh magnitude.
+
+    ``flux_parameter`` must be a column with a flux in nanomaggies. ``band`` is
+    the band name, to determine the softening parameter. If ``flux_parameter``
+    is and array, ``index`` defines the position of ``band`` within the array.
+
+    """
 
     @hybrid_property
-    def hybridProperty(self):
+    def hybridMag(self):
         if index is not None:
-            return getattr(self, parameter)[index]
+            flux = getattr(self, flux_parameter)[index]
         else:
-            return getattr(self, parameter)
+            flux = getattr(self, flux_parameter)
 
-    @hybridProperty.expression
-    def hybridProperty(cls):
+        flux *= 1e-9  # From nanomaggies to maggies
+        bb_band = bb[band]
+        asinh_mag = -2.5 / np.log(10) * (np.arcsinh(flux / (2. * bb_band)) + np.log(bb_band))
+        return asinh_mag
+
+    @hybridMag.expression
+    def hybridMag(cls):
         if index is not None:
             # It needs to be index + 1 because Postgresql arrays are 1-indexed.
-            return getattr(cls, parameter)[index + 1]
+            flux = getattr(cls, flux_parameter)[index + 1]
         else:
-            return getattr(cls, parameter)
+            flux = getattr(cls, flux_parameter)
 
-    return hybridProperty
+        flux *= 1e-9
+        bb_band = bb[band]
+        asinh_mag = -2.5 / np.log(10) * (np.arcsinh(flux / (2. * bb_band)) + np.log(bb_band))
+        return asinh_mag
+
+    return hybridMag
 
 
 def HybridColour(parameter):
@@ -249,16 +280,16 @@ def HybridMethodToProperty(method, bandA, bandB):
     return colour_property
 
 
-# Adds hybrid properties defining colours for petroth50_el (for now).
-setattr(NSA, 'petroth50_el_colour', HybridColour('petroth50_el'))
-for ii, band in enumerate('FNurgiz'):
-    propertyName = 'petroth50_el_{0}'.format(band)
-    setattr(NSA, propertyName, HybridProperty('petroth50_el', ii))
+# Adds hybrid properties defining asinh magnitudes for each of the SDSS bands.
+for ii, band in enumerate('ugriz'):
+    propertyName = 'elpetro_mag_{0}'.format(band)
+    setattr(NSA, propertyName, HybridMag('elpetro_flux', band, ii + 2))
 
 # Creates an attribute for each colour.
-for colour_a, colour_b in itertools.combinations('FNugriz', 2):
-    setattr(NSA, 'petroth50_el_{0}_{1}'.format(colour_a, colour_b),
-            HybridMethodToProperty('petroth50_el_colour', colour_a, colour_b))
+setattr(NSA, 'elpetro_colour', HybridColour('elpetro_mag'))
+for colour_a, colour_b in itertools.combinations('ugriz', 2):
+    setattr(NSA, 'elpetro_mag_{0}_{1}'.format(colour_a, colour_b),
+            HybridMethodToProperty('elpetro_colour', colour_a, colour_b))
 
 
 # Add stellar mass hybrid attributes to NSA catalog
@@ -277,12 +308,11 @@ def logmass(parameter):
 
     return mass
 
-setattr(NSA, 'petro_logmass_el', logmass('petro_mass_el'))
+setattr(NSA, 'elpetro_logmass', logmass('elpetro_mass'))
 setattr(NSA, 'sersic_logmass', logmass('sersic_mass'))
-
+#
 configure_mappers()
 
 sample_cache = RelationshipCache(MangaTarget.NSA_objects).\
                and_(RelationshipCache(MangaTarget.character)).\
                and_(RelationshipCache(CurrentCatalogue.catalogue))
-
