@@ -10,6 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import copy
 import os
 import unittest
 
@@ -48,6 +49,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
         cls.bintype = 'NONE'
 
         cls.marvindb_session = marvin.marvindb.session
+        cls.db_orig = copy.copy(marvin.marvindb.db)
 
         cls.filename_mpl5_spx = os.path.join(
             os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
@@ -61,11 +63,13 @@ class TestMapsBase(marvin.tests.MarvinTest):
     def setUp(self):
 
         marvin.marvindb.session = self.marvindb_session
+        marvin.marvindb.db = self.db_orig
+
         marvin.config.setMPL('MPL-4')
         self.assertTrue(os.path.exists(self.filename_default))
 
     def tearDown(self):
-        pass
+        marvin.marvindb.db = self.db_orig
 
     def _assert_maps(self, maps):
         """Basic checks for a Maps object."""
@@ -121,7 +125,7 @@ class TestMapsFile(TestMapsBase):
     def test_get_spaxel_no_db(self):
         """Tests getting an spaxel if there is no DB."""
 
-        marvin.marvindb.session = None
+        marvin.marvindb.db = None
 
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         spaxel = maps.getSpaxel(x=5, y=5)
@@ -326,12 +330,11 @@ class TestGetMap(TestMapsBase):
 class TestPickling(TestMapsBase):
 
     def setUp(self):
-        super(TestPickling, self).setUp()
+        marvin.config.setMPL('MPL-4')
+        self.assertTrue(os.path.exists(self.filename_default))
         self._files_created = []
 
     def tearDown(self):
-
-        super(TestPickling, self).tearDown()
 
         for fp in self._files_created:
             if os.path.exists(fp):
@@ -344,7 +347,7 @@ class TestPickling(TestMapsBase):
         self.assertIsInstance(maps, marvin.tools.maps.Maps)
         self.assertIsNotNone(maps.data)
 
-        path = maps.save()
+        path = maps.save(overwrite=True)
         self._files_created.append(path)
 
         self.assertTrue(os.path.exists(path))
@@ -384,9 +387,10 @@ class TestPickling(TestMapsBase):
     def test_pickling_db(self):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu)
+        self.assertEqual(maps.data_origin, 'db')
 
         with self.assertRaises(marvin.core.exceptions.MarvinError) as ee:
-            maps.save()
+            maps.save(overwrite=True)
 
         self.assertIn('objects with data_origin=\'db\' cannot be saved.',
                       str(ee.exception))
@@ -398,7 +402,7 @@ class TestPickling(TestMapsBase):
         self.assertIsInstance(maps, marvin.tools.maps.Maps)
         self.assertIsNone(maps.data)
 
-        path = maps.save()
+        path = maps.save(overwrite=True)
         self._files_created.append(path)
 
         self.assertTrue(os.path.exists(path))

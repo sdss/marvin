@@ -23,6 +23,7 @@
 - Issue #115: drpall does not get updated when a tool sets a custom release.
 - Issue #107: missing os library under save function of Map class
 - Issue #117: hybrid colours were incorrect as they were being derived from petroth50_el.
+- Issue #119: test_get_spaxel_no_db fails
 
 
 ## [2.0.9] - 2016/11/19
