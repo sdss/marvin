@@ -772,7 +772,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
-                         mpl=relase, bintype=bintype, n=n, mode=binmode, daptype=daptype)
+                         mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream
     try:
