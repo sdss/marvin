@@ -591,7 +591,7 @@ class Spaxel(object):
                 spaxelprops_table.spaxel_index == spaxel_index).one()
 
             if spaxelprops is None:
-                raise MarvinError('cannot find an spaxelprops for x={0.x}, y={0.y}'.format(self))
+                raise MarvinError('cannot find a spaxelprops for x={0.x}, y={0.y}'.format(self))
 
             properties = {}
             for prop in maps_properties:
@@ -688,7 +688,7 @@ class Spaxel(object):
                 dapdb.ModelSpaxel.x == self.x, dapdb.ModelSpaxel.y == self.y).one()
 
             if modelcube_db_spaxel is None:
-                raise MarvinError('cannot find an modelcube spaxel for '
+                raise MarvinError('cannot find a modelcube spaxel for '
                                   'x={0.x}, y={0.y}'.format(self))
 
             flux_array = modelcube_db_spaxel.flux
