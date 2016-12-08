@@ -440,7 +440,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self.shape = data[self.plateifu]['shape']
 
         # Sets the WCS
-        self.wcs = data[self.plateifu]['wcs']
+        self.wcs = astropy.wcs.WCS(astropy.io.fits.Header.fromstring(data[self.plateifu]['wcs']))
 
         return
 
