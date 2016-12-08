@@ -4,9 +4,12 @@ from __future__ import print_function, division, absolute_import
 import unittest
 from marvin import config
 from marvin.tools.query import Query, Results
+from marvin.core.exceptions import MarvinError
 from marvin.api.api import Interaction
 from collections import OrderedDict, namedtuple
 from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.modelcube import ModelCube
 
 
 class TestResults(unittest.TestCase):
@@ -35,9 +38,9 @@ class TestResults(unittest.TestCase):
         config.sasurl = self.init_sasurl
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
-        config.setMPL('MPL-4')
+        config.setMPL('MPL-5')
 
-        self.filter = 'nsa.z < 0.02 and ifu.name=19*'
+        self.filter = 'nsa.z < 0.1 and cube.plate==8485'
         self.columns = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
         self.remotecols = [u'mangaid', u'plate', u'plateifu', u'name', u'z']
         self.coltoparam = OrderedDict([('mangaid', 'cube.mangaid'),
@@ -50,7 +53,8 @@ class TestResults(unittest.TestCase):
                                        ('cube.plateifu', 'plateifu'),
                                        ('ifu.name', 'name'),
                                        ('nsa.z', 'z')])
-        self.res = (u'1-22438', 7992, u'7992-1901', u'1901', 0.016383046284318)
+        #self.res = (u'1-22438', 7992, u'7992-1901', u'1901', 0.016383046284318)
+        self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407446920871735)
         self.q = Query(searchfilter=self.filter)
 
     def tearDown(self):
@@ -63,8 +67,14 @@ class TestResults(unittest.TestCase):
 
         self.q = Query(searchfilter=self.filter, mode='remote')
 
-    def _check_cols(self, mode='local'):
+    def _run_query(self):
         r = self.q.run()
+        r.sort('z', order='desc')
+        self.assertEqual(self.res, r.results[0])
+        return r
+
+    def _check_cols(self, mode='local'):
+        r = self._run_query()
         if mode == 'local':
             self.assertEqual(r.columns, self.columns)
         elif mode == 'remote':
@@ -80,7 +90,7 @@ class TestResults(unittest.TestCase):
         self._check_cols(mode='remote')
 
     def _getattribute(self, mode='local'):
-        r = self.q.run()
+        r = self._run_query()
         res = r.results[0]
 
         cols = self.columns if mode == 'local' else self.remotecols
@@ -95,7 +105,7 @@ class TestResults(unittest.TestCase):
         self._getattribute(mode='remote')
 
     def _refname(self, mode='local'):
-        r = self.q.run()
+        r = self._run_query()
         cols = self.columns if mode == 'local' else self.remotecols
         for i, expname in enumerate(cols):
             self.assertEqual(expname, r._getRefName(self.columns[i]))
@@ -109,7 +119,7 @@ class TestResults(unittest.TestCase):
         self._refname(mode='remote')
 
     def _get_list(self, name):
-        r = self.q.run()
+        r = self._run_query()
         obj = r.getListOf(name)
         self.assertIsNotNone(obj)
         self.assertEqual(list, type(obj))
@@ -126,7 +136,7 @@ class TestResults(unittest.TestCase):
             self._get_list(self.remotecols[i])
 
     def _get_dict(self, name=None, ftype='listdict'):
-        r = self.q.run()
+        r = self._run_query()
         # get output
         if name is not None:
             output = r.getDictOf(name, format_type=ftype)
@@ -177,15 +187,44 @@ class TestResults(unittest.TestCase):
         self._setRemote()
         self._get_dict(name='cube.mangaid', ftype='dictlist')
 
-    def _convertTool(self):
-        r = self.q.run()
-        r.convertToTool('cube')
+    def _convertTool(self, tooltype='cube'):
+
+        if tooltype == 'cube':
+            marvintool = Cube
+        elif tooltype == 'maps':
+            marvintool = Maps
+        elif tooltype == 'modelcube':
+            marvintool = ModelCube
+        else:
+            marvintool = Cube
+
+        r = self._run_query()
+        r.convertToTool(tooltype, limit=1)
         self.assertIsNotNone(r.objects)
         self.assertEqual(list, type(r.objects))
-        self.assertEqual(True, isinstance(r.objects[0], Cube))
+        self.assertEqual(True, isinstance(r.objects[0], marvintool))
 
     def test_convert_to_tool_local(self):
         self._convertTool()
+
+    def test_convert_tool_no_spaxel(self):
+        with self.assertRaises(AssertionError) as cm:
+            self._convertTool('spaxel')
+        errmsg = 'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel'
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_convert_tool_map(self):
+        self._convertTool('maps')
+
+    def test_convert_tool_modelcube(self):
+        self._convertTool('modelcube')
+
+    def test_convert_tool_no_modelcube(self):
+        config.setRelease('MPL-4')
+        with self.assertRaises(MarvinError) as cm:
+            self._convertTool('modelcube')
+        errmsg = "ModelCube requires at least dapver='2.0.2'"
+        self.assertIn(errmsg, str(cm.exception))
 
     def test_convert_to_tool_remote(self):
         self._setRemote()

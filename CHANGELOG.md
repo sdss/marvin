@@ -14,7 +14,8 @@
     - Only implemented in two Query API calls at the moment
     - Added a few tests for traceback
     - see usage in cube_query in marvin/api/query.py
-- Added the Ha_to_Hb ratio the DAP ModelClasses
+- Added the Ha_to_Hb ratio the DAP ModelClasses for querying
+- Added new script to perform somce basic system, os, and Marvin checks: bin/check_marvin
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -24,6 +25,8 @@
 - Issue #107: missing os library under save function of Map class
 - Issue #117: hybrid colours were incorrect as they were being derived from petroth50_el.
 - Issue #119: test_get_spaxel_no_db fails
+- Issue #121: bugfix with misspelled word in downloadList utility function
+- Issue #105: query results convertToTool not robust when null/default parameters not present
 
 
 ## [2.0.9] - 2016/11/19
