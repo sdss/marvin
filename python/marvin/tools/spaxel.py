@@ -211,6 +211,8 @@ class Spaxel(object):
         self.__maps_filename = kwargs.pop('maps_filename', None)
         self.__modelcube_filename = kwargs.pop('modelcube_filename', None)
 
+        self._set_radec()
+
         if kwargs.pop('load', True):
             self.load()
 
@@ -248,6 +250,19 @@ class Spaxel(object):
 
         if has_modelcube:
             return self.modelcube._release
+
+    def _set_radec(self):
+        """Calculates ra and dec for this spaxel."""
+
+        self.ra = None
+        self.dec = None
+
+        for obj in [self.cube, self.maps, self.modelcube]:
+            if hasattr(obj, 'wcs'):
+                if obj.wcs.naxis == 2:
+                    self.ra, self.dec = obj.wcs.wcs_pix2world([[self.x, self.y]], 0)[0]
+                elif obj.wcs.naxis == 3:
+                    self.ra, self.dec, __ = obj.wcs.wcs_pix2world([[self.x, self.y, 0]], 0)[0]
 
     def load(self):
         """Loads the spaxel data."""

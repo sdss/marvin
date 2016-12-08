@@ -222,6 +222,14 @@ class TestSpaxelInit(TestSpaxelBase):
 
         self.assertIn('cannot instantiate a Spaxel from a binned Maps.', str(cm.exception))
 
+    def test_spaxel_ra_dec(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
+        spaxel = Spaxel(x=15, y=16, cube=cube)
+
+        self.assertAlmostEqual(spaxel.ra, 232.54512, places=5)
+        self.assertAlmostEqual(spaxel.dec, 48.690062, places=5)
+
 
 class TestPickling(TestSpaxelBase):
 
@@ -246,7 +254,7 @@ class TestPickling(TestSpaxelBase):
         spaxel_path = '~/test_spaxel.mpf'
         self._files_created.append(spaxel_path)
         with self.assertRaises(MarvinError) as ee:
-            spaxel.save(spaxel_path)
+            spaxel.save(spaxel_path, overwrite=True)
 
         self.assertIn('objects with data_origin=\'db\' cannot be saved.', str(ee.exception))
 
@@ -260,7 +268,7 @@ class TestPickling(TestSpaxelBase):
         spaxel_path = '~/test_spaxel.mpf'
         self._files_created.append(spaxel_path)
 
-        path_saved = spaxel.save(spaxel_path)
+        path_saved = spaxel.save(spaxel_path, overwrite=True)
         self.assertTrue(os.path.exists(path_saved))
         self.assertTrue(os.path.realpath(os.path.expanduser(spaxel_path)), path_saved)
 
@@ -297,7 +305,7 @@ class TestPickling(TestSpaxelBase):
         spaxel_path = '~/test_spaxel_api.mpf'
         self._files_created.append(spaxel_path)
 
-        path_saved = spaxel.save(spaxel_path)
+        path_saved = spaxel.save(spaxel_path, overwrite=True)
         self.assertTrue(os.path.exists(path_saved))
         self.assertTrue(os.path.realpath(os.path.expanduser(spaxel_path)), path_saved)
 
