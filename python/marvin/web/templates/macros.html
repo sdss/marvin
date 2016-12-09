@@ -136,3 +136,21 @@
 {#</div>#}
 {% endmacro %}
 
+{# NSA Table #}
+{% macro nsatable(nsa) %}
+<div id='nsatool'> <h4><strong>NSA Parameters</strong></h4></div>
+<div class='col-md-2' id='nsadiv'>
+  <table class='table table-responsive table-condensed table-striped table-bordered' id='nsatable'
+  data-toggle='table' data-toolbar='#nsatool' data-show-pagination-switch="true" data-pagination="true"
+  data-page-size='5' data-page-list='[5]'>
+  <thead>
+    <tr><th>Name</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    {% for k, v in nsa.items() %}
+    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')|replace('th50', 'th50_r')}}</strong></span></td><td>{{v}}</td></tr>
+    {% endfor %}
+  </tbody>
+  </table>
+</div>
+{% endmacro %}

@@ -414,13 +414,12 @@ var Galaxy = function () {
                 var popid = value.id;
                 // split id and grab the mngtarg
 
-                var _popid$split = popid.split('_');
-
-                var _popid$split2 = _slicedToArray(_popid$split, 2);
-
-                var base = _popid$split2[0];
-                var targ = _popid$split2[1];
+                var _popid$split = popid.split('_'),
+                    _popid$split2 = _slicedToArray(_popid$split, 2),
+                    base = _popid$split2[0],
+                    targ = _popid$split2[1];
                 // build the label list id
+
 
                 var listid = '#list_' + targ;
                 // init the specific popover
@@ -659,12 +658,10 @@ var HeatMap = function () {
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 

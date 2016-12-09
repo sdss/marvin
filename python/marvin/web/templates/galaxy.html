@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist, infopopup %}
+{% from 'macros.html' import download, panellist, infopopup, nsatable %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -35,6 +35,7 @@
                     <div class='col-md-3'>
                         <h4>Plate-IFU: {{cube.plateifu}} <small>{{cube._drpver}}</small></h4>
                         <h4>Manga-ID: {{cube.mangaid}}</h4>
+                        <h5>IAU Name: {{cube.nsa.iauname}}</h5>
                         <table class='table table-condensed table-bordered table-striped marvin-metatable' id='galaxymeta'>
                             <tbody>
                                 <tr><th>OBJ RA, Dec</th><td>{{cubehdr.objra}}</td><td>{{cubehdr.objdec}}</td></tr>
@@ -108,7 +109,18 @@
 <!-- Interactive Map and Spectrum View -->
 {# Map and Spectrum View #}
 {% if cube %}
-<div class='well' id='specview'>
+                <!-- Tabs -->
+                {# Tabs #}
+  <ul class="nav nav-pills" role="tablist">
+    <li role="presentation" class="active"><a href="#specview" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+    <li role="presentation"><a id='nsadisp' href="#nsatab" aria-controls="nsadisp" role="tab" data-toggle="tab">NSA Display</a></li>
+    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
+  </ul>
+
+<div class='tab-content'>
+<!-- SpecMap View Tab-->
+{# SpecMap View Tab #}
+<div class='well tab-pane active' id='specview' role='tabpanel'>
     <div class='row'>
         <div class='col-md-12 galinfo'>
                 <!-- static galaxy image -->
@@ -117,7 +129,9 @@
                     <div class='col-md-3'>
                         <img class='img-responsive' id='staticimage' src="{{image}}" alt="{{cube.plateifu}} Galaxy Image">
                     </div>
+                    {#{{nsatable()}}#}
                 </div>
+
                 <!-- dynamic image and spaxel -->
                 {# Dynamic Interaction #}
                 <div id='dynamicdiv' style='display:none;'>
@@ -202,7 +216,45 @@
                 </div>
         </div>
     </div>
+</div> {# end specmap view tab #}
+
+<!-- NSA Display Tab-->
+{# NSA Display Tab #}
+<div class='well tab-pane' role='tabpanel' id='nsatab'>
+  <div class='row'>
+    {{nsatable(nsadict)}}
+    <div class='col-md-1'>
+      <ul class="nav nav-pills nav-stacked" role="tablist">
+        <li role="presentation" class="active"><a href="#nsaplot" aria-controls="nsaplot" role="tab" data-toggle="tab">Scatter Plot</a></li>
+        <li role="presentation"><a href="#nsabox" aria-controls="nsabox" role="tab" data-toggle="tab">Box and Whisker</a></li>
+      </ul>
+    </div>
+    <div class='col-md-8' id='nsacontent'>
+      <div class='tab-content'>
+        <div class='tab-pane active' id='nsaplot' role='tabpanel'>
+          <div class='row'>
+            <div class='col-md-2'>
+              <select class="selectpicker" id='nsachoices' multiple title='Choose Two: y and x' data-max-options="2" data-width='fit'>
+                {% for k in nsadict.keys() %}
+                <option>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')|replace('th50', 'th50_r')}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class='col-md-10'>
+              <div class='marvinplot' id='nsahighchart'><h1>PLOT</h1></div>
+            </div>
+          </div>
+        </div>
+        <div class='tab-pane' id='nsabox' role='tabpanel'>NSA Box</div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class='tab-pane' role='tabpanel' id='messages'>
+</div>
+
+</div> {# end tab-content div #}
 {% endif %}
 
 </div> {# end of singlegalaxydiv #}

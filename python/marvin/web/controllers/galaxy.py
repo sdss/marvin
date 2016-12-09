@@ -23,6 +23,7 @@ from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 import os
+import numpy as np
 
 try:
     from sdss_access.path import Path
@@ -188,6 +189,8 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
+                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_th50_r']
+                self.galaxy['nsadict'] = nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
