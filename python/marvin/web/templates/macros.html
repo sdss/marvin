@@ -148,7 +148,7 @@
   </thead>
   <tbody>
     {% for k, v in nsa.items() %}
-    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')|replace('th50', 'th50_r')}}</strong></span></td><td>{{v}}</td></tr>
+    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')}}</strong></span></td><td>{{v}}</td></tr>
     {% endfor %}
   </tbody>
   </table>

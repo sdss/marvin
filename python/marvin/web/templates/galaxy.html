@@ -236,12 +236,12 @@
             <div class='col-md-2'>
               <select class="selectpicker" id='nsachoices' multiple title='Choose Two: y and x' data-max-options="2" data-width='fit'>
                 {% for k in nsadict.keys() %}
-                <option>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')|replace('th50', 'th50_r')}}</option>
+                <option>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')}}</option>
                 {% endfor %}
               </select>
             </div>
             <div class='col-md-10'>
-              <div class='marvinplot' id='nsahighchart'><h1>PLOT</h1></div>
+              <div class='marvinplot' id='nsahighchart'></div>
             </div>
           </div>
         </div>

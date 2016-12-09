@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-11-05 14:53:52
+* @Last Modified time: 2016-12-09 03:03:25
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -29,6 +29,7 @@ var Galaxy = function () {
 
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        // main elements
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
@@ -41,16 +42,24 @@ var Galaxy = function () {
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
+        // toggle elements
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        // flag popover elements
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        // maps elements
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
+        // nsa elements
+        this.nsadisplay = $('#nsadisp');
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart');
+        this.nsaboxdiv = this.maindiv.find('#nsabox');
+        this.nsachoices = $('#nsachoices');
 
         // init some stuff
         this.initFlagPopovers();
@@ -60,6 +69,7 @@ var Galaxy = function () {
         this.dapmapsbut.on('click', this, this.getDapMaps);
         this.resetmapsbut.on('click', this, this.resetMaps);
         this.togglediv.on('change', this, this.initDynamic);
+        this.nsadisplay.on('click', this, this.displayNSA);
     }
 
     // Test print
@@ -409,6 +419,27 @@ var Galaxy = function () {
             _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
+        }
+
+        // Display the NSA info
+
+    }, {
+        key: 'displayNSA',
+        value: function displayNSA(event) {
+            console.log('showing nsa');
+            var _this = event.data;
+            _this.initNSAScatter();
+        }
+
+        // Init the NSA Scatter plot
+
+    }, {
+        key: 'initNSAScatter',
+        value: function initNSAScatter() {
+            console.log('making scatter');
+            var options = undefined;
+            var data = [{ 'name': '8485-1901', 'x': 0.646087385, 'y': 0.0407447 }];
+            this.nsascatter = new Scatter(this.nsaplotdiv, data, options);
         }
     }]);
 

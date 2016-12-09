@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-11-05 14:53:52
+* @Last Modified time: 2016-12-09 03:03:25
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -99,6 +99,7 @@ var Galaxy = function () {
 
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        // main elements
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
@@ -111,16 +112,24 @@ var Galaxy = function () {
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
+        // toggle elements
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        // flag popover elements
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        // maps elements
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
+        // nsa elements
+        this.nsadisplay = $('#nsadisp');
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart');
+        this.nsaboxdiv = this.maindiv.find('#nsabox');
+        this.nsachoices = $('#nsachoices');
 
         // init some stuff
         this.initFlagPopovers();
@@ -130,6 +139,7 @@ var Galaxy = function () {
         this.dapmapsbut.on('click', this, this.getDapMaps);
         this.resetmapsbut.on('click', this, this.resetMaps);
         this.togglediv.on('change', this, this.initDynamic);
+        this.nsadisplay.on('click', this, this.displayNSA);
     }
 
     // Test print
@@ -479,6 +489,27 @@ var Galaxy = function () {
             _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
+        }
+
+        // Display the NSA info
+
+    }, {
+        key: 'displayNSA',
+        value: function displayNSA(event) {
+            console.log('showing nsa');
+            var _this = event.data;
+            _this.initNSAScatter();
+        }
+
+        // Init the NSA Scatter plot
+
+    }, {
+        key: 'initNSAScatter',
+        value: function initNSAScatter() {
+            console.log('making scatter');
+            var options = undefined;
+            var data = [{ 'name': '8485-1901', 'x': 0.646087385, 'y': 0.0407447 }];
+            this.nsascatter = new Scatter(this.nsaplotdiv, data, options);
         }
     }]);
 
@@ -1255,6 +1286,165 @@ var OLMap = function () {
     }]);
 
     return OLMap;
+}();
+;/*
+* @Author: Brian Cherinka
+* @Date:   2016-12-09 01:38:32
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-12-09 11:07:37
+*/
+
+'use strict';
+
+// Creates a Scatter Plot Highcharts Object
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Scatter = function () {
+
+    // Constructor
+    function Scatter(id, data, options) {
+        _classCallCheck(this, Scatter);
+
+        if (data === undefined) {
+            console.error('Must specify input plot data to initialize a ScatterPlot!');
+        } else if (id === undefined) {
+            console.error('Must specify an input plotdiv to initialize a ScatterPlot');
+        } else {
+            this.plotdiv = id; // div element for map
+            this.data = data; // map data
+            //this.title = title; // map title
+            //this.origthis = galthis; //the self of the Galaxy class
+            //this.parseTitle();
+            this.setOptions(options);
+            this.initChart();
+        }
+    }
+
+    _createClass(Scatter, [{
+        key: 'print',
+
+
+        // test print
+        value: function print() {
+            console.log('We are now printing scatter for ', this.cfg.title);
+        }
+    }, {
+        key: 'setOptions',
+
+
+        // sets the options
+        value: function setOptions(options) {
+            // create the default options
+            this.cfg = {
+                title: 'Scatter Title',
+                origthis: null
+            };
+
+            //Put all of the options into a variable called cfg
+            if ('undefined' !== typeof options) {
+                for (var i in options) {
+                    if ('undefined' !== typeof options[i]) {
+                        this.cfg[i] = options[i];
+                    }
+                }
+            }
+        }
+
+        // initialize the chart
+
+    }, {
+        key: 'initChart',
+        value: function initChart() {
+            console.log('init plotdiv', this.plotdiv.attr('id'));
+            this.plotdiv.empty();
+            this.chart = Highcharts.chart(this.plotdiv.attr('id'), {
+                chart: {
+                    type: 'scatter',
+                    zoomType: 'xy',
+                    backgroundColor: '#F5F5F5',
+                    plotBackgroundColor: '#F5F5F5'
+                },
+                title: {
+                    text: 'NSA redshift vs Stellar Mass'
+                },
+                xAxis: {
+                    title: {
+                        enabled: true,
+                        text: 'Stellar Mass'
+                    },
+                    startOnTick: true,
+                    endOnTick: true,
+                    showLastLabel: true,
+                    id: 'mass-axis'
+                },
+                yAxis: {
+                    title: {
+                        text: 'NSA z'
+                    },
+                    id: 'nsaz-axis'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
+                    borderWidth: 1
+                },
+                plotOptions: {
+                    scatter: {
+                        marker: {
+                            radius: 5,
+                            states: {
+                                hover: {
+                                    enabled: true,
+                                    lineColor: 'rgb(100,100,100)'
+                                }
+                            }
+                        },
+                        states: {
+                            hover: {
+                                marker: {
+                                    enabled: false
+                                }
+                            }
+                        },
+                        tooltip: {
+                            headerFormat: '<b>{series.name}</b><br>',
+                            pointFormat: '({point.x} M*, {point.y})'
+                        }
+                    }
+                },
+                series: [
+                // {
+                //     name: 'Sample',
+                //     color: 'rgba(70,130,180,0.2)',
+                //     data: grz,
+                //     turboThreshold:0,
+                //     marker: {
+                //         radius:2,
+                //         symbol: 'circle'
+                //     },
+                //         tooltip: {
+                //             headerFormat: '<b>{series.name}: {point.key}</b><br>'                }
+
+                // },
+                {
+                    name: '8485-1901',
+                    color: 'rgba(255, 0, 0, 1)',
+                    data: this.data,
+                    marker: { symbol: 'circle', radius: 5 }
+                }]
+            });
+        }
+    }]);
+
+    return Scatter;
 }();
 ;/*
 * @Author: Brian Cherinka

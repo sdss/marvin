@@ -342,4 +342,16 @@ class Galaxy(FlaskView):
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
+    @route('initnsaplot', methods=['POST'], endpoint='initnsaplot')
+    def init_nsaplot(self):
+        self._drpver, self._dapver, self._release = parseSession()
+        f = processRequest(request=request)
+        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
+        # get cube (self.galaxy['cube'] does not work)
+        try:
+            cube = Cube(**cubeinputs)
+        except Exception as e:
+            cube = None
+
+
 Galaxy.register(galaxy)
