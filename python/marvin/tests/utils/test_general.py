@@ -185,3 +185,7 @@ class TestGetNSAData(TestCase):
         marvin.config._drpall = None
         data = get_nsa_data('1-209232', source='drpall', mode='auto')
         self._test_drpall(data)
+
+    def test_hybrid_properties_populated(self):
+        data = get_nsa_data('1-209232', source='nsa', mode='local')
+        self.assertIn('elpetro_mag_g', data)

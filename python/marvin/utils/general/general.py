@@ -811,8 +811,19 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
 def _db_row_to_dict(row, remove_columns=False):
     """Converts a DB object to a dictionary."""
 
-    columns = row.__table__.columns.keys()
+    from sqlalchemy.inspection import inspect as sa_inspect
+    from sqlalchemy.ext.hybrid import hybrid_property
+    from sqlalchemy.orm.attributes import InstrumentedAttribute
+
     row_dict = collections.OrderedDict()
+
+    columns = row.__table__.columns.keys()
+
+    mapper = sa_inspect(row.__class__)
+    for key, item in mapper.all_orm_descriptors.items():
+
+        if isinstance(item, hybrid_property):
+            columns.append(key)
 
     for col in columns:
         if remove_columns and col in remove_columns:

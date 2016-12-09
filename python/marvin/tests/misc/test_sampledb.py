@@ -63,3 +63,11 @@ class TestSampleDB(marvin.tests.MarvinTest):
             self.assertAlmostEqual(getattr(nsa_target,
                                            'elpetro_mag_{0}_{1}'.format(bandA, bandB)),
                                    expected[ii])
+
+    def test_query_elpetro_mag(self):
+
+        elpetro_mag_g = self.session.query(self.sampledb.NSA.elpetro_mag_g).join(
+            self.sampledb.MangaTargetToNSA, self.sampledb.MangaTarget).filter(
+                self.sampledb.MangaTarget.mangaid == '1-209232').first()
+
+        self.assertAlmostEqual(elpetro_mag_g[0], 17.454505782813705)

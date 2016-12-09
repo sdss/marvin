@@ -234,8 +234,10 @@ def HybridMag(flux_parameter, band, index=None):
 
         flux *= 1e-9
         bb_band = bb[band]
-        asinh_mag = -2.5 / np.log(10) * (np.arcsinh(flux / (2. * bb_band)) + np.log(bb_band))
-        return asinh_mag
+        xx = flux / (2. * bb_band)
+        asinh_mag = (-2.5 / func.log(10) *
+                     (func.log(xx + func.sqrt(func.pow(xx, 2) + 1)) + func.log(bb_band)))
+        return cast(asinh_mag, Float)
 
     return hybridMag
 
@@ -298,7 +300,7 @@ def logmass(parameter):
     @hybrid_property
     def mass(self):
         par = getattr(self, parameter)
-        return cast(math.log10(par), Float) if par > 0. else 0.
+        return math.log10(par) if par > 0. else 0.
 
     @mass.expression
     def mass(cls):
