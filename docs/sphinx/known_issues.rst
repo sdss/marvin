@@ -28,6 +28,13 @@ Web
 * **Point-and-Click Model Fits** - On the individual galaxy page, the modelfits shown in the point-and-click display is from the unbinned MODELCUBE FITS files, i.e. SPX-MILESHC.
 * **Dynamic DAP Maps** - For the DAP map display on the individual galaxy page, you can only choose one binning-template option for all the selected maps.
 * **MPL-3 and below** - Marvin web does not yet fully support loading of Cubes from MPL-3 and below.
+.. _known-browser:
+* **Browser compatibility** - Marvin is not fully compatible with Safari. This is mostly due to the current
+  stable version of Safari not being compliant with the latest HTML standards. In the future we will try to
+  make Marvin more stable in Safari, as long as that does not mean sacrificing functionality. In the meantime,
+  please use Chrome or Firefox. Alternatively, you can try the
+  `beta version of Safari <https://developer.apple.com/safari/technology-preview/>`_, which is significantly
+  more HTML compliant.
 
 
 Bugs
