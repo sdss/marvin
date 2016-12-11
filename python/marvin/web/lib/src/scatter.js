@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-09 11:38:05
+* @Last Modified time: 2016-12-10 18:57:02
 */
 
 'use strict';
@@ -39,7 +39,9 @@ class Scatter {
         // create the default options
         this.cfg = {
             title:'Scatter Title',
-            origthis:null
+            origthis:null,
+            xtitle: 'X-Axis',
+            ytitle: 'Y-Axis'
         };
 
         //Put all of the options into a variable called cfg
@@ -62,23 +64,23 @@ class Scatter {
             plotBackgroundColor: '#F5F5F5'
         },
         title: {
-            text: 'NSA redshift vs Stellar Mass'
+            text: this.cfg.title
         },
         xAxis: {
             title: {
                 enabled: true,
-                text: 'Stellar Mass'
+                text: this.cfg.xtitle
             },
             startOnTick: true,
             endOnTick: true,
             showLastLabel: true,
-            id: 'mass-axis'
+            id: this.cfg.xtitle.replace(/\s/g,'').toLowerCase()+'-axis'
         },
         yAxis: {
             title: {
-                text: 'NSA z'
+                text: this.cfg.ytitle
             },
-            id: 'nsaz-axis'
+            id: this.cfg.ytitle.replace(/\s/g,'').toLowerCase()+'-axis'
         },
         legend: {
             layout: 'vertical',
@@ -110,7 +112,7 @@ class Scatter {
                 },
                 tooltip: {
                     headerFormat: '<b>{series.name}</b><br>',
-                    pointFormat: '({point.x} M*, {point.y})'
+                    pointFormat: '({point.x}, {point.y})'
                 }
             }
         },

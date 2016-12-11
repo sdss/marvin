@@ -133,6 +133,7 @@ class Galaxy(FlaskView):
         self.galaxy['specmsg'] = None
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
+        self.galaxy['nsamsg'] = None
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -189,7 +190,7 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_th50_r']
+                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r']
                 self.galaxy['nsadict'] = nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
@@ -346,12 +347,28 @@ class Galaxy(FlaskView):
     def init_nsaplot(self):
         self._drpver, self._dapver, self._release = parseSession()
         f = processRequest(request=request)
+        #params = f.get('params[]', None)
         cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
         # get cube (self.galaxy['cube'] does not work)
         try:
             cube = Cube(**cubeinputs)
         except Exception as e:
             cube = None
+
+        print('initializing some nsa plots')
+        # get some nsa params
+        if not cube:
+            output = {'nsamsg': 'No cube found', 'nsa': None, 'status': -1}
+        # elif not params:
+        #     output = {'nsamsg': 'No parameters selected', 'nsa': None, 'status': -1}
+        else:
+            try:
+                print('trying')
+            except Exception as e:
+                output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
+            else:
+                output = {'nsamsg': None, 'status': 1, 'nsa': 'nsastuffgoeshere', 'nsachoices': {'y': 'z', 'x': 'sersic_logmass'}}
+        return jsonify(result=output)
 
 
 Galaxy.register(galaxy)

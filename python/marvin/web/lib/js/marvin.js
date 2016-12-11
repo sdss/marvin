@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-20 22:51:56
+* @Last Modified time: 2016-12-10 17:53:04
 */
 
 'use strict';
@@ -31,6 +31,9 @@ var Marvin = function () {
 
         // setup raven
         this.setupRaven();
+
+        this.window = $(window);
+        this.window.on('load', this, this.checkBrowser);
     }
 
     // sets the Sentry raven for monitoring
@@ -45,6 +48,30 @@ var Marvin = function () {
                 whitelistUrls: ['/(sas|api)\.sdss\.org/marvin/', '/(sas|api)\.sdss\.org/marvin2/'],
                 includePaths: ['/https?:\/\/((sas|api)\.)?sdss\.org/marvin', '/https?:\/\/((sas|api)\.)?sdss\.org/marvin2']
             }).install();
+        }
+    }, {
+        key: 'checkBrowser',
+        value: function checkBrowser(event) {
+            var _this = event.data;
+            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+                _this.window[0].cookieconsent.initialise({
+                    "palette": {
+                        "popup": {
+                            "background": "#000"
+                        },
+                        "button": {
+                            "background": "#f1d600"
+                        }
+                    },
+                    "position": "top",
+                    "cookie": {
+                        "expiryDays": 1 },
+                    "content": {
+                        "message": 'We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.',
+                        "dismiss": 'Got it!',
+                        "href": 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser' }
+                });
+            }
         }
     }]);
 

@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-09 03:03:25
+* @Last Modified time: 2016-12-11 15:45:32
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -127,9 +127,13 @@ var Galaxy = function () {
         this.resetmapsbut = $('#resetmapsbut');
         // nsa elements
         this.nsadisplay = $('#nsadisp');
-        this.nsaplotdiv = this.maindiv.find('#nsahighchart');
+        this.nsaplots = $('.marvinplot');
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart1');
         this.nsaboxdiv = this.maindiv.find('#nsabox');
-        this.nsachoices = $('#nsachoices');
+        this.nsaselect = $('.nsaselect'); //$('#nsachoices1');
+        this.nsamsg = this.maindiv.find('#nsamsg');
+        this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');
+        this.nsamovers = $('#nsatable').find('.mover');
 
         // init some stuff
         this.initFlagPopovers();
@@ -140,6 +144,16 @@ var Galaxy = function () {
         this.resetmapsbut.on('click', this, this.resetMaps);
         this.togglediv.on('change', this, this.initDynamic);
         this.nsadisplay.on('click', this, this.displayNSA);
+        this.nsaresetbut.on('click', this, this.resetNSASelect);
+        this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot);
+
+        // NSA movers events
+        var _this = this;
+        $.each(this.nsamovers, function (index, mover) {
+            var id = mover.id;
+            $('#' + id).on('dragstart', this, _this.dragStart);
+            $('#' + id).on('dragover', this, _this.dragOver);
+        });
     }
 
     // Test print
@@ -498,18 +512,171 @@ var Galaxy = function () {
         value: function displayNSA(event) {
             console.log('showing nsa');
             var _this = event.data;
-            _this.initNSAScatter();
+
+            // make the form
+            var keys = ['plateifu'];
+            var form = m.utils.buildForm(keys, _this.plateifu);
+
+            // send the request if the div is empty
+            console.log('nsa plot elements', _this.nsaplots, _this.nsaplots.is(':empty'));
+
+            // send the form data
+            $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
+                if (data.result.status !== -1) {
+                    _this.addNSAData(data.result.nsa);
+                    _this.updateNSAChoices(data.result.nsachoices);
+                    _this.initNSAScatter();
+                    _this.addNSAEvents();
+                    console.log('again nsa plot elements', _this.nsaplots, _this.nsaplots.is(':empty'));
+                } else {
+                    _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                }
+            }).fail(function (data) {
+                _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+            });
         }
 
-        // Init the NSA Scatter plot
+        // add the NSA data into the Galaxy object
 
     }, {
+        key: 'addNSAData',
+        value: function addNSAData(data) {
+            // the galaxy
+            if (data[this.plateifu]) {
+                this.mygalaxy = data[this.plateifu];
+            } else {
+                this.updateNSAMsg('Error: No NSA data found for ' + this.plateifu, -1);
+            }
+            // the manga sample
+            if (data.sample) {
+                this.nsasample = data.sample;
+            } else {
+                this.updateNSAMsg('Error: Problem getting NSA data found for the MaNGA sample', -1);
+            }
+        }
+    }, {
+        key: 'addNSAEvents',
+
+
+        // Add event handlers to the Highcharts scatter plots
+        value: function addNSAEvents() {
+            var _this = this;
+            // NSA plot events
+            $.each(this.nsaplots, function (index, plot) {
+                var id = plot.id;
+                var highx = $('#' + id).find('.highcharts-xaxis');
+                var highy = $('#' + id).find('.highcharts-yaxis');
+                console.log('plot id', id, highx, highy);
+
+                highx.on('dragover', this, _this.dragOver);
+                highx.on('dragenter', this, _this.dragEnter);
+                highx.on('drop', this, _this.dropElement);
+                highy.on('dragover', this, _this.dragOver);
+                highy.on('dragenter', this, _this.dragEnter);
+                highy.on('drop', this, _this.dropElement);
+            });
+        }
+
+        // Update the NSA Msg
+
+    }, {
+        key: 'updateNSAMsg',
+        value: function updateNSAMsg(nsamsg, status) {
+            this.nsamsg.hide();
+            if (status !== undefined && status === -1) {
+                this.nsamsg.show();
+            }
+            var newmsg = '<strong>' + nsamsg + '</strong>';
+            this.nsamsg.empty();
+            this.nsamsg.html(newmsg);
+        }
+    }, {
         key: 'initNSAScatter',
+
+
+        // Init the NSA Scatter plot
         value: function initNSAScatter() {
             console.log('making scatter');
             var options = undefined;
-            var data = [{ 'name': '8485-1901', 'x': 0.646087385, 'y': 0.0407447 }];
+            var data = [{ 'name': '8485-1901', 'x': 9.6293504, 'y': 0.0407447 }];
+            var options = { xtitle: 'Stellar Mass', ytitle: 'NSA z', title: 'Redshift vs Stellar Mass' };
             this.nsascatter = new Scatter(this.nsaplotdiv, data, options);
+            var data = [{ 'name': '8485-1901', 'x': -18.9128, 'y': 0.6461 }];
+            var options = undefined;
+            this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
+            //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart3'), data, options);
+        }
+    }, {
+        key: 'updateNSAChoices',
+
+
+        // Update the NSA selectpicker choices for the scatter plot
+        value: function updateNSAChoices(vals) {
+            this.nsaselect.selectpicker('deselectAll');
+            this.nsaselect.selectpicker('val', [vals.x, vals.y]);
+            this.nsaselect.selectpicker('refresh');
+        }
+
+        // Reset the NSA selecpicker
+
+    }, {
+        key: 'resetNSASelect',
+        value: function resetNSASelect(event) {
+            var resetid = $(this).attr('id');
+            var index = parseInt(resetid[resetid.length - 1]);
+            var _this = event.data;
+            var myselect = _this.nsaselect[index - 1];
+            _this.nsamsg.hide();
+            $(myselect).selectpicker('deselectAll');
+            $(myselect).selectpicker('refresh');
+        }
+
+        // Update the NSA scatter plot on select change
+
+    }, {
+        key: 'updateNSAPlot',
+        value: function updateNSAPlot(event, clickedIndex) {
+            var _this = event.data;
+            var params = _this.nsaselect.selectpicker('val');
+            console.log('updating nsa plot', clickedIndex, params);
+        }
+
+        // Events for Drag and Drop
+
+        // Element drag start
+
+    }, {
+        key: 'dragStart',
+        value: function dragStart(event) {
+            var _this = event.data;
+            event.originalEvent.dataTransfer.setData('Text', this.id);
+        }
+        // Element drag over
+
+    }, {
+        key: 'dragOver',
+        value: function dragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        // Element drag enter
+
+    }, {
+        key: 'dragEnter',
+        value: function dragEnter(event) {
+            console.log('dragging on enter');
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        // Element drop and redraw the scatter plot
+
+    }, {
+        key: 'dropElement',
+        value: function dropElement(event) {
+            console.log('dropping something on axis');
+            console.log('drop id', event.originalEvent.dataTransfer.getData('Text'));
+            event.preventDefault();
+            event.stopPropagation();
         }
     }]);
 
@@ -1040,7 +1207,7 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-20 22:51:56
+* @Last Modified time: 2016-12-10 17:53:04
 */
 
 'use strict';
@@ -1069,6 +1236,9 @@ var Marvin = function () {
 
         // setup raven
         this.setupRaven();
+
+        this.window = $(window);
+        this.window.on('load', this, this.checkBrowser);
     }
 
     // sets the Sentry raven for monitoring
@@ -1083,6 +1253,30 @@ var Marvin = function () {
                 whitelistUrls: ['/(sas|api)\.sdss\.org/marvin/', '/(sas|api)\.sdss\.org/marvin2/'],
                 includePaths: ['/https?:\/\/((sas|api)\.)?sdss\.org/marvin', '/https?:\/\/((sas|api)\.)?sdss\.org/marvin2']
             }).install();
+        }
+    }, {
+        key: 'checkBrowser',
+        value: function checkBrowser(event) {
+            var _this = event.data;
+            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+                _this.window[0].cookieconsent.initialise({
+                    "palette": {
+                        "popup": {
+                            "background": "#000"
+                        },
+                        "button": {
+                            "background": "#f1d600"
+                        }
+                    },
+                    "position": "top",
+                    "cookie": {
+                        "expiryDays": 1 },
+                    "content": {
+                        "message": 'We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.',
+                        "dismiss": 'Got it!',
+                        "href": 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser' }
+                });
+            }
         }
     }]);
 
@@ -1291,7 +1485,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-09 11:07:37
+* @Last Modified time: 2016-12-10 18:57:02
 */
 
 'use strict';
@@ -1340,7 +1534,9 @@ var Scatter = function () {
             // create the default options
             this.cfg = {
                 title: 'Scatter Title',
-                origthis: null
+                origthis: null,
+                xtitle: 'X-Axis',
+                ytitle: 'Y-Axis'
             };
 
             //Put all of the options into a variable called cfg
@@ -1368,23 +1564,23 @@ var Scatter = function () {
                     plotBackgroundColor: '#F5F5F5'
                 },
                 title: {
-                    text: 'NSA redshift vs Stellar Mass'
+                    text: this.cfg.title
                 },
                 xAxis: {
                     title: {
                         enabled: true,
-                        text: 'Stellar Mass'
+                        text: this.cfg.xtitle
                     },
                     startOnTick: true,
                     endOnTick: true,
                     showLastLabel: true,
-                    id: 'mass-axis'
+                    id: this.cfg.xtitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 yAxis: {
                     title: {
-                        text: 'NSA z'
+                        text: this.cfg.ytitle
                     },
-                    id: 'nsaz-axis'
+                    id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 legend: {
                     layout: 'vertical',
@@ -1416,14 +1612,14 @@ var Scatter = function () {
                         },
                         tooltip: {
                             headerFormat: '<b>{series.name}</b><br>',
-                            pointFormat: '({point.x} M*, {point.y})'
+                            pointFormat: '({point.x}, {point.y})'
                         }
                     }
                 },
                 series: [
                 // {
                 //     name: 'Sample',
-                //     color: 'rgba(70,130,180,0.2)',
+                //     color: 'rgba(70,130,180,0.4)',
                 //     data: grz,
                 //     turboThreshold:0,
                 //     marker: {
@@ -1695,7 +1891,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-19 13:29:32
+* @Last Modified time: 2016-12-10 16:50:04
 */
 
 // Javascript code for general things

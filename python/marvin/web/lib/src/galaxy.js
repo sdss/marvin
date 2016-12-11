@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-09 03:03:25
+* @Last Modified time: 2016-12-11 15:47:15
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -49,9 +49,13 @@ class Galaxy {
         this.resetmapsbut = $('#resetmapsbut');
         // nsa elements
         this.nsadisplay = $('#nsadisp');
-        this.nsaplotdiv = this.maindiv.find('#nsahighchart');
+        this.nsaplots = $('.marvinplot');
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart1');
         this.nsaboxdiv = this.maindiv.find('#nsabox');
-        this.nsachoices = $('#nsachoices');
+        this.nsaselect = $('.nsaselect');//$('#nsachoices1');
+        this.nsamsg = this.maindiv.find('#nsamsg');
+        this.nsaresetbut = $('.nsareset');//$('#resetnsa1');
+        this.nsamovers = $('#nsatable').find('.mover');
 
         // init some stuff
         this.initFlagPopovers();
@@ -62,6 +66,17 @@ class Galaxy {
         this.resetmapsbut.on('click', this, this.resetMaps);
         this.togglediv.on('change', this, this.initDynamic);
         this.nsadisplay.on('click', this, this.displayNSA);
+        this.nsaresetbut.on('click', this, this.resetNSASelect);
+        this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot);
+
+        // NSA movers events
+        var _this = this;
+        $.each(this.nsamovers, function(index, mover) {
+            var id = mover.id;
+            $('#'+id).on('dragstart', this, _this.dragStart);
+            $('#'+id).on('dragover', this, _this.dragOver);
+        });
+
     }
 
     // Test print
@@ -364,15 +379,140 @@ class Galaxy {
     displayNSA(event) {
         console.log('showing nsa');
         var _this = event.data;
-        _this.initNSAScatter();
+
+        // make the form
+        var keys = ['plateifu'];
+        var form = m.utils.buildForm(keys, _this.plateifu);
+
+        // send the request if the div is empty
+        nsaempty = _this.nsaplots.is(':empty');
+        if (nsaempty) {
+            // send the form data
+            $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json')
+                .done(function(data) {
+                    if (data.result.status !== -1) {
+                        _this.addNSAData(data.result.nsa);
+                        _this.updateNSAChoices(data.result.nsachoices);
+                        _this.initNSAScatter();
+                        _this.addNSAEvents();
+                    } else {
+                        _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+                    }
+                })
+                .fail(function(data) {
+                    _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+                });
+        }
+
     }
+
+    // add the NSA data into the Galaxy object
+    addNSAData(data) {
+        // the galaxy
+        if (data[this.plateifu]) {
+            this.mygalaxy = data[this.plateifu];
+        } else {
+            this.updateNSAMsg('Error: No NSA data found for '+this.plateifu, -1);
+        }
+        // the manga sample
+        if (data.sample) {
+            this.nsasample = data.sample;
+        } else {
+            this.updateNSAMsg('Error: Problem getting NSA data found for the MaNGA sample', -1);
+        }
+
+    };
+
+    // Add event handlers to the Highcharts scatter plots
+    addNSAEvents() {
+        var _this = this;
+        // NSA plot events
+        $.each(this.nsaplots, function(index, plot) {
+            var id = plot.id;
+            var highx = $('#'+id).find('.highcharts-xaxis');
+            var highy = $('#'+id).find('.highcharts-yaxis');
+
+            highx.on('dragover', this, _this.dragOver);
+            highx.on('dragenter', this, _this.dragEnter);
+            highx.on('drop', this, _this.dropElement);
+            highy.on('dragover', this, _this.dragOver);
+            highy.on('dragenter', this, _this.dragEnter);
+            highy.on('drop', this, _this.dropElement);
+        });
+    }
+
+    // Update the NSA Msg
+    updateNSAMsg(nsamsg, status) {
+        this.nsamsg.hide();
+        if (status !== undefined && status === -1) {
+            this.nsamsg.show();
+        }
+        var newmsg = '<strong>'+nsamsg+'</strong>';
+        this.nsamsg.empty();
+        this.nsamsg.html(newmsg);
+    };
 
     // Init the NSA Scatter plot
     initNSAScatter() {
         console.log('making scatter');
         var options = undefined;
-        var data = [{'name':'8485-1901','x':0.646087385, 'y':0.0407447}];
+        var data = [{'name':'8485-1901','x':9.6293504, 'y':0.0407447}];
+        var options = {xtitle:'Stellar Mass', ytitle:'NSA z', title:'Redshift vs Stellar Mass'};
         this.nsascatter = new Scatter(this.nsaplotdiv, data, options);
+        var data = [{'name':'8485-1901','x':-18.9128, 'y':0.6461}];
+        var options = undefined;
+        this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
+        //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart3'), data, options);
     };
+
+    // Update the NSA selectpicker choices for the scatter plot
+    updateNSAChoices(vals) {
+        this.nsaselect.selectpicker('deselectAll');
+        this.nsaselect.selectpicker('val', [vals.x, vals.y]);
+        this.nsaselect.selectpicker('refresh');
+    }
+
+    // Reset the NSA selecpicker
+    resetNSASelect(event) {
+        var resetid = $(this).attr('id');
+        var index = parseInt(resetid[resetid.length-1]);
+        var _this = event.data;
+        var myselect = _this.nsaselect[index-1];
+        _this.nsamsg.hide();
+        $(myselect).selectpicker('deselectAll');
+        $(myselect).selectpicker('refresh');
+    }
+
+    // Update the NSA scatter plot on select change
+    updateNSAPlot(event, clickedIndex) {
+        var _this = event.data;
+        var params = _this.nsaselect.selectpicker('val');
+        console.log('updating nsa plot', clickedIndex, params);
+    }
+
+    // Events for Drag and Drop
+
+    // Element drag start
+    dragStart(event) {
+        var _this = event.data;
+        event.originalEvent.dataTransfer.setData('Text', this.id);
+    }
+    // Element drag over
+    dragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    // Element drag enter
+    dragEnter(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    // Element drop and redraw the scatter plot
+    dropElement(event) {
+        console.log('drop id', event.originalEvent.dataTransfer.getData('Text'));
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
 
 }

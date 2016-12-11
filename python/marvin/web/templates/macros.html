@@ -148,9 +148,34 @@
   </thead>
   <tbody>
     {% for k, v in nsa.items() %}
-    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')}}</strong></span></td><td>{{v}}</td></tr>
+    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</strong></span></td><td>{{v|round(4)}}</td></tr>
     {% endfor %}
   </tbody>
   </table>
 </div>
+{% endmacro %}
+
+{# NSA Scatter Plot and Select #}
+{% macro nsascatter(nsadict, id) %}
+    <div class='row nsascatter'>
+      <div class='col-md-2'>
+        <select class="selectpicker nsaselect" id='nsachoices{{id}}' multiple title='Choose x and y' data-max-options="2"
+        data-width='fit'>
+          <optgroup label="X" data-max-options="1">
+          {% for k in nsadict.keys() %}
+          <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          {% endfor %}
+          </optgroup>
+          <optgroup label="Y" data-max-options="1">
+          {% for k in nsadict.keys() %}
+          <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          {% endfor %}
+          </optgroup>
+        </select>
+        <button class='btn btn-info nsareset' id='resetnsa{{id}}'>Reset</button>
+      </div>
+      <div class='col-md-10'>
+        <div class='marvinplot' id='nsahighchart{{id}}'></div>
+      </div>
+    </div>
 {% endmacro %}

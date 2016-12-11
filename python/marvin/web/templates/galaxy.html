@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist, infopopup, nsatable %}
+{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -232,22 +232,32 @@
     <div class='col-md-8' id='nsacontent'>
       <div class='tab-content'>
         <div class='tab-pane active' id='nsaplot' role='tabpanel'>
+
+          {#
           <div class='row'>
             <div class='col-md-2'>
               <select class="selectpicker" id='nsachoices' multiple title='Choose Two: y and x' data-max-options="2" data-width='fit'>
                 {% for k in nsadict.keys() %}
-                <option>{{k|replace('mass', 'logmass')|replace('mag', 'mag_r')}}</option>
+                <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
                 {% endfor %}
               </select>
+              <button class='btn btn-info' id='resetnsa'>Reset</button>
             </div>
             <div class='col-md-10'>
               <div class='marvinplot' id='nsahighchart'></div>
             </div>
-          </div>
+          </div>#}
+
+          {{nsascatter(nsadict, 1)}}
+          {{nsascatter(nsadict, 2)}}
+
         </div>
         <div class='tab-pane' id='nsabox' role='tabpanel'>NSA Box</div>
       </div>
     </div>
+  </div>
+  <div class='row'>
+    <p class='alert alert-danger' id='nsamsg' style="display:none;"><strong>{{nsamsg}}</strong></p>
   </div>
 </div>
 
