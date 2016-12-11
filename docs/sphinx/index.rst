@@ -38,6 +38,9 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 :doc:`known_issues`
 ^^^^^^^^^^^^^^^^^^^
 
+`Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
+^^^^^^^^^^^^^^^^^^^
+
 |
 
 Marvin Primer
