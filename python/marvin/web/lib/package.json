@@ -20,6 +20,5 @@
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-newer": "^1.2.0",
     "load-grunt-tasks": "^3.5.0",
-    "js-cookie": "^2.1.3"
   }
 }
