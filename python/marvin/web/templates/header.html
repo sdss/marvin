@@ -1,35 +1,6 @@
 
 {% from 'macros.html' import galidsearch, login %}
 
-
-<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent.
-We use it to show a banner if the used browser does not play well with Marvin.-->
-<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
-<script>
-window.addEventListener("load", function(){
-    if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
-        window.cookieconsent.initialise({
-          "palette": {
-            "popup": {
-              "background": "#000"
-            },
-            "button": {
-              "background": "#f1d600"
-            }
-          },
-          "position": "top",
-          "cookie": {
-              "expiryDays": 1},
-        "content": {
-              "message": 'We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.',
-              "dismiss": 'Got it!',
-              "href": 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser'}
-        })}
-    }
-);
-</script>
-
 <nav class="navbar navbar-default">
     <div class="container-fluid">
 
