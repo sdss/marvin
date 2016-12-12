@@ -221,14 +221,24 @@
 <!-- NSA Display Tab-->
 {# NSA Display Tab #}
 <div class='well tab-pane' role='tabpanel' id='nsatab'>
+  <!-- NSA error message -->
+  {# NSA error message #}
   <div class='row'>
+    <p class='alert alert-danger' id='nsamsg' style="display:none;"><strong>{{nsamsg}}</strong></p>
+  </div>
+  <!-- Main NSA area -->
+  {# Main NSA display #}
+  <div class='row'>
+    <!-- NSA table -->
     {{nsatable(nsadict)}}
+    <!-- NSA tabs -->
     <div class='col-md-1'>
       <ul class="nav nav-pills nav-stacked" role="tablist">
         <li role="presentation" class="active"><a href="#nsaplot" aria-controls="nsaplot" role="tab" data-toggle="tab">Scatter Plot</a></li>
         <li role="presentation"><a href="#nsabox" aria-controls="nsabox" role="tab" data-toggle="tab">Box and Whisker</a></li>
       </ul>
     </div>
+    <!-- NSA scatter plots -->
     <div class='col-md-8' id='nsacontent'>
       <div class='tab-content'>
         <div class='tab-pane active' id='nsaplot' role='tabpanel'>
@@ -255,10 +265,7 @@
         <div class='tab-pane' id='nsabox' role='tabpanel'>NSA Box</div>
       </div>
     </div>
-  </div>
-  <div class='row'>
-    <p class='alert alert-danger' id='nsamsg' style="display:none;"><strong>{{nsamsg}}</strong></p>
-  </div>
+  </div> {# end main NSA #}
 </div>
 
 <div class='tab-pane' role='tabpanel' id='messages'>

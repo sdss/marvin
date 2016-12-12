@@ -163,15 +163,16 @@
         data-width='fit'>
           <optgroup label="X" data-max-options="1">
           {% for k in nsadict.keys() %}
-          <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          <option value='x_{{k}}''>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
           {% endfor %}
           </optgroup>
           <optgroup label="Y" data-max-options="1">
           {% for k in nsadict.keys() %}
-          <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          <option value='y_{{k}}'>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
           {% endfor %}
           </optgroup>
         </select>
+        <button class='btn btn-warning nsaplotbuts' id='plotnsabut{{id}}'>Plot</button>
         <button class='btn btn-info nsareset' id='resetnsa{{id}}'>Reset</button>
       </div>
       <div class='col-md-10'>

@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-11 15:45:32
+* @Last Modified time: 2016-12-12 14:46:59
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -56,26 +56,29 @@ var Galaxy = function () {
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
         // nsa elements
-        this.nsadisplay = $('#nsadisp');
-        this.nsaplots = $('.marvinplot');
-        this.nsaplotdiv = this.maindiv.find('#nsahighchart1');
-        this.nsaboxdiv = this.maindiv.find('#nsabox');
-        this.nsaselect = $('.nsaselect'); //$('#nsachoices1');
-        this.nsamsg = this.maindiv.find('#nsamsg');
-        this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');
-        this.nsamovers = $('#nsatable').find('.mover');
+        this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
+        this.nsaplots = $('.marvinplot'); // list of divs for the NSA highcharts scatter plot
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart1'); // the first div - NSA scatter plot
+        this.nsaboxdiv = this.maindiv.find('#nsabox'); // the NSA D3 boxplot element
+        this.nsaselect = $('.nsaselect'); //$('#nsachoices1');   // list of the NSA selectpicker elements
+        this.nsamsg = this.maindiv.find('#nsamsg'); // the NSA error message element
+        this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');    // list of the NSA reset button elements
+        this.nsamovers = $('#nsatable').find('.mover'); // list of all NSA table parameter name elements
+
+        // object for mapping magnitude bands to their array index
+        this.magband = { 'F': 0, 'N': 1, 'u': 2, 'g': 3, 'r': 4, 'i': 5, 'z': 6 };
 
         // init some stuff
         this.initFlagPopovers();
         //this.checkToggle();
 
         //Event Handlers
-        this.dapmapsbut.on('click', this, this.getDapMaps);
-        this.resetmapsbut.on('click', this, this.resetMaps);
-        this.togglediv.on('change', this, this.initDynamic);
-        this.nsadisplay.on('click', this, this.displayNSA);
-        this.nsaresetbut.on('click', this, this.resetNSASelect);
-        this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot);
+        this.dapmapsbut.on('click', this, this.getDapMaps); // this event fires when a user clicks the GetMaps button
+        this.resetmapsbut.on('click', this, this.resetMaps); // this event fires when a user clicks the Maps Reset button
+        this.togglediv.on('change', this, this.initDynamic); // this event fires when a user clicks the Spec/Map View Toggle
+        this.nsadisplay.on('click', this, this.displayNSA); // this event fires when a user clicks the NSA tab
+        this.nsaresetbut.on('click', this, this.resetNSASelect); // this event fires when a user clicks the NSA select reset button
+        this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot); // this event fires when a user selects an NSA parameter
 
         // NSA movers events
         var _this = this;
@@ -128,11 +131,11 @@ var Galaxy = function () {
                 xlabel: 'Wavelength [Ångströms]'
             });
         }
-    }, {
-        key: 'updateSpecMsg',
-
 
         // Update the spectrum message div for errors only
+
+    }, {
+        key: 'updateSpecMsg',
         value: function updateSpecMsg(specmsg, status) {
             this.specmsg.hide();
             if (status !== undefined && status === -1) {
@@ -151,11 +154,11 @@ var Galaxy = function () {
             this.updateSpecMsg(specmsg);
             this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
         }
-    }, {
-        key: 'initOpenLayers',
-
 
         // Initialize OpenLayers Map
+
+    }, {
+        key: 'initOpenLayers',
         value: function initOpenLayers(image) {
             this.image = image;
             this.olmap = new OLMap(image);
@@ -178,11 +181,11 @@ var Galaxy = function () {
                 }
             });
         }
-    }, {
-        key: 'getSpaxel',
-
 
         // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
+
+    }, {
+        key: 'getSpaxel',
         value: function getSpaxel(event) {
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
@@ -204,12 +207,12 @@ var Galaxy = function () {
                 _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
-    }, {
-        key: 'checkToggle',
-
 
         // check the toggle preference on initial page load
         // eventually for user preferences
+
+    }, {
+        key: 'checkToggle',
         value: function checkToggle() {
             if (this.toggleon) {
                 this.toggleOn();
@@ -354,11 +357,11 @@ var Galaxy = function () {
                 }
             }
         }
-    }, {
-        key: 'initFlagPopovers',
-
 
         //  Initialize the Quality and Target Popovers
+
+    }, {
+        key: 'initFlagPopovers',
         value: function initFlagPopovers() {
             // DRP Quality Popovers
             this.qualpop.popover({ html: true, content: $('#list_drp3quality').html() });
@@ -380,11 +383,11 @@ var Galaxy = function () {
                 $('#' + popid).popover({ html: true, content: $(listid).html() });
             });
         }
-    }, {
-        key: 'getDapMaps',
-
 
         // Get some DAP Maps
+
+    }, {
+        key: 'getDapMaps',
         value: function getDapMaps(event) {
             var _this = event.data;
             console.log('getting dap maps', _this.dapselect.selectpicker('val'));
@@ -409,11 +412,11 @@ var Galaxy = function () {
                 _this.dapmapsbut.button('reset');
             });
         }
-    }, {
-        key: 'updateMapMsg',
-
 
         // Update the Map Msg
+
+    }, {
+        key: 'updateMapMsg',
         value: function updateMapMsg(mapmsg, status) {
             this.mapmsg.hide();
             if (status !== undefined && status === -1) {
@@ -423,11 +426,11 @@ var Galaxy = function () {
             this.mapmsg.empty();
             this.mapmsg.html(newmsg);
         }
-    }, {
-        key: 'resetMaps',
-
 
         // Reset the Maps selection
+
+    }, {
+        key: 'resetMaps',
         value: function resetMaps(event) {
             var _this = event.data;
             _this.mapmsg.hide();
@@ -448,22 +451,22 @@ var Galaxy = function () {
             var form = m.utils.buildForm(keys, _this.plateifu);
 
             // send the request if the div is empty
-            console.log('nsa plot elements', _this.nsaplots, _this.nsaplots.is(':empty'));
-
-            // send the form data
-            $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
-                if (data.result.status !== -1) {
-                    _this.addNSAData(data.result.nsa);
-                    _this.updateNSAChoices(data.result.nsachoices);
-                    _this.initNSAScatter();
-                    _this.addNSAEvents();
-                    console.log('again nsa plot elements', _this.nsaplots, _this.nsaplots.is(':empty'));
-                } else {
+            var nsaempty = _this.nsaplots.is(':empty');
+            if (nsaempty) {
+                // send the form data
+                $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
+                    if (data.result.status !== -1) {
+                        _this.addNSAData(data.result.nsa);
+                        _this.updateNSAChoices(data.result.nsachoices);
+                        _this.initNSAScatter('nsahighchart1');
+                        _this.addNSAEvents();
+                    } else {
+                        _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                    }
+                }).fail(function (data) {
                     _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
-                }
-            }).fail(function (data) {
-                _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
-            });
+                });
+            }
         }
 
         // add the NSA data into the Galaxy object
@@ -472,38 +475,59 @@ var Galaxy = function () {
         key: 'addNSAData',
         value: function addNSAData(data) {
             // the galaxy
+            console.log('nsa data', data);
             if (data[this.plateifu]) {
                 this.mygalaxy = data[this.plateifu];
             } else {
                 this.updateNSAMsg('Error: No NSA data found for ' + this.plateifu, -1);
+                return;
             }
             // the manga sample
             if (data.sample) {
                 this.nsasample = data.sample;
             } else {
                 this.updateNSAMsg('Error: Problem getting NSA data found for the MaNGA sample', -1);
+                return;
             }
         }
-    }, {
-        key: 'addNSAEvents',
 
+        // get new NSA data based on drag-drop axis change
+
+    }, {
+        key: 'updateNSAData',
+        value: function updateNSAData() {
+            var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'galaxy';
+
+            var data, options;
+            if (type === 'galaxy') {
+                var x = this.mygalaxy[this.nsachoices.x];
+                var y = this.mygalaxy[this.nsachoices.y];
+                data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
+                options = { xtitle: this.nsachoices.xtitle, ytitle: this.nsachoices.ytitle, title: this.nsachoices.title };
+            } else if (type === 'sample') {}
+            return [data, options];
+        }
 
         // Add event handlers to the Highcharts scatter plots
+
+    }, {
+        key: 'addNSAEvents',
         value: function addNSAEvents() {
             var _this = this;
             // NSA plot events
+            this.nsaplots = $('.marvinplot');
+            console.log('adding nsa drag events');
             $.each(this.nsaplots, function (index, plot) {
                 var id = plot.id;
                 var highx = $('#' + id).find('.highcharts-xaxis');
                 var highy = $('#' + id).find('.highcharts-yaxis');
-                console.log('plot id', id, highx, highy);
 
-                highx.on('dragover', this, _this.dragOver);
-                highx.on('dragenter', this, _this.dragEnter);
-                highx.on('drop', this, _this.dropElement);
-                highy.on('dragover', this, _this.dragOver);
-                highy.on('dragenter', this, _this.dragEnter);
-                highy.on('drop', this, _this.dropElement);
+                highx.on('dragover', _this, _this.dragOver);
+                highx.on('dragenter', _this, _this.dragEnter);
+                highx.on('drop', _this, _this.dropElement);
+                highy.on('dragover', _this, _this.dragOver);
+                highy.on('dragenter', _this, _this.dragEnter);
+                highy.on('drop', _this, _this.dropElement);
             });
         }
 
@@ -520,31 +544,40 @@ var Galaxy = function () {
             this.nsamsg.empty();
             this.nsamsg.html(newmsg);
         }
-    }, {
-        key: 'initNSAScatter',
-
 
         // Init the NSA Scatter plot
-        value: function initNSAScatter() {
-            console.log('making scatter');
-            var options = undefined;
-            var data = [{ 'name': '8485-1901', 'x': 9.6293504, 'y': 0.0407447 }];
-            var options = { xtitle: 'Stellar Mass', ytitle: 'NSA z', title: 'Redshift vs Stellar Mass' };
-            this.nsascatter = new Scatter(this.nsaplotdiv, data, options);
-            var data = [{ 'name': '8485-1901', 'x': -18.9128, 'y': 0.6461 }];
-            var options = undefined;
+
+    }, {
+        key: 'initNSAScatter',
+        value: function initNSAScatter(parentid) {
+            console.log('making scatter', parentid);
+            var parentdiv = this.maindiv.find('#' + parentid);
+
+            var _updateNSAData = this.updateNSAData(),
+                _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                data = _updateNSAData2[0],
+                options = _updateNSAData2[1];
+
+            this.nsascatter = new Scatter(parentdiv, data, options);
+            //data = [{'name':'8485-1901','x':-18.9128, 'y':0.6461}];
+            //options = undefined;
             this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
             //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart3'), data, options);
         }
-    }, {
-        key: 'updateNSAChoices',
-
 
         // Update the NSA selectpicker choices for the scatter plot
+
+    }, {
+        key: 'updateNSAChoices',
         value: function updateNSAChoices(vals) {
-            this.nsaselect.selectpicker('deselectAll');
-            this.nsaselect.selectpicker('val', [vals.x, vals.y]);
-            this.nsaselect.selectpicker('refresh');
+            this.nsachoices = vals;
+            console.log('nsaselect', this.nsaselect);
+            $.each(this.nsaselect, function (index, nsasp) {
+                console.log(index, nsasp);
+                $(nsasp).selectpicker('deselectAll');
+                $(nsasp).selectpicker('val', ['x_' + vals[index + 1].x, 'y_' + vals[index + 1].y]);
+                $(nsasp).selectpicker('refresh');
+            });
         }
 
         // Reset the NSA selecpicker
@@ -579,7 +612,8 @@ var Galaxy = function () {
         key: 'dragStart',
         value: function dragStart(event) {
             var _this = event.data;
-            event.originalEvent.dataTransfer.setData('Text', this.id);
+            var param = this.id + '+' + this.textContent;
+            event.originalEvent.dataTransfer.setData('Text', param);
         }
         // Element drag over
 
@@ -594,7 +628,6 @@ var Galaxy = function () {
     }, {
         key: 'dragEnter',
         value: function dragEnter(event) {
-            console.log('dragging on enter');
             event.preventDefault();
             event.stopPropagation();
         }
@@ -603,10 +636,53 @@ var Galaxy = function () {
     }, {
         key: 'dropElement',
         value: function dropElement(event) {
-            console.log('dropping something on axis');
-            console.log('drop id', event.originalEvent.dataTransfer.getData('Text'));
             event.preventDefault();
             event.stopPropagation();
+            // get the id and name of the dropped parameter
+            var _this = event.data;
+            var param = event.originalEvent.dataTransfer.getData('Text');
+
+            var _param$split = param.split('+'),
+                _param$split2 = _slicedToArray(_param$split, 2),
+                id = _param$split2[0],
+                name = _param$split2[1];
+
+            console.log('drop id', id, name);
+            // Determine which axis and plot the name was dropped on
+            var classes = $(this).attr('class');
+            var isX = classes.includes('highcharts-xaxis');
+            var isY = classes.includes('highcharts-yaxis');
+            var parentdiv = $(this).closest('.marvinplot');
+            var parentid = parentdiv.attr('id');
+
+            // get the other axis and extract title
+            var otheraxis = null;
+            if (isX) {
+                otheraxis = $(this).next();
+            } else if (isY) {
+                otheraxis = $(this).prev();
+            }
+            var axistitle = this.textContent;
+            var otheraxistitle = otheraxis[0].textContent;
+            console.log('otheraxis', otheraxis, otheraxistitle);
+            console.log('axis', axistitle, id, name);
+
+            // Update the Values
+            var newtitle = _this.nsachoices.title.replace(axistitle, name);
+            _this.nsachoices.title = newtitle;
+            if (isX) {
+                _this.nsachoices.xtitle = name;
+                _this.nsachoices.x = id;
+            } else if (isY) {
+                _this.nsachoices.ytitle = name;
+                _this.nsachoices.y = id;
+            }
+
+            console.log('new nsa', _this.nsachoices);
+
+            // Construct the new NSA data
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
         }
     }]);
 

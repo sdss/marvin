@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-10 18:57:02
+* @Last Modified time: 2016-12-11 22:33:11
 */
 
 'use strict';
@@ -41,7 +41,10 @@ class Scatter {
             title:'Scatter Title',
             origthis:null,
             xtitle: 'X-Axis',
-            ytitle: 'Y-Axis'
+            ytitle: 'Y-Axis',
+            galaxy:{
+                name: 'Galaxy'
+            }
         };
 
         //Put all of the options into a variable called cfg
@@ -131,7 +134,7 @@ class Scatter {
 
         // },
         {
-            name: '8485-1901',
+            name: this.cfg.galaxy.name,
             color: 'rgba(255, 0, 0, 1)',
             data: this.data,
             marker: {symbol:'circle', radius:5}

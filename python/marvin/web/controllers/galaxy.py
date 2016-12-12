@@ -190,7 +190,7 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r']
+                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
                 self.galaxy['nsadict'] = nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
@@ -363,11 +363,18 @@ class Galaxy(FlaskView):
         #     output = {'nsamsg': 'No parameters selected', 'nsa': None, 'status': -1}
         else:
             try:
-                print('trying')
+                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+                nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
+                nsa = {f['plateifu']: nsadict}
             except Exception as e:
                 output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
             else:
-                output = {'nsamsg': None, 'status': 1, 'nsa': 'nsastuffgoeshere', 'nsachoices': {'y': 'z', 'x': 'sersic_logmass'}}
+                nsachoices = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
+                              '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
+                                    'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
+                              }
+                output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices}
         return jsonify(result=output)
 
 
