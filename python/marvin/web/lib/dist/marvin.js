@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-12 14:46:59
+* @Last Modified time: 2016-12-12 18:57:28
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -134,6 +134,8 @@ var Galaxy = function () {
         this.nsamsg = this.maindiv.find('#nsamsg'); // the NSA error message element
         this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');    // list of the NSA reset button elements
         this.nsamovers = $('#nsatable').find('.mover'); // list of all NSA table parameter name elements
+        this.nsaplotbuttons = $('.nsaplotbuts'); // list of the NSA plot button elements
+        this.nsatable = $('#nsatable'); // the NSA table element
 
         // object for mapping magnitude bands to their array index
         this.magband = { 'F': 0, 'N': 1, 'u': 2, 'g': 3, 'r': 4, 'i': 5, 'z': 6 };
@@ -148,7 +150,10 @@ var Galaxy = function () {
         this.togglediv.on('change', this, this.initDynamic); // this event fires when a user clicks the Spec/Map View Toggle
         this.nsadisplay.on('click', this, this.displayNSA); // this event fires when a user clicks the NSA tab
         this.nsaresetbut.on('click', this, this.resetNSASelect); // this event fires when a user clicks the NSA select reset button
-        this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot); // this event fires when a user selects an NSA parameter
+        //this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot); // this event fires when a user selects an NSA parameter
+        this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
 
         // NSA movers events
         var _this = this;
@@ -527,8 +532,9 @@ var Galaxy = function () {
                 $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
                     if (data.result.status !== -1) {
                         _this.addNSAData(data.result.nsa);
-                        _this.updateNSAChoices(data.result.nsachoices);
-                        _this.initNSAScatter('nsahighchart1');
+                        _this.refreshNSASelect(data.result.nsachoices);
+                        _this.initNSAScatter();
+                        _this.setTableEvents();
                         _this.addNSAEvents();
                     } else {
                         _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
@@ -565,17 +571,36 @@ var Galaxy = function () {
 
     }, {
         key: 'updateNSAData',
-        value: function updateNSAData() {
-            var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'galaxy';
-
+        value: function updateNSAData(index, type) {
+            console.log('updating nsa data', index, type, this.nsachoices);
             var data, options;
             if (type === 'galaxy') {
-                var x = this.mygalaxy[this.nsachoices.x];
-                var y = this.mygalaxy[this.nsachoices.y];
+                var x = this.mygalaxy[this.nsachoices[index].x];
+                var y = this.mygalaxy[this.nsachoices[index].y];
                 data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
-                options = { xtitle: this.nsachoices.xtitle, ytitle: this.nsachoices.ytitle, title: this.nsachoices.title };
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle, title: this.nsachoices[index].title };
             } else if (type === 'sample') {}
             return [data, options];
+        }
+
+        // Update the Table event handlers when the table state changes
+
+    }, {
+        key: 'setTableEvents',
+        value: function setTableEvents() {
+            console.log('updating table events');
+            console.log(this.nsatable.bootstrapTable('getData'));
+            var tabledata = this.nsatable.bootstrapTable('getData');
+            var _this = this;
+            this.nsatable.on('page-change.bs.table', function () {
+                $.each(tabledata, function (index, row) {
+                    var mover = row[0];
+                    var id = $(mover).attr('id');
+                    console.log(mover, id);
+                    $('#' + id).on('dragstart', _this, _this.dragStart);
+                    $('#' + id).on('dragover', _this, _this.dragOver);
+                });
+            });
         }
 
         // Add event handlers to the Highcharts scatter plots
@@ -621,25 +646,46 @@ var Galaxy = function () {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
             console.log('making scatter', parentid);
-            var parentdiv = this.maindiv.find('#' + parentid);
+            var _this = this;
+            // only update the single parent div element
+            if (parentid !== undefined) {
+                var parentdiv = this.maindiv.find('#' + parentid);
+                var index = parseInt(parentid[parentid.length - 1]);
 
-            var _updateNSAData = this.updateNSAData(),
-                _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
-                data = _updateNSAData2[0],
-                options = _updateNSAData2[1];
+                var _updateNSAData = this.updateNSAData(index, 'galaxy'),
+                    _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                    data = _updateNSAData2[0],
+                    options = _updateNSAData2[1];
 
-            this.nsascatter = new Scatter(parentdiv, data, options);
+                this.nsascatter = new Scatter(parentdiv, data, options);
+            } else {
+                // try updating all of them
+                $.each(this.nsaplots, function (index, plot) {
+                    console.log('plot', index, index + 1, plot, plot.id);
+                    var plotdiv = $(plot);
+                    console.log('plotdiv', plotdiv);
+                    console.log('nsaplotdib', _this.nsaplotdiv, _this);
+
+                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy'),
+                        _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2),
+                        data = _this$updateNSAData2[0],
+                        options = _this$updateNSAData2[1];
+
+                    _this.nsascatter = new Scatter(plotdiv, data, options);
+                });
+            }
+
             //data = [{'name':'8485-1901','x':-18.9128, 'y':0.6461}];
             //options = undefined;
-            this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
+            //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
             //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart3'), data, options);
         }
 
-        // Update the NSA selectpicker choices for the scatter plot
+        // Refresh the NSA select choices for the scatter plot
 
     }, {
-        key: 'updateNSAChoices',
-        value: function updateNSAChoices(vals) {
+        key: 'refreshNSASelect',
+        value: function refreshNSASelect(vals) {
             this.nsachoices = vals;
             console.log('nsaselect', this.nsaselect);
             $.each(this.nsaselect, function (index, nsasp) {
@@ -648,6 +694,20 @@ var Galaxy = function () {
                 $(nsasp).selectpicker('val', ['x_' + vals[index + 1].x, 'y_' + vals[index + 1].y]);
                 $(nsasp).selectpicker('refresh');
             });
+        }
+
+        // Update the NSA selectpicker choices for the scatter plot
+
+    }, {
+        key: 'updateNSAChoices',
+        value: function updateNSAChoices(index, params) {
+            var xpar = params[0].slice(2, params[0].length);
+            var ypar = params[1].slice(2, params[1].length);
+            this.nsachoices[index].title = xpar + ' vs ' + ypar;
+            this.nsachoices[index].xtitle = xpar;
+            this.nsachoices[index].x = xpar;
+            this.nsachoices[index].ytitle = ypar;
+            this.nsachoices[index].y = ypar;
         }
 
         // Reset the NSA selecpicker
@@ -668,10 +728,20 @@ var Galaxy = function () {
 
     }, {
         key: 'updateNSAPlot',
-        value: function updateNSAPlot(event, clickedIndex) {
+        value: function updateNSAPlot(event) {
             var _this = event.data;
-            var params = _this.nsaselect.selectpicker('val');
-            console.log('updating nsa plot', clickedIndex, params);
+            var plotid = $(this).attr('id');
+            var index = parseInt(plotid[plotid.length - 1]);
+            console.log('update this', this, $(this).attr('id'));
+            var nsasp = _this.nsaselect[index - 1];
+            var params = $(nsasp).selectpicker('val');
+            console.log('updating nsa plot', params);
+
+            // Construct the new NSA data
+            var parentid = 'nsahighchart' + index;
+            _this.updateNSAChoices(index, params);
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
         }
 
         // Events for Drag and Drop
@@ -683,6 +753,7 @@ var Galaxy = function () {
         value: function dragStart(event) {
             var _this = event.data;
             var param = this.id + '+' + this.textContent;
+            console.log('drag start', this, param);
             event.originalEvent.dataTransfer.setData('Text', param);
         }
         // Element drag over
@@ -724,6 +795,12 @@ var Galaxy = function () {
             var isY = classes.includes('highcharts-yaxis');
             var parentdiv = $(this).closest('.marvinplot');
             var parentid = parentdiv.attr('id');
+            console.log('drop parents', this, parentdiv, parentid);
+            if (parentid === undefined) {
+                event.stopPropagation();
+                return false;
+            }
+            var parentindex = parseInt(parentid[parentid.length - 1]);
 
             // get the other axis and extract title
             var otheraxis = null;
@@ -738,14 +815,14 @@ var Galaxy = function () {
             console.log('axis', axistitle, id, name);
 
             // Update the Values
-            var newtitle = _this.nsachoices.title.replace(axistitle, name);
-            _this.nsachoices.title = newtitle;
+            var newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
+            _this.nsachoices[parentindex].title = newtitle;
             if (isX) {
-                _this.nsachoices.xtitle = name;
-                _this.nsachoices.x = id;
+                _this.nsachoices[parentindex].xtitle = name;
+                _this.nsachoices[parentindex].x = id;
             } else if (isY) {
-                _this.nsachoices.ytitle = name;
-                _this.nsachoices.y = id;
+                _this.nsachoices[parentindex].ytitle = name;
+                _this.nsachoices[parentindex].y = id;
             }
 
             console.log('new nsa', _this.nsachoices);
@@ -753,6 +830,8 @@ var Galaxy = function () {
             // Construct the new NSA data
             _this.initNSAScatter(parentid);
             _this.addNSAEvents();
+
+            return false;
         }
     }]);
 
