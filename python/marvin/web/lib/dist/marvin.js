@@ -414,13 +414,12 @@ var Galaxy = function () {
                 var popid = value.id;
                 // split id and grab the mngtarg
 
-                var _popid$split = popid.split('_');
-
-                var _popid$split2 = _slicedToArray(_popid$split, 2);
-
-                var base = _popid$split2[0];
-                var targ = _popid$split2[1];
+                var _popid$split = popid.split('_'),
+                    _popid$split2 = _slicedToArray(_popid$split, 2),
+                    base = _popid$split2[0],
+                    targ = _popid$split2[1];
                 // build the label list id
+
 
                 var listid = '#list_' + targ;
                 // init the specific popover
@@ -659,12 +658,10 @@ var HeatMap = function () {
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 
@@ -1648,6 +1645,49 @@ var Utils = function () {
                     _this.login();
                 }
             }
+        }
+    }, {
+        key: 'marvinBanner',
+
+
+        // Shows a banner
+        value: function marvinBanner(text, expiryDays, cookieName, url, urlText) {
+
+            var _this = this;
+            var expiryDays = expiryDays === undefined ? 0 : expiryDays;
+            var cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
+            var url = url === undefined ? "" : url;
+            var urlText = urlText === undefined ? "Learn more" : urlText;
+
+            if (urlText == "" || url == "") {
+                urlText = "";
+                url = "";
+            }
+
+            window.cookieconsent.initialise({
+                "palette": {
+                    "popup": {
+                        "background": "#000"
+                    },
+                    "button": {
+                        "background": "#f1d600"
+                    }
+                },
+                "position": "top",
+                "cookie": {
+                    "name": cookieName,
+                    "expiryDays": expiryDays,
+                    "domain": "localhost" },
+                "content": {
+                    "message": text,
+                    "dismiss": 'Got it!',
+                    "href": url,
+                    "link": urlText }
+            });
+
+            if (expiryDays == 0) {
+                document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
+            };
         }
     }]);
 
