@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-13 01:14:57
+* @Last Modified time: 2016-12-13 14:01:39
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -59,7 +59,7 @@ var Galaxy = function () {
         this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
         this.nsaplots = $('.marvinplot'); // list of divs for the NSA highcharts scatter plot
         this.nsaplotdiv = this.maindiv.find('#nsahighchart1'); // the first div - NSA scatter plot
-        this.nsaboxdiv = this.maindiv.find('#nsabox'); // the NSA D3 boxplot element
+        this.nsaboxdiv = this.maindiv.find('#nsad3box'); // the NSA D3 boxplot element
         this.nsaselect = $('.nsaselect'); //$('#nsachoices1');   // list of the NSA selectpicker elements
         this.nsamsg = this.maindiv.find('#nsamsg'); // the NSA error message element
         this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');    // list of the NSA reset button elements
@@ -466,6 +466,7 @@ var Galaxy = function () {
                         _this.initNSAScatter();
                         _this.setTableEvents();
                         _this.addNSAEvents();
+                        _this.initNSABoxPlot(data.result.nsaplotcols);
                     } else {
                         _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
                     }
@@ -577,6 +578,48 @@ var Galaxy = function () {
             var newmsg = '<strong>' + nsamsg + '</strong>';
             this.nsamsg.empty();
             this.nsamsg.html(newmsg);
+        }
+
+        // remove values of -9999 from arrays
+
+    }, {
+        key: 'filterArray',
+        value: function filterArray(value) {
+            return value !== -9999.0;
+        }
+
+        // create the d3 data format
+
+    }, {
+        key: 'createD3data',
+        value: function createD3data() {
+            var data = [];
+            var _this = this;
+            $.each(this.nsaplotcols, function (index, column) {
+                var goodsample = _this.nsasample[column].filter(_this.filterArray);
+                var tmp = { 'value': _this.mygalaxy[column], 'title': column, 'sample': goodsample };
+                data.push(tmp);
+            });
+            return data;
+        }
+
+        // initialize the NSA d3 box and whisker plot
+
+    }, {
+        key: 'initNSABoxPlot',
+        value: function initNSABoxPlot(cols) {
+            // test for undefined columns
+            if (cols === undefined && this.nsaplotcols === undefined) {
+                console.error('columns for NSA boxplot are undefined');
+            } else {
+                this.nsaplotcols = cols;
+            }
+
+            // generate the data format
+            var data, options;
+            data = this.createD3data();
+            console.log('d3 box', this.nsaboxdiv.attr('id'));
+            this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
         }
 
         // Init the NSA Scatter plot

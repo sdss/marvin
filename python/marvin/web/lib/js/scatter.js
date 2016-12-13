@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 00:31:59
+* @Last Modified time: 2016-12-13 09:51:10
 */
 
 'use strict';
@@ -34,19 +34,19 @@ var Scatter = function () {
         }
     }
 
+    // test print
+
+
     _createClass(Scatter, [{
         key: 'print',
-
-
-        // test print
         value: function print() {
             console.log('We are now printing scatter for ', this.cfg.title);
         }
-    }, {
-        key: 'setOptions',
-
 
         // sets the options
+
+    }, {
+        key: 'setOptions',
         value: function setOptions(options) {
             // create the default options
             this.cfg = {

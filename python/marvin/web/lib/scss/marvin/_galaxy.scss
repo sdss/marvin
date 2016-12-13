@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 14:43:20
+* @Last Modified time: 2016-12-13 13:38:19
 */
 
 .marvinflag {
@@ -41,3 +41,28 @@
     background-color: rgb(57, 179, 215);
     border-color: rgb(38, 154, 188);
 }
+
+
+// D3 box plot styling
+
+.box {
+  font: 10px sans-serif;
+}
+
+.box line,
+.box rect,
+.box circle {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.box .center {
+  stroke-dasharray: 3,3;
+}
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc;
+}
+

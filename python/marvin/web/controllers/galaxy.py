@@ -404,7 +404,7 @@ class Galaxy(FlaskView):
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
                     nsa['sample'] = nsasamp
                     print(nsa)
-                    output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices}
+                    output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}
         return jsonify(result=output)
 
 

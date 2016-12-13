@@ -15,6 +15,7 @@
     <script rel='preconnect' src="https://code.highcharts.com/modules/exporting.js"></script>
     <script rel='preconnect' src="https://highcharts.github.io/pattern-fill/pattern-fill-v2.js"></script>
     <script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.6.0/math.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
 
 {% endblock jshead %}
 
@@ -237,21 +238,27 @@
         <li role="presentation"><a href="#nsabox" aria-controls="nsabox" role="tab" data-toggle="tab">Box and Whisker</a></li>
       </ul>
     </div>
-    <!-- NSA scatter plots -->
+    <!-- NSA plots -->
     <div class='col-md-8' id='nsacontent'>
       <div class='tab-content'>
+        <!-- NSA scatter plots -->
         <div class='tab-pane active' id='nsaplot' role='tabpanel'>
           {% for index in nsachoices.keys() %}
             {{nsascatter(nsadict, index)}}
           {% endfor %}
         </div>
-        <div class='tab-pane' id='nsabox' role='tabpanel'>NSA Box</div>
+        <!-- NSA box and whisker plots -->
+        <div class='tab-pane' id='nsabox' role='tabpanel'>
+          <div class='row'>
+            <div class='col-md-12'>
+              <div id='d3tooltip'></div>
+              <div id='nsad3box'></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div> {# end main NSA #}
-</div>
-
-<div class='tab-pane' role='tabpanel' id='messages'>
 </div>
 
 </div> {# end tab-content div #}
