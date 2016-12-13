@@ -66,6 +66,19 @@ class ModelCube(MarvinToolsClass):
             A placeholder for a future version in which stellar populations
             are fitted using a different template that ``template_kin``. It
             has no effect for now.
+        nsa_source ({'auto', 'drpall', 'nsa'}):
+            Defines how the NSA data for this object should loaded when
+            ``ModelCube.nsa`` is first called. If ``drpall``, the drpall file
+            will be used (note that this will only contain a subset of all the
+            NSA information); if ``nsa``, the full set of data from the DB will
+            be retrieved. If the drpall file or a database are not available, a
+            remote API call will be attempted. If ``nsa_source='auto'``, the
+            source will depend on how the ``ModelCube`` object has been
+            instantiated. If the cube has ``ModelCube.data_origin='file'``,
+            the drpall file will be used (as it is more likely that the user
+            has that file in their system). Otherwise, ``nsa_source='nsa'``
+            will be assumed. This behaviour can be modified during runtime by
+            modifying the ``ModelCube.nsa_mode`` with one of the valid values.
         release (str):
             The MPL/DR version of the data to use.
 
@@ -79,7 +92,7 @@ class ModelCube(MarvinToolsClass):
 
         valid_kwargs = [
             'data', 'cube', 'maps', 'filename', 'mangaid', 'plateifu', 'mode',
-            'release', 'bintype', 'template_kin', 'template_pop']
+            'release', 'bintype', 'template_kin', 'template_pop', 'nsa_source']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:

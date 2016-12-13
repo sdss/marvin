@@ -68,5 +68,18 @@ Anaconda. You need to switch your matplolib backend to ``Agg`` or ``TkAgg``.  Fo
 the problem. If you do want to use the MacOS backend, consider installing Python using
 `homebrew <http://brew.sh/>`_.
 
+Web Browser Oddities
+^^^^^^^^^^^^^^^^^^^^
+
+If the MPL dropdown list in the top menu bar is blank, or other elements appear to disappear, this is an indication
+your browser cache is creating conflicts.  The solution is to clear your browser cache, close and restart your browser from scratch.
+You can also clear your browser cookies.
+
+As a reminder, we recommend these browsers for the best Marvin web experience:
+
+ * Google Chrome 53+ or higher
+ * Mozilla Firefox 50+ or higher
+ * Safari 10+ or Safari Technology Preview
+
 
 

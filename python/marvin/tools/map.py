@@ -11,6 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from distutils import version
+import os
 import warnings
 
 from astropy.io import fits
@@ -232,7 +233,7 @@ class Map(object):
 
         # check for file extension
         if not os.path.splitext(path)[1]:
-            path = os.path.join(path+'.mpf')
+            path = os.path.join(path + '.mpf')
 
         return marvin.core.marvin_pickle.save(self, path=path, overwrite=overwrite)
 

@@ -344,13 +344,12 @@ var Galaxy = function () {
                 var popid = value.id;
                 // split id and grab the mngtarg
 
-                var _popid$split = popid.split('_');
-
-                var _popid$split2 = _slicedToArray(_popid$split, 2);
-
-                var base = _popid$split2[0];
-                var targ = _popid$split2[1];
+                var _popid$split = popid.split('_'),
+                    _popid$split2 = _slicedToArray(_popid$split, 2),
+                    base = _popid$split2[0],
+                    targ = _popid$split2[1];
                 // build the label list id
+
 
                 var listid = '#list_' + targ;
                 // init the specific popover

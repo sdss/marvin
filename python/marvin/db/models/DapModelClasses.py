@@ -224,6 +224,7 @@ class SpaxelAtts(object):
     ''' New class to add attributes to all SpaxelProp classes '''
     pass
 
+setattr(SpaxelAtts, 'ha_to_hb', HybridRatio('emline_gflux_ha_6564', 'emline_gflux_hb_4862'))
 setattr(SpaxelAtts, 'nii_to_ha', HybridRatio('emline_gflux_nii_6585', 'emline_gflux_ha_6564'))
 setattr(SpaxelAtts, 'oiii_to_hb', HybridRatio('emline_gflux_oiii_5008', 'emline_gflux_hb_4862'))
 setattr(SpaxelAtts, 'sii_to_ha', HybridRatio(('emline_gflux_sii_6718', 'emline_gflux_sii_6732'), 'emline_gflux_ha_6564'))

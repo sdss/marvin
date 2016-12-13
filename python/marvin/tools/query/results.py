@@ -911,20 +911,38 @@ class Results(object):
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
+        # get the parameter list to check against
+        paramlist = self.paramtocol.keys()
+        print(self.results[0])
+
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
             self.objects = [Cube(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
-            self.objects = [Maps(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid')),
-                            bintype=res.__getattribute__(
-                            self._getRefName('bintype.name')),
-                            template_kin=res.__getattribute__(
-                            self._getRefName('template.name')),
-                            mode=self.mode) for res in self.results[0:limit]]
+
+            isbin = 'bintype.name' in paramlist
+            istemp = 'template.name' in paramlist
+            self.objects = []
+
+            for res in self.results[0:limit]:
+                mapkwargs = {'mode': self.mode, 'mangaid': res.__getattribute__(self._getRefName('cube.mangaid'))}
+
+                if isbin:
+                    binval = res.__getattribute__(self._getRefName('bintype.name'))
+                    mapkwargs['bintype'] = binval
+
+                if istemp:
+                    tempval = res.__getattribute__(self._getRefName('template.name'))
+                    mapkwargs['template_kin'] = tempval
+
+                self.objects.append(Maps(**mapkwargs))
         elif tooltype == 'spaxel':
+
+            assert 'spaxelprop.x' in paramlist and 'spaxelprop.y' in paramlist, \
+                    'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel.'
+
             self.objects = [Spaxel(mangaid=res.__getattribute__(
                             self._getRefName('cube.mangaid')),
                             x=res.__getattribute__(
@@ -937,10 +955,21 @@ class Results(object):
                             self._getRefName('cube.mangaid')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
-            self.objects = [ModelCube(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid')),
-                            bintype=res.__getattribute__(
-                            self._getRefName('bintype.name')),
-                            template_kin=res.__getattribute__(
-                            self._getRefName('template.name')),
-                            mode=self.mode) for res in self.results[0:limit]]
+
+            isbin = 'bintype.name' in paramlist
+            istemp = 'template.name' in paramlist
+            self.objects = []
+
+            for res in self.results[0:limit]:
+                mapkwargs = {'mode': self.mode, 'mangaid': res.__getattribute__(self._getRefName('cube.mangaid'))}
+
+                if isbin:
+                    binval = res.__getattribute__(self._getRefName('bintype.name'))
+                    mapkwargs['bintype'] = binval
+
+                if istemp:
+                    tempval = res.__getattribute__(self._getRefName('template.name'))
+                    mapkwargs['template_kin'] = tempval
+
+                self.objects.append(ModelCube(**mapkwargs))
+
