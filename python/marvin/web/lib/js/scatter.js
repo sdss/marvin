@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-11 22:33:11
+* @Last Modified time: 2016-12-13 00:31:59
 */
 
 'use strict';
@@ -56,6 +56,10 @@ var Scatter = function () {
                 ytitle: 'Y-Axis',
                 galaxy: {
                     name: 'Galaxy'
+                },
+                altseries: {
+                    name: null,
+                    data: null
                 }
             };
 
@@ -100,6 +104,7 @@ var Scatter = function () {
                     title: {
                         text: this.cfg.ytitle
                     },
+                    gridLineWidth: 0,
                     id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 legend: {
@@ -136,21 +141,19 @@ var Scatter = function () {
                         }
                     }
                 },
-                series: [
-                // {
-                //     name: 'Sample',
-                //     color: 'rgba(70,130,180,0.4)',
-                //     data: grz,
-                //     turboThreshold:0,
-                //     marker: {
-                //         radius:2,
-                //         symbol: 'circle'
-                //     },
-                //         tooltip: {
-                //             headerFormat: '<b>{series.name}: {point.key}</b><br>'                }
+                series: [{
+                    name: this.cfg.altseries.name,
+                    color: 'rgba(70,130,180,0.4)',
+                    data: this.cfg.altseries.data,
+                    turboThreshold: 0,
+                    marker: {
+                        radius: 2,
+                        symbol: 'circle'
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}: {point.key}</b><br>' }
 
-                // },
-                {
+                }, {
                     name: this.cfg.galaxy.name,
                     color: 'rgba(255, 0, 0, 1)',
                     data: this.data,

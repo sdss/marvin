@@ -73,7 +73,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-12 18:57:28
+* @Last Modified time: 2016-12-13 01:14:57
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -574,12 +574,24 @@ var Galaxy = function () {
         value: function updateNSAData(index, type) {
             console.log('updating nsa data', index, type, this.nsachoices);
             var data, options;
+            var _this = this;
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
                 var y = this.mygalaxy[this.nsachoices[index].y];
                 data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
-                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle, title: this.nsachoices[index].title };
-            } else if (type === 'sample') {}
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, galaxy: { name: this.plateifu } };
+            } else if (type === 'sample') {
+                var x = this.nsasample[this.nsachoices[index].x];
+                var y = this.nsasample[this.nsachoices[index].y];
+                data = [];
+                $.each(x, function (index, value) {
+                    var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                    data.push(tmp);
+                });
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
+            }
             return [data, options];
         }
 
@@ -588,15 +600,12 @@ var Galaxy = function () {
     }, {
         key: 'setTableEvents',
         value: function setTableEvents() {
-            console.log('updating table events');
-            console.log(this.nsatable.bootstrapTable('getData'));
             var tabledata = this.nsatable.bootstrapTable('getData');
             var _this = this;
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
                     var id = $(mover).attr('id');
-                    console.log(mover, id);
                     $('#' + id).on('dragstart', _this, _this.dragStart);
                     $('#' + id).on('dragover', _this, _this.dragOver);
                 });
@@ -657,6 +666,12 @@ var Galaxy = function () {
                     data = _updateNSAData2[0],
                     options = _updateNSAData2[1];
 
+                var _updateNSAData3 = this.updateNSAData(index, 'sample'),
+                    _updateNSAData4 = _slicedToArray(_updateNSAData3, 2),
+                    sdata = _updateNSAData4[0],
+                    soptions = _updateNSAData4[1];
+
+                options['altseries'] = { data: sdata, name: 'Sample' };
                 this.nsascatter = new Scatter(parentdiv, data, options);
             } else {
                 // try updating all of them
@@ -671,6 +686,12 @@ var Galaxy = function () {
                         data = _this$updateNSAData2[0],
                         options = _this$updateNSAData2[1];
 
+                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample'),
+                        _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2),
+                        sdata = _this$updateNSAData4[0],
+                        soptions = _this$updateNSAData4[1];
+
+                    options['altseries'] = { data: sdata, name: 'Sample' };
                     _this.nsascatter = new Scatter(plotdiv, data, options);
                 });
             }
@@ -703,7 +724,7 @@ var Galaxy = function () {
         value: function updateNSAChoices(index, params) {
             var xpar = params[0].slice(2, params[0].length);
             var ypar = params[1].slice(2, params[1].length);
-            this.nsachoices[index].title = xpar + ' vs ' + ypar;
+            this.nsachoices[index].title = ypar + ' vs ' + xpar;
             this.nsachoices[index].xtitle = xpar;
             this.nsachoices[index].x = xpar;
             this.nsachoices[index].ytitle = ypar;
@@ -762,7 +783,8 @@ var Galaxy = function () {
         key: 'dragOver',
         value: function dragOver(event) {
             event.preventDefault();
-            event.stopPropagation();
+            //event.stopPropagation();
+            e.originalEvent.dataTransfer.dropEffect = 'move';
         }
         // Element drag enter
 
@@ -770,7 +792,7 @@ var Galaxy = function () {
         key: 'dragEnter',
         value: function dragEnter(event) {
             event.preventDefault();
-            event.stopPropagation();
+            //event.stopPropagation();
         }
         // Element drop and redraw the scatter plot
 
@@ -1613,7 +1635,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-11 22:33:11
+* @Last Modified time: 2016-12-13 00:31:59
 */
 
 'use strict';
@@ -1667,6 +1689,10 @@ var Scatter = function () {
                 ytitle: 'Y-Axis',
                 galaxy: {
                     name: 'Galaxy'
+                },
+                altseries: {
+                    name: null,
+                    data: null
                 }
             };
 
@@ -1711,6 +1737,7 @@ var Scatter = function () {
                     title: {
                         text: this.cfg.ytitle
                     },
+                    gridLineWidth: 0,
                     id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 legend: {
@@ -1747,21 +1774,19 @@ var Scatter = function () {
                         }
                     }
                 },
-                series: [
-                // {
-                //     name: 'Sample',
-                //     color: 'rgba(70,130,180,0.4)',
-                //     data: grz,
-                //     turboThreshold:0,
-                //     marker: {
-                //         radius:2,
-                //         symbol: 'circle'
-                //     },
-                //         tooltip: {
-                //             headerFormat: '<b>{series.name}: {point.key}</b><br>'                }
+                series: [{
+                    name: this.cfg.altseries.name,
+                    color: 'rgba(70,130,180,0.4)',
+                    data: this.cfg.altseries.data,
+                    turboThreshold: 0,
+                    marker: {
+                        radius: 2,
+                        symbol: 'circle'
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}: {point.key}</b><br>' }
 
-                // },
-                {
+                }, {
                     name: this.cfg.galaxy.name,
                     color: 'rgba(255, 0, 0, 1)',
                     data: this.data,

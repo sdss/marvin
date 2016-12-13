@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-12 18:58:27
+* @Last Modified time: 2016-12-13 01:26:07
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -439,12 +439,23 @@ class Galaxy {
     updateNSAData(index, type) {
         console.log('updating nsa data', index, type, this.nsachoices);
         var data, options;
+        var _this = this;
         if (type === 'galaxy') {
             var x = this.mygalaxy[this.nsachoices[index].x];
             var y = this.mygalaxy[this.nsachoices[index].y];
             data = [{'name':this.plateifu,'x':x, 'y':y}];
-            options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle, title:this.nsachoices[index].title};
+            options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
+                       title:this.nsachoices[index].title, galaxy:{name:this.plateifu}};
         } else if (type === 'sample') {
+            var x = this.nsasample[this.nsachoices[index].x];
+            var y = this.nsasample[this.nsachoices[index].y];
+            data = [];
+            $.each(x, function(index, value) {
+                var tmp = {'name':_this.nsasample.plateifu[index],'x':value, 'y':y[index]};
+                data.push(tmp);
+            });
+            options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
+                       title:this.nsachoices[index].title, altseries:{name:'Sample'}};
         }
         return [data, options];
     }
@@ -503,6 +514,8 @@ class Galaxy {
             var parentdiv = this.maindiv.find('#'+parentid);
             var index = parseInt(parentid[parentid.length-1]);
             var [data, options] = this.updateNSAData(index, 'galaxy');
+            var [sdata, soptions] = this.updateNSAData(index, 'sample');
+            options['altseries'] = {data:sdata, name:'Sample'};
             this.nsascatter = new Scatter(parentdiv, data, options);
         } else {
             // try updating all of them
@@ -512,6 +525,8 @@ class Galaxy {
                 console.log('plotdiv', plotdiv);
                 console.log('nsaplotdib', _this.nsaplotdiv, _this);
                 var [data, options] = _this.updateNSAData(index+1, 'galaxy');
+                var [sdata, soptions] = _this.updateNSAData(index+1, 'sample');
+                options['altseries'] = {data:sdata,name:'Sample'};
                 _this.nsascatter = new Scatter(plotdiv, data, options);
             });
         }
@@ -538,7 +553,7 @@ class Galaxy {
     updateNSAChoices(index, params) {
         var xpar = params[0].slice(2,params[0].length);
         var ypar = params[1].slice(2,params[1].length);
-        this.nsachoices[index].title = xpar+' vs '+ypar;
+        this.nsachoices[index].title = ypar+' vs '+xpar;
         this.nsachoices[index].xtitle = xpar;
         this.nsachoices[index].x = xpar;
         this.nsachoices[index].ytitle = ypar;
@@ -586,12 +601,13 @@ class Galaxy {
     // Element drag over
     dragOver(event) {
         event.preventDefault();
-        event.stopPropagation();
+        //event.stopPropagation();
+        e.originalEvent.dataTransfer.dropEffect = 'move';
     }
     // Element drag enter
     dragEnter(event) {
         event.preventDefault();
-        event.stopPropagation();
+        //event.stopPropagation();
     }
     // Element drop and redraw the scatter plot
     dropElement(event) {

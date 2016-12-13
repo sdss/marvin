@@ -112,9 +112,8 @@
                 <!-- Tabs -->
                 {# Tabs #}
   <ul class="nav nav-pills" role="tablist">
-    <li role="presentation" class="active"><a href="#specview" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+    <li role="presentation" class="active"><a href="#specview" aria-controls="home" role="tab" data-toggle="tab">MapSpec View</a></li>
     <li role="presentation"><a id='nsadisp' href="#nsatab" aria-controls="nsadisp" role="tab" data-toggle="tab">NSA Display</a></li>
-    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
   </ul>
 
 <div class='tab-content'>
@@ -242,25 +241,9 @@
     <div class='col-md-8' id='nsacontent'>
       <div class='tab-content'>
         <div class='tab-pane active' id='nsaplot' role='tabpanel'>
-
-          {#
-          <div class='row'>
-            <div class='col-md-2'>
-              <select class="selectpicker" id='nsachoices' multiple title='Choose Two: y and x' data-max-options="2" data-width='fit'>
-                {% for k in nsadict.keys() %}
-                <option>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
-                {% endfor %}
-              </select>
-              <button class='btn btn-info' id='resetnsa'>Reset</button>
-            </div>
-            <div class='col-md-10'>
-              <div class='marvinplot' id='nsahighchart'></div>
-            </div>
-          </div>#}
-
-          {{nsascatter(nsadict, 1)}}
-          {{nsascatter(nsadict, 2)}}
-
+          {% for index in nsachoices.keys() %}
+            {{nsascatter(nsadict, index)}}
+          {% endfor %}
         </div>
         <div class='tab-pane' id='nsabox' role='tabpanel'>NSA Box</div>
       </div>

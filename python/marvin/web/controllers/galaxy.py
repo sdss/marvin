@@ -15,7 +15,9 @@ from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
-from marvin.utils.general.general import convertImgCoords, parseIdentifier, getDefaultMapPath, getDapRedux
+from marvin import marvindb
+from marvin.utils.general.general import convertImgCoords, parseIdentifier
+from marvin.utils.general.general import getDefaultMapPath, getDapRedux, _db_row_to_dict
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
@@ -134,6 +136,13 @@ class Galaxy(FlaskView):
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
         self.galaxy['nsamsg'] = None
+        self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+                                           'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
+                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
+                                           'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
+                                     }
+        # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+        #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'}}
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -347,34 +356,55 @@ class Galaxy(FlaskView):
     def init_nsaplot(self):
         self._drpver, self._dapver, self._release = parseSession()
         f = processRequest(request=request)
-        #params = f.get('params[]', None)
         cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
+
+        # get the default nsa choices
+        nsachoices = self.galaxy.get('nsachoices', None)
+        if not nsachoices:
+            nsachoices = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+                                'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
+                          '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
+                                'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}}
+
         # get cube (self.galaxy['cube'] does not work)
         try:
             cube = Cube(**cubeinputs)
         except Exception as e:
             cube = None
 
-        print('initializing some nsa plots')
         # get some nsa params
         if not cube:
             output = {'nsamsg': 'No cube found', 'nsa': None, 'status': -1}
-        # elif not params:
-        #     output = {'nsamsg': 'No parameters selected', 'nsa': None, 'status': -1}
         else:
+            # get the galaxy nsa parameters
+            cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
             try:
-                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
                 nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
                 nsa = {f['plateifu']: nsadict}
             except Exception as e:
                 output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
             else:
-                nsachoices = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
-                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                              '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
-                                    'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
-                              }
-                output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices}
+                print('nsa success 1')
+                # get the sample nsa parameters
+                try:
+                    session = marvindb.session
+                    sampledb = marvindb.sampledb
+                    allnsa = session.query(sampledb.NSA, marvindb.datadb.Cube.plateifu).\
+                        join(sampledb.MangaTargetToNSA, sampledb.MangaTarget,
+                             marvindb.datadb.Cube, marvindb.datadb.PipelineInfo,
+                             marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
+                        filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
+                except Exception as e:
+                    print('nsa error 2')
+                    output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}
+                else:
+                    print('nsa success 2')
+                    nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
+                    nsasamp = {c: [np.log10(n[0][c]) if 'mass' in c else n[0][c][4] if 'absmag' in c else n[0][c] for n in nsadict] for c in cols}
+                    nsasamp['plateifu'] = [n[1] for n in nsadict]
+                    nsa['sample'] = nsasamp
+                    print(nsa)
+                    output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices}
         return jsonify(result=output)
 
 
