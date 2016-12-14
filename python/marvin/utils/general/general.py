@@ -860,6 +860,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
     """
 
     from marvin import config, marvindb
+    from marvin.core.core import DotableCaseInsensitive
 
     valid_modes = ['auto', 'local', 'remote']
     assert mode in valid_modes, 'mode must be one of {0}'.format(valid_modes)
@@ -900,11 +901,13 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     sampledb.MangaTarget.mangaid == mangaid).all()
 
                 if len(nsa_row) == 1:
-                    return _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk'])
+                    return DotableCaseInsensitive(
+                        _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk']))
                 elif len(nsa_row) > 1:
                     warnings.warn('get_nsa_data: multiple NSA rows found for mangaid={0}. '
                                   'Using the first one.'.format(mangaid), MarvinUserWarning)
-                    return _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk'])
+                    return DotableCaseInsensitive(
+                        _db_row_to_dict(nsa_row[0], remove_columns=['pk', 'catalogue_pk']))
                 elif len(nsa_row) == 0:
                     raise MarvinError('get_nsa_data: cannot find NSA row for mangaid={0}'
                                       .format(mangaid))
@@ -928,7 +931,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                         value = value.tolist()
                     nsa_data[col[4:]] = value
 
-            return nsa_data
+            return DotableCaseInsensitive(nsa_data)
 
     elif mode == 'remote':
 
@@ -945,6 +948,6 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
             raise MarvinError('API call to {0} failed: {1}'.format(request_name, str(ee)))
         else:
             if response.results['status'] == 1:
-                return collections.OrderedDict(response.getData())
+                return DotableCaseInsensitive(collections.OrderedDict(response.getData()))
             else:
                 raise MarvinError('get_nsa_data: %s', response['error'])

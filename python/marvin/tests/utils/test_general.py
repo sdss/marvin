@@ -26,6 +26,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 import marvin
+from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data
@@ -142,12 +143,12 @@ class TestGetNSAData(TestCase):
         marvin.config.db = self.config_db
 
     def _test_nsa(self, data):
-        self.assertIsInstance(data, OrderedDict)
+        self.assertIsInstance(data, DotableCaseInsensitive)
         self.assertIn('profmean_ivar', data.keys())
         self.assertEqual(data['profmean_ivar'][0][0], 18.5536117553711)
 
     def _test_drpall(self, data):
-        self.assertIsInstance(data, OrderedDict)
+        self.assertIsInstance(data, DotableCaseInsensitive)
         self.assertNotIn('profmean_ivar', data.keys())
         self.assertIn('iauname', data.keys())
         self.assertEqual(data['iauname'], 'J153010.73+484124.8')
@@ -189,3 +190,11 @@ class TestGetNSAData(TestCase):
     def test_hybrid_properties_populated(self):
         data = get_nsa_data('1-209232', source='nsa', mode='local')
         self.assertIn('elpetro_mag_g', data)
+
+    def test_nsa_dotable(self):
+        data = get_nsa_data('1-209232', source='nsa', mode='local')
+        self.assertEqual(data['elpetro_mag_g'], data.elpetro_mag_g)
+
+    def test_drpall_dotable(self):
+        data = get_nsa_data('1-209232', source='drpall', mode='local')
+        self.assertEqual(data['iauname'], data.iauname)

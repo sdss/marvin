@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 11:59:13
+* @Last Modified time: 2016-12-14 15:44:16
 */
 
 // Using Mike Bostocks box.js code
@@ -26,7 +26,10 @@ function boxQuartiles(d) {
     return [d3.quantile(d, .25), d3.quantile(d, .5), d3.quantile(d, .75)];
 }
 
-var tooltip = d3.select('body').append("div").attr("class", "tooltip").style("opacity", 0);
+function getTooltip() {
+    var tooltip = d3.select('body').append("div").attr("class", "tooltip").style("opacity", 0);
+    return tooltip;
+}
 
 // Inspired by http://informationandvisualization.de/blog/box-plot
 d3.box = function () {
@@ -43,6 +46,8 @@ d3.box = function () {
     x0 = null,
         // the old y-axis
     tickFormat = null;
+
+    var tooltip = getTooltip();
 
     // For each small multiple…
     function box(g) {
@@ -1847,7 +1852,7 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-11 17:40:25
+* @Last Modified time: 2016-12-14 15:46:11
 */
 
 'use strict';
@@ -1876,6 +1881,10 @@ var Marvin = function () {
 
         // setup raven
         this.setupRaven();
+
+        // check the browser on page load
+        this.window = $(window);
+        this.window.on('load', this.checkBrowser);
     }
 
     // sets the Sentry raven for monitoring
@@ -1890,6 +1899,17 @@ var Marvin = function () {
                 whitelistUrls: ['/(sas|api)\.sdss\.org/marvin/', '/(sas|api)\.sdss\.org/marvin2/'],
                 includePaths: ['/https?:\/\/((sas|api)\.)?sdss\.org/marvin', '/https?:\/\/((sas|api)\.)?sdss\.org/marvin2']
             }).install();
+        }
+
+        // check the browser for banner display
+
+    }, {
+        key: 'checkBrowser',
+        value: function checkBrowser(event) {
+            var _this = event.data;
+            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+                m.utils.marvinBanner('We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.', 1, 'safari_banner', 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser');
+            }
         }
     }]);
 
@@ -2550,7 +2570,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-10 16:50:04
+* @Last Modified time: 2016-12-14 15:54:41
 */
 
 // Javascript code for general things
@@ -2566,6 +2586,8 @@ var Utils = function () {
     // Constructor
     function Utils() {
         _classCallCheck(this, Utils);
+
+        this.window = $(window);
 
         // login handlers
         $('#login-user').on('keyup', this, this.submitLogin); // submit login on keypress
@@ -2690,6 +2712,49 @@ var Utils = function () {
                     _this.login();
                 }
             }
+        }
+    }, {
+        key: 'marvinBanner',
+
+
+        // Shows a banner
+        value: function marvinBanner(text, expiryDays, cookieName, url, urlText) {
+
+            var _this = this;
+            var expiryDays = expiryDays === undefined ? 0 : expiryDays;
+            var cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
+            var url = url === undefined ? "" : url;
+            var urlText = urlText === undefined ? "Learn more" : urlText;
+
+            if (urlText == "" || url == "") {
+                urlText = "";
+                url = "";
+            }
+
+            _this.window[0].cookieconsent.initialise({
+                "palette": {
+                    "popup": {
+                        "background": "#000"
+                    },
+                    "button": {
+                        "background": "#f1d600"
+                    }
+                },
+                "position": "top",
+                "cookie": {
+                    "name": cookieName,
+                    "expiryDays": expiryDays,
+                    "domain": "localhost" },
+                "content": {
+                    "message": text,
+                    "dismiss": 'Got it!',
+                    "href": url,
+                    "link": urlText }
+            });
+
+            if (expiryDays == 0) {
+                document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
+            };
         }
     }]);
 

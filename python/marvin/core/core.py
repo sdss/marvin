@@ -39,7 +39,7 @@ except ImportError:
     RsyncAccess = None
 
 
-__all__ = ['MarvinToolsClass']
+__all__ = ['MarvinToolsClass', 'Dotable', 'DotableCaseInsensitive']
 
 
 def kwargsGet(kwargs, key, replacement):

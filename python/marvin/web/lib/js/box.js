@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 11:59:13
+* @Last Modified time: 2016-12-14 15:44:16
 */
 
 // Using Mike Bostocks box.js code
@@ -26,7 +26,10 @@ function boxQuartiles(d) {
     return [d3.quantile(d, .25), d3.quantile(d, .5), d3.quantile(d, .75)];
 }
 
-var tooltip = d3.select('body').append("div").attr("class", "tooltip").style("opacity", 0);
+function getTooltip() {
+    var tooltip = d3.select('body').append("div").attr("class", "tooltip").style("opacity", 0);
+    return tooltip;
+}
 
 // Inspired by http://informationandvisualization.de/blog/box-plot
 d3.box = function () {
@@ -43,6 +46,8 @@ d3.box = function () {
     x0 = null,
         // the old y-axis
     tickFormat = null;
+
+    var tooltip = getTooltip();
 
     // For each small multiple…
     function box(g) {
