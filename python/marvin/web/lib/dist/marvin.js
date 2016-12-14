@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 10:56:23
+* @Last Modified time: 2016-12-14 11:59:13
 */
 
 // Using Mike Bostocks box.js code
@@ -69,7 +69,7 @@ d3.box = function () {
 
             // Compute the new x-scale.
             var q50 = quartileData[1];
-            var zero = Math.max(max - q50, q50 - min);
+            var zero = Math.max(max - q50, q50 - min); //rescales the axis to center each plot on the median
             x1 = d3.scaleLinear().domain([q50 - zero, q50, q50 + zero]).range([height, height / 2, 0]);
 
             // Retrieve the old x-scale, if this is an update.
@@ -479,7 +479,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-14 10:12:05
+* @Last Modified time: 2016-12-14 13:54:59
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -1010,6 +1010,7 @@ var Galaxy = function () {
                 var id = mover.id;
                 $('#' + id).on('dragstart', _this, _this.dragStart);
                 $('#' + id).on('dragover', _this, _this.dragOver);
+                $('#' + id).on('drop', _this, _this.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
@@ -1018,6 +1019,7 @@ var Galaxy = function () {
                     var id = $(mover).attr('id');
                     $('#' + id).on('dragstart', _this, _this.dragStart);
                     $('#' + id).on('dragover', _this, _this.dragOver);
+                    $('#' + id).on('drop', _this, _this.moverDrop);
                 });
             });
         }
@@ -1245,6 +1247,14 @@ var Galaxy = function () {
         value: function dragEnter(event) {
             event.preventDefault();
             //event.stopPropagation();
+        }
+        // Mover element drop event
+
+    }, {
+        key: 'moverDrop',
+        value: function moverDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
         }
         // Element drop and redraw the scatter plot
 

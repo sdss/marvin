@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-14 10:12:05
+* @Last Modified time: 2016-12-14 13:54:59
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -534,6 +534,7 @@ var Galaxy = function () {
                 var id = mover.id;
                 $('#' + id).on('dragstart', _this, _this.dragStart);
                 $('#' + id).on('dragover', _this, _this.dragOver);
+                $('#' + id).on('drop', _this, _this.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
@@ -542,6 +543,7 @@ var Galaxy = function () {
                     var id = $(mover).attr('id');
                     $('#' + id).on('dragstart', _this, _this.dragStart);
                     $('#' + id).on('dragover', _this, _this.dragOver);
+                    $('#' + id).on('drop', _this, _this.moverDrop);
                 });
             });
         }
@@ -769,6 +771,14 @@ var Galaxy = function () {
         value: function dragEnter(event) {
             event.preventDefault();
             //event.stopPropagation();
+        }
+        // Mover element drop event
+
+    }, {
+        key: 'moverDrop',
+        value: function moverDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
         }
         // Element drop and redraw the scatter plot
 

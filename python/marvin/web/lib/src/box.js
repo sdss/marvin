@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 10:56:23
+* @Last Modified time: 2016-12-14 11:59:13
 */
 
 // Using Mike Bostocks box.js code
@@ -74,7 +74,7 @@ d3.box = function() {
 
       // Compute the new x-scale.
       var q50 = quartileData[1];
-      var zero = Math.max(max-q50,q50-min);
+      var zero = Math.max(max-q50,q50-min); //rescales the axis to center each plot on the median
       x1 = d3.scaleLinear()
           .domain([q50-zero, q50, q50+zero])
           .range([height, height/2, 0]);
