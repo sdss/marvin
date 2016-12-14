@@ -158,7 +158,7 @@
 {# NSA Scatter Plot and Select #}
 {% macro nsascatter(nsadict, id) %}
     <div class='row nsascatter'>
-      <div class='col-md-2'>
+      {#<div class='col-md-2'>
         <select class="selectpicker nsaselect" id='nsachoices{{id}}' multiple title='Choose x and y' data-max-options="2"
         data-width='fit'>
           <optgroup label="X" data-max-options="1">
@@ -174,9 +174,12 @@
         </select>
         <button class='btn btn-warning nsaplotbuts' id='plotnsabut{{id}}'>Plot</button>
         <button class='btn btn-info nsareset' id='resetnsa{{id}}'>Reset</button>
-      </div>
-      <div class='col-md-10'>
+      </div>#}
+      <div class='col-md-6'>
         <div class='marvinplot' id='nsahighchart{{id}}'></div>
+      </div>
+      <div class='col-md-6'>
+        <div class='marvinplot' id='nsahighchart2'></div>
       </div>
     </div>
 {% endmacro %}

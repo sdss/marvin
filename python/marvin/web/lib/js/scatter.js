@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 09:51:10
+* @Last Modified time: 2016-12-14 10:13:03
 */
 
 'use strict';
@@ -31,6 +31,7 @@ var Scatter = function () {
             //this.parseTitle();
             this.setOptions(options);
             this.initChart();
+            this.createTitleOverlays();
         }
     }
 
@@ -78,7 +79,6 @@ var Scatter = function () {
     }, {
         key: 'initChart',
         value: function initChart() {
-            console.log('init plotdiv', this.plotdiv.attr('id'));
             this.plotdiv.empty();
             this.chart = Highcharts.chart(this.plotdiv.attr('id'), {
                 chart: {
@@ -88,7 +88,7 @@ var Scatter = function () {
                     plotBackgroundColor: '#F5F5F5'
                 },
                 title: {
-                    text: this.cfg.title
+                    text: null //this.cfg.title
                 },
                 xAxis: {
                     title: {
@@ -160,6 +160,46 @@ var Scatter = function () {
                     marker: { symbol: 'circle', radius: 5 }
                 }]
             });
+        }
+
+        // Create Axis Title Overlays for Drag and Drop highlighting
+
+    }, {
+        key: 'createTitleOverlays',
+        value: function createTitleOverlays() {
+            this.overgroup = this.chart.renderer.g().add();
+            this.overheight = 20;
+            this.overwidth = 100;
+            this.overedge = 5;
+
+            // styling
+            this.overcolor = 'rgba(255,0,0,0.5)';
+            this.overborder = 'black';
+            this.overbwidth = 2;
+            this.overzindex = 3;
+
+            var xtextsvg = this.chart.xAxis[0].axisTitle.element;
+            var xtextsvg_x = xtextsvg.getAttribute('x');
+            var xtextsvg_y = xtextsvg.getAttribute('y');
+
+            var ytextsvg = this.chart.yAxis[0].axisTitle.element;
+            var ytextsvg_x = ytextsvg.getAttribute('x');
+            var ytextsvg_y = ytextsvg.getAttribute('y');
+
+            this.yover = this.chart.renderer.rect(ytextsvg_x - (this.overheight / 2. + 3), ytextsvg_y - this.overwidth / 2., this.overheight, this.overwidth, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+
+            this.xover = this.chart.renderer.rect(xtextsvg_x - this.overwidth / 2., xtextsvg_y - (this.overheight / 2 + 3), this.overwidth, this.overheight, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+            this.overgroup.hide();
         }
     }]);
 

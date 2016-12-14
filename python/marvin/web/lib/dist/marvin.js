@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:02:47
+* @Last Modified time: 2016-12-14 10:56:23
 */
 
 // Using Mike Bostocks box.js code
@@ -68,7 +68,9 @@ d3.box = function () {
             var outlierIndices = whiskerIndices ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n)) : d3.range(n);
 
             // Compute the new x-scale.
-            x1 = d3.scaleLinear().domain(domain && domain.call(this, d, i) || [min, max]).range([height, 0]);
+            var q50 = quartileData[1];
+            var zero = Math.max(max - q50, q50 - min);
+            x1 = d3.scaleLinear().domain([q50 - zero, q50, q50 + zero]).range([height, height / 2, 0]);
 
             // Retrieve the old x-scale, if this is an update.
             x0 = this.__chart__ || d3.scaleLinear().domain([0, Infinity]).range(x1.range());
@@ -477,7 +479,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-13 14:01:39
+* @Last Modified time: 2016-12-14 10:12:05
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -560,12 +562,12 @@ var Galaxy = function () {
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
 
         // NSA movers events
-        var _this = this;
-        $.each(this.nsamovers, function (index, mover) {
-            var id = mover.id;
-            $('#' + id).on('dragstart', this, _this.dragStart);
-            $('#' + id).on('dragover', this, _this.dragOver);
-        });
+        // var _this = this;
+        // $.each(this.nsamovers, function(index, mover) {
+        //     var id = mover.id;
+        //     $('#'+id).on('dragstart', this, _this.dragStart);
+        //     $('#'+id).on('dragover', this, _this.dragOver);
+        // });
     }
 
     // Test print
@@ -869,7 +871,6 @@ var Galaxy = function () {
         key: 'getDapMaps',
         value: function getDapMaps(event) {
             var _this = event.data;
-            console.log('getting dap maps', _this.dapselect.selectpicker('val'));
             var params = _this.dapselect.selectpicker('val');
             var bintemp = _this.dapbt.selectpicker('val');
             var keys = ['plateifu', 'params', 'bintemp'];
@@ -922,7 +923,6 @@ var Galaxy = function () {
     }, {
         key: 'displayNSA',
         value: function displayNSA(event) {
-            console.log('showing nsa');
             var _this = event.data;
 
             // make the form
@@ -956,7 +956,6 @@ var Galaxy = function () {
         key: 'addNSAData',
         value: function addNSAData(data) {
             // the galaxy
-            console.log('nsa data', data);
             if (data[this.plateifu]) {
                 this.mygalaxy = data[this.plateifu];
             } else {
@@ -977,7 +976,6 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            console.log('updating nsa data', index, type, this.nsachoices);
             var data, options;
             var _this = this;
             if (type === 'galaxy') {
@@ -1007,6 +1005,13 @@ var Galaxy = function () {
         value: function setTableEvents() {
             var tabledata = this.nsatable.bootstrapTable('getData');
             var _this = this;
+
+            $.each(this.nsamovers, function (index, mover) {
+                var id = mover.id;
+                $('#' + id).on('dragstart', _this, _this.dragStart);
+                $('#' + id).on('dragover', _this, _this.dragOver);
+            });
+
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
@@ -1025,7 +1030,6 @@ var Galaxy = function () {
             var _this = this;
             // NSA plot events
             this.nsaplots = $('.marvinplot');
-            console.log('adding nsa drag events');
             $.each(this.nsaplots, function (index, plot) {
                 var id = plot.id;
                 var highx = $('#' + id).find('.highcharts-xaxis');
@@ -1092,8 +1096,16 @@ var Galaxy = function () {
             // generate the data format
             var data, options;
             data = this.createD3data();
-            console.log('d3 box', this.nsaboxdiv.attr('id'));
             this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
+        }
+
+        // Destroy old Charts
+
+    }, {
+        key: 'destroyChart',
+        value: function destroyChart(div, index) {
+            this.nsascatter[index].chart.destroy();
+            div.empty();
         }
 
         // Init the NSA Scatter plot
@@ -1101,7 +1113,6 @@ var Galaxy = function () {
     }, {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
-            console.log('making scatter', parentid);
             var _this = this;
             // only update the single parent div element
             if (parentid !== undefined) {
@@ -1119,14 +1130,13 @@ var Galaxy = function () {
                     soptions = _updateNSAData4[1];
 
                 options['altseries'] = { data: sdata, name: 'Sample' };
-                this.nsascatter = new Scatter(parentdiv, data, options);
+                this.destroyChart(parentdiv, index);
+                this.nsascatter[index] = new Scatter(parentdiv, data, options);
             } else {
                 // try updating all of them
+                _this.nsascatter = {};
                 $.each(this.nsaplots, function (index, plot) {
-                    console.log('plot', index, index + 1, plot, plot.id);
                     var plotdiv = $(plot);
-                    console.log('plotdiv', plotdiv);
-                    console.log('nsaplotdib', _this.nsaplotdiv, _this);
 
                     var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy'),
                         _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2),
@@ -1139,14 +1149,9 @@ var Galaxy = function () {
                         soptions = _this$updateNSAData4[1];
 
                     options['altseries'] = { data: sdata, name: 'Sample' };
-                    _this.nsascatter = new Scatter(plotdiv, data, options);
+                    _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
-
-            //data = [{'name':'8485-1901','x':-18.9128, 'y':0.6461}];
-            //options = undefined;
-            //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart2'), data, options);
-            //this.nsascatter = new Scatter(this.maindiv.find('#nsahighchart3'), data, options);
         }
 
         // Refresh the NSA select choices for the scatter plot
@@ -1155,9 +1160,7 @@ var Galaxy = function () {
         key: 'refreshNSASelect',
         value: function refreshNSASelect(vals) {
             this.nsachoices = vals;
-            console.log('nsaselect', this.nsaselect);
             $.each(this.nsaselect, function (index, nsasp) {
-                console.log(index, nsasp);
                 $(nsasp).selectpicker('deselectAll');
                 $(nsasp).selectpicker('val', ['x_' + vals[index + 1].x, 'y_' + vals[index + 1].y]);
                 $(nsasp).selectpicker('refresh');
@@ -1200,10 +1203,8 @@ var Galaxy = function () {
             var _this = event.data;
             var plotid = $(this).attr('id');
             var index = parseInt(plotid[plotid.length - 1]);
-            console.log('update this', this, $(this).attr('id'));
             var nsasp = _this.nsaselect[index - 1];
             var params = $(nsasp).selectpicker('val');
-            console.log('updating nsa plot', params);
 
             // Construct the new NSA data
             var parentid = 'nsahighchart' + index;
@@ -1221,8 +1222,12 @@ var Galaxy = function () {
         value: function dragStart(event) {
             var _this = event.data;
             var param = this.id + '+' + this.textContent;
-            console.log('drag start', this, param);
             event.originalEvent.dataTransfer.setData('Text', param);
+
+            // show the overlay elements
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.show();
+            });
         }
         // Element drag over
 
@@ -1231,7 +1236,7 @@ var Galaxy = function () {
         value: function dragOver(event) {
             event.preventDefault();
             //event.stopPropagation();
-            e.originalEvent.dataTransfer.dropEffect = 'move';
+            event.originalEvent.dataTransfer.dropEffect = 'move';
         }
         // Element drag enter
 
@@ -1257,14 +1262,19 @@ var Galaxy = function () {
                 id = _param$split2[0],
                 name = _param$split2[1];
 
-            console.log('drop id', id, name);
+            // Hide overlay elements
+
+
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.hide();
+            });
+
             // Determine which axis and plot the name was dropped on
             var classes = $(this).attr('class');
             var isX = classes.includes('highcharts-xaxis');
             var isY = classes.includes('highcharts-yaxis');
             var parentdiv = $(this).closest('.marvinplot');
             var parentid = parentdiv.attr('id');
-            console.log('drop parents', this, parentdiv, parentid);
             if (parentid === undefined) {
                 event.stopPropagation();
                 return false;
@@ -1280,8 +1290,6 @@ var Galaxy = function () {
             }
             var axistitle = this.textContent;
             var otheraxistitle = otheraxis[0].textContent;
-            console.log('otheraxis', otheraxis, otheraxistitle);
-            console.log('axis', axistitle, id, name);
 
             // Update the Values
             var newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
@@ -1293,8 +1301,6 @@ var Galaxy = function () {
                 _this.nsachoices[parentindex].ytitle = name;
                 _this.nsachoices[parentindex].y = id;
             }
-
-            console.log('new nsa', _this.nsachoices);
 
             // Construct the new NSA data
             _this.initNSAScatter(parentid);
@@ -2082,7 +2088,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 09:51:10
+* @Last Modified time: 2016-12-14 10:13:03
 */
 
 'use strict';
@@ -2111,6 +2117,7 @@ var Scatter = function () {
             //this.parseTitle();
             this.setOptions(options);
             this.initChart();
+            this.createTitleOverlays();
         }
     }
 
@@ -2158,7 +2165,6 @@ var Scatter = function () {
     }, {
         key: 'initChart',
         value: function initChart() {
-            console.log('init plotdiv', this.plotdiv.attr('id'));
             this.plotdiv.empty();
             this.chart = Highcharts.chart(this.plotdiv.attr('id'), {
                 chart: {
@@ -2168,7 +2174,7 @@ var Scatter = function () {
                     plotBackgroundColor: '#F5F5F5'
                 },
                 title: {
-                    text: this.cfg.title
+                    text: null //this.cfg.title
                 },
                 xAxis: {
                     title: {
@@ -2240,6 +2246,46 @@ var Scatter = function () {
                     marker: { symbol: 'circle', radius: 5 }
                 }]
             });
+        }
+
+        // Create Axis Title Overlays for Drag and Drop highlighting
+
+    }, {
+        key: 'createTitleOverlays',
+        value: function createTitleOverlays() {
+            this.overgroup = this.chart.renderer.g().add();
+            this.overheight = 20;
+            this.overwidth = 100;
+            this.overedge = 5;
+
+            // styling
+            this.overcolor = 'rgba(255,0,0,0.5)';
+            this.overborder = 'black';
+            this.overbwidth = 2;
+            this.overzindex = 3;
+
+            var xtextsvg = this.chart.xAxis[0].axisTitle.element;
+            var xtextsvg_x = xtextsvg.getAttribute('x');
+            var xtextsvg_y = xtextsvg.getAttribute('y');
+
+            var ytextsvg = this.chart.yAxis[0].axisTitle.element;
+            var ytextsvg_x = ytextsvg.getAttribute('x');
+            var ytextsvg_y = ytextsvg.getAttribute('y');
+
+            this.yover = this.chart.renderer.rect(ytextsvg_x - (this.overheight / 2. + 3), ytextsvg_y - this.overwidth / 2., this.overheight, this.overwidth, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+
+            this.xover = this.chart.renderer.rect(xtextsvg_x - this.overwidth / 2., xtextsvg_y - (this.overheight / 2 + 3), this.overwidth, this.overheight, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+            this.overgroup.hide();
         }
     }]);
 

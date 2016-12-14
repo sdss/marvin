@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:02:47
+* @Last Modified time: 2016-12-14 10:56:23
 */
 
 // Using Mike Bostocks box.js code
@@ -68,7 +68,9 @@ d3.box = function () {
             var outlierIndices = whiskerIndices ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n)) : d3.range(n);
 
             // Compute the new x-scale.
-            x1 = d3.scaleLinear().domain(domain && domain.call(this, d, i) || [min, max]).range([height, 0]);
+            var q50 = quartileData[1];
+            var zero = Math.max(max - q50, q50 - min);
+            x1 = d3.scaleLinear().domain([q50 - zero, q50, q50 + zero]).range([height, height / 2, 0]);
 
             // Retrieve the old x-scale, if this is an update.
             x0 = this.__chart__ || d3.scaleLinear().domain([0, Infinity]).range(x1.range());

@@ -243,9 +243,10 @@
       <div class='tab-content'>
         <!-- NSA scatter plots -->
         <div class='tab-pane active' id='nsaplot' role='tabpanel'>
-          {% for index in nsachoices.keys() %}
+          {#{% for index in nsachoices.keys() %}
             {{nsascatter(nsadict, index)}}
-          {% endfor %}
+          {% endfor %}#}
+          {{nsascatter(nsadict, 1)}}
         </div>
         <!-- NSA box and whisker plots -->
         <div class='tab-pane' id='nsabox' role='tabpanel'>
