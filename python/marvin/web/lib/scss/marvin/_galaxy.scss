@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 13:38:19
+* @Last Modified time: 2016-12-14 16:27:57
 */
 
 .marvinflag {
@@ -36,12 +36,19 @@
     //padding-bottom:100%;
 }
 
-#toggle-grp .input-group-addon.info {
+@mixin loading-icon() {
     color: rgb(255, 255, 255);
     background-color: rgb(57, 179, 215);
     border-color: rgb(38, 154, 188);
 }
 
+#toggle-grp .input-group-addon.info {
+  @include loading-icon()
+}
+
+#nsa-load {
+  @include loading-icon()
+}
 
 // D3 box plot styling
 

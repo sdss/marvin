@@ -175,7 +175,12 @@
         <button class='btn btn-warning nsaplotbuts' id='plotnsabut{{id}}'>Plot</button>
         <button class='btn btn-info nsareset' id='resetnsa{{id}}'>Reset</button>
       </div>#}
-      <div id='ddtext'><p class="text-info">Drag-n-Drop the Table Parameter Name to change the Plot Axis!</p></div>
+
+      <div class='input-group col-md-6' id='nsa-grp'>
+        <div id='ddtext'><p class="text-info">Drag-n-Drop the Table Parameter Name to change the Plot Axis!</p></div>
+        <span class="input-group-addon info" id="nsa-load"><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...</span>
+      </div>
+
       <div class='col-md-6'>
         <div class='marvinplot' id='nsahighchart{{id}}'></div>
       </div>

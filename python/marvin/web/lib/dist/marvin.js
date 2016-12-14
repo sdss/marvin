@@ -484,7 +484,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-14 13:54:59
+* @Last Modified time: 2016-12-14 16:33:55
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -547,6 +547,7 @@ var Galaxy = function () {
         this.nsamovers = $('#nsatable').find('.mover'); // list of all NSA table parameter name elements
         this.nsaplotbuttons = $('.nsaplotbuts'); // list of the NSA plot button elements
         this.nsatable = $('#nsatable'); // the NSA table element
+        this.nsaload = $('#nsa-load'); //the NSA scatter plot loading element
 
         // object for mapping magnitude bands to their array index
         this.magband = { 'F': 0, 'N': 1, 'u': 2, 'g': 3, 'r': 4, 'i': 5, 'z': 6 };
@@ -946,6 +947,7 @@ var Galaxy = function () {
                         _this.setTableEvents();
                         _this.addNSAEvents();
                         _this.initNSABoxPlot(data.result.nsaplotcols);
+                        _this.nsaload.hide();
                     } else {
                         _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
                     }
