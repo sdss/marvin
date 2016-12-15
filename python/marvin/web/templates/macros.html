@@ -137,7 +137,7 @@
 {% endmacro %}
 
 {# NSA Table #}
-{% macro nsatable(nsa) %}
+{% macro nsatable(nsa, cols) %}
 <div id='nsatool'> <h4><strong>NSA Parameters</strong></h4></div>
 <div class='col-md-2' id='nsadiv'>
   <table class='table table-responsive table-condensed table-striped table-bordered' id='nsatable'
@@ -147,8 +147,8 @@
     <tr><th>Name</th><th>Value</th></tr>
   </thead>
   <tbody>
-    {% for k, v in nsa.items() %}
-    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|filternsa}}</strong></span></td><td>{{v|round(4)}}</td></tr>
+    {% for c in cols %}
+    <tr><td><span class='mover' id='{{c}}' draggable=true><strong>{{c|filternsa}}</strong></span></td><td>{{nsa[c]|round(4)}}</td></tr>
     {% endfor %}
   </tbody>
   </table>

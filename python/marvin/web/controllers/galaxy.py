@@ -145,6 +145,11 @@ class Galaxy(FlaskView):
         # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
         #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'}}
 
+        # cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+        self.galaxy['nsaplotcols'] = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r',
+                                      'elpetro_th50_r', 'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba',
+                                      'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
+
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
         self.galaxy['error'] = None
@@ -200,9 +205,7 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                #cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r',
-                        'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba', 'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
+                cols = self.galaxy.get('nsaplotcols')
                 self.galaxy['nsadict'] = nsadict = OrderedDict({c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols})
                 print('nsadict', OrderedDict(nsadict))
                 self.galaxy['dapmaps'] = daplist
@@ -381,9 +384,7 @@ class Galaxy(FlaskView):
             output = {'nsamsg': 'No cube found', 'nsa': None, 'status': -1}
         else:
             # get the galaxy nsa parameters
-            #cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-            cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r',
-                    'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba', 'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
+            cols = self.galaxy.get('nsaplotcols')
             try:
                 nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols}
                 nsa = {f['plateifu']: nsadict}
