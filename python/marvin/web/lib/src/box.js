@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-15 15:41:21
+* @Last Modified time: 2016-12-15 17:20:57
 */
 
 // Using Mike Bostocks box.js code
@@ -17,6 +17,19 @@
 // Dec-13-2016 - converted to D3 v4
 
 'use strict';
+
+function iqr(k) {
+      return function(d, i) {
+        var q1 = d.quartiles[0],
+            q3 = d.quartiles[2],
+            iqr = (q3 - q1) * k,
+            i = -1,
+            j = d.length;
+        while (d[++i] < q1 - iqr);
+        while (d[--j] > q3 + iqr);
+        return [i, j];
+      };
+}
 
 function boxWhiskers(d) {
   return [0, d.length - 1];
@@ -68,6 +81,11 @@ d3.box = function() {
       var quartileData = d.quartiles = quartiles(d);
       var q10 = d3.quantile(d, .10);
       var q90 = d3.quantile(d, .90);
+      var myiqr = quartileData[2]-quartileData[0];
+
+      // compute the 2.5*iqr indices and values
+      var iqr25inds = iqr(2.5).call(this, d, i);
+      var iqr25data = iqr25inds.map(function(i) {return d[i];});
 
       // Compute whiskers. Must return exactly 2 elements, or null.
       var whiskerIndices = whiskers && whiskers.call(this, d, i),
@@ -80,9 +98,8 @@ d3.box = function() {
           : d3.range(n);
 
       // Compute the new x-scale.
-      console.log('whiskers', whiskerIndices, whiskerData);
       var q50 = quartileData[1];
-      var zero = Math.max(whiskerData[1]-q50,q50-whiskerData[0]); //rescales the axis to center each plot on the median
+      var zero = Math.max(iqr25data[1]-q50,q50-iqr25data[0]); //rescales the axis to center each plot on the median
       var diff = Math.min(max-whiskerData[1], min-whiskerData[0]);
 
       x1 = d3.scaleLinear()
@@ -242,6 +259,7 @@ d3.box = function() {
         .attr('y', height)
         .attr('dy', 20)
         .attr('text-anchor', 'middle')
+        .style('font-weight', 'bold')
         .style('font-size', 15);
      }
 
