@@ -148,7 +148,7 @@
   </thead>
   <tbody>
     {% for k, v in nsa.items() %}
-    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</strong></span></td><td>{{v|round(4)}}</td></tr>
+    <tr><td><span class='mover' id='{{k}}' draggable=true><strong>{{k|filternsa}}</strong></span></td><td>{{v|round(4)}}</td></tr>
     {% endfor %}
   </tbody>
   </table>
@@ -163,12 +163,12 @@
         data-width='fit'>
           <optgroup label="X" data-max-options="1">
           {% for k in nsadict.keys() %}
-          <option value='x_{{k}}''>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          <option value='x_{{k}}''>{{k|filternsa}}</option>
           {% endfor %}
           </optgroup>
           <optgroup label="Y" data-max-options="1">
           {% for k in nsadict.keys() %}
-          <option value='y_{{k}}'>{{k|replace('mass', 'logmass')|replace('absmag', 'absmag_r')|replace('elpetro_mag_g_r', 'g-r')}}</option>
+          <option value='y_{{k}}'>{{k|filternsa}}</option>
           {% endfor %}
           </optgroup>
         </select>

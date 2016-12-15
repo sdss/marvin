@@ -24,6 +24,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
+from collections import OrderedDict
 import os
 import numpy as np
 
@@ -199,8 +200,11 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
-                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-                self.galaxy['nsadict'] = nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
+                #cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+                cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r',
+                        'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba', 'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
+                self.galaxy['nsadict'] = nsadict = OrderedDict({c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols})
+                print('nsadict', OrderedDict(nsadict))
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
@@ -377,14 +381,15 @@ class Galaxy(FlaskView):
             output = {'nsamsg': 'No cube found', 'nsa': None, 'status': -1}
         else:
             # get the galaxy nsa parameters
-            cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+            #cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+            cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r',
+                    'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba', 'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
             try:
-                nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c else cube.nsa[c] for c in cols}
+                nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols}
                 nsa = {f['plateifu']: nsadict}
             except Exception as e:
                 output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
             else:
-                print('nsa success 1')
                 # get the sample nsa parameters
                 try:
                     session = marvindb.session
@@ -395,15 +400,12 @@ class Galaxy(FlaskView):
                              marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
                         filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
                 except Exception as e:
-                    print('nsa error 2')
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}
                 else:
-                    print('nsa success 2')
                     nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
-                    nsasamp = {c: [np.log10(n[0][c]) if 'mass' in c else n[0][c][4] if 'absmag' in c else n[0][c] for n in nsadict] for c in cols}
+                    nsasamp = {c: [np.log10(n[0][c]) if 'mass' in c else n[0][c][4] if 'absmag' in c or 'mtol' in c else n[0][c] for n in nsadict] for c in cols}
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
                     nsa['sample'] = nsasamp
-                    print(nsa)
                     output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}
         return jsonify(result=output)
 

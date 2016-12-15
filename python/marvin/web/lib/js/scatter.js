@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 10:13:03
+* @Last Modified time: 2016-12-15 13:27:14
 */
 
 'use strict';
@@ -61,7 +61,9 @@ var Scatter = function () {
                 altseries: {
                     name: null,
                     data: null
-                }
+                },
+                xrev: false,
+                yrev: false
             };
 
             //Put all of the options into a variable called cfg
@@ -98,6 +100,7 @@ var Scatter = function () {
                     startOnTick: true,
                     endOnTick: true,
                     showLastLabel: true,
+                    reversed: this.cfg.xrev,
                     id: this.cfg.xtitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 yAxis: {
@@ -105,15 +108,20 @@ var Scatter = function () {
                         text: this.cfg.ytitle
                     },
                     gridLineWidth: 0,
+                    reversed: this.cfg.yrev,
                     id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 legend: {
                     layout: 'vertical',
                     align: 'left',
                     verticalAlign: 'top',
-                    x: 100,
-                    y: 70,
+                    x: 75,
+                    y: 20,
+                    title: {
+                        text: 'Drag Me'
+                    },
                     floating: true,
+                    draggable: true,
                     backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
                     borderWidth: 1
                 },

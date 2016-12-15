@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 16:27:57
+* @Last Modified time: 2016-12-15 15:34:05
 */
 
 .marvinflag {
@@ -73,3 +73,7 @@
   stroke: #ccc;
 }
 
+#nsad3box {
+  overflow-x: auto;
+  white-space: nowrap;
+}

@@ -35,6 +35,17 @@ def filtergaltype(context, value):
 
 @jinja2.contextfilter
 @jinjablue.app_template_filter()
+def filternsa(context, value):
+    ''' Parse plateifu or mangaid into better form '''
+
+    newvalue = value.replace('mass', 'logmass').replace('absmag', 'absmag_r').\
+        replace('elpetro_mag_g_r', 'g-r').replace('elpetro_mag_u_r', 'u-r').\
+        replace('elpetro_mag_i_z', 'i-z').replace('mtol', 'mtol_r')
+    return newvalue
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
 def allclose(context, value, newvalue):
     ''' Do a numpy allclose comparison between the two values '''
     try:

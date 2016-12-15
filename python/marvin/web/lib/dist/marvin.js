@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:44:16
+* @Last Modified time: 2016-12-15 15:41:21
 */
 
 // Using Mike Bostocks box.js code
@@ -61,6 +61,8 @@ d3.box = function () {
 
             // Compute quartiles. Must return exactly 3 elements.
             var quartileData = d.quartiles = quartiles(d);
+            var q10 = d3.quantile(d, .10);
+            var q90 = d3.quantile(d, .90);
 
             // Compute whiskers. Must return exactly 2 elements, or null.
             var whiskerIndices = whiskers && whiskers.call(this, d, i),
@@ -73,9 +75,14 @@ d3.box = function () {
             var outlierIndices = whiskerIndices ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n)) : d3.range(n);
 
             // Compute the new x-scale.
+            console.log('whiskers', whiskerIndices, whiskerData);
             var q50 = quartileData[1];
-            var zero = Math.max(max - q50, q50 - min); //rescales the axis to center each plot on the median
+            var zero = Math.max(whiskerData[1] - q50, q50 - whiskerData[0]); //rescales the axis to center each plot on the median
+            var diff = Math.min(max - whiskerData[1], min - whiskerData[0]);
+
             x1 = d3.scaleLinear().domain([q50 - zero, q50, q50 + zero]).range([height, height / 2, 0]);
+            //.domain([min,max])
+            //.range([height,0]);
 
             // Retrieve the old x-scale, if this is an update.
             x0 = this.__chart__ || d3.scaleLinear().domain([0, Infinity]).range(x1.range());
@@ -484,7 +491,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-14 16:33:55
+* @Last Modified time: 2016-12-15 13:22:57
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -988,16 +995,21 @@ var Galaxy = function () {
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
                 var y = this.mygalaxy[this.nsachoices[index].y];
+                var xrev = this.nsachoices[index].x.search('absmag') > -1 ? true : false;
+                var yrev = this.nsachoices[index].y.search('absmag') > -1 ? true : false;
                 data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
                 options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
-                    title: this.nsachoices[index].title, galaxy: { name: this.plateifu } };
+                    title: this.nsachoices[index].title, galaxy: { name: this.plateifu }, xrev: xrev,
+                    yrev: yrev };
             } else if (type === 'sample') {
                 var x = this.nsasample[this.nsachoices[index].x];
                 var y = this.nsasample[this.nsachoices[index].y];
                 data = [];
                 $.each(x, function (index, value) {
-                    var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
-                    data.push(tmp);
+                    if (value > -9999 && y[index] > -9999) {
+                        var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                        data.push(tmp);
+                    }
                 });
                 options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
                     title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
@@ -2120,7 +2132,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 10:13:03
+* @Last Modified time: 2016-12-15 13:27:14
 */
 
 'use strict';
@@ -2179,7 +2191,9 @@ var Scatter = function () {
                 altseries: {
                     name: null,
                     data: null
-                }
+                },
+                xrev: false,
+                yrev: false
             };
 
             //Put all of the options into a variable called cfg
@@ -2216,6 +2230,7 @@ var Scatter = function () {
                     startOnTick: true,
                     endOnTick: true,
                     showLastLabel: true,
+                    reversed: this.cfg.xrev,
                     id: this.cfg.xtitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 yAxis: {
@@ -2223,15 +2238,20 @@ var Scatter = function () {
                         text: this.cfg.ytitle
                     },
                     gridLineWidth: 0,
+                    reversed: this.cfg.yrev,
                     id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
                 },
                 legend: {
                     layout: 'vertical',
                     align: 'left',
                     verticalAlign: 'top',
-                    x: 100,
-                    y: 70,
+                    x: 75,
+                    y: 20,
+                    title: {
+                        text: 'Drag Me'
+                    },
                     floating: true,
+                    draggable: true,
                     backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
                     borderWidth: 1
                 },

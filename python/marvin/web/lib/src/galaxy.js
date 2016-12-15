@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-12-14 16:33:55
+* @Last Modified time: 2016-12-15 13:22:57
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -442,16 +442,21 @@ class Galaxy {
         if (type === 'galaxy') {
             var x = this.mygalaxy[this.nsachoices[index].x];
             var y = this.mygalaxy[this.nsachoices[index].y];
+            var xrev = (this.nsachoices[index].x.search('absmag') > -1) ? true : false;
+            var yrev = (this.nsachoices[index].y.search('absmag') > -1) ? true : false;
             data = [{'name':this.plateifu,'x':x, 'y':y}];
             options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
-                       title:this.nsachoices[index].title, galaxy:{name:this.plateifu}};
+                       title:this.nsachoices[index].title, galaxy:{name:this.plateifu}, xrev:xrev,
+                       yrev:yrev};
         } else if (type === 'sample') {
             var x = this.nsasample[this.nsachoices[index].x];
             var y = this.nsasample[this.nsachoices[index].y];
             data = [];
             $.each(x, function(index, value) {
-                var tmp = {'name':_this.nsasample.plateifu[index],'x':value, 'y':y[index]};
-                data.push(tmp);
+                if (value > -9999 && y[index] > -9999) {
+                    var tmp = {'name':_this.nsasample.plateifu[index],'x':value, 'y':y[index]};
+                    data.push(tmp);
+                }
             });
             options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
                        title:this.nsachoices[index].title, altseries:{name:'Sample'}};

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:44:16
+* @Last Modified time: 2016-12-15 15:41:21
 */
 
 // Using Mike Bostocks box.js code
@@ -66,6 +66,8 @@ d3.box = function() {
 
       // Compute quartiles. Must return exactly 3 elements.
       var quartileData = d.quartiles = quartiles(d);
+      var q10 = d3.quantile(d, .10);
+      var q90 = d3.quantile(d, .90);
 
       // Compute whiskers. Must return exactly 2 elements, or null.
       var whiskerIndices = whiskers && whiskers.call(this, d, i),
@@ -78,11 +80,16 @@ d3.box = function() {
           : d3.range(n);
 
       // Compute the new x-scale.
+      console.log('whiskers', whiskerIndices, whiskerData);
       var q50 = quartileData[1];
-      var zero = Math.max(max-q50,q50-min); //rescales the axis to center each plot on the median
+      var zero = Math.max(whiskerData[1]-q50,q50-whiskerData[0]); //rescales the axis to center each plot on the median
+      var diff = Math.min(max-whiskerData[1], min-whiskerData[0]);
+
       x1 = d3.scaleLinear()
           .domain([q50-zero, q50, q50+zero])
           .range([height, height/2, 0]);
+          //.domain([min,max])
+          //.range([height,0]);
 
       // Retrieve the old x-scale, if this is an update.
       x0 = this.__chart__ || d3.scaleLinear()
