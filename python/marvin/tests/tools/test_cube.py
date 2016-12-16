@@ -11,6 +11,7 @@ from astropy.io import fits
 
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
+from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 
@@ -180,7 +181,7 @@ class TestCube(TestCubeBase):
         self.assertAlmostEqual(cube.redshift, 0.0407447)
 
     def _test_nsa(self, nsa_data, mode='nsa'):
-        self.assertIsInstance(nsa_data, collections.OrderedDict)
+        self.assertIsInstance(nsa_data, DotableCaseInsensitive)
         if mode == 'drpall':
             self.assertNotIn('profmean_ivar', nsa_data.keys())
         self.assertIn('zdist', nsa_data.keys())

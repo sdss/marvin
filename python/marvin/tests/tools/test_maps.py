@@ -265,7 +265,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         self.assertEqual(maps.data_origin, 'db')
 
-        map_db = maps.getMap('specindex', channel='fe5406')
+        map_db = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_db, marvin.tools.map.Map)
         self.assertIsInstance(map_db.header, astropy.io.fits.Header)
         self.assertEqual(map_db.header['C01'], 'D4000')
@@ -274,7 +274,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self.assertEqual(maps.data_origin, 'file')
 
-        map_file = maps.getMap('specindex', channel='fe5406')
+        map_file = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_file, marvin.tools.map.Map)
         self.assertIsInstance(map_file.header, astropy.io.fits.Header)
         self.assertEqual(map_file.header['C01'], 'D4000')
@@ -293,7 +293,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self.assertEqual(maps.data_origin, 'api')
 
-        map_api = maps.getMap('specindex', channel='fe5406')
+        map_api = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_api, marvin.tools.map.Map)
         self.assertIsInstance(map_api.header, astropy.io.fits.Header)
         self.assertEqual(map_api.header['C01'], 'D4000')

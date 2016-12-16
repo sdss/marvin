@@ -17,7 +17,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import case, cast, Float
 import re
 from marvin.db.database import db
-import DataModelClasses as datadb
+import marvin.db.models.DataModelClasses as datadb
 from astropy.io import fits
 import numpy as np
 from marvin.core.caching_query import RelationshipCache

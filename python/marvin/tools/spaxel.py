@@ -168,11 +168,11 @@ class Spaxel(object):
         self.mangaid = None
 
         if len(args) > 0:
-            self.x = args[0]
-            self.y = args[1]
+            self.x = int(args[0])
+            self.y = int(args[1])
         else:
-            self.x = kwargs.pop('x', None)
-            self.y = kwargs.pop('y', None)
+            self.x = int(kwargs.pop('x', None))
+            self.y = int(kwargs.pop('y', None))
 
         assert self.x is not None and self.y is not None, 'Spaxel requires x and y to initialise.'
 

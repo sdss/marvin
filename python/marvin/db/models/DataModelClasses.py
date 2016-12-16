@@ -29,7 +29,7 @@ except ImportError as e:
     Path = None
 
 from marvin.db.database import db
-import SampleModelClasses as sampledb
+import marvin.db.models.SampleModelClasses as sampledb
 
 # ========================
 # Define database classes

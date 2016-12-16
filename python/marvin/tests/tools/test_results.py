@@ -157,7 +157,7 @@ class TestResults(unittest.TestCase):
             if name is not None:
                 self.assertEqual([name], output.keys())
             else:
-                self.assertEqual(set(self.columns), set(output)
+                self.assertEqual(set(self.columns), set(output))
 
     def test_get_dict_local(self):
         self._get_dict()
