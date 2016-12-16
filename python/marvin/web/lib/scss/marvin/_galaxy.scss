@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 14:43:20
+* @Last Modified time: 2016-12-15 15:34:05
 */
 
 .marvinflag {
@@ -36,8 +36,44 @@
     //padding-bottom:100%;
 }
 
-#toggle-grp .input-group-addon.info {
+@mixin loading-icon() {
     color: rgb(255, 255, 255);
     background-color: rgb(57, 179, 215);
     border-color: rgb(38, 154, 188);
+}
+
+#toggle-grp .input-group-addon.info {
+  @include loading-icon()
+}
+
+#nsa-load {
+  @include loading-icon()
+}
+
+// D3 box plot styling
+
+.box {
+  font: 10px sans-serif;
+}
+
+.box line,
+.box rect,
+.box circle {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.box .center {
+  stroke-dasharray: 3,3;
+}
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc;
+}
+
+#nsad3box {
+  overflow-x: auto;
+  white-space: nowrap;
 }

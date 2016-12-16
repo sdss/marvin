@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-11-05 14:53:52
+* @Last Modified time: 2016-12-15 13:22:57
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -29,6 +29,7 @@ var Galaxy = function () {
 
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        // main elements
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
@@ -41,25 +42,57 @@ var Galaxy = function () {
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
+        // toggle elements
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        // flag popover elements
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        // maps elements
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
+        // nsa elements
+        this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
+        this.nsaplots = $('.marvinplot'); // list of divs for the NSA highcharts scatter plot
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart1'); // the first div - NSA scatter plot
+        this.nsaboxdiv = this.maindiv.find('#nsad3box'); // the NSA D3 boxplot element
+        this.nsaselect = $('.nsaselect'); //$('#nsachoices1');   // list of the NSA selectpicker elements
+        this.nsamsg = this.maindiv.find('#nsamsg'); // the NSA error message element
+        this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');    // list of the NSA reset button elements
+        this.nsamovers = $('#nsatable').find('.mover'); // list of all NSA table parameter name elements
+        this.nsaplotbuttons = $('.nsaplotbuts'); // list of the NSA plot button elements
+        this.nsatable = $('#nsatable'); // the NSA table element
+        this.nsaload = $('#nsa-load'); //the NSA scatter plot loading element
+
+        // object for mapping magnitude bands to their array index
+        this.magband = { 'F': 0, 'N': 1, 'u': 2, 'g': 3, 'r': 4, 'i': 5, 'z': 6 };
 
         // init some stuff
         this.initFlagPopovers();
         //this.checkToggle();
 
         //Event Handlers
-        this.dapmapsbut.on('click', this, this.getDapMaps);
-        this.resetmapsbut.on('click', this, this.resetMaps);
-        this.togglediv.on('change', this, this.initDynamic);
+        this.dapmapsbut.on('click', this, this.getDapMaps); // this event fires when a user clicks the GetMaps button
+        this.resetmapsbut.on('click', this, this.resetMaps); // this event fires when a user clicks the Maps Reset button
+        this.togglediv.on('change', this, this.initDynamic); // this event fires when a user clicks the Spec/Map View Toggle
+        this.nsadisplay.on('click', this, this.displayNSA); // this event fires when a user clicks the NSA tab
+        this.nsaresetbut.on('click', this, this.resetNSASelect); // this event fires when a user clicks the NSA select reset button
+        //this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot); // this event fires when a user selects an NSA parameter
+        this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+
+        // NSA movers events
+        // var _this = this;
+        // $.each(this.nsamovers, function(index, mover) {
+        //     var id = mover.id;
+        //     $('#'+id).on('dragstart', this, _this.dragStart);
+        //     $('#'+id).on('dragover', this, _this.dragOver);
+        // });
     }
 
     // Test print
@@ -104,11 +137,11 @@ var Galaxy = function () {
                 xlabel: 'Wavelength [Ångströms]'
             });
         }
-    }, {
-        key: 'updateSpecMsg',
-
 
         // Update the spectrum message div for errors only
+
+    }, {
+        key: 'updateSpecMsg',
         value: function updateSpecMsg(specmsg, status) {
             this.specmsg.hide();
             if (status !== undefined && status === -1) {
@@ -127,11 +160,11 @@ var Galaxy = function () {
             this.updateSpecMsg(specmsg);
             this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
         }
-    }, {
-        key: 'initOpenLayers',
-
 
         // Initialize OpenLayers Map
+
+    }, {
+        key: 'initOpenLayers',
         value: function initOpenLayers(image) {
             this.image = image;
             this.olmap = new OLMap(image);
@@ -154,11 +187,11 @@ var Galaxy = function () {
                 }
             });
         }
-    }, {
-        key: 'getSpaxel',
-
 
         // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
+
+    }, {
+        key: 'getSpaxel',
         value: function getSpaxel(event) {
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
@@ -180,12 +213,12 @@ var Galaxy = function () {
                 _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
-    }, {
-        key: 'checkToggle',
-
 
         // check the toggle preference on initial page load
         // eventually for user preferences
+
+    }, {
+        key: 'checkToggle',
         value: function checkToggle() {
             if (this.toggleon) {
                 this.toggleOn();
@@ -330,11 +363,11 @@ var Galaxy = function () {
                 }
             }
         }
-    }, {
-        key: 'initFlagPopovers',
-
 
         //  Initialize the Quality and Target Popovers
+
+    }, {
+        key: 'initFlagPopovers',
         value: function initFlagPopovers() {
             // DRP Quality Popovers
             this.qualpop.popover({ html: true, content: $('#list_drp3quality').html() });
@@ -356,14 +389,13 @@ var Galaxy = function () {
                 $('#' + popid).popover({ html: true, content: $(listid).html() });
             });
         }
-    }, {
-        key: 'getDapMaps',
-
 
         // Get some DAP Maps
+
+    }, {
+        key: 'getDapMaps',
         value: function getDapMaps(event) {
             var _this = event.data;
-            console.log('getting dap maps', _this.dapselect.selectpicker('val'));
             var params = _this.dapselect.selectpicker('val');
             var bintemp = _this.dapbt.selectpicker('val');
             var keys = ['plateifu', 'params', 'bintemp'];
@@ -385,11 +417,11 @@ var Galaxy = function () {
                 _this.dapmapsbut.button('reset');
             });
         }
-    }, {
-        key: 'updateMapMsg',
-
 
         // Update the Map Msg
+
+    }, {
+        key: 'updateMapMsg',
         value: function updateMapMsg(mapmsg, status) {
             this.mapmsg.hide();
             if (status !== undefined && status === -1) {
@@ -399,16 +431,423 @@ var Galaxy = function () {
             this.mapmsg.empty();
             this.mapmsg.html(newmsg);
         }
-    }, {
-        key: 'resetMaps',
-
 
         // Reset the Maps selection
+
+    }, {
+        key: 'resetMaps',
         value: function resetMaps(event) {
             var _this = event.data;
             _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
+        }
+
+        // Display the NSA info
+
+    }, {
+        key: 'displayNSA',
+        value: function displayNSA(event) {
+            var _this = event.data;
+
+            // make the form
+            var keys = ['plateifu'];
+            var form = m.utils.buildForm(keys, _this.plateifu);
+
+            // send the request if the div is empty
+            var nsaempty = _this.nsaplots.is(':empty');
+            if (nsaempty) {
+                // send the form data
+                $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
+                    if (data.result.status !== -1) {
+                        _this.addNSAData(data.result.nsa);
+                        _this.refreshNSASelect(data.result.nsachoices);
+                        _this.initNSAScatter();
+                        _this.setTableEvents();
+                        _this.addNSAEvents();
+                        _this.initNSABoxPlot(data.result.nsaplotcols);
+                        _this.nsaload.hide();
+                    } else {
+                        _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                    }
+                }).fail(function (data) {
+                    _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                });
+            }
+        }
+
+        // add the NSA data into the Galaxy object
+
+    }, {
+        key: 'addNSAData',
+        value: function addNSAData(data) {
+            // the galaxy
+            if (data[this.plateifu]) {
+                this.mygalaxy = data[this.plateifu];
+            } else {
+                this.updateNSAMsg('Error: No NSA data found for ' + this.plateifu, -1);
+                return;
+            }
+            // the manga sample
+            if (data.sample) {
+                this.nsasample = data.sample;
+            } else {
+                this.updateNSAMsg('Error: Problem getting NSA data found for the MaNGA sample', -1);
+                return;
+            }
+        }
+
+        // get new NSA data based on drag-drop axis change
+
+    }, {
+        key: 'updateNSAData',
+        value: function updateNSAData(index, type) {
+            var data, options;
+            var _this = this;
+            if (type === 'galaxy') {
+                var x = this.mygalaxy[this.nsachoices[index].x];
+                var y = this.mygalaxy[this.nsachoices[index].y];
+                var xrev = this.nsachoices[index].x.search('absmag') > -1 ? true : false;
+                var yrev = this.nsachoices[index].y.search('absmag') > -1 ? true : false;
+                data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, galaxy: { name: this.plateifu }, xrev: xrev,
+                    yrev: yrev };
+            } else if (type === 'sample') {
+                var x = this.nsasample[this.nsachoices[index].x];
+                var y = this.nsasample[this.nsachoices[index].y];
+                data = [];
+                $.each(x, function (index, value) {
+                    if (value > -9999 && y[index] > -9999) {
+                        var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                        data.push(tmp);
+                    }
+                });
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
+            }
+            return [data, options];
+        }
+
+        // Update the Table event handlers when the table state changes
+
+    }, {
+        key: 'setTableEvents',
+        value: function setTableEvents() {
+            var tabledata = this.nsatable.bootstrapTable('getData');
+            var _this = this;
+
+            $.each(this.nsamovers, function (index, mover) {
+                var id = mover.id;
+                $('#' + id).on('dragstart', _this, _this.dragStart);
+                $('#' + id).on('dragover', _this, _this.dragOver);
+                $('#' + id).on('drop', _this, _this.moverDrop);
+            });
+
+            this.nsatable.on('page-change.bs.table', function () {
+                $.each(tabledata, function (index, row) {
+                    var mover = row[0];
+                    var id = $(mover).attr('id');
+                    $('#' + id).on('dragstart', _this, _this.dragStart);
+                    $('#' + id).on('dragover', _this, _this.dragOver);
+                    $('#' + id).on('drop', _this, _this.moverDrop);
+                });
+            });
+        }
+
+        // Add event handlers to the Highcharts scatter plots
+
+    }, {
+        key: 'addNSAEvents',
+        value: function addNSAEvents() {
+            var _this = this;
+            // NSA plot events
+            this.nsaplots = $('.marvinplot');
+            $.each(this.nsaplots, function (index, plot) {
+                var id = plot.id;
+                var highx = $('#' + id).find('.highcharts-xaxis');
+                var highy = $('#' + id).find('.highcharts-yaxis');
+
+                highx.on('dragover', _this, _this.dragOver);
+                highx.on('dragenter', _this, _this.dragEnter);
+                highx.on('drop', _this, _this.dropElement);
+                highy.on('dragover', _this, _this.dragOver);
+                highy.on('dragenter', _this, _this.dragEnter);
+                highy.on('drop', _this, _this.dropElement);
+            });
+        }
+
+        // Update the NSA Msg
+
+    }, {
+        key: 'updateNSAMsg',
+        value: function updateNSAMsg(nsamsg, status) {
+            this.nsamsg.hide();
+            if (status !== undefined && status === -1) {
+                this.nsamsg.show();
+            }
+            var newmsg = '<strong>' + nsamsg + '</strong>';
+            this.nsamsg.empty();
+            this.nsamsg.html(newmsg);
+        }
+
+        // remove values of -9999 from arrays
+
+    }, {
+        key: 'filterArray',
+        value: function filterArray(value) {
+            return value !== -9999.0;
+        }
+
+        // create the d3 data format
+
+    }, {
+        key: 'createD3data',
+        value: function createD3data() {
+            var data = [];
+            var _this = this;
+            $.each(this.nsaplotcols, function (index, column) {
+                var goodsample = _this.nsasample[column].filter(_this.filterArray);
+                var tmp = { 'value': _this.mygalaxy[column], 'title': column, 'sample': goodsample };
+                data.push(tmp);
+            });
+            return data;
+        }
+
+        // initialize the NSA d3 box and whisker plot
+
+    }, {
+        key: 'initNSABoxPlot',
+        value: function initNSABoxPlot(cols) {
+            // test for undefined columns
+            if (cols === undefined && this.nsaplotcols === undefined) {
+                console.error('columns for NSA boxplot are undefined');
+            } else {
+                this.nsaplotcols = cols;
+            }
+
+            // generate the data format
+            var data, options;
+            data = this.createD3data();
+            this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
+        }
+
+        // Destroy old Charts
+
+    }, {
+        key: 'destroyChart',
+        value: function destroyChart(div, index) {
+            this.nsascatter[index].chart.destroy();
+            div.empty();
+        }
+
+        // Init the NSA Scatter plot
+
+    }, {
+        key: 'initNSAScatter',
+        value: function initNSAScatter(parentid) {
+            var _this = this;
+            // only update the single parent div element
+            if (parentid !== undefined) {
+                var parentdiv = this.maindiv.find('#' + parentid);
+                var index = parseInt(parentid[parentid.length - 1]);
+
+                var _updateNSAData = this.updateNSAData(index, 'galaxy'),
+                    _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                    data = _updateNSAData2[0],
+                    options = _updateNSAData2[1];
+
+                var _updateNSAData3 = this.updateNSAData(index, 'sample'),
+                    _updateNSAData4 = _slicedToArray(_updateNSAData3, 2),
+                    sdata = _updateNSAData4[0],
+                    soptions = _updateNSAData4[1];
+
+                options['altseries'] = { data: sdata, name: 'Sample' };
+                this.destroyChart(parentdiv, index);
+                this.nsascatter[index] = new Scatter(parentdiv, data, options);
+            } else {
+                // try updating all of them
+                _this.nsascatter = {};
+                $.each(this.nsaplots, function (index, plot) {
+                    var plotdiv = $(plot);
+
+                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy'),
+                        _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2),
+                        data = _this$updateNSAData2[0],
+                        options = _this$updateNSAData2[1];
+
+                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample'),
+                        _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2),
+                        sdata = _this$updateNSAData4[0],
+                        soptions = _this$updateNSAData4[1];
+
+                    options['altseries'] = { data: sdata, name: 'Sample' };
+                    _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                });
+            }
+        }
+
+        // Refresh the NSA select choices for the scatter plot
+
+    }, {
+        key: 'refreshNSASelect',
+        value: function refreshNSASelect(vals) {
+            this.nsachoices = vals;
+            $.each(this.nsaselect, function (index, nsasp) {
+                $(nsasp).selectpicker('deselectAll');
+                $(nsasp).selectpicker('val', ['x_' + vals[index + 1].x, 'y_' + vals[index + 1].y]);
+                $(nsasp).selectpicker('refresh');
+            });
+        }
+
+        // Update the NSA selectpicker choices for the scatter plot
+
+    }, {
+        key: 'updateNSAChoices',
+        value: function updateNSAChoices(index, params) {
+            var xpar = params[0].slice(2, params[0].length);
+            var ypar = params[1].slice(2, params[1].length);
+            this.nsachoices[index].title = ypar + ' vs ' + xpar;
+            this.nsachoices[index].xtitle = xpar;
+            this.nsachoices[index].x = xpar;
+            this.nsachoices[index].ytitle = ypar;
+            this.nsachoices[index].y = ypar;
+        }
+
+        // Reset the NSA selecpicker
+
+    }, {
+        key: 'resetNSASelect',
+        value: function resetNSASelect(event) {
+            var resetid = $(this).attr('id');
+            var index = parseInt(resetid[resetid.length - 1]);
+            var _this = event.data;
+            var myselect = _this.nsaselect[index - 1];
+            _this.nsamsg.hide();
+            $(myselect).selectpicker('deselectAll');
+            $(myselect).selectpicker('refresh');
+        }
+
+        // Update the NSA scatter plot on select change
+
+    }, {
+        key: 'updateNSAPlot',
+        value: function updateNSAPlot(event) {
+            var _this = event.data;
+            var plotid = $(this).attr('id');
+            var index = parseInt(plotid[plotid.length - 1]);
+            var nsasp = _this.nsaselect[index - 1];
+            var params = $(nsasp).selectpicker('val');
+
+            // Construct the new NSA data
+            var parentid = 'nsahighchart' + index;
+            _this.updateNSAChoices(index, params);
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
+        }
+
+        // Events for Drag and Drop
+
+        // Element drag start
+
+    }, {
+        key: 'dragStart',
+        value: function dragStart(event) {
+            var _this = event.data;
+            var param = this.id + '+' + this.textContent;
+            event.originalEvent.dataTransfer.setData('Text', param);
+
+            // show the overlay elements
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.show();
+            });
+        }
+        // Element drag over
+
+    }, {
+        key: 'dragOver',
+        value: function dragOver(event) {
+            event.preventDefault();
+            //event.stopPropagation();
+            event.originalEvent.dataTransfer.dropEffect = 'move';
+        }
+        // Element drag enter
+
+    }, {
+        key: 'dragEnter',
+        value: function dragEnter(event) {
+            event.preventDefault();
+            //event.stopPropagation();
+        }
+        // Mover element drop event
+
+    }, {
+        key: 'moverDrop',
+        value: function moverDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        // Element drop and redraw the scatter plot
+
+    }, {
+        key: 'dropElement',
+        value: function dropElement(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            // get the id and name of the dropped parameter
+            var _this = event.data;
+            var param = event.originalEvent.dataTransfer.getData('Text');
+
+            var _param$split = param.split('+'),
+                _param$split2 = _slicedToArray(_param$split, 2),
+                id = _param$split2[0],
+                name = _param$split2[1];
+
+            // Hide overlay elements
+
+
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.hide();
+            });
+
+            // Determine which axis and plot the name was dropped on
+            var classes = $(this).attr('class');
+            var isX = classes.includes('highcharts-xaxis');
+            var isY = classes.includes('highcharts-yaxis');
+            var parentdiv = $(this).closest('.marvinplot');
+            var parentid = parentdiv.attr('id');
+            if (parentid === undefined) {
+                event.stopPropagation();
+                return false;
+            }
+            var parentindex = parseInt(parentid[parentid.length - 1]);
+
+            // get the other axis and extract title
+            var otheraxis = null;
+            if (isX) {
+                otheraxis = $(this).next();
+            } else if (isY) {
+                otheraxis = $(this).prev();
+            }
+            var axistitle = this.textContent;
+            var otheraxistitle = otheraxis[0].textContent;
+
+            // Update the Values
+            var newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
+            _this.nsachoices[parentindex].title = newtitle;
+            if (isX) {
+                _this.nsachoices[parentindex].xtitle = name;
+                _this.nsachoices[parentindex].x = id;
+            } else if (isY) {
+                _this.nsachoices[parentindex].ytitle = name;
+                _this.nsachoices[parentindex].y = id;
+            }
+
+            // Construct the new NSA data
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
+
+            return false;
         }
     }]);
 

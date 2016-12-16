@@ -6210,7 +6210,7 @@ section h3.section-subheading {
 * @Author: Brian Cherinka
 * @Date:   2016-05-08 15:31:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 14:43:20
+* @Last Modified time: 2016-12-15 15:34:05
 */
 .marvinflag {
   border-radius: 50px; }
@@ -6230,6 +6230,32 @@ section h3.section-subheading {
   color: white;
   background-color: #39b3d7;
   border-color: #269abc; }
+
+#nsa-load {
+  color: white;
+  background-color: #39b3d7;
+  border-color: #269abc; }
+
+.box {
+  font: 10px sans-serif; }
+
+.box line,
+.box rect,
+.box circle {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1.5px; }
+
+.box .center {
+  stroke-dasharray: 3,3; }
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc; }
+
+#nsad3box {
+  overflow-x: auto;
+  white-space: nowrap; }
 
 /*
 * @Author: Brian Cherinka

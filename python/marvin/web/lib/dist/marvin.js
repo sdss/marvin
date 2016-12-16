@@ -1,5 +1,442 @@
 /*
 * @Author: Brian Cherinka
+* @Date:   2016-12-13 09:41:40
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-12-15 17:20:57
+*/
+
+// Using Mike Bostocks box.js code
+// https://bl.ocks.org/mbostock/4061502
+
+// This has been modified by me to accept data as a
+// a list of objects in the format of
+// data = [ {'value': number, 'title': string_name, 'sample': array of points}, ..]
+// This allows to display box and whisker plots of an array of data
+// and overplot a single value within this space
+
+// Dec-13-2016 - converted to D3 v4
+
+'use strict';
+
+function iqr(k) {
+    return function (d, i) {
+        var q1 = d.quartiles[0],
+            q3 = d.quartiles[2],
+            iqr = (q3 - q1) * k,
+            i = -1,
+            j = d.length;
+        while (d[++i] < q1 - iqr) {}
+        while (d[--j] > q3 + iqr) {}
+        return [i, j];
+    };
+}
+
+function boxWhiskers(d) {
+    return [0, d.length - 1];
+}
+
+function boxQuartiles(d) {
+    return [d3.quantile(d, .25), d3.quantile(d, .5), d3.quantile(d, .75)];
+}
+
+function getTooltip() {
+    var tooltip = d3.select('body').append("div").attr("class", "tooltip").style("opacity", 0);
+    return tooltip;
+}
+
+// Inspired by http://informationandvisualization.de/blog/box-plot
+d3.box = function () {
+    var width = 1,
+        height = 1,
+        duration = 0,
+        domain = null,
+        value = Number,
+        whiskers = boxWhiskers,
+        quartiles = boxQuartiles,
+        showLabels = true,
+        x1 = null,
+        // the x1 variable here represents the y-axis
+    x0 = null,
+        // the old y-axis
+    tickFormat = null;
+
+    var tooltip = getTooltip();
+
+    // For each small multiple…
+    function box(g) {
+        g.each(function (d, i) {
+            var origd = d;
+            d = d.sample.map(value).sort(d3.ascending);
+            var g = d3.select(this),
+                n = d.length,
+                min = d[0],
+                max = d[n - 1];
+
+            // Compute quartiles. Must return exactly 3 elements.
+            var quartileData = d.quartiles = quartiles(d);
+            var q10 = d3.quantile(d, .10);
+            var q90 = d3.quantile(d, .90);
+            var myiqr = quartileData[2] - quartileData[0];
+
+            // compute the 2.5*iqr indices and values
+            var iqr25inds = iqr(2.5).call(this, d, i);
+            var iqr25data = iqr25inds.map(function (i) {
+                return d[i];
+            });
+
+            // Compute whiskers. Must return exactly 2 elements, or null.
+            var whiskerIndices = whiskers && whiskers.call(this, d, i),
+                whiskerData = whiskerIndices && whiskerIndices.map(function (i) {
+                return d[i];
+            });
+
+            // Compute outliers. If no whiskers are specified, all data are "outliers".
+            // We compute the outliers as indices, so that we can join across transitions!
+            var outlierIndices = whiskerIndices ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n)) : d3.range(n);
+
+            // Compute the new x-scale.
+            var q50 = quartileData[1];
+            var zero = Math.max(iqr25data[1] - q50, q50 - iqr25data[0]); //rescales the axis to center each plot on the median
+            var diff = Math.min(max - whiskerData[1], min - whiskerData[0]);
+
+            x1 = d3.scaleLinear().domain([q50 - zero, q50, q50 + zero]).range([height, height / 2, 0]);
+            //.domain([min,max])
+            //.range([height,0]);
+
+            // Retrieve the old x-scale, if this is an update.
+            x0 = this.__chart__ || d3.scaleLinear().domain([0, Infinity]).range(x1.range());
+
+            // Stash the new scale.
+            this.__chart__ = x1;
+
+            // Note: the box, median, and box tick elements are fixed in number,
+            // so we only have to handle enter and update. In contrast, the outliers
+            // and other elements are variable, so we need to exit them! Variable
+            // elements also fade in and out.
+
+            // Update center line: the vertical line spanning the whiskers.
+            var center = g.selectAll("line.center").data(whiskerData ? [whiskerData] : []);
+
+            center.enter().insert("line", "rect").attr("class", "center").attr("x1", width / 2).attr("y1", function (d) {
+                return x0(d[0]);
+            }).attr("x2", width / 2).attr("y2", function (d) {
+                return x0(d[1]);
+            }).style("opacity", 1e-6).transition().duration(duration).style("opacity", 1).attr("y1", function (d) {
+                return x1(d[0]);
+            }).attr("y2", function (d) {
+                return x1(d[1]);
+            });
+
+            center.transition().duration(duration).style("opacity", 1).attr("y1", function (d) {
+                return x1(d[0]);
+            }).attr("y2", function (d) {
+                return x1(d[1]);
+            });
+
+            center.exit().transition().duration(duration).style("opacity", 1e-6).attr("y1", function (d) {
+                return x1(d[0]);
+            }).attr("y2", function (d) {
+                return x1(d[1]);
+            }).remove();
+
+            // Update innerquartile box.
+            var box = g.selectAll("rect.box").data([quartileData]);
+
+            box.enter().append("rect").attr("class", "box").attr("x", 0).attr("y", function (d) {
+                return x0(d[2]);
+            }).attr("width", width).attr("height", function (d) {
+                return x0(d[0]) - x0(d[2]);
+            }).transition().duration(duration).attr("y", function (d) {
+                return x1(d[2]);
+            }).attr("height", function (d) {
+                return x1(d[0]) - x1(d[2]);
+            });
+
+            box.transition().duration(duration).attr("y", function (d) {
+                return x1(d[2]);
+            }).attr("height", function (d) {
+                return x1(d[0]) - x1(d[2]);
+            });
+
+            // Update median line.
+            var medianLine = g.selectAll("line.median").data([quartileData[1]]);
+
+            medianLine.enter().append("line").attr("class", "median").attr("x1", 0).attr("y1", x0).attr("x2", width).attr("y2", x0).transition().duration(duration).attr("y1", x1).attr("y2", x1);
+
+            medianLine.transition().duration(duration).attr("y1", x1).attr("y2", x1);
+
+            // Update whiskers.
+            var whisker = g.selectAll("line.whisker").data(whiskerData || []);
+
+            whisker.enter().insert("line", "circle, text").attr("class", "whisker").attr("x1", 0).attr("y1", x0).attr("x2", width).attr("y2", x0).style("opacity", 1e-6).transition().duration(duration).attr("y1", x1).attr("y2", x1).style("opacity", 1);
+
+            whisker.transition().duration(duration).attr("y1", x1).attr("y2", x1).style("opacity", 1);
+
+            whisker.exit().transition().duration(duration).attr("y1", x1).attr("y2", x1).style("opacity", 1e-6).remove();
+
+            // update datapoint circle
+            if (origd.value) {
+
+                var datapoint = g.selectAll('circle.datapoint').data([origd.value]);
+
+                datapoint.enter().append('circle').attr('class', 'datapoint').attr('cx', width / 2).attr('cy', x1(origd.value)).attr("r", 5).style('fill', 'red').on("mouseover", function (d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html('<b> Value: ' + origd.value + '</b>').style("left", d3.event.pageX + "px").style("top", d3.event.pageY - 28 + "px");
+                }).on("mouseout", function (d) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+            }
+
+            // update title
+            if (origd.title) {
+                var title = g.selectAll('text.title').data([origd.title]);
+                title.enter().append('text').text(origd.title).attr('x', width / 2).attr('y', height).attr('dy', 20).attr('text-anchor', 'middle').style('font-weight', 'bold').style('font-size', 15);
+            }
+
+            // Update outliers.
+            var outlier = g.selectAll("circle.outlier").data(outlierIndices, Number);
+
+            outlier.enter().insert("circle", "text").attr("class", "outlier").attr("r", 5).attr("cx", width / 2).attr("cy", function (i) {
+                return x0(d[i]);
+            }).style("opacity", 1e-6).on("mouseover", function (i) {
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html('<b> Value: ' + d[i] + '</b>').style("left", d3.event.pageX + "px").style("top", d3.event.pageY - 28 + "px");
+            }).on("mouseout", function (d) {
+                tooltip.transition().duration(500).style("opacity", 0);
+            }).transition().duration(duration).attr("cy", function (i) {
+                return x1(d[i]);
+            }).style("opacity", 1);
+
+            // outlier.transition()
+            //     .duration(duration)
+            //     .attr("cy", function(i) { return x1(d[i]); })
+            //     .style("opacity", 1);
+
+            // outlier.exit().transition()
+            //     .duration(duration)
+            //     .attr("cy", function(i) { return x1(d[i]); })
+            //     .style("opacity", 1e-6)
+            //     .remove();
+
+            // Compute the tick format.
+            var format = tickFormat || x1.tickFormat(8);
+
+            // Update box ticks.
+            var boxTick = g.selectAll("text.box").data(quartileData);
+
+            if (showLabels == true) {
+                boxTick.enter().append("text").attr("class", "box").attr("dy", ".3em").attr("dx", function (d, i) {
+                    return i & 1 ? 6 : -6;
+                }).attr("x", function (d, i) {
+                    return i & 1 ? width : 0;
+                }).attr("y", x0).attr("text-anchor", function (d, i) {
+                    return i & 1 ? "start" : "end";
+                }).text(format).transition().duration(duration).attr("y", x1);
+            }
+
+            boxTick.transition().duration(duration).text(format).attr("y", x1);
+
+            // Update whisker ticks. These are handled separately from the box
+            // ticks because they may or may not exist, and we want don't want
+            // to join box ticks pre-transition with whisker ticks post-.
+            var whiskerTick = g.selectAll("text.whisker").data(whiskerData || []);
+
+            whiskerTick.enter().append("text").attr("class", "whisker").attr("dy", ".3em").attr("dx", 6).attr("x", width).attr("y", x0).text(format).style("opacity", 1e-6).transition().duration(duration).attr("y", x1).style("opacity", 1);
+
+            whiskerTick.transition().duration(duration).text(format).attr("y", x1).style("opacity", 1);
+
+            whiskerTick.exit().transition().duration(duration).attr("y", x1).style("opacity", 1e-6).remove();
+        });
+        d3.timerFlush();
+    }
+
+    box.overlay = function (x) {
+        if (!arguments.length) return overlay;
+        overlay = x;
+        return overlay;
+    };
+
+    box.x1 = function (x) {
+        if (!arguments.length) return x1;
+        return x1(x);
+    };
+
+    box.x0 = function (x) {
+        if (!arguments.length) return x0;
+        return x0(x);
+    };
+
+    box.width = function (x) {
+        if (!arguments.length) return width;
+        width = x;
+        return box;
+    };
+
+    box.height = function (x) {
+        if (!arguments.length) return height;
+        height = x;
+        return box;
+    };
+
+    box.tickFormat = function (x) {
+        if (!arguments.length) return tickFormat;
+        tickFormat = x;
+        return box;
+    };
+
+    box.duration = function (x) {
+        if (!arguments.length) return duration;
+        duration = x;
+        return box;
+    };
+
+    box.domain = function (x) {
+        if (!arguments.length) return domain;
+        domain = x == null ? x : d3.functor(x);
+        return box;
+    };
+
+    box.value = function (x) {
+        if (!arguments.length) return value;
+        value = x;
+        return box;
+    };
+
+    box.tooltip = function (x) {
+        if (!arguments.length) return tooltip;
+        tooltip = x;
+        return tooltip;
+    };
+
+    box.whiskers = function (x) {
+        if (!arguments.length) return whiskers;
+        whiskers = x;
+        return box;
+    };
+
+    box.showLabels = function (x) {
+        if (!arguments.length) return showLabels;
+        showLabels = x;
+        return box;
+    };
+
+    box.quartiles = function (x) {
+        if (!arguments.length) return quartiles;
+        quartiles = x;
+        return box;
+    };
+
+    return box;
+};
+;/*
+* @Author: Brian Cherinka
+* @Date:   2016-12-13 09:49:30
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-12-13 14:05:15
+*/
+
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var BoxWhisker = function () {
+
+    // Constructor
+    function BoxWhisker(id, data, options) {
+        _classCallCheck(this, BoxWhisker);
+
+        if (data === undefined) {
+            console.error('Must specify input plot data to initialize a BoxWhisker!');
+        } else if (id === undefined) {
+            console.error('Must specify an input plotdiv to initialize a BoxWhisker');
+        } else {
+            this.plotdiv = id; // div element for map
+            this.plotid = '#' + this.plotdiv.attr('id');
+            this.tooltip = '#d3tooltip';
+            this.data = data; // map data
+            //this.title = title; // map title
+            //this.origthis = galthis; //the self of the Galaxy class
+            //this.parseTitle();
+            this.setOptions(options);
+            this.initBoxplot();
+        }
+    }
+
+    // test print
+
+
+    _createClass(BoxWhisker, [{
+        key: 'print',
+        value: function print() {
+            console.log('We are now printing boxwhisker for ', this.cfg.title);
+        }
+
+        // sets the options
+
+    }, {
+        key: 'setOptions',
+        value: function setOptions(options) {
+            this.margin = { top: 10, right: 50, bottom: 40, left: 50 };
+            // create the default options
+            this.cfg = {
+                title: 'BoxWhisker Title',
+                origthis: null,
+                width: 120 - this.margin.left - this.margin.right,
+                height: 500 - this.margin.top - this.margin.bottom
+            };
+
+            //Put all of the options into a variable called cfg
+            if ('undefined' !== typeof options) {
+                for (var i in options) {
+                    if ('undefined' !== typeof options[i]) {
+                        this.cfg[i] = options[i];
+                    }
+                }
+            }
+        }
+
+        // Compute the IQR
+
+    }, {
+        key: 'iqr',
+        value: function iqr(k) {
+            return function (d, i) {
+                var q1 = d.quartiles[0],
+                    q3 = d.quartiles[2],
+                    iqr = (q3 - q1) * k,
+                    i = -1,
+                    j = d.length;
+                while (d[++i] < q1 - iqr) {}
+                while (d[--j] > q3 + iqr) {}
+                return [i, j];
+            };
+        }
+
+        // initialize the D3 box and whisker plot
+
+    }, {
+        key: 'initBoxplot',
+        value: function initBoxplot() {
+
+            // // Define the div for the tooltip
+            // var tooltip = d3.select(this.tooltip).append("div")
+            //     .attr("class", "tooltip")
+            //     .style("opacity", 0);
+
+            // Make the chart
+            var chart = d3.box().whiskers(this.iqr(1.5)).width(this.cfg.width).height(this.cfg.height);
+
+            // load in the data and create the box plot
+            var svg = d3.select(this.plotid).selectAll("svg").data(this.data).enter().append("svg").attr("class", "box").attr("width", this.cfg.width + this.margin.left + this.margin.right).attr("height", this.cfg.height + this.margin.bottom + this.margin.top).append("g").attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")").call(chart);
+        }
+    }]);
+
+    return BoxWhisker;
+}();
+;/*
+* @Author: Brian Cherinka
 * @Date:   2016-04-29 09:29:24
 * @Last Modified by:   Brian
 * @Last Modified time: 2016-04-29 09:45:04
@@ -73,7 +510,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2016-11-05 14:53:52
+* @Last Modified time: 2016-12-15 13:22:57
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -99,6 +536,7 @@ var Galaxy = function () {
 
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        // main elements
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
         this.specdiv = this.maindiv.find('#specview');
@@ -111,25 +549,57 @@ var Galaxy = function () {
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
+        // toggle elements
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        // flag popover elements
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
+        // maps elements
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
         this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
+        // nsa elements
+        this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
+        this.nsaplots = $('.marvinplot'); // list of divs for the NSA highcharts scatter plot
+        this.nsaplotdiv = this.maindiv.find('#nsahighchart1'); // the first div - NSA scatter plot
+        this.nsaboxdiv = this.maindiv.find('#nsad3box'); // the NSA D3 boxplot element
+        this.nsaselect = $('.nsaselect'); //$('#nsachoices1');   // list of the NSA selectpicker elements
+        this.nsamsg = this.maindiv.find('#nsamsg'); // the NSA error message element
+        this.nsaresetbut = $('.nsareset'); //$('#resetnsa1');    // list of the NSA reset button elements
+        this.nsamovers = $('#nsatable').find('.mover'); // list of all NSA table parameter name elements
+        this.nsaplotbuttons = $('.nsaplotbuts'); // list of the NSA plot button elements
+        this.nsatable = $('#nsatable'); // the NSA table element
+        this.nsaload = $('#nsa-load'); //the NSA scatter plot loading element
+
+        // object for mapping magnitude bands to their array index
+        this.magband = { 'F': 0, 'N': 1, 'u': 2, 'g': 3, 'r': 4, 'i': 5, 'z': 6 };
 
         // init some stuff
         this.initFlagPopovers();
         //this.checkToggle();
 
         //Event Handlers
-        this.dapmapsbut.on('click', this, this.getDapMaps);
-        this.resetmapsbut.on('click', this, this.resetMaps);
-        this.togglediv.on('change', this, this.initDynamic);
+        this.dapmapsbut.on('click', this, this.getDapMaps); // this event fires when a user clicks the GetMaps button
+        this.resetmapsbut.on('click', this, this.resetMaps); // this event fires when a user clicks the Maps Reset button
+        this.togglediv.on('change', this, this.initDynamic); // this event fires when a user clicks the Spec/Map View Toggle
+        this.nsadisplay.on('click', this, this.displayNSA); // this event fires when a user clicks the NSA tab
+        this.nsaresetbut.on('click', this, this.resetNSASelect); // this event fires when a user clicks the NSA select reset button
+        //this.nsaselect.on('changed.bs.select', this, this.updateNSAPlot); // this event fires when a user selects an NSA parameter
+        this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+        //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+
+        // NSA movers events
+        // var _this = this;
+        // $.each(this.nsamovers, function(index, mover) {
+        //     var id = mover.id;
+        //     $('#'+id).on('dragstart', this, _this.dragStart);
+        //     $('#'+id).on('dragover', this, _this.dragOver);
+        // });
     }
 
     // Test print
@@ -174,11 +644,11 @@ var Galaxy = function () {
                 xlabel: 'Wavelength [Ångströms]'
             });
         }
-    }, {
-        key: 'updateSpecMsg',
-
 
         // Update the spectrum message div for errors only
+
+    }, {
+        key: 'updateSpecMsg',
         value: function updateSpecMsg(specmsg, status) {
             this.specmsg.hide();
             if (status !== undefined && status === -1) {
@@ -197,11 +667,11 @@ var Galaxy = function () {
             this.updateSpecMsg(specmsg);
             this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
         }
-    }, {
-        key: 'initOpenLayers',
-
 
         // Initialize OpenLayers Map
+
+    }, {
+        key: 'initOpenLayers',
         value: function initOpenLayers(image) {
             this.image = image;
             this.olmap = new OLMap(image);
@@ -224,11 +694,11 @@ var Galaxy = function () {
                 }
             });
         }
-    }, {
-        key: 'getSpaxel',
-
 
         // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
+
+    }, {
+        key: 'getSpaxel',
         value: function getSpaxel(event) {
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
@@ -250,12 +720,12 @@ var Galaxy = function () {
                 _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
-    }, {
-        key: 'checkToggle',
-
 
         // check the toggle preference on initial page load
         // eventually for user preferences
+
+    }, {
+        key: 'checkToggle',
         value: function checkToggle() {
             if (this.toggleon) {
                 this.toggleOn();
@@ -400,11 +870,11 @@ var Galaxy = function () {
                 }
             }
         }
-    }, {
-        key: 'initFlagPopovers',
-
 
         //  Initialize the Quality and Target Popovers
+
+    }, {
+        key: 'initFlagPopovers',
         value: function initFlagPopovers() {
             // DRP Quality Popovers
             this.qualpop.popover({ html: true, content: $('#list_drp3quality').html() });
@@ -426,14 +896,13 @@ var Galaxy = function () {
                 $('#' + popid).popover({ html: true, content: $(listid).html() });
             });
         }
-    }, {
-        key: 'getDapMaps',
-
 
         // Get some DAP Maps
+
+    }, {
+        key: 'getDapMaps',
         value: function getDapMaps(event) {
             var _this = event.data;
-            console.log('getting dap maps', _this.dapselect.selectpicker('val'));
             var params = _this.dapselect.selectpicker('val');
             var bintemp = _this.dapbt.selectpicker('val');
             var keys = ['plateifu', 'params', 'bintemp'];
@@ -455,11 +924,11 @@ var Galaxy = function () {
                 _this.dapmapsbut.button('reset');
             });
         }
-    }, {
-        key: 'updateMapMsg',
-
 
         // Update the Map Msg
+
+    }, {
+        key: 'updateMapMsg',
         value: function updateMapMsg(mapmsg, status) {
             this.mapmsg.hide();
             if (status !== undefined && status === -1) {
@@ -469,16 +938,423 @@ var Galaxy = function () {
             this.mapmsg.empty();
             this.mapmsg.html(newmsg);
         }
-    }, {
-        key: 'resetMaps',
-
 
         // Reset the Maps selection
+
+    }, {
+        key: 'resetMaps',
         value: function resetMaps(event) {
             var _this = event.data;
             _this.mapmsg.hide();
             _this.dapselect.selectpicker('deselectAll');
             _this.dapselect.selectpicker('refresh');
+        }
+
+        // Display the NSA info
+
+    }, {
+        key: 'displayNSA',
+        value: function displayNSA(event) {
+            var _this = event.data;
+
+            // make the form
+            var keys = ['plateifu'];
+            var form = m.utils.buildForm(keys, _this.plateifu);
+
+            // send the request if the div is empty
+            var nsaempty = _this.nsaplots.is(':empty');
+            if (nsaempty) {
+                // send the form data
+                $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json').done(function (data) {
+                    if (data.result.status !== -1) {
+                        _this.addNSAData(data.result.nsa);
+                        _this.refreshNSASelect(data.result.nsachoices);
+                        _this.initNSAScatter();
+                        _this.setTableEvents();
+                        _this.addNSAEvents();
+                        _this.initNSABoxPlot(data.result.nsaplotcols);
+                        _this.nsaload.hide();
+                    } else {
+                        _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                    }
+                }).fail(function (data) {
+                    _this.updateNSAMsg('Error: ' + data.result.nsamsg, data.result.status);
+                });
+            }
+        }
+
+        // add the NSA data into the Galaxy object
+
+    }, {
+        key: 'addNSAData',
+        value: function addNSAData(data) {
+            // the galaxy
+            if (data[this.plateifu]) {
+                this.mygalaxy = data[this.plateifu];
+            } else {
+                this.updateNSAMsg('Error: No NSA data found for ' + this.plateifu, -1);
+                return;
+            }
+            // the manga sample
+            if (data.sample) {
+                this.nsasample = data.sample;
+            } else {
+                this.updateNSAMsg('Error: Problem getting NSA data found for the MaNGA sample', -1);
+                return;
+            }
+        }
+
+        // get new NSA data based on drag-drop axis change
+
+    }, {
+        key: 'updateNSAData',
+        value: function updateNSAData(index, type) {
+            var data, options;
+            var _this = this;
+            if (type === 'galaxy') {
+                var x = this.mygalaxy[this.nsachoices[index].x];
+                var y = this.mygalaxy[this.nsachoices[index].y];
+                var xrev = this.nsachoices[index].x.search('absmag') > -1 ? true : false;
+                var yrev = this.nsachoices[index].y.search('absmag') > -1 ? true : false;
+                data = [{ 'name': this.plateifu, 'x': x, 'y': y }];
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, galaxy: { name: this.plateifu }, xrev: xrev,
+                    yrev: yrev };
+            } else if (type === 'sample') {
+                var x = this.nsasample[this.nsachoices[index].x];
+                var y = this.nsasample[this.nsachoices[index].y];
+                data = [];
+                $.each(x, function (index, value) {
+                    if (value > -9999 && y[index] > -9999) {
+                        var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                        data.push(tmp);
+                    }
+                });
+                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
+                    title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
+            }
+            return [data, options];
+        }
+
+        // Update the Table event handlers when the table state changes
+
+    }, {
+        key: 'setTableEvents',
+        value: function setTableEvents() {
+            var tabledata = this.nsatable.bootstrapTable('getData');
+            var _this = this;
+
+            $.each(this.nsamovers, function (index, mover) {
+                var id = mover.id;
+                $('#' + id).on('dragstart', _this, _this.dragStart);
+                $('#' + id).on('dragover', _this, _this.dragOver);
+                $('#' + id).on('drop', _this, _this.moverDrop);
+            });
+
+            this.nsatable.on('page-change.bs.table', function () {
+                $.each(tabledata, function (index, row) {
+                    var mover = row[0];
+                    var id = $(mover).attr('id');
+                    $('#' + id).on('dragstart', _this, _this.dragStart);
+                    $('#' + id).on('dragover', _this, _this.dragOver);
+                    $('#' + id).on('drop', _this, _this.moverDrop);
+                });
+            });
+        }
+
+        // Add event handlers to the Highcharts scatter plots
+
+    }, {
+        key: 'addNSAEvents',
+        value: function addNSAEvents() {
+            var _this = this;
+            // NSA plot events
+            this.nsaplots = $('.marvinplot');
+            $.each(this.nsaplots, function (index, plot) {
+                var id = plot.id;
+                var highx = $('#' + id).find('.highcharts-xaxis');
+                var highy = $('#' + id).find('.highcharts-yaxis');
+
+                highx.on('dragover', _this, _this.dragOver);
+                highx.on('dragenter', _this, _this.dragEnter);
+                highx.on('drop', _this, _this.dropElement);
+                highy.on('dragover', _this, _this.dragOver);
+                highy.on('dragenter', _this, _this.dragEnter);
+                highy.on('drop', _this, _this.dropElement);
+            });
+        }
+
+        // Update the NSA Msg
+
+    }, {
+        key: 'updateNSAMsg',
+        value: function updateNSAMsg(nsamsg, status) {
+            this.nsamsg.hide();
+            if (status !== undefined && status === -1) {
+                this.nsamsg.show();
+            }
+            var newmsg = '<strong>' + nsamsg + '</strong>';
+            this.nsamsg.empty();
+            this.nsamsg.html(newmsg);
+        }
+
+        // remove values of -9999 from arrays
+
+    }, {
+        key: 'filterArray',
+        value: function filterArray(value) {
+            return value !== -9999.0;
+        }
+
+        // create the d3 data format
+
+    }, {
+        key: 'createD3data',
+        value: function createD3data() {
+            var data = [];
+            var _this = this;
+            $.each(this.nsaplotcols, function (index, column) {
+                var goodsample = _this.nsasample[column].filter(_this.filterArray);
+                var tmp = { 'value': _this.mygalaxy[column], 'title': column, 'sample': goodsample };
+                data.push(tmp);
+            });
+            return data;
+        }
+
+        // initialize the NSA d3 box and whisker plot
+
+    }, {
+        key: 'initNSABoxPlot',
+        value: function initNSABoxPlot(cols) {
+            // test for undefined columns
+            if (cols === undefined && this.nsaplotcols === undefined) {
+                console.error('columns for NSA boxplot are undefined');
+            } else {
+                this.nsaplotcols = cols;
+            }
+
+            // generate the data format
+            var data, options;
+            data = this.createD3data();
+            this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
+        }
+
+        // Destroy old Charts
+
+    }, {
+        key: 'destroyChart',
+        value: function destroyChart(div, index) {
+            this.nsascatter[index].chart.destroy();
+            div.empty();
+        }
+
+        // Init the NSA Scatter plot
+
+    }, {
+        key: 'initNSAScatter',
+        value: function initNSAScatter(parentid) {
+            var _this = this;
+            // only update the single parent div element
+            if (parentid !== undefined) {
+                var parentdiv = this.maindiv.find('#' + parentid);
+                var index = parseInt(parentid[parentid.length - 1]);
+
+                var _updateNSAData = this.updateNSAData(index, 'galaxy'),
+                    _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                    data = _updateNSAData2[0],
+                    options = _updateNSAData2[1];
+
+                var _updateNSAData3 = this.updateNSAData(index, 'sample'),
+                    _updateNSAData4 = _slicedToArray(_updateNSAData3, 2),
+                    sdata = _updateNSAData4[0],
+                    soptions = _updateNSAData4[1];
+
+                options['altseries'] = { data: sdata, name: 'Sample' };
+                this.destroyChart(parentdiv, index);
+                this.nsascatter[index] = new Scatter(parentdiv, data, options);
+            } else {
+                // try updating all of them
+                _this.nsascatter = {};
+                $.each(this.nsaplots, function (index, plot) {
+                    var plotdiv = $(plot);
+
+                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy'),
+                        _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2),
+                        data = _this$updateNSAData2[0],
+                        options = _this$updateNSAData2[1];
+
+                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample'),
+                        _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2),
+                        sdata = _this$updateNSAData4[0],
+                        soptions = _this$updateNSAData4[1];
+
+                    options['altseries'] = { data: sdata, name: 'Sample' };
+                    _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                });
+            }
+        }
+
+        // Refresh the NSA select choices for the scatter plot
+
+    }, {
+        key: 'refreshNSASelect',
+        value: function refreshNSASelect(vals) {
+            this.nsachoices = vals;
+            $.each(this.nsaselect, function (index, nsasp) {
+                $(nsasp).selectpicker('deselectAll');
+                $(nsasp).selectpicker('val', ['x_' + vals[index + 1].x, 'y_' + vals[index + 1].y]);
+                $(nsasp).selectpicker('refresh');
+            });
+        }
+
+        // Update the NSA selectpicker choices for the scatter plot
+
+    }, {
+        key: 'updateNSAChoices',
+        value: function updateNSAChoices(index, params) {
+            var xpar = params[0].slice(2, params[0].length);
+            var ypar = params[1].slice(2, params[1].length);
+            this.nsachoices[index].title = ypar + ' vs ' + xpar;
+            this.nsachoices[index].xtitle = xpar;
+            this.nsachoices[index].x = xpar;
+            this.nsachoices[index].ytitle = ypar;
+            this.nsachoices[index].y = ypar;
+        }
+
+        // Reset the NSA selecpicker
+
+    }, {
+        key: 'resetNSASelect',
+        value: function resetNSASelect(event) {
+            var resetid = $(this).attr('id');
+            var index = parseInt(resetid[resetid.length - 1]);
+            var _this = event.data;
+            var myselect = _this.nsaselect[index - 1];
+            _this.nsamsg.hide();
+            $(myselect).selectpicker('deselectAll');
+            $(myselect).selectpicker('refresh');
+        }
+
+        // Update the NSA scatter plot on select change
+
+    }, {
+        key: 'updateNSAPlot',
+        value: function updateNSAPlot(event) {
+            var _this = event.data;
+            var plotid = $(this).attr('id');
+            var index = parseInt(plotid[plotid.length - 1]);
+            var nsasp = _this.nsaselect[index - 1];
+            var params = $(nsasp).selectpicker('val');
+
+            // Construct the new NSA data
+            var parentid = 'nsahighchart' + index;
+            _this.updateNSAChoices(index, params);
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
+        }
+
+        // Events for Drag and Drop
+
+        // Element drag start
+
+    }, {
+        key: 'dragStart',
+        value: function dragStart(event) {
+            var _this = event.data;
+            var param = this.id + '+' + this.textContent;
+            event.originalEvent.dataTransfer.setData('Text', param);
+
+            // show the overlay elements
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.show();
+            });
+        }
+        // Element drag over
+
+    }, {
+        key: 'dragOver',
+        value: function dragOver(event) {
+            event.preventDefault();
+            //event.stopPropagation();
+            event.originalEvent.dataTransfer.dropEffect = 'move';
+        }
+        // Element drag enter
+
+    }, {
+        key: 'dragEnter',
+        value: function dragEnter(event) {
+            event.preventDefault();
+            //event.stopPropagation();
+        }
+        // Mover element drop event
+
+    }, {
+        key: 'moverDrop',
+        value: function moverDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        // Element drop and redraw the scatter plot
+
+    }, {
+        key: 'dropElement',
+        value: function dropElement(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            // get the id and name of the dropped parameter
+            var _this = event.data;
+            var param = event.originalEvent.dataTransfer.getData('Text');
+
+            var _param$split = param.split('+'),
+                _param$split2 = _slicedToArray(_param$split, 2),
+                id = _param$split2[0],
+                name = _param$split2[1];
+
+            // Hide overlay elements
+
+
+            $.each(_this.nsascatter, function (index, scat) {
+                scat.overgroup.hide();
+            });
+
+            // Determine which axis and plot the name was dropped on
+            var classes = $(this).attr('class');
+            var isX = classes.includes('highcharts-xaxis');
+            var isY = classes.includes('highcharts-yaxis');
+            var parentdiv = $(this).closest('.marvinplot');
+            var parentid = parentdiv.attr('id');
+            if (parentid === undefined) {
+                event.stopPropagation();
+                return false;
+            }
+            var parentindex = parseInt(parentid[parentid.length - 1]);
+
+            // get the other axis and extract title
+            var otheraxis = null;
+            if (isX) {
+                otheraxis = $(this).next();
+            } else if (isY) {
+                otheraxis = $(this).prev();
+            }
+            var axistitle = this.textContent;
+            var otheraxistitle = otheraxis[0].textContent;
+
+            // Update the Values
+            var newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
+            _this.nsachoices[parentindex].title = newtitle;
+            if (isX) {
+                _this.nsachoices[parentindex].xtitle = name;
+                _this.nsachoices[parentindex].x = id;
+            } else if (isY) {
+                _this.nsachoices[parentindex].ytitle = name;
+                _this.nsachoices[parentindex].y = id;
+            }
+
+            // Construct the new NSA data
+            _this.initNSAScatter(parentid);
+            _this.addNSAEvents();
+
+            return false;
         }
     }]);
 
@@ -1009,7 +1885,7 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-20 22:51:56
+* @Last Modified time: 2016-12-14 15:46:11
 */
 
 'use strict';
@@ -1038,6 +1914,10 @@ var Marvin = function () {
 
         // setup raven
         this.setupRaven();
+
+        // check the browser on page load
+        this.window = $(window);
+        this.window.on('load', this.checkBrowser);
     }
 
     // sets the Sentry raven for monitoring
@@ -1052,6 +1932,17 @@ var Marvin = function () {
                 whitelistUrls: ['/(sas|api)\.sdss\.org/marvin/', '/(sas|api)\.sdss\.org/marvin2/'],
                 includePaths: ['/https?:\/\/((sas|api)\.)?sdss\.org/marvin', '/https?:\/\/((sas|api)\.)?sdss\.org/marvin2']
             }).install();
+        }
+
+        // check the browser for banner display
+
+    }, {
+        key: 'checkBrowser',
+        value: function checkBrowser(event) {
+            var _this = event.data;
+            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+                m.utils.marvinBanner('We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.', 1, 'safari_banner', 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser');
+            }
         }
     }]);
 
@@ -1255,6 +2146,221 @@ var OLMap = function () {
     }]);
 
     return OLMap;
+}();
+;/*
+* @Author: Brian Cherinka
+* @Date:   2016-12-09 01:38:32
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2016-12-15 13:27:14
+*/
+
+'use strict';
+
+// Creates a Scatter Plot Highcharts Object
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Scatter = function () {
+
+    // Constructor
+    function Scatter(id, data, options) {
+        _classCallCheck(this, Scatter);
+
+        if (data === undefined) {
+            console.error('Must specify input plot data to initialize a ScatterPlot!');
+        } else if (id === undefined) {
+            console.error('Must specify an input plotdiv to initialize a ScatterPlot');
+        } else {
+            this.plotdiv = id; // div element for map
+            this.data = data; // map data
+            //this.title = title; // map title
+            //this.origthis = galthis; //the self of the Galaxy class
+            //this.parseTitle();
+            this.setOptions(options);
+            this.initChart();
+            this.createTitleOverlays();
+        }
+    }
+
+    // test print
+
+
+    _createClass(Scatter, [{
+        key: 'print',
+        value: function print() {
+            console.log('We are now printing scatter for ', this.cfg.title);
+        }
+
+        // sets the options
+
+    }, {
+        key: 'setOptions',
+        value: function setOptions(options) {
+            // create the default options
+            this.cfg = {
+                title: 'Scatter Title',
+                origthis: null,
+                xtitle: 'X-Axis',
+                ytitle: 'Y-Axis',
+                galaxy: {
+                    name: 'Galaxy'
+                },
+                altseries: {
+                    name: null,
+                    data: null
+                },
+                xrev: false,
+                yrev: false
+            };
+
+            //Put all of the options into a variable called cfg
+            if ('undefined' !== typeof options) {
+                for (var i in options) {
+                    if ('undefined' !== typeof options[i]) {
+                        this.cfg[i] = options[i];
+                    }
+                }
+            }
+        }
+
+        // initialize the chart
+
+    }, {
+        key: 'initChart',
+        value: function initChart() {
+            this.plotdiv.empty();
+            this.chart = Highcharts.chart(this.plotdiv.attr('id'), {
+                chart: {
+                    type: 'scatter',
+                    zoomType: 'xy',
+                    backgroundColor: '#F5F5F5',
+                    plotBackgroundColor: '#F5F5F5'
+                },
+                title: {
+                    text: null //this.cfg.title
+                },
+                xAxis: {
+                    title: {
+                        enabled: true,
+                        text: this.cfg.xtitle
+                    },
+                    startOnTick: true,
+                    endOnTick: true,
+                    showLastLabel: true,
+                    reversed: this.cfg.xrev,
+                    id: this.cfg.xtitle.replace(/\s/g, '').toLowerCase() + '-axis'
+                },
+                yAxis: {
+                    title: {
+                        text: this.cfg.ytitle
+                    },
+                    gridLineWidth: 0,
+                    reversed: this.cfg.yrev,
+                    id: this.cfg.ytitle.replace(/\s/g, '').toLowerCase() + '-axis'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 75,
+                    y: 20,
+                    title: {
+                        text: 'Drag Me'
+                    },
+                    floating: true,
+                    draggable: true,
+                    backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
+                    borderWidth: 1
+                },
+                plotOptions: {
+                    scatter: {
+                        marker: {
+                            radius: 5,
+                            states: {
+                                hover: {
+                                    enabled: true,
+                                    lineColor: 'rgb(100,100,100)'
+                                }
+                            }
+                        },
+                        states: {
+                            hover: {
+                                marker: {
+                                    enabled: false
+                                }
+                            }
+                        },
+                        tooltip: {
+                            headerFormat: '<b>{series.name}</b><br>',
+                            pointFormat: '({point.x}, {point.y})'
+                        }
+                    }
+                },
+                series: [{
+                    name: this.cfg.altseries.name,
+                    color: 'rgba(70,130,180,0.4)',
+                    data: this.cfg.altseries.data,
+                    turboThreshold: 0,
+                    marker: {
+                        radius: 2,
+                        symbol: 'circle'
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}: {point.key}</b><br>' }
+
+                }, {
+                    name: this.cfg.galaxy.name,
+                    color: 'rgba(255, 0, 0, 1)',
+                    data: this.data,
+                    marker: { symbol: 'circle', radius: 5 }
+                }]
+            });
+        }
+
+        // Create Axis Title Overlays for Drag and Drop highlighting
+
+    }, {
+        key: 'createTitleOverlays',
+        value: function createTitleOverlays() {
+            this.overgroup = this.chart.renderer.g().add();
+            this.overheight = 20;
+            this.overwidth = 100;
+            this.overedge = 5;
+
+            // styling
+            this.overcolor = 'rgba(255,0,0,0.5)';
+            this.overborder = 'black';
+            this.overbwidth = 2;
+            this.overzindex = 3;
+
+            var xtextsvg = this.chart.xAxis[0].axisTitle.element;
+            var xtextsvg_x = xtextsvg.getAttribute('x');
+            var xtextsvg_y = xtextsvg.getAttribute('y');
+
+            var ytextsvg = this.chart.yAxis[0].axisTitle.element;
+            var ytextsvg_x = ytextsvg.getAttribute('x');
+            var ytextsvg_y = ytextsvg.getAttribute('y');
+
+            this.yover = this.chart.renderer.rect(ytextsvg_x - (this.overheight / 2. + 3), ytextsvg_y - this.overwidth / 2., this.overheight, this.overwidth, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+
+            this.xover = this.chart.renderer.rect(xtextsvg_x - this.overwidth / 2., xtextsvg_y - (this.overheight / 2 + 3), this.overwidth, this.overheight, this.overedge).attr({
+                'stroke-width': this.overbwidth,
+                stroke: this.overborder,
+                fill: this.overcolor,
+                zIndex: this.overzindex
+            }).add(this.overgroup);
+            this.overgroup.hide();
+        }
+    }]);
+
+    return Scatter;
 }();
 ;/*
 * @Author: Brian Cherinka
@@ -1505,7 +2611,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-19 13:29:32
+* @Last Modified time: 2016-12-14 15:54:41
 */
 
 // Javascript code for general things
@@ -1521,6 +2627,8 @@ var Utils = function () {
     // Constructor
     function Utils() {
         _classCallCheck(this, Utils);
+
+        this.window = $(window);
 
         // login handlers
         $('#login-user').on('keyup', this, this.submitLogin); // submit login on keypress
@@ -1664,7 +2772,7 @@ var Utils = function () {
                 url = "";
             }
 
-            window.cookieconsent.initialise({
+            _this.window[0].cookieconsent.initialise({
                 "palette": {
                     "popup": {
                         "background": "#000"

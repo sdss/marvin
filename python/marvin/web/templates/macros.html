@@ -136,3 +136,56 @@
 {#</div>#}
 {% endmacro %}
 
+{# NSA Table #}
+{% macro nsatable(nsa, cols) %}
+<div id='nsatool'> <h4><strong>NSA Parameters</strong></h4></div>
+<div class='col-md-2' id='nsadiv'>
+  <table class='table table-responsive table-condensed table-striped table-bordered' id='nsatable'
+  data-toggle='table' data-toolbar='#nsatool' data-show-pagination-switch="true" data-pagination="true"
+  data-page-size='5' data-page-list='[5]'>
+  <thead>
+    <tr><th>Name</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    {% for c in cols %}
+    <tr><td><span class='mover' id='{{c}}' draggable=true><strong>{{c|filternsa}}</strong></span></td><td>{{nsa[c]|round(4)}}</td></tr>
+    {% endfor %}
+  </tbody>
+  </table>
+</div>
+{% endmacro %}
+
+{# NSA Scatter Plot and Select #}
+{% macro nsascatter(nsadict, id) %}
+    <div class='row nsascatter'>
+      {#<div class='col-md-2'>
+        <select class="selectpicker nsaselect" id='nsachoices{{id}}' multiple title='Choose x and y' data-max-options="2"
+        data-width='fit'>
+          <optgroup label="X" data-max-options="1">
+          {% for k in nsadict.keys() %}
+          <option value='x_{{k}}''>{{k|filternsa}}</option>
+          {% endfor %}
+          </optgroup>
+          <optgroup label="Y" data-max-options="1">
+          {% for k in nsadict.keys() %}
+          <option value='y_{{k}}'>{{k|filternsa}}</option>
+          {% endfor %}
+          </optgroup>
+        </select>
+        <button class='btn btn-warning nsaplotbuts' id='plotnsabut{{id}}'>Plot</button>
+        <button class='btn btn-info nsareset' id='resetnsa{{id}}'>Reset</button>
+      </div>#}
+
+      <div class='input-group col-md-6' id='nsa-grp'>
+        <div id='ddtext'><p class="text-info">Drag-n-Drop the Table Parameter Name to change the Plot Axis!</p></div>
+        <span class="input-group-addon info" id="nsa-load"><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...</span>
+      </div>
+
+      <div class='col-md-6'>
+        <div class='marvinplot' id='nsahighchart{{id}}'></div>
+      </div>
+      <div class='col-md-6'>
+        <div class='marvinplot' id='nsahighchart{{id+1}}'></div>
+      </div>
+    </div>
+{% endmacro %}
