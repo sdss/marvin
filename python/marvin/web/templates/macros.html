@@ -137,18 +137,25 @@
 {% endmacro %}
 
 {# NSA Table #}
-{% macro nsatable(nsa, cols) %}
+{% macro nsatable(nsa, cols, plotcols) %}
 <div id='nsatool'> <h4><strong>NSA Parameters</strong></h4></div>
 <div class='col-md-2' id='nsadiv'>
   <table class='table table-responsive table-condensed table-striped table-bordered' id='nsatable'
   data-toggle='table' data-toolbar='#nsatool' data-show-pagination-switch="true" data-pagination="true"
-  data-page-size='5' data-page-list='[5]'>
+  data-page-size='6' data-page-list='[6]'>
   <thead>
     <tr><th>Name</th><th>Value</th></tr>
   </thead>
   <tbody>
     {% for c in cols %}
-    <tr><td><span class='mover' id='{{c}}' draggable=true><strong>{{c|filternsa}}</strong></span></td><td>{{nsa[c]|round(4)}}</td></tr>
+    <tr><td>
+        {% if c in plotcols %}
+          <span class='mover' id='{{c}}' draggable=true><strong>{{c|filternsa}}</strong></span>
+        {% else %}
+          {{c|filternsa}}
+        {% endif %}
+        </td>
+        <td>{{nsa[c]|filternsaval(c)}}</td></tr>
     {% endfor %}
   </tbody>
   </table>

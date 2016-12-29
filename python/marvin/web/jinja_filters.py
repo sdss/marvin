@@ -38,9 +38,24 @@ def filtergaltype(context, value):
 def filternsa(context, value):
     ''' Parse plateifu or mangaid into better form '''
 
-    newvalue = value.replace('mass', 'logmass').replace('absmag', 'absmag_r').\
-        replace('elpetro_mag_g_r', 'g-r').replace('elpetro_mag_u_r', 'u-r').\
-        replace('elpetro_mag_i_z', 'i-z').replace('mtol', 'mtol_r')
+    newvalue = value.replace('elpetro_mag_g_r', 'g-r').\
+        replace('elpetro_mag_u_r', 'u-r').\
+        replace('elpetro_mag_i_z', 'i-z')
+    return newvalue
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def filternsaval(context, value, key):
+    ''' Parse plateifu or mangaid into better form '''
+
+    if type(value) == list:
+        newvalue = ', '.join([str(np.round(v, 4)) for v in value])
+    elif isinstance(value, (float, np.floating)):
+        newvalue = np.round(value, 4)
+    else:
+        newvalue = value
+
     return newvalue
 
 

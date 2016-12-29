@@ -124,6 +124,25 @@ def buildMapDict(cube, params, bintemp=None):
     return mapdict
 
 
+def make_nsa_dict(nsa, cols=None):
+    ''' Make/rearrange the nsa dictionary of values '''
+
+    # get columns
+    if not cols:
+        cols = [k for k in nsa.keys() if 'stokes' not in k]
+        cols.sort()
+
+    # make dictionary
+    nsadict = {c: nsa[c] for c in cols}
+    nsadict.update({'sersic_absmag_r': nsadict['sersic_absmag'][4]})
+    nsadict.update({'sersic_mtol_r': nsadict['sersic_mtol'][4]})
+    cols.append('sersic_absmag_r')
+    cols.append('sersic_mtol_r')
+    cols.sort()
+
+    return nsadict, cols
+
+
 class Galaxy(FlaskView):
     route_base = '/galaxy'
 
@@ -137,18 +156,18 @@ class Galaxy(FlaskView):
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
         self.galaxy['nsamsg'] = None
-        self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+        self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_logmass', 'xtitle': 'Stellar Mass',
                                            'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
+                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag_r', 'xtitle': 'AbsMag_r',
                                            'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
                                      }
         # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
         #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'}}
 
-        # cols = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-        self.galaxy['nsaplotcols'] = ['z', 'sersic_mass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r',
+        # cols = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
+        self.galaxy['nsaplotcols'] = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag_r', 'elpetro_mag_g_r',
                                       'elpetro_th50_r', 'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba',
-                                      'elpetro_phi', 'sersic_mtol', 'elpetro_th90_r']
+                                      'elpetro_phi', 'sersic_mtol_r', 'elpetro_th90_r']
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -177,7 +196,6 @@ class Galaxy(FlaskView):
 
             # Get cube
             try:
-                print('marvin config', self._release, self._dapver, self._dapver)
                 cube = Cube(**galaxyid)
             except MarvinError as e:
                 self.galaxy['cube'] = None
@@ -205,9 +223,15 @@ class Galaxy(FlaskView):
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
                 self.galaxy['mngtarget'] = cube.targetbit
+
+                # make the nsa dictionary
                 cols = self.galaxy.get('nsaplotcols')
-                self.galaxy['nsadict'] = nsadict = OrderedDict({c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols})
-                print('nsadict', OrderedDict(nsadict))
+                nsadict, nsacols = make_nsa_dict(cube.nsa)
+                nsatmp = [nsacols.pop(nsacols.index(i)) for i in cols]
+                nsatmp.extend(nsacols)
+                self.galaxy['nsacols'] = nsatmp
+                self.galaxy['nsadict'] = nsadict
+
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
@@ -368,9 +392,9 @@ class Galaxy(FlaskView):
         # get the default nsa choices
         nsachoices = self.galaxy.get('nsachoices', None)
         if not nsachoices:
-            nsachoices = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
+            nsachoices = {'1': {'y': 'z', 'x': 'sersic_logmass', 'xtitle': 'Stellar Mass',
                                 'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                          '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag', 'xtitle': 'AbsMag_r',
+                          '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag_r', 'xtitle': 'AbsMag_r',
                                 'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}}
 
         # get cube (self.galaxy['cube'] does not work)
@@ -386,7 +410,7 @@ class Galaxy(FlaskView):
             # get the galaxy nsa parameters
             cols = self.galaxy.get('nsaplotcols')
             try:
-                nsadict = {c: np.log10(cube.nsa[c]) if 'mass' in c else cube.nsa[c][4] if 'absmag' in c or 'mtol' in c else cube.nsa[c] for c in cols}
+                nsadict, nsacols = make_nsa_dict(cube.nsa)
                 nsa = {f['plateifu']: nsadict}
             except Exception as e:
                 output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
@@ -404,7 +428,7 @@ class Galaxy(FlaskView):
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}
                 else:
                     nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
-                    nsasamp = {c: [np.log10(n[0][c]) if 'mass' in c else n[0][c][4] if 'absmag' in c or 'mtol' in c else n[0][c] for n in nsadict] for c in cols}
+                    nsasamp = {c: [n[0][c.split('_r')[0]][4] if 'absmag_r' in c or 'mtol_r' in c else n[0][c] for n in nsadict] for c in cols}
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
                     nsa['sample'] = nsasamp
                     output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}
