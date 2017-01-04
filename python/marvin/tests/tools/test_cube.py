@@ -4,9 +4,6 @@ import collections
 import os
 import unittest
 
-from brain.core.core import URLMapDict
-from brain.core.exceptions import BrainError
-
 from astropy.io import fits
 
 from marvin import config, marvindb
@@ -593,6 +590,7 @@ class TestPickling(TestCubeBase):
     def test_pickling_db(self):
 
         cube = Cube(plateifu=self.plateifu)
+        self.assertEqual(cube.data_origin, 'db')
 
         with self.assertRaises(MarvinError) as ee:
             cube.save()
