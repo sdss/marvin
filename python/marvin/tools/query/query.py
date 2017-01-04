@@ -10,8 +10,7 @@
 #                - Added config drpver info
 #     2016-03-12 - Changed parameter input to be a natural language string
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division, unicode_literals
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
@@ -639,7 +638,8 @@ class Query(object):
 
     def update_params(self, param):
         ''' Update the input parameters '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        # param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else val.replace('*', '%').decode('UTF-8') for key, val in param.items() if key in self.filterparams.keys()}
         self.filterparams.update(param)
         self._setForms()
 

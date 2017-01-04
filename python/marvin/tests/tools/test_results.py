@@ -53,8 +53,9 @@ class TestResults(unittest.TestCase):
                                        ('cube.plateifu', 'plateifu'),
                                        ('ifu.name', 'name'),
                                        ('nsa.z', 'z')])
-        #self.res = (u'1-22438', 7992, u'7992-1901', u'1901', 0.016383046284318)
-        self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407446920871735)
+        # self.res = (u'1-22438', 7992, u'7992-1901', u'1901', 0.016383046284318)
+        # self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407446920871735)
+        self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407447)
         self.q = Query(searchfilter=self.filter)
 
     def tearDown(self):
@@ -155,7 +156,7 @@ class TestResults(unittest.TestCase):
             self.assertEqual(dict, type(output))
             self.assertEqual(list, type(output.get('cube.mangaid')))
             if name is not None:
-                self.assertEqual([name], output.keys())
+                self.assertEqual([name], list(output.keys()))
             else:
                 self.assertEqual(set(self.columns), set(output))
 
