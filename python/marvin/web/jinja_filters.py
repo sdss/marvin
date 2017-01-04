@@ -35,6 +35,32 @@ def filtergaltype(context, value):
 
 @jinja2.contextfilter
 @jinjablue.app_template_filter()
+def filternsa(context, value):
+    ''' Parse plateifu or mangaid into better form '''
+
+    newvalue = value.replace('elpetro_mag_g_r', 'g-r').\
+        replace('elpetro_mag_u_r', 'u-r').\
+        replace('elpetro_mag_i_z', 'i-z')
+    return newvalue
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def filternsaval(context, value, key):
+    ''' Parse plateifu or mangaid into better form '''
+
+    if type(value) == list:
+        newvalue = ', '.join([str(np.round(v, 4)) for v in value])
+    elif isinstance(value, (float, np.floating)):
+        newvalue = np.round(value, 4)
+    else:
+        newvalue = value
+
+    return newvalue
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
 def allclose(context, value, newvalue):
     ''' Do a numpy allclose comparison between the two values '''
     try:
