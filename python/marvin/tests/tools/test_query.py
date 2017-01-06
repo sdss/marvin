@@ -120,7 +120,7 @@ class TestQuery(MarvinTest):
         tmp = r.sort('emline_gflux_ha_6564')
         self.assertEqual(self.plate, r.getListOf('cube.plate')[0])
         self.assertEqual(self.mangaid, r.getListOf('cube.mangaid')[0])
-        self.assertEqual(26.2344, r.getListOf('emline_gflux_ha_6564')[0])
+        self.assertEqual(26.112, r.getListOf('emline_gflux_ha_6564')[0])
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -219,16 +219,16 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(231, table='spaxelprop', allspax=True)
+        self._dap_query_1(237, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
-        self._dap_query_1(231, name='haflux', allspax=True)
+        self._dap_query_1(237, name='haflux', allspax=True)
 
     def test_dap_query_1_normal_clean(self):
-        self._dap_query_1(231, table='spaxelprop')
+        self._dap_query_1(237, table='spaxelprop')
 
     def test_dap_query_1_haflux_clean(self):
-        self._dap_query_1(231, name='haflux')
+        self._dap_query_1(237, name='haflux')
 
     def test_dap_query_1_badshortcut(self):
         errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"
