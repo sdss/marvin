@@ -828,7 +828,7 @@ class Results(object):
                 >>> (u'27-1170', u'1901', -9999.0),
                 >>> (u'27-1167', u'1902', -9999.0)]
         '''
-        start = 0 if start < 0 else int(start)
+        start = 0 if int(start) < 0 else int(start)
         end = start + int(limit)
         # if end > self.count:
         #     end = self.count

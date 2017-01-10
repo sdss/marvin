@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import warnings
+import sys
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -293,7 +294,12 @@ class Cube(MarvinToolsClass):
     def qualitybit(self):
         """The Cube DRP3QUAL bits."""
 
-        bit = long(self.header['DRP3QUAL'])
+        # Python 2-3 compatibility
+        try:
+            bit = long(self.header['DRP3QUAL'])
+        except NameError as e:
+            bit = int(self.header['DRP3QUAL'])
+
         labels = None
 
         # get labels
@@ -312,12 +318,12 @@ class Cube(MarvinToolsClass):
 
         try:
             names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
-                     long(self.header[names[2]])]
+            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
+                     int(self.header[names[2]])]
         except KeyError:
             names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [long(self.header[names[0]]), long(self.header[names[1]]),
-                     long(self.header[names[2]])]
+            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
+                     int(self.header[names[2]])]
 
         ind = np.nonzero(targs)[0]
 
