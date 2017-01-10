@@ -67,7 +67,7 @@ def save(obj, path=None, overwrite=False):
 
     try:
         with open(path, 'wb') as fout:
-            pickle.dump(obj, fout)
+            pickle.dump(obj, fout, protocol=-1)
     except Exception as ee:
         if os.path.exists(path):
             os.remove(path)

@@ -339,7 +339,7 @@ class MarvinConfig(object):
 
         return release
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None):
+    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000):
         ''' Switches the SAS url config attribute
 
         Easily switch the sasurl configuration variable between
@@ -356,7 +356,7 @@ class MarvinConfig(object):
             if ngrokid:
                 self.sasurl = 'http://{0}.ngrok.io/marvin2/'.format(ngrokid)
             else:
-                self.sasurl = 'http://localhost:5000/marvin2/'
+                self.sasurl = 'http://localhost:{0}/marvin2/'.format(port)
         elif sasmode == 'utah':
             self.sasurl = 'https://api.sdss.org/marvin2/'
 

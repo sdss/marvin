@@ -449,7 +449,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            pickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)

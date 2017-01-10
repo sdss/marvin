@@ -157,7 +157,7 @@ class TestQuery(MarvinTest):
         config.switchSasUrl(mode)
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
-        config.mode='remote'
+        config.mode = 'remote'
 
     def test_Query_remote_mpl4(self):
         self._setRemote()
@@ -207,7 +207,7 @@ class TestQuery(MarvinTest):
         else:
             key = '{0}'.format(name)
 
-        p = '{0} > 25'.format(key)
+        p = '{0} > 25 and cube.plate == 8485'.format(key)
         q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'], allspaxels=allspax)
         r = q.run()
         self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
@@ -219,16 +219,16 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(237, table='spaxelprop', allspax=True)
+        self._dap_query_1(19, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
-        self._dap_query_1(237, name='haflux', allspax=True)
+        self._dap_query_1(19, name='haflux', allspax=True)
 
     def test_dap_query_1_normal_clean(self):
-        self._dap_query_1(237, table='spaxelprop')
+        self._dap_query_1(19, table='spaxelprop')
 
     def test_dap_query_1_haflux_clean(self):
-        self._dap_query_1(237, name='haflux')
+        self._dap_query_1(19, name='haflux')
 
     def test_dap_query_1_badshortcut(self):
         errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"

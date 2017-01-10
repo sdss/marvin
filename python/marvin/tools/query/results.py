@@ -148,7 +148,15 @@ class Results(object):
                 querystring (str):
                     A string representation of the SQL query
         '''
-        if type(self.query) == unicode:
+
+        # check unicode or str
+        try:
+            isstr = type(self.query) == unicode
+        except NameError as e:
+            isstr = type(self.query) == str
+
+        # return the string query or compile the real query
+        if isstr:
             return self.query
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
@@ -400,7 +408,7 @@ class Results(object):
             os.makedirs(dirname)
 
         try:
-            pickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
