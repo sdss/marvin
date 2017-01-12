@@ -71,10 +71,10 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': cube.data.target.NSA_objects[0].z,
+                                    'redshift': cube.nsa.redshift,
                                     'shape': cube.shape,
-                                    'wavelength': cube.wavelength,
-                                    'wcs_header': cube.data.wcs.makeHeader().tostring()}
+                                    'wavelength': cube.wavelength.tolist(),
+                                    'wcs_header': cube.wcs.to_header_string()}
 
         return json.dumps(self.results)
 

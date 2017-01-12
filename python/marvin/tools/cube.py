@@ -265,7 +265,7 @@ class Cube(MarvinToolsClass):
         self.header = fits.Header.fromstring(data['header'])
         self.redshift = float(data['redshift'])
         self.shape = data['shape']
-        self.wavelength = data['wavelength']
+        self.wavelength = np.array(data['wavelength'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
 
         if self.plateifu not in data:

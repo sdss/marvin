@@ -529,7 +529,7 @@ class TestWCS(TestCubeBase):
     def test_wcs_api(self):
         cube = Cube(plateifu=self.plateifu, mode='remote')
         self.assertIsInstance(cube.wcs, wcs.WCS)
-        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+        self.assertAlmostEqual(cube.wcs.wcs.pc[1, 1], 0.000138889)
 
 
 class TestPickling(TestCubeBase):
