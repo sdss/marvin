@@ -1,5 +1,7 @@
 import json
 
+import numpy as np
+
 from flask_classy import route
 from flask import Blueprint, redirect, url_for
 from flask import request
@@ -68,12 +70,14 @@ class CubeView(BaseView):
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
+            wavelength = (cube.wavelength.tolist() if isinstance(cube.wavelength, np.ndarray)
+                          else cube.wavelength)
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': cube.nsa.redshift,
+                                    'redshift': cube.redshift,
                                     'shape': cube.shape,
-                                    'wavelength': cube.wavelength.tolist(),
+                                    'wavelength': wavelength,
                                     'wcs_header': cube.wcs.to_header_string()}
 
         return json.dumps(self.results)
