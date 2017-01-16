@@ -40,11 +40,11 @@ def add_data_file(directory):
             data_files.append(os.path.join('..', root.lstrip('python/'), filename))
 
 add_data_file('python/marvin/extern/')
-add_data_file('python/marvin/web/configuration/')
-add_data_file('python/marvin/web/lib/')
-add_data_file('python/marvin/web/static/')
-add_data_file('python/marvin/web/templates/')
-add_data_file('python/marvin/web/uwsgi_conf_files/')
+# add_data_file('python/marvin/web/configuration/')
+# add_data_file('python/marvin/web/lib/')
+# add_data_file('python/marvin/web/static/')
+# add_data_file('python/marvin/web/templates/')
+# add_data_file('python/marvin/web/uwsgi_conf_files/')
 data_files.append('../marvin/db/dbconfig.ini')
 data_files.append('../../requirements.txt')
 data_files.append('../../README.md')
@@ -66,8 +66,8 @@ setup(name=NAME,
       author_email='havok2063@hotmail.com',
       keywords='marvin manga astronomy MaNGA',
       url='https://github.com/sdss/marvin',
-      packages=find_packages(where='python', exclude=['extern']),
-      package_dir={'': 'python/'},
+      packages=find_packages(where='python', exclude=['marvin.web*']),
+      package_dir={'': 'python'},
       package_data={'': data_files},
       install_requires=install_requires,
       scripts=['bin/run_marvin'],
