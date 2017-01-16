@@ -294,7 +294,7 @@ class Galaxy(FlaskView):
         output['dapmaps'] = daplist
         output['dapbintemps'] = _get_bintemps(self._dapver)
         current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
-        print('init dyn', len(webspec), type(webspec))
+
         return jsonify(result=output)
 
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
