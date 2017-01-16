@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-19 13:29:32
+* @Last Modified time: 2016-12-14 15:54:41
 */
 
 // Javascript code for general things
@@ -18,6 +18,8 @@ var Utils = function () {
     // Constructor
     function Utils() {
         _classCallCheck(this, Utils);
+
+        this.window = $(window);
 
         // login handlers
         $('#login-user').on('keyup', this, this.submitLogin); // submit login on keypress
@@ -161,7 +163,7 @@ var Utils = function () {
                 url = "";
             }
 
-            window.cookieconsent.initialise({
+            _this.window[0].cookieconsent.initialise({
                 "palette": {
                     "popup": {
                         "background": "#000"
