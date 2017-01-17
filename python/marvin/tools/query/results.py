@@ -922,7 +922,6 @@ class Results(object):
 
         # get the parameter list to check against
         paramlist = self.paramtocol.keys()
-        print(self.results[0])
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
