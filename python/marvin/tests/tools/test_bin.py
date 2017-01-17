@@ -11,6 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import unittest
 
 import marvin
 import marvin.tests
@@ -114,3 +115,9 @@ class TestBinInit(TestBinBase):
         self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
 
         self._check_bin_data(bb)
+
+
+if __name__ == '__main__':
+    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
+    verbosity = 2
+    unittest.main(verbosity=verbosity)
