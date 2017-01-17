@@ -876,7 +876,7 @@ class Results(object):
         self.results = self.query.all()
         return self.results
 
-    def convertToTool(self, tooltype=None, limit=None):
+    def convertToTool(self, tooltype, **kwargs):
         ''' Converts the list of results into Marvin Tool objects
 
             Creates a list of Marvin Tool objects from a set of query results.
@@ -915,18 +915,18 @@ class Results(object):
         '''
 
         # set the desired tool type
+        limit = kwargs.get('limit', None)
         toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
         # get the parameter list to check against
         paramlist = self.paramtocol.keys()
-        print(self.results[0])
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
-            self.objects = [Cube(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid')),
+            self.objects = [Cube(plateifu=res.__getattribute__(
+                            self._getRefName('cube.plateifu')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
 
@@ -935,7 +935,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'mangaid': res.__getattribute__(self._getRefName('cube.mangaid'))}
+                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))
@@ -951,16 +951,21 @@ class Results(object):
             assert 'spaxelprop.x' in paramlist and 'spaxelprop.y' in paramlist, \
                     'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel.'
 
-            self.objects = [Spaxel(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid')),
-                            x=res.__getattribute__(
-                            self._getRefName('spaxelprop.x')),
-                            y=res.__getattribute__(
-                            self._getRefName('spaxelprop.y')))
-                            for res in self.results[0:limit]]
+            self.objects = []
+
+            load = kwargs.get('load', True)
+            maps = kwargs.get('maps', True)
+            modelcube = kwargs.get('modelcube', True)
+
+            for res in self.results[0:limit]:
+                spaxkwargs = {'plateifu': res.__getattribute__(self._getRefName('cube.plateifu')),
+                              'x': res.__getattribute__(self._getRefName('spaxelprop.x')),
+                              'y': res.__getattribute__(self._getRefName('spaxelprop.y')),
+                              'load': load, 'maps': maps, 'modelcube': modelcube}
+                self.objects.append(Spaxel(**spaxkwargs))
         elif tooltype == 'rss':
-            self.objects = [RSS(mangaid=res.__getattribute__(
-                            self._getRefName('cube.mangaid')),
+            self.objects = [RSS(plateifu=res.__getattribute__(
+                            self._getRefName('cube.plateifu')),
                             mode=self.mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
 
@@ -969,7 +974,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'mangaid': res.__getattribute__(self._getRefName('cube.mangaid'))}
+                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))

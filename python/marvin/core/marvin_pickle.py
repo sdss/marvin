@@ -27,8 +27,8 @@ def save(obj, path=None, overwrite=False):
     """Pickles the object.
 
     If ``path=None``, uses the default location of the file in the tree
-    but changes the extension of the file to ``.mpf``. Returns the path
-    of the saved pickle file.
+    but changes the extension of the file to ``.mpf`` (MaNGA Pickle File).
+    Returns the path of the saved pickle file.
 
     """
 

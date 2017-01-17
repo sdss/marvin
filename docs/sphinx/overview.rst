@@ -23,7 +23,7 @@ Marvin
 Marvin is a complete ecosystem designed for overcoming the challenge of
 searching, accessing, and visualizing the MaNGA data. It consists of a
 three-pronged approach of a web app, a python package, and an API. The web app,
-Marvin-web, provides an easily accesible interface for searching the MaNGA data
+Marvin-web, provides an easily accessible interface for searching the MaNGA data
 and visual exploration of individual MaNGA galaxies or of the entire sample. The
 python package, in particular Marvin-tools, allows users to easily and
 efficiently interact with the MaNGA data via local files, files retrieved from

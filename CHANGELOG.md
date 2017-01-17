@@ -17,6 +17,7 @@
 - Added the Ha_to_Hb ratio the DAP ModelClasses for querying
 - Added new script to perform somce basic system, os, and Marvin checks: bin/check_marvin
 - Added an alert banner when the user is using Safari. See #94.
+- Issue #122: added ra/dec to spaxel
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -28,6 +29,7 @@
 - Issue #119: test_get_spaxel_no_db fails
 - Issue #121: bugfix with misspelled word in downloadList utility function
 - Issue #105: query results convertToTool not robust when null/default parameters not present
+- Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
 
 
 ## [2.0.9] - 2016/11/19
