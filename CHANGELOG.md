@@ -29,6 +29,7 @@
 - Issue #119: test_get_spaxel_no_db fails
 - Issue #121: bugfix with misspelled word in downloadList utility function
 - Issue #105: query results convertToTool not robust when null/default parameters not present
+- Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
 
 
 ## [2.0.9] - 2016/11/19

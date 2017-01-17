@@ -618,7 +618,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
             response = response.getData()
             spaxel_coords = response['spaxels']
 
-        if len(list(spaxel_coords)) == 0:
+        spaxel_coords = list(spaxel_coords)
+        if len(spaxel_coords) == 0:
             if only_list:
                 return [(), ()]
             else:
