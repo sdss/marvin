@@ -54,7 +54,7 @@ class TestResults(unittest.TestCase):
                                        ('ifu.name', 'name'),
                                        ('nsa.z', 'z')])
         #self.res = (u'1-22438', 7992, u'7992-1901', u'1901', 0.016383046284318)
-        self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407446920871735)
+        self.res = (u'1-209232', 8485, u'8485-1901', u'1901', 0.0407447)
         self.q = Query(searchfilter=self.filter)
 
     def tearDown(self):
