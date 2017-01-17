@@ -786,7 +786,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
 
 def get_drpall_row(plateifu, drpver=None, drpall=None):
-    """Returns a row from drpall matching the plateifu."""
+    """Returns a dictionary from drpall matching the plateifu."""
 
     from marvin import config
 
@@ -929,6 +929,8 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     value = drpall_row[col]
                     if isinstance(value, np.ndarray):
                         value = value.tolist()
+                    else:
+                        value = np.asscalar(value)
                     nsa_data[col[4:]] = value
 
             return DotableCaseInsensitive(nsa_data)
