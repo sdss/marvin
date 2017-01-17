@@ -477,6 +477,9 @@ def getWCSFromPng(image):
     if mywcs:
         pngwcs = wcs.WCS(mywcs)
 
+    # Close the image
+    image.close()
+
     return pngwcs
 
 
