@@ -75,9 +75,9 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
                                                                    cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': cube.nsa.z,
+                                    'redshift': cube.redshift,
                                     'shape': cube.shape,
-                                    'wavelength': cube.wavelength,
+                                    'wavelength': wavelength,
                                     'wcs_header': cube.wcs.to_header_string()}
 
         return json.dumps(self.results)
