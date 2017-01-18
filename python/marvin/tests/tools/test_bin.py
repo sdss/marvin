@@ -18,6 +18,8 @@ import marvin.tools.bin
 import marvin.tools.maps
 import marvin.tools.modelcube
 
+from marvin.core.exceptions import MarvinError
+
 
 class TestBinBase(marvin.tests.MarvinTest):
     """Defines the files and plateifus we will use in the tests."""
@@ -94,6 +96,7 @@ class TestBinInit(TestBinBase):
         self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
         self.assertIsNotNone(bb._modelcube)
         self.assertEqual(bb._modelcube.data_origin, 'db')
+        self.assertEqual(bb._modelcube.bintype, self.bintype)
 
         self._check_bin_data(bb)
 
@@ -114,5 +117,13 @@ class TestBinInit(TestBinBase):
 
         self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
         self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+        self.assertEqual(bb._modelcube.bintype, self.bintype)
 
         self._check_bin_data(bb)
+
+    def test_bin_does_not_exist(self):
+
+        with self.assertRaises(MarvinError) as ee:
+            marvin.tools.bin.Bin(binid=99999, plateifu=self.plateifu, mode='local',
+                                 bintype=self.bintype)
+            self.assertIn('there are no spaxels associated with binid=99999.', str(ee.exception))
