@@ -746,7 +746,7 @@ class Query(object):
                 ii = Interaction(route=url, params=params)
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
-                self._cleanUpQueries()
+                # self._cleanUpQueries()
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
