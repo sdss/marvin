@@ -127,7 +127,7 @@ class Results(object):
 
         # Auto convert to Marvin Object
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
     def _updateQueryObj(self, **kwargs):
         ''' update parameters using the _queryobj '''
