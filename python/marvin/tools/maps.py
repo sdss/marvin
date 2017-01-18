@@ -337,9 +337,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
         # Checks the bintype and template_kin from the header
-        header_bintype = self.data[0].header['BINTYPE'].strip().upper()
-        if header_bintype == 'NONE' and not _is_MPL4(self._dapver):
-            header_bintype = 'SPX'
+        if not _is_MPL4(self._dapver):
+            header_bintype = self.data[0].header['BINKEY'].strip().upper()
+            header_bintype = 'SPX' if header_bintype == 'NONE' else header_bintype
+        else:
+            header_bintype = self.data[0].header['BINTYPE'].strip().upper()
 
         header_template_kin_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
         header_template_kin = self.data[0].header[header_template_kin_key].strip().upper()
@@ -620,10 +622,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         spaxel_coords = list(spaxel_coords)
         if len(spaxel_coords) == 0:
-            if only_list:
-                return [(), ()]
-            else:
-                return []
+            return []
         else:
             if only_list:
                 return tuple([tuple(cc) for cc in spaxel_coords])
