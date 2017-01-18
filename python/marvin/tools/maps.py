@@ -622,10 +622,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         spaxel_coords = list(spaxel_coords)
         if len(spaxel_coords) == 0:
-            if only_list:
-                return [(), ()]
-            else:
-                return []
+            return []
         else:
             if only_list:
                 return tuple([tuple(cc) for cc in spaxel_coords])

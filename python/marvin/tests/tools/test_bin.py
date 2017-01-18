@@ -100,8 +100,10 @@ class TestBinInit(TestBinBase):
     def test_init_from_db(self):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=self.plateifu, bintype=self.bintype)
+        self.assertEqual(bb._maps.data_origin, 'db')
         self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
         self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+        self.assertEqual(bb._modelcube.bintype, self.bintype)
 
         self._check_bin_data(bb)
 
