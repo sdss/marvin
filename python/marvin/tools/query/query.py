@@ -397,13 +397,32 @@ class Query(object):
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'all'}
             try:
-                ii = Interaction(route=url)
+                ii = Interaction(route=url, params=params)
             except MarvinError as e:
                 raise MarvinError('API Query call to get params failed: {0}'.format(e))
             else:
                 mykeys = ii.getData()
                 return mykeys
+
+    def get_best_params(self):
+        ''' Retrieves a list of best parameters to query on '''
+        if self.mode == 'local':
+            keys = self.get_available_params()
+            bestkeys = ['spaxelprop.emline_gflux_ha_6564', 'cube.ra', 'cube.dec', 'nsa.z']
+            return bestkeys
+        elif self.mode == 'remote':
+            # Get the query route
+            url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'best'}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call to get params failed: {0}'.format(e))
+            else:
+                bestkeys = ii.getData()
+                return bestkeys
 
     def save(self, path=None, overwrite=False):
         ''' Save the query as a pickle object
