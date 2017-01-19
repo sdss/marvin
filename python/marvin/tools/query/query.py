@@ -409,11 +409,18 @@ class Query(object):
                 mykeys = ii.getData()
                 return mykeys
 
+    def _read_best_params(self):
+        bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best.cfg')
+        f = open(bestpath, 'r')
+        bestkeys = f.read().splitlines()
+        bestkeys = [k.strip() for k in bestkeys]
+        return bestkeys
+
     def get_best_params(self):
         ''' Retrieves a list of best parameters to query on '''
         if self.mode == 'local':
             keys = self.get_available_params()
-            bestkeys = ['spaxelprop.emline_gflux_ha_6564', 'cube.ra', 'cube.dec', 'nsa.z']
+            bestkeys = self._read_best_params()
             return bestkeys
         elif self.mode == 'remote':
             # Get the query route

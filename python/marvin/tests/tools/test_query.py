@@ -325,6 +325,14 @@ class TestQuery(MarvinTest):
     def test_query_returntype_spaxel_remote(self):
         self._query_return_type(rt='spaxel', mode='remote')
 
+    def test_read_best(self):
+        q = Query(mode='local')
+        bestkeys = q._read_best_params()
+        self.assertEqual(type(bestkeys), list)
+        exp = ['cube.ra', 'cube.dec', 'cube.plate', 'nsa.z', 'spaxelprop.x']
+        for e in exp:
+            self.assertIn(e, bestkeys)
+
     def _get_params(self, pdisp, mode='local', expcount=None, inlist=None, outlist=None):
         if mode == 'remote':
             self._setRemote()
