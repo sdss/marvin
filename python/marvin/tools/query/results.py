@@ -12,11 +12,15 @@ import warnings
 import json
 import os
 import datetime
-import cPickle
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 try:
     import pandas as pd
@@ -123,7 +127,7 @@ class Results(object):
 
         # Auto convert to Marvin Object
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
     def _updateQueryObj(self, **kwargs):
         ''' update parameters using the _queryobj '''
@@ -144,7 +148,15 @@ class Results(object):
                 querystring (str):
                     A string representation of the SQL query
         '''
-        if type(self.query) == unicode:
+
+        # check unicode or str
+        try:
+            isstr = type(self.query) == unicode
+        except NameError as e:
+            isstr = type(self.query) == str
+
+        # return the string query or compile the real query
+        if isstr:
             return self.query
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
@@ -396,7 +408,7 @@ class Results(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -462,7 +474,7 @@ class Results(object):
                 >>> [u'mangaid', u'name', u'nsa.z']
         '''
         try:
-            self.columns = self.results[0].keys() if self.results else None
+            self.columns = list(self.results[0].keys()) if self.results else None
         except Exception as e:
             raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
         return self.columns
@@ -495,7 +507,7 @@ class Results(object):
         if cols:
             if not self.coltoparam:
                 self.coltoparam = OrderedDict(zip(cols, self._params))
-            mapping = self.coltoparam[col] if col else self.coltoparam.values()
+            mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
         else:
             mapping = None
         return mapping
@@ -508,7 +520,7 @@ class Results(object):
         if cols:
             if not self.paramtocol:
                 self.paramtocol = OrderedDict(zip(self._params, cols))
-            mapping = self.paramtocol[param] if param else self.paramtocol.values()
+            mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
         else:
             mapping = None
         return mapping
@@ -816,7 +828,7 @@ class Results(object):
                 >>> (u'27-1170', u'1901', -9999.0),
                 >>> (u'27-1167', u'1902', -9999.0)]
         '''
-        start = 0 if start < 0 else int(start)
+        start = 0 if int(start) < 0 else int(start)
         end = start + int(limit)
         # if end > self.count:
         #     end = self.count
@@ -910,7 +922,6 @@ class Results(object):
 
         # get the parameter list to check against
         paramlist = self.paramtocol.keys()
-        print(self.results[0])
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':

@@ -29,7 +29,7 @@ import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import TemplateTestCase, Call, template
-from marvin.utils.general import convertCoords, get_nsa_data
+from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
 
 
 class TestConvertCoords(TestCase):
@@ -198,3 +198,27 @@ class TestGetNSAData(TestCase):
     def test_drpall_dotable(self):
         data = get_nsa_data('1-209232', source='drpall', mode='local')
         self.assertEqual(data['iauname'], data.iauname)
+
+
+class TestPillowImage(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        outver = 'v1_5_1'
+        cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),
+                                    outver,
+                                    '8485/stack/images/1901.png')
+
+    def test_image_has_wcs(self):
+        w = getWCSFromPng(self.filename)
+        self.assertEqual(type(w), WCS)
+
+    def test_use_pil(self):
+        try:
+            import PIL
+        except ImportError as e:
+            with self.assertRaises(ImportError):
+                err = 'No module named PIL'
+                self.assertEqual(err, e.args[0])
+
+

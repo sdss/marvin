@@ -120,7 +120,7 @@ class TestQuery(MarvinTest):
         tmp = r.sort('emline_gflux_ha_6564')
         self.assertEqual(self.plate, r.getListOf('cube.plate')[0])
         self.assertEqual(self.mangaid, r.getListOf('cube.mangaid')[0])
-        self.assertEqual(26.2344, r.getListOf('emline_gflux_ha_6564')[0])
+        self.assertEqual(26.112, r.getListOf('emline_gflux_ha_6564')[0])
         self.assertGreaterEqual(r.count, 6)
         self.assertIn('drpalias', str(q.query.whereclause))
         self.assertIn('dapalias', str(q.query.whereclause))
@@ -157,7 +157,7 @@ class TestQuery(MarvinTest):
         config.switchSasUrl(mode)
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
-        config.mode='remote'
+        config.mode = 'remote'
 
     def test_Query_remote_mpl4(self):
         self._setRemote()
@@ -207,7 +207,7 @@ class TestQuery(MarvinTest):
         else:
             key = '{0}'.format(name)
 
-        p = '{0} > 25'.format(key)
+        p = '{0} > 25 and cube.plate == 8485'.format(key)
         q = Query(searchfilter=p, returnparams=['spaxelprop.emline_gflux_hb_4862'], allspaxels=allspax)
         r = q.run()
         self.assertEqual(classname, q.marvinform._param_form_lookup[key].Meta.model.__name__)
@@ -219,16 +219,16 @@ class TestQuery(MarvinTest):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_dap_query_1_normal(self):
-        self._dap_query_1(231, table='spaxelprop', allspax=True)
+        self._dap_query_1(19, table='spaxelprop', allspax=True)
 
     def test_dap_query_1_haflux(self):
-        self._dap_query_1(231, name='haflux', allspax=True)
+        self._dap_query_1(19, name='haflux', allspax=True)
 
     def test_dap_query_1_normal_clean(self):
-        self._dap_query_1(231, table='spaxelprop')
+        self._dap_query_1(19, table='spaxelprop')
 
     def test_dap_query_1_haflux_clean(self):
-        self._dap_query_1(231, name='haflux')
+        self._dap_query_1(19, name='haflux')
 
     def test_dap_query_1_badshortcut(self):
         errmsg = "Table 'spaxelprop' does not have a field named 'emline_gflux_ha_6564'"
@@ -324,6 +324,55 @@ class TestQuery(MarvinTest):
 
     def test_query_returntype_spaxel_remote(self):
         self._query_return_type(rt='spaxel', mode='remote')
+
+    def test_read_best(self):
+        q = Query(mode='local')
+        bestkeys = q._read_best_params()
+        self.assertEqual(type(bestkeys), list)
+        exp = ['cube.ra', 'cube.dec', 'cube.plate', 'nsa.z', 'spaxelprop.x']
+        for e in exp:
+            self.assertIn(e, bestkeys)
+
+    def _get_params(self, pdisp, mode='local', expcount=None, inlist=None, outlist=None):
+        if mode == 'remote':
+            self._setRemote()
+        q = Query(mode=mode)
+
+        if pdisp == 'all':
+            keys = q.get_available_params()
+            self.assertGreaterEqual(len(keys), expcount)
+        elif pdisp == 'best':
+            keys = q.get_best_params()
+            self.assertLessEqual(len(keys), expcount)
+
+        for i in inlist:
+            self.assertIn(i, keys)
+        if outlist:
+            for o in outlist:
+                self.assertNotIn(o, keys)
+
+    def test_get_available_params_local(self):
+        expcount = 300
+        inlist = ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit']
+        self._get_params('all', expcount=expcount, inlist=inlist)
+
+    def test_get_available_params_remote(self):
+        expcount = 300
+        inlist = ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit']
+        self._get_params('all', mode='remote', expcount=expcount, inlist=inlist)
+
+    def test_get_best_params_local(self):
+        expcount = 300
+        inlist = ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564']
+        outlist = ['nsa.tile', 'anime.anime', 'wcs.extname', 'maskbit.bit']
+        self._get_params('best', expcount=expcount, inlist=inlist, outlist=outlist)
+
+    def test_get_best_params_remote(self):
+        expcount = 300
+        inlist = ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564']
+        outlist = ['nsa.tile', 'anime.anime', 'wcs.extname', 'maskbit.bit']
+        self._get_params('best', mode='remote', expcount=expcount, inlist=inlist, outlist=outlist)
+
 
 if __name__ == '__main__':
     verbosity = 2

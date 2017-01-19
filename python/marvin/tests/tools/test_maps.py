@@ -56,6 +56,11 @@ class TestMapsBase(marvin.tests.MarvinTest):
             'SPX-GAU-MILESHC', str(cls.plate), str(cls.ifu),
             'manga-{0}-MAPS-SPX-GAU-MILESHC.fits.gz'.format(cls.plateifu))
 
+        cls.filename_mpl5_vor10 = os.path.join(
+            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
+            'VOR10-GAU-MILESHC', str(cls.plate), str(cls.ifu),
+            'manga-{0}-MAPS-VOR10-GAU-MILESHC.fits.gz'.format(cls.plateifu))
+
     @classmethod
     def tearDownClass(cls):
         pass
@@ -147,6 +152,22 @@ class TestMapsFile(TestMapsBase):
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 0.00031520479546875247)
         self.assertEqual(spaxel.bintype, 'SPX')
 
+    def test_bintype_maps_filename_vor10(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_vor10, release='MPL-5')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_filename_spx(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx, release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
+
+    def test_bintype_maps_filename_bad_input(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx, bintype='VOR10',
+                                      release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
+
 
 class TestMapsDB(TestMapsBase):
 
@@ -201,6 +222,16 @@ class TestMapsDB(TestMapsBase):
         self.assertTrue(len(spaxel_getitem.properties.keys()) > 0)
 
         self.assertAlmostEqual(spaxel_getitem.spectrum.flux[100], spaxel.spectrum.flux[100])
+
+    def test_bintype_maps_db_vor10(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10', release='MPL-5')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_db_spx(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
 
 
 class TestMapsAPI(TestMapsBase):
@@ -258,6 +289,17 @@ class TestMapsAPI(TestMapsBase):
 
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
+    def test_bintype_maps_remote_vor10(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10',
+                                      release='MPL-5', mode='remote')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_remote_spx(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5', mode='remote')
+        self.assertEqual(maps.bintype, 'SPX')
+
 
 class TestGetMap(TestMapsBase):
 
@@ -265,7 +307,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         self.assertEqual(maps.data_origin, 'db')
 
-        map_db = maps.getMap('specindex', channel='fe5406')
+        map_db = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_db, marvin.tools.map.Map)
         self.assertIsInstance(map_db.header, astropy.io.fits.Header)
         self.assertEqual(map_db.header['C01'], 'D4000')
@@ -274,7 +316,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self.assertEqual(maps.data_origin, 'file')
 
-        map_file = maps.getMap('specindex', channel='fe5406')
+        map_file = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_file, marvin.tools.map.Map)
         self.assertIsInstance(map_file.header, astropy.io.fits.Header)
         self.assertEqual(map_file.header['C01'], 'D4000')
@@ -293,7 +335,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self.assertEqual(maps.data_origin, 'api')
 
-        map_api = maps.getMap('specindex', channel='fe5406')
+        map_api = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_api, marvin.tools.map.Map)
         self.assertIsInstance(map_api.header, astropy.io.fits.Header)
         self.assertEqual(map_api.header['C01'], 'D4000')
@@ -328,6 +370,15 @@ class TestGetMap(TestMapsBase):
 
 
 class TestPickling(TestMapsBase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        for fn in ['~/test_map_ha.mpf', '~/test.mpf']:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+        super(TestPickling, cls).setUpClass()
 
     def setUp(self):
         marvin.config.setMPL('MPL-4')
