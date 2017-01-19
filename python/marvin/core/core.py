@@ -22,7 +22,7 @@ import astropy.io.fits
 
 import marvin
 import marvin.api.api
-import marvin_pickle
+from marvin.core import marvin_pickle
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
 from marvin.utils.db import testDbConnection
@@ -319,7 +319,7 @@ class DotableCaseInsensitive(Dotable):
         return self.__getitem__(value)
 
     def __getitem__(self, value):
-        key = self._match(self.keys(), value)
+        key = self._match(list(self.keys()), value)
         if key is False:
             raise KeyError('{0} key or attribute not found'.format(value))
         return dict.__getitem__(self, key)

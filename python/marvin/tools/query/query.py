@@ -10,8 +10,7 @@
 #                - Added config drpver info
 #     2016-03-12 - Changed parameter input to be a natural language string
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division, unicode_literals
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
@@ -29,9 +28,13 @@ import datetime
 import numpy as np
 import warnings
 import os
-import cPickle
 from marvin.core import marvin_pickle
 from functools import wraps
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 __all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
@@ -384,7 +387,7 @@ class Query(object):
                 a list of all of the available queryable parameters
         '''
         if self.mode == 'local':
-            keys = self.marvinform._param_form_lookup.keys()
+            keys = list(self.marvinform._param_form_lookup.keys())
             keys.sort()
             rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
             # simplify the spaxelprop list down to one set
@@ -465,7 +468,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'w'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -600,12 +603,12 @@ class Query(object):
     def _validateForms(self):
         ''' Validate all the data in the forms '''
 
-        formkeys = self.myforms.keys()
+        formkeys = list(self.myforms.keys())
         isgood = [form.validate() for form in self.myforms.values()]
         if not all(isgood):
             inds = np.where(np.invert(isgood))[0]
             for index in inds:
-                self._errors.append(self.myforms.values()[index].errors)
+                self._errors.append(list(self.myforms.values())[index].errors)
             raise MarvinError('Parameters failed to validate: {0}'.format(self._errors))
 
     def add_condition(self):
@@ -654,7 +657,8 @@ class Query(object):
 
     def update_params(self, param):
         ''' Update the input parameters '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        # param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else val.replace('*', '%').decode('UTF-8') for key, val in param.items() if key in self.filterparams.keys()}
         self.filterparams.update(param)
         self._setForms()
 

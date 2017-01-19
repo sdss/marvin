@@ -29,14 +29,14 @@ class TestBase(unittest.TestCase):
         bv = BaseView()
         bv.results = {'key1': 'value1'}
         bv.reset_results()
-        desired = {'data': None, 'status': -1, 'error': None}
+        desired = {'data': None, 'status': -1, 'error': None, 'traceback': None}
         self.assertDictEqual(bv.results, desired)
 
     def test_update_results(self):
         bv = BaseView()
         new_results = {'key1': 'value1'}
         bv.update_results(new_results)
-        desired = {'data': None, 'status': -1, 'error': None, 'key1': 'value1'}
+        desired = {'data': None, 'status': -1, 'error': None, 'key1': 'value1', 'traceback': None}
         self.assertDictEqual(bv.results, desired)
 
     def test_reset_status(self):
@@ -48,7 +48,7 @@ class TestBase(unittest.TestCase):
     def test_add_config(self):
         bv = BaseView()
         bv.add_config()
-        desired = {'data': None, 'status': -1, 'error': None,
+        desired = {'data': None, 'status': -1, 'error': None, 'traceback': None,
                    'utahconfig': {'release': config.release, 'mode': config.mode}}
         self.assertDictEqual(bv.results, desired)
 
@@ -65,7 +65,7 @@ class TestBase(unittest.TestCase):
         name = 'test_name'
         req = 'test_request'
         bv.after_request(name, req)
-        desired = {'data': None, 'status': -1, 'error': None}
+        desired = {'data': None, 'status': -1, 'error': None, 'traceback': None}
         self.assertDictEqual(bv.results, desired)
 
 

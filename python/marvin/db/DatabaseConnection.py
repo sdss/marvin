@@ -53,10 +53,12 @@ regions['default'] = make_region(
         # serialized persistence.  Normally
         # memcached or similar is a better choice
         # for caching.
-        'dogpile.cache.dbm',
+        # 'dogpile.cache.dbm',  # file-based backend
+        'dogpile.cache.memcached',  # memcached-based backend
         expiration_time=3600,
         arguments={
-            "filename": os.path.join(dogroot, "cache.dbm")
+            'url': "127.0.0.1:11211"  # memcached option
+            # "filename": os.path.join(dogroot, "cache.dbm") # file option
         }
     )
 

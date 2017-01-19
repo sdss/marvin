@@ -7,7 +7,7 @@
 from __future__ import print_function
 from __future__ import division
 
-from DatabaseConnection import DatabaseConnection
+from marvin.db.DatabaseConnection import DatabaseConnection
 from pgpasslib import getpass
 from marvin import config
 import yaml
