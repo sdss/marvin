@@ -325,6 +325,55 @@ class TestQuery(MarvinTest):
     def test_query_returntype_spaxel_remote(self):
         self._query_return_type(rt='spaxel', mode='remote')
 
+    def test_read_best(self):
+        q = Query(mode='local')
+        bestkeys = q._read_best_params()
+        self.assertEqual(type(bestkeys), list)
+        exp = ['cube.ra', 'cube.dec', 'cube.plate', 'nsa.z', 'spaxelprop.x']
+        for e in exp:
+            self.assertIn(e, bestkeys)
+
+    def _get_params(self, pdisp, mode='local', expcount=None, inlist=None, outlist=None):
+        if mode == 'remote':
+            self._setRemote()
+        q = Query(mode=mode)
+
+        if pdisp == 'all':
+            keys = q.get_available_params()
+            self.assertGreaterEqual(len(keys), expcount)
+        elif pdisp == 'best':
+            keys = q.get_best_params()
+            self.assertLessEqual(len(keys), expcount)
+
+        for i in inlist:
+            self.assertIn(i, keys)
+        if outlist:
+            for o in outlist:
+                self.assertNotIn(o, keys)
+
+    def test_get_available_params_local(self):
+        expcount = 300
+        inlist = ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit']
+        self._get_params('all', expcount=expcount, inlist=inlist)
+
+    def test_get_available_params_remote(self):
+        expcount = 300
+        inlist = ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit']
+        self._get_params('all', mode='remote', expcount=expcount, inlist=inlist)
+
+    def test_get_best_params_local(self):
+        expcount = 300
+        inlist = ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564']
+        outlist = ['nsa.tile', 'anime.anime', 'wcs.extname', 'maskbit.bit']
+        self._get_params('best', expcount=expcount, inlist=inlist, outlist=outlist)
+
+    def test_get_best_params_remote(self):
+        expcount = 300
+        inlist = ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564']
+        outlist = ['nsa.tile', 'anime.anime', 'wcs.extname', 'maskbit.bit']
+        self._get_params('best', mode='remote', expcount=expcount, inlist=inlist, outlist=outlist)
+
+
 if __name__ == '__main__':
     verbosity = 2
     unittest.main(verbosity=verbosity)

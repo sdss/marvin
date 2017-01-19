@@ -400,13 +400,39 @@ class Query(object):
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'all'}
             try:
-                ii = Interaction(route=url)
+                ii = Interaction(route=url, params=params)
             except MarvinError as e:
                 raise MarvinError('API Query call to get params failed: {0}'.format(e))
             else:
                 mykeys = ii.getData()
                 return mykeys
+
+    def _read_best_params(self):
+        bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best.cfg')
+        f = open(bestpath, 'r')
+        bestkeys = f.read().splitlines()
+        bestkeys = [k.strip() for k in bestkeys]
+        return bestkeys
+
+    def get_best_params(self):
+        ''' Retrieves a list of best parameters to query on '''
+        if self.mode == 'local':
+            keys = self.get_available_params()
+            bestkeys = self._read_best_params()
+            return bestkeys
+        elif self.mode == 'remote':
+            # Get the query route
+            url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'best'}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call to get params failed: {0}'.format(e))
+            else:
+                bestkeys = ii.getData()
+                return bestkeys
 
     def save(self, path=None, overwrite=False):
         ''' Save the query as a pickle object
@@ -750,7 +776,7 @@ class Query(object):
                 ii = Interaction(route=url, params=params)
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
-                self._cleanUpQueries()
+                # self._cleanUpQueries()
                 raise MarvinError('API Query call failed: {0}'.format(e))
             else:
                 res = ii.getData()
