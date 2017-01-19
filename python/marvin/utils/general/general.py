@@ -240,8 +240,9 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         if ((cubeCoords < 0).any() or
                 (cubeCoords[:, 0] > (shape[0] - 1)).any() or
                 (cubeCoords[:, 1] > (shape[1] - 1)).any()):
-            raise MarvinError('some indices are out of limits. `xyorig` is currently set to "{0}". '
-                              'Try setting `xyorig` to "{1}".'
+            raise MarvinError('some indices are out of limits.'
+                              '``xyorig`` is currently set to "{0}". '
+                              'Try setting ``xyorig`` to "{1}".'
                               .format(xyorig, 'center' if xyorig is 'lower' else 'lower'))
 
     return cubeCoords
