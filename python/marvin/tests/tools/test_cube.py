@@ -232,6 +232,16 @@ class TestCube(TestCubeBase):
         self.assertEqual(cube.nsa_source, 'drpall')
         self._test_nsa(cube.nsa)
 
+    def test_release(self):
+        cube = Cube(plateifu=self.plateifu)
+        self.assertEqual(cube.release, 'MPL-4')
+
+    def test_set_release_fails(self):
+        cube = Cube(plateifu=self.plateifu)
+        with self.assertRaises(MarvinError) as ee:
+            cube.release = 'a'
+            self.assertIn('the release cannot be changed', str(ee.exception))
+
 
 class TestGetSpaxel(TestCubeBase):
 
