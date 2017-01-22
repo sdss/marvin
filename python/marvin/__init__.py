@@ -10,7 +10,9 @@ import os
 import re
 import warnings
 import sys
+import marvin
 from collections import OrderedDict
+from distutils.version import StrictVersion
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -34,6 +36,17 @@ log = initLog(logFilePath)
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
+
+
+# Set the Marvin version
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    dist = get_distribution('sdss-marvin')
+except DistributionNotFound:
+    __version__ = 'dev'
+else:
+    __version__ = dist.version
 
 
 class MarvinConfig(object):
@@ -67,6 +80,7 @@ class MarvinConfig(object):
         self._checkConfig()
         self._check_netrc()
         self.setDefaultDrpAll()
+        self._setup_sentry()
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -402,6 +416,28 @@ class MarvinConfig(object):
             else:
                 self._sdss_access_isloaded = True
 
+    def _setup_sentry(self):
+        ''' Sets up the Sentry python client '''
+        try:
+            from raven import Client
+        except ImportError as e:
+            Client = None
+
+        if Client:
+            os.environ['SENTRY_DSN'] = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
+            self._client = Client(
+                    dsn=os.environ.get('SENTRY_DSN'),
+                    release=__version__,
+                    site='Marvin',
+                    environment=sys.version.rsplit('|', 1)[0],
+                    processors=(
+                            'raven.processors.SanitizePasswordsProcessor',
+                        )
+                )
+            self._client.context.merge({'user': {'name':os.getlogin(), 'system': '_'.join(os.uname())}})
+        else:
+            self._client = None
+
 config = MarvinConfig()
 
 # Inits the Database session and ModelClasses
@@ -414,12 +450,3 @@ config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
 
-
-from pkg_resources import get_distribution, DistributionNotFound
-
-try:
-    dist = get_distribution('sdss-marvin')
-except DistributionNotFound:
-    __version__ = 'dev'
-else:
-    __version__ = dist.version
