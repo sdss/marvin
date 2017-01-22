@@ -114,8 +114,8 @@ class TestModelCubeInit(TestModelCubeBase):
 
         marvin.config.setMPL('MPL-4')
         with self.assertRaises(MarvinError) as err:
-            __ = ModelCube(plateifu=self.plateifu)
-        self.assertEqual('ModelCube requires at least dapver=\'2.0.2\'',  str(err.exception))
+            ModelCube(plateifu=self.plateifu)
+        self.assertEqual('ModelCube requires at least dapver=\'2.0.2\'', str(err.exception))
 
     def test_init_from_db_not_default(self):
 
@@ -138,8 +138,8 @@ class TestModelCubeInit(TestModelCubeBase):
 
         model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
         with self.assertRaises(MarvinError) as err:
-            __ = model_cube.flux
-        self.assertIn('cannot return a full cube in remote mode.',  str(err.exception))
+            model_cube.flux
+        self.assertIn('cannot return a full cube in remote mode.', str(err.exception))
 
     def test_get_cube_file(self):
 
