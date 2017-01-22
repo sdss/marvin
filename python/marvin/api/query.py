@@ -9,10 +9,11 @@ from marvin.utils.db import get_traceback
 
 
 def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
-              limit=None, sort=None, order=None):
+              limit=None, sort=None, order=None, release=None):
     """Run query locally at Utah."""
 
-    release = parse_params(request)
+    if release is None:
+        release = parse_params(request)
 
     try:
         q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
@@ -55,11 +56,13 @@ class QueryView(BaseView):
         limit = self.results['inconfig'].get('limit', 100)
         sort = self.results['inconfig'].get('sort', None)
         order = self.results['inconfig'].get('order', 'asc')
+        release = self.results['inconfig'].get('release', None)
+
         print('inconfig', self.results['inconfig'])
         print('cube_query', searchfilter, params, limit)
         try:
             res = _getCubes(searchfilter, params=params, rettype=rettype,
-                            limit=limit, sort=sort, order=order)
+                            limit=limit, sort=sort, order=order, release=release)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
@@ -80,10 +83,12 @@ class QueryView(BaseView):
         limit = self.results['inconfig'].get('limit', 100)
         sort = self.results['inconfig'].get('sort', None)
         order = self.results['inconfig'].get('order', 'asc')
+        release = self.results['inconfig'].get('release', None)
+
         try:
             res = _getCubes(searchfilter, params=params, start=int(start),
                             end=int(end), rettype=rettype, limit=limit,
-                            sort=sort, order=order)
+                            sort=sort, order=order, release=release)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)

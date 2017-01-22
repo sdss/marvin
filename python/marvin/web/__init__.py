@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
+#from flask_errormail import mail_on_500
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
@@ -56,7 +57,7 @@ def create_app(debug=False, local=False):
     jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
     jsglue = jsg.JSGlue(app)
 
-    # Logger
+    # Add Marvin Logger
     app.logger.addHandler(log)
 
     # Setup the profile configuration
@@ -65,6 +66,7 @@ def create_app(debug=False, local=False):
         "storage": {
             "engine": "sqlite"
         },
+        'endpointRoot': 'marvin2/profiler',
         "basicAuth": {
             "enabled": True,
             "username": "admin",

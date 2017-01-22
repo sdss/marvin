@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request
+from flask import Blueprint, render_template, session as current_session, request, current_app
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -49,6 +49,14 @@ class Search(FlaskView):
         self.search['errmsg'] = None
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
+        print(request.cookies)
+        print(request.headers)
+        print(request.blueprint)
+        print(request.endpoint)
+        print(request.url)
+        print(request.remote_addr)
+        print(request.environ)
+        print(request.environ['REMOTE_ADDR'])
 
     @route('/', methods=['GET', 'POST'])
     def index(self):

@@ -16,6 +16,7 @@ from flask import session as current_session, current_app, request
 from marvin import config, marvindb
 from collections import defaultdict
 import re
+import traceback
 
 
 def configFeatures(app, mode):
