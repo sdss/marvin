@@ -12,7 +12,7 @@ from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
 from marvin.web.jinja_filters import jinjablue
-from marvin.web.web_utils import updateGlobalSession
+from marvin.web.web_utils import updateGlobalSession, make_error_page
 import sys
 import os
 import logging
@@ -165,47 +165,19 @@ def create_app(debug=False, local=False):
     # ----------------
     @app.errorhandler(404)
     def page_not_found(error):
-        error = {}
-        error['title'] = 'Marvin | Page Not Found'
-        error['page'] = request.url
-        error['event_id'] = g.get('sentry_event_id', None)
-        if sentry:
-            error['public_dsn'] = sentry.client.get_public_dsn('https')
-        app.logger.error('Page Not Found Exception {0}'.format(error))
-        return render_template('errors/page_not_found.html', **error), 404
+        return make_error_page(app, 'Page Not Found', 404, sentry=sentry)
 
     @app.errorhandler(500)
     def internal_server_error(error):
-        error = {}
-        error['title'] = 'Marvin | Internal Server Error'
-        error['page'] = request.url
-        error['event_id'] = g.get('sentry_event_id', None)
-        if sentry:
-            error['public_dsn'] = sentry.client.get_public_dsn('https')
-        app.logger.error('Internal Server Error Exception {0}'.format(error))
-        return render_template('errors/internal_server_error.html', **error), 500
+        return make_error_page(app, 'Internal Server Error', 500, sentry=sentry)
 
     @app.errorhandler(400)
     def bad_request(error):
-        error = {}
-        error['title'] = 'Marvin | Bad Request'
-        error['page'] = request.url
-        error['event_id'] = g.get('sentry_event_id', None)
-        if sentry:
-            error['public_dsn'] = sentry.client.get_public_dsn('https')
-        app.logger.error('Bad Request Exception {0}'.format(error))
-        return render_template('errors/bad_request.html', **error), 400
+        return make_error_page(app, 'Bad Request', 400, sentry=sentry)
 
     @app.errorhandler(405)
     def internal_server_error(error):
-        error = {}
-        error['title'] = 'Marvin | Method Not Allowed'
-        error['page'] = request.url
-        error['event_id'] = g.get('sentry_event_id', None)
-        if sentry:
-            error['public_dsn'] = sentry.client.get_public_dsn('https')
-        app.logger.error('Method Not Allowed Exception {0}'.format(error))
-        return render_template('errors/method_not_allowed.html', **error), 405
+        return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
 
     # ----------------------------------
     # Registration
