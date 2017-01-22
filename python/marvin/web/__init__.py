@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
-#from flask_errormail import mail_on_500
+from flask import session, request, render_template, g
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
@@ -91,6 +91,8 @@ def create_app(debug=False, local=False):
             app.use_x_sendfile = True
         except ImportError:
             pass
+    else:
+        sentry = None
 
     # Change the implementation of "decimal" to a C-based version (much! faster)
     #
@@ -157,6 +159,53 @@ def create_app(debug=False, local=False):
     def global_update():
         ''' updates the global session / config '''
         updateGlobalSession()
+
+    # ----------------
+    # Error Handling
+    # ----------------
+    @app.errorhandler(404)
+    def page_not_found(error):
+        error = {}
+        error['title'] = 'Marvin | Page Not Found'
+        error['page'] = request.url
+        error['event_id'] = g.get('sentry_event_id', None)
+        if sentry:
+            error['public_dsn'] = sentry.client.get_public_dsn('https')
+        app.logger.error('Page Not Found Exception {0}'.format(error))
+        return render_template('errors/page_not_found.html', **error), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        error = {}
+        error['title'] = 'Marvin | Internal Server Error'
+        error['page'] = request.url
+        error['event_id'] = g.get('sentry_event_id', None)
+        if sentry:
+            error['public_dsn'] = sentry.client.get_public_dsn('https')
+        app.logger.error('Internal Server Error Exception {0}'.format(error))
+        return render_template('errors/internal_server_error.html', **error), 500
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        error = {}
+        error['title'] = 'Marvin | Bad Request'
+        error['page'] = request.url
+        error['event_id'] = g.get('sentry_event_id', None)
+        if sentry:
+            error['public_dsn'] = sentry.client.get_public_dsn('https')
+        app.logger.error('Bad Request Exception {0}'.format(error))
+        return render_template('errors/bad_request.html', **error), 400
+
+    @app.errorhandler(405)
+    def internal_server_error(error):
+        error = {}
+        error['title'] = 'Marvin | Method Not Allowed'
+        error['page'] = request.url
+        error['event_id'] = g.get('sentry_event_id', None)
+        if sentry:
+            error['public_dsn'] = sentry.client.get_public_dsn('https')
+        app.logger.error('Method Not Allowed Exception {0}'.format(error))
+        return render_template('errors/method_not_allowed.html', **error), 405
 
     # ----------------------------------
     # Registration

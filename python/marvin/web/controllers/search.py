@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, current_app
+from flask import Blueprint, render_template, session as current_session, request
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -131,8 +131,6 @@ class Search(FlaskView):
         if not paramdisplay:
             paramdisplay = 'all'
 
-        print('paramdisplay', paramdisplay)
-
         # run query and retrieve parameters
         q = Query(release=self._release)
         if paramdisplay == 'all':
@@ -151,7 +149,6 @@ class Search(FlaskView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        print('webtable', searchvalue, returnparams, self._release)
         limit = form.get('limit', 10)
         offset = form.get('offset', None)
         order = form.get('order', None)
@@ -173,7 +170,6 @@ class Search(FlaskView):
         # create output
         rows = res.getDictOf(format_type='listdict')
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        print('webtable output', output)
         output = json.dumps(output)
         return output
 
