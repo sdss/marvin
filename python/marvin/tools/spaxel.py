@@ -27,9 +27,11 @@ import marvin.tools.maps
 import marvin.tools.modelcube
 
 from marvin.api import api
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class Spaxel(object):
@@ -157,6 +159,11 @@ class Spaxel(object):
         if not self.cube and not self.maps and not self.modelcube:
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
+
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
+                        category=self.__class__)
 
         # Checks versions
         input_release = kwargs.pop('release', marvin.config.release)

@@ -1,5 +1,5 @@
 from __future__ import print_function
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
@@ -28,6 +28,8 @@ except ImportError:
     warnings.warn('Could not import pandas.', MarvinUserWarning)
 
 __all__ = ['Results']
+
+breadcrumb = MarvinBreadCrumb()
 
 
 def local_mode_only(func):
@@ -116,6 +118,10 @@ class Results(object):
         self.objects = None
         self.sortcol = None
         self.order = None
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinResults {0}'.format(self.__class__),
+                        category=self.__class__)
 
         # Convert remote results to NamedTuple
         if self.mode == 'remote':

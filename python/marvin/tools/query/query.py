@@ -11,7 +11,7 @@
 #     2016-03-12 - Changed parameter input to be a natural language string
 
 from __future__ import print_function, division, unicode_literals
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
@@ -38,6 +38,8 @@ except:
 
 __all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
+
+breadcrumb = MarvinBreadCrumb()
 
 
 # Boom. Tree dictionary.
@@ -181,6 +183,10 @@ class Query(object):
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
         self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinQuery {0}'.format(self.__class__),
+                        category=self.__class__)
 
         # set the mode
         if self.mode is None:

@@ -80,7 +80,6 @@ def create_app(debug=False, local=False):
 
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
-        #dsn = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
         dsn = os.environ.get('SENTRY_DSN', None)
         app.config['SENTRY_DSN'] = dsn
         sentry = Sentry(app, logging=True, level=logging.ERROR)

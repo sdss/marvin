@@ -94,4 +94,53 @@ class MarvinSkippedTestWarning(MarvinUserWarning):
 
 
 class MarvinBreadCrumb(object):
-    pass
+    """ A Sentry Breadcrumb to help leave a trail to bugs """
+
+    def __init__(self):
+        try:
+            from raven import breadcrumbs
+        except ImportError as e:
+            breadcrumbs = None
+
+        if breadcrumbs:
+            self.breadcrumbs = breadcrumbs
+        else:
+            self.breadcrumbs = None
+
+    def drop(self, **kwargs):
+        ''' Records a breadcrumb into Sentry
+
+            Info:
+            https://docs.sentry.io/clients/python/breadcrumbs/
+            https://docs.sentry.io/clientdev/interfaces/breadcrumbs/
+
+        Parameters:
+            timestamp (ISO datetime string, or a Unix timestamp):
+                A timestamp representing when the breadcrumb occurred.
+                This can be either an ISO datetime string, or a Unix timestamp.
+            type (str):
+                The type of breadcrumb. The default type is default which indicates
+                no specific handling. Other types are currently http for HTTP requests and
+                navigation for navigation events.
+            message (str):
+                If a message is provided it’s rendered as text where whitespace is preserved.
+                Very long text might be abbreviated in the UI.
+            data (dict):
+                Data associated with this breadcrumb. Contains a sub-object whose contents
+                depend on the breadcrumb type. See descriptions of breadcrumb types below.
+                Additional parameters that are unsupported by the type are rendered as a key/value table.
+            category (str):
+                Categories are dotted strings that indicate what the crumb is or where it comes from.
+                Typically it’s a module name or a descriptive string. For instance ui.click could
+                be used to indicate that a click happend in the UI or flask could be used to indicate
+                that the event originated in the Flask framework.
+            level (str):
+                This defines the level of the event. If not provided it defaults to info
+                which is the middle level. In the order of priority from highest to lowest
+                the levels are critical, error, warning, info and debug. Levels are
+                used in the UI to emphasize and deemphasize the crumb.
+
+        '''
+
+        self.breadcrumbs.record(**kwargs)
+

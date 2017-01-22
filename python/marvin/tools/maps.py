@@ -524,6 +524,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
+        try:
+            fdfdf
+        except NameError as e:
+            raise marvin.core.exceptions.MarvinError('no map to get')
+
         return marvin.tools.map.Map(self, property_name, channel=channel)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
