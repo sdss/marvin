@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-22 20:17:33
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-01-23 11:56:04
+# @Last Modified time: 2017-01-23 14:55:25
 
 from __future__ import print_function, division, absolute_import
 import requests
@@ -52,6 +52,10 @@ class Sentry(object):
         self.authtoken = authtoken
         self.data = None
         self.users = None
+        self.tagvals = None
+        self.ips = None
+        self.locations = None
+        self.response = None
         self.base_url = 'https://sentry.io/api/0/'
         self.header = {'Authorization': 'Bearer {authtoken}'}
 
@@ -128,10 +132,11 @@ class Sentry(object):
         ''' Extraction the location info from the ip output '''
         self.places = []
         for loc in self.locations:
+            nets = loc['nets'][0] if len(loc['nets']) > 0 else None
             locdict = {'asn_country_code': loc['asn_country_code'],
-                       'place': {'city': loc['nets'][0]['city'],
-                                 'state': loc['nets'][0]['state'],
-                                 'country': loc['nets'][0]['country']}}
+                       'place': {'city': nets['city'] if nets else None,
+                                 'state': nets['state'] if nets else None,
+                                 'country': nets['country'] if nets else None}}
             self.places.append(locdict)
 
     def get_project_tags(self):
@@ -178,11 +183,35 @@ class Sentry(object):
         self.send_request(url)
         return self.data
 
-    def plot_pie(self, key):
+    def get_place(self, place):
+        ''' get a place from the places dictionary '''
+
+        assert place in ['country', 'city', 'state'], 'Place must be either country, city, or state'
+        return [p['place'][place] for p in self.places if p['place'][place]]
+
+    def count_data(self, data):
+        ''' Count the generic data and return a list of tuples '''
+        return {(x, data.count(x)) for x in data}
+
+    def get_pie_data(self, data):
+        ''' Return the labels and sizes needed for the pie chart '''
+        labels = [v[0] for v in data]
+        sizes = [v[1] for v in data]
+        return labels, sizes
+
+    def plot_pie(self, key, data=None):
         ''' Makes a matplotlib pie chart for a given tag key '''
-        vals = self.tagvals[key]
-        labels = [v['name'] for v in vals]
-        sizes = [v['count'] for v in vals]
+        if self.tagvals and key in self.tagvals:
+            vals = self.tagvals[key]
+            labels = [v['name'] for v in vals]
+            sizes = [v['count'] for v in vals]
+        elif key == 'place':
+            assert data is not None, 'Must provide some data to extract'
+            vals = self.count_data(data)
+            labels, sizes = self.get_pie_data(vals)
+        else:
+            sizes = None
+            raise NameError('No sizes or labels found.  Make sure the data is somewhere')
 
         plt.clf()
         plt.pie(sizes, labels=labels, shadow=True, autopct='%1.1f%%', startangle=90)
