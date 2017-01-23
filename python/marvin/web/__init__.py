@@ -159,7 +159,7 @@ def create_app(debug=False, local=False):
     def global_update():
         ''' updates the global session / config '''
         updateGlobalSession()
-        send_request()
+        # send_request()
 
     # ----------------
     # Error Handling
