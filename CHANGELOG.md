@@ -21,6 +21,9 @@
 - Issue #145: Limited the number of query parameters in the web
 - Added more tests to Results for sorting, paging, and getting subsets
 - Added kwargs input for Spaxel when using Result.convertToTool
+- Added automatic Sentry error logging #147 into MarvinError, and Sentry in Flask for production mode
+- Added custom error handlers for the web, with potential user feedback form
+- Added Sentry tool for grabbing and displaying Sentry statistics
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -29,6 +32,7 @@
 - Syntax changes and bug fixes to get Marvin Web working when Marvin run on 3.5
 - Got Queries and Results working in 3.5
 - Changed all convertToTool options in Results from mangaid to plateifu
+- Added release explicitly into api query routes
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
