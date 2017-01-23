@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-22 20:17:33
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-01-22 22:18:21
+# @Last Modified time: 2017-01-23 11:56:04
 
 from __future__ import print_function, division, absolute_import
 import requests
@@ -21,6 +21,10 @@ try:
     pyplot = True
 except ImportError:
     pyplot = False
+try:
+    import ipwhois
+except ImportError as e:
+    ipwhois = None
 
 
 class Sentry(object):
@@ -47,7 +51,7 @@ class Sentry(object):
         self.project = project
         self.authtoken = authtoken
         self.data = None
-        self.pie = None
+        self.users = None
         self.base_url = 'https://sentry.io/api/0/'
         self.header = {'Authorization': 'Bearer {authtoken}'}
 
@@ -79,6 +83,56 @@ class Sentry(object):
         '''
         if not self.response.raise_for_status():
             self.data = self.response.json()
+
+    def get_users(self):
+        ''' Get the users for a projet '''
+        url = urljoin(self.base_url, os.path.join('projects', self.org, self.project, 'users/'))
+        self.send_request(url)
+        self.users = self.data
+
+    def get_ips(self):
+        ''' Get the ip addresses of a list of users '''
+        if not self.users:
+            self.get_users()
+        self.ips = [u['ipAddress'] for u in self.users if u['ipAddress']]
+
+    def lookup_ips(self, ip=None):
+        ''' Look up the locations of the ips '''
+
+        self.locations = []
+
+        if ip and ip != '127.0.0.1':
+            self.locations.append(self.get_ip_dict(ip))
+        else:
+            for ip in self.ips:
+                if ip is not None and ip != '127.0.0.1':
+                    self.locations.append(self.get_ip_dict(ip))
+
+    def get_ip_dict(self, ip, method='whois'):
+        ''' Get the ip lookup dictionary '''
+
+        if not ipwhois:
+            raise ImportError('Cannot look up ips.  You do not have the ipwhois package installed!')
+
+        assert method in ['whois', 'rdap'], 'Method must either be rdap or whois'
+
+        ipwho = ipwhois.IPWhois(ip)
+        self.ipmethod = method
+        if method == 'whois':
+            ipdict = ipwho.lookup_whois()
+        elif method == 'rdap':
+            ipdict = ipwho.lookup_rdap()
+        return ipdict
+
+    def extract_locations(self):
+        ''' Extraction the location info from the ip output '''
+        self.places = []
+        for loc in self.locations:
+            locdict = {'asn_country_code': loc['asn_country_code'],
+                       'place': {'city': loc['nets'][0]['city'],
+                                 'state': loc['nets'][0]['state'],
+                                 'country': loc['nets'][0]['country']}}
+            self.places.append(locdict)
 
     def get_project_tags(self):
         ''' Get the tags for a project '''
