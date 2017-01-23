@@ -12,7 +12,7 @@ from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
 from marvin.web.jinja_filters import jinjablue
-from marvin.web.web_utils import updateGlobalSession, make_error_page
+from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
 import sys
 import os
 import logging
@@ -159,6 +159,7 @@ def create_app(debug=False, local=False):
     def global_update():
         ''' updates the global session / config '''
         updateGlobalSession()
+        send_request()
 
     # ----------------
     # Error Handling

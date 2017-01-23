@@ -79,6 +79,19 @@ def make_error_page(app, name, code, sentry=None):
     app.logger.error('{0} Exception {1}'.format(name, error))
     return render_template('errors/{0}.html'.format(shortname), **error), code
 
+
+def send_request():
+    ''' sends the request info to the history db '''
+    if request.blueprint is not None:
+        print(request.cookies)
+        print(request.headers)
+        print(request.blueprint)
+        print(request.endpoint)
+        print(request.url)
+        print(request.remote_addr)
+        print(request.environ)
+        print(request.environ['REMOTE_ADDR'])
+
 # def setGlobalSession_old():
 #     ''' Set default global session variables '''
 

@@ -49,14 +49,7 @@ class Search(FlaskView):
         self.search['errmsg'] = None
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
-        print(request.cookies)
-        print(request.headers)
-        print(request.blueprint)
-        print(request.endpoint)
-        print(request.url)
-        print(request.remote_addr)
-        print(request.environ)
-        print(request.environ['REMOTE_ADDR'])
+
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
