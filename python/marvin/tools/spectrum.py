@@ -12,14 +12,23 @@
 
 from __future__ import division
 from __future__ import print_function
+import sys
 import numpy as np
 from marvin.core.exceptions import MarvinMissingDependency
 
 try:
     import matplotlib.pyplot as plt
-    pyplot = True
 except ImportError:
-    pyplot = None
+    raise MarvinMissingDependency('matplotlib is not installed.')
+
+# Try to set better default plotting styles with seaborn or matplotlib version >= 1.4
+try:
+    import seaborn as sns
+except ImportError:
+    try:
+        plt.style.use('seaborn-darkgrid')
+    except AttributeError:
+        pass
 
 
 class Spectrum(object):
@@ -145,11 +154,6 @@ class Spectrum(object):
         .. _axes: http://matplotlib.org/api/axes_api.html
 
         """
-
-        # Alternative if this block keeps throwing an error when matplotlib is actually installed:
-        # if pyplot not in sys.modules
-        if not pyplot:
-            raise MarvinMissingDependency('matplotlib is not installed.')
 
         array = array.lower()
         validSpectrum = ['flux', 'ivar', 'mask']
