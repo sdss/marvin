@@ -14,12 +14,10 @@ from marvin.tools.query import Query, doQuery
 from marvin.api.api import Interaction
 
 
-class TestQuery(MarvinTest):
+class TestQueryBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
-        config.switchSasUrl('local')
 
         cls.mangaid = '1-209232'
         cls.plate = 8485
@@ -47,9 +45,20 @@ class TestQuery(MarvinTest):
         config.urlmap = self.init_urlmap
         config._traceback = self.init_traceback
         config.setMPL('MPL-4')
+        config.switchSasUrl('local')
+        config.forceDbOn()
 
     def tearDown(self):
         pass
+
+    def _setRemote(self, mode='local'):
+        config.switchSasUrl(mode)
+        response = Interaction('api/general/getroutemap', request_type='get')
+        config.urlmap = response.getRouteMap()
+        config.mode = 'remote'
+
+
+class TestQuery(TestQueryBase):
 
     def test_Query_emptyinit(self):
         q = Query()
@@ -152,12 +161,6 @@ class TestQuery(MarvinTest):
         params = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
         qps = ['mangaid', 'plate', 'plateifu', 'name', 'z']
         self._queryparams(p, params, qps)
-
-    def _setRemote(self, mode='local'):
-        config.switchSasUrl(mode)
-        response = Interaction('api/general/getroutemap', request_type='get')
-        config.urlmap = response.getRouteMap()
-        config.mode = 'remote'
 
     def test_Query_remote_mpl4(self):
         self._setRemote()
@@ -275,6 +278,9 @@ class TestQuery(MarvinTest):
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
+
+class TestQueryReturnType(TestQueryBase):
+
     def _query_return_type(self, rt=None, mode='local'):
 
         if rt == 'cube':
@@ -325,13 +331,8 @@ class TestQuery(MarvinTest):
     def test_query_returntype_spaxel_remote(self):
         self._query_return_type(rt='spaxel', mode='remote')
 
-    def test_read_best(self):
-        q = Query(mode='local')
-        bestkeys = q._read_best_params()
-        self.assertEqual(type(bestkeys), list)
-        exp = ['cube.ra', 'cube.dec', 'cube.plate', 'nsa.z', 'spaxelprop.x']
-        for e in exp:
-            self.assertIn(e, bestkeys)
+
+class TestQueryParams(TestQueryBase):
 
     def _get_params(self, pdisp, mode='local', expcount=None, inlist=None, outlist=None):
         if mode == 'remote':
@@ -372,6 +373,56 @@ class TestQuery(MarvinTest):
         inlist = ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564']
         outlist = ['nsa.tile', 'anime.anime', 'wcs.extname', 'maskbit.bit']
         self._get_params('best', mode='remote', expcount=expcount, inlist=inlist, outlist=outlist)
+
+    def test_read_best(self):
+        q = Query(mode='local')
+        bestkeys = q._read_best_params()
+        self.assertEqual(type(bestkeys), list)
+        exp = ['cube.ra', 'cube.dec', 'cube.plate', 'nsa.z', 'spaxelprop.x']
+        for e in exp:
+            self.assertIn(e, bestkeys)
+
+
+class TestQueryModes(TestQueryBase):
+
+    def _set_modes(self, expmode=None):
+        p = 'nsa.z < 0.1 and cube.plate == 8485'
+        q = Query(searchfilter=p)
+        r = q.run()
+        # this part selects 8485-1901
+        r.sort('z')
+        r.results = r.results[-4:]
+        r.convertToTool('cube', limit=1)
+        self.assertEqual(expmode, q.mode)
+        self.assertEqual(expmode, r.mode)
+        self.assertEqual(q.mode, r.mode)
+        self.assertEqual(expmode, r.objects[0].mode)
+
+    def test_mode_local(self):
+        config.mode = 'local'
+        self._set_modes(expmode='local')
+
+    def test_mode_remote(self):
+        config.mode = 'remote'
+        self._set_modes(expmode='remote')
+
+    def test_mode_auto(self):
+        config.mode = 'auto'
+        self._set_modes(expmode='local')
+
+    def test_mode_local_nodb(self):
+        config.forceDbOff()
+        config.mode = 'local'
+        errmsg = 'Query cannot be run in local mode'
+        with self.assertRaises(MarvinError) as cm:
+            self._set_modes(expmode='local')
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_mode_auto_nodb(self):
+        config.forceDbOff()
+        config.switchSasUrl('utah')
+        config.mode = 'auto'
+        self._set_modes(expmode='remote')
 
 
 if __name__ == '__main__':

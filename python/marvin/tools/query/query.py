@@ -191,8 +191,10 @@ class Query(object):
         if self.mode == 'remote':
             self._doRemote()
         if self.mode == 'auto':
-            self._doLocal()
-            if self.mode == 'remote':
+            try:
+                self._doLocal()
+            except Exception as e:
+                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
                 self._doRemote()
 
         # get return type
@@ -243,8 +245,8 @@ class Query(object):
         ''' Tests if it is possible to perform queries locally. '''
 
         if not config.db or not self.session:
-            warnings.warn('No local database found. Setting mode to remote', MarvinUserWarning)
-            self.mode = 'remote'
+            warnings.warn('No local database found. Cannot perform queries.', MarvinUserWarning)
+            raise MarvinError('No local database found.  Query cannot be run in local mode')
         else:
             self.mode = 'local'
 
@@ -252,7 +254,7 @@ class Query(object):
         ''' Sets up to perform queries remotely. '''
 
         if not config.urlmap:
-            raise MarvinError('No URL Map found.  Cannot make remote calls!')
+            raise MarvinError('No URL Map found.  Cannot make remote query calls!')
         else:
             self.mode = 'remote'
 

@@ -317,6 +317,24 @@ class Results(object):
         table.write(filename, format='fits')
         print('Writing new FITS file {0}'.format(filename))
 
+    def toCSV(self, filename='myresults.csv'):
+        ''' Output the results as a CSV file
+
+        Writes a new CSV file from search results using
+        the astropy Table.write()
+
+        Parameters:
+            filename (str):
+                Name of CSV file to output
+
+        '''
+        myext = os.path.splitext(filename)[1]
+        if not myext:
+            filename = filename+'.csv'
+        table = self.toTable()
+        table.write(filename, format='csv')
+        print('Writing new CSV file {0}'.format(filename))
+
     def toDF(self):
         '''Call toDataFrame().
         '''
