@@ -3,6 +3,7 @@
 from __future__ import print_function, division, absolute_import
 import unittest
 import copy
+import os
 from marvin import config, marvindb
 from marvin import bconfig
 from marvin.core.exceptions import MarvinError
@@ -330,6 +331,57 @@ class TestQueryReturnType(TestQueryBase):
 
     def test_query_returntype_spaxel_remote(self):
         self._query_return_type(rt='spaxel', mode='remote')
+
+
+class TestQueryPickling(TestQueryBase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        for fn in ['~/test_query.mpf']:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+        super(TestQueryPickling, cls).setUpClass()
+
+    def setUp(self):
+        self._files_created = []
+        super(TestQueryPickling, self).setUp()
+
+    def tearDown(self):
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def _pickle_query(self, mode=None, name=None):
+        p = 'nsa.z < 0.1'
+        q = Query(searchfilter=p, mode=mode)
+        path = q.save(name, overwrite=True)
+        self._files_created.append(path)
+        self.assertTrue(os.path.exists(path))
+
+        q = None
+        self.assertIsNone(q)
+
+        q = Query.restore(path)
+        self.assertEqual('nsa.z < 0.1', q.searchfilter)
+        self.assertEqual('remote', q.mode)
+
+    def test_pickle_save_local(self):
+        errmsg = 'save not available in local mode'
+        with self.assertRaises(MarvinError) as cm:
+            self._pickle_query(mode='local', name='test_query.mpf')
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_pickle_save_remote(self):
+        self._setRemote()
+        self._pickle_query(mode='remote', name='test_query.mpf')
+
+    def test_pickle_save_auto(self):
+        self._setRemote()
+        config.forceDbOff()
+        self._pickle_query(mode='auto', name='test_query.mpf')
 
 
 class TestQueryParams(TestQueryBase):

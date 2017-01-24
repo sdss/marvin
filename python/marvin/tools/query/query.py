@@ -30,6 +30,7 @@ import warnings
 import os
 from marvin.core import marvin_pickle
 from functools import wraps
+from marvin.tools.query.results import remote_mode_only
 
 try:
     import cPickle as pickle
@@ -436,6 +437,7 @@ class Query(object):
                 bestkeys = ii.getData()
                 return bestkeys
 
+    @remote_mode_only
     def save(self, path=None, overwrite=False):
         ''' Save the query as a pickle object
 
@@ -477,7 +479,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            pickle.dump(self, open(path, 'w'), protocol=-1)
+            pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)

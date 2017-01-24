@@ -30,27 +30,27 @@ except ImportError:
 __all__ = ['Results']
 
 
-def local_mode_only(func):
+def local_mode_only(fxn):
     '''Decorator that bypasses function if in remote mode.'''
 
-    @wraps(func)
+    @wraps(fxn)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'remote':
-            raise MarvinError('{0} not available in remote mode'.format(func.__name__))
+            raise MarvinError('{0} not available in remote mode'.format(fxn.__name__))
         else:
-            return func(self, *args, **kwargs)
+            return fxn(self, *args, **kwargs)
     return wrapper
 
 
-def remote_mode_only(func):
+def remote_mode_only(fxn):
     '''Decorator that bypasses function if in local mode.'''
 
-    @wraps(func)
+    @wraps(fxn)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'local':
-            raise MarvinError('{0} not available in local mode'.format(func.__name__))
+            raise MarvinError('{0} not available in local mode'.format(fxn.__name__))
         else:
-            return func(self, *args, **kwargs)
+            return fxn(self, *args, **kwargs)
     return wrapper
 
 
@@ -402,6 +402,12 @@ class Results(object):
 
         # set Marvin query object to None, in theory this could be pickled as well
         self._queryobj = None
+        try:
+            isnotstr = type(self.query) != unicode
+        except NameError as e:
+            isnotstr = type(self.query) != str
+        if isnotstr:
+            self.query = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
@@ -426,7 +432,7 @@ class Results(object):
             os.makedirs(dirname)
 
         try:
-            pickle.dump(self, open(path, 'w'), protocol=-1)
+            pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)

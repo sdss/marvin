@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import *
 from sqlalchemy.types import Float, Integer
 from sqlalchemy.orm.session import Session
 from sqlalchemy import select, func  # for aggregate, other functions
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method, Comparator
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql import column
 from marvin.db.ArrayUtils import ARRAY_D
 from marvin.core.caching_query import RelationshipCache
@@ -175,21 +175,6 @@ class ArrayOps(object):
             return None
 
         return indices
-
-
-class ConcatComparator(Comparator):
-    ''' '''
-    def __init__(self, A, B):
-        self.concatparam = func.concat(A, '-', B)
-
-    def __clause_element__(self):
-        return self.concatparam
-
-    def __eq__(self):
-        return self.__clause_element__() == self.concatparam
-
-    def __str__(self):
-        return self.concatparam
 
 
 class Cube(Base, ArrayOps):
@@ -359,10 +344,6 @@ class Cube(Base, ArrayOps):
     def plateifu(self):
         '''Returns parameter plate-ifu'''
         return '{0}-{1}'.format(self.plate, self.ifu.name)
-
-    # @plateifu.comparator
-    # def plateifu(cls):
-    #     return ConcatComparator(Cube.plate, IFUDesign.name)
 
     @plateifu.expression
     def plateifu(cls):
