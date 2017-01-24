@@ -41,6 +41,7 @@ class TestResultsBase(MarvinTest):
         config.mode = self.init_mode
         config.urlmap = self.init_urlmap
         config.setMPL('MPL-5')
+        config.forceDbOn()
 
         self.filter = 'nsa.z < 0.1 and cube.plate==8485'
         self.columns = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
@@ -247,6 +248,23 @@ class TestResultsConvertTool(TestResultsBase):
     def test_convert_to_tool_remote(self):
         self._setRemote()
         self._convertTool()
+
+    def test_convert_tool_auto(self):
+        self._setRemote()
+        r = self._run_query()
+        r.convertToTool('cube', mode='auto')
+        self.assertEqual('remote', r.mode)
+        self.assertEqual('local', r.objects[0].mode)
+        self.assertEqual('db', r.objects[0].data_origin)
+
+    def test_convert_tool_auto_nodb(self):
+        self._setRemote()
+        config.forceDbOff()
+        r = self._run_query()
+        r.convertToTool('cube', mode='auto', limit=1)
+        self.assertEqual('remote', r.mode)
+        self.assertEqual('local', r.objects[0].mode)
+        self.assertEqual('file', r.objects[0].data_origin)
 
 
 class TestResultsPickling(TestResultsBase):

@@ -916,6 +916,9 @@ class Results(object):
                 limit (int):
                     Limit the number of results you convert to Marvin tools.  Useful
                     for extremely large result sets.  Default is None.
+                mode (str):
+                    The mode to use when attempting to convert to Tool. Default mode
+                    is to use the mode internal to Results. (most often remote mode)
 
             Example:
                 >>> # Get the results from some query
@@ -939,6 +942,7 @@ class Results(object):
         '''
 
         # set the desired tool type
+        mode = kwargs.get('mode', self.mode)
         limit = kwargs.get('limit', None)
         toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
         tooltype = tooltype if tooltype else self.returntype
@@ -951,7 +955,7 @@ class Results(object):
         if tooltype == 'cube':
             self.objects = [Cube(plateifu=res.__getattribute__(
                             self._getRefName('cube.plateifu')),
-                            mode=self.mode) for res in self.results[0:limit]]
+                            mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
 
             isbin = 'bintype.name' in paramlist
@@ -959,7 +963,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))
@@ -990,7 +994,7 @@ class Results(object):
         elif tooltype == 'rss':
             self.objects = [RSS(plateifu=res.__getattribute__(
                             self._getRefName('cube.plateifu')),
-                            mode=self.mode) for res in self.results[0:limit]]
+                            mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
 
             isbin = 'bintype.name' in paramlist
@@ -998,7 +1002,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))
