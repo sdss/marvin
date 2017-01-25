@@ -1,9 +1,40 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
+# Licensed under a 3-clause BSD license.
+#
+#
 # map.py
 #
 # Created by José Sánchez-Gallego on 26 Jun 2016.
+#
+# Includes code from mangadap.plot.maps.py licensed under the following 3-clause BSD license.
+#
+# Copyright (c) 2015, SDSS-IV/MaNGA Pipeline Group
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted
+# provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of
+# conditions and the following disclaimer in the documentation and/or other materials provided with
+# the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to
+# endorse or promote products derived from this software without specific prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+# OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 
 
 from __future__ import division
@@ -12,10 +43,11 @@ from __future__ import absolute_import
 
 from distutils import version
 import os
+import sys
 import warnings
 
 from astropy.io import fits
-import numpy
+import numpy as np
 
 import marvin
 import marvin.api.api
@@ -24,17 +56,26 @@ import marvin.core.exceptions
 import marvin.tools.maps
 
 try:
+    import matplotlib
     import matplotlib.pyplot as plt
     import mpl_toolkits.axes_grid1
+    from matplotlib.colors import LogNorm
+    from matplotlib.colors import from_levels_and_colors
     pyplot = True
+    plt.style.use('seaborn-darkgrid')
 except ImportError:
     pyplot = False
 
+if 'seaborn' in sys.modules:
+    import seaborn as sns
 
 try:
     import sqlalchemy
 except ImportError:
     sqlalchemy = None
+
+#### from mangadap.plot import util
+#### from mangadap.plot import colorbar
 
 
 class Map(object):
@@ -146,19 +187,19 @@ class Map(object):
         fullname_value = self.maps_property.fullname(channel=self.channel)
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-        self.value = numpy.array(value).reshape(self.shape)
+        self.value = np.array(value).reshape(self.shape)
 
         if self.maps_property.ivar:
             fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.ivar = numpy.array(ivar).reshape(self.shape)
+            self.ivar = np.array(ivar).reshape(self.shape)
 
         if self.maps_property.mask:
             fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.mask = numpy.array(mask).reshape(self.shape)
+            self.mask = np.array(mask).reshape(self.shape)
 
         # Gets the header
         hdus = self.maps.data.hdus
@@ -200,9 +241,9 @@ class Map(object):
             raise marvin.core.exceptions.MarvinError(
                 'something went wrong. Error is: {0}'.format(response.results['error']))
 
-        self.value = numpy.array(data['value'])
-        self.ivar = numpy.array(data['ivar']) if data['ivar'] is not None else None
-        self.mask = numpy.array(data['mask']) if data['mask'] is not None else None
+        self.value = np.array(data['value'])
+        self.ivar = np.array(data['ivar']) if data['ivar'] is not None else None
+        self.mask = np.array(data['mask']) if data['mask'] is not None else None
         self.unit = data['unit']
         self.header = fits.Header(data['header'])
 
@@ -349,7 +390,7 @@ class Map(object):
             cmap = plt.cm.coolwarm_r
 
         if show_masked is False and array != 'mask':
-            data = numpy.ma.array(data, mask=(self.mask > 0))
+            data = np.ma.array(data, mask=(self.mask > 0))
 
         imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
 
@@ -384,3 +425,206 @@ class Map(object):
             return (ax, fig)
         else:
             return ax
+
+# ======================================================================
+
+    def make_image(self, data, ivar, mask, snr_thresh, log_colorbar):
+        """Make masked array of image.
+    
+        Args:
+            data (array): Data.
+            ivar (array): Inverse variance.
+            mask (array): Mask.
+            snr_thresh (float): Signal-to-noise theshold below which is not considered a
+                measurement.
+            log_colorbar (bool): If True, use log colorbar.
+    
+        Returns:
+            tuple: (masked array of image,
+                    tuple of (x, y) coordinates of bins with no measurement)
+        """
+        # Flag a region as having no data if ivar = 0...
+        ivar_zero = (ivar == 0.)
+
+        novalue = (mask & 2**4) > 0
+        badvalue = (mask & 2**5) > 0
+        matherror = (mask & 2**6) > 0
+        badfit = (mask & 2**7) > 0
+        donotuse = (mask & 2**30) > 0
+        no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit,
+                                        donotuse))
+
+        no_measure = self._make_mask_no_measurement(data, ivar, snr_thresh, log_colorbar)
+        no_data_no_measure = np.logical_or(no_data, no_measure)
+        image = np.ma.array(data, mask=no_data_no_measure)
+        mask_nodata = np.ma.array(np.ones(data.shape), mask=np.logical_not(no_data))
+        return image, mask_nodata
+
+    def _make_mask_no_measurement(self, data, ivar, snr_thresh, log_colorbar):
+        """Mask invalid measurements within a data array.
+
+        Args:
+            data (array): Data.
+            ivar (array): Inverse variance.
+            snr_thresh (float): Signal-to-noise threshold for keeping a valid measurement.
+            log_colorbar (bool): If True, use log colorbar.
+
+        Returns:
+            array: Boolean array for mask (i.e., True corresponds to value to be
+                masked out).
+        """
+        if np.all(np.isnan(ivar)):
+            ivar = None
+
+        if ivar is not None:
+            no_measure = (ivar == 0.)
+            # no_measure[ivar == 0.] = True
+            if snr_thresh is not None:
+                no_measure[(np.abs(data * np.sqrt(ivar)) < snr_thresh)] = True
+            if log_colorbar:
+                no_measure[data <= 0.] = True
+
+        return no_measure
+
+    def set_map_background_color(self, extent, color='#A8A8A8'):
+        """Set default parameters for a single panel plot.
+
+        Args:
+            extent (tuple): Extent of image (xmin, xmax, ymin, ymax).
+            color (str): Background color. Default is '#A8A8A8' (gray).
+
+        Returns:
+            tuple: axes keyword args, patch keyword args
+        """
+        ax_kws = dict(facecolor=color)
+        patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
+                         width=extent[1] - extent[0] - 0.02,
+                         height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
+                         fill=True, fc=color, ec='w', zorder=0)
+        return ax_kws, patch_kws
+
+    def ax_setup(self, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2'):
+        """Basic axes setup for maps.
+
+        Args:
+            fig: Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
+                Default is None.
+            ax: Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel
+                plot. Default is None.
+            fig_kws (dict): Keyword args to pass to plt.figure. Default is None.
+            facecolor (str): Axis facecolor. Default is '#EAEAF2'.
+
+        Returns:
+            tuple: (plt.figure object, plt.figure axis object)
+        """
+        fig_kws = self.none_to_empty_dict(fig_kws)
+
+        if 'seaborn' in sys.modules:
+            if ax is None:
+                sns.set_context('poster', rc={'lines.linewidth': 2})
+            else:
+                sns.set_context('talk', rc={'lines.linewidth': 2})
+            sns.set_style(rc={'axes.facecolor': facecolor})
+
+        if ax is None:
+            fig = plt.figure(**fig_kws)
+            ax = fig.add_axes([0.12, 0.1, 2/3., 5/6.])
+            ax.set_xlabel('arcscec')
+            ax.set_ylabel('arcsec')
+
+        if 'seaborn' not in sys.modules:
+            ax.set_axis_bgcolor(facecolor)
+
+        ax.grid(False, which='both', axis='both')
+        return fig, ax
+
+    def one_color_cmap(self, color):
+        """Generate a colormap with only one color.
+
+        Useful for imshow.
+
+        Args:
+            color (str): Color.
+
+        Returns:
+            matplotlib.colors.ListedColormap
+        """
+        cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
+        return cmap
+
+    def none_to_empty_dict(self, x):
+        """If a variable is None, return an empty dictionary."""
+        if x is None:
+            x = {}
+        return x
+
+    def set_vmin_vmax(self, d, cbrange):
+        """Set minimum and maximum values of the color map."""
+        if 'vmin' not in d.keys():
+            d['vmin'] = cbrange[0]
+        if 'vmax' not in d.keys():
+            d['vmax'] = cbrange[1]
+        return d
+
+    def dapplot(self, data, ivar, mask, snr_thresh=None, fig=None, ax=None, fig_kws=None,
+                ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None, cb_kws=None):
+        """Make single panel map or one panel of multi-panel map plot.
+
+        Args:
+            data (array): Image to display.
+            ivar (array): Inverse variance of data.
+            mask (array): Mask for data.
+            snr_thresh (float): Signal-to-noise theshold below which a value is not considered a
+                measurement. Default is None.
+            fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is
+                None.
+            ax: plt.figure axis object. Use if creating subplot of a multi-panel plot. Default
+                is None.
+            fig_kws (dict): Keyword args to pass to plt.figure. Default is None.
+            ax_kws (dict): Keyword args to draw axis. Default is None.
+            title_kws (dict): Keyword args to pass to ax.set_title. Default is None.
+            patch_kws (dict): Keyword args to pass to ax.add_patch. Default is None.
+            imshow_kws (dict): Keyword args to pass to ax.imshow. Default is None.
+            cb_kws (dict): Keyword args to set and draw colorbar. Default is None.
+
+        Returns:
+            tuple: (plt.figure object, plt.figure axis object)
+        """
+        fig_kws = self.none_to_empty_dict(fig_kws)
+        ax_kws = self.none_to_empty_dict(ax_kws)
+        title_kws = self.none_to_empty_dict(title_kws)
+        patch_kws = self.none_to_empty_dict(patch_kws)
+        imshow_kws = self.none_to_empty_dict(imshow_kws)
+        cb_kws = self.none_to_empty_dict(cb_kws)
+
+        fig, ax = self.ax_setup(fig, ax, fig_kws=fig_kws, **ax_kws)
+
+        if title_kws.get('label', None) is not None:
+            ax.set_title(**title_kws)
+
+        # cb_kws = colorbar.set_cbrange(data, cb_kws)
+        # TODO remove hard coding
+        cb_kws['cbrange'] = [0, 25]
+        imshow_kws['extent'] = [0, 32, 0, 32]
+
+        imshow_kws = self.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+
+        image, nodata = self.make_image(data, ivar, mask, snr_thresh=snr_thresh,
+                                        log_colorbar=cb_kws.get('log_colorbar', False))
+
+        # Plot regions of no data as a solid color (gray #A8A8A8)
+        ax.imshow(nodata, interpolation='none', origin='lower', extent=imshow_kws['extent'],
+                  cmap=self.one_color_cmap(color='#A8A8A8'), zorder=1)
+
+        # Plot regions with no measurement as hatched (otherwise pass in patch_kws=None).
+        if patch_kws:
+            ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
+
+        p = ax.imshow(image, interpolation='none', origin='lower', **imshow_kws)
+
+        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+
+        if 'seaborn' in sys.modules:
+            sns.set_style(rc={'axes.facecolor': '#EAEAF2'})
+
+        return fig, ax
