@@ -47,6 +47,11 @@ import warnings
 
 from astropy.io import fits
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import mpl_toolkits.axes_grid1
+from matplotlib.colors import LogNorm
+from matplotlib.colors import from_levels_and_colors
 
 import marvin
 import marvin.api.api
@@ -55,19 +60,10 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.colorbar as colorbar
 
-try:
-    import matplotlib
-    import matplotlib.pyplot as plt
-    import mpl_toolkits.axes_grid1
-    from matplotlib.colors import LogNorm
-    from matplotlib.colors import from_levels_and_colors
-    pyplot = True
-    plt.style.use('seaborn-darkgrid')
-except ImportError:
-    pyplot = False
-
 if 'seaborn' in sys.modules:
     import seaborn as sns
+else:
+    plt.style.use('seaborn-darkgrid')
 
 try:
     import sqlalchemy
@@ -354,10 +350,6 @@ class Map(object):
         """
 
         # TODO: plot in sky coordinates. (JSG)
-
-        if not pyplot:
-            raise marvin.core.exceptions.MarvinMissingDependency(
-                'matplotlib is not installed.')
 
         array = array.lower()
         validExensions = ['value', 'ivar', 'mask']
