@@ -43,6 +43,11 @@ The results of your Query by default might not be in the format you desire.  Ins
 **NOTE**: This is time intensive.  Depending on the size of your results, this conversion may take awhile.  Be wary.
 
 
+Query Timing
+------------
+Query requests have an default timeout of 5 minutes.  Most queries should finish within this time.  However, for time-consuming queries, you may wish to follow these guidelines: :ref:`marvin-query-practice`.
+
+
 Simple Query
 ------------
 
