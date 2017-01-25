@@ -54,11 +54,21 @@ class MarvinError(Exception):
     def __init__(self, message=None):
 
         message = 'Unknown Marvin Error' if not message else message
+
+        # Send error to Sentry
         exc = sys.exc_info()
         if exc[0] is not None:
             ms.client.captureException(exc_info=exc)
         else:
             ms.client.captureMessage(message)
+
+        # Add Github Issue URL to message
+        giturl = 'https://github.com/sdss/marvin/issues/new'
+        message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
+                   'Fill out a subject and some text describing the error that just occurred.\n'
+                   'If able, copy and paste the full traceback information into the issue '
+                   'as well.'.format(message, giturl))
+
         super(MarvinError, self).__init__(message)
 
 

@@ -24,6 +24,7 @@
 - Added automatic Sentry error logging #147 into MarvinError, and Sentry in Flask for production mode
 - Added custom error handlers for the web, with potential user feedback form
 - Added Sentry tool for grabbing and displaying Sentry statistics
+- Added text to MarvinError with a Github Issues link and description of how to submit and issue
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
