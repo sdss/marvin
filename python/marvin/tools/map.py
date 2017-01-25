@@ -36,7 +36,6 @@
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
@@ -429,7 +428,7 @@ class Map(object):
 
 # ======================================================================
 
-    def make_image(self, data, ivar, mask, snr_thresh, log_colorbar):
+    def _make_image(self, data, ivar, mask, snr_thresh, log_colorbar):
         """Make masked array of image.
     
         Args:
@@ -487,25 +486,42 @@ class Map(object):
 
         return no_measure
 
-    def set_map_background_color(self, extent, color='#A8A8A8'):
-        """Set default parameters for a single panel plot.
+    def _set_map_background_color(self, kws, color='#A8A8A8'):
+        """Set background color for a single panel plot.
+
+        Args:
+            kws (dict): Dictionary of keyword args.
+            color (str): Background color. Default is '#A8A8A8' (gray).
+
+        Returns:
+            tuple: axes keyword args, patch keyword args
+        """
+        if isinstance(kws, dict):
+            kws['facecolor'] = color
+        else:
+            kws = dict(facecolor=color)
+
+        return kws
+
+    def _set_patch_style(self, extent, color='#A8A8A8'):
+        """Set default parameters for a patch.
 
         Args:
             extent (tuple): Extent of image (xmin, xmax, ymin, ymax).
             color (str): Background color. Default is '#A8A8A8' (gray).
 
         Returns:
-            tuple: axes keyword args, patch keyword args
+            dict
         """
-        ax_kws = dict(facecolor=color)
         patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                          width=extent[1] - extent[0] - 0.02,
                          height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
                          fill=True, fc=color, ec='w', zorder=0)
-        return ax_kws, patch_kws
+        return patch_kws
 
-    def ax_setup(self, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2'):
-        """Basic axes setup for maps.
+    def _ax_setup(self, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2', xlabel='spaxel',
+                  ylabel='spaxel'):
+        """Basic axis setup for maps.
 
         Args:
             fig: Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
@@ -514,11 +530,13 @@ class Map(object):
                 plot. Default is None.
             fig_kws (dict): Keyword args to pass to plt.figure. Default is None.
             facecolor (str): Axis facecolor. Default is '#EAEAF2'.
+            xlabel (str): Label for x-axis. Default is 'spaxel'.
+            ylabel (str): Label for y-axis. Default is 'spaxel'.
 
         Returns:
             tuple: (plt.figure object, plt.figure axis object)
         """
-        fig_kws = self.none_to_empty_dict(fig_kws)
+        fig_kws = fig_kws or {}
 
         if 'seaborn' in sys.modules:
             if ax is None:
@@ -530,42 +548,14 @@ class Map(object):
         if ax is None:
             fig = plt.figure(**fig_kws)
             ax = fig.add_axes([0.12, 0.1, 2/3., 5/6.])
-            ax.set_xlabel('arcscec')
-            ax.set_ylabel('arcsec')
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
 
         if 'seaborn' not in sys.modules:
             ax.set_axis_bgcolor(facecolor)
 
         ax.grid(False, which='both', axis='both')
         return fig, ax
-
-    def one_color_cmap(self, color):
-        """Generate a colormap with only one color.
-
-        Useful for imshow.
-
-        Args:
-            color (str): Color.
-
-        Returns:
-            matplotlib.colors.ListedColormap
-        """
-        cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
-        return cmap
-
-    def none_to_empty_dict(self, x):
-        """If a variable is None, return an empty dictionary."""
-        if x is None:
-            x = {}
-        return x
-
-    def set_vmin_vmax(self, d, cbrange):
-        """Set minimum and maximum values of the color map."""
-        if 'vmin' not in d.keys():
-            d['vmin'] = cbrange[0]
-        if 'vmax' not in d.keys():
-            d['vmax'] = cbrange[1]
-        return d
 
     def dapplot(self, data, ivar, mask, snr_thresh=None, fig=None, ax=None, fig_kws=None,
                 ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None, cb_kws=None):
@@ -591,31 +581,39 @@ class Map(object):
         Returns:
             tuple: (plt.figure object, plt.figure axis object)
         """
-        fig_kws = self.none_to_empty_dict(fig_kws)
-        ax_kws = self.none_to_empty_dict(ax_kws)
-        title_kws = self.none_to_empty_dict(title_kws)
-        patch_kws = self.none_to_empty_dict(patch_kws)
-        imshow_kws = self.none_to_empty_dict(imshow_kws)
-        cb_kws = self.none_to_empty_dict(cb_kws)
+        fig_kws = fig_kws or {}
+        ax_kws = ax_kws or {}
+        title_kws = title_kws or {}
+        patch_kws = patch_kws or {}
+        imshow_kws = imshow_kws or {}
+        cb_kws = cb_kws or {}
 
-        fig, ax = self.ax_setup(fig, ax, fig_kws=fig_kws, **ax_kws)
+        ax_kws = self._set_map_background_color(ax_kws)
+        patch_kws = self._set_map_background_color(patch_kws)
+
+        fig, ax = self._ax_setup(fig, ax, fig_kws=fig_kws, **ax_kws)
 
         if title_kws.get('label', None) is not None:
             ax.set_title(**title_kws)
 
-        # cb_kws = colorbar.set_cbrange(data, cb_kws)
-        # TODO remove hard coding
-        cb_kws['cbrange'] = [0, 25]
-        imshow_kws['extent'] = [0, 32, 0, 32]
+        cb_kws = colorbar.set_cbrange(data, cb_kws)
 
-        imshow_kws = self.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+        extent = [0, data.shape[0], 0, data.shape[1]]
+        imshow_kws['extent'] = extent
+        patch_kws = self._set_patch_style(extent=extent)
 
-        image, nodata = self.make_image(data, ivar, mask, snr_thresh=snr_thresh,
-                                        log_colorbar=cb_kws.get('log_colorbar', False))
+        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+
+        # TODO remove hardcoding
+        snr_thresh = 1
+
+        image, nodata = self._make_image(data, ivar, mask, snr_thresh=snr_thresh,
+                                         log_colorbar=cb_kws.get('log_colorbar', False))
+        print('nodata', nodata)
 
         # Plot regions of no data as a solid color (gray #A8A8A8)
         ax.imshow(nodata, interpolation='none', origin='lower', extent=imshow_kws['extent'],
-                  cmap=self.one_color_cmap(color='#A8A8A8'), zorder=1)
+                  cmap=colorbar.one_color_cmap(color='#A8A8A8'), zorder=1)
 
         # Plot regions with no measurement as hatched (otherwise pass in patch_kws=None).
         if patch_kws:

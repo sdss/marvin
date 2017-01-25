@@ -361,7 +361,7 @@ def _set_cb_kws(column, cb_kws_master):
 
 def cmap_discretize(cmap_in, N):
     """Return a discrete colormap from the continuous colormap cmap.
-    
+
     Example
         x = resize(arange(100), (5,100))
         djet = cmap_discretize(cm.jet, 5)
