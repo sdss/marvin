@@ -54,6 +54,7 @@ import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
+import marvin.utils.plot.colorbar as colorbar
 
 try:
     import matplotlib

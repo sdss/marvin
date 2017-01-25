@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
+#
 # Licensed under a 3-clause BSD license.
-
+#
+# Original code from mangadap.plot.colorbar.py licensed under the following 3-clause BSD license.
+#
 # Copyright (c) 2015, SDSS-IV/MaNGA Pipeline Group
 #
 # All rights reserved.
