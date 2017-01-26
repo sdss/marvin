@@ -50,6 +50,7 @@ class Search(FlaskView):
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
 
+
     @route('/', methods=['GET', 'POST'])
     def index(self):
 
@@ -123,8 +124,6 @@ class Search(FlaskView):
         if not paramdisplay:
             paramdisplay = 'all'
 
-        print('paramdisplay', paramdisplay)
-
         # run query and retrieve parameters
         q = Query(release=self._release)
         if paramdisplay == 'all':
@@ -143,7 +142,6 @@ class Search(FlaskView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        print('webtable', searchvalue, returnparams, self._release)
         limit = form.get('limit', 10)
         offset = form.get('offset', None)
         order = form.get('order', None)
@@ -165,7 +163,6 @@ class Search(FlaskView):
         # create output
         rows = res.getDictOf(format_type='listdict')
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        print('webtable output', output)
         output = json.dumps(output)
         return output
 
