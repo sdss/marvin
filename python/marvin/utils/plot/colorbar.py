@@ -56,6 +56,7 @@ from astropy.stats import sigma_clip
 
 from mangadap.plot import util
 
+import marvin
 
 def _log_colorbar_ticks(cbrange):
     """Set ticks and ticklabels for a log normalized colorbar.
@@ -168,10 +169,10 @@ def set_cbrange(image, cb_kws):
 
     Args:
         image (masked array): Image.
-        cbrange (list): Colorbar kwargs.
+        cb_kws (dict): Colorbar kwargs.
 
     Returns:
-        list: Colorbar range.
+        dict: Colorbar kwargs.
     """
     if cb_kws.get('sigclip') is not None:
         cbr = _cbrange_sigclip(image, cb_kws['sigclip'])
@@ -310,41 +311,28 @@ def _string_to_cmap(cm_name):
     if 'linear_Lab' in cm_name:
         try:
             cmap, cmap_r = linear_Lab()
-        except IOError:
-            cmap = cm.Blues_r
+        except FileNotFoundError:
+            cmap = cm.viridis
         else:
             if '_r' in cm_name:
                 cmap = cmap_r
     else:
-        try:
-            cmap = cm.__dict__[cm_name]
-        except KeyError:
-            cmap = cm.Blues_r
+        cmap = cm.get_cmap(cm_name)
     return cmap
 
 
-def _set_cb_kws(column, cb_kws_master):
+def set_cb_kws(cb_kws):
     """Set colorbar keyword args.
 
     Args:
-        column (str): Column name.
-        cb_kws_master (dict): Color bar keyword args.
+        cb_kws (dict): Colorbar keyword args.
 
     Returns:
         dict
     """
-    cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None,
-                          symmetric=False, cmap=None, n_levels=None,
-                          label_kws=dict(size=24),
+    cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None, symmetric=False,
+                          cmap='linear_Lab', n_levels=None, label_kws=dict(size=24),
                           tick_params_kws=dict(labelsize=24))
-
-    # Load master kwargs
-    cb_kws = {}
-    for k, v in cb_kws_master.items():
-        try:
-            cb_kws[k] = v[column]
-        except (TypeError, IndexError):
-            cb_kws[k] = v
 
     # Load default kwargs
     for k, v in cb_kws_default.items():
@@ -413,8 +401,7 @@ def linear_Lab():
     Returns:
         tuple: colormap and reversed colormap
     """
-    LinL_file = join(os.environ['MANGADAP_DIR'], 'python', 'mangadap',
-                     'plot', 'Linear_L_0-1.csv')
+    LinL_file = join(os.path.dirname(marvin.__file__), 'utils', 'plot', 'Linear_L_0-1.csv')
     LinL = np.loadtxt(LinL_file, delimiter=',')
 
     b3 = LinL[:, 2]  # value of blue at sample n

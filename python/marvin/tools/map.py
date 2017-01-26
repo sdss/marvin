@@ -422,13 +422,11 @@ class Map(object):
 
 # ======================================================================
 
-    def _make_image(self, data, ivar, mask, snr_thresh, log_colorbar):
+    def _make_image(self, data, snr_thresh, log_colorbar):
         """Make masked array of image.
 
         Args:
             data (array): Data.
-            ivar (array): Inverse variance.
-            mask (array): Mask.
             snr_thresh (float): Signal-to-noise theshold below which is not considered a
                 measurement.
             log_colorbar (bool): If True, use log colorbar.
@@ -438,17 +436,16 @@ class Map(object):
                     tuple of (x, y) coordinates of bins with no measurement)
         """
         # Flag a region as having no data if ivar = 0...
-        ivar_zero = (ivar == 0.)
+        ivar_zero = (self.ivar == 0.)
 
-        novalue = (mask & 2**4) > 0
-        badvalue = (mask & 2**5) > 0
-        matherror = (mask & 2**6) > 0
-        badfit = (mask & 2**7) > 0
-        donotuse = (mask & 2**30) > 0
-        no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit,
-                                        donotuse))
+        novalue = (self.mask & 2**4) > 0
+        badvalue = (self.mask & 2**5) > 0
+        matherror = (self.mask & 2**6) > 0
+        badfit = (self.mask & 2**7) > 0
+        donotuse = (self.mask & 2**30) > 0
+        no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit, donotuse))
 
-        no_measure = self._make_mask_no_measurement(data, ivar, snr_thresh, log_colorbar)
+        no_measure = self._make_mask_no_measurement(data, self.ivar, snr_thresh, log_colorbar)
         no_data_no_measure = np.logical_or(no_data, no_measure)
         image = np.ma.array(data, mask=no_data_no_measure)
         mask_nodata = np.ma.array(np.ones(data.shape), mask=np.logical_not(no_data))
@@ -480,12 +477,31 @@ class Map(object):
 
         return no_measure
 
-    def _set_map_background_color(self, kws, color='#A8A8A8'):
-        """Set background color for a single panel plot.
+    def _set_extent(self, cube_size, sky_coords):
+        """Set extent of map.
+
+        Args:
+            cube_size (tuple): Size of the cube in spaxels.
+            sky_coords (bool): If True, use sky coordinates, otherwise use spaxel coordinates.
+
+        Returns:
+            array
+        """
+        if sky_coords:
+            spaxel_size = 0.5  # arcsec
+            extent = np.array([-(cube_size[0] * spaxel_size), (cube_size[0] * spaxel_size),
+                               -(cube_size[1] * spaxel_size), (cube_size[1] * spaxel_size)])
+        else:
+            extent = np.array([0, cube_size[0], 0, cube_size[1]])
+
+        return extent
+
+    def _set_facecolor(self, kws, color='#A8A8A8'):
+        """Set facecolor for a single panel plot.
 
         Args:
             kws (dict): Dictionary of keyword args.
-            color (str): Background color. Default is '#A8A8A8' (gray).
+            color (str): Facecolor. Default is '#A8A8A8' (gray).
 
         Returns:
             tuple: axes keyword args, patch keyword args
@@ -513,11 +529,12 @@ class Map(object):
                          fill=True, fc=color, ec='w', zorder=0)
         return patch_kws
 
-    def _ax_setup(self, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2', xlabel='spaxel',
-                  ylabel='spaxel'):
+    def _ax_setup(self, sky_coords, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2'):
         """Basic axis setup for maps.
 
         Args:
+            sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
+                in spaxel coordinates.
             fig: Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
                 Default is None.
             ax: Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel
@@ -531,6 +548,9 @@ class Map(object):
             tuple: (plt.figure object, plt.figure axis object)
         """
         fig_kws = fig_kws or {}
+
+        xlabel = 'arcsec' if sky_coords else 'spaxel'
+        ylabel = 'arcsec' if sky_coords else 'spaxel'
 
         if 'seaborn' in sys.modules:
             if ax is None:
@@ -551,16 +571,18 @@ class Map(object):
         ax.grid(False, which='both', axis='both')
         return fig, ax
 
-    def dapplot(self, data, ivar, mask, snr_thresh=None, fig=None, ax=None, fig_kws=None,
-                ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None, cb_kws=None):
+    def dapplot(self, ext='value', snr_thresh=None, sky_coords=False, fig=None, ax=None,
+                fig_kws=None, ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None,
+                cb_kws=None):
         """Make single panel map or one panel of multi-panel map plot.
 
         Args:
-            data (array): Image to display.
-            ivar (array): Inverse variance of data.
-            mask (array): Mask for data.
+            ext (str):  The array to display, either the data itself ('value'), the inverse
+                variance ('ivar'), or the mask ('mask'). Default is 'value'.
             snr_thresh (float): Signal-to-noise theshold below which a value is not considered a
                 measurement. Default is None.
+            sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
+                in spaxel coordinates. Default is False.
             fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is
                 None.
             ax: plt.figure axis object. Use if creating subplot of a multi-panel plot. Default
@@ -582,40 +604,50 @@ class Map(object):
         imshow_kws = imshow_kws or {}
         cb_kws = cb_kws or {}
 
-        ax_kws = self._set_map_background_color(ax_kws)
-        patch_kws = self._set_map_background_color(patch_kws)
+        ax_kws.setdefault('facecolor', '#A8A8A8')
+        patch_kws.setdefault('facecolor', '#A8A8A8')
 
-        fig, ax = self._ax_setup(fig, ax, fig_kws=fig_kws, **ax_kws)
+        ext = ext.lower()
+        validExtensions = ['value', 'ivar', 'mask']
+        assert ext in validExtensions, 'ext must be one of {0!r}'.format(validExtensions)
+
+        if ext == 'value':
+            data = self.value
+        elif ext == 'ivar':
+            data = self.ivar
+        elif ext == 'mask':
+            data = self.mask
+
+        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax, fig_kws=fig_kws, **ax_kws)
 
         if title_kws.get('label', None) is not None:
             ax.set_title(**title_kws)
 
+        cb_kws = colorbar.set_cb_kws(cb_kws)
         cb_kws = colorbar.set_cbrange(data, cb_kws)
+        imshow_kws['cmap'] = cb_kws['cmap']
+        if cb_kws.get('log_colorbar', False):
+            imshow_kws['norm'] = LogNorm()
 
-        extent = [0, data.shape[0], 0, data.shape[1]]
+        extent = self._set_extent(data.shape, sky_coords)
         imshow_kws['extent'] = extent
         patch_kws = self._set_patch_style(extent=extent)
 
         imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
-        # TODO remove hardcoding
-        snr_thresh = 1
-
-        image, nodata = self._make_image(data, ivar, mask, snr_thresh=snr_thresh,
+        image, nodata = self._make_image(data, snr_thresh=snr_thresh,
                                          log_colorbar=cb_kws.get('log_colorbar', False))
-        print('nodata', nodata)
+
+        # Plot regions with no measurement as hatched
+        ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
+
+        p = ax.imshow(image, interpolation='none', origin='lower', **imshow_kws)
 
         # Plot regions of no data as a solid color (gray #A8A8A8)
         ax.imshow(nodata, interpolation='none', origin='lower', extent=imshow_kws['extent'],
                   cmap=colorbar.one_color_cmap(color='#A8A8A8'), zorder=1)
 
-        # Plot regions with no measurement as hatched (otherwise pass in patch_kws=None).
-        if patch_kws:
-            ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
-
-        p = ax.imshow(image, interpolation='none', origin='lower', **imshow_kws)
-
-        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+        # fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
 
         if 'seaborn' in sys.modules:
             sns.set_style(rc={'axes.facecolor': '#EAEAF2'})
