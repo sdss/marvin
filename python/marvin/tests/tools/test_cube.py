@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import collections
 import os
 import unittest
 
@@ -515,6 +514,66 @@ class TestGetSpaxel(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
         expect = 0.62007582
         self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
+
+    @skipIfNoDB
+    def test_getspaxel_matches_file_db_remote(self):
+
+        config.setMPL('MPL-4')
+        self.assertEqual(config.release, 'MPL-4')
+
+        cube_file = Cube(filename=self.filename)
+        cube_db = Cube(plateifu=self.plateifu)
+        cube_api = Cube(plateifu=self.plateifu, mode='remote')
+
+        self.assertEqual(cube_file.data_origin, 'file')
+        self.assertEqual(cube_db.data_origin, 'db')
+        self.assertEqual(cube_api.data_origin, 'api')
+
+        xx = 12
+        yy = 5
+        spec_idx = 200
+
+        spaxel_slice_file = cube_file[xx, yy]
+        spaxel_slice_db = cube_db[xx, yy]
+        spaxel_slice_api = cube_api[xx, yy]
+
+        flux_result = 0.017639931
+        ivar_result = 352.12421
+        mask_result = 1026
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.ivar[spec_idx], ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.ivar[spec_idx], ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.ivar[spec_idx], ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.mask[spec_idx], mask_result)
+
+        xx_cen = -5
+        yy_cen = -12
+
+        spaxel_getspaxel_file = cube_file.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.ivar[spec_idx],
+                               ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.ivar[spec_idx],
+                               ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.ivar[spec_idx],
+                               ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.mask[spec_idx], mask_result)
 
 
 class TestWCS(TestCubeBase):
