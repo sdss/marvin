@@ -4,7 +4,7 @@ import numpy as np
 
 from flask_classy import route
 from flask import Blueprint, redirect, url_for
-from flask import request
+from flask import request, jsonify
 
 from marvin.api import parse_params
 from marvin.api.base import BaseView
@@ -60,32 +60,131 @@ class CubeView(BaseView):
     # decorators = [parseRoutePath]
 
     def index(self):
+        '''Returns general cube info
+
+        .. :quickref: Cube; Get general cube info
+
+        :form inconfig: json of any incoming parameters
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson string data: data message
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": "this is a cube!"
+           }
+
+        '''
+        self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
     def get(self, name):
-        """Returns the necessary information to instantiate a cube for a given plateifu."""
+        '''Returns the necessary information to instantiate a cube for a given plateifu.
+
+        .. :quickref: Cube; Get a cube given a plate-ifu or mangaid
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :form inconfig: json of any incoming parameters
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string plateifu: id of cube
+        :json string mangaid: mangaid of cube
+        :json float ra: RA of cube
+        :json float dec: Dec of cube
+        :json string header: the cube header as a string
+        :json float redshift: the cube redshift
+        :json list shape: the cube shape [x, y]
+        :json list wavelength: the cube wavelength array
+        :json string wcs_header: the cube wcs_header as a string
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/8485-1901/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"plateifu": "8485-1901",
+                    "mangaid": "1-209232",
+                    "ra": 232.544703894,
+                    "dec": 48.6902009334,
+                    "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
+                    "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
+                    "redshift": 0.0407447,
+                    "shape": [34, 34],
+                    "wavelength": [3621.6, 3622.43,...,10353.8]
+              }
+           }
+
+        '''
 
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
             wavelength = (cube.wavelength.tolist() if isinstance(cube.wavelength, np.ndarray)
                           else cube.wavelength)
-            self.results['data'] = {name: '{0},{1},{2},{3}'.format(name, cube.plate,
-                                                                   cube.ra, cube.dec),
+            self.results['data'] = {name: '{0}, {1}, {2}, {3}'.format(name, cube.plate,
+                                                                      cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
                                     'redshift': cube.redshift,
                                     'shape': cube.shape,
                                     'wavelength': wavelength,
                                     'wcs_header': cube.wcs.to_header_string()}
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     # TODO: This is not used anymore, so maybe it should be removed.
     @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
     def getAllSpectra(self, name=None):
-        ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing '''
+        ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing
+
+        .. :quickref: Cube; Get a spectrum from a cube
+
+        '''
         self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
         return json.dumps(self.results)
 
@@ -93,7 +192,11 @@ class CubeView(BaseView):
     @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
     @parseRoutePath
     def getSpaxels(self, **kwargs):
-        """Returns a list of x, y positions for all the spaxels in a given cube."""
+        """Returns a list of x, y positions for all the spaxels in a given cube.
+
+        .. :quickref: Cube; Get a spaxel from a cube
+
+        """
 
         name = kwargs.pop('name')
         for var in ['x', 'y', 'ra', 'dec']:

@@ -10,7 +10,19 @@ import os
 import re
 import warnings
 import sys
+import marvin
 from collections import OrderedDict
+from distutils.version import StrictVersion
+
+# Set the Marvin version
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    dist = get_distribution('sdss-marvin')
+except DistributionNotFound:
+    __version__ = 'dev'
+else:
+    __version__ = dist.version
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -366,6 +378,12 @@ class MarvinConfig(object):
         from marvin import marvindb
         marvindb.forceDbOff()
 
+    def forceDbOn(self):
+        ''' Force the database to be reconnected '''
+        self._setDbConfig()
+        from marvin import marvindb
+        marvindb.forceDbOn(dbtype=self.db)
+
     def _addExternal(self, name):
         ''' Adds an external product into the path '''
         assert type(name) == str, 'name must be a string'
@@ -402,6 +420,7 @@ class MarvinConfig(object):
             else:
                 self._sdss_access_isloaded = True
 
+
 config = MarvinConfig()
 
 # Inits the Database session and ModelClasses
@@ -414,12 +433,3 @@ config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
 
-
-from pkg_resources import get_distribution, DistributionNotFound
-
-try:
-    dist = get_distribution('sdss-marvin')
-except DistributionNotFound:
-    __version__ = 'dev'
-else:
-    __version__ = dist.version
