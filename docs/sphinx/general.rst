@@ -99,8 +99,8 @@ SAS as specified by the ``$SAS_BASE_DIR`` environment variable.
 * **Via Explicit Call**:
     Calling the downloadList utility function
 
-Authentication
-^^^^^^^^^^^^^^
+Download Authentication
+^^^^^^^^^^^^^^^^^^^^^^^
 Downloading with sdss_access requires authentication to the SAS, using a .netrc file placed in your local home directory.
 ::
 
@@ -112,6 +112,8 @@ Downloading with sdss_access requires authentication to the SAS, using a .netrc 
     machine data.sdss.org
         login sdss
         password replace_with_sdss_password
+
+**Note**: For API Authentication, please go to :ref:`marvin-authentication`
 
 Via Config
 ^^^^^^^^^^

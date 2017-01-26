@@ -76,6 +76,8 @@ RSS
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-tools-maps:
+
 Maps
 ----
 
@@ -84,6 +86,8 @@ Maps
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-tools-map:
+
 Map
 ---
 
@@ -91,6 +95,8 @@ Map
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-tools-modelcube:
 
 Model Cube
 ----------

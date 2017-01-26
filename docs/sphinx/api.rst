@@ -49,8 +49,8 @@ Some urls require parameters passed to them. Others do not.  Urls with curly bra
 
 .. _marvin-authentication:
 
-Authentication
---------------
+API Authentication
+------------------
 
 The use of the API requires authentication.  To authenticate, you will need to have a .netrc file in your local home directory.  Inside the .netrc file,
 ::

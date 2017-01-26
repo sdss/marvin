@@ -378,6 +378,12 @@ class MarvinConfig(object):
         from marvin import marvindb
         marvindb.forceDbOff()
 
+    def forceDbOn(self):
+        ''' Force the database to be reconnected '''
+        self._setDbConfig()
+        from marvin import marvindb
+        marvindb.forceDbOn(dbtype=self.db)
+
     def _addExternal(self, name):
         ''' Adds an external product into the path '''
         assert type(name) == str, 'name must be a string'

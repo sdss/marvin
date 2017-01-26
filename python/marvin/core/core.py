@@ -282,6 +282,18 @@ class MarvinToolsClass(object):
 
         return self._nsa
 
+    @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')
+
 
 class Dotable(dict):
     """A custom dict class that allows dot access to nested dictionaries.

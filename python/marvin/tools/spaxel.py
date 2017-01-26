@@ -769,3 +769,15 @@ class Spaxel(object):
             wavelength=self.modelcube.wavelength,
             wavelength_unit='Angstrom',
             mask=model_emline_mask)
+
+    @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')

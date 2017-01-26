@@ -30,6 +30,7 @@ import warnings
 import os
 from marvin.core import marvin_pickle
 from functools import wraps
+from marvin.tools.query.results import remote_mode_only
 
 try:
     import cPickle as pickle
@@ -197,8 +198,10 @@ class Query(object):
         if self.mode == 'remote':
             self._doRemote()
         if self.mode == 'auto':
-            self._doLocal()
-            if self.mode == 'remote':
+            try:
+                self._doLocal()
+            except Exception as e:
+                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
                 self._doRemote()
 
         # get return type
@@ -249,8 +252,8 @@ class Query(object):
         ''' Tests if it is possible to perform queries locally. '''
 
         if not config.db or not self.session:
-            warnings.warn('No local database found. Setting mode to remote', MarvinUserWarning)
-            self.mode = 'remote'
+            warnings.warn('No local database found. Cannot perform queries.', MarvinUserWarning)
+            raise MarvinError('No local database found.  Query cannot be run in local mode')
         else:
             self.mode = 'local'
 
@@ -258,7 +261,7 @@ class Query(object):
         ''' Sets up to perform queries remotely. '''
 
         if not config.urlmap:
-            raise MarvinError('No URL Map found.  Cannot make remote calls!')
+            raise MarvinError('No URL Map found.  Cannot make remote query calls!')
         else:
             self.mode = 'remote'
 
@@ -440,6 +443,7 @@ class Query(object):
                 bestkeys = ii.getData()
                 return bestkeys
 
+    @remote_mode_only
     def save(self, path=None, overwrite=False):
         ''' Save the query as a pickle object
 
@@ -481,7 +485,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            pickle.dump(self, open(path, 'w'), protocol=-1)
+            pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)

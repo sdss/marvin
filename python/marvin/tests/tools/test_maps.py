@@ -368,6 +368,57 @@ class TestGetMap(TestMapsBase):
         maps_ellcoo = maps['spx_ellcoo_elliptical_radius']
         self.assertIsNone(maps_ellcoo.ivar)
 
+    def test_haflux_matches_file_db_api(self):
+
+        maps_file = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx)
+        maps_db = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5')
+        maps_api = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5', mode='remote')
+
+        self.assertEqual(maps_file.data_origin, 'file')
+        self.assertEqual(maps_db.data_origin, 'db')
+        self.assertEqual(maps_api.data_origin, 'api')
+
+        self.assertEqual(maps_file._release, 'MPL-5')
+        self.assertEqual(maps_db._release, 'MPL-5')
+        self.assertEqual(maps_api._release, 'MPL-5')
+
+        self.assertEqual(maps_file.bintype, 'SPX')
+        self.assertEqual(maps_db.bintype, 'SPX')
+        self.assertEqual(maps_api.bintype, 'SPX')
+
+        xx = 12
+        yy = 10
+
+        flux_expected = 0.98572426396458579
+        ivar_expected = 295.06537566125365
+
+        haflux_file = maps_file['emline_gflux_ha_6564']
+        haflux_db = maps_db['emline_gflux_ha_6564']
+        haflux_api = maps_api['emline_gflux_ha_6564']
+
+        self.assertAlmostEqual(haflux_file.value[yy, xx], flux_expected)
+        self.assertAlmostEqual(haflux_db.value[yy, xx], flux_expected, places=6)
+        self.assertAlmostEqual(haflux_api.value[yy, xx], flux_expected, places=6)
+
+        self.assertAlmostEqual(haflux_file.ivar[yy, xx], ivar_expected)
+        self.assertAlmostEqual(haflux_db.ivar[yy, xx], ivar_expected, places=6)
+        self.assertAlmostEqual(haflux_api.ivar[yy, xx], ivar_expected, places=6)
+
+        haflux_spaxel_file = maps_file.getSpaxel(x=xx, y=yy,
+                                                 xyorig='lower').properties['emline_gflux_ha_6564']
+        haflux_spaxel_db = maps_db.getSpaxel(x=xx, y=yy,
+                                             xyorig='lower').properties['emline_gflux_ha_6564']
+        haflux_spaxel_api = maps_api.getSpaxel(x=xx, y=yy,
+                                               xyorig='lower').properties['emline_gflux_ha_6564']
+
+        self.assertAlmostEqual(haflux_spaxel_file.value, flux_expected)
+        self.assertAlmostEqual(haflux_spaxel_db.value, flux_expected, places=6)
+        self.assertAlmostEqual(haflux_spaxel_api.value, flux_expected, places=6)
+
+        self.assertAlmostEqual(haflux_spaxel_file.ivar, ivar_expected)
+        self.assertAlmostEqual(haflux_spaxel_db.ivar, ivar_expected, places=6)
+        self.assertAlmostEqual(haflux_spaxel_api.ivar, ivar_expected, places=6)
+
 
 class TestPickling(TestMapsBase):
 

@@ -25,6 +25,7 @@
 - Added custom error handlers for the web, with potential user feedback form
 - Added Sentry tool for grabbing and displaying Sentry statistics
 - Added text to MarvinError with a Github Issues link and description of how to submit and issue
+- Added Results option to save to CSV
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -34,6 +35,8 @@
 - Got Queries and Results working in 3.5
 - Changed all convertToTool options in Results from mangaid to plateifu
 - Added release explicitly into api query routes
+- Modified the decision tree in query to throw an error in local mode
+- Modified convertToTool to accept a mode keyword
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.

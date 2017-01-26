@@ -75,6 +75,8 @@ class Map(object):
         self.channel = channel.lower() if channel else None
         self.shape = self.maps.shape
 
+        self.release = maps.release
+
         self.maps_property = self.maps.properties[self.property_name]
         if (self.maps_property is None or
                 (self.maps_property.channels is not None and
@@ -146,19 +148,19 @@ class Map(object):
         fullname_value = self.maps_property.fullname(channel=self.channel)
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-        self.value = numpy.array(value).reshape(self.shape)
+        self.value = numpy.array(value).reshape(self.shape).T
 
         if self.maps_property.ivar:
             fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.ivar = numpy.array(ivar).reshape(self.shape)
+            self.ivar = numpy.array(ivar).reshape(self.shape).T
 
         if self.maps_property.mask:
             fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.mask = numpy.array(mask).reshape(self.shape)
+            self.mask = numpy.array(mask).reshape(self.shape).T
 
         # Gets the header
         hdus = self.maps.data.hdus
