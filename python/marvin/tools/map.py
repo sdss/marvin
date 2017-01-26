@@ -112,6 +112,8 @@ class Map(object):
         self.channel = channel.lower() if channel else None
         self.shape = self.maps.shape
 
+        self.release = maps.release
+
         self.maps_property = self.maps.properties[self.property_name]
         if (self.maps_property is None or
                 (self.maps_property.channels is not None and
@@ -183,19 +185,19 @@ class Map(object):
         fullname_value = self.maps_property.fullname(channel=self.channel)
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-        self.value = np.array(value).reshape(self.shape)
+        self.value = np.array(value).reshape(self.shape).T
 
         if self.maps_property.ivar:
             fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.ivar = np.array(ivar).reshape(self.shape)
+            self.ivar = np.array(ivar).reshape(self.shape).T
 
         if self.maps_property.mask:
             fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.mask = np.array(mask).reshape(self.shape)
+            self.mask = np.array(mask).reshape(self.shape).T
 
         # Gets the header
         hdus = self.maps.data.hdus
@@ -422,7 +424,7 @@ class Map(object):
 
     def _make_image(self, data, ivar, mask, snr_thresh, log_colorbar):
         """Make masked array of image.
-    
+
         Args:
             data (array): Data.
             ivar (array): Inverse variance.
@@ -430,7 +432,7 @@ class Map(object):
             snr_thresh (float): Signal-to-noise theshold below which is not considered a
                 measurement.
             log_colorbar (bool): If True, use log colorbar.
-    
+
         Returns:
             tuple: (masked array of image,
                     tuple of (x, y) coordinates of bins with no measurement)

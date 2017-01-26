@@ -1,3 +1,10 @@
+What's New in Marvin 2.1 (January 2017)
+=======================================
+
+* Stuff
+
+* More stuff
+
 What's New in Marvin 2.0 Beta (November 2016)
 =============================================
 

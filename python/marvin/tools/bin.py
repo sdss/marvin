@@ -12,10 +12,12 @@ from __future__ import absolute_import
 
 import warnings
 
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.maps import Maps, _is_MPL4
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class Bin(object):
@@ -74,8 +76,14 @@ class Bin(object):
         kwargs.pop('bintype', None)
         kwargs.pop('mode', None)
 
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinBin {0}'.format(self.__class__),
+                        category=self.__class__)
+
         self._load_spaxels(**kwargs)
         self._load_data(**kwargs)
+
+        self.release = self._maps.release
 
     def __repr__(self):
         return ('<Marvin Bin (binid={0}, n_spaxels={1}, bintype={2}, template_kin={3})>'

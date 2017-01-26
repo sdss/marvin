@@ -24,7 +24,8 @@ import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
 
-from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
+from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
 from marvin.utils.db import testDbConnection
 from marvin.utils.general import mangaid2plateifu, get_nsa_data
 
@@ -51,6 +52,9 @@ def kwargsGet(kwargs, key, replacement):
         return replacement
     else:
         return kwargs[key]
+
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class MarvinToolsClass(object):
@@ -103,6 +107,10 @@ class MarvinToolsClass(object):
             self.plateifu = mangaid2plateifu(self.mangaid,
                                              drpall=self._drpall,
                                              drpver=self._drpver)
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
+                        category=self.__class__)
 
         if self.mode == 'local':
             self._doLocal()
@@ -273,6 +281,18 @@ class MarvinToolsClass(object):
                                      drpall=self._drpall)
 
         return self._nsa
+
+    @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')
 
 
 class Dotable(dict):

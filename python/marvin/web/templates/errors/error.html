@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block body %}
+
+    <div class='marvinerror'>
+        <div class='row'>
+            <div class='col-md-2'>
+                <img id="marvin_img" src="{{url_for('static',filename='images/marvin.png')}}" class="img-responsive">
+            </div>
+
+            <div class='col-md-6 vert-offset-top-7' id='errortext'>
+                {% block error %}
+                {% endblock error %}
+
+                {% if page %}
+                    <h4>{{page}} page broke down!</h4>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+{% if event_id %}
+  <script>
+  Raven.showReportDialog({
+    eventId: '{{ event_id }}',
+    dsn: '{{ public_dsn }}'
+  });
+  </script>
+{% endif %}
+
+{% endblock body %}
+
