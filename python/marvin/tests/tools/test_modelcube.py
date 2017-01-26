@@ -115,7 +115,7 @@ class TestModelCubeInit(TestModelCubeBase):
         marvin.config.setMPL('MPL-4')
         with self.assertRaises(MarvinError) as err:
             ModelCube(plateifu=self.plateifu)
-        self.assertEqual('ModelCube requires at least dapver=\'2.0.2\'', str(err.exception))
+        self.assertIn('ModelCube requires at least dapver=\'2.0.2\'', str(err.exception))
 
     def test_init_from_db_not_default(self):
 
