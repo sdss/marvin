@@ -647,7 +647,10 @@ class Map(object):
         ax.imshow(nodata, interpolation='none', origin='lower', extent=imshow_kws['extent'],
                   cmap=colorbar.one_color_cmap(color='#A8A8A8'), zorder=1)
 
-        # fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+
+        # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
+        matplotlib.rcParams['image.composite_image'] = False
 
         if 'seaborn' in sys.modules:
             sns.set_style(rc={'axes.facecolor': '#EAEAF2'})
