@@ -75,6 +75,8 @@ class Map(object):
         self.channel = channel.lower() if channel else None
         self.shape = self.maps.shape
 
+        self.release = maps.release
+
         self.maps_property = self.maps.properties[self.property_name]
         if (self.maps_property is None or
                 (self.maps_property.channels is not None and

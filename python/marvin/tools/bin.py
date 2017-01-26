@@ -77,6 +77,8 @@ class Bin(object):
         self._load_spaxels(**kwargs)
         self._load_data(**kwargs)
 
+        self.release = self._maps.release
+
     def __repr__(self):
         return ('<Marvin Bin (binid={0}, n_spaxels={1}, bintype={2}, template_kin={3})>'
                 .format(self.binid, len(self.spaxels), self._maps.bintype,
