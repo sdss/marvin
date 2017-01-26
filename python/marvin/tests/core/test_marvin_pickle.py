@@ -22,27 +22,37 @@ class TestMarvinPickle(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
         cls.data = dict(a=7, b=[10, 2])
+        files = ['~/tmp_testMarvinPickleSpecifyPath.pck',
+                 '~/tmp_testMarvinPickleDeleteOnRestore.pck',
+                 '~/tmp_testMarvinPickleOverwriteTrue.pck']
+        for fn in files:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+    def setUp(self):
+        self._files_created = []
 
     def tearDown(self):
-        if self.path_in in [os.path.join(os.getcwd(), it) for it in os.listdir()]:
-            os.remove(self.path_in)
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
 
     def testMarvinPickleSpecifyPath(self):
-        self.path_in = os.path.join(os.getcwd(), 'tmp_testMarvinPickleSpecifyPath.pck')
+        self.path_in = os.path.expanduser('~/tmp_testMarvinPickleSpecifyPath.pck')
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
         revivedData = marvin.core.marvin_pickle.restore(path_out)
         self.assertDictEqual(self.data, revivedData)
 
     def testMarvinPickleOverwriteTrue(self):
-        fname = 'tmp_testMarvinPickleOverwriteTrue.pck'
-        open(fname, 'a').close()
-        self.path_in = os.path.join(os.getcwd(), fname)
+        fname = '~/tmp_testMarvinPickleOverwriteTrue.pck'
+        self.path_in = os.path.expanduser(fname)
+        open(self.path_in, 'a').close()
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=True)
         revivedData = marvin.core.marvin_pickle.restore(path_out)
         self.assertDictEqual(self.data, revivedData)
 
     def testMarvinPickleDeleteOnRestore(self):
-        self.path_in = os.path.join(os.getcwd(), 'tmp_testMarvinPickleDeleteOnRestore.pck')
+        self.path_in = os.path.expanduser('~/tmp_testMarvinPickleDeleteOnRestore.pck')
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
         revivedData = marvin.core.marvin_pickle.restore(path_out, delete=True)
         self.assertDictEqual(self.data, revivedData)
