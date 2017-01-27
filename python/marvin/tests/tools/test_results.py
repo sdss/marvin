@@ -19,8 +19,6 @@ class TestResultsBase(MarvinTest):
     @classmethod
     def setUpClass(cls):
 
-        config.switchSasUrl('local')
-
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
@@ -37,8 +35,9 @@ class TestResultsBase(MarvinTest):
         pass
 
     def setUp(self):
+        config.switchSasUrl('local')
         config.sasurl = self.init_sasurl
-        config.mode = self.init_mode
+        self.mode = self.init_mode
         config.urlmap = self.init_urlmap
         config.setMPL('MPL-5')
         config.forceDbOn()
@@ -68,13 +67,14 @@ class TestResultsBase(MarvinTest):
                         '41': (u'1-378182', 8134, u'8134-12705', u'12705', 0.0178659),
                         '46': (u'1-252126', 8335, u'8335-3703', u'3703', 0.0181555)}
 
-        self.q = Query(searchfilter=self.filter)
+        self.q = Query(searchfilter=self.filter, mode=self.mode)
 
     def tearDown(self):
         pass
 
     def _setRemote(self, mode='local', limit=100):
         config.switchSasUrl(mode)
+        self.mode = 'remote'
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
 
@@ -83,7 +83,10 @@ class TestResultsBase(MarvinTest):
     def _run_query(self):
         r = self.q.run()
         r.sort('z', order='desc')
-        self.assertEqual(self.res, r.results[0])
+        plateifu = r.getListOf('plateifu')
+        index = plateifu.index(self.plateifu)
+        newres = r.results[index]
+        self.assertEqual(self.res, newres)
         return r
 
 
