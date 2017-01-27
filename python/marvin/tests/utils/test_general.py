@@ -45,6 +45,8 @@ class TestConvertCoords(TestCase):
         cls.testHeader = fits.getheader(filename, 1)
         cls.testWcs = WCS(cls.testHeader)
         cls.testShape = fits.getdata(filename, 1).shape[1:]
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
     def test_pix_center(self):
         """Tests mode='pix', xyorig='center'."""
@@ -137,6 +139,8 @@ class TestGetNSAData(TestCase):
     @classmethod
     def setUpClass(cls):
         marvin.config.switchSasUrl('local')
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
         cls.config_db = marvin.config.db
 
     def setUp(self):
@@ -204,6 +208,8 @@ class TestPillowImage(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
         outver = 'v1_5_1'
         cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),
                                     outver,

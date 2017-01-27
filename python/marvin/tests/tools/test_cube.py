@@ -22,6 +22,7 @@ class TestCubeBase(MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestCubeBase, cls).setUpClass()
         config.switchSasUrl('local')
 
         cls.outver = 'v1_5_1'

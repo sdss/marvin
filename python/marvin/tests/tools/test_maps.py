@@ -30,6 +30,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestMapsBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver_out = 'v1_5_1'
