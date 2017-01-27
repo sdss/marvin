@@ -153,8 +153,8 @@ def _cbrange_user_defined(cbrange, cbrange_user):
 
     Args:
         cbrange (list): Input colorbar range.
-        cbrange_user (list): User-specified colorbar range. If a value is
-            None, then the colorbar uses the previous value.
+        cbrange_user (list): User-specified colorbar range. If a value is None, then the colorbar
+            uses the previous value.
 
     Returns:
         list: Colorbar range.
@@ -211,8 +211,8 @@ def set_cbrange(image, cb_kws):
 def _set_cbticks(cbrange, cb_kws):
     """Set colorbar ticks.
 
-    Adjust colorbar range if using a discrete colorbar so that the ticks fall in
-    the middle of each level.
+    Adjust colorbar range if using a discrete colorbar so that the ticks fall in the middle of each
+        level.
 
     Args:
         cbrange (list): Colorbar range.
@@ -227,8 +227,7 @@ def _set_cbticks(cbrange, cb_kws):
         try:
             ticks = MaxNLocator(cb_kws.get('n_ticks', 7)).tick_values(*cbrange)
         except AttributeError:
-            print('AttributeError: MaxNLocator instance has no attribute'
-                  ' "tick_values" ')
+            print('AttributeError: MaxNLocator instance has no attribute "tick_values".')
 
     # if discrete colorbar, offset upper and lower cbrange so that ticks are in
     # the center of each level
@@ -249,13 +248,11 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None,
     Args:
         fig: plt.figure object.
         mappable: Plotting element to map to colorbar.
-        axloc (list): Specify (left, bottom, width, height) of colorbar axis.
-            Defaults to None.
+        axloc (list): Specify (left, bottom, width, height) of colorbar axis. Default is None.
         cbrange (list): Colorbar min and max.
         ticks (list): Ticks on colorbar.
         label_kws (dict): Keyword args to set colorbar label. Default is None.
-        tick_params_kws (dict): Keyword args to set colorbar tick parameters.
-            Default is None.
+        tick_params_kws (dict): Keyword args to set colorbar tick parameters. Default is None.
 
     Returns:
         tuple: (plt.figure object, plt.figure axis object)
@@ -283,8 +280,8 @@ def _set_cmap(cm_name, n_levels=None):
 
     Args:
         cm_name (str): Name of colormap.
-        n_levels (int): Number of discrete levels of colormap. If None, then
-            produce continuous colormap. Default is None.
+        n_levels (int): Number of discrete levels of colormap. If None, then produce continuous
+            colormap. Default is None.
 
     Returns:
         colormap
@@ -362,15 +359,15 @@ def set_cb_kws(cb_kws, title):
 
 
 def cmap_discretize(cmap_in, N):
-    """Return a discrete colormap from the continuous colormap cmap.
+    """Return a discrete colormap from a continuous colormap.
 
     Example
-        x = resize(arange(100), (5,100))
-        djet = cmap_discretize(cm.jet, 5)
-        imshow(x, cmap=djet)
+        x = resize(arange(100), (5, 100))
+        dviridis = cmap_discretize(cm.viridis, 5)
+        imshow(x, cmap=dviridis)
 
     Args:
-        cmap_in: colormap instance, eg. cm.jet.
+        cmap_in: colormap instance, eg. cm.viridis.
         N (int): Number of colors.
 
     Returns:
