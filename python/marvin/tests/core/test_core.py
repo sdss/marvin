@@ -21,6 +21,8 @@ class TestCoreDotable(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
         cls.normalDict = dict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
     def testDotable(self):
         self.dotableDict = marvin.core.core.Dotable(self.normalDict)
