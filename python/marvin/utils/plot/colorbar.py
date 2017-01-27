@@ -332,8 +332,8 @@ def set_cb_kws(cb_kws):
         dict
     """
     cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None, symmetric=False,
-                          cmap='linear_Lab', n_levels=None, label_kws=dict(size=24),
-                          tick_params_kws=dict(labelsize=24))
+                          cmap='linear_Lab', n_levels=None, label_kws=dict(size=20),
+                          tick_params_kws=dict(labelsize=20))
 
     # Load default kwargs
     for k, v in cb_kws_default.items():

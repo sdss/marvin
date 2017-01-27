@@ -214,6 +214,8 @@ class Map(object):
         else:
             self.header = fits.Header(header_dict)
 
+        self.unit = self.maps_property.unit
+
     def _load_map_from_api(self):
         """Initialises de Map from a ``Maps`` with ``data_origin='api'``."""
 
@@ -599,6 +601,12 @@ class Map(object):
 
         ax_kws.setdefault('facecolor', '#A8A8A8')
         patch_kws.setdefault('facecolor', '#A8A8A8')
+
+        title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
+        title = ' '.join(title.split('_'))
+        title_kws.setdefault('label', title)
+
+        cb_kws.setdefault('label', self.unit)
 
         ext = ext.lower()
         validExtensions = ['value', 'ivar', 'mask']
