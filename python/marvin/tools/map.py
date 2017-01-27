@@ -613,7 +613,7 @@ class Map(object):
         title_kws.setdefault('label', title)
 
         cb_kws.setdefault('label', self.unit)
-        cb_kws = colorbar.set_cb_kws(cb_kws)
+        cb_kws = colorbar.set_cb_kws(cb_kws, title)
 
         extent = self._set_extent(data.shape, sky_coords)
 

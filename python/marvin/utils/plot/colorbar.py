@@ -306,8 +306,6 @@ def _string_to_cmap(cm_name):
     Returns:
         colormap
     """
-    if cm_name is None:
-        cm_name = 'linear_Lab'
 
     if 'linear_Lab' in cm_name:
         try:
@@ -322,18 +320,32 @@ def _string_to_cmap(cm_name):
     return cmap
 
 
-def set_cb_kws(cb_kws):
+def set_cb_kws(cb_kws, title):
     """Set colorbar keyword args.
 
     Args:
         cb_kws (dict): Colorbar keyword args.
+        title (str): Property and channel (if applicable) to be plotted.
 
     Returns:
         dict
     """
-    cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None, symmetric=False,
-                          cmap='linear_Lab', n_levels=None, label_kws=dict(size=16),
-                          tick_params_kws=dict(labelsize=16))
+    if 'vel' in title:
+        cmap = 'RdBu_r'
+        percentile_clip = [10, 90]
+        symmetric = True
+    elif 'sigma' in title:
+        cmap = 'inferno'
+        percentile_clip = [10, 90]
+        symmetric = False
+    else:
+        cmap = 'linear_Lab'
+        percentile_clip = [5, 95]
+        symmetric = False
+
+    cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None, symmetric=symmetric,
+                          cmap=cmap, n_levels=None, percentile_clip=percentile_clip,
+                          label_kws=dict(size=16), tick_params_kws=dict(labelsize=16))
 
     # Load default kwargs
     for k, v in cb_kws_default.items():
@@ -384,21 +396,25 @@ def cmap_discretize(cmap_in, N):
         for l in A:
             L.append(tuple(l))
         cdict[key] = tuple(L)
+
     return LinearSegmentedColormap('colormap', cdict, 1024)
 
 
 def reverse_cmap(cdict):
     cdict_r = {}
     for k, v in cdict.items():
-        data = []
+        out = []
         for it in v:
-            data.append((1 - it[0], it[1], it[2]))
-        cdict_r[k] = sorted(data)
+            out.append((1 - it[0], it[1], it[2]))
+        cdict_r[k] = sorted(out)
     return cdict_r
 
 
 def linear_Lab():
     """Make linear Lab color map.
+    
+    For a description of the Linear Lab palette see
+    `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
     Returns:
         tuple: colormap and reversed colormap
