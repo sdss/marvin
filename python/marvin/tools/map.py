@@ -51,7 +51,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1
 from matplotlib.colors import LogNorm
-from matplotlib.colors import from_levels_and_colors
 
 import marvin
 import marvin.api.api
@@ -69,9 +68,6 @@ try:
     import sqlalchemy
 except ImportError:
     sqlalchemy = None
-
-#### from mangadap.plot import util
-#### from mangadap.plot import colorbar
 
 
 class Map(object):
@@ -141,7 +137,7 @@ class Map(object):
                 'channel={0.channel!r})>'.format(self))
 
     def _load_map_from_file(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='file'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
 
         self.header = self.maps.data[self.property_name].header
 
@@ -167,7 +163,7 @@ class Map(object):
         return
 
     def _load_map_from_db(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='db'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='db'``."""
 
         mdb = marvin.marvindb
 
@@ -217,7 +213,7 @@ class Map(object):
         self.unit = self.maps_property.unit
 
     def _load_map_from_api(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='api'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
 
         url = marvin.config.urlmap['api']['getmap']['url']
 
@@ -422,8 +418,6 @@ class Map(object):
         else:
             return ax
 
-# ======================================================================
-
     def _make_image(self, data, snr_thresh, log_colorbar):
         """Make masked array of image.
 
@@ -566,12 +560,13 @@ class Map(object):
 
         return fig, ax
 
-    def dapplot(self, ext='value', snr_thresh=1, sky_coords=False, fig=None, ax=None, fig_kws=None,
-                ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None, cb_kws=None):
+    def dapplot(self, array='value', snr_thresh=1, sky_coords=False, fig=None, ax=None,
+                fig_kws=None, ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None,
+                cb_kws=None):
         """Make single panel map or one panel of multi-panel map plot.
 
         Args:
-            ext (str):  The array to display, either the data itself ('value'), the inverse
+            array (str):  The array to display, either the data itself ('value'), the inverse
                 variance ('ivar'), or the mask ('mask'). Default is 'value'.
             snr_thresh (float): Signal-to-noise threshold for keeping a valid measurement. Default
                 is 1.
@@ -608,15 +603,15 @@ class Map(object):
 
         cb_kws.setdefault('label', self.unit)
 
-        ext = ext.lower()
+        array = array.lower()
         validExtensions = ['value', 'ivar', 'mask']
-        assert ext in validExtensions, 'ext must be one of {0!r}'.format(validExtensions)
+        assert array in validExtensions, 'array must be one of {0!r}'.format(validExtensions)
 
-        if ext == 'value':
+        if array == 'value':
             data = self.value
-        elif ext == 'ivar':
+        elif array == 'ivar':
             data = self.ivar
-        elif ext == 'mask':
+        elif array == 'mask':
             data = self.mask
 
         fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax, fig_kws=fig_kws, **ax_kws)
