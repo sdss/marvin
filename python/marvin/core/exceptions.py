@@ -53,21 +53,24 @@ ms = MarvinSentry(version=marvin.__version__)
 class MarvinError(Exception):
     def __init__(self, message=None):
 
+        from marvin import config
         message = 'Unknown Marvin Error' if not message else message
 
-        # Send error to Sentry
-        exc = sys.exc_info()
-        if exc[0] is not None:
-            ms.client.captureException(exc_info=exc)
-        else:
-            ms.client.captureMessage(message)
+        if config.use_sentry is True:
+            # Send error to Sentry
+            exc = sys.exc_info()
+            if exc[0] is not None:
+                ms.client.captureException(exc_info=exc)
+            else:
+                ms.client.captureMessage(message)
 
-        # Add Github Issue URL to message
-        giturl = 'https://github.com/sdss/marvin/issues/new'
-        message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
-                   'Fill out a subject and some text describing the error that just occurred.\n'
-                   'If able, copy and paste the full traceback information into the issue '
-                   'as well.'.format(message, giturl))
+        # Add Github Issue URL to message or not
+        if config.add_github_message is True:
+            giturl = 'https://github.com/sdss/marvin/issues/new'
+            message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
+                       'Fill out a subject and some text describing the error that just occurred.\n'
+                       'If able, copy and paste the full traceback information into the issue '
+                       'as well.'.format(message, giturl))
 
         super(MarvinError, self).__init__(message)
 

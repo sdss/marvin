@@ -19,6 +19,7 @@ class TestResultsBase(MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestResultsBase, cls).setUpClass()
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'

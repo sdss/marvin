@@ -21,6 +21,8 @@ class TestMapsProperties(TestCase):
     @classmethod
     def setUpClass(cls):
         config.setMPL('MPL-5')
+        config.use_sentry = False
+        config.add_github_message = False
 
     def test_dap_datamodel_mpl4(self):
         datamodel = get_dap_datamodel('1.1.1')

@@ -26,6 +26,7 @@
 - Added Sentry tool for grabbing and displaying Sentry statistics
 - Added text to MarvinError with a Github Issues link and description of how to submit and issue
 - Added Results option to save to CSV
+- Added new parameters in Marvin Config to turn off Sentry error handling and Github Issue message
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -37,6 +38,8 @@
 - Added release explicitly into api query routes
 - Modified the decision tree in query to throw an error in local mode
 - Modified convertToTool to accept a mode keyword
+- Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
+- Updated all Marvin tests to turn off Sentry exception catching and the github message
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
