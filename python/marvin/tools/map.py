@@ -560,16 +560,15 @@ class Map(object):
 
         return fig, ax
 
-    def dapplot(self, ext='value', snr_thresh=None, sky_coords=False, fig=None, ax=None,
-                fig_kws=None, ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None,
-                cb_kws=None):
+    def dapplot(self, ext='value', snr_thresh=1, sky_coords=False, fig=None, ax=None, fig_kws=None,
+                ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None, cb_kws=None):
         """Make single panel map or one panel of multi-panel map plot.
 
         Args:
             ext (str):  The array to display, either the data itself ('value'), the inverse
                 variance ('ivar'), or the mask ('mask'). Default is 'value'.
             snr_thresh (float): Signal-to-noise threshold for keeping a valid measurement. Default
-                is None.
+                is 1.
             sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
                 in spaxel coordinates. Default is False.
             fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is
