@@ -41,6 +41,7 @@ class TestMarvinPickle(marvin.tests.MarvinTest):
         self.path_in = os.path.expanduser('~/tmp_testMarvinPickleSpecifyPath.pck')
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
         revivedData = marvin.core.marvin_pickle.restore(path_out)
+        self._files_created.append(path_out)
         self.assertDictEqual(self.data, revivedData)
 
     def testMarvinPickleOverwriteTrue(self):
@@ -48,12 +49,14 @@ class TestMarvinPickle(marvin.tests.MarvinTest):
         self.path_in = os.path.expanduser(fname)
         open(self.path_in, 'a').close()
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=True)
+        self._files_created.append(path_out)
         revivedData = marvin.core.marvin_pickle.restore(path_out)
         self.assertDictEqual(self.data, revivedData)
 
     def testMarvinPickleDeleteOnRestore(self):
         self.path_in = os.path.expanduser('~/tmp_testMarvinPickleDeleteOnRestore.pck')
         path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
+        self._files_created.append(path_out)
         revivedData = marvin.core.marvin_pickle.restore(path_out, delete=True)
         self.assertDictEqual(self.data, revivedData)
         self.assertFalse(os.path.isfile(self.path_in))
