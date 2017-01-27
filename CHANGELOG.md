@@ -39,6 +39,7 @@
 - Modified the decision tree in query to throw an error in local mode
 - Modified convertToTool to accept a mode keyword
 - Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
+- Updated all Marvin tests to turn off Sentry exception catching and the github message
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.

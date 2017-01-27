@@ -19,6 +19,7 @@ class TestQueryBase(MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestQueryBase, cls).setUpClass()
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'

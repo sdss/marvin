@@ -21,6 +21,8 @@ class TestMarvinPickle(marvin.tests.MarvinTest):
 
     @classmethod
     def setUpClass(cls):
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
         cls.data = dict(a=7, b=[10, 2])
         files = ['~/tmp_testMarvinPickleSpecifyPath.pck',
                  '~/tmp_testMarvinPickleDeleteOnRestore.pck',

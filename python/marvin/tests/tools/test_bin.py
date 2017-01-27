@@ -27,6 +27,7 @@ class TestBinBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestBinBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver = 'v2_0_1'
