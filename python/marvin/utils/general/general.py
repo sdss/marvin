@@ -30,7 +30,7 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters')
 
 drpTable = {}
 
@@ -959,3 +959,12 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                 return DotableCaseInsensitive(collections.OrderedDict(response.getData()))
             else:
                 raise MarvinError('get_nsa_data: %s', response['error'])
+
+
+def _check_file_parameters(obj1, obj2):
+    for param in ['plateifu', 'mangaid', 'plate', '_release', 'drpver', 'dapver']:
+        assert_msg = ('{0} is different between {1} {2}:\n {1}.{0}: {3} {2}.{0}:{4}'
+                      .format(param, obj1.__repr__, obj2.__repr__, getattr(obj1, param),
+                              getattr(obj2, param)))
+        assert getattr(obj1, param) == getattr(obj2, param), assert_msg
+

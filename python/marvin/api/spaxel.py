@@ -14,6 +14,8 @@ from __future__ import division
 from __future__ import print_function
 import json
 
+import numpy as np
+
 from flask_classy import route
 from flask import request
 
@@ -123,7 +125,10 @@ class SpaxelView(BaseView):
                 prop = spaxel.properties[name]
                 spaxel_properties[name] = {}
                 for key in ['name', 'channel', 'value', 'ivar', 'mask', 'description', 'unit']:
-                    spaxel_properties[name][key] = getattr(prop, key)
+                    propval = getattr(prop, key)
+                    if type(propval).__module__ == np.__name__:
+                        propval = np.asscalar(propval)
+                    spaxel_properties[name][key] = propval
 
             self.results['data'] = {'properties': spaxel_properties}
 
