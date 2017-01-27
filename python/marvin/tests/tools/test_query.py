@@ -2,7 +2,6 @@
 
 from __future__ import print_function, division, absolute_import
 import unittest
-import copy
 import os
 from marvin import config, marvindb
 from marvin import bconfig
@@ -27,7 +26,6 @@ class TestQueryBase(MarvinTest):
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
 
-        cls.initconfig = copy.deepcopy(config)
         cls.init_mode = config.mode
         cls.init_sasurl = config.sasurl
         cls.init_urlmap = config.urlmap
@@ -38,11 +36,8 @@ class TestQueryBase(MarvinTest):
         pass
 
     def setUp(self):
-        # cvars = ['drpver', 'dapver']
-        # for var in cvars:
-        #     config.__setattr__(var, self.initconfig.__getattribute__(var))
         config.sasurl = self.init_sasurl
-        config.mode = self.init_mode
+        self.mode = self.init_mode
         config.urlmap = self.init_urlmap
         config._traceback = self.init_traceback
         config.setMPL('MPL-4')
@@ -56,7 +51,7 @@ class TestQueryBase(MarvinTest):
         config.switchSasUrl(mode)
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
-        config.mode = 'remote'
+        self.mode = 'remote'
 
 
 class TestQuery(TestQueryBase):
@@ -195,7 +190,7 @@ class TestQuery(TestQueryBase):
         rt = 'nsa.hello'
         errmsg = 'nsa.hello does not match any column'
         tracemsg = 'Query failed with'
-        self._fail_query(errmsg, tracemsg, searchfilter=p, returnparams=rt)
+        self._fail_query(errmsg, tracemsg, searchfilter=p, returnparams=rt, mode=self.mode)
 
     def test_Query_remote_no_traceback(self):
         self._setRemote(mode='local')
@@ -275,7 +270,7 @@ class TestQuery(TestQueryBase):
     def test_dap_query_2_remote(self):
         self._setRemote()
         p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'
-        q = Query(searchfilter=p)
+        q = Query(searchfilter=p, mode=self.mode)
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
@@ -439,7 +434,7 @@ class TestQueryModes(TestQueryBase):
 
     def _set_modes(self, expmode=None):
         p = 'nsa.z < 0.1 and cube.plate == 8485'
-        q = Query(searchfilter=p)
+        q = Query(searchfilter=p, mode=self.mode)
         r = q.run()
         # this part selects 8485-1901
         r.sort('z')
@@ -451,20 +446,20 @@ class TestQueryModes(TestQueryBase):
         self.assertEqual(expmode, r.objects[0].mode)
 
     def test_mode_local(self):
-        config.mode = 'local'
+        self.mode = 'local'
         self._set_modes(expmode='local')
 
     def test_mode_remote(self):
-        config.mode = 'remote'
+        self.mode = 'remote'
         self._set_modes(expmode='remote')
 
     def test_mode_auto(self):
-        config.mode = 'auto'
+        self.mode = 'auto'
         self._set_modes(expmode='local')
 
     def test_mode_local_nodb(self):
         config.forceDbOff()
-        config.mode = 'local'
+        self.mode = 'local'
         errmsg = 'Query cannot be run in local mode'
         with self.assertRaises(MarvinError) as cm:
             self._set_modes(expmode='local')
@@ -473,7 +468,7 @@ class TestQueryModes(TestQueryBase):
     def test_mode_auto_nodb(self):
         config.forceDbOff()
         config.switchSasUrl('utah')
-        config.mode = 'auto'
+        self.mode = 'auto'
         self._set_modes(expmode='remote')
 
 
