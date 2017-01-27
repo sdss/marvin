@@ -54,10 +54,14 @@ class MarvinConfig(object):
     The global configuration of Marvin.
 
     Parameters:
-        mplver (str):
-            The MPL version of the MaNGA data you want to use
+        release (str):
+            The release version of the MaNGA data you want to use.  Either MPL or DR.
         download (bool):
             Set to turn on downloading of objects with sdss_access
+        use_sentry (bool):
+            Set to turn on/off the Sentry error logging.  Default is True.
+        add_github_message (bool):
+            Set to turn on/off the additional Github Issue message in MarvinErrors. Default is True.
     '''
     def __init__(self):
 
@@ -71,6 +75,8 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
+        self.use_sentry = True
+        self.add_github_message = True
 
         self._plantTree()
         self._checkSDSSAccess()
