@@ -594,15 +594,6 @@ class Map(object):
         imshow_kws = imshow_kws or {}
         cb_kws = cb_kws or {}
 
-        ax_kws.setdefault('facecolor', '#A8A8A8')
-        patch_kws.setdefault('facecolor', '#A8A8A8')
-
-        title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
-        title = ' '.join(title.split('_'))
-        title_kws.setdefault('label', title)
-
-        cb_kws.setdefault('label', self.unit)
-
         array = array.lower()
         validExtensions = ['value', 'ivar', 'mask']
         assert array in validExtensions, 'array must be one of {0!r}'.format(validExtensions)
@@ -614,11 +605,14 @@ class Map(object):
         elif array == 'mask':
             data = self.mask
 
-        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax, fig_kws=fig_kws, **ax_kws)
+        ax_kws.setdefault('facecolor', '#A8A8A8')
+        patch_kws.setdefault('facecolor', '#A8A8A8')
 
-        if title_kws.get('label', None) is not None:
-            ax.set_title(**title_kws)
+        title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
+        title = ' '.join(title.split('_'))
+        title_kws.setdefault('label', title)
 
+        cb_kws.setdefault('label', self.unit)
         cb_kws = colorbar.set_cb_kws(cb_kws)
 
         extent = self._set_extent(data.shape, sky_coords)
@@ -630,8 +624,14 @@ class Map(object):
 
         patch_kws = self._set_patch_style(extent=extent)
 
+        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax, fig_kws=fig_kws, **ax_kws)
+
+        if title_kws.get('label', None) is not None:
+            ax.set_title(**title_kws)
+
         image, nodata = self._make_image(data, snr_thresh=snr_thresh,
                                          log_colorbar=cb_kws.get('log_colorbar', False))
+
         cb_kws = colorbar.set_cbrange(image, cb_kws)
         imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
