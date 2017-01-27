@@ -58,6 +58,7 @@ from mangadap.plot import util
 
 import marvin
 
+
 def _log_colorbar_ticks(cbrange):
     """Set ticks and ticklabels for a log normalized colorbar.
 

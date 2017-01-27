@@ -511,6 +511,10 @@ class Map(object):
             dict
         """
 
+        # TODO test this with matplotlib 2.0
+        # if int(matplotlib.__version__.split('.')[0]) > 1:
+        #     matplotlib.rcParams['hatch_linewidth'] = 0.1
+
         patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                          width=extent[1] - extent[0] - 0.02,
                          height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
@@ -613,13 +617,11 @@ class Map(object):
             ax.set_title(**title_kws)
 
         cb_kws = colorbar.set_cb_kws(cb_kws)
-        cb_kws = colorbar.set_cbrange(data, cb_kws)
 
         extent = self._set_extent(data.shape, sky_coords)
 
         imshow_kws['extent'] = extent
         imshow_kws['cmap'] = cb_kws['cmap']
-        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
         if cb_kws.get('log_colorbar', False):
             imshow_kws['norm'] = LogNorm()
 
@@ -627,6 +629,8 @@ class Map(object):
 
         image, nodata = self._make_image(data, snr_thresh=snr_thresh,
                                          log_colorbar=cb_kws.get('log_colorbar', False))
+        cb_kws = colorbar.set_cbrange(image, cb_kws)
+        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
         # Plot regions with no measurement as hatched by putting one large patch as lowest layer
         ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
