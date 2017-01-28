@@ -54,12 +54,10 @@ from matplotlib.colors import from_levels_and_colors
 
 from astropy.stats import sigma_clip
 
-from mangadap.plot import util
-
 import marvin
 
 
-def _log_colorbar_ticks(cbrange):
+def _log_cbticks(cbrange):
     """Set ticks and ticklabels for a log normalized colorbar.
 
     Args:
@@ -71,7 +69,7 @@ def _log_colorbar_ticks(cbrange):
     subs = [1., 2., 3., 6.]
     bottom = np.floor(np.log10(cbrange[0]))
     top = np.ceil(np.log10(cbrange[1]))
-    decs = np.arange(bottom, top+1)
+    decs = np.arange(bottom, top + 1)
     tmp = np.array([sub * 10.**dec for dec in decs for sub in subs])
     return tmp[np.logical_and((tmp >= cbrange[0]), (tmp <= cbrange[1]))]
 
@@ -194,7 +192,7 @@ def set_cbrange(image, cb_kws):
 
     cbr, cb_kws['ticks'] = _set_cbticks(cbr, cb_kws)
 
-    if cb_kws.get('log_colorbar', False):
+    if cb_kws.get('log_cb', False):
         try:
             im_min = np.min(image[image > 0.])
         except ValueError:
@@ -221,16 +219,15 @@ def _set_cbticks(cbrange, cb_kws):
     Return:
         tuple: colorbar range, colorbar tick numbers
     """
-    if cb_kws.get('log_colorbar'):
-        ticks = _log_colorbar_ticks(cbrange)
+    if cb_kws.get('log_cb'):
+        ticks = _log_cbticks(cbrange)
     else:
         try:
             ticks = MaxNLocator(cb_kws.get('n_ticks', 7)).tick_values(*cbrange)
         except AttributeError:
-            print('AttributeError: MaxNLocator instance has no attribute "tick_values".')
+            print('AttributeError: MaxNLocator instance has no attribute ``tick_values``.')
 
-    # if discrete colorbar, offset upper and lower cbrange so that ticks are in
-    # the center of each level
+    # if discrete colorbar, offset upper and lower cbrange so that ticks are in center of each level
     if cb_kws.get('n_levels', None) is not None:
         offset = (ticks[1] - ticks[0]) / 2.
         cbrange = [ticks[0] - offset, ticks[-1] + offset]
@@ -240,9 +237,8 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def draw_colorbar(fig, mappable, axloc=None, cbrange=None,
-                  ticks=None, label_kws=None, tick_params_kws=None,
-                  log_colorbar=False, **extras):
+def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws=None,
+                  tick_params_kws=None, log_cb=False, **extras):
     """Make colorbar.
 
     Args:
@@ -251,14 +247,15 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None,
         axloc (list): Specify (left, bottom, width, height) of colorbar axis. Default is None.
         cbrange (list): Colorbar min and max.
         ticks (list): Ticks on colorbar.
+        log_cb (bool): Log colorbar. Default is False.
         label_kws (dict): Keyword args to set colorbar label. Default is None.
         tick_params_kws (dict): Keyword args to set colorbar tick parameters. Default is None.
 
     Returns:
         tuple: (plt.figure object, plt.figure axis object)
     """
-    label_kws = util.none_to_empty_dict(label_kws)
-    tick_params_kws = util.none_to_empty_dict(tick_params_kws)
+    label_kws = label_kws or {}
+    tick_params_kws = tick_params_kws or {}
 
     cax = (fig.add_axes(axloc) if axloc is not None else None)
     try:
@@ -269,7 +266,7 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None,
         cb.ax.tick_params(**tick_params_kws)
         if label_kws.get('label') is not None:
             cb.set_label(**label_kws)
-        if log_colorbar:
+        if log_cb:
             cb.set_ticklabels([_log_tick_format(tick) for tick in ticks])
 
     return fig, cb
@@ -340,7 +337,7 @@ def set_cb_kws(cb_kws, title):
         percentile_clip = [5, 95]
         symmetric = False
 
-    cb_kws_default = dict(axloc=[0.82, 0.1, 0.02, 5/6.], cbrange=None, symmetric=symmetric,
+    cb_kws_default = dict(axloc=[0.8, 0.1, 0.03, 5/6.], cbrange=None, symmetric=symmetric,
                           cmap=cmap, n_levels=None, percentile_clip=percentile_clip,
                           label_kws=dict(size=16), tick_params_kws=dict(labelsize=16))
 
@@ -349,7 +346,7 @@ def set_cb_kws(cb_kws, title):
         if k not in cb_kws:
             cb_kws[k] = v
 
-    if 'label' in cb_kws:
+    if cb_kws['label'] != '':
         cb_kws['label_kws'] = cb_kws.get('label_kws', {})
         cb_kws['label_kws']['label'] = cb_kws.pop('label')
 

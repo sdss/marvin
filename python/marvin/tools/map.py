@@ -287,7 +287,7 @@ class Map(object):
 
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    def plot(self, array='value', xlim=None, ylim=None, zlim=None,
+    def _plot(self, array='value', xlim=None, ylim=None, zlim=None,
              xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
              figure=None, return_figure=False, show_masked=False):
         """Plot a map using matplotlib.
@@ -418,13 +418,12 @@ class Map(object):
         else:
             return ax
 
-    def _make_image(self, data, snr_thresh, log_colorbar):
+    def _make_image(self, snr_min, log_cb):
         """Make masked array of image.
 
         Args:
-            data (array): Data.
-            snr_thresh (float): Signal-to-noise theshold for keeping a valid measurement.
-            log_colorbar (bool): If True, use log colorbar.
+            snr_min (float): Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool): If True, use log colorbar.
 
         Returns:
             tuple: (masked array of image,
@@ -441,23 +440,23 @@ class Map(object):
         donotuse = (self.mask & 2**30) > 0
         no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit, donotuse))
 
-        no_measure = self._make_mask_no_measurement(data, self.ivar, snr_thresh, log_colorbar)
+        no_measure = self._make_mask_no_measurement(self.value, self.ivar, snr_min, log_cb)
 
         no_data_no_measure = np.logical_or(no_data, no_measure)
 
-        image = np.ma.array(data, mask=no_data_no_measure)
-        mask_nodata = np.ma.array(np.ones(data.shape), mask=np.logical_not(no_data))
+        image = np.ma.array(self.value, mask=no_data_no_measure)
+        mask_nodata = np.ma.array(np.ones(self.value.shape), mask=np.logical_not(no_data))
 
         return image, mask_nodata
 
-    def _make_mask_no_measurement(self, data, ivar, snr_thresh, log_colorbar):
+    def _make_mask_no_measurement(self, data, ivar, snr_min, log_cb):
         """Mask invalid measurements within a data array.
 
         Args:
             data (array): Data.
             ivar (array): Inverse variance.
-            snr_thresh (float): Signal-to-noise threshold for keeping a valid measurement.
-            log_colorbar (bool): If True, use log colorbar.
+            snr_min (float): Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool): If True, use log colorbar.
 
         Returns:
             array: Boolean array for mask (i.e., True corresponds to value to be
@@ -469,9 +468,9 @@ class Map(object):
 
         if ivar is not None:
             no_measure = (ivar == 0.)
-            if snr_thresh is not None:
-                no_measure[(np.abs(data * np.sqrt(ivar)) < snr_thresh)] = True
-            if log_colorbar:
+            if snr_min is not None:
+                no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
+            if log_cb:
                 no_measure[data <= 0.] = True
 
         return no_measure
@@ -496,12 +495,12 @@ class Map(object):
 
         return extent
 
-    def _set_patch_style(self, extent, color='#A8A8A8'):
+    def _set_patch_style(self, extent, facecolor='#A8A8A8'):
         """Set default parameters for a patch.
 
         Args:
             extent (tuple): Extent of image (xmin, xmax, ymin, ymax).
-            color (str): Background color. Default is '#A8A8A8' (gray).
+            facecolor (str): Background color. Default is '#A8A8A8' (gray).
 
         Returns:
             dict
@@ -514,11 +513,11 @@ class Map(object):
         patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                          width=extent[1] - extent[0] - 0.02,
                          height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
-                         fill=True, fc=color, ec='w', zorder=0)
+                         fill=True, fc=facecolor, ec='w', zorder=0)
 
         return patch_kws
 
-    def _ax_setup(self, sky_coords, fig=None, ax=None, fig_kws=None, facecolor='#EAEAF2'):
+    def _ax_setup(self, sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
         """Basic axis setup for maps.
 
         Args:
@@ -528,14 +527,11 @@ class Map(object):
                 Default is None.
             ax: Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel
                 plot. Default is None.
-            fig_kws (dict): Keyword args to pass to plt.figure. Default is None.
-            facecolor (str): Axis facecolor. Default is '#EAEAF2'.
+            facecolor (str): Axis facecolor. Default is '#A8A8A8'.
 
         Returns:
             tuple: (plt.figure object, plt.figure axis object)
         """
-
-        fig_kws = fig_kws or {}
 
         xlabel = 'arcsec' if sky_coords else 'spaxel'
         ylabel = 'arcsec' if sky_coords else 'spaxel'
@@ -548,7 +544,7 @@ class Map(object):
             sns.set_style(rc={'axes.facecolor': facecolor})
 
         if ax is None:
-            fig = plt.figure(**fig_kws)
+            fig = plt.figure()
             ax = fig.add_axes([0.12, 0.1, 2/3., 5/6.])
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
@@ -560,26 +556,29 @@ class Map(object):
 
         return fig, ax
 
-    def dapplot(self, array='value', snr_thresh=1, sky_coords=False, fig=None, ax=None,
-                fig_kws=None, ax_kws=None, title_kws=None, patch_kws=None, imshow_kws=None,
-                cb_kws=None):
+    def plot(self, cmap='linear_Lab', percentile_clip=(5, 95), sigclip=None, cbrange=None,
+             symmetric=False, snr_min=1, log_cb=False, title=None, cblabel=None, sky_coords=False,
+             use_mask=True, fig=None, ax=None, imshow_kws=None, cb_kws=None):
         """Make single panel map or one panel of multi-panel map plot.
 
         Args:
-            array (str):  The array to display, either the data itself ('value'), the inverse
-                variance ('ivar'), or the mask ('mask'). Default is 'value'.
-            snr_thresh (float): Signal-to-noise threshold for keeping a valid measurement. Default
-                is 1.
+            cmap (str): Default is 'linear_Lab'.
+            percentile_clip (tuple): Default is (5, 95).
+            sigclip (tuple): Default is None.
+            cbrange (tuple): If None, set automatically. Default is None.
+            symmetric (bool): Draw a colorbar that is symmetric around zero. Default is False.
+            snr_min (float): Minimum signal-to-noise for keeping a valid measurement. Default is 1.
+            log_cb (bool): Draw a log normalized colorbar. Default is False.
+            title (str): If None, set automatically from property (and channel) name(s). For no
+                title, set to ''. Default is None.
+            cblabel (str): If None, set automatically from unit. For no colorbar label, set to ''.
+                Default is None.
             sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
                 in spaxel coordinates. Default is False.
-            fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is
+            use_mask (bool): Use DAP bitmasks. Default is True.
+            fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is None.
+            ax: plt.figure axis object. Use if creating subplot of a multi-panel plot. Default is
                 None.
-            ax: plt.figure axis object. Use if creating subplot of a multi-panel plot. Default
-                is None.
-            fig_kws (dict): Keyword args to pass to plt.figure. Default is None.
-            ax_kws (dict): Keyword args to draw axis. Default is None.
-            title_kws (dict): Keyword args to pass to ax.set_title. Default is None.
-            patch_kws (dict): Keyword args to pass to ax.add_patch. Default is None.
             imshow_kws (dict): Keyword args to pass to ax.imshow. Default is None.
             cb_kws (dict): Keyword args to set and draw colorbar. Default is None.
 
@@ -587,69 +586,48 @@ class Map(object):
             tuple: (plt.figure object, plt.figure axis object)
         """
 
-        fig_kws = fig_kws or {}
-        ax_kws = ax_kws or {}
-        title_kws = title_kws or {}
-        patch_kws = patch_kws or {}
         imshow_kws = imshow_kws or {}
         cb_kws = cb_kws or {}
 
-        array = array.lower()
-        validExtensions = ['value', 'ivar', 'mask']
-        assert array in validExtensions, 'array must be one of {0!r}'.format(validExtensions)
+        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb)
 
-        if array == 'value':
-            data = self.value
-        elif array == 'ivar':
-            data = self.ivar
-        elif array == 'mask':
-            data = self.mask
+        if title is None:
+            title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
+            title = ' '.join(title.split('_'))
 
-        ax_kws.setdefault('facecolor', '#A8A8A8')
-        patch_kws.setdefault('facecolor', '#A8A8A8')
-
-        title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
-        title = ' '.join(title.split('_'))
-        title_kws.setdefault('label', title)
-
-        cb_kws.setdefault('label', self.unit)
+        cb_kws['cmap'] = cmap
+        cb_kws['percentile_clip'] = percentile_clip
+        cb_kws['symmetric'] = symmetric
+        cb_kws['cbrange'] = cbrange
+        cb_kws['label'] = self.unit if cblabel is None else cblabel
         cb_kws = colorbar.set_cb_kws(cb_kws, title)
-
-        extent = self._set_extent(data.shape, sky_coords)
-
-        imshow_kws['extent'] = extent
-        imshow_kws['cmap'] = cb_kws['cmap']
-        if cb_kws.get('log_colorbar', False):
-            imshow_kws['norm'] = LogNorm()
-
-        patch_kws = self._set_patch_style(extent=extent)
-
-        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax, fig_kws=fig_kws, **ax_kws)
-
-        if title_kws.get('label', None) is not None:
-            ax.set_title(**title_kws)
-
-        image, nodata = self._make_image(data, snr_thresh=snr_thresh,
-                                         log_colorbar=cb_kws.get('log_colorbar', False))
-
         cb_kws = colorbar.set_cbrange(image, cb_kws)
+
+        extent = self._set_extent(self.value.shape, sky_coords)
+        imshow_kws.setdefault('extent', extent)
+        imshow_kws.setdefault('interpolation', 'none')
+        imshow_kws.setdefault('origin', 'lower')
+        imshow_kws['norm'] = LogNorm() if log_cb else None
         imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
+        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+
         # Plot regions with no measurement as hatched by putting one large patch as lowest layer
+        patch_kws = self._set_patch_style(extent=extent)
         ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
 
         # Plot regions of no data as a solid color (gray #A8A8A8)
-        ax.imshow(nodata, interpolation='none', origin='lower', extent=imshow_kws['extent'],
-                  cmap=colorbar.one_color_cmap(color='#A8A8A8'), zorder=1)
+        A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
+        ax.imshow(nodata, cmap=A8A8A8, zorder=1, **imshow_kws)
 
-        p = ax.imshow(image, interpolation='none', origin='lower', **imshow_kws)
+        p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
         fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
 
+        if title is not '':
+            ax.set_title(label=title)
+
         # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
         matplotlib.rcParams['image.composite_image'] = False
-
-        if 'seaborn' in sys.modules:
-            sns.set_style(rc={'axes.facecolor': '#EAEAF2'})
 
         return fig, ax
