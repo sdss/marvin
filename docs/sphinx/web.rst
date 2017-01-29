@@ -200,6 +200,8 @@ flux map, and the d4000 spectral index map.  All maps are generated using the
 
 * **Saving a Map**: Click on the menu dropdown (three horizontal lines) just to the upper right of each map and select file format (PNG, JPG, PDF, SVG).
 
+.. _nsa_display:
+
 NSA Display
 ^^^^^^^^^^^
 
