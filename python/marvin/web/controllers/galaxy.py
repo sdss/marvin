@@ -304,18 +304,9 @@ class Galaxy(FlaskView):
         cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
         maptype = f.get('type', None)
 
-        print('orig request post-form', request.form)
-        if not request.form:
-            print('there is no form')
-        print('orig request get', request.args)
-        print('orig request values', request.values)
-        print('orig request json', request.get_json())
-        print('get spaxel', f)
-
         if maptype == 'optical':
             # for now, do this, but TODO - general processRequest to handle lists and not lists
             try:
-                # mousecoords = [float(v) for v in f.get('mousecoords[]', None)]
                 mousecoords = f.getlist('mousecoords[]', type=float)
             except Exception as e:
                 mousecoords = None
@@ -344,8 +335,6 @@ class Galaxy(FlaskView):
                 self.galaxy['error'] = output['specmsg']
         elif maptype == 'heatmap':
             # grab spectrum based on (x, y) coordinates
-            #x = int(f.get('x')) if 'x' in f.keys() else None
-            #y = int(f.get('y')) if 'y' in f.keys() else None
             x = f.get('x', None, type=int)
             y = f.get('y', None, type=int)
             if all([x, y]):

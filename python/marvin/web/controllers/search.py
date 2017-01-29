@@ -50,7 +50,6 @@ class Search(FlaskView):
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
 
-
     @route('/', methods=['GET', 'POST'])
     def index(self):
 
