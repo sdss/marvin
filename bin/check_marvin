@@ -72,5 +72,6 @@ else:
     print('$MANGA_SPECTRO_REDUX: ', manga_redux)
     print('$MANGA_SPECTRO_ANALYSIS: ', manga_analysis)
     print('DRPall Path: ', drpallpath)
+    print('DB connected?', marvin.marvindb.isdbconnected)
 
 
