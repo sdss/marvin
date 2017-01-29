@@ -63,4 +63,14 @@ else:
     marvinmap = True if marvin.config.urlmap else False
     print('Does Marvin have a URLMap for API use? {0}'.format(marvinmap))
 
+    # check for paths
+    sasbasedir = os.environ.get('SAS_BASE_DIR', None)
+    manga_redux = os.environ.get('MANGA_SPECTRO_REDUX', None)
+    manga_analysis = os.environ.get('MANGA_SPECTRO_ANALYSIS', None)
+    drpallpath = marvin.config.drpall
+    print('$SAS_BASE_DIR: ', sasbasedir)
+    print('$MANGA_SPECTRO_REDUX: ', manga_redux)
+    print('$MANGA_SPECTRO_ANALYSIS: ', manga_analysis)
+    print('DRPall Path: ', drpallpath)
+
 
