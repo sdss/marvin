@@ -55,7 +55,7 @@ class Search(FlaskView):
     def index(self):
 
         # Attempt to retrieve search parameters
-        form = processRequest(request=request, raw=True)
+        form = processRequest(request=request)
         self.search['formparams'] = form
 
         # set the marvin form
@@ -75,15 +75,17 @@ class Search(FlaskView):
             self.search.update({'results': None, 'errmsg': None})
             searchvalue = form['searchbox']
             # Get the returnparams from the dropdown select
-            returnparams = form.getlist('returnparams', None)
+            returnparams = form.getlist('returnparams', type=str)
             # Get the returnparams from the autocomplete input
-            parambox = form.get('parambox', None)
+            parambox = form.get('parambox', None, type=str)
             if parambox:
                 parms = parambox.split(',')
                 parms = parms if parms[-1].strip() else parms[:-1]
                 parambox = parms if parambox else None
             # Select the one that is not none
-            returnparams = returnparams if returnparams else parambox if parambox else None
+            returnparams = returnparams if returnparams and not parambox else \
+                parambox if parambox and not returnparams else \
+                list(set(returnparams) | set(parambox)) if returnparams and parambox else None
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
             # if main form passes validation then do search
             if searchform.validate():
@@ -137,16 +139,16 @@ class Search(FlaskView):
     def webtable(self):
         ''' Do a query for Bootstrap Table interaction in Marvin web '''
 
-        form = processRequest(request=request, raw=True)
+        form = processRequest(request=request)
 
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        limit = form.get('limit', 10)
-        offset = form.get('offset', None)
-        order = form.get('order', None)
-        sort = form.get('sort', None)
-        search = form.get('search', None)
+        limit = form.get('limit', 10, type=int)
+        offset = form.get('offset', None, type=int)
+        order = form.get('order', None, type=str)
+        sort = form.get('sort', None, type=str)
+        search = form.get('search', None, type=str)
 
         # exit if no searchvalue is found
         if not searchvalue:

@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 from flask_classy import route
-from flask import Blueprint, redirect, url_for
+from flask import url_for, current_app
 from flask import request, jsonify
 
 from marvin.api import parse_params
@@ -13,10 +13,11 @@ from marvin.utils.general import parseIdentifier
 from marvin.tools.cube import Cube
 
 from brain.utils.general import parseRoutePath
+from webargs import fields, validate
+from webargs.flaskparser import use_args, use_kwargs
+from brain.api.base import processRequest
 
 ''' stuff that runs server-side '''
-
-# api = Blueprint("api", __name__)
 
 
 def _getCube(name):
@@ -51,6 +52,11 @@ def _getCube(name):
         results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
 
     return cube, results
+
+cube_args = {
+    'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
+    'release': fields.String(required=True, validate=validate.Regexp('MPL-[4-9]'))
+}
 
 
 class CubeView(BaseView):
@@ -103,7 +109,8 @@ class CubeView(BaseView):
         return jsonify(self.results)
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
-    def get(self, name):
+    @use_args(cube_args)
+    def get(self, args, name):
         '''Returns the necessary information to instantiate a cube for a given plateifu.
 
         .. :quickref: Cube; Get a cube given a plate-ifu or mangaid
@@ -162,13 +169,27 @@ class CubeView(BaseView):
 
         '''
 
+        print('testing args', name, args, args['name'])
+        form = processRequest(request)
+        print('orig request post-form', request.form)
+        if not request.form:
+            print('there is no form')
+        print('orig request get', request.args)
+        print('orig request values', request.values)
+        print('orig request json', request.get_json())
+
+        print('test form', form)
+        # print('current_app', current_app.blueprints)
+
         cube, res = _getCube(name)
         self.update_results(res)
         if cube:
             wavelength = (cube.wavelength.tolist() if isinstance(cube.wavelength, np.ndarray)
                           else cube.wavelength)
-            self.results['data'] = {name: '{0}, {1}, {2}, {3}'.format(name, cube.plate,
-                                                                      cube.ra, cube.dec),
+            self.results['data'] = {'plateifu': name,
+                                    'mangaid': cube.mangaid,
+                                    'ra': cube.ra,
+                                    'dec': cube.dec,
                                     'header': cube.header.tostring(),
                                     'redshift': cube.redshift,
                                     'shape': cube.shape,
@@ -177,48 +198,48 @@ class CubeView(BaseView):
 
         return jsonify(self.results)
 
-    # TODO: This is not used anymore, so maybe it should be removed.
-    @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
-    def getAllSpectra(self, name=None):
-        ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing
+    # # TODO: This is not used anymore, so maybe it should be removed.
+    # @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
+    # def getAllSpectra(self, name=None):
+    #     ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing
 
-        .. :quickref: Cube; Get a spectrum from a cube
+    #     .. :quickref: Cube; Get a spectrum from a cube
 
-        '''
-        self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
-        return json.dumps(self.results)
+    #     '''
+    #     self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
+    #     return json.dumps(self.results)
 
-    # TODO: This is not used anymore, so maybe it should be removed.
-    @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
-    @parseRoutePath
-    def getSpaxels(self, **kwargs):
-        """Returns a list of x, y positions for all the spaxels in a given cube.
+    # # TODO: This is not used anymore, so maybe it should be removed.
+    # @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
+    # @parseRoutePath
+    # def getSpaxels(self, **kwargs):
+    #     """Returns a list of x, y positions for all the spaxels in a given cube.
 
-        .. :quickref: Cube; Get a spaxel from a cube
+    #     .. :quickref: Cube; Get a spaxel from a cube
 
-        """
+    #     """
 
-        name = kwargs.pop('name')
-        for var in ['x', 'y', 'ra', 'dec']:
-            if var in kwargs:
-                kwargs[var] = eval(kwargs[var])
+    #     name = kwargs.pop('name')
+    #     for var in ['x', 'y', 'ra', 'dec']:
+    #         if var in kwargs:
+    #             kwargs[var] = eval(kwargs[var])
 
-        # Add ability to grab spectra from fits files
-        cube, res = _getCube(name)
-        self.update_results(res)
-        if not cube:
-            self.results['error'] = 'getSpaxels: No cube: {0}'.format(
-                res['error'])
-            return json.dumps(self.results)
+    #     # Add ability to grab spectra from fits files
+    #     cube, res = _getCube(name)
+    #     self.update_results(res)
+    #     if not cube:
+    #         self.results['error'] = 'getSpaxels: No cube: {0}'.format(
+    #             res['error'])
+    #         return json.dumps(self.results)
 
-        try:
-            spaxels = cube.getSpaxel(**kwargs)
-            self.results['data'] = {}
-            self.results['data']['x'] = [spaxel.x for spaxel in spaxels]
-            self.results['data']['y'] = [spaxel.y for spaxel in spaxels]
-            self.results['status'] = 1
-        except Exception as e:
-            self.results['status'] = -1
-            self.results['error'] = 'getSpaxels: {0}'.format(str(e))
+    #     try:
+    #         spaxels = cube.getSpaxel(**kwargs)
+    #         self.results['data'] = {}
+    #         self.results['data']['x'] = [spaxel.x for spaxel in spaxels]
+    #         self.results['data']['y'] = [spaxel.y for spaxel in spaxels]
+    #         self.results['status'] = 1
+    #     except Exception as e:
+    #         self.results['status'] = -1
+    #         self.results['error'] = 'getSpaxels: {0}'.format(str(e))
 
-        return json.dumps(self.results)
+    #     return json.dumps(self.results)

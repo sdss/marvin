@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
-from flask import session, request, render_template, g
+from flask import session, request, render_template, g, jsonify
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
@@ -11,7 +11,9 @@ from raven.contrib.flask import Sentry
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
+from marvin.api import apierrors
 from marvin.web.jinja_filters import jinjablue
+from marvin.web.error_handlers import weberrors
 from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
 import sys
 import os
@@ -180,6 +182,20 @@ def create_app(debug=False, local=False):
     def internal_server_error(error):
         return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
 
+    @api.errorhandler(422)
+    def handle_unprocessable_entity(err):
+        # webargs attaches additional metadata to the `data` attribute
+        data = getattr(err, 'data')
+        if data:
+            # Get validations from the ValidationError object
+            messages = data['messages']
+        else:
+            messages = ['Invalid request']
+        return jsonify({
+            'validation_errors': messages,
+        }), 422
+
+
     # ----------------------------------
     # Registration
     #
@@ -204,6 +220,10 @@ def create_app(debug=False, local=False):
 
     # Register all custom Jinja filters in the file.
     app.register_blueprint(jinjablue)
+
+    # Register error handlers
+    app.register_blueprint(apierrors)
+    app.register_blueprint(weberrors)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
     try:
