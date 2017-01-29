@@ -50,11 +50,13 @@ import scipy.interpolate as interpolate
 import matplotlib.cm as cm
 from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import from_levels_and_colors
 
 from astropy.stats import sigma_clip
 
 import marvin
+from marvin.core.exceptions import MarvinError
 
 
 def _log_cbticks(cbrange):
@@ -301,44 +303,38 @@ def _string_to_cmap(cm_name):
         colormap
     """
 
-    if 'linear_Lab' in cm_name:
-        try:
-            cmap, cmap_r = linear_Lab()
-        except FileNotFoundError:
-            cmap = cm.viridis
+    if isinstance(cm_name, str):
+        if 'linear_Lab' in cm_name:
+            try:
+                cmap, cmap_r = linear_Lab()
+            except FileNotFoundError:
+                cmap = cm.viridis
+            else:
+                if '_r' in cm_name:
+                    cmap = cmap_r
         else:
-            if '_r' in cm_name:
-                cmap = cmap_r
+            cmap = cm.get_cmap(cm_name)
+    elif isinstance(cm_name, ListedColormap) or isinstance(cm_name, LinearSegmentedColormap):
+        cmap = cm_name
     else:
-        cmap = cm.get_cmap(cm_name)
+        raise MarvinError('{} is not a valid cmap'.format(cm_name))
+
     return cmap
 
 
-def set_cb_kws(cb_kws, title):
+def set_cb_kws(cb_kws):
     """Set colorbar keyword args.
 
     Args:
         cb_kws (dict): Colorbar keyword args.
-        title (str): Property and channel (if applicable) to be plotted.
+        cmap (str): Colormap.
+        percentile_clip (list): Percentile clip.
+        symmetric (bool): Draw a colorbar that is symmetric around zero.
 
     Returns:
         dict
     """
-    if 'vel' in title:
-        cmap = 'RdBu_r'
-        percentile_clip = [10, 90]
-        symmetric = True
-    elif 'sigma' in title:
-        cmap = 'inferno'
-        percentile_clip = [10, 90]
-        symmetric = False
-    else:
-        cmap = 'linear_Lab'
-        percentile_clip = [5, 95]
-        symmetric = False
-
-    cb_kws_default = dict(axloc=[0.8, 0.1, 0.03, 5/6.], cbrange=None, symmetric=symmetric,
-                          cmap=cmap, n_levels=None, percentile_clip=percentile_clip,
+    cb_kws_default = dict(axloc=[0.8, 0.1, 0.03, 5/6.], cbrange=None, n_levels=None,
                           label_kws=dict(size=16), tick_params_kws=dict(labelsize=16))
 
     # Load default kwargs

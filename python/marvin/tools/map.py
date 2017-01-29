@@ -418,27 +418,32 @@ class Map(object):
         else:
             return ax
 
-    def _make_image(self, snr_min, log_cb):
+    def _make_image(self, snr_min, log_cb, use_mask):
         """Make masked array of image.
 
         Args:
             snr_min (float): Minimum signal-to-noise for keeping a valid measurement.
             log_cb (bool): If True, use log colorbar.
+            use_mask (bool): If True, use DAP bitmasks.
 
         Returns:
             tuple: (masked array of image,
                     tuple of (x, y) coordinates of bins with no measurement)
         """
 
-        # Flag a region as having no data if ivar = 0
-        ivar_zero = (self.ivar == 0.)
-
         novalue = (self.mask & 2**4) > 0
-        badvalue = (self.mask & 2**5) > 0
-        matherror = (self.mask & 2**6) > 0
-        badfit = (self.mask & 2**7) > 0
-        donotuse = (self.mask & 2**30) > 0
-        no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit, donotuse))
+        if use_mask:
+            # Flag a region as having no data if ivar = 0
+            ivar_zero = (self.ivar == 0.)
+
+            badvalue = (self.mask & 2**5) > 0
+            matherror = (self.mask & 2**6) > 0
+            badfit = (self.mask & 2**7) > 0
+            donotuse = (self.mask & 2**30) > 0
+            no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit,
+                                            donotuse))
+        else:
+            no_data = novalue
 
         no_measure = self._make_mask_no_measurement(self.value, self.ivar, snr_min, log_cb)
 
@@ -556,17 +561,18 @@ class Map(object):
 
         return fig, ax
 
-    def plot(self, cmap='linear_Lab', percentile_clip=(5, 95), sigclip=None, cbrange=None,
-             symmetric=False, snr_min=1, log_cb=False, title=None, cblabel=None, sky_coords=False,
-             use_mask=True, fig=None, ax=None, imshow_kws=None, cb_kws=None):
+    def plot(self, *args, **kwargs):
         """Make single panel map or one panel of multi-panel map plot.
 
         Args:
-            cmap (str): Default is 'linear_Lab'.
-            percentile_clip (tuple): Default is (5, 95).
-            sigclip (tuple): Default is None.
-            cbrange (tuple): If None, set automatically. Default is None.
-            symmetric (bool): Draw a colorbar that is symmetric around zero. Default is False.
+            cmap (str): Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab'
+                for other properties.
+            percentile_clip (list): Percentile clip. Default is [10, 90] for velocities and sigmas
+                and [5, 95] for other properites.
+            sigclip (list): Sigma clip. Default is None.
+            cbrange (list): If None, set automatically. Default is None.
+            symmetric (bool): Draw a colorbar that is symmetric around zero. Default is True for
+                velocities and False for other properties.
             snr_min (float): Minimum signal-to-noise for keeping a valid measurement. Default is 1.
             log_cb (bool): Draw a log normalized colorbar. Default is False.
             title (str): If None, set automatically from property (and channel) name(s). For no
@@ -585,22 +591,53 @@ class Map(object):
         Returns:
             tuple: (plt.figure object, plt.figure axis object)
         """
+        valid_kwargs = ['cmap', 'percentile_clip', 'sigclip', 'cbrange', 'symmetric', 'snr_min',
+                        'log_cb', 'title', 'cblabel', 'sky_coords', 'use_mask', 'fig', 'ax',
+                        'imshow_kws', 'cb_kws']
 
-        imshow_kws = imshow_kws or {}
-        cb_kws = cb_kws or {}
+        assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb)
+        sigclip = kwargs.get('sigclip', None)
+        cbrange = kwargs.get('cbrange', None)
+        snr_min = kwargs.get('snr_min', 1)
+        log_cb = kwargs.get('log_cb', False)
+        title = kwargs.get('title', None)
+        cblabel = kwargs.get('cblabel', None)
+        sky_coords = kwargs.get('sky_coords', False)
+        use_mask = kwargs.get('use_mask', True)
+        fig = kwargs.get('fig', None)
+        ax = kwargs.get('ax', None)
+        imshow_kws = kwargs.get('imshow_kws', {})
+        cb_kws = kwargs.get('cb_kws', {})
+
+        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb, use_mask=use_mask)
 
         if title is None:
             title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
             title = ' '.join(title.split('_'))
 
+        if 'vel' in title:
+            cmap = kwargs.get('cmap', 'RdBu_r')
+            percentile_clip = kwargs.get('percentile_clip', [10, 90])
+            symmetric = kwargs.get('symmetric', True)
+        elif 'sigma' in title:
+            cmap = kwargs.get('cmap', 'inferno')
+            percentile_clip = kwargs.get('percentile_clip', [10, 90])
+            symmetric = kwargs.get('symmetric', False)
+        else:
+            cmap = kwargs.get('cmap', 'linear_Lab')
+            percentile_clip = kwargs.get('percentile_clip', [5, 95])
+            symmetric = kwargs.get('symmetric', False)
+
         cb_kws['cmap'] = cmap
         cb_kws['percentile_clip'] = percentile_clip
-        cb_kws['symmetric'] = symmetric
+        cb_kws['sigclip'] = sigclip
         cb_kws['cbrange'] = cbrange
+        cb_kws['symmetric'] = symmetric
         cb_kws['label'] = self.unit if cblabel is None else cblabel
-        cb_kws = colorbar.set_cb_kws(cb_kws, title)
+        cb_kws = colorbar.set_cb_kws(cb_kws)
         cb_kws = colorbar.set_cbrange(image, cb_kws)
 
         extent = self._set_extent(self.value.shape, sky_coords)
