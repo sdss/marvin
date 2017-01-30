@@ -297,7 +297,7 @@ Return the results either as a list of dictionaries or a dictionary of lists
 
 Converting Your Results
 -----------------------
-You can convert your results to a variety of forms.
+You can convert your results to a variety of forms.  ConvertToTool accepts as its main argument **tooltype**, a string name of the tool you wish to convert tool.
 
 To Marvin Tool
 ^^^^^^^^^^^^^^
@@ -362,5 +362,22 @@ To JSON object
     r.toJson()
     '[["1-22286", 7992, "12704", 0.099954180419445], ["1-22298", 7992, "12702", 0.0614774264395237], ["1-22333", 7992, "3704", 0.0366250574588776], ["1-22347", 7992, "3701", 0.0437936186790466], ["1-22383", 7992, "3702", 0.0542150922119617], ["1-22412", 7992, "9101", 0.0190997123718262], ["1-22414", 7992, "6103", 0.0922721400856972], ["1-22438", 7992, "1901", 0.016383046284318], ["1-22662", 7992, "6104", 0.027131162583828], ["1-22970", 7992, "3703", 0.0564263463020325]]'
 
+
+To FITS
+^^^^^^^
+
+.. code-block:: python
+
+    r.toFits(filename='myresults.fits')
+    Writing new FITS file myresults.fits
+
+
+To CSV
+^^^^^^
+
+.. code-block:: python
+
+    r.toCSV(filename='myresults.csv')
+    Writing new FITS file myresults.csv
 
 |
