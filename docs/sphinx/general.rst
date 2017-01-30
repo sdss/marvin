@@ -26,6 +26,12 @@ several attributes that control how you interact with MaNGA data.
     The Config class has a single attribute referencing the version of MaNGA data you are working with.
     **release** refers to either MaNGA Product Launches (MPLs), e.g. "MPL-5", or Data Releases (DRs), e.g. "DR13".  See :ref:`marvin-set-versions` below, to see how to set the version of the data you want.
 
+* **use_sentry**:
+    Marvin uses `Sentry <https://sentry.io>`_ to handle real-time logging of errors.  This setting toggles this feature.  The default value is set to **True**.  Set to **False** to disable.
+
+* **add_github_message**:
+    Marvin appends a message to every error instructing you on how to submit a new Github Issue regarding the error you just experienced.  If you wish to disable this message, set this value to **False**.  The default value is **True**.
+
 * **db**:
     This attribute lets Marvin know if you have a database that it can be connected to.  If you have no database, this
     attribute will be set to None.  This attribute is set automatically and **you do not have to do anything with this attribute**.
@@ -46,7 +52,7 @@ Marvin Modes
 * **Local mode** - Use this mode to deal with local FITS files either in your local SAS or through explicit file locations.
 * **Remote mode** - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API.  Depending on your use,
   it may be returned as a JSON object or used to complete the Tool function you are using.
-* **Auto mode** - Use this mode to have Marvin attempt to automatically handle the modes.
+* **Auto mode** - Use this mode to have Marvin attempt to automatically handle the modes.  Marvin starts in this mode. It is recommended to leave Marvin in this mode, and let him handle your data access.
 * See :doc:`data-access-modes` for more detailed information.
 
 .. _marvin-set-versions:

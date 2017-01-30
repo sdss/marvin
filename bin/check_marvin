@@ -63,4 +63,23 @@ else:
     marvinmap = True if marvin.config.urlmap else False
     print('Does Marvin have a URLMap for API use? {0}'.format(marvinmap))
 
+    # check for paths
+    sasbasedir = os.environ.get('SAS_BASE_DIR', None)
+    manga_redux = os.environ.get('MANGA_SPECTRO_REDUX', None)
+    manga_analysis = os.environ.get('MANGA_SPECTRO_ANALYSIS', None)
+    drpallpath = marvin.config.drpall
+    treedir = os.environ.get('TREE_DIR', None)
+    braindir = os.environ.get('MARVIN_BRAIN_DIR', None)
+    sdss_access = os.environ.get('SDSS_ACCESS_DIR', None)
+
+    print('$SAS_BASE_DIR: ', sasbasedir)
+    print('$MANGA_SPECTRO_REDUX: ', manga_redux)
+    print('$MANGA_SPECTRO_ANALYSIS: ', manga_analysis)
+    print('$TREE_DIR: ', treedir)
+    print('$MARVIN_BRAIN_DIR: ', braindir)
+    print('$SDSS_ACCESS_DIR: ', sdss_access)
+
+    print('DRPall Path: ', drpallpath)
+    print('DB connected?', marvin.marvindb.isdbconnected)
+
 
