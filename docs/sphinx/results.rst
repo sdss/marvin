@@ -297,7 +297,7 @@ Return the results either as a list of dictionaries or a dictionary of lists
 
 Converting Your Results
 -----------------------
-You can convert your results to a variety of forms.  ConvertToTool accepts as its main argument **tooltype**, a string name of the tool you wish to convert tool.
+You can convert your results to a variety of forms.  ConvertToTool accepts as its main argument **tooltype**, a string name of the tool you wish to convert tool.  ConvertToTool also accepts optional keyword **mode** if you wish to instantiante Marvin Objects differently that your Queries and Results.
 
 To Marvin Tool
 ^^^^^^^^^^^^^^
@@ -308,9 +308,9 @@ Tools are stored in a separate Results attribute called **objects**.
 Conversion names: 'cube', 'maps', 'spaxel', 'rss', 'modelcube'
 
 Minimum Default Parameters:
- * Cube and RSS objects: needs at least a mangaid.
- * Spaxel object: needs a mangaID, and a X and Y position.
- * Maps and ModelCube objects: need a mangaid, a bintype, and a template
+ * Cube and RSS objects: needs at least a mangaid or plateifu.
+ * Spaxel object: needs a plateifu/mangaID, and a X and Y position.
+ * Maps and ModelCube objects: need a plateifu/mangaid, a bintype, and a template
 
 .. code-block:: python
 
@@ -330,6 +330,28 @@ Minimum Default Parameters:
      <Marvin Cube (plateifu='7995-1901', mode='remote', data_origin='api')>,
      <Marvin Cube (plateifu='7995-1902', mode='remote', data_origin='api')>,
      <Marvin Cube (plateifu='8000-1901', mode='remote', data_origin='api')>]
+
+Let's say you run a query and retrieve a list of results.  By default, this will naturally occur in remote mode.  But now you want to save your query/results, download all the objects in your results, and convert the list of results into local file-based Marvin Cubes.  Just pass convertToTool the **mode** keyword as **auto**, and let Marvin figure it all out for you.
+
+.. code-block:: python
+
+    # Save the query and results as Marvin Pickle files
+    q.save('myquery.mpf')
+    r.save('myresults.mpf')
+
+    # download the results into my local SAS
+    r.download()
+
+    # convert the tools but do so locally
+    print(r.mode)
+    u'remote'
+    r.convertToTool('cube', mode='auto')
+    r.objects
+    [<Marvin Cube (plateifu='7444-1901', mode='local', data_origin='file')>,
+     <Marvin Cube (plateifu='7444-1902', mode='local', data_origin='file')>,
+     <Marvin Cube (plateifu='7995-1901', mode='local', data_origin='file')>,
+     <Marvin Cube (plateifu='7995-1902', mode='local', data_origin='file')>,
+     <Marvin Cube (plateifu='8000-1901', mode='local', data_origin='file')>]
 
 
 To Astropy Table
