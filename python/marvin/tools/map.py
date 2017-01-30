@@ -631,6 +631,9 @@ class Map(object):
             percentile_clip = kwargs.get('percentile_clip', [5, 95])
             symmetric = kwargs.get('symmetric', False)
 
+        assert (percentile_clip is None or sigclip is None), ('Cannot set both percentile_clip and'
+                                                              'sigclip')
+
         cb_kws['cmap'] = cmap
         cb_kws['percentile_clip'] = percentile_clip
         cb_kws['sigclip'] = sigclip

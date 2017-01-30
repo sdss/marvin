@@ -402,7 +402,7 @@ def reverse_cmap(cdict):
 
 def linear_Lab():
     """Make linear Lab color map.
-    
+
     For a description of the Linear Lab palette see
     `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
