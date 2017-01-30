@@ -645,7 +645,6 @@ class Map(object):
         imshow_kws.setdefault('interpolation', 'none')
         imshow_kws.setdefault('origin', 'lower')
         imshow_kws['norm'] = LogNorm() if log_cb else None
-        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
         fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
 
@@ -657,6 +656,7 @@ class Map(object):
         A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
         ax.imshow(nodata, cmap=A8A8A8, zorder=1, **imshow_kws)
 
+        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
         p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
         fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
