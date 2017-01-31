@@ -40,6 +40,7 @@
 - Modified convertToTool to accept a mode keyword
 - Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
 - Updated all Marvin tests to turn off Sentry exception catching and the github message
+- Updated some of the Tools Snippets on the web
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
