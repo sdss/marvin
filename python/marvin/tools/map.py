@@ -421,14 +421,16 @@ class Map(object):
     def _make_image(self, snr_min, log_cb, use_mask):
         """Make masked array of image.
 
-        Args:
-            snr_min (float): Minimum signal-to-noise for keeping a valid measurement.
-            log_cb (bool): If True, use log colorbar.
-            use_mask (bool): If True, use DAP bitmasks.
+        Parameters:
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool):
+                If True, use log colorbar.
+            use_mask (bool):
+                If True, use DAP bitmasks.
 
         Returns:
-            tuple: (masked array of image,
-                    tuple of (x, y) coordinates of bins with no measurement)
+            tuple: (masked array of image, tuple of (x, y) coordinates of bins with no measurement)
         """
 
         novalue = (self.mask & 2**4) > 0
@@ -457,15 +459,18 @@ class Map(object):
     def _make_mask_no_measurement(self, data, ivar, snr_min, log_cb):
         """Mask invalid measurements within a data array.
 
-        Args:
-            data (array): Data.
-            ivar (array): Inverse variance.
-            snr_min (float): Minimum signal-to-noise for keeping a valid measurement.
-            log_cb (bool): If True, use log colorbar.
+        Parameters:
+            data (array):
+                Values for image.
+            ivar (array):
+                Inverse variance of values.
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool):
+                 If True, use log colorbar.
 
         Returns:
-            array: Boolean array for mask (i.e., True corresponds to value to be
-                masked out).
+            array: Boolean array for mask (i.e., True corresponds to value to be masked out).
         """
 
         if np.all(np.isnan(ivar)):
@@ -483,9 +488,11 @@ class Map(object):
     def _set_extent(self, cube_size, sky_coords):
         """Set extent of map.
 
-        Args:
-            cube_size (tuple): Size of the cube in spaxels.
-            sky_coords (bool): If True, use sky coordinates, otherwise use spaxel coordinates.
+        Parameters:
+            cube_size (tuple):
+                Size of the cube in spaxels.
+            sky_coords (bool):
+                If True, use sky coordinates, otherwise use spaxel coordinates.
 
         Returns:
             array
@@ -503,9 +510,11 @@ class Map(object):
     def _set_patch_style(self, extent, facecolor='#A8A8A8'):
         """Set default parameters for a patch.
 
-        Args:
-            extent (tuple): Extent of image (xmin, xmax, ymin, ymax).
-            facecolor (str): Background color. Default is '#A8A8A8' (gray).
+        Parameters:
+            extent (tuple):
+                Extent of image (xmin, xmax, ymin, ymax).
+            facecolor (str):
+                Background color. Default is '#A8A8A8' (gray).
 
         Returns:
             dict
@@ -525,14 +534,18 @@ class Map(object):
     def _ax_setup(self, sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
         """Basic axis setup for maps.
 
-        Args:
-            sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
-                in spaxel coordinates.
-            fig: Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
+        Parameters:
+            sky_coords (bool):
+                If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates.
+            fig (plt.figure object):
+                Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot. Default
+                is None.
+            ax (plt.figure axis object):
+                Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel plot.
                 Default is None.
-            ax: Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel
-                plot. Default is None.
-            facecolor (str): Axis facecolor. Default is '#A8A8A8'.
+            facecolor (str):
+                Axis facecolor. Default is '#A8A8A8'.
 
         Returns:
             tuple: (plt.figure object, plt.figure axis object)
@@ -564,29 +577,42 @@ class Map(object):
     def plot(self, *args, **kwargs):
         """Make single panel map or one panel of multi-panel map plot.
 
-        Args:
-            cmap (str): Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab'
-                for other properties.
-            percentile_clip (list): Percentile clip. Default is [10, 90] for velocities and sigmas
-                and [5, 95] for other properites.
-            sigclip (list): Sigma clip. Default is None.
-            cbrange (list): If None, set automatically. Default is None.
-            symmetric (bool): Draw a colorbar that is symmetric around zero. Default is True for
-                velocities and False for other properties.
-            snr_min (float): Minimum signal-to-noise for keeping a valid measurement. Default is 1.
-            log_cb (bool): Draw a log normalized colorbar. Default is False.
-            title (str): If None, set automatically from property (and channel) name(s). For no
-                title, set to ''. Default is None.
-            cblabel (str): If None, set automatically from unit. For no colorbar label, set to ''.
-                Default is None.
-            sky_coords (bool): If True, show plot in sky coordinates (i.e., arcsec), otherwise show
-                in spaxel coordinates. Default is False.
-            use_mask (bool): Use DAP bitmasks. Default is True.
-            fig: plt.figure object. Use if creating subplot of a multi-panel plot. Default is None.
-            ax: plt.figure axis object. Use if creating subplot of a multi-panel plot. Default is
+        Parameters:
+            cmap (str):
+                Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab' for other
+                properties.
+            percentile_clip (list):
+                Percentile clip. Default is [10, 90] for velocities and sigmas and [5, 95] for other
+                properites.
+            sigclip (list):
+                Sigma clip. Default is None.
+            cbrange (list):
+                If None, set automatically. Default is None.
+            symmetric (bool):
+                Draw a colorbar that is symmetric around zero. Default is True for velocities and
+                False for other properties.
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement. Default is 1.
+            log_cb (bool):
+                Draw a log normalized colorbar. Default is False.
+            title (str):
+                If None, set automatically from property (and channel) name(s). For no title, set to
+                ''. Default is None.
+            cblabel (str):
+                If None, set automatically from unit. For no colorbar label, set to ''. Default is
                 None.
-            imshow_kws (dict): Keyword args to pass to ax.imshow. Default is None.
-            cb_kws (dict): Keyword args to set and draw colorbar. Default is None.
+            sky_coords (bool):
+                If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates. Default is False.
+            use_mask (bool): Use DAP bitmasks. Default is True.
+            fig (plt.figure object):
+                Use if creating subplot of a multi-panel plot. Default is None.
+            ax (plt.figure axis object):
+                Use if creating subplot of a multi-panel plot. Default is None.
+            imshow_kws (dict):
+                Keyword args to pass to ax.imshow. Default is None.
+            cb_kws (dict):
+                Keyword args to set and draw colorbar. Default is None.
 
         Returns:
             tuple: (plt.figure object, plt.figure axis object)

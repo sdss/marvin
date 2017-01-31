@@ -62,8 +62,9 @@ from marvin.core.exceptions import MarvinError
 def _log_cbticks(cbrange):
     """Set ticks and ticklabels for a log normalized colorbar.
 
-    Args:
-        cbrange (list): Colorbar range.
+    Parameters:
+        cbrange (list):
+            Colorbar range.
 
     Returns:
         array
@@ -84,8 +85,9 @@ def _log_tick_format(value):
        [0.1, 0.99], 1 digit float
        otherwise: exponential notation
 
-    Args:
-        value (float): Input value.
+    Parameters
+        value (float):
+            Input value.
 
     Returns:
         str
@@ -112,9 +114,11 @@ def set_vmin_vmax(d, cbrange):
 def _cbrange_sigclip(image, sigma):
     """Sigma clip colorbar range.
 
-    Args:
-        image (masked array): Image.
-        sigma (float): Sigma to clip.
+    Parameters:
+        image (masked array):
+            Image.
+        sigma (float):
+            Sigma to clip.
 
     Returns:
         list: Colorbar range.
@@ -135,10 +139,13 @@ def _cbrange_sigclip(image, sigma):
 def _cbrange_percentile_clip(image, lower, upper):
     """Clip colorbar range according to percentiles.
 
-    Args:
-        image (masked array): Image.
-        lower (float): Lower percentile boundary.
-        upper (float): Upper percentile boundary.
+    Parameters:
+        image (masked array):
+            Image.
+        lower (float):
+            Lower percentile boundary.
+        upper (float):
+            Upper percentile boundary.
 
     Returns:
         list: Colorbar range.
@@ -151,10 +158,11 @@ def _cbrange_percentile_clip(image, lower, upper):
 def _cbrange_user_defined(cbrange, cbrange_user):
     """Set user-specified colorbar range.
 
-    Args:
-        cbrange (list): Input colorbar range.
-        cbrange_user (list): User-specified colorbar range. If a value is None, then the colorbar
-            uses the previous value.
+    Parameters:
+        cbrange (list):
+            Input colorbar range.
+        cbrange_user (list):
+            User-specified colorbar range. If a value is None, then use the previous value.
 
     Returns:
         list: Colorbar range.
@@ -168,9 +176,11 @@ def _cbrange_user_defined(cbrange, cbrange_user):
 def set_cbrange(image, cb_kws):
     """Set colorbar range.
 
-    Args:
-        image (masked array): Image.
-        cb_kws (dict): Colorbar kwargs.
+    Parameters:
+        image (masked array):
+            Image.
+        cb_kws (dict):
+            Colorbar kwargs.
 
     Returns:
         dict: Colorbar kwargs.
@@ -214,9 +224,11 @@ def _set_cbticks(cbrange, cb_kws):
     Adjust colorbar range if using a discrete colorbar so that the ticks fall in the middle of each
         level.
 
-    Args:
-        cbrange (list): Colorbar range.
-        cb_kws (dict): Keyword args to set and draw colorbar.
+    Parameters:
+        cbrange (list):
+            Colorbar range.
+        cb_kws (dict):
+            Keyword args to set and draw colorbar.
 
     Return:
         tuple: colorbar range, colorbar tick numbers
@@ -243,18 +255,26 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws
                   tick_params_kws=None, log_cb=False, **extras):
     """Make colorbar.
 
-    Args:
-        fig: plt.figure object.
-        mappable: Plotting element to map to colorbar.
-        axloc (list): Specify (left, bottom, width, height) of colorbar axis. Default is None.
-        cbrange (list): Colorbar min and max.
-        ticks (list): Ticks on colorbar.
-        log_cb (bool): Log colorbar. Default is False.
-        label_kws (dict): Keyword args to set colorbar label. Default is None.
-        tick_params_kws (dict): Keyword args to set colorbar tick parameters. Default is None.
+    Parameters:
+        fig (matplotlib figure object):
+            Matplotlib figure object from which the axes must be created.
+        mappable (matplotlib image object):
+            Matplotlib plotting element to map to colorbar.
+        axloc (list):
+            Specify (left, bottom, width, height) of colorbar axis. Default is None.
+        cbrange (list):
+            Colorbar min and max.
+        ticks (list):
+            Ticks on colorbar.
+        log_cb (bool):
+            Log colorbar. Default is False.
+        label_kws (dict):
+            Keyword args to set colorbar label. Default is None.
+        tick_params_kws (dict):
+            Keyword args to set colorbar tick parameters. Default is None.
 
     Returns:
-        tuple: (plt.figure object, plt.figure axis object)
+        tuple: (matplotlib figure object, matplotlb axes object)
     """
     label_kws = label_kws or {}
     tick_params_kws = tick_params_kws or {}
@@ -277,13 +297,15 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws
 def _set_cmap(cm_name, n_levels=None):
     """Set the colormaps.
 
-    Args:
-        cm_name (str): Name of colormap.
-        n_levels (int): Number of discrete levels of colormap. If None, then produce continuous
-            colormap. Default is None.
+    Parameters:
+        cm_name (str):
+            Name of colormap.
+        n_levels (int):
+            Number of discrete levels of colormap. If None, then produce continuous colormap.
+            Default is None.
 
     Returns:
-        colormap
+        matplotlib colormap object
     """
     cmap = _string_to_cmap(cm_name)
 
@@ -296,11 +318,12 @@ def _set_cmap(cm_name, n_levels=None):
 def _string_to_cmap(cm_name):
     """Return colormap given name.
 
-    Args:
-        cm_name (str): Name of colormap.
+    Parameters:
+        cm_name (str):
+            Name of colormap.
 
     Returns:
-        colormap
+        matplotlib colormap object
     """
 
     if isinstance(cm_name, str):
@@ -325,11 +348,15 @@ def _string_to_cmap(cm_name):
 def set_cb_kws(cb_kws):
     """Set colorbar keyword args.
 
-    Args:
-        cb_kws (dict): Colorbar keyword args.
-        cmap (str): Colormap.
-        percentile_clip (list): Percentile clip.
-        symmetric (bool): Draw a colorbar that is symmetric around zero.
+    Parameters:
+        cb_kws (dict):
+            Colorbar keyword args.
+        cmap (str):
+            Colormap.
+        percentile_clip (list):
+            Percentile clip.
+        symmetric (bool):
+            Draw a colorbar that is symmetric around zero.
 
     Returns:
         dict
@@ -354,40 +381,46 @@ def set_cb_kws(cb_kws):
 def cmap_discretize(cmap_in, N):
     """Return a discrete colormap from a continuous colormap.
 
-    Example
-        x = resize(arange(100), (5, 100))
-        dviridis = cmap_discretize(cm.viridis, 5)
-        imshow(x, cmap=dviridis)
-
-    Args:
-        cmap_in: colormap instance, eg. cm.viridis.
-        N (int): Number of colors.
+    Parameters:
+        cmap_in:
+            Matplotlib colormap object (e.g., cm.RdBu).
+        N (int):
+            Number of colors.
 
     Returns:
-        colormap instance
-    """
-    cdict = cmap_in._segmentdata.copy()
-    # N colors
-    colors_i = np.linspace(0, 1., N)
-    # N+1 indices
-    indices = np.linspace(0, 1., N+1)
-    for key in ('red', 'green', 'blue'):
-        # Find the N colors
-        D = np.array(cdict[key])
-        I = interpolate.interp1d(D[:, 0], D[:, 1])
-        colors = I(colors_i)
-        # Place these colors at the correct indices.
-        A = np.zeros((N + 1, 3), float)
-        A[:, 0] = indices
-        A[1:, 1] = colors
-        A[:-1, 2] = colors
-        # Create a tuple for the dictionary.
-        L = []
-        for l in A:
-            L.append(tuple(l))
-        cdict[key] = tuple(L)
+        matplotlib colormap object
 
-    return LinearSegmentedColormap('colormap', cdict, 1024)
+    Example:
+        fig, ax = plt.subplots()
+        im = np.resize(np.arange(100), (5, 100))
+        dRdBu = cmap_discretize(cm.RdBu, 5)
+        ax.imshow(im, cmap=dRdBu)
+    """
+    try:
+        return cmap_in._resample(N)
+    except AttributeError:
+        cdict = cmap_in._segmentdata.copy()
+        # N colors
+        colors_i = np.linspace(0, 1., N)
+        # N+1 indices
+        indices = np.linspace(0, 1., N+1)
+        for key in ('red', 'green', 'blue'):
+            # Find the N colors
+            D = np.array(cdict[key])
+            I = interpolate.interp1d(D[:, 0], D[:, 1])
+            colors = I(colors_i)
+            # Place these colors at the correct indices.
+            A = np.zeros((N + 1, 3), float)
+            A[:, 0] = indices
+            A[1:, 1] = colors
+            A[:-1, 2] = colors
+            # Create a tuple for the dictionary.
+            L = []
+            for l in A:
+                L.append(tuple(l))
+            cdict[key] = tuple(L)
+
+        return LinearSegmentedColormap('colormap', cdict, 1024)
 
 
 def reverse_cmap(cdict):
@@ -407,7 +440,7 @@ def linear_Lab():
     `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
     Returns:
-        tuple: colormap and reversed colormap
+        tuple: matplotlib colormap object and reversed matplotlib colormap object
     """
     LinL_file = join(os.path.dirname(marvin.__file__), 'utils', 'plot', 'Linear_L_0-1.csv')
     LinL = np.loadtxt(LinL_file, delimiter=',')
@@ -436,7 +469,7 @@ def linear_Lab():
 
     # creating dictionary
     k = ['red', 'green', 'blue']
-    LinearL = dict(zip(k, rgb))  # makes a dictionary from 2 lists
+    LinearL = dict(zip(k, rgb))
 
     LinearL_r = reverse_cmap(LinearL)
 
@@ -449,9 +482,11 @@ def linear_Lab():
 def get_cmap_rgb(cmap, n_colors=256):
     """Return RGB values of a colormap.
 
-    Args:
-        cmap: Colormap.
-        n_colors: Number of color tuples in colormap. Default is 256.
+    Parameters:
+        cmap (matplotlib colormap object):
+            Colormap.
+        n_colors (int):
+            Number of color tuples in colormap. Default is 256.
 
     Returns:
         array
@@ -465,10 +500,13 @@ def get_cmap_rgb(cmap, n_colors=256):
 def output_cmap_rgb(cmap, path=None, n_colors=256):
     """Print RGB values of a colormap to a file.
 
-    Args:
-        cmap: Colormap.
-        path: Path to generate output file.
-        n_colors: Number of color tuples in colormap. Default is 256.
+    Parameters:
+        cmap (matplotlib colormap object):
+            Colormap.
+        path (str):
+            Path to generate output file. Default is None.
+        n_colors (int):
+            Number of color tuples in colormap. Default is 256.
     """
     rgb = get_cmap_rgb(cmap, n_colors)
     if path is None:
@@ -485,11 +523,12 @@ def one_color_cmap(color):
 
     Useful for imshow.
 
-    Args:
-        color (str): Color.
+    Parameters:
+        color (str):
+            Color.
 
     Returns:
-        matplotlib.colors.ListedColormap
+        matplotlib colormap object
     """
     cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
     return cmap
