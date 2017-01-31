@@ -27,6 +27,7 @@ import marvin.tools.map
 import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap
+import marvin.utils.dap.bpt
 import marvin.utils.six
 
 try:
@@ -631,3 +632,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                    for cc in spaxel_coords]
 
         return spaxels
+
+    def get_bpt_mask(self, method='kewley06'):
+
+        return marvin.utils.dap.bpt.bpt_kewley06(self)
