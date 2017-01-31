@@ -96,6 +96,8 @@ class Map(object):
         elif maps.data_origin == 'api':
             self._load_map_from_api()
 
+        self.masked = numpy.ma.array(self.value, mask=self.mask > 0)
+
     def __repr__(self):
 
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
