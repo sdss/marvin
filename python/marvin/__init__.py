@@ -15,14 +15,12 @@ from collections import OrderedDict
 from distutils.version import StrictVersion
 
 # Set the Marvin version
-from pkg_resources import get_distribution, DistributionNotFound
-
 try:
-    dist = get_distribution('sdss-marvin')
-except DistributionNotFound:
+    from marvin.version import get_version
+except ImportError as e:
     __version__ = 'dev'
 else:
-    __version__ = dist.version
+    __version__ = get_version()
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
