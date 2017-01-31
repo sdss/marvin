@@ -15,15 +15,12 @@
 import sys
 import os
 
-from distutils.version import StrictVersion
-
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
 
 
 try:
-    StrictVersion(marvin.__version__)
     marvin_version = marvin.__version__
 except ValueError:
     marvin_version = 'dev'

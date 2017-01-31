@@ -12,14 +12,14 @@
 
 from __future__ import division
 from __future__ import print_function
+import sys
 import numpy as np
-from marvin.core.exceptions import MarvinMissingDependency
+import matplotlib.pyplot as plt
 
-try:
-    import matplotlib.pyplot as plt
-    pyplot = True
-except ImportError:
-    pyplot = None
+if 'seaborn' in sys.modules:
+    import seaborn as sns
+else:
+    plt.style.use('seaborn-darkgrid')
 
 
 class Spectrum(object):
@@ -79,7 +79,7 @@ class Spectrum(object):
 
         return '<Marvin Spectrum ({0!s})'.format(self.flux)
 
-    def plot(self, array='flux', xlim=None, ylim=None, mask_color=None,
+    def plot(self, array='flux', xlim=None, ylim=(0, None), mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
         """Plots a spectrum using matplotlib.
 
@@ -100,7 +100,8 @@ class Spectrum(object):
                 the range is ``None``, the range for the axis will be set
                 automatically by matploltib. If ``Spectrum.wavelength`` is
                 defined, the range in the x-axis must be defined as a
-                wavelength range.
+                wavelength range. Default for ylim is (0, None), which cuts
+                off negative values but lets the maximum float.
             xlabel,ylabel (str or None):
                 The axis labels to be passed to the plot. If ``xlabel=None``
                 and ``Spectrum.wavelength_unit`` is defined, those units will
@@ -144,11 +145,6 @@ class Spectrum(object):
         .. _axes: http://matplotlib.org/api/axes_api.html
 
         """
-
-        # Alternative if this block keeps throwing an error when matplotlib is actually installed:
-        # if pyplot not in sys.modules
-        if not pyplot:
-            raise MarvinMissingDependency('matplotlib is not installed.')
 
         array = array.lower()
         validSpectrum = ['flux', 'ivar', 'mask']
