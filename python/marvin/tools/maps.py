@@ -16,6 +16,7 @@ import itertools
 
 import astropy.io.fits
 import astropy.wcs
+import matplotlib.pyplot
 import numpy as np
 
 import marvin
@@ -633,6 +634,72 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return spaxels
 
-    def get_bpt_mask(self, method='kewley06'):
+    def get_bpt(self, method='kewley06', snr=3, return_figure=True, show_plot=True):
+        """Returns the BPT diagram for this target.
 
-        return marvin.utils.dap.bpt.bpt_kewley06(self)
+        This method calculates the BPT diagram for this target using emission line maps and
+        returns a dictionary of classification masks, that can be used to select spaxels
+        that have been classified as belonging to a certain excitation process. It also provides
+        plotting functionalities.
+
+        Parameters:
+            method ({'kewley06'}):
+                The method used to determine the boundaries between different excitation
+                mechanisms. Currently, the only available method is ``'kewley06'``, based on
+                Kewley et al. (2006). Other methods may be added in the future. For a detailed
+                explanation of the implementation of the method check the BPT documentation.
+            snr (float or dict):
+                The signal-to-noise cutoff value for the emission lines used to generate the BPT
+                diagram. If ``snr`` is a single value, that signal-to-noise will be used for all
+                the lines. Alternatively, a dictionary of signal-to-noise values, with the
+                emission line channels as keys, can be used.
+                E.g., ``snr={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
+                they will default to ``SNR>=3``.
+            return_figure (bool):
+                If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
+                which can be used to modify the style of the plot.
+            show_plot (bool):
+                If ``True``, interactively display the BPT plot.
+
+        Returns:
+            bpt_return:
+                ``get_bpt`` always returns a dictionary of classification masks. These
+                classification masks (not to be confused with bitmasks) are boolean arrays with the
+                same shape as the Maps or Cube (without the spectral dimension) that can be used
+                to select spaxels belonging to a certain excitation process (e.g., star forming).
+                The keys of the dictionary, i.e., the classification categories, may change
+                depending on the selected `method`. Consult the BPT documentation for more details.
+                If ``return_figure=True``, ``get_bpt`` will return a tuple, the first elemnt of
+                which is the dictionary of classification masks, and the second the matplotlib
+                figure.
+
+        Example:
+            >>> cube = Cube(plateifu='8485-1901')
+            >>> maps = cube.getMaps()
+            >>> bpt_masks, bpt_figure = maps.get_bpt(snr=5, return_figure=True, show_plot=False)
+
+            Now we can use the masks to select star forming spaxels from the cube
+
+            >>> sf_spaxels = cube.flux[bpt_masks['sf']]
+
+            And we can save the figure as a PDF
+
+            >>> bpt_figure.savefig('8485_1901_bpt.pdf')
+
+        .. _figure: http://matplotlib.org/api/figure_api.html
+
+        """
+
+        # Makes sure all the keys in the snr keyword are lowercase
+        if isinstance(snr, dict):
+            snr = dict((kk.lower(), vv) for kk, vv in snr.items())
+
+        if return_figure or show_plot:
+            return_figure = True
+
+        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr, return_figure=return_figure)
+
+        if show_plot:
+            matplotlib.pyplot.show()
+
+        return bpt_return
