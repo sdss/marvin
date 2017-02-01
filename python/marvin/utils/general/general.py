@@ -50,7 +50,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     Parameters:
         cube (:class:`~marvin.tools.cube.Cube` or None or bool)
-            A :class:`~marvin.tools.cube.Cube` object with th DRP cube
+            A :class:`~marvin.tools.cube.Cube` object with the DRP cube
             data from which the spaxel spectrum will be extracted. If None,
             the |spaxel| object(s) returned won't contain spectral information.
         maps (:class:`~marvin.tools.maps.Maps` or None or bool)
