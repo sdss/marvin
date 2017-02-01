@@ -647,7 +647,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 The method used to determine the boundaries between different excitation
                 mechanisms. Currently, the only available method is ``'kewley06'``, based on
                 Kewley et al. (2006). Other methods may be added in the future. For a detailed
-                explanation of the implementation of the method check the BPT documentation.
+                explanation of the implementation of the method check the
+                :ref:`BPT documentation <marvin-bpt>`.
             snr (float or dict):
                 The signal-to-noise cutoff value for the emission lines used to generate the BPT
                 diagram. If ``snr`` is a single value, that signal-to-noise will be used for all
@@ -668,7 +669,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 same shape as the Maps or Cube (without the spectral dimension) that can be used
                 to select spaxels belonging to a certain excitation process (e.g., star forming).
                 The keys of the dictionary, i.e., the classification categories, may change
-                depending on the selected `method`. Consult the BPT documentation for more details.
+                depending on the selected `method`. Consult the :ref:`BPT <marvin-bpt>`
+                documentation for more details.
                 If ``return_figure=True``, ``get_bpt`` will return a tuple, the first elemnt of
                 which is the dictionary of classification masks, and the second the matplotlib
                 figure.
