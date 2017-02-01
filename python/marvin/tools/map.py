@@ -131,7 +131,7 @@ class Map(object):
         elif maps.data_origin == 'api':
             self._load_map_from_api()
 
-        self.masked = numpy.ma.array(self.value, mask=self.mask > 0)
+        self.masked = np.ma.array(self.value, mask=self.mask > 0)
 
     def __repr__(self):
 
