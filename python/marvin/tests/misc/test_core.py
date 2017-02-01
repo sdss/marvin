@@ -24,6 +24,8 @@ class TestCore(marvin.tests.MarvinTest):
     def setUpClass(cls):
 
         marvin.config.switchSasUrl('local')
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
         cls.plate = 8485
         cls.mangaid = '1-209232'

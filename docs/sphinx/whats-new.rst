@@ -1,3 +1,26 @@
+What's New in Marvin 2.1 (January 2017)
+=======================================
+
+* Marvin is now minimally compliant with Python 3.5+
+
+* The NSA catalog information is now available via **Cube.nsa** in Marvin Cubes.
+
+* Marvin Web now has a new NSA Display tab with interactive scatter, and box-and-whisker, plots. See :ref:`nsa_display`
+
+* Marvin now uses Sentry to catch and send errors.
+
+* Marvin Maps now include the ability to make and plot a BPT diagram
+
+* Marvin Maps have updated plotting display
+
+* Marvin Spaxels now include as properties RA, and Dec.
+
+* Streamlined list of query parameters both in the Web and Tools.  Added new parameter Ha_to_Hb ratio.
+
+* New **check_marvin** utility to provide some basic system checks with regards to Marvin
+
+* See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for more.
+
 What's New in Marvin 2.0 Beta (November 2016)
 =============================================
 

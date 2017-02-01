@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-11-18 08:42:54
+# @Last Modified time: 2017-01-30 15:02:17
 #
 # This is the Marvin setup
 #
@@ -70,7 +70,7 @@ setup(name=NAME,
       package_dir={'': 'python'},
       package_data={'': data_files},
       install_requires=install_requires,
-      scripts=['bin/run_marvin'],
+      scripts=['bin/run_marvin', 'bin/check_marvin'],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',

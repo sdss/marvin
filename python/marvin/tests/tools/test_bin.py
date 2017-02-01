@@ -11,13 +11,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import unittest
 
 import marvin
 import marvin.tests
 import marvin.tools.bin
 import marvin.tools.maps
 import marvin.tools.modelcube
-
+import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
 
@@ -27,6 +28,7 @@ class TestBinBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestBinBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver = 'v2_0_1'
@@ -38,14 +40,17 @@ class TestBinBase(marvin.tests.MarvinTest):
         cls.plateifu = '8485-1901'
         cls.ifu = cls.plateifu.split('-')[1]
 
+        cls.path_release = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver, cls.dapver)
+
+        cls.path_gau_mileshc = os.path.join(
+            cls.path_release, '{0}-GAU-MILESHC'.format(cls.bintype), str(cls.plate), str(cls.ifu))
+
         cls.maps_filename = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver, cls.dapver,
-            '{0}-GAU-MILESHC'.format(cls.bintype), str(cls.plate), str(cls.ifu),
+            cls.path_gau_mileshc,
             'manga-{0}-{1}-{2}-GAU-MILESHC.fits.gz'.format(cls.plateifu, 'MAPS', cls.bintype))
 
         cls.modelcube_filename = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver, cls.dapver,
-            '{0}-GAU-MILESHC'.format(cls.bintype), str(cls.plate), str(cls.ifu),
+            cls.path_gau_mileshc,
             'manga-{0}-{1}-{2}-GAU-MILESHC.fits.gz'.format(cls.plateifu, 'LOGCUBE', cls.bintype))
 
         cls.marvindb_session = marvin.marvindb.session
@@ -127,3 +132,34 @@ class TestBinInit(TestBinBase):
             marvin.tools.bin.Bin(binid=99999, plateifu=self.plateifu, mode='local',
                                  bintype=self.bintype)
             self.assertIn('there are no spaxels associated with binid=99999.', str(ee.exception))
+
+
+class TestBinFileMismatch(TestBinBase):
+
+    @unittest.expectedFailure
+    def test_bintypes(self):
+
+        wrong_bintype = 'SPX'
+        self.assertNotEqual(wrong_bintype, self.bintype)
+
+        wrong_modelcube_filename = os.path.join(
+            self.path_release,
+            '{0}-GAU-MILESHC'.format(wrong_bintype), str(self.plate), str(self.ifu),
+            'manga-{0}-{1}-{2}-GAU-MILESHC.fits.gz'.format(self.plateifu, 'LOGCUBE', wrong_bintype))
+
+        bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename,
+                                  modelcube_filename=wrong_modelcube_filename)
+
+        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
+        self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+
+        self.assertRaises(MarvinError,
+                          marvin.utils.general._check_file_parameters(bb._maps, bb._modelcube))
+
+
+
+
+if __name__ == '__main__':
+    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
+    verbosity = 2
+    unittest.main(verbosity=verbosity)

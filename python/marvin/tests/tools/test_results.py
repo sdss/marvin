@@ -2,6 +2,7 @@
 
 from __future__ import print_function, division, absolute_import
 import unittest
+import os
 from marvin import config
 from marvin.tools.query import Query, Results
 from marvin.core.exceptions import MarvinError
@@ -13,13 +14,12 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tests import MarvinTest, skipIfNoBrian
 
 
-class TestResults(MarvinTest):
+class TestResultsBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
 
-        config.switchSasUrl('local')
-
+        super(TestResultsBase, cls).setUpClass()
         cls.mangaid = '1-209232'
         cls.plate = 8485
         cls.plateifu = '8485-1901'
@@ -36,10 +36,12 @@ class TestResults(MarvinTest):
         pass
 
     def setUp(self):
+        config.switchSasUrl('local')
         config.sasurl = self.init_sasurl
-        config.mode = self.init_mode
+        self.mode = self.init_mode
         config.urlmap = self.init_urlmap
         config.setMPL('MPL-5')
+        config.forceDbOn()
 
         self.filter = 'nsa.z < 0.1 and cube.plate==8485'
         self.columns = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
@@ -66,13 +68,14 @@ class TestResults(MarvinTest):
                         '41': (u'1-378182', 8134, u'8134-12705', u'12705', 0.0178659),
                         '46': (u'1-252126', 8335, u'8335-3703', u'3703', 0.0181555)}
 
-        self.q = Query(searchfilter=self.filter)
+        self.q = Query(searchfilter=self.filter, mode=self.mode)
 
     def tearDown(self):
         pass
 
     def _setRemote(self, mode='local', limit=100):
         config.switchSasUrl(mode)
+        self.mode = 'remote'
         response = Interaction('api/general/getroutemap', request_type='get')
         config.urlmap = response.getRouteMap()
 
@@ -81,8 +84,14 @@ class TestResults(MarvinTest):
     def _run_query(self):
         r = self.q.run()
         r.sort('z', order='desc')
-        self.assertEqual(self.res, r.results[0])
+        plateifu = r.getListOf('plateifu')
+        index = plateifu.index(self.plateifu)
+        newres = r.results[index]
+        self.assertEqual(self.res, newres)
         return r
+
+
+class TestResults(TestResultsBase):
 
     def _check_cols(self, mode='local'):
         r = self._run_query()
@@ -198,6 +207,9 @@ class TestResults(MarvinTest):
         self._setRemote()
         self._get_dict(name='cube.mangaid', ftype='dictlist')
 
+
+class TestResultsConvertTool(TestResultsBase):
+
     def _convertTool(self, tooltype='cube'):
 
         if tooltype == 'cube':
@@ -240,6 +252,62 @@ class TestResults(MarvinTest):
     def test_convert_to_tool_remote(self):
         self._setRemote()
         self._convertTool()
+
+    def test_convert_tool_auto(self):
+        self._setRemote()
+        r = self._run_query()
+        r.convertToTool('cube', mode='auto')
+        self.assertEqual('remote', r.mode)
+        self.assertEqual('local', r.objects[0].mode)
+        self.assertEqual('db', r.objects[0].data_origin)
+
+    def test_convert_tool_auto_nodb(self):
+        self._setRemote()
+        config.forceDbOff()
+        r = self._run_query()
+        r.convertToTool('cube', mode='auto', limit=1)
+        self.assertEqual('remote', r.mode)
+        self.assertEqual('local', r.objects[0].mode)
+        self.assertEqual('file', r.objects[0].data_origin)
+
+
+class TestResultsPickling(TestResultsBase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        for fn in ['~/test_results.mpf']:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+        super(TestResultsPickling, cls).setUpClass()
+
+    def setUp(self):
+        self._files_created = []
+        super(TestResultsPickling, self).setUp()
+
+    def tearDown(self):
+
+        for fp in self._files_created:
+            if os.path.exists(fp):
+                os.remove(fp)
+
+    def test_pickle_results(self):
+        self._setRemote()
+        r = self._run_query()
+        path = r.save('results_test.mpf', overwrite=True)
+        self._files_created.append(path)
+        self.assertTrue(os.path.exists(path))
+
+        r = None
+        self.assertIsNone(r)
+
+        r = Results.restore(path)
+        self.assertEqual('nsa.z < 0.1 and cube.plate==8485', r.searchfilter)
+        self.assertEqual('remote', r.mode)
+
+
+class TestResultsPage(TestResultsBase):
 
     def _setrun_query(self, limit=10):
         config.setRelease("MPL-4")

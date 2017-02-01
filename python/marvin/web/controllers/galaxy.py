@@ -237,11 +237,19 @@ class Galaxy(FlaskView):
                 current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
-                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16,16]<br></samp></html>".format(cube.plateifu))
-                self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
-                    Cube(plateifu='{0}')<br># get maps<br>maps=cube.getMaps()<br># or another way <br>\
-                    from marvin.tools.maps import Maps<br>maps = Maps(plateifu='{0}')<br># get an emission \
-                    line map<br>haflux = maps.getMap('emline_gflux', channel='ha_6564')<br></samp></html>".format(cube.plateifu))
+                    Cube(plateifu='{0}')<br># access the header<br>cube.header<br># get NSA data<br>\
+                    cube.nsa<br></samp></html>".format(cube.plateifu))
+
+                self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
+                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>spec = \
+                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum.flux<br>ivar = \
+                    spectrum.ivar<br>mask = spectrum.mask<br>spec.plot()<br></samp></html>".format(cube.plateifu))
+
+                self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.maps import Maps<br>maps = \
+                    Maps(plateifu='{0}')<br>print(maps)<br># get an emission \
+                    line map<br>haflux = maps.getMap('emline_gflux', channel='ha_6564')<br>values = \
+                    haflux.value<br>ivar = haflux.ivar<br>mask = haflux.mask<br>haflux.plot()<br>\
+                    </samp></html>".format(cube.plateifu))
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)

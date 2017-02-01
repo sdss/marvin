@@ -18,9 +18,29 @@
 - Added new script to perform somce basic system, os, and Marvin checks: bin/check_marvin
 - Added an alert banner when the user is using Safari. See #94.
 - Issue #122: added ra/dec to spaxel
+- Issue #145: Limited the number of query parameters in the web
+- Added more tests to Results for sorting, paging, and getting subsets
+- Added kwargs input for Spaxel when using Result.convertToTool
+- Added automatic Sentry error logging #147 into MarvinError, and Sentry in Flask for production mode
+- Added custom error handlers for the web, with potential user feedback form
+- Added Sentry tool for grabbing and displaying Sentry statistics
+- Added text to MarvinError with a Github Issues link and description of how to submit and issue
+- Added Results option to save to CSV
+- Added new parameters in Marvin Config to turn off Sentry error handling and Github Issue message
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
+- Removed the cleanUpQueries method to assess db stability
+- Switched dogpile.cache from using a file to python-memcached
+- Syntax changes and bug fixes to get Marvin Web working when Marvin run on 3.5
+- Got Queries and Results working in 3.5
+- Changed all convertToTool options in Results from mangaid to plateifu
+- Added release explicitly into api query routes
+- Modified the decision tree in query to throw an error in local mode
+- Modified convertToTool to accept a mode keyword
+- Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
+- Updated all Marvin tests to turn off Sentry exception catching and the github message
+- Updated some of the Tools Snippets on the web
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
@@ -30,7 +50,7 @@
 - Issue #121: bugfix with misspelled word in downloadList utility function
 - Issue #105: query results convertToTool not robust when null/default parameters not present
 - Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
-
+- Issue #137: PIL should work in py2.7 and py3.5
 
 ## [2.0.9] - 2016/11/19
 ### Added:
