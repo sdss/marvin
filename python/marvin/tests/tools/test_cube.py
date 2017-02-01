@@ -169,15 +169,15 @@ class TestCube(TestCubeBase):
 
     def test_cube_file_redshift(self):
         cube = Cube(filename=self.filename)
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.redshift, 0.0407447)
 
     def test_cube_db_redshift(self):
         cube = Cube(plateifu=self.plateifu, mode='local')
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.z, 0.0407447)
 
     def test_cube_remote_redshift(self):
         cube = Cube(plateifu=self.plateifu, mode='remote')
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.z, 0.0407447)
 
     def _test_nsa(self, nsa_data, mode='nsa'):
         self.assertIsInstance(nsa_data, DotableCaseInsensitive)
@@ -241,6 +241,33 @@ class TestCube(TestCubeBase):
         with self.assertRaises(MarvinError) as ee:
             cube.release = 'a'
             self.assertIn('the release cannot be changed', str(ee.exception))
+
+    def test_load_7443_12701_file(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        filename = os.path.realpath(os.path.join(
+            os.getenv('MANGA_SPECTRO_REDUX'), 'v2_0_1',
+            '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
+        cube = Cube(filename=filename)
+        self.assertEqual(cube.data_origin, 'file')
+        self.assertIn('elpetro_amivar', cube.nsa)
+
+    def test_load_7443_12701_db(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        cube = Cube(plateifu='7443-12701')
+        self.assertEqual(cube.data_origin, 'db')
+        self.assertIsNone(cube.nsa)
+
+    def test_load_7443_12701_api(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        cube = Cube(plateifu='7443-12701', mode='remote')
+        self.assertEqual(cube.data_origin, 'api')
+        self.assertIsNone(cube.nsa)
 
 
 class TestGetSpaxel(TestCubeBase):
