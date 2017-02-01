@@ -50,7 +50,7 @@ def _get_kewley06_axes():
     xx_comp_nii = np.linspace(-2, 0.4, 1e4)
 
     xx_agn_sii = np.array([-0.308, 1.0])
-    xx_agn_oi = np.array([-1.12, 0.0])
+    xx_agn_oi = np.array([-1.12, 0.5])
 
     grid_bpt[0].plot(xx_sf_nii, sf_nii(xx_sf_nii), 'b--', zorder=90)
     grid_bpt[1].plot(xx_sf_sii, sf_sii(xx_sf_sii), 'r-', zorder=90)
@@ -61,18 +61,19 @@ def _get_kewley06_axes():
     grid_bpt[1].plot(xx_agn_sii, agn_sii(xx_agn_sii), 'b-', zorder=80)
     grid_bpt[2].plot(xx_agn_oi, agn_oi(xx_agn_oi), 'b-', zorder=80)
 
-    grid_bpt[0].text(-1, -0.5, 'SF', horizontalalignment='center', fontsize=12, zorder=100)
-    grid_bpt[0].text(0, 1, 'AGN', horizontalalignment='left', fontsize=12, zorder=100)
+    grid_bpt[0].text(-1, -0.5, 'SF', ha='center', fontsize=12, zorder=100, color='c')
+    grid_bpt[0].text(0, 1, 'AGN', ha='left', fontsize=12, zorder=100)
+    grid_bpt[0].text(-0.08, -1.2, 'Comp', ha='left', fontsize=12, zorder=100, color='g')
 
-    grid_bpt[1].text(-1.2, -0.5, 'SF', horizontalalignment='center', fontsize=12, zorder=100)
-    grid_bpt[1].text(-1, 1.2, 'Seyfert', horizontalalignment='left', fontsize=12, zorder=100)
-    grid_bpt[1].text(0.3, -1, 'LINER', horizontalalignment='left', fontsize=12, zorder=100)
+    grid_bpt[1].text(-1.2, -0.5, 'SF', ha='center', fontsize=12, zorder=100)
+    grid_bpt[1].text(-1, 1.2, 'Seyfert', ha='left', fontsize=12, zorder=100, color='r')
+    grid_bpt[1].text(0.3, -1, 'LINER', ha='left', fontsize=12, zorder=100, color='m')
 
-    grid_bpt[2].text(-2, -0.5, 'SF', horizontalalignment='center', fontsize=12, zorder=100)
-    grid_bpt[2].text(-1.5, 1, 'Seyfert', horizontalalignment='left', fontsize=12, zorder=100)
-    grid_bpt[2].text(-0.1, -1, 'LINER', horizontalalignment='right', fontsize=12, zorder=100)
+    grid_bpt[2].text(-2, -0.5, 'SF', ha='center', fontsize=12, zorder=100)
+    grid_bpt[2].text(-1.5, 1, 'Seyfert', ha='left', fontsize=12, zorder=100)
+    grid_bpt[2].text(-0.1, -1, 'LINER', ha='right', fontsize=12, zorder=100)
 
-    xtick_limits = ((-2, 1), (-1.5, 1), (-2.5, 0))
+    xtick_limits = ((-2, 1), (-1.5, 1), (-2.5, 0.5))
 
     for ii in [0, 1, 2]:
 
@@ -101,6 +102,8 @@ def _get_kewley06_axes():
     grid_bpt[0].set_xlabel(r'log([NII]/H$\alpha$)')
     grid_bpt[1].set_xlabel(r'log([SII]/H$\alpha$)')
     grid_bpt[2].set_xlabel(r'log([OI]/H$\alpha$)')
+
+    gal_bpt[0].grid(False)
 
     return fig, grid_bpt, gal_bpt[0]
 
