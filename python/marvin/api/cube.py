@@ -178,7 +178,7 @@ class CubeView(BaseView):
             self.results['data'] = {name: '{0}, {1}, {2}, {3}'.format(name, cube.plate,
                                                                       cube.ra, cube.dec),
                                     'header': cube.header.tostring(),
-                                    'redshift': nsa_data.z if nsa_data else -1,
+                                    'redshift': nsa_data.z if nsa_data else -9999,
                                     'shape': cube.shape,
                                     'wavelength': wavelength,
                                     'wcs_header': cube.wcs.to_header_string()}
