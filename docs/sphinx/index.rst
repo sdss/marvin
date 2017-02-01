@@ -68,6 +68,7 @@ Marvin Primer
    query
    results
    tools/cube
+   tools/bpt
 
 :doc:`api`
 ==========
