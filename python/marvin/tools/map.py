@@ -31,9 +31,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
 # CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-# OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 from __future__ import division
@@ -49,7 +49,6 @@ from astropy.io import fits
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import mpl_toolkits.axes_grid1
 from matplotlib.colors import LogNorm
 
 import marvin
@@ -410,8 +409,8 @@ class Map(object):
                 If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
                 coordinates.
             fig (plt.figure object):
-                Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot. Default
-                is None.
+                Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
+                Default is None.
             ax (plt.figure axis object):
                 Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel plot.
                 Default is None.
@@ -434,7 +433,7 @@ class Map(object):
 
         if ax is None:
             fig = plt.figure()
-            ax = fig.add_axes([0.12, 0.1, 2/3., 5/6.])
+            ax = fig.add_axes([0.12, 0.1, 2 / 3., 5 / 6.])
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
 
@@ -450,11 +449,11 @@ class Map(object):
 
         Parameters:
             cmap (str):
-                Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab' for other
-                properties.
+                Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab' for
+                other properties.
             percentile_clip (list):
-                Percentile clip. Default is [10, 90] for velocities and sigmas and [5, 95] for other
-                properites.
+                Percentile clip. Default is [10, 90] for velocities and sigmas and [5, 95] for
+                other properites.
             sigclip (list):
                 Sigma clip. Default is None.
             cbrange (list):
@@ -467,8 +466,8 @@ class Map(object):
             log_cb (bool):
                 Draw a log normalized colorbar. Default is False.
             title (str):
-                If None, set automatically from property (and channel) name(s). For no title, set to
-                ''. Default is None.
+                If None, set automatically from property (and channel) name(s). For no title, set
+                to ''. Default is None.
             cblabel (str):
                 If None, set automatically from unit. For no colorbar label, set to ''. Default is
                 None.
