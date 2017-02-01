@@ -492,6 +492,7 @@ class Map(object):
             >>> haflux = maps.getMap('emline_gflux', channel='ha_6564')
             >>> haflux.plot()
         """
+
         valid_kwargs = ['cmap', 'percentile_clip', 'sigclip', 'cbrange', 'symmetric', 'snr_min',
                         'log_cb', 'title', 'cblabel', 'sky_coords', 'use_mask', 'fig', 'ax',
                         'imshow_kws', 'cb_kws']
