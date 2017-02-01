@@ -159,16 +159,15 @@ def bpt_kewley06(maps, mode='strict'):
                  ((log_oiii_hb < sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False) &
                  ((log_oiii_hb < sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False))
 
-    agn_mask = (((log_oiii_hb > comp_nii(log_nii_ha)) | (log_nii_ha > 0.05)).filled(False) &
+    agn_mask = (((log_oiii_hb > comp_nii(log_nii_ha)) | (log_nii_ha > 0.465)).filled(False) &
                 ((log_oiii_hb > sf_sii(log_sii_ha)) | (log_sii_ha > 0.32)).filled(False) &
                 ((log_oiii_hb > sf_oi(log_oi_ha)) | (log_oi_ha > -0.59)).filled(False))
 
-    seyfert_mask = (agn_mask & (log_oi_ha > -0.59).filled(False) &
-                    (1.89 * log_sii_ha + 0.76 < log_oiii_hb).filled(False) &
-                    (1.18 * log_oi_ha + 1.30 < log_oiii_hb).filled(False))
+    seyfert_mask = (agn_mask & (1.89 * log_sii_ha + 0.76 < log_oiii_hb).filled(False) &
+                               (1.18 * log_oi_ha + 1.30 < log_oiii_hb).filled(False))
 
-    liner_mask = (agn_mask & (log_oi_ha > -0.59).filled(False) &
-                  (1.18 * log_oi_ha + 1.30 > log_oiii_hb).filled(False))
+    liner_mask = (agn_mask & (1.89 * log_sii_ha + 0.76 > log_oiii_hb).filled(False) &
+                             (1.18 * log_oi_ha + 1.30 > log_oiii_hb).filled(False))
 
     invalid_mask = ha.mask & oiii.mask & nii.mask & hb.mask & sii.mask & oi.mask
     ambiguous_mask = ~(sf_mask | comp_mask | seyfert_mask | liner_mask) & ~invalid_mask
