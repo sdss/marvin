@@ -170,7 +170,51 @@ def kewley_agn_oi(log_oi_ha):
 
 
 def bpt_kewley06(maps, snr=3, return_figure=True):
-    """Returns ionisation regions, making use of the boundaries defined in Kewley+06."""
+    """Returns ionisation regions, making use of the boundaries defined in Kewley+06.
+
+    Makes use of the classification system defined by
+    `Kewley et al. (2006) <https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract>`_
+    to return classification masks for different ionisation mechanisms. If ``return_figure=True``,
+    produces and returns a matplotlib figure with the classification plots (based on
+    Kewley+06 Fig. 4) and the 2D spatial distribution of classified spaxels (i.e., a map of the
+    galaxy in which each spaxel is colour-coded based on its emission mechanism).
+
+    While it is possible to call this function directly, its normal use will be via the
+    :func:`~marvin.tools.maps.Maps.get_bpt` method.
+
+    Parameters:
+        maps (a Marvin :class:`~marvin.tools.maps.Maps` object)
+            The Marvin Maps object that contains the emission line maps to be used to determine
+            the BPT classification.
+        snr (float or dict):
+            The signal-to-noise cutoff value for the emission lines used to generate the BPT
+            diagram. If ``snr`` is a single value, that signal-to-noise will be used for all
+            the lines. Alternatively, a dictionary of signal-to-noise values, with the
+            emission line channels as keys, can be used.
+            E.g., ``snr={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
+            they will default to ``SNR>=3``.
+        return_figure (bool):
+            If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
+            which can be used to modify the style of the plot.
+
+    Returns:
+        bpt_return:
+            ``bpt_kewley06`` always returns a dictionary of classification masks. These
+            classification masks (not to be confused with bitmasks) are boolean arrays with the
+            same shape as the Maps or Cube (without the spectral dimension) that can be used
+            to select spaxels belonging to a certain excitation process (e.g., star forming).
+            The returned masks are ``sf`` (star forming), ``comp`` (composite), ``agn``,
+            ``seyfert``, ``liner``, ``invalid`` (spaxels that are masked out in at least one of
+            the emission line maps used), and ``ambiguous`` (spaxels that do not fall in any
+            classification or fall in more than one). All these masks are unique (a spaxel can
+            only belong to one of them) with the exception of ``agn``, which intersects with
+            ``seyfert`` and ``liner``. If ``return_figure=True``, ``get_bpt`` will return a tuple,
+            the first elemnt of which is the dictionary of classification masks, and the second the
+            matplotlib figure.
+
+    .. _figure: http://matplotlib.org/api/figure_api.html
+
+    """
 
     # Gets the necessary emission line maps
     oiii = get_masked(maps, 'oiii_5008', snr=get_snr(snr, 'oiii'))
