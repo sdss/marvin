@@ -252,3 +252,5 @@ class Plate(MarvinToolsClass, list):
             # load the file
             if file:
                 self.filename = file
+            else:
+                self.filename = None

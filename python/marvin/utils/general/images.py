@@ -148,6 +148,13 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     or the Utah SAS.  Optionally can download the images by rsync using
     sdss_access.
 
+    When as_url is False, both local and remote modes will allow you to access
+    the full path to the images in your local SAS.  WHen as_url is True,
+    local mode generates the Utah SAS url links, while remote mode generates the
+    Utah SAS rsync links.
+
+    Auto mode defaults to remote.
+
     Parameters:
         plateid (int):
             The plate ID to retrieve the images for.  Required.
@@ -158,7 +165,8 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
             :doc:`Mode secision tree</mode_decision>`.
             the cube exists.
         as_url (bool):
-            Convert the list of images to use the SAS url
+            Convert the list of images to use the SAS url (mode=local)
+            or the SAS rsync url (mode=remote)
         verbose (bool):
             Turns on verbosity during rsync
         release (str):
@@ -180,9 +188,20 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     drpver, __ = marvin.config.lookUpVersions(release=release)
     dir3d = getDir3d(plateid, mode=mode)
 
+    # if mode is auto, set it to remote:
+    if mode == 'auto':
+        warnings.warn('Mode is auto.  Defaulting to remote.  If you want to access your \
+            local images, set the mode explicitly to local', MarvinUserWarning)
+        mode = 'remote'
+
     if mode == 'local':
         full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
-        listofimages = rsync_access.expand('', full=full, as_url=True)
+        listofimages = rsync_access.expand('', full=full, as_url=as_url)
+
+        # if download, issue warning that cannot do it
+        if download:
+            warnings.warn('Download not available when in local mode', MarvinUserWarning)
+
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
@@ -212,17 +231,25 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     or the Utah SAS.  Optionally can download the images by rsync using
     sdss_access.
 
+    When as_url is False, both local and remote modes will allow you to access
+    the full path to the images in your local SAS.  WHen as_url is True,
+    local mode generates the Utah SAS url links, while remote mode generates the
+    Utah SAS rsync links.
+
+    Auto mode defaults to remote.
+
     Parameters:
         inputlist (list):
-            Required.  A list of plate-ifus or mangaids for the images you want to retrieve
+            A list of plate-ifus or mangaids for the images you want to retrieve. Required.
         download (bool):
-            Set to download the images from the SAS
+            Set to download the images from the SAS.  Only works in remote mode.
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`.
             the cube exists.
         as_url (bool):
-            Convert the list of images to use the SAS url
+            Convert the list of images to use the SAS url (mode=local)
+            or the SAS rsync url (mode=remote)
         verbose (bool):
             Turns on verbosity during rsync
         release (str):
@@ -230,7 +257,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
 
     Returns:
         listofimages (list):
-            The list of images
+            The list of images you have requested
 
     '''
     # Check inputs
