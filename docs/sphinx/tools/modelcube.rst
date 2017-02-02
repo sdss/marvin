@@ -1,14 +1,13 @@
-.. _marvin-cube:
+.. _marvin-modelcube:
 
-Cube
-====
+ModelCube
+=========
 
-:ref:`marvin-tools-cube` is a class to interact with a fully reduced DRP data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DRP cube file on your machine and in the expected directory (see ```:ref:sasdir-setup```), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a cube and plot the spectrum of its central spaxel.
+:ref:`marvin-tools-modelcube` is a class to interact with a DAP model data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DAP model cube file on your machine and in the expected directory (see ```:ref:sasdir-setup```), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a model cube and plot the spectrum of its central spaxel.
 
 
-.. If remote, fetches data on request: getSpaxel()
-   getWavelength doesn't work via API
-   AttributeError: 'Cube' object has no attribute '_useDB'
+.. everything below here is unchanged from cube.rst
+
 
 ::
     
