@@ -25,7 +25,7 @@ organization\:
 - :ref:`marvin-tools-modelcube`: Interface to the MaNGA DAP Modelcube object
 - :ref:`marvin-tools-plate`: Explore all cubes for a given Plate
 
-These classes follow the Manga :doc:`data-access-modes` when determining the data location.  Thus they seamlessly move between local FITS file and remote data via API.
+These classes follow the MaNGA :doc:`data-access-modes` when determining the data location.  Thus they seamlessly move between local FITS file and remote data via API.
 
 
 .. marvin-tools-queries:

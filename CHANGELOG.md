@@ -1,5 +1,35 @@
 # Marvin's Change Log
 
+## [2.1] - not yet released
+### Added:
+- Added Python example code for getting a spectrum in galaxy page of web.
+
+### Changed:
+
+- Overhauled Map plotting
+    - uses DAP bitmasks (NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE)
+    - adds percentile and sigma clipping
+    - adds hatching for regions with data (i.e., a spectrum) but no measurement by the DAP
+    - adds Linear Lab color map
+    - adds option for logarithmic colorbar
+    - adds option to use sky coordinates
+    - adds map property name as title
+    - makes plot square
+    - sets plotting defaults:
+        - cmap is linear_Lab (sequential)
+        - cmap is RdBu_r (diverging) for velocity plots (Note: this is reversed from the sense of the default coolwarm    colormap in v2.0---red for positive velocities and blue for negative velocities)
+        - cmap is inferno (sequential) for sigma plots
+        - clips at 5th and 95th percentiles
+        - clips at 10th and 90th percentiles for velocity and sigma plots
+        - velocity plots are symmetric about 0
+        - uses DAP bitmasks NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE
+        - also masks spaxels with ivar=0
+        - minimum SNR is 1
+
+
+### Fixed:
+
+
 ## [2.0.10] - not yet released
 ### Added:
 - Restructured documentation index page.
