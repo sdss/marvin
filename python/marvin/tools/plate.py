@@ -59,6 +59,11 @@ class Plate(MarvinToolsClass, list):
             self.plateifu = '{0}-XXXX'.format(self.plateid)
             kwargs['plateifu'] = self.plateifu
 
+        self.plateifu = kwargs.get('plateifu', None)
+
+        args = [self.plateid, self.plateifu]
+        assert any(args), 'Enter plateid or plateifu!'
+
         MarvinToolsClass.__init__(self, *args, **kwargs)
 
         # sort out any plateid, plate-ifu, mangaid name snafus

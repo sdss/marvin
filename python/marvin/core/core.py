@@ -44,7 +44,7 @@ __all__ = ['MarvinToolsClass', 'Dotable', 'DotableCaseInsensitive']
 
 
 def kwargsGet(kwargs, key, replacement):
-    """As kwargs.get but handles uses replacemente if the value is None."""
+    """As kwargs.get but uses replacement if the value is None."""
 
     if key not in kwargs:
         return replacement
