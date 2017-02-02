@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-01 23:11:25
+# @Last Modified time: 2017-02-01 23:33:24
 
 from __future__ import print_function, division, absolute_import
 
@@ -253,6 +253,12 @@ class TestImagesByPlate(TestImagesBase):
             image = getImagesByPlate('8485abc', mode='local')
         self.assertIn(errmsg, str(cm.exception))
 
+    def test_notvalid_mode(self):
+        errmsg = 'Mode must be either auto, local, or remote'
+        with self.assertRaises(AssertionError) as cm:
+            image = getImagesByPlate(self.plate, mode='notvalidmode')
+        self.assertIn(errmsg, str(cm.exception))
+
     def _get_imageplate(self, explist, plate=None, mode=None, as_url=None):
         images = getImagesByPlate(plate, mode=mode, as_url=as_url)
         self.assertIn(explist[0], images)
@@ -302,6 +308,62 @@ class TestImagesByPlate(TestImagesBase):
             image = getImagesByPlate(self.new_plate, mode='local', as_url=True, download=True)
         self.assertIs(cm[-1].category, MarvinUserWarning)
         self.assertIn(errmsg, str(cm[-1].message))
+
+
+class TestRandomImages(TestImagesBase):
+
+    def test_notvalid_mode(self):
+        errmsg = 'Mode must be either auto, local, or remote'
+        with self.assertRaises(AssertionError) as cm:
+            image = getRandomImages(mode='notvalidmode')
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_get_images_download_local_fail(self):
+        localpath = self._make_paths(self.mangaredux, mode='local', inputs=[self.new_plateifu])
+        remotepath = self._make_paths(self.remoteredux, mode='remote', inputs=[self.new_plateifu])
+        self.assertFalse(os.path.isfile(localpath[0]))
+        errmsg = 'Download not available when in local mode'
+        with warnings.catch_warnings(record=True) as cm:
+            warnings.simplefilter("always")
+            image = getRandomImages(mode='local', as_url=True, download=True)
+        self.assertIs(cm[-1].category, MarvinUserWarning)
+        self.assertIn(errmsg, str(cm[-1].message))
+
+    def _get_image_random(self, basedir, num=10, mode=None, as_url=None):
+        images = getRandomImages(num=num, mode=mode, as_url=as_url)
+        self.assertIn(basedir, images[0])
+        self.assertIsInstance(images, list)
+        self.assertIsNotNone(images)
+        self.assertEqual(num, len(images))
+
+    def test_get_images_auto(self):
+        mode = 'auto'
+        self._get_image_random(self.mangaredux, mode=mode)
+
+    def test_get_images_local(self):
+        mode = 'local'
+        self._get_image_random(self.mangaredux, mode=mode)
+
+    def test_get_images_local_num5(self):
+        mode = 'local'
+        self._get_image_random(self.mangaredux, num=5, mode=mode)
+
+    def test_get_images_local_url(self):
+        mode = 'local'
+        self._get_image_random(self.remoteurl, mode=mode, as_url=True)
+
+    def test_get_images_remote_url(self):
+        mode = 'remote'
+        self._get_image_random(self.remoteredux, mode=mode, as_url=True)
+
+    def test_get_images_remote(self):
+        mode = 'remote'
+        self._get_image_random(self.mangaredux, mode=mode)
+
+    def test_get_images_remote_num5(self):
+        mode = 'remote'
+        self._get_image_random(self.mangaredux, num=5, mode=mode)
+
 
 if __name__ == '__main__':
     verbosity = 2

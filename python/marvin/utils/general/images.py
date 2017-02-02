@@ -91,6 +91,13 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     or the Utah SAS.  Optionally can download the images by rsync using
     sdss_access.
 
+    When as_url is False, both local and remote modes will allow you to access
+    the full path to the images in your local SAS.  WHen as_url is True,
+    local mode generates the Utah SAS url links, while remote mode generates the
+    Utah SAS rsync links.
+
+    Auto mode defaults to remote.
+
     Parameters:
         num (int):
             The number of images to retrieve
@@ -101,7 +108,8 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
             :doc:`Mode secision tree</mode_decision>`.
             the cube exists.
         as_url (bool):
-            Convert the list of images to use the SAS url
+            Convert the list of images to use the SAS url (mode=local)
+            or the SAS rsync url (mode=remote)
         verbose (bool):
             Turns on verbosity during rsync
         release (str):
@@ -116,9 +124,21 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     drpver, __ = marvin.config.lookUpVersions(release=release)
     rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose)
 
+    # if mode is auto, set it to remote:
+    if mode == 'auto':
+        warnings.warn('Mode is auto.  Defaulting to remote.  If you want to access your \
+            local images, set the mode explicitly to local', MarvinUserWarning)
+        mode = 'remote'
+
+    # do a local or remote thing
     if mode == 'local':
         full = rsync_access.full('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
-        listofimages = rsync_access.random('', full=full, num=16, refine='\d{4,5}.png', as_url=True)
+        listofimages = rsync_access.random('', full=full, num=num, refine='\d{4,5}.png', as_url=as_url)
+
+        # if download, issue warning that cannot do it
+        if download:
+            warnings.warn('Download not available when in local mode', MarvinUserWarning)
+
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
@@ -194,6 +214,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
             local images, set the mode explicitly to local', MarvinUserWarning)
         mode = 'remote'
 
+    # do a local or remote thing
     if mode == 'local':
         full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
         listofimages = rsync_access.expand('', full=full, as_url=as_url)
