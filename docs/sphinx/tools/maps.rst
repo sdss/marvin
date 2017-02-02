@@ -14,6 +14,10 @@ Maps
 
 .. image:: ../_static/haflux_8485-1901.png
 
+.. maps = Maps(plateifu='8485-1901', bintype='VOR10')
+.. haflux = maps['emline_gflux_ha_6564']
+.. stvel = maps['stellar_vel']
+.. spax = maps[17, 17]
 
 The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object.
 
