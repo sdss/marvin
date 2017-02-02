@@ -74,6 +74,7 @@ class CubeView(BaseView):
         :resjson string data: data message
         :resheader Content-Type: application/json
         :statuscode 200: no error
+        :statuscode 422: invalid input parameters
 
         **Example request**:
 
@@ -128,6 +129,7 @@ class CubeView(BaseView):
         :json string wcs_header: the cube wcs_header as a string
         :resheader Content-Type: application/json
         :statuscode 200: no error
+        :statuscode 422: invalid input parameters
 
         **Example request**:
 

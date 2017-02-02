@@ -108,6 +108,7 @@ Status Codes:
 * **500**: Internal Server Error - something has gone wrong on the server side
 * **405**: Method Not Allowed - the route is using the wrong method request, e.g. GET instead of POST
 * **401**: Authentication Required - the correct authentication credentials was not provided
+* **422**: Unprocessable Entity - the input parameters are invalid
 * **400**: Bad Request
 * **502**: Bad Gateway
 * **504**: Gateway Timeout

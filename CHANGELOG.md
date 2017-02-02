@@ -76,6 +76,7 @@
 - Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
 - Issue #137: PIL should work in py2.7 and py3.5
 - Issue #172: broken mode=auto in image utilities
+- Issue #158: version discrepancy in setup.py
 
 ## [2.0.9] - 2016/11/19
 ### Added:
