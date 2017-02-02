@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-01 23:33:24
+# @Last Modified time: 2017-02-01 23:50:38
 
 from __future__ import print_function, division, absolute_import
 
@@ -20,6 +20,12 @@ from marvin.tools.plate import Plate
 from marvin.tests import MarvinTest, skipIfNoBrian
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d
 
+try:
+    from sdss_access import RsyncAccess, AccessError
+except ImportError:
+    Path = None
+    RsyncAccess = None
+
 
 class TestImagesBase(MarvinTest):
 
@@ -31,12 +37,15 @@ class TestImagesBase(MarvinTest):
         cls.plate = 8485
         cls.plateifu = '8485-1901'
         cls.mastar_plateifu = '8705-1901'
-        cls.new_plateifu = '7495-1901'
-        cls.new_plate = 7495
         cls.cubepk = 10179
         cls.ra = 232.544703894
         cls.dec = 48.6902009334
         cls.imagelist = ['8485-1901', '7443-12701', '7443-1901']
+
+        cls.new_plateifu = '7495-1901'
+        cls.new_plate = 7495
+        cls.new_ifu = '1901'
+        cls.new_file = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.new_plateifu)
 
         cls.sasbasedir = os.getenv("$SAS_BASE_DIR")
         cls.mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
@@ -68,6 +77,7 @@ class TestImagesBase(MarvinTest):
         for file in newfiles:
             if os.path.isfile(file):
                 os.remove(file)
+        self._remove_cube(release='MPL-5')
 
     def _update_release(self, release):
         config.setMPL(release)
@@ -82,6 +92,24 @@ class TestImagesBase(MarvinTest):
             thepath = os.path.join(basepath, self.drpver, plateid, dir3d, 'images', ifu+'.png')
             fullpaths.append(thepath)
         return fullpaths
+
+    def _get_cube(self, release=None):
+        if release:
+            self._update_release(release)
+        filepath = os.path.join(self.mangaredux, self.drpver, str(self.new_plate), 'stack', self.new_file)
+        if not os.path.isfile(filepath):
+            rsync_access = RsyncAccess(label='marvin_getlist', verbose=False)
+            rsync_access.remote()
+            rsync_access.add('mangacube', plate=self.new_plate, drpver=self.drpver, ifu=self.new_ifu, dir3d='stack')
+            rsync_access.set_stream()
+            rsync_access.commit()
+
+    def _remove_cube(self, release=None):
+        if release:
+            self._update_release(release)
+        filepath = os.path.join(self.mangaredux, self.drpver, str(self.new_plate), 'stack', self.new_file)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
 
 
 class TestGetDir3d(TestImagesBase):
@@ -291,6 +319,7 @@ class TestImagesByPlate(TestImagesBase):
     def test_get_images_download_remote(self):
         self._update_release('MPL-5')
         config.forceDbOff()
+        self._get_cube()
         localpath = self._make_paths(self.mangaredux, mode='local', inputs=[self.new_plateifu])
         remotepath = self._make_paths(self.remoteredux, mode='remote', inputs=[self.new_plateifu])
         self.assertFalse(os.path.isfile(localpath[0]))
