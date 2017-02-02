@@ -52,6 +52,7 @@ class Plate(MarvinToolsClass, list):
         self._cubes = None
         self._plate = None
         self._pdict = None
+        self.platedir = None
         self.nocubes = kwargs.get('nocubes', None)
 
         # If plateid specified, force a temp plateifu
@@ -86,9 +87,9 @@ class Plate(MarvinToolsClass, list):
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
         self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
-        platedir = self.filename
+        self.platedir = self.filename
         self._checkFilename()
-        return platedir, self.filename
+        return self.filename
 
     def _getPlateFromFile(self):
         ''' Initialize a Plate from a Cube/RSS File'''

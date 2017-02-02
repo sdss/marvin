@@ -12,10 +12,11 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 import numpy as np
 from functools import wraps
 import marvin
+import warnings
 from distutils.version import StrictVersion
 from marvin.utils.general import parseIdentifier, mangaid2plateifu
 
@@ -39,6 +40,7 @@ def setMode(func):
             kwargs['mode'] = mode
         else:
             kwargs['mode'] = marvin.config.mode
+        assert kwargs['mode'] in ['auto', 'local', 'remote'], 'Mode must be either auto, local, or remote'
         return func(*args, **kwargs)
     return wrapper
 
@@ -148,7 +150,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 
     Parameters:
         plateid (int):
-            The plate ID to retrieve the images for
+            The plate ID to retrieve the images for.  Required.
         download (bool):
             Set to download the images from the SAS
         mode ({'local', 'remote', 'auto'}):
@@ -212,7 +214,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
 
     Parameters:
         inputlist (list):
-            A list of plate-ifus or mangaids for the images you want to retrieve
+            Required.  A list of plate-ifus or mangaids for the images you want to retrieve
         download (bool):
             Set to download the images from the SAS
         mode ({'local', 'remote', 'auto'}):
@@ -232,9 +234,10 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
 
     '''
     # Check inputs
-    assert type(inputlist) == list or type(inputlist) == np.ndarray, 'Input must be of type list of Numpy array'
+    assert type(inputlist) == list or type(inputlist) == np.ndarray, 'Input must be of type list or Numpy array'
     idtype = parseIdentifier(inputlist[0])
     assert idtype in ['plateifu', 'mangaid'], 'Input must be of type plate-ifu or mangaid'
+    # mode is checked via decorator
 
     # convert mangaids into plateifus
     if idtype == 'mangaid':
@@ -252,22 +255,35 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     drpver, __ = marvin.config.lookUpVersions(release=release)
     rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose)
 
+    # if mode is auto, set it to remote:
+    if mode == 'auto':
+        warnings.warn('Mode is auto.  Defaulting to remote.  If you want to access your \
+            local images, set the mode explicitly to local', MarvinUserWarning)
+        mode = 'remote'
+
+    # do a local or remote thing
     if mode == 'local':
         # Get list of images
         listofimages = []
-        from marvin.tools.plate import Plate
         for plateifu in inputlist:
             dir3d = getDir3d(plateifu, mode=mode)
             plateid, ifu = plateifu.split('-')
-            url = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
-            listofimages.append(url)
+            if as_url:
+                path = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
+            else:
+                path = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
+            listofimages.append(path)
+
+        # if download, issue warning that cannot do it
+        if download:
+            warnings.warn('Download not available when in local mode', MarvinUserWarning)
+
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
-        from marvin.tools.plate import Plate
         # Add plateifus to stream
         for plateifu in inputlist:
-            dir3d = getDir3d(plateid, mode=mode)
+            dir3d = getDir3d(plateifu, mode=mode)
             plateid, ifu = plateifu.split('-')
             rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
 
