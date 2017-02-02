@@ -91,7 +91,8 @@ class Plate(MarvinToolsClass, list):
 
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
-        self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
+        self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver,
+                                                        plate=self.plateid, **kwargs)
         self.platedir = self.filename
         self._checkFilename()
         return self.filename
@@ -126,24 +127,26 @@ class Plate(MarvinToolsClass, list):
                 mdb.datadb.PipelineInfo, mdb.datadb.PipelineVersion).\
                 filter(mdb.datadb.Cube.plate == self.plateid,
                        mdb.datadb.PipelineVersion.version == self._drpver).first()
-        except sqlalchemy.orm.exc.NoResultFound as e:
+        except sqlalchemy.orm.exc.NoResultFound as ee:
             raise MarvinError('Could not retrieve Cube for plate {0}: '
                               'No Results Found: {1}'
                               .format(self.plateid, ee))
 
-        except Exception as e:
+        except Exception as ee:
             raise MarvinError('Could not retrieve Cube for plate {0}: '
                               'Unknown exception: {1}'
                               .format(self.plateid, ee))
         else:
             # no cube
             if not cube:
-                raise MarvinError('No cube found in db for plate {0}, drpver {1}'.format(self.plateid, self._drpver))
+                raise MarvinError('No cube found in db for plate {0}, drpver {1}'
+                                  .format(self.plateid, self._drpver))
             # cube but no plateclass
             try:
                 self._plate = cube.plateclass
-            except AttributeError as e:
-                raise MarvinError('AttributeError: cube has no plateclass for plate {0}: {1}'.format(self.plateid, e))
+            except AttributeError as ee:
+                raise MarvinError('AttributeError: cube has no plateclass for plate {0}: {1}'
+                                  .format(self.plateid, ee))
             else:
                 self._hdr = self._plate._hdr
                 self._pdict = self._plate.__dict__
