@@ -19,7 +19,7 @@ Cube
 .. image:: ../_static/spec_8485-1901_17-17.png
 
 
-Here ``cube[17, 17]`` is a shorthand for ``cube.getSpaxel(x=17, x=17, xyorig='lower')``. This returns a :ref:`marvin-tools-spaxel` object. We then use the ``spectrum`` attribute of the :ref:`marvin-tools-spaxel` object to get a :ref:`marvin-tools-spectrum` object that has a ``plot`` method to show the spectrum.
+Here ``cube[17, 17]`` is a shorthand for ``cube.getSpaxel(x=17, y=17, xyorig='lower')``. This returns a :ref:`marvin-tools-spaxel` object. We then use the ``spectrum`` attribute of the :ref:`marvin-tools-spaxel` object to get a :ref:`marvin-tools-spectrum` object that has a ``plot`` method to show the spectrum.
 
 If we want the model spectrum, we must explicitly ask for it by setting ``modelcube=True`` when we initialize the :ref:`marvin-tools-spaxel` object.
 
