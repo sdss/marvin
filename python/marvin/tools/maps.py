@@ -546,8 +546,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         map_1.value /= map_2.value
 
-        # TODO: this is probably wrong (JSG)
-        map_1.ivar /= map_2.ivar
+        # TODO: do the error propogation (BHA)
+        map_1.ivar = None
 
         map_1.mask &= map_2.mask
 
