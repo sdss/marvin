@@ -201,6 +201,8 @@ def bpt_kewley06(maps, snr=3, return_figure=True, nooi=False):
         return_figure (bool):
             If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
             which can be used to modify the style of the plot.
+        nooi (bool):
+            If ``True``, turns off use of the OI diagnostic line during BPT spaxel classification
 
     Returns:
         bpt_return:
