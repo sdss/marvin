@@ -70,6 +70,7 @@ Marvin Primer
    tools/cube
    tools/modelcube
    tools/maps
+   images
 
 :doc:`api`
 ==========

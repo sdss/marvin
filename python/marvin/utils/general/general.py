@@ -688,13 +688,16 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux
 
+    Can download cubes, rss files, maps, mastar cubes, png images, default maps, or
+    the entire plate directory.
+
     Parameters:
         inputlist (list):
-            A list of objects to download.  Must be a list of plate IDs,
+            Required.  A list of objects to download.  Must be a list of plate IDs,
             plate-IFUs, or manga-ids
-        dltype (str):
-            Indicated the type of object to download.  Can be any of
-            plate, cube, mastar, rss, map, or default (default map).
+        dltype ({'cube', 'map', 'image', 'rss', 'mastar', 'default', 'plate'}):
+            Indicated type of object to download.  Can be any of
+            plate, cube, imagea, mastar, rss, map, or default (default map).
             If not specified, the dltype defaults to cube.
         release (str):
             The MPL/DR version of the data to download.
@@ -707,8 +710,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             The plan id number [1-12] of the DAP maps to download. Defaults to *
         daptype (str):
             The daptype of the default map to grab.  Defaults to *
+        dir3d (str):
+            The directory where the images are located.  Either 'stack' or 'mastar'. Defaults to *
         verbose (bool):
             Turns on verbosity during rsync
+        limit (int):
+            A limit to the number of items to download
     Returns:
         NA: Downloads
 
@@ -724,6 +731,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
     daptype = kwargs.get('daptype', '*')
+    dir3d = kwargs.get('dir3d', '*')
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
 
@@ -733,8 +741,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # Assert correct dltype
     dltype = 'cube' if not dltype else dltype
-    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map',
-                      'default'], 'dltype must be one of plate, cube, mastar, rss, map, default'
+    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map', 'image',
+                      'default'], 'dltype must be one of plate, cube, mastar, image, rss, map, default'
+
+    # Assert correct dir3d
+    if dir3d != '*':
+        assert dir3d in ['stack', 'mastar'], 'dir3d must be either stack or mastar'
 
     # Parse and retrieve the input type and the download type
     idtype = parseIdentifier(inputlist[0])
@@ -757,6 +769,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
+    elif dltype == 'image':
+        name = 'mangaimage'
 
     # create rsync
     rsync_access = RsyncAccess(label='marvin_download', verbose=verbose)
@@ -777,7 +791,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             plateid = item
             ifu = '*'
 
-        rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
+        rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver, dir3d=dir3d,
                          mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream

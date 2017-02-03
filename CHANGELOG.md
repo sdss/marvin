@@ -29,6 +29,7 @@
 - Added new parameters in Marvin Config to turn off Sentry error handling and Github Issue message
 - Added Python example code for getting a spectrum in galaxy page of web.
 - Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
+- Added new documentation on Image Utilities
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -65,6 +66,7 @@
 - Changed Marvin Plate path back to the standard MarvinToolsClass use
 - Made sdss_access somewhat more Python 3 compatible
 - Modified the image utilities to return local paths in local/remote modes and url paths when as_url is True
+- downloadList utility function now downloads images
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.

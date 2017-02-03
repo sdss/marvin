@@ -4,8 +4,8 @@ Marvin Utilities Reference
 
 .. _marvin-utils-general-general:
 
-General
--------
+General Utilities
+-----------------
 
 .. automodule:: marvin.utils.general.general
    :members:
@@ -14,8 +14,8 @@ General
 
 .. _marvin-utils-general-images:
 
-Image
------
+Image Utilities
+---------------
 
 .. automodule:: marvin.utils.general.images
    :members:
