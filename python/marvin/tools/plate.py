@@ -29,21 +29,47 @@ class Plate(MarvinToolsClass, list):
     This class represents a Plate, initialised either
     from a file, a database, or remotely via the Marvin API. The class
     inherits from Python's list class, and is defined as a list of
-    Cube objects.
+    Cube objects.  As it inherits from list, it can do all the standard Python
+    list operations.
+
+    When instanstantiated, Marvin Plate will attempt to discover and load all the Cubes
+    associated with this plate.
 
     Parameters:
         plateid (str):
             The plateid of the Plate to load.
         plateifu (str):
             The plate-ifu of the Plate to load
+        filename (str):
+            The path of the file containing the data cube to load.
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`..
-
+        release (str):
+            The MPL/DR version of the data to use.
+        nocubes (bool):
+            Set this to turn off the Cube loading
     Return:
         plate:
             An object representing the Plate entity. The object is a list of
             Cube objects, one for each IFU cube in the Plate entity.
+
+    Example:
+        >>> from marvin.tools.plate import Plate
+        >>> plate = Plate(plateid=8485)
+        >>> print(plate)
+        >>> <Marvin Plate (plateid=8485, mode='local', data_origin='db')>
+        >>>
+        >>> print('Cubes found in this plate: {0}'.format(len(plate)))
+        >>> Cubes found in this plate: 4
+        >>>
+        >>> # access the plate via index to access the individual cubes
+        >>> print(plate[0])
+        >>> <Marvin Cube (plateifu='8485-12701', mode='local', data_origin='db')>
+        >>>
+        >>> print(plate[1])
+        >>> <Marvin Cube (plateifu='8485-12702', mode='local', data_origin='db')>
+        >>>
     '''
 
     def __init__(self, *args, **kwargs):
@@ -196,7 +222,7 @@ class Plate(MarvinToolsClass, list):
             response = self.ToolInteraction(url)
             data = response.getData()
             plateifus = data['plateifus']
-            _cubes = [Cube(plateifu=pifu, mode='remote', data_origin='api') for pifu in plateifus]
+            _cubes = [Cube(plateifu=pifu, mode='remote') for pifu in plateifus]
 
         list.__init__(self, _cubes)
 
