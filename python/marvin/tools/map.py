@@ -304,15 +304,16 @@ class Map(object):
 
         novalue = (self.mask & 2**4) > 0
         if use_mask:
-            # Flag a region as having no data if ivar = 0
-            ivar_zero = (self.ivar == 0.)
-
             badvalue = (self.mask & 2**5) > 0
             matherror = (self.mask & 2**6) > 0
             badfit = (self.mask & 2**7) > 0
             donotuse = (self.mask & 2**30) > 0
-            no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit,
-                                            donotuse))
+            no_data = np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
+
+            if self.ivar is not None:
+                # Flag a region as having no data if ivar = 0
+                ivar_zero = (self.ivar == 0.)
+                no_data = np.logical_or.reduce((no_data, ivar_zero))
         else:
             no_data = novalue
 
@@ -341,16 +342,15 @@ class Map(object):
         Returns:
             array: Boolean array for mask (i.e., True corresponds to value to be masked out).
         """
-
-        if np.all(np.isnan(ivar)):
-            ivar = None
+        no_measure = np.zeros(data.shape, dtype=bool)
 
         if ivar is not None:
-            no_measure = (ivar == 0.)
-            if snr_min is not None:
-                no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
-            if log_cb:
-                no_measure[data <= 0.] = True
+            if not np.all(np.isnan(ivar)):
+                no_measure = (ivar == 0.)
+                if snr_min is not None:
+                    no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
+                if log_cb:
+                    no_measure[data <= 0.] = True
 
         return no_measure
 

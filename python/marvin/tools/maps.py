@@ -553,6 +553,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
 
+        if map_1.unit != map_2.unit:
+            map_1.unit = '{0}/{1}'.format(map_1.unit, map_2.unit)
+        else:
+            map_1.unit = ''
+
         return map_1
 
     def is_binned(self):
