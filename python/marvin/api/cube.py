@@ -65,7 +65,7 @@ class CubeView(BaseView):
 
         .. :quickref: Cube; Get general cube info
 
-        :form inconfig: json of any incoming parameters
+        :query string release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
         :resjson json inconfig: json of incoming configuration
@@ -111,7 +111,7 @@ class CubeView(BaseView):
         .. :quickref: Cube; Get a cube given a plate-ifu or mangaid
 
         :param name: The name of the cube as plate-ifu or mangaid
-        :form inconfig: json of any incoming parameters
+        :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
         :resjson json inconfig: json of incoming configuration

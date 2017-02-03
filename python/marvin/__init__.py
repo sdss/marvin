@@ -282,7 +282,7 @@ class MarvinConfig(object):
                    'MPL-4': ('v1_5_1', '1.1.1'),
                    'MPL-3': ('v1_3_3', 'v1_0_0'),
                    'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None)}
+                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_1', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
@@ -335,10 +335,9 @@ class MarvinConfig(object):
                 ``release`` value.
 
         Returns:
-            drpver (str):
-                The DRP version according to the input MPL version
-            dapver (str):
-                The DAP version according to the input MPL version
+            drpver, dapver (tuple):
+                A tuple of strings of the DRP and DAP versions according
+                to the input MPL version
 
         """
 

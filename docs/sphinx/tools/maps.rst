@@ -22,14 +22,14 @@ Maps
 The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object.
 
 ::
-    
+
     haflux.value
 
 
 The beauty of Marvin is that you can link to other data about the same galaxy. Let's see the spectrum of the central spaxel (x=17, y=17).
 
 ::
-    
+
     spec = maps.cube[17, 17].spectrum
     spec.plot()
 
@@ -40,7 +40,7 @@ The beauty of Marvin is that you can link to other data about the same galaxy. L
 The spectrum data is stored as 1-D arrays in the ``flux``, ``ivar``, and ``mask`` attributes of ``spec`` :ref:`marvin-tools-spectrum` object.
 
 ::
-    
+
     spec.flux
 
 
