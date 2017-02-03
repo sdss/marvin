@@ -634,7 +634,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return spaxels
 
-    def get_bpt(self, method='kewley06', snr=3, return_figure=True, show_plot=True):
+    def get_bpt(self, method='kewley06', snr=3, return_figure=True, show_plot=True, nooi=False):
         """Returns the BPT diagram for this target.
 
         This method calculates the BPT diagram for this target using emission line maps and
@@ -661,6 +661,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 which can be used to modify the style of the plot.
             show_plot (bool):
                 If ``True``, interactively display the BPT plot.
+            nooi (bool):
+                If ``True``, turns off the use of the OI diagnostic line in classifying BPT spaxels
 
         Returns:
             bpt_return:
@@ -699,7 +701,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if return_figure or show_plot:
             return_figure = True
 
-        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr, return_figure=return_figure)
+        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr, return_figure=return_figure, nooi=nooi)
 
         if show_plot:
             matplotlib.pyplot.show()

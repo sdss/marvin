@@ -51,7 +51,7 @@ def get_masked(maps, emline, snr=1):
     return gflux_masked
 
 
-def _get_kewley06_axes():
+def _get_kewley06_axes(nooi=False):
     """Creates custom axes for displaying Kewley06 plots."""
 
     fig = plt.figure(1, (8.5, 10))
@@ -61,7 +61,7 @@ def _get_kewley06_axes():
 
     # The axes for the three classification plots
     grid_bpt = ImageGrid(fig, 211,
-                         nrows_ncols=(1, 3),
+                         nrows_ncols=(1, 2) if nooi else (1, 3),
                          direction='row',
                          axes_pad=0.,
                          add_all=True,
@@ -83,12 +83,14 @@ def _get_kewley06_axes():
 
     grid_bpt[0].plot(xx_sf_nii, kewley_sf_nii(xx_sf_nii), 'b--', zorder=90)
     grid_bpt[1].plot(xx_sf_sii, kewley_sf_sii(xx_sf_sii), 'r-', zorder=90)
-    grid_bpt[2].plot(xx_sf_oi, kewley_sf_oi(xx_sf_oi), 'r-', zorder=90)
+    if not nooi:
+        grid_bpt[2].plot(xx_sf_oi, kewley_sf_oi(xx_sf_oi), 'r-', zorder=90)
 
     grid_bpt[0].plot(xx_comp_nii, kewley_comp_nii(xx_comp_nii), 'r-', zorder=90)
 
     grid_bpt[1].plot(xx_agn_sii, kewley_agn_sii(xx_agn_sii), 'b-', zorder=80)
-    grid_bpt[2].plot(xx_agn_oi, kewley_agn_oi(xx_agn_oi), 'b-', zorder=80)
+    if not nooi:
+        grid_bpt[2].plot(xx_agn_oi, kewley_agn_oi(xx_agn_oi), 'b-', zorder=80)
 
     # Adds captions
     grid_bpt[0].text(-1, -0.5, 'SF', ha='center', fontsize=12, zorder=100, color='c')
@@ -99,14 +101,16 @@ def _get_kewley06_axes():
     grid_bpt[1].text(-1, 1.2, 'Seyfert', ha='left', fontsize=12, zorder=100, color='r')
     grid_bpt[1].text(0.3, -1, 'LINER', ha='left', fontsize=12, zorder=100, color='m')
 
-    grid_bpt[2].text(-2, -0.5, 'SF', ha='center', fontsize=12, zorder=100)
-    grid_bpt[2].text(-1.5, 1, 'Seyfert', ha='left', fontsize=12, zorder=100)
-    grid_bpt[2].text(-0.1, -1, 'LINER', ha='right', fontsize=12, zorder=100)
+    if not nooi:
+        grid_bpt[2].text(-2, -0.5, 'SF', ha='center', fontsize=12, zorder=100)
+        grid_bpt[2].text(-1.5, 1, 'Seyfert', ha='left', fontsize=12, zorder=100)
+        grid_bpt[2].text(-0.1, -1, 'LINER', ha='right', fontsize=12, zorder=100)
 
     # Sets the ticks, ticklabels, and other details
     xtick_limits = ((-2, 1), (-1.5, 1), (-2.5, 0.5))
+    axes = [0, 1] if nooi else [0, 1, 2]
 
-    for ii in [0, 1, 2]:
+    for ii in axes:
 
         grid_bpt[ii].get_xaxis().set_tick_params(direction='in')
         grid_bpt[ii].get_yaxis().set_tick_params(direction='in')
@@ -132,7 +136,8 @@ def _get_kewley06_axes():
 
     grid_bpt[0].set_xlabel(r'log([NII]/H$\alpha$)')
     grid_bpt[1].set_xlabel(r'log([SII]/H$\alpha$)')
-    grid_bpt[2].set_xlabel(r'log([OI]/H$\alpha$)')
+    if not nooi:
+        grid_bpt[2].set_xlabel(r'log([OI]/H$\alpha$)')
 
     gal_bpt[0].grid(False)
 
@@ -169,7 +174,7 @@ def kewley_agn_oi(log_oi_ha):
     return 1.18 * log_oi_ha + 1.30
 
 
-def bpt_kewley06(maps, snr=3, return_figure=True):
+def bpt_kewley06(maps, snr=3, return_figure=True, nooi=False):
     """Returns ionisation regions, making use of the boundaries defined in Kewley+06.
 
     Makes use of the classification system defined by
@@ -233,29 +238,52 @@ def bpt_kewley06(maps, snr=3, return_figure=True):
     # Calculates masks for each emission mechanism according to the paper boundaries.
     # The log_nii_ha < 0.05, log_sii_ha < 0.32, etc are necessary because the classification lines
     # diverge and we only want the region before the asymptota.
-    sf_mask = (((log_oiii_hb < kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
-               ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False) &
-               ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False))
+    if nooi:
+        sf_mask = (((log_oiii_hb < kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
+                   ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False))
+    else:
+        sf_mask = (((log_oiii_hb < kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
+                   ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False) &
+                   ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False))
 
-    comp_mask = (
-        ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
-        ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False) &
-        ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False) &
-        ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False))
+    if nooi:
+        comp_mask = (
+            ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
+            ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False) &
+            ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False))
+    else:
+        comp_mask = (
+            ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
+            ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False) &
+            ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False) &
+            ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False))
 
-    agn_mask = (
-        ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) | (log_nii_ha > 0.465)).filled(False) &
-        ((log_oiii_hb > kewley_sf_sii(log_sii_ha)) | (log_sii_ha > 0.32)).filled(False) &
-        ((log_oiii_hb > kewley_sf_oi(log_oi_ha)) | (log_oi_ha > -0.59)).filled(False))
+    if nooi:
+        agn_mask = (
+            ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) | (log_nii_ha > 0.465)).filled(False) &
+            ((log_oiii_hb > kewley_sf_sii(log_sii_ha)) | (log_sii_ha > 0.32)).filled(False))
+    else:
+        agn_mask = (
+            ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) | (log_nii_ha > 0.465)).filled(False) &
+            ((log_oiii_hb > kewley_sf_sii(log_sii_ha)) | (log_sii_ha > 0.32)).filled(False) &
+            ((log_oiii_hb > kewley_sf_oi(log_oi_ha)) | (log_oi_ha > -0.59)).filled(False))
 
-    seyfert_mask = (agn_mask & (1.89 * log_sii_ha + 0.76 < log_oiii_hb).filled(False) &
-                               (1.18 * log_oi_ha + 1.30 < log_oiii_hb).filled(False))
+    if nooi:
+        seyfert_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) < log_oiii_hb).filled(False))
 
-    liner_mask = (agn_mask & (1.89 * log_sii_ha + 0.76 > log_oiii_hb).filled(False) &
-                             (1.18 * log_oi_ha + 1.30 > log_oiii_hb).filled(False))
+        liner_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) > log_oiii_hb).filled(False))
+    else:
+        seyfert_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) < log_oiii_hb).filled(False) &
+                                   (kewley_agn_oi(log_oi_ha) < log_oiii_hb).filled(False))
+
+        liner_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) > log_oiii_hb).filled(False) &
+                                 (kewley_agn_oi(log_oi_ha) > log_oiii_hb).filled(False))
 
     # The invalid mask is the combination of spaxels that are invalid in any of the emission maps
-    invalid_mask = ha.mask & oiii.mask & nii.mask & hb.mask & sii.mask & oi.mask
+    if nooi:
+        invalid_mask = ha.mask & oiii.mask & nii.mask & hb.mask & sii.mask
+    else:
+        invalid_mask = ha.mask & oiii.mask & nii.mask & hb.mask & sii.mask & oi.mask
 
     # The ambiguous mask are spaxels that are not invalid but don't fall into any of the
     # emission mechanism classifications.
@@ -273,32 +301,37 @@ def bpt_kewley06(maps, snr=3, return_figure=True):
         return bpt_classification
 
     # Does all the plotting
-    fig, grid_bpt, gal_bpt = _get_kewley06_axes()
+    fig, grid_bpt, gal_bpt = _get_kewley06_axes(nooi=nooi)
 
     sf_kwargs = {'marker': 's', 's': 10, 'color': 'c', 'zorder': 50}
     grid_bpt[0].scatter(log_nii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
     grid_bpt[1].scatter(log_sii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
-    grid_bpt[2].scatter(log_oi_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
+    if not nooi:
+        grid_bpt[2].scatter(log_oi_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
 
     comp_kwargs = {'marker': 's', 's': 10, 'color': 'g', 'zorder': 45}
     grid_bpt[0].scatter(log_nii_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
     grid_bpt[1].scatter(log_sii_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
-    grid_bpt[2].scatter(log_oi_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
+    if not nooi:
+        grid_bpt[2].scatter(log_oi_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
 
     seyfert_kwargs = {'marker': 's', 's': 10, 'color': 'r', 'zorder': 40}
     grid_bpt[0].scatter(log_nii_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
     grid_bpt[1].scatter(log_sii_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
-    grid_bpt[2].scatter(log_oi_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
+    if not nooi:
+        grid_bpt[2].scatter(log_oi_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
 
     liner_kwargs = {'marker': 's', 's': 10, 'color': 'm', 'zorder': 35}
     grid_bpt[0].scatter(log_nii_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
     grid_bpt[1].scatter(log_sii_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
-    grid_bpt[2].scatter(log_oi_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
+    if not nooi:
+        grid_bpt[2].scatter(log_oi_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
 
     amb_kwargs = {'marker': 's', 's': 10, 'color': '0.6', 'zorder': 30}
     grid_bpt[0].scatter(log_nii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
     grid_bpt[1].scatter(log_sii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
-    grid_bpt[2].scatter(log_oi_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
+    if not nooi:
+        grid_bpt[2].scatter(log_oi_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
 
     # Creates a RGB image of the galaxy, and sets the colours of the spaxels to match the
     # classification masks
@@ -326,5 +359,16 @@ def bpt_kewley06(maps, snr=3, return_figure=True):
     gal_bpt.set_ylim(0, ha.shape[0] - 1)
     gal_bpt.set_xlabel('x [spaxels]')
     gal_bpt.set_ylabel('y [spaxels]')
+
+    # # build legend
+    # import matplotlib.patches as mpatches
+    # colors = {'sf': 'cyan', 'comp': 'green', 'seyfert': 'red', 'liner': 'magenta', 'ambiguous': 'grey'}
+    # bpt_handles = []
+    # for key, val in bpt_classification.items():
+    #     if key in colors.keys() and sum(sum(val)) > 0:
+    #         bpt_patch = mpatches.Patch(color=colors[key], label=key.upper())
+    #         bpt_handles.append(bpt_patch)
+
+    # gal_bpt.legend(handles=bpt_handles, loc='upper left')
 
     return (bpt_classification, fig)
