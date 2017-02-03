@@ -30,9 +30,7 @@ The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` at
     haflux.value
 
 
-.. TODO fix ref to marvin-visual-guide
-
-The beauty of Marvin is that you can link to other data about the same galaxy (``` :ref:`marvin-visual-guide` ```). Let's see the spectrum of the central spaxel (x=17, y=17).
+The beauty of Marvin is that you can link to other data about the same galaxy (see :ref:`visual-guide`). Let's see the spectrum of the central spaxel (x=17, y=17).
 
 ::
 

@@ -3,7 +3,7 @@
 ModelCube
 =========
 
-:ref:`marvin-tools-modelcube` is a class to interact with a DAP model data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DAP model cube file on your machine and in the expected directory (see ```:ref:sasdir-setup```), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a model cube and plot the spectrum of its central spaxel.
+:ref:`marvin-tools-modelcube` is a class to interact with a DAP model data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DAP model cube file on your machine and in the expected directory (see :ref:`marvin-sasdir`), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a model cube and plot the spectrum of its central spaxel.
 
 ::
 
