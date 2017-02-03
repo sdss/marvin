@@ -25,7 +25,7 @@ organization\:
 - :ref:`marvin-tools-modelcube`: Interface to the MaNGA DAP Modelcube object
 - :ref:`marvin-tools-plate`: Explore all cubes for a given Plate
 
-**Helper Tools**: Not importable
+**Helper Tools**: Not importable but still usable
 
 - :ref:`marvin-tools-spectrum`: The object containing the spaxel flux, ivar, and mask
 - :ref:`marvin-tools-map`: Access individual maps
