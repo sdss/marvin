@@ -7,7 +7,7 @@ Tools
 Marvin provides tools that are convenience classes and functions for searching, accessing, interacting with, and visualzing MaNGA
 data. The tools make up the common core components of Marvin and are utilized within the tools itself, as well as by the Web and API.
 
-.. marvin-tools-classes:
+.. _marvin-tools-classes:
 
 Object-Based Tools
 ------------------
@@ -28,7 +28,7 @@ organization\:
 These classes follow the MaNGA :doc:`data-access-modes` when determining the data location.  Thus they seamlessly move between local FITS file and remote data via API.
 
 
-.. marvin-tools-queries:
+.. _marvin-tools-queries:
 
 Search-Based Tools
 ------------------
@@ -37,5 +37,20 @@ Marvin provides tools for easily searching through the MaNGA dataset via queries
 
 - :doc:`query`: Perform Queries.
 - :doc:`results`: Deal with Results from Queries.
+
+
+.. _visual-guide:
+
+Visual Guide to Marvin Tools
+----------------------------
+
+All of the Marvin Tools are seamlessly linked together.  To better understand the flow amongst the various Tools, here is a visual guide.
+
+|
+
+.. image:: ../Marvin_Visual_Guide.png
+    :width: 800px
+    :align: center
+    :alt: marvin visual guide
 
 |

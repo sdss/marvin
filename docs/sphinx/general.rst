@@ -177,6 +177,7 @@ All cubes from the query results will be downloaded and placed in their respecti
 
 Via Explicit Call
 ^^^^^^^^^^^^^^^^^
+**downloadList** lets you download the files for cubes, images, maps, rss, mastar cubes, or the entire plate directory.
 ::
 
     # Import the downloadList utility function

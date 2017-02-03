@@ -3,7 +3,7 @@
 Cube
 ====
 
-:ref:`marvin-tools-cube` is a class to interact with a fully reduced DRP data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DRP cube file on your machine and in the expected directory (see ```:ref:sasdir-setup```), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a cube and plot the spectrum of its central spaxel.
+:ref:`marvin-tools-cube` is a class to interact with a fully reduced DRP data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DRP cube file on your machine and in the expected directory (see :ref:`marvin-sasdir`), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a cube and plot the spectrum of its central spaxel.
 
 
 .. If remote, fetches data on request: getSpaxel()
@@ -11,7 +11,7 @@ Cube
    AttributeError: 'Cube' object has no attribute '_useDB'
 
 ::
-    
+
     from marvin.tools.cube import Cube
     cube = Cube(mangaid='1-209232')
     cube[17, 17].spectrum.plot()
@@ -34,6 +34,6 @@ Then we just access the model spectrum with the ``model`` attribute, which retur
 
 
 
-If all of this jumping between Marvin objects is making your head spin, please consult this handy diagram: ```:ref:marvin-road-map```.
+If all of this jumping between Marvin objects is making your head spin, please consult this handy diagram: :ref:`visual-guide`.
 
 |
