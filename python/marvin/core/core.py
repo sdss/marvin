@@ -20,6 +20,8 @@ import warnings
 
 import astropy.io.fits
 
+from brain.core.exceptions import BrainError
+
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
@@ -44,7 +46,7 @@ __all__ = ['MarvinToolsClass', 'Dotable', 'DotableCaseInsensitive']
 
 
 def kwargsGet(kwargs, key, replacement):
-    """As kwargs.get but handles uses replacemente if the value is None."""
+    """As kwargs.get but uses replacement if the value is None."""
 
     if key not in kwargs:
         return replacement
@@ -275,10 +277,14 @@ class MarvinToolsClass(object):
             else:
                 nsa_source = self.nsa_source
 
-            self._nsa = get_nsa_data(self.mangaid, mode='auto',
-                                     source=nsa_source,
-                                     drpver=self._drpver,
-                                     drpall=self._drpall)
+            try:
+                self._nsa = get_nsa_data(self.mangaid, mode='auto',
+                                         source=nsa_source,
+                                         drpver=self._drpver,
+                                         drpall=self._drpall)
+            except (MarvinError, BrainError):
+                warnings.warn('cannot load NSA information for mangaid={0}.'.format(self.mangaid))
+                return None
 
         return self._nsa
 
