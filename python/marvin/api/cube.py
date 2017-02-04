@@ -1,10 +1,10 @@
-import json
+#!/usr/bin/env python
+# encoding: utf-8
 
 import numpy as np
 
 from flask_classy import route
-from flask import url_for, current_app
-from flask import request, jsonify
+from flask import request, jsonify, abort
 
 from marvin.api import parse_params
 from marvin.api.base import BaseView
@@ -106,6 +106,7 @@ class CubeView(BaseView):
            }
 
         '''
+        abort(405)
         self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
         return jsonify(self.results)
@@ -174,15 +175,7 @@ class CubeView(BaseView):
 
         print('testing args', name, args, args['name'])
         form = processRequest(request)
-        print('orig request post-form', request.form)
-        if not request.form:
-            print('there is no form')
-        print('orig request get', request.args)
-        print('orig request values', request.values)
-        print('orig request json', request.get_json())
-
         print('test form', form)
-        # print('current_app', current_app.blueprints)
 
         cube, res = _getCube(name)
         self.update_results(res)
@@ -208,48 +201,3 @@ class CubeView(BaseView):
 
         return jsonify(self.results)
 
-    # # TODO: This is not used anymore, so maybe it should be removed.
-    # @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
-    # def getAllSpectra(self, name=None):
-    #     ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing
-
-    #     .. :quickref: Cube; Get a spectrum from a cube
-
-    #     '''
-    #     self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
-    #     return json.dumps(self.results)
-
-    # # TODO: This is not used anymore, so maybe it should be removed.
-    # @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
-    # @parseRoutePath
-    # def getSpaxels(self, **kwargs):
-    #     """Returns a list of x, y positions for all the spaxels in a given cube.
-
-    #     .. :quickref: Cube; Get a spaxel from a cube
-
-    #     """
-
-    #     name = kwargs.pop('name')
-    #     for var in ['x', 'y', 'ra', 'dec']:
-    #         if var in kwargs:
-    #             kwargs[var] = eval(kwargs[var])
-
-    #     # Add ability to grab spectra from fits files
-    #     cube, res = _getCube(name)
-    #     self.update_results(res)
-    #     if not cube:
-    #         self.results['error'] = 'getSpaxels: No cube: {0}'.format(
-    #             res['error'])
-    #         return json.dumps(self.results)
-
-    #     try:
-    #         spaxels = cube.getSpaxel(**kwargs)
-    #         self.results['data'] = {}
-    #         self.results['data']['x'] = [spaxel.x for spaxel in spaxels]
-    #         self.results['data']['y'] = [spaxel.y for spaxel in spaxels]
-    #         self.results['status'] = 1
-    #     except Exception as e:
-    #         self.results['status'] = -1
-    #         self.results['error'] = 'getSpaxels: {0}'.format(str(e))
-
-    #     return json.dumps(self.results)

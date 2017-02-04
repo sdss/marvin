@@ -68,6 +68,9 @@ class Search(FlaskView):
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
 
+        from flask import abort
+        abort(500)
+
         # If form parameters then try to search
         if form:
             print('searchform', form)
@@ -115,6 +118,10 @@ class Search(FlaskView):
                         r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
 
         return render_template('search.html', **self.search)
+
+    @route('/dopost/', methods=['POST'], endpoint='dopost')
+    def post(self):
+        return 'this is a post'
 
     @route('/getparams/<paramdisplay>/', methods=['GET', 'POST'], endpoint='getparams')
     def getparams(self, paramdisplay):

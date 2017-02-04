@@ -11,9 +11,9 @@ from raven.contrib.flask import Sentry
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
-from marvin.api import apierrors
 from marvin.web.jinja_filters import jinjablue
-from marvin.web.error_handlers import weberrors
+from marvin.web.error_handlers import weberrors as web
+from marvin.utils.db import get_traceback
 from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
 import sys
 import os
@@ -36,6 +36,7 @@ def register_blueprints(app=None):
 
 def create_app(debug=False, local=False):
 
+    #from marvin.api import theapi as api
     from marvin.api.cube import CubeView
     from marvin.api.maps import MapsView
     from marvin.api.modelcube import ModelCubeView
@@ -54,8 +55,8 @@ def create_app(debug=False, local=False):
     # ----------------------------------
     # Create App
     app = Flask(__name__, static_url_path='/marvin2/static')
-    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
     app.debug = debug
+    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
     jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
     jsglue = jsg.JSGlue(app)
 
@@ -166,12 +167,14 @@ def create_app(debug=False, local=False):
     # ----------------
     # Error Handling
     # ----------------
+
     @app.errorhandler(404)
     def page_not_found(error):
         return make_error_page(app, 'Page Not Found', 404, sentry=sentry)
 
     @app.errorhandler(500)
     def internal_server_error(error):
+        print('blah500', request.blueprint, request.url)
         return make_error_page(app, 'Internal Server Error', 500, sentry=sentry)
 
     @app.errorhandler(400)
@@ -179,8 +182,23 @@ def create_app(debug=False, local=False):
         return make_error_page(app, 'Bad Request', 400, sentry=sentry)
 
     @app.errorhandler(405)
-    def internal_server_error(error):
-        return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
+    def method_not_allowed(error):
+        print('blah405', request.blueprint, request.url)
+        if 'api' in request.url:
+            messages = {'error': 'method_not_allowed',
+                        'message': error.description,
+                        'traceback': get_traceback(asstring=True)}
+            return jsonify({
+                'api_error': messages,
+            }), 405
+        else:
+            return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
+
+    # These should be moved into the api module but they need the api blueprint to be registered on
+    # I had these in the api.__init__ with the api blueprint defined there as theapi
+    # which was imported here, see line 39
+    # This should all be moved into the Brain and abstracted since it is
+    # general useful standardized stuff (what?)
 
     @api.errorhandler(422)
     def handle_unprocessable_entity(err):
@@ -195,6 +213,23 @@ def create_app(debug=False, local=False):
             'validation_errors': messages,
         }), 422
 
+    @api.errorhandler(500)
+    def api_internal_server_error(err):
+        messages = {'error': 'internal_server_error',
+                    'message': err.description,
+                    'traceback': get_traceback(asstring=True)}
+        return jsonify({
+            'api_error': messages,
+        }), 500
+
+    @api.errorhandler(405)
+    def api_method_not_allowed(err):
+        messages = {'error': 'method_not_allowed',
+                    'message': err.description,
+                    'traceback': get_traceback(asstring=True)}
+        return jsonify({
+            'api_error': messages,
+        }), 405
 
     # ----------------------------------
     # Registration
@@ -222,8 +257,7 @@ def create_app(debug=False, local=False):
     app.register_blueprint(jinjablue)
 
     # Register error handlers
-    app.register_blueprint(apierrors)
-    app.register_blueprint(weberrors)
+    app.register_blueprint(web)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
     try:

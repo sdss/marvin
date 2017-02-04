@@ -11,7 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import flask_classy
-from flask import request
+from flask import request, jsonify, abort
 
 import json
 
@@ -20,6 +20,8 @@ from marvin.api import parse_params
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.general
+from webargs import fields, validate
+from webargs.flaskparser import use_args
 
 
 def _getMaps(name, **kwargs):
@@ -59,6 +61,13 @@ def _getMaps(name, **kwargs):
 
     return maps, results
 
+maps_args = {
+    'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
+    'release': fields.String(required=True, validate=validate.Regexp('MPL-[4-9]')),
+    'bintype': fields.String(required=True, location='view_args'),
+    'template_kin': fields.String(required=True, location='view_args')
+}
+
 
 class MapsView(marvin.api.base.BaseView):
     """Class describing API calls related to MaNGA Maps."""
@@ -66,26 +75,109 @@ class MapsView(marvin.api.base.BaseView):
     route_base = '/maps/'
 
     def index(self):
+        '''Returns general maps info
+
+        .. :quickref: Maps; Get general maps info
+
+        :form inconfig: json of any incoming parameters
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson string data: data message
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/maps/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": "this is a maps!"
+           }
+
+        '''
+        abort(500)
+        self.results['status'] = 1
         self.results['data'] = 'this is a maps!'
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
-    def get(self, name, bintype, template_kin):
-        """Returns the parameters needed to initialise a Maps remotely.
+    @use_args(maps_args)
+    def get(self, args, name, bintype, template_kin):
+        '''Returns the parameters needed to initialise a Maps remotely.
 
-        Parameters:
-            name (str):
-                The ``plateifu`` or ``mangaid`` of the object.
-            bintype (str):
-                The bintype associated with this model cube. If not defined,
-                the default type of binning will be used.
-            template_kin (str):
-                The template_kin associated with this model cube.
-                If not defined, the default template_kin will be used.
+        .. :quickref: Maps; Get a maps given a name, bintype, and template_kin
 
-        """
+        :param name: The name of the maps as plate-ifu or mangaid
+        :param bintype: The bintype associated with this maps.  If not defined, the default is used
+        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :form inconfig: json of any incoming parameters
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string plateifu: id of maps
+        :json string mangaid: mangaid of maps
+        :json string header: the maps header as a string
+        :json list shape: the maps shape [x, y]
+        :json string wcs: the maps wcs_header as a string
+        :json string bintype: the bintype of the maps
+        :json string template_kin: the template library of the maps
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
 
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"8485-1901": {"plateifu": "8485-1901",
+                            "mangaid": "1-209232",
+                            "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
+                            "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
+                            "shape": [34, 34],
+                            "bintype": "SPX",
+                            "template_kin": "GAU-MILESHC"
+                            }
+                      }
+           }
+
+        '''
         kwargs = {'bintype': bintype, 'template_kin': template_kin}
         maps, results = _getMaps(name, **kwargs)
         self.update_results(results)
@@ -111,10 +203,11 @@ class MapsView(marvin.api.base.BaseView):
                                        'bintype': bintype,
                                        'template_kin': template_kin}}
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
+    @use_args(maps_args)
     def getMap(self, name, bintype, template_kin, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
