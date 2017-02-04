@@ -436,14 +436,16 @@ class Cube(MarvinToolsClass):
         Example:
             To get the mask for a circular aperture centred in spaxel (5, 7)
             and with radius 5 spaxels
-              >>> mask = cube.getAperture((5, 7), 5)
-              >>> mask.shape
-              (34, 34)
-            If you want to get the spaxels associated with that mask
-              >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
-              >>> len(spaxels)
-              15
 
+                >>> mask = cube.getAperture((5, 7), 5)
+                >>> mask.shape
+                (34, 34)
+
+            If you want to get the spaxels associated with that mask
+
+                >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
+                >>> len(spaxels)
+                15
         """
 
         assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']

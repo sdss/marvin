@@ -112,7 +112,7 @@ class Spectrum(object):
                 If set and ``Spectrum.mask`` is defined, the elements of
                 ``array`` with ``mask`` will be coloured using that value.
                 More information about `matplotlib colours
-                <http://matplotlib.org/api/colors_api.html>`_
+                <http://matplotlib.org/api/colors_api.html>`_.
             figure (matplotlib Figure object or None):
                 The matplotlib figure object from which the axes must be
                 created. If ``figure=None``, a new figure will be created.
@@ -125,10 +125,11 @@ class Spectrum(object):
                 <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot>`_.
 
         Returns:
-            ax (`matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_):
-                The matplotlib axes object containing the plot representing
-                the spectrum. If ``return_figure=True``, a tuple will be
-                returned of the form ``(ax, fig)``.
+            ax:
+                The `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
+                object containing the plot representing the spectrum. If
+                ``return_figure=True``, a tuple will be returned of the form
+                ``(ax, fig)``.
 
         Example:
 

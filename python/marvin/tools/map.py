@@ -448,43 +448,47 @@ class Map(object):
 
         Parameters:
             cmap (str):
-                Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab' for other
-                properties.
+                Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and ``linear_Lab`` for
+                other properties.
             percentile_clip (list):
-                Percentile clip. Default is [10, 90] for velocities and sigmas and [5, 95] for other
-                properites.
+                Percentile clip. Default is ``[10, 90]`` for velocities and sigmas and ``[5, 95]``
+                for other properites.
             sigclip (list):
-                Sigma clip. Default is None.
+                Sigma clip. Default is ``None``.
             cbrange (list):
-                If None, set automatically. Default is None.
+                If ``None``, set automatically. Default is ``None``.
             symmetric (bool):
-                Draw a colorbar that is symmetric around zero. Default is True for velocities and
-                False for other properties.
+                Draw a colorbar that is symmetric around zero. Default is ``True`` for velocities
+                and ``False`` for other properties.
             snr_min (float):
-                Minimum signal-to-noise for keeping a valid measurement. Default is 1.
+                Minimum signal-to-noise for keeping a valid measurement. Default is ``1``.
             log_cb (bool):
-                Draw a log normalized colorbar. Default is False.
+                Draw a log normalized colorbar. Default is ``False``.
             title (str):
-                If None, set automatically from property (and channel) name(s). For no title, set to
-                ''. Default is None.
+                If ``None``, set automatically from property (and channel) name(s). For no title,
+                set to ''. Default is ``None``.
             cblabel (str):
-                If None, set automatically from unit. For no colorbar label, set to ''. Default is
-                None.
+                If ``None``, set automatically from unit. For no colorbar label, set to ''. Default
+                is ``None``.
             sky_coords (bool):
-                If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
-                coordinates. Default is False.
-            use_mask (bool): Use DAP bitmasks. Default is True.
-            fig (plt.figure object):
-                Use if creating subplot of a multi-panel plot. Default is None.
-            ax (plt.figure axis object):
-                Use if creating subplot of a multi-panel plot. Default is None.
+                If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates. Default is ``False``.
+            use_mask (bool): Use DAP bitmasks. Default is ``True``.
+            fig (matplotlib Figure object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
+            ax (matplotlib Axis object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
             imshow_kws (dict):
-                Keyword args to pass to ax.imshow. Default is None.
+                Keyword args to pass to `ax.imshow
+                <http://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow>`_.
+                Default is ``None``.
             cb_kws (dict):
-                Keyword args to set and draw colorbar. Default is None.
+                Keyword args to set and draw colorbar. Default is ``None``.
 
         Returns:
-            tuple: (plt.figure object, plt.figure axis object)
+            fig, ax (tuple):
+                `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_,
+                `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
 
         Example:
             >>> maps = Maps(plateifu='8485-1901')
