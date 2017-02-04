@@ -545,7 +545,7 @@ class Map(object):
 
         extent = self._set_extent(self.value.shape, sky_coords)
         imshow_kws.setdefault('extent', extent)
-        imshow_kws.setdefault('interpolation', 'none')
+        imshow_kws.setdefault('interpolation', 'nearest')
         imshow_kws.setdefault('origin', 'lower')
         imshow_kws['norm'] = LogNorm() if log_cb else None
 
