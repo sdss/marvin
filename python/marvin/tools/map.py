@@ -47,7 +47,7 @@ import warnings
 
 from astropy.io import fits
 import numpy as np
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1
 from matplotlib.colors import LogNorm
@@ -389,14 +389,14 @@ class Map(object):
             dict
         """
 
-        # TODO test this with matplotlib 2.0
-        # if int(matplotlib.__version__.split('.')[0]) > 1:
-        #     matplotlib.rcParams['hatch_linewidth'] = 0.1
+        if int(mpl.__version__.split('.')[0]) > 1:
+            mpl.rcParams['hatch.linewidth'] = 0.5
+            mpl.rcParams['hatch.color'] = 'w'
 
         patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                          width=extent[1] - extent[0] - 0.02,
                          height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
-                         fill=True, fc=facecolor, ec='w', zorder=0)
+                         fill=True, facecolor=facecolor, edgecolor='w', zorder=0)
 
         return patch_kws
 
@@ -553,7 +553,7 @@ class Map(object):
 
         # Plot regions with no measurement as hatched by putting one large patch as lowest layer
         patch_kws = self._set_patch_style(extent=extent)
-        ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
+        ax.add_patch(mpl.patches.Rectangle(**patch_kws))
 
         # Plot regions of no data as a solid color (gray #A8A8A8)
         A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
@@ -568,6 +568,6 @@ class Map(object):
             ax.set_title(label=title)
 
         # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
-        matplotlib.rcParams['image.composite_image'] = False
+        mpl.rcParams['image.composite_image'] = False
 
         return fig, ax
