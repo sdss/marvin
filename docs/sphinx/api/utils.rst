@@ -21,3 +21,23 @@ Image Utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-utils-dap:
+
+DAP DataModel Utilities
+-----------------------
+
+.. automodule:: marvin.utils.dap.datamodel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. _marvin-utils-plot:
+
+Plot Colorbar Utilities
+-----------------------
+
+.. automodule:: marvin.utils.plot.colorbar
+   :members:
+   :undoc-members:
+   :show-inheritance:
