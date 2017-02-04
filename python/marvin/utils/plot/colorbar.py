@@ -256,25 +256,28 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws
     """Make colorbar.
 
     Parameters:
-        fig (matplotlib figure object):
-            Matplotlib figure object from which the axes must be created.
+        fig:
+            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ object from which the
+            axes must be created.
         mappable (matplotlib image object):
             Matplotlib plotting element to map to colorbar.
         axloc (list):
-            Specify (left, bottom, width, height) of colorbar axis. Default is None.
+            Specify (left, bottom, width, height) of colorbar axis. Default is ``None``.
         cbrange (list):
             Colorbar min and max.
         ticks (list):
             Ticks on colorbar.
         log_cb (bool):
-            Log colorbar. Default is False.
+            Log colorbar. Default is ``False``.
         label_kws (dict):
-            Keyword args to set colorbar label. Default is None.
+            Keyword args to set colorbar label. Default is ``None``.
         tick_params_kws (dict):
-            Keyword args to set colorbar tick parameters. Default is None.
+            Keyword args to set colorbar tick parameters. Default is ``None``.
 
     Returns:
-        tuple: (matplotlib figure object, matplotlb axes object)
+        fig, ax (tuple):
+            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_,
+            `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
     """
     label_kws = label_kws or {}
     tick_params_kws = tick_params_kws or {}
@@ -301,11 +304,11 @@ def _set_cmap(cm_name, n_levels=None):
         cm_name (str):
             Name of colormap.
         n_levels (int):
-            Number of discrete levels of colormap. If None, then produce continuous colormap.
-            Default is None.
+            Number of discrete levels of colormap. If ``None``, then produce continuous colormap.
+            Default is ``None``.
 
     Returns:
-        matplotlib colormap object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
     """
     cmap = _string_to_cmap(cm_name)
 
@@ -323,7 +326,7 @@ def _string_to_cmap(cm_name):
             Name of colormap.
 
     Returns:
-        matplotlib colormap object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
     """
 
     if isinstance(cm_name, str):
@@ -383,12 +386,12 @@ def cmap_discretize(cmap_in, N):
 
     Parameters:
         cmap_in:
-            Matplotlib colormap object (e.g., cm.RdBu).
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object.
         N (int):
             Number of colors.
 
     Returns:
-        matplotlib colormap object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
 
     Example:
         fig, ax = plt.subplots()
@@ -436,11 +439,13 @@ def reverse_cmap(cdict):
 def linear_Lab():
     """Make linear Lab color map.
 
-    For a description of the Linear Lab palette see
-    `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
+    `Description of linear Lab palatte
+    <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
     Returns:
-        tuple: matplotlib colormap object and reversed matplotlib colormap object
+        cm, cm_r (tuple):
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object and reversed
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
     """
     LinL_file = join(os.path.dirname(marvin.__file__), 'utils', 'plot', 'Linear_L_0-1.csv')
     LinL = np.loadtxt(LinL_file, delimiter=',')
@@ -483,10 +488,10 @@ def get_cmap_rgb(cmap, n_colors=256):
     """Return RGB values of a colormap.
 
     Parameters:
-        cmap (matplotlib colormap object):
-            Colormap.
+        cmap:
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
         n_colors (int):
-            Number of color tuples in colormap. Default is 256.
+            Number of color tuples in colormap. Default is ``256``.
 
     Returns:
         array
@@ -501,12 +506,12 @@ def output_cmap_rgb(cmap, path=None, n_colors=256):
     """Print RGB values of a colormap to a file.
 
     Parameters:
-        cmap (matplotlib colormap object):
-            Colormap.
+        cmap:
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
         path (str):
-            Path to generate output file. Default is None.
+            Path to generate output file. Default is ``None``.
         n_colors (int):
-            Number of color tuples in colormap. Default is 256.
+            Number of color tuples in colormap. Default is ``256``.
     """
     rgb = get_cmap_rgb(cmap, n_colors)
     if path is None:
@@ -528,7 +533,7 @@ def one_color_cmap(color):
             Color.
 
     Returns:
-        matplotlib colormap object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
     """
     cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
     return cmap

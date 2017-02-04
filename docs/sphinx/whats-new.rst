@@ -9,9 +9,9 @@ What's New in Marvin 2.1 (January 2017)
 
 * Marvin now uses Sentry to catch and send errors.
 
-* Marvin Maps now include the ability to make and plot a BPT diagram
+* Marvin Maps now include the ability to make and plot a BPT diagram.  See :ref:`marvin-bpt`.
 
-* Marvin Maps have updated plotting display
+* Marvin Maps have updated plotting display.  See :ref:`marvin-maps`.
 
 * Marvin Spaxels now include as properties RA, and Dec.
 

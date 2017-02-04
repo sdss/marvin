@@ -68,6 +68,9 @@ Marvin Primer
    query
    results
    tools/cube
+   tools/modelcube
+   tools/maps
+   images
 
 :doc:`api`
 ==========

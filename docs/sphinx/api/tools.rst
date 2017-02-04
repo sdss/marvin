@@ -57,6 +57,8 @@ Spectrum
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-tools-analprop:
+
 AnalysisProperty
 ----------------
 
@@ -82,6 +84,16 @@ Maps
 ----
 
 .. automodule:: marvin.tools.maps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. _marvin-tools-mapsprop:
+
+MapsProperty
+------------
+
+.. autoclass:: marvin.utils.dap.datamodel.MapsProperty
    :members:
    :undoc-members:
    :show-inheritance:

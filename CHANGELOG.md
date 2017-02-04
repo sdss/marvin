@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.0.10] - not yet released
+## [2.1.0] - not yet released
 ### Added:
 - Restructured documentation index page.
 - Improved installation documentation:
@@ -27,6 +27,9 @@
 - Added text to MarvinError with a Github Issues link and description of how to submit and issue
 - Added Results option to save to CSV
 - Added new parameters in Marvin Config to turn off Sentry error handling and Github Issue message
+- Added Python example code for getting a spectrum in galaxy page of web.
+- Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
+- Added new documentation on Image Utilities
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
@@ -41,6 +44,29 @@
 - Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
 - Updated all Marvin tests to turn off Sentry exception catching and the github message
 - Updated some of the Tools Snippets on the web
+- Overhauled Map plotting
+    - uses DAP bitmasks (NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE)
+    - adds percentile and sigma clipping
+    - adds hatching for regions with data (i.e., a spectrum) but no measurement by the DAP
+    - adds Linear Lab color map
+    - adds option for logarithmic colorbar
+    - adds option to use sky coordinates
+    - adds map property name as title
+    - makes plot square
+    - sets plotting defaults:
+        - cmap is linear_Lab (sequential)
+        - cmap is RdBu_r (diverging) for velocity plots (Note: this is reversed from the sense of the default coolwarm    colormap in v2.0---red for positive velocities and blue for negative velocities)
+        - cmap is inferno (sequential) for sigma plots
+        - clips at 5th and 95th percentiles
+        - clips at 10th and 90th percentiles for velocity and sigma plots
+        - velocity plots are symmetric about 0
+        - uses DAP bitmasks NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE
+        - also masks spaxels with ivar=0
+        - minimum SNR is 1
+- Changed Marvin Plate path back to the standard MarvinToolsClass use
+- Made sdss_access somewhat more Python 3 compatible
+- Modified the image utilities to return local paths in local/remote modes and url paths when as_url is True
+- downloadList utility function now downloads images
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
@@ -51,6 +77,8 @@
 - Issue #105: query results convertToTool not robust when null/default parameters not present
 - Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
 - Issue #137: PIL should work in py2.7 and py3.5
+- Issue #172: broken mode=auto in image utilities
+- Issue #158: version discrepancy in setup.py
 
 ## [2.0.9] - 2016/11/19
 ### Added:
