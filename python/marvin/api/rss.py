@@ -15,6 +15,7 @@ from __future__ import print_function
 import json
 
 import flask
+from flask import jsonify
 from flask_classy import route
 
 from marvin.api import parse_params
@@ -64,7 +65,47 @@ class RSSView(BaseView):
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getRSS')
     def get(self, name):
-        """This method performs a get request at the url route /rss/<id>."""
+        """This method performs a get request at the url route /rss/<id>.
+
+        .. :quickref: RSS; Get an RSS given a plate-ifu or mangaid
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string empty: the data dict is empty
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/rss/8485-1901/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {}
+           }
+
+        """
 
         rss, results = _getRSS(name)
         self.update_results(results)
@@ -73,11 +114,57 @@ class RSSView(BaseView):
             # For now we don't return anything here, maybe later.
             self.results['data'] = {}
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @route('/<name>/fibers/', methods=['GET', 'POST'], endpoint='getRSSAllFibers')
     def getAllFibers(self, name):
-        """Returns a list of all the flux, ivar, mask, and wavelength arrays for all fibres."""
+        """Returns a list of all the flux, ivar, mask, and wavelength arrays for all fibres.
+
+        .. :quickref: RSS; Get a list of flux, ivar, mask, and wavelength arrays for all fibers
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json list rssfiber: the flux, ivar, mask arrays for the given rssfiber index
+        :json list wavelength: the wavelength arrays for all fibers
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/rss/8485-1901/fibers/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"wavelength": [3621.6, 3622.43, 3623.26, ...],
+                       "0": [flux, ivar, mask],
+                       "1": [flux, ivar, mask],
+                       ...
+                       "170": [flux, ivar, mask]
+              }
+           }
+
+        """
 
         rss, results = _getRSS(name)
         self.update_results(results)
@@ -92,4 +179,4 @@ class RSSView(BaseView):
                 mask = fiber.mask.tolist()
                 self.results['data'][ii] = [flux, ivar, mask]
 
-        return json.dumps(self.results)
+        return jsonify(self.results)

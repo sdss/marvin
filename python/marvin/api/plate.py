@@ -13,6 +13,7 @@
 from __future__ import print_function
 from __future__ import division
 import json
+from flask import jsonify
 from flask_classy import route
 from marvin.tools.plate import Plate
 from marvin.api.base import BaseView
@@ -45,7 +46,50 @@ class PlateView(BaseView):
 
     @route('/<plateid>/', methods=['GET', 'POST'], endpoint='getPlate')
     def get(self, plateid):
-        """This method performs a get request at the url route /plate/<id>."""
+        """Retrieve basic info about a plate
+
+        .. :quickref: Plate; Get a plate given a plateid
+
+        :param plateid: The plateid you want
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string plateid: the plateid
+        :json dict header: the cube header as a dict
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/plate/8485/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"plateid": "8485",
+                    "header": {"AIRMSMAX": "1.07643", "AIRMSMED": "1.04336", "AIRMSMIN": "1.03694", ... }
+              }
+           }
+
+        """
 
         plate, results = _getPlate(plateid, nocubes=True)
         self.update_results(results)
@@ -56,11 +100,52 @@ class PlateView(BaseView):
             platedict = {'plateid': plateid, 'header': plate._hdr}
             self.results['data'] = platedict
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @route('/<plateid>/cubes/', methods=['GET', 'POST'], endpoint='getPlateCubes')
     def getPlateCubes(self, plateid):
-        """Returns a list of all the cubes for this plate """
+        """Returns a list of all the cubes for this plate
+
+        .. :quickref: Plate; Get a list of all cubes for this plate
+
+        :param plateid: The plateid you want
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json list plateifus: a list of plate-ifus for this plate
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/plate/8485/cubes/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"plateifus": ["8485-12701","8485-12702","8485-1901","8485-1902", ...]
+              }
+           }
+
+        """
 
         plate, results = _getPlate(plateid)
         self.update_results(results)
@@ -69,4 +154,4 @@ class PlateView(BaseView):
             plateifus = [cube.plateifu for cube in plate]
             self.results['data'] = {'plateifus': plateifus}
 
-        return json.dumps(self.results)
+        return jsonify(self.results)

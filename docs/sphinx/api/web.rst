@@ -1,6 +1,4 @@
 
-.. note:: Documentation In Progress
-
 .. _marvin-api-routes:
 
 Marvin API/Web Routes
