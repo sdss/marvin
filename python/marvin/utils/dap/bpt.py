@@ -270,10 +270,10 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
         seyfert_mask &= (kewley_agn_oi(log_oi_ha) < log_oiii_hb).filled(False)
         liner_mask &= (kewley_agn_oi(log_oi_ha) > log_oiii_hb).filled(False)
 
-    # The invalid mask is the combination of spaxels that are invalid in any of the emission maps
-    invalid_mask = ha.mask & oiii.mask & nii.mask & hb.mask & sii.mask
+    # The invalid mask is the combination of spaxels that are invalid in all of the emission maps
+    invalid_mask = ha.mask | oiii.mask | nii.mask | hb.mask | sii.mask
     if use_oi:
-        invalid_mask &= oi.mask
+        invalid_mask |= oi.mask
 
     # The ambiguous mask are spaxels that are not invalid but don't fall into any of the
     # emission mechanism classifications.
@@ -293,26 +293,26 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     # Does all the plotting
     fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
 
-    sf_kwargs = {'marker': 's', 's': 10, 'color': 'c', 'zorder': 50}
+    sf_kwargs = {'marker': 's', 's': 12, 'color': 'c', 'zorder': 50, 'alpha': 0.7, 'lw': 0.0}
     sf_handler = grid_bpt[0].scatter(log_nii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
     grid_bpt[1].scatter(log_sii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
 
-    comp_kwargs = {'marker': 's', 's': 10, 'color': 'g', 'zorder': 45}
+    comp_kwargs = {'marker': 's', 's': 12, 'color': 'g', 'zorder': 45, 'alpha': 0.7, 'lw': 0.0}
     comp_handler = grid_bpt[0].scatter(log_nii_ha[comp_mask], log_oiii_hb[comp_mask],
                                        **comp_kwargs)
     grid_bpt[1].scatter(log_sii_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
 
-    seyfert_kwargs = {'marker': 's', 's': 10, 'color': 'r', 'zorder': 40}
+    seyfert_kwargs = {'marker': 's', 's': 12, 'color': 'r', 'zorder': 40, 'alpha': 0.7, 'lw': 0.0}
     seyfert_handler = grid_bpt[0].scatter(log_nii_ha[seyfert_mask], log_oiii_hb[seyfert_mask],
                                           **seyfert_kwargs)
     grid_bpt[1].scatter(log_sii_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
 
-    liner_kwargs = {'marker': 's', 's': 10, 'color': 'm', 'zorder': 35}
+    liner_kwargs = {'marker': 's', 's': 12, 'color': 'm', 'zorder': 35, 'alpha': 0.7, 'lw': 0.0}
     liner_handler = grid_bpt[0].scatter(log_nii_ha[liner_mask], log_oiii_hb[liner_mask],
                                         **liner_kwargs)
     grid_bpt[1].scatter(log_sii_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
 
-    amb_kwargs = {'marker': 's', 's': 10, 'color': '0.6', 'zorder': 30}
+    amb_kwargs = {'marker': 's', 's': 12, 'color': '0.6', 'zorder': 30, 'alpha': 0.7, 'lw': 0.0}
     amb_handler = grid_bpt[0].scatter(log_nii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask],
                                       **amb_kwargs)
     grid_bpt[1].scatter(log_sii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
@@ -356,16 +356,5 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     gal_bpt.set_ylim(0, ha.shape[0] - 1)
     gal_bpt.set_xlabel('x [spaxels]')
     gal_bpt.set_ylabel('y [spaxels]')
-
-    # build legend
-    # import matplotlib.patches as mpatches
-    # colors = {'sf': 'cyan', 'comp': 'green', 'seyfert': 'red', 'liner': 'magenta', 'ambiguous': 'grey'}
-    # bpt_handles = []
-    # for key, val in bpt_classification.items():
-    #     if key in colors.keys() and sum(sum(val)) > 0:
-    #         bpt_patch = mpatches.Patch(color=colors[key], label=key.upper())
-    #         bpt_handles.append(bpt_patch)
-    #
-    # gal_bpt.legend(handles=bpt_handles, loc='upper left')
 
     return (bpt_classification, fig)
