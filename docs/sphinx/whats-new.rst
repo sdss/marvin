@@ -9,15 +9,19 @@ What's New in Marvin 2.1 (January 2017)
 
 * Marvin now uses Sentry to catch and send errors.
 
-* Marvin Maps now include the ability to make and plot a BPT diagram.  See :ref:`marvin-bpt`.
+* Marvin :ref:`marvin-maps` now include the ability to make and plot a BPT diagram.  See :ref:`marvin-bpt`.
 
-* Marvin Maps have updated plotting display.  See :ref:`marvin-maps`.
+* Marvin :ref:`marvin-maps` have updated plotting display.
 
-* Marvin Spaxels now include as properties RA, and Dec.
+* Check out the :ref:`visual-guide`.
 
-* Streamlined list of query parameters both in the Web and Tools.  Added new parameter Ha_to_Hb ratio.
+* Marvin Spaxels now include ``ra`` and ``dec`` as properties.
+
+* Streamlined list of query parameters both in the :ref:`marvin-web` and :ref:`marvin-tools`.  Added new parameter ``ha_to_hb`` ratio.
 
 * New **check_marvin** utility to provide some basic system checks with regards to Marvin
+
+* Marvin :ref:`marvin-web` now has a "Provide Feedback" button in the navbar that directly links to a New Issue in Github.
 
 * See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for more.
 

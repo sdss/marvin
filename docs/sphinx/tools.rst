@@ -1,4 +1,3 @@
-
 .. _marvin-tools:
 
 Tools
@@ -33,6 +32,15 @@ organization\:
 
 These classes follow the MaNGA :doc:`data-access-modes` when determining the data location.  Thus they seamlessly move between local FITS file and remote data via API.
 
+All of the Marvin Tools are seamlessly linked together.  To better understand the flow amongst the various Tools, here is a visual guide.
+
+|
+
+.. image:: ../Marvin_Visual_Guide.png
+    :width: 800px
+    :align: center
+    :alt: marvin visual guide
+
 
 .. _marvin-tools-queries:
 
@@ -43,20 +51,5 @@ Marvin provides tools for easily searching through the MaNGA dataset via queries
 
 - :doc:`query`: Perform Queries.
 - :doc:`results`: Deal with Results from Queries.
-
-
-.. _visual-guide:
-
-Visual Guide to Marvin Tools
-----------------------------
-
-All of the Marvin Tools are seamlessly linked together.  To better understand the flow amongst the various Tools, here is a visual guide.
-
-|
-
-.. image:: ../Marvin_Visual_Guide.png
-    :width: 800px
-    :align: center
-    :alt: marvin visual guide
 
 |

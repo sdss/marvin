@@ -39,7 +39,7 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 ^^^^^^^^^^^^^^^^^^^
 
 `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |
 
@@ -102,6 +102,7 @@ General Reference
 
    data-access-modes
    Available Query Parameters <query_params>
+   tools/visual-guide
 
 |
 
