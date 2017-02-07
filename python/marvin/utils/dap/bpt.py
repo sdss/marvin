@@ -211,24 +211,24 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
     Returns:
         bpt_return:
-            ``bpt_kewley06`` always returns a dictionary of sets of classification masks. The
-            classification masks (not to be confused with bitmasks) are boolean arrays with the
+            ``bpt_kewley06`` always returns a dictionary of dictionaries of classification masks.
+            The classification masks (not to be confused with bitmasks) are boolean arrays with the
             same shape as the Maps or Cube (without the spectral dimension) that can be used
             to select spaxels belonging to a certain excitation process (e.g., star forming).
-            The sets of masks are labeled as ``'nii'`` (for the constraints in the diagram
-            NII/Halpha vs OIII/Hbeta), ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha
-            vs OIII/Hbeta, only if ``use_oi=True``), and ``'global'``, which applies all the
-            previous constraints at once. Each set is a dictionary of masks, labeled as ``'sf'``
-            (star forming), ``'comp'`` (composite), ``'agn'``, ``'seyfert'``, ``'liner'``,
-            ``'invalid'`` (spaxels that are masked out in at least one of the emission
-            line maps used), and ``'ambiguous'`` (spaxels that do not fall in any classification or
-            fall in more than one). The ``'ambiguous'`` mask is only available for the ``'global'``
-            set, while the ``'comp'`` mask is only available for ``'nii'``. ``'seyfert'`` and
-            ``'liner'`` are not available for ``'nii'``. All the masks are unique (a spaxel can
-            only belong to one of them) with the exception of ``'agn'``, which intersects with
-            ``'seyfert'`` and ``'liner'``. If ``return_figure=True``, ``get_bpt`` will return a
-            tuple, the first elemnt of which is the dictionary of classification masks, and the
-            second the matplotlib figure.
+            The returned dictionary has the following keys: ``'sf'`` (star forming), ``'comp'``
+            (composite), ``'agn'``, ``'seyfert'``, ``'liner'``, ``'invalid'``
+            (spaxels that are masked out at the DAP level), and ``'ambiguous'`` (good spaxels that
+            do not fall in any  classification or fall in more than one). Each key provides a new
+            dictionary with keys ``'nii'`` (for the constraints in the diagram NII/Halpha vs
+            OIII/Hbeta),  ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha vs OIII/Hbeta,
+            only if ``use_oi=True``), and ``'global'``, which applies all the previous constraints
+            at once. The ``'ambiguous'`` mask only contains the ``'global'`` subclassification,
+            while the ``'comp'`` dictionary only contains ``'nii'``. ``'seyfert'`` and
+            ``'liner'`` are not available for ``'nii'``. All the global masks are unique (a spaxel
+            can only belong to one of them) with the exception of ``'agn'``, which intersects with
+            ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``, ``get_bpt``
+            will return a tuple, the first elemnt of which is the dictionary of classification
+            masks, and the second the matplotlib figure.
 
     Example:
         >>> maps_8485_1901 = Maps(plateifu='8485-1901')
@@ -236,11 +236,11 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
         Gets the global mask for star forming spaxels
 
-        >>> sf = bpt_masks['global']['sf']
+        >>> sf = bpt_masks['sf']['global']
 
         Gets the seyfert mask based only on the SII/Halpha vs OIII/Hbeta diagnostics
 
-        >>> seyfert_sii = bpt_masks['sii']['seyfert']
+        >>> seyfert_sii = bpt_masks['seyfert']['sii']
 
     """
 
@@ -298,36 +298,43 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     # emission mechanism classifications.
     ambiguous_mask = ~(sf_mask | comp_mask | seyfert_mask | liner_mask) & ~invalid_mask
 
-    bpt_nii_classification = {'sf': sf_mask_nii,
-                              'comp': comp_mask,
-                              'agn': agn_mask_nii,
-                              'invalid': invalid_mask_nii}
+    sf_classification = {'global': sf_mask,
+                         'nii': sf_mask_nii,
+                         'sii': sf_mask_sii}
 
-    bpt_sii_classification = {'sf': sf_mask_sii,
-                              'agn': agn_mask_sii,
-                              'seyfert': seyfert_mask_sii,
-                              'liner': liner_mask_sii,
-                              'invalid': invalid_mask_sii}
+    comp_classification = {'global': comp_mask,
+                           'nii': comp_mask}
 
-    bpt_oi_classification = {'sf': sf_mask_oi,
-                             'agn': agn_mask_oi,
-                             'seyfert': seyfert_mask_oi,
-                             'liner': liner_mask_oi,
-                             'invalid': invalid_mask_oi}
+    agn_classification = {'global': agn_mask,
+                          'nii': agn_mask_nii,
+                          'sii': agn_mask_sii}
 
-    bpt_global_classification = {'sf': sf_mask,
-                                 'comp': comp_mask,
-                                 'agn': agn_mask,
-                                 'seyfert': seyfert_mask,
-                                 'liner': liner_mask,
-                                 'invalid': invalid_mask,
-                                 'ambiguous': ambiguous_mask}
+    seyfert_classification = {'global': seyfert_mask,
+                              'sii': seyfert_mask_sii}
 
-    bpt_return_classification = {'global': bpt_global_classification,
-                                 'nii': bpt_nii_classification,
-                                 'sii': bpt_sii_classification}
+    liner_classification = {'global': liner_mask,
+                            'sii': liner_mask_sii}
+
+    invalid_classification = {'global': invalid_mask,
+                              'nii': invalid_mask_nii,
+                              'sii': invalid_mask_sii}
+
+    ambiguous_classification = {'global': ambiguous_mask}
+
     if use_oi:
-        bpt_return_classification['oi'] = bpt_oi_classification
+        sf_classification['oi'] = sf_mask_oi
+        agn_classification['oi'] = agn_mask_oi
+        seyfert_classification['oi'] = seyfert_mask_oi
+        liner_classification['oi'] = liner_mask_oi
+        invalid_classification['oi'] = invalid_mask_oi
+
+    bpt_return_classification = {'sf': sf_classification,
+                                 'comp': comp_classification,
+                                 'agn': agn_classification,
+                                 'seyfert': seyfert_classification,
+                                 'liner': liner_classification,
+                                 'invalid': invalid_classification,
+                                 'ambiguous': ambiguous_classification}
 
     if not return_figure:
         return bpt_return_classification
