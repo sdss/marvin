@@ -32,7 +32,9 @@ Each function accepts three optional keyword arguments which determine what it r
 
 See :ref:`marvin-utils-general-images` for the reference to the basic utility functions we provide.
 
-A secret fourth way of downloading images is via **downloadList**. See **Via Explicit Call** in :ref:`marvin-download-objects` and :meth:`marvin.utils.general.general.downloadList`
+A secret fourth way of downloading images is via **downloadList**. See **Via Explicit Call** in :ref:`marvin-download-objects` and :meth:`~marvin.utils.general.general.downloadList`
+
+Once you have downloaded images into your local SAS, you can easily display them using the ``showImage`` utility function, described below.  Or if you'd rather not download them, ``showImage`` also works remotely.  See :ref:`marvin-image-show`.
 
 Common Usage
 ------------
@@ -138,5 +140,56 @@ By Random Chance
      'https://data.sdss.org/sas/mangawork/manga/spectro/redux/v2_0_1/7443/stack/images/6101.png',
      'https://data.sdss.org/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/12701.png',
      'https://data.sdss.org/sas/mangawork/manga/spectro/redux/v2_0_1/7443/stack/images/6103.png']
+
+
+.. _marvin-image-show:
+
+Displaying Images
+-----------------
+
+Once you have downloaded IFU png images into your local SAS using any of the above utility functions, you may display them using the ``showImage`` utility function.  This function quickly and coarsely opens and displays an image as a PIL Image Object (using the `Python Image Library <http://pillow.readthedocs.io/en/3.1.x/index.html>`_ python package.)  The image will be displayed and the image object is also returned.  Once the image object is returned, you can manipulate the image as you see fit.
+
+When acting in ``mode=local``, ``showImage`` will attempt to locate the image file from your local SAS.  In ``mode=remote``, ``showImage`` will attempt to grab the requested image file from the Utah SAS.  In ``mode=auto``, local mode is tried first, then remote mode.
+
+See :meth:`~marvin.utils.general.images.showImage` for the API reference.
+
+::
+
+    from marvin.utils.general.images import showImage
+
+    # let's open the image for plateifu 8485-1901
+    image = showImage(plateifu='8485-1901')
+    print(image)
+    <PIL.PngImagePlugin.PngImageFile image mode=RGBA size=562x562 at 0x1142CE390>
+
+    # this file was opened locally via mode = auto
+    print(image.filename)
+    /Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/1901.png
+
+    # open an image remotely via mode = auto
+    image = showImage(plateifu='7495-1902')
+    WARNING: Local mode failed.  Trying remote.
+    print(image.filename)
+    https://data.sdss.org/sas/mangawork/manga/spectro/redux/v2_0_1/7495/stack/images/1902.png
+
+    # open an image via a path
+
+    # first get some paths to some local images
+    imagepaths = getRandomImages(num=3, mode='local')
+    print(images)
+    ['/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/9101.png',
+     '/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/7443/stack/images/1902.png',
+     '/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/7443/stack/images/3702.png']
+
+     # showImage only acts on one path a time
+     image = showImage(path=imagepaths[0])
+
+     # retrieve the image object so I can manipulate it, but don't show the image
+     image = showImage(plateifu='8485-1901', show_image=False)
+
+     # show the image without returning the image object
+     image = showImage(plateifu='8485-1901', return_image=False)
+     print(image)
+     None
 
 End of line!

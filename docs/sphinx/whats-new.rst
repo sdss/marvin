@@ -15,6 +15,8 @@ What's New in Marvin 2.1 (January 2017)
 
 * Marvin Spaxels now include as properties RA, and Dec.
 
+* Marvin has updated Image Utility functions for downloading, showing, locating.  See :ref:`marvin-images`
+
 * Streamlined list of query parameters both in the Web and Tools.  Added new parameter Ha_to_Hb ratio.
 
 * New **check_marvin** utility to provide some basic system checks with regards to Marvin

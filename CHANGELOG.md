@@ -30,6 +30,7 @@
 - Added Python example code for getting a spectrum in galaxy page of web.
 - Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
 - Added new documentation on Image Utilities
+- Added new image utility function showImage, which displays images from your local SAS
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
