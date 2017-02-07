@@ -698,13 +698,22 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if isinstance(snr, dict):
             snr = dict((kk.lower(), vv) for kk, vv in snr.items())
 
+        # If we don't want the figure but want to show the plot, we still need to
+        # temporarily get it.
         if return_figure or show_plot:
-            return_figure = True
+            do_return_figure = True
 
-        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr, return_figure=return_figure,
+        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr,
+                                                       return_figure=do_return_figure,
                                                        use_oi=use_oi)
 
         if show_plot:
             matplotlib.pyplot.show()
 
-        return bpt_return
+        # Returs what we actually asked for.
+        if return_figure and do_return_figure:
+            return bpt_return
+        elif not return_figure and do_return_figure:
+            return bpt_return[0]
+        else:
+            return bpt_return
