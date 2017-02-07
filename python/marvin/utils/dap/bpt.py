@@ -350,7 +350,7 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
         gal_rgb[:, :, ii][ambiguous_mask] = 169  # Grey
 
     # Shows the image.
-    gal_bpt.imshow(gal_rgb, origin='lower', aspect='auto')
+    gal_bpt.imshow(gal_rgb, origin='lower', aspect='auto', interpolation='nearest')
 
     gal_bpt.set_xlim(0, ha.shape[1] - 1)
     gal_bpt.set_ylim(0, ha.shape[0] - 1)
