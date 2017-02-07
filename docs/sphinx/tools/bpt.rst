@@ -3,15 +3,15 @@
 BPT diagrams
 ============
 
-Marvin now includes the ability to generate BPT diagrams for a particular galaxy.  Marvin makes use of the classification system defined by `Kewley et al. (2006) <https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract>`_  to return classification masks for different ionisation mechanisms.  By default, the Marvin BPT uses a strict selection criteria, utilizing all three BPTs (NII, SII, and OI) from Kewley2006.  A spaxel only becomes classified if it meets the criteria in all three.
+Marvin now includes the ability to generate BPT (`Baldwin, Phillips, & Terlevich 1981 <https://ui.adsabs.harvard.edu/#abs/1981PASP...93....5B/abstract>`_) diagrams for a particular galaxy.  Marvin makes use of the classification system defined by |kewley2006|_  to return classification masks for different ionisation mechanisms.  By default, the Marvin BPT uses a strict selection criteria, utilizing all three BPT diagnostic criteria (NII, SII, and OI) from |kewley2006|_.  A spaxel only becomes classified if it meets the criteria in all three.
 
 The BPT spaxel classifications that Marvin provides are
 
 * **Star-Forming (sf)**:
-    Spaxels that fall in the Kewley Star-forming region in the SII and OI BPTs, and the Kauffmann Star-forming region in the NII BPT.
+    Spaxels that fall in the |kewley2006|_ star-forming region in the SII and OI BPTs, and the |kauffmann2003|_ star-forming region in the NII BPT.
 
 * **Composite (comp)**:
-    Spaxels that fall in the Kewley Star-forming region in the SII and OI BPTs, and between the Kauffmann Star-forming region and the Kewley Star-forming region in the NII BPT.
+    Spaxels that fall in the |kewley2006|_ star-forming region in the SII and OI BPTs, and between the |kauffmann2003|_ star-forming region and the |kewley2006|_ star-forming region in the NII BPT.
 
 * **AGN (agn)**:
     Spaxels that fall in the AGN region in all three BPTs.
@@ -19,20 +19,20 @@ The BPT spaxel classifications that Marvin provides are
 * **Seyfert (seyfert)**:
     Spaxels that fall in the AGN region in all three BPTs, and the Seyfert region in both the SII, and OI BPTs.
 
-* **Liner (liner)**:
-    Spaxels that fall in the AGN region in all three BPTs, and the Liner region in both the SII, and OI BPTs.
+* **LINER (liner)**:
+    Spaxels that fall in the AGN region in all three BPTs, and the LINER region in both the SII, and OI BPTs.
 
 * **Ambiguous (ambiguous)**:
     Spaxels that cannot be strictly classified in one of the given categories.
 
 * **Invalid (invalid)**:
-    Spaxels that have emission-line flux < 0 and are rejected by any SNR cuts.
+    Spaxels that have emission line flux <= 0 or are rejected by any signal-to-noise ratio (SNR) cuts.
 
-Often the OI diagnostic line cannot be realiably measured.  If you wish to disable the use of the OI diagnostic line when classifying your spaxels, use may set the ``use_oi`` keyword to ``False``.  This turns off the OI line, and only uses the NII, and SII BPTs during classification, giving you more spaxels to play with.
+Often the OI diagnostic line cannot be reliably measured.  If you wish to disable the use of the OI diagnostic line when classifying your spaxels, use may set the ``use_oi`` keyword to ``False``.  This turns off the OI line, and only uses the NII and SII BPTs during classification, giving you more spaxels to play with.
 
-By default, :meth:`~marvin.tools.maps.Maps.get_bpt` produces and returns a matplotlib figure with the classification plots **(based on Kewley+06 Fig. 4)** and the 2D spatial distribution of classified spaxels (i.e., a map of the galaxy in which each spaxel is colour-coded based on its emission mechanism).  To disable the return of the figure, you may set the ``return_figure`` keyword to ``False``.
+By default, :meth:`~marvin.tools.maps.Maps.get_bpt` produces and returns a matplotlib figure with the classification plots **(based on |kewley2006|_ Fig. 4)** and the 2D spatial distribution of classified spaxels (i.e., a map of the galaxy in which each spaxel is colour-coded based on its emission mechanism).  To disable the return of the figure, set the ``return_figure`` keyword to ``False``.
 
-See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to call BPT from within Maps.  See :ref:`marvin-utils-bpt` for the API reference guide on the BPT utility code.
+See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to generate a BPT diagram from within :ref:`marvin-tools-maps`.  See :ref:`marvin-utils-bpt` for the API reference guide on the BPT utility code.
 
 ::
 
@@ -42,42 +42,41 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to call
     # make a standard 3-plot BPT and retrieve the classifications
     masks, fig = maps.get_bpt()
 
-    # make a BPT classification without the OI
+    # make a BPT classification without OI
     masks, fig = maps.get_bpt(use_oi=False)
 
-    # also show the optical image using an image utility function
+    # also show the optical image
     from marvin.utils.general.images import showImage
     image = showImage(plateifu='8485-1901')
 
-    # I only want the masks (good for batch jobs)
+    # only return the masks (good for batch jobs)
     masks = maps.get_bpt(return_figure=False, show_plot=False)
 
-    # Give me the masks, and figures but don't show me the plot (good for batch jobs)
+    # give me the masks and figures, but don't show me the plot (good for batch jobs)
     masks, fig = maps.get_bpt(show_plot=False)
 
 Signal-To-Noise Cuts
 --------------------
 
-Marvin's BPT code allows you to impose a cut on SN over any or all of the emission-line diagnostics used in spaxel classification.  Marvin accepts either a single number, which will be applied to all emission-lines, or a dictionary of values for specific emission lines.  **Marvin uses a default SN cutoff value of 3.**
+Marvin's BPT code allows you to impose a cut on SNR over any or all of the emission line diagnostics used in spaxel classification.  Marvin accepts either a single number, which will be applied to all emission lines, or a dictionary of values for specific emission lines.  **Marvin uses a default minimum SNR of 3.**
 
-When using a dictionary to define your SN cutoffs, it takes the form of ``{emission_line: sn_threshold}``.  The emission lines available are
-``ha``, ``hb``, ``nii``, ``sii``, ``oiii``, and ``oi``.  Any lines not specified in the dictionary take on the default value of 3.
+When using a dictionary to define your minimum SNR, it takes the form of ``{emission_line: snr_min}``.  The emission lines available are ``ha``, ``hb``, ``nii``, ``sii``, ``oiii``, and ``oi``.  Any lines not specified in the dictionary take on the default value of 3.
 
 ::
 
     maps = Maps(plateifu='8485-1901')
 
-    # generate a bpt plot using a single SNR cutoff of 5
+    # generate a bpt plot using a sinlge minimum SNR of 5
     masks, fig = maps.get_bpt(snr=5)
 
-    # generate a bpt plot using an Ha SN cutoff of 5 and a SII SN cutoff of 2.  The remaining lines are cutoff at SNR of 3.
-    sndict = {'ha': 5, 'sii':2}
-    masks, fig = maps.get_bpt(snr=sndict)
+    # generate a bpt plot using a minimum Halpha SNR of 5 and a minimum SII SNR of 2.  The remaining lines have minimum SNRs of 3.
+    snrdict = {'ha': 5, 'sii': 2}
+    masks, fig = maps.get_bpt(snr=snrdict)
 
 Using the Masks
 ---------------
 
-Marvin always returns the BPT classifications as masks.  These masks are boolean arrays of the same shape as Maps, i.e. 2d-arrays. These masks can be used to filter on any other Map or Cube property.  Marvin returns a dictionary of all the classifications.
+Marvin always returns the BPT classifications as masks.  These masks are boolean arrays of the same shape as :ref:`marvin-tools-maps`, i.e. 2d-arrays. These masks can be used to filter on any other :ref:`marvin-tools-map` or :ref:`marvin-tools-cube` property.  Marvin returns a dictionary of all the classifications.
 
 ::
 
@@ -91,7 +90,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
     ['agn', 'ambiguous', 'comp', 'liner', 'invalid', 'seyfert', 'sf']
 
     # each mask is a boolean 2-d array of the same shape as the Maps
-    print(masks['sf'])
+    print(masks['global']['sf'])
     array([[False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
@@ -100,10 +99,10 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False]], dtype=bool)
 
-    print(masks['sf'].shape)
+    print(masks['global']['sf'].shape)
     (34, 34)
 
-    # let's look at the H-alpha EW values for all spaxels classified as Star-Forming (sf)
+    # let's look at the H-alpha EW values for all spaxels classified as star-Forming (sf)
 
     # get the Ha EW map
     haew = maps.getMap('emline_sew', channel='ha_6564')
@@ -111,7 +110,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
     <Marvin Map (plateifu='8485-1901', property='emline_sew', channel='ha_6564')>
 
     # select and view the ew for star-forming spaxels
-    sfewha = haew.value[masks['sf']]
+    sfewha = haew.value[masks['global']['sf']]
     print(sfewha)
     array([ 24.24110881,  25.01420788,  24.7991354 ,  23.38512724,
             25.68793683,  25.28550245,  26.52018748,  24.97324795,
@@ -130,7 +129,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
             25.93436365,  28.79926688,  29.91935251,  30.44388859,
             29.53938287,  27.72750152])
 
-If you want to know the spaxel x, y coordinates for the spaxels in given mask, you can use `Numpy's where <https://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html>`_ command.  Using Numpy's where on a boolean array will return the indices of that array that evaluate to ``True``. **Note that for 2d-arrays, numpy.where always returns a tuple of (array of y indices, array of x indices).**
+If you want to know the spaxel x, y coordinates for the spaxels in given mask, you can use Numpy's `np.where <https://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html>`_ function.  Using ``np.where`` on a boolean array will return the indices of that array that evaluate to ``True``. **Note that for Maps, np.where returns a tuple of (array of y indices, array of x indices).**
 
 ::
 
@@ -139,20 +138,18 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 
     # get the spaxel x, y coordinates of our star-forming spaxels
     import numpy as np
-    y, x = np.where(masks['sf'])
-    y
-    array([12, 12, 12, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 16,
-           16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18,
-           18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20,
-           20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21])
-    x
-    array([16, 17, 18, 13, 14, 15, 16, 20, 21, 12, 13, 14, 15, 13, 14, 21, 16,
-           17, 18, 21, 22, 14, 15, 16, 17, 18, 19, 20, 21, 22, 13, 14, 15, 16,
-           17, 18, 19, 20, 21, 12, 13, 14, 15, 16, 17, 18, 19, 20, 12, 13, 14,
-           15, 16, 17, 18, 19, 20, 15, 16, 17, 18, 19])
+    y, x = np.where(masks['global']['sf'])
+    print(y)
+    [12 12 12 13 13 13 13 13 13 14 14 14 14 15 15 15 16 16 16 16 16 17 17 17 17
+     17 17 17 17 17 18 18 18 18 18 18 18 18 18 19 19 19 19 19 19 19 19 19 20 20
+     20 20 20 20 20 20 20 21 21 21 21 21]
+    print(x)
+    [16 17 18 13 14 15 16 20 21 12 13 14 15 13 14 21 16 17 18 21 22 14 15 16 17
+     18 19 20 21 22 13 14 15 16 17 18 19 20 21 12 13 14 15 16 17 18 19 20 12 13
+     14 15 16 17 18 19 20 15 16 17 18 19]
 
     # alternatively, if you want a list of coordinate pairs of [y, x]
-    coordlist = np.asarray(np.where(masks['sf'])).T.tolist()
+    coordlist = np.asarray(np.where(masks['global']['sf'])).T.tolist()
     print(coordlist[0:2])
     [[12, 16], [12, 17]]
 
@@ -190,7 +187,7 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 
     # It matches!
 
-If you want to examine the emission-line ratios up close for spaxels in a given mask, you can do so easily using the rest of the Marvin Maps
+If you want to examine the emission-line ratios up close for spaxels in a given mask, you can do so easily using the rest of the Marvin :ref:`marvin-tools-maps`
 
 ::
 
@@ -202,7 +199,7 @@ If you want to examine the emission-line ratios up close for spaxels in a given 
 
     # we need Numpy to take the log.  Let's look at the nii_to_ha values for the star-forming spaxels
     import numpy as np
-    print(np.log10(niihamap.value)[masks['sf']])
+    print(np.log10(niihamap.value)[masks['global']['sf']])
     array([-0.36584288, -0.36719094, -0.35660012, -0.4014837 , -0.40940271,
            -0.38925928, -0.37854384, -0.37854133, -0.3702414 , -0.35243334,
            -0.4063151 , -0.40700583, -0.37816566, -0.32691184, -0.33938829,
@@ -218,7 +215,7 @@ If you want to examine the emission-line ratios up close for spaxels in a given 
            -0.4120694 , -0.39626994])
 
     # how about the ambiguous spaxels?
-    print(np.log10(niihamap.value)[masks['ambiguous']])
+    print(np.log10(niihamap.value)[masks['global']['ambiguous']])
     array([-0.22995676, -0.3285372 , -0.35113382, -0.36632009, -0.32398985,
            -0.28100636, -0.26962523, -0.27915169])
 
@@ -247,3 +244,9 @@ API
 ---
 
 .. autofunction:: marvin.utils.dap.bpt.bpt_kewley06
+
+.. |kewley2006| replace:: Kewley et al. (2006)
+.. _kewley2006: https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract
+
+.. |kauffmann2003| replace:: Kauffmann et al. (2003)
+.. _kauffmann2003: https://ui.adsabs.harvard.edu/#abs/2003MNRAS.346.1055K/abstract
