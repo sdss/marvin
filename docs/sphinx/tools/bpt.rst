@@ -224,6 +224,7 @@ Ambiguous Spaxels
 
 
 
+
 Modifying the Plot
 ------------------
 
@@ -240,10 +241,6 @@ Now that you know about Marvin's BPT, try to do these things
 Did you do them? :) Now you can contribute your code into Marvin for others to use.  Hurray!
 
 
-API
----
-
-.. autofunction:: marvin.utils.dap.bpt.bpt_kewley06
 
 .. |kewley2006| replace:: Kewley et al. (2006)
 .. _kewley2006: https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract
