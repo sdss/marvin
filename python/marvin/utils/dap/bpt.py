@@ -286,6 +286,10 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     liner_mask = liner_mask_sii & liner_mask_oi if use_oi else liner_mask_sii
 
     # The invalid mask is the combination of spaxels that are invalid in all of the emission maps
+    invalid_mask_nii = ha.mask | oiii.mask | nii.mask | hb.mask
+    invalid_mask_sii = ha.mask | oiii.mask | sii.mask | hb.mask
+    invalid_mask_oi = ha.mask | oiii.mask | oi.mask | hb.mask
+
     invalid_mask = ha.mask | oiii.mask | nii.mask | hb.mask | sii.mask
     if use_oi:
         invalid_mask |= oi.mask
@@ -297,19 +301,19 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     bpt_nii_classification = {'sf': sf_mask_nii,
                               'comp': comp_mask,
                               'agn': agn_mask_nii,
-                              'invalid': invalid_mask}
+                              'invalid': invalid_mask_nii}
 
     bpt_sii_classification = {'sf': sf_mask_sii,
                               'agn': agn_mask_sii,
                               'seyfert': seyfert_mask_sii,
                               'liner': liner_mask_sii,
-                              'invalid': invalid_mask}
+                              'invalid': invalid_mask_sii}
 
     bpt_oi_classification = {'sf': sf_mask_oi,
                              'agn': agn_mask_oi,
                              'seyfert': seyfert_mask_oi,
                              'liner': liner_mask_oi,
-                             'invalid': invalid_mask}
+                             'invalid': invalid_mask_oi}
 
     bpt_global_classification = {'sf': sf_mask,
                                  'comp': comp_mask,
