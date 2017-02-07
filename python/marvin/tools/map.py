@@ -137,6 +137,12 @@ class Map(object):
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
 
+    @property
+    def snr(self):
+        """Returns the signal-to-noise ratio for each spaxel in the map."""
+
+        return np.abs(self.value * np.sqrt(self.ivar))
+
     def _load_map_from_file(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
 
