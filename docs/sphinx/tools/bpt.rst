@@ -242,3 +242,8 @@ Now that you know about Marvin's BPT, try to do these things
 
 Did you do them? :) Now you can contribute your code into Marvin for others to use.  Hurray!
 
+
+API
+---
+
+.. autofunction:: marvin.utils.dap.bpt.bpt_kewley06

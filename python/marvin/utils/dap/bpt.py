@@ -211,20 +211,36 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
     Returns:
         bpt_return:
-            ``bpt_kewley06`` always returns a dictionary of classification masks. These
+            ``bpt_kewley06`` always returns a dictionary of sets of classification masks. The
             classification masks (not to be confused with bitmasks) are boolean arrays with the
             same shape as the Maps or Cube (without the spectral dimension) that can be used
             to select spaxels belonging to a certain excitation process (e.g., star forming).
-            The returned masks are ``sf`` (star forming), ``comp`` (composite), ``agn``,
-            ``seyfert``, ``liner``, ``invalid`` (spaxels that are masked out in at least one of
-            the emission line maps used), and ``ambiguous`` (spaxels that do not fall in any
-            classification or fall in more than one). All these masks are unique (a spaxel can
-            only belong to one of them) with the exception of ``agn``, which intersects with
-            ``seyfert`` and ``liner``. If ``return_figure=True``, ``get_bpt`` will return a tuple,
-            the first elemnt of which is the dictionary of classification masks, and the second the
-            matplotlib figure.
+            The sets of masks are labeled as ``'nii'`` (for the constraints in the diagram
+            NII/Halpha vs OIII/Hbeta), ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha
+            vs OIII/Hbeta, only if ``use_oi=True``), and ``'global'``, which applies all the
+            previous constraints at once. Each set is a dictionary of masks, labeled as ``'sf'``
+            (star forming), ``'comp'`` (composite), ``'agn'``, ``'seyfert'``, ``'liner'``,
+            ``'invalid'`` (spaxels that are masked out in at least one of the emission
+            line maps used), and ``'ambiguous'`` (spaxels that do not fall in any classification or
+            fall in more than one). The ``'ambiguous'`` mask is only available for the ``'global'``
+            set, while the ``'comp'`` mask is only available for ``'nii'``. ``'seyfert'`` and
+            ``'liner'`` are not available for ``'nii'``. All the masks are unique (a spaxel can
+            only belong to one of them) with the exception of ``'agn'``, which intersects with
+            ``'seyfert'`` and ``'liner'``. If ``return_figure=True``, ``get_bpt`` will return a
+            tuple, the first elemnt of which is the dictionary of classification masks, and the
+            second the matplotlib figure.
 
-    .. _figure: http://matplotlib.org/api/figure_api.html
+    Example:
+        >>> maps_8485_1901 = Maps(plateifu='8485-1901')
+        >>> bpt_masks = bpt_kewley06(maps_8485_1901)
+
+        Gets the global mask for star forming spaxels
+
+        >>> sf = bpt_masks['global']['sf']
+
+        Gets the seyfert mask based only on the SII/Halpha vs OIII/Hbeta diagnostics
+
+        >>> seyfert_sii = bpt_masks['sii']['seyfert']
 
     """
 
@@ -245,30 +261,29 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     # Calculates masks for each emission mechanism according to the paper boundaries.
     # The log_nii_ha < 0.05, log_sii_ha < 0.32, etc are necessary because the classification lines
     # diverge and we only want the region before the asymptota.
-    sf_mask = (
-        ((log_oiii_hb < kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
-        ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False))
-    if use_oi:
-        sf_mask &= ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False)
+    sf_mask_nii = ((log_oiii_hb < kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False)
+    sf_mask_sii = ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False)
+    sf_mask_oi = ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False)
+    sf_mask = sf_mask_nii & sf_mask_sii & sf_mask_oi if use_oi else sf_mask_nii & sf_mask_sii
 
-    comp_mask = (
-        ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) &
-        ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False) &
-        ((log_oiii_hb < kewley_sf_sii(log_sii_ha)) & (log_sii_ha < 0.32)).filled(False))
-    if use_oi:
-        comp_mask &= ((log_oiii_hb < kewley_sf_oi(log_oi_ha)) & (log_oi_ha < -0.59)).filled(False)
+    comp_mask = ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) & \
+                ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False)
 
-    agn_mask = (
-        ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) | (log_nii_ha > 0.465)).filled(False) &
-        ((log_oiii_hb > kewley_sf_sii(log_sii_ha)) | (log_sii_ha > 0.32)).filled(False))
-    if use_oi:
-        agn_mask &= ((log_oiii_hb > kewley_sf_oi(log_oi_ha)) | (log_oi_ha > -0.59)).filled(False)
+    agn_mask_nii = ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) |
+                    (log_nii_ha > 0.465)).filled(False)
+    agn_mask_sii = ((log_oiii_hb > kewley_sf_sii(log_sii_ha)) |
+                    (log_sii_ha > 0.32)).filled(False)
+    agn_mask_oi = ((log_oiii_hb > kewley_sf_oi(log_oi_ha)) |
+                   (log_oi_ha > -0.59)).filled(False)
+    agn_mask = agn_mask_nii & agn_mask_sii & agn_mask_oi if use_oi else agn_mask_nii & agn_mask_sii
 
-    seyfert_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) < log_oiii_hb).filled(False))
-    liner_mask = (agn_mask & (kewley_agn_sii(log_sii_ha) > log_oiii_hb).filled(False))
-    if use_oi:
-        seyfert_mask &= (kewley_agn_oi(log_oi_ha) < log_oiii_hb).filled(False)
-        liner_mask &= (kewley_agn_oi(log_oi_ha) > log_oiii_hb).filled(False)
+    seyfert_mask_sii = agn_mask & (kewley_agn_sii(log_sii_ha) < log_oiii_hb).filled(False)
+    seyfert_mask_oi = agn_mask & (kewley_agn_oi(log_oi_ha) < log_oiii_hb).filled(False)
+    seyfert_mask = seyfert_mask_sii & seyfert_mask_oi if use_oi else seyfert_mask_sii
+
+    liner_mask_sii = agn_mask & (kewley_agn_sii(log_sii_ha) > log_oiii_hb).filled(False)
+    liner_mask_oi = agn_mask & (kewley_agn_oi(log_oi_ha) > log_oiii_hb).filled(False)
+    liner_mask = liner_mask_sii & liner_mask_oi if use_oi else liner_mask_sii
 
     # The invalid mask is the combination of spaxels that are invalid in all of the emission maps
     invalid_mask = ha.mask | oiii.mask | nii.mask | hb.mask | sii.mask
@@ -279,16 +294,39 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     # emission mechanism classifications.
     ambiguous_mask = ~(sf_mask | comp_mask | seyfert_mask | liner_mask) & ~invalid_mask
 
-    bpt_classification = {'sf': sf_mask,
-                          'comp': comp_mask,
-                          'agn': agn_mask,
-                          'seyfert': seyfert_mask,
-                          'liner': liner_mask,
-                          'invalid': invalid_mask,
-                          'ambiguous': ambiguous_mask}
+    bpt_nii_classification = {'sf': sf_mask_nii,
+                              'comp': comp_mask,
+                              'agn': agn_mask_nii,
+                              'invalid': invalid_mask}
+
+    bpt_sii_classification = {'sf': sf_mask_sii,
+                              'agn': agn_mask_sii,
+                              'seyfert': seyfert_mask_sii,
+                              'liner': liner_mask_sii,
+                              'invalid': invalid_mask}
+
+    bpt_oi_classification = {'sf': sf_mask_oi,
+                             'agn': agn_mask_oi,
+                             'seyfert': seyfert_mask_oi,
+                             'liner': liner_mask_oi,
+                             'invalid': invalid_mask}
+
+    bpt_global_classification = {'sf': sf_mask,
+                                 'comp': comp_mask,
+                                 'agn': agn_mask,
+                                 'seyfert': seyfert_mask,
+                                 'liner': liner_mask,
+                                 'invalid': invalid_mask,
+                                 'ambiguous': ambiguous_mask}
+
+    bpt_return_classification = {'global': bpt_global_classification,
+                                 'nii': bpt_nii_classification,
+                                 'sii': bpt_sii_classification}
+    if use_oi:
+        bpt_return_classification['oi'] = bpt_oi_classification
 
     if not return_figure:
-        return bpt_classification
+        return bpt_return_classification
 
     # Does all the plotting
     fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
@@ -357,4 +395,4 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
     gal_bpt.set_xlabel('x [spaxels]')
     gal_bpt.set_ylabel('y [spaxels]')
 
-    return (bpt_classification, fig)
+    return (bpt_return_classification, fig)
