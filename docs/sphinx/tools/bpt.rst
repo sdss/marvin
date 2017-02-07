@@ -76,7 +76,12 @@ When using a dictionary to define your minimum SNR, it takes the form of ``{emis
 Using the Masks
 ---------------
 
-Marvin always returns the BPT classifications as masks.  These masks are boolean arrays of the same shape as :ref:`marvin-tools-maps`, i.e. 2d-arrays. These masks can be used to filter on any other :ref:`marvin-tools-map` or :ref:`marvin-tools-cube` property.  Marvin returns a dictionary of all the classifications.
+Marvin always returns the BPT classifications as masks.  These masks are boolean arrays of the same shape as :ref:`marvin-tools-maps`, i.e. 2d-arrays. These masks can be used to filter on any other :ref:`marvin-tools-map` or :ref:`marvin-tools-cube` property.  Marvin returns a dictionary of all the classifications, with two tiers.  At the top level, the BPT mask contains a key for each classfication category.  Within each category, there are four sub-groups, described as follows:
+
+* **global**: the strict spaxel classifications as described above, using all three BPT diagrams
+* **nii**: the spaxel classifications using only the NII BPT
+* **sii**: the spaxel classifications using only the SII BPT
+* **oi**: the spaxel classifications using only the OI BPT
 
 ::
 
@@ -90,7 +95,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
     ['agn', 'ambiguous', 'comp', 'liner', 'invalid', 'seyfert', 'sf']
 
     # each mask is a boolean 2-d array of the same shape as the Maps
-    print(masks['global']['sf'])
+    print(masks['sf']['global'])
     array([[False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
@@ -99,7 +104,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False]], dtype=bool)
 
-    print(masks['global']['sf'].shape)
+    print(masks['sf']['global'].shape)
     (34, 34)
 
     # let's look at the H-alpha EW values for all spaxels classified as star-Forming (sf)
@@ -110,7 +115,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
     <Marvin Map (plateifu='8485-1901', property='emline_sew', channel='ha_6564')>
 
     # select and view the ew for star-forming spaxels
-    sfewha = haew.value[masks['global']['sf']]
+    sfewha = haew.value[masks['sf']['global']]
     print(sfewha)
     array([ 24.24110881,  25.01420788,  24.7991354 ,  23.38512724,
             25.68793683,  25.28550245,  26.52018748,  24.97324795,
@@ -138,7 +143,7 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 
     # get the spaxel x, y coordinates of our star-forming spaxels
     import numpy as np
-    y, x = np.where(masks['global']['sf'])
+    y, x = np.where(masks['sf']['global'])
     print(y)
     [12 12 12 13 13 13 13 13 13 14 14 14 14 15 15 15 16 16 16 16 16 17 17 17 17
      17 17 17 17 17 18 18 18 18 18 18 18 18 18 19 19 19 19 19 19 19 19 19 20 20
@@ -149,7 +154,7 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
      14 15 16 17 18 19 20 15 16 17 18 19]
 
     # alternatively, if you want a list of coordinate pairs of [y, x]
-    coordlist = np.asarray(np.where(masks['global']['sf'])).T.tolist()
+    coordlist = np.asarray(np.where(masks['sf']['global'])).T.tolist()
     print(coordlist[0:2])
     [[12, 16], [12, 17]]
 
@@ -199,7 +204,7 @@ If you want to examine the emission-line ratios up close for spaxels in a given 
 
     # we need Numpy to take the log.  Let's look at the nii_to_ha values for the star-forming spaxels
     import numpy as np
-    print(np.log10(niihamap.value)[masks['global']['sf']])
+    print(np.log10(niihamap.value)[masks['sf']['global']])
     array([-0.36584288, -0.36719094, -0.35660012, -0.4014837 , -0.40940271,
            -0.38925928, -0.37854384, -0.37854133, -0.3702414 , -0.35243334,
            -0.4063151 , -0.40700583, -0.37816566, -0.32691184, -0.33938829,
@@ -215,13 +220,47 @@ If you want to examine the emission-line ratios up close for spaxels in a given 
            -0.4120694 , -0.39626994])
 
     # how about the ambiguous spaxels?
-    print(np.log10(niihamap.value)[masks['global']['ambiguous']])
+    print(np.log10(niihamap.value)[masks['ambiguous']['global']])
     array([-0.22995676, -0.3285372 , -0.35113382, -0.36632009, -0.32398985,
            -0.28100636, -0.26962523, -0.27915169])
 
 Ambiguous Spaxels
 -----------------
 
+Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` based on all three BPTs, are classified as ambiguous.  You can determine how ambiguous spaxels were classified in the individual BPT diagrams using the individual BPT masks.
+
+::
+
+    # get the spaxels classified as ambiguous
+    ambig = masks['ambiguous']['global']
+    y, x = np.where(ambig)
+    print(x, y)
+    (array([11, 11, 12, 11]), array([14, 15, 15, 16]))
+
+    # we have 4 ambiguous spaxels. why are they ambiguous?
+
+    # let's examine the sub-classes in each bpt for these 4 spaxels
+    # by filtering the individual BPT boolean maps using the ambiguous spaxel map
+
+    # they are star-forming in the NII BPT
+    masks['sf']['nii'][ambig]
+    array([ True,  True,  True,  True], dtype=bool)
+
+    # they are star-forming in the SII BPT
+    masks['sf']['sii'][ambig]
+    array([ True,  True,  True,  True], dtype=bool)
+
+    # they are not star-forming in the OI BPT
+    masks['sf']['oi'][ambig]
+    array([False, False, False, False], dtype=bool)
+
+    # they are agn in the OI BPT
+    masks['agn']['oi'][ambig]
+    array([ True,  True,  True,  True], dtype=bool)
+
+    # If you want a new full 2d-boolean array to use elsewhere, use the bitwise & operator
+
+    niisf_ambig = masks['sf']['nii'] & ambig
 
 
 
