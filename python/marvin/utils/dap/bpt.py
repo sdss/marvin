@@ -45,7 +45,7 @@ def get_masked(maps, emline, snr=1):
     gflux_masked.mask |= (gflux_masked.data <= 0)
 
     # Masks all spaxels that don't reach the cutoff SNR
-    gflux_masked.mask |= np.abs(gflux.value * np.sqrt(gflux.ivar)) < snr
+    gflux_masked.mask |= gflux.snr < snr
     gflux_masked.mask |= gflux.ivar == 0
 
     return gflux_masked
