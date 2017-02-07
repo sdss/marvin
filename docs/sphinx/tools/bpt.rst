@@ -3,8 +3,6 @@
 BPT diagrams
 ============
 
-A skillfully written general description of the BPT method will go here.
-
 Marvin now includes the ability to generate BPT diagrams for a particular galaxy.  Marvin makes use of the classification system defined by `Kewley et al. (2006) <https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract>`_  to return classification masks for different ionisation mechanisms.  By default, the Marvin BPT uses a strict selection criteria, utilizing all three BPTs (NII, SII, and OI) from Kewley2006.  A spaxel only becomes classified if it meets the criteria in all three.
 
 The BPT spaxel classifications that Marvin provides are
@@ -46,6 +44,10 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to call
 
     # make a BPT classification without the OI
     masks, fig = maps.get_bpt(use_oi=False)
+
+    # also show the optical image using an image utility function
+    from marvin.utils.general.images import showImage
+    image = showImage(plateifu='8485-1901')
 
     # I only want the masks (good for batch jobs)
     masks = maps.get_bpt(return_figure=False, show_plot=False)
@@ -188,10 +190,55 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 
     # It matches!
 
+If you want to examine the emission-line ratios up close for spaxels in a given mask, you can do so easily using the rest of the Marvin Maps
+
+::
+
+    # get a mask
+    masks, fig = maps.get_bpt()
+
+    # get the nii_to_ha emission-line map
+    niihamap = maps.getMapRatio('emline_gflux', 'nii_6585', 'ha_6564')
+
+    # we need Numpy to take the log.  Let's look at the nii_to_ha values for the star-forming spaxels
+    import numpy as np
+    print(np.log10(niihamap.value)[masks['sf']])
+    array([-0.36584288, -0.36719094, -0.35660012, -0.4014837 , -0.40940271,
+           -0.38925928, -0.37854384, -0.37854133, -0.3702414 , -0.35243334,
+           -0.4063151 , -0.40700583, -0.37816566, -0.32691184, -0.33938829,
+           -0.38954354, -0.39481861, -0.39354811, -0.39014752, -0.38456884,
+           -0.36997772, -0.34816849, -0.38874181, -0.40622432, -0.4031055 ,
+           -0.39180703, -0.38927489, -0.38439859, -0.3867139 , -0.37030788,
+           -0.36343103, -0.36707432, -0.38794217, -0.39947496, -0.39955753,
+           -0.39139759, -0.38655966, -0.38414232, -0.3820709 , -0.33771159,
+           -0.37821421, -0.36919585, -0.375137  , -0.38745702, -0.39792523,
+           -0.39382841, -0.38583616, -0.38413919, -0.33190377, -0.38916062,
+           -0.38345063, -0.38779218, -0.39944001, -0.4123838 , -0.40705238,
+           -0.39332287, -0.38851668, -0.41152218, -0.41904352, -0.42121039,
+           -0.4120694 , -0.39626994])
+
+    # how about the ambiguous spaxels?
+    print(np.log10(niihamap.value)[masks['ambiguous']])
+    array([-0.22995676, -0.3285372 , -0.35113382, -0.36632009, -0.32398985,
+           -0.28100636, -0.26962523, -0.27915169])
+
+Ambiguous Spaxels
+-----------------
+
+
+
 Modifying the Plot
 ------------------
 
 Once you return the BPT figure, you are free to modify it anyway you like.
 
 
+Things to Try
+-------------
+
+Now that you know about Marvin's BPT, try to do these things
+
+* For a given BPT mask, compute an average spectrum using Marvin Spaxel and the BPT spaxel coordinates.
+
+Did you do them? :) Now you can contribute your code into Marvin for others to use.  Hurray!
 
