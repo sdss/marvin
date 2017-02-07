@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-01 23:50:38
+# @Last Modified time: 2017-02-06 22:46:53
 
 from __future__ import print_function, division, absolute_import
 
@@ -18,7 +18,7 @@ from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.plate import Plate
 from marvin.tests import MarvinTest, skipIfNoBrian
-from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d
+from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -35,6 +35,7 @@ class TestImagesBase(MarvinTest):
         super(TestImagesBase, cls).setUpClass()
         cls.mangaid = '1-209232'
         cls.plate = 8485
+        cls.ifu = '1901'
         cls.plateifu = '8485-1901'
         cls.mastar_plateifu = '8705-1901'
         cls.cubepk = 10179
@@ -393,6 +394,133 @@ class TestRandomImages(TestImagesBase):
         mode = 'remote'
         self._get_image_random(self.mangaredux, num=5, mode=mode)
 
+
+class TestShowImage(TestImagesBase):
+    def _show_image(self, path=None, plateifu=None, mode=None, release=None, return_image=True, show_image=None):
+        image = showImage(path=path, plateifu=plateifu, mode=mode, release=release,
+                          return_image=return_image, show_image=show_image)
+        if return_image:
+            self.assertIsNotNone(image)
+        else:
+            self.assertIsNone(image)
+        return image
+
+    def test_notvalid_mode(self):
+        errmsg = 'Mode must be either auto, local, or remote'
+        with self.assertRaises(AssertionError) as cm:
+            self._show_image(mode='notvalidmode')
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_noinput(self):
+        errmsg = 'A filepath or plateifu must be specified!'
+        with self.assertRaises(AssertionError) as cm:
+            self._show_image()
+        self.assertIn(errmsg, str(cm.exception))
+
+    # def test_mode_remote(self):
+    #     errmsg = 'showImage currently only works in local mode.'
+    #     with self.assertRaises(MarvinError) as cm:
+    #         self._show_image(plateifu=self.plateifu, mode='remote')
+    #     self.assertIn(errmsg, str(cm.exception))
+
+    def test_mode_auto(self):
+        image = self._show_image(plateifu=self.plateifu, mode='auto')
+
+    def test_noreturn(self):
+        image = self._show_image(plateifu=self.plateifu, return_image=False)
+        self.assertIsNone(image)
+
+    def _plateifu_fail(self, badplateifu, errmsg, mode=None):
+        with self.assertRaises(MarvinError) as cm:
+            self._show_image(plateifu=badplateifu, mode=mode)
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_plateifu_fail_local(self):
+        badplateifu = '8485-1905'
+        errmsg = 'Error: No files found locally to match plateifu {0}'.format(badplateifu)
+        self._plateifu_fail(badplateifu, errmsg, mode='local')
+
+    def test_plateifu_fail_remote(self):
+        badplateifu = '8485-1905'
+        badfilepath = 'https://data.sdss.org/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1905.png'
+        errmsg = 'Error: remote filepath {0}'.format(badfilepath)
+        self._plateifu_fail(badplateifu, errmsg, mode='remote')
+
+    def test_plateifu_fail_auto(self):
+        badplateifu = '8485-1905'
+        badfilepath = 'https://data.sdss.org/sas/mangawork/manga/spectro/redux/v1_5_1/8485/stack/images/1905.png'
+        errmsg = 'Error: remote filepath {0}'.format(badfilepath)
+        self._plateifu_fail(badplateifu, errmsg, mode='auto')
+
+    def _plateifu_success(self, mode=None):
+        image = self._show_image(plateifu=self.plateifu, mode=mode)
+        self.assertIsNotNone(image)
+        self.assertEqual(image.size, (562, 562))
+        self.assertEqual(image.format, 'PNG')
+        self.assertIn(str(self.plate), image.filename)
+        self.assertIn(self.ifu, image.filename)
+        if mode == 'remote':
+            self.assertIn('https://data.sdss.org/sas/', image.filename)
+
+    def test_plateifu_success_local(self):
+        self._plateifu_success(mode='local')
+
+    def test_plateifu_success_remote(self):
+        self._plateifu_success(mode='remote')
+
+    def test_plateifu_success_auto(self):
+        self._plateifu_success(mode='auto')
+
+    def test_path_fails_toomany(self):
+        paths = self._make_paths(self.mangaredux, mode='local')
+        errmsg = 'showImage currently only works on a single input at a time'
+        with self.assertRaises(MarvinError) as cm:
+            self._show_image(path=paths)
+        self.assertIn(errmsg, str(cm.exception))
+
+    def _path_fails_wrongmode(self, path, errmsg, mode=None):
+        with self.assertRaises(MarvinError) as cm:
+            self._show_image(path=path, mode=mode)
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_path_fails_localhttp(self):
+        paths = self._make_paths(self.remoteurl, mode='remote')
+        errmsg = 'Remote url path not allowed in local mode'
+        self._path_fails_wrongmode(paths[0], errmsg, mode='local')
+
+    def test_path_fails_remoteuserdir(self):
+        paths = self._make_paths(self.mangaredux, mode='local')
+        errmsg = 'Local path not allowed in remote mode'
+        self._path_fails_wrongmode(paths[0], errmsg, mode='remote')
+
+    def _path_success(self, paths, mode=None):
+        image = self._show_image(path=paths[0], mode=mode)
+        self.assertIsNotNone(image)
+        self.assertEqual(image.size, (562, 562))
+        self.assertEqual(image.format, 'PNG')
+        self.assertIn(str(self.plate), image.filename)
+        self.assertIn(self.ifu, image.filename)
+        if mode == 'remote':
+            self.assertIn('https://data.sdss.org/sas/', image.filename)
+
+    def test_path_success_local(self):
+        paths = self._make_paths(self.mangaredux, mode='local')
+        self._path_success(paths, mode='local')
+
+    def test_path_success_remote(self):
+        paths = self._make_paths(self.remoteurl, mode='remote')
+        self._path_success(paths, mode='remote')
+
+    def test_path_success_auto(self):
+        paths = self._make_paths(self.mangaredux, mode='auto')
+        self._path_success(paths, mode='auto')
+
+    def test_path_badfile(self):
+        badfile = os.path.expanduser('~/test_image.png')
+        errmsg = 'Error: local filepath {0} does not exist. '.format(badfile)
+        with self.assertRaises(MarvinError) as cm:
+            self._show_image(path=badfile)
+        self.assertIn(errmsg, str(cm.exception))
 
 if __name__ == '__main__':
     verbosity = 2

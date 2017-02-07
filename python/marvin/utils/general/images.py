@@ -19,14 +19,24 @@ import marvin
 import warnings
 from distutils.version import StrictVersion
 from marvin.utils.general import parseIdentifier, mangaid2plateifu
+import PIL
+import os
+import requests
+import sys
+
+if sys.version_info == 2:
+    from cStringIO import StringIO as stringio
+else:
+    from io import BytesIO as stringio
 
 try:
-    from sdss_access import RsyncAccess, AccessError
+    from sdss_access import RsyncAccess, AccessError, HttpAccess
 except ImportError:
     Path = None
     RsyncAccess = None
+    HttpAccess = None
 
-__all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList']
+__all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList', 'showImage']
 
 
 # Decorators
@@ -73,8 +83,13 @@ def getDir3d(inputid, mode=None):
 
     if drpstrict >= verstrict:
         from marvin.tools.plate import Plate
-        plate = Plate(plateid=plateid, nocubes=True, mode=mode)
-        dir3d = plate.dir3d
+        try:
+            plate = Plate(plateid=plateid, nocubes=True, mode=mode)
+        except Exception as e:
+            raise MarvinError('Could not retrieve a remote plate.  If it is a mastar \
+                plate you are after, Marvin currently does not handle those: {0}'.format(e))
+        else:
+            dir3d = plate.dir3d
     else:
         dir3d = 'stack'
 
@@ -347,3 +362,123 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
             rsync_access.commit()
         else:
             return listofimages
+
+
+@checkPath
+@setMode
+def showImage(path=None, plateifu=None, release=None, return_image=True, show_image=True, mode=None):
+    ''' Crudely and coarsely show a galaxy image that has been downloaded
+
+    This utility function quickly allows you to display a PNG IFU image that is located in your
+    local SAS or from the remote Utah SAS.  A PIL Image object is also returned which allows you to
+    manipulate the image after the fact.
+
+    Parameters:
+        path (str):
+            A string filepath to a local IFU image
+        plateifu (str):
+            A plateifu designation used to look for the IFU image in your local SAS
+        return_image (bool):
+            If ``True``, returns the PIL Image object for image manipulation.  Default is ``True``.
+        show_image (bool):
+            If ``True``, shows the requested image that is opened internally
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See
+            :doc:`Mode secision tree</mode_decision>`.
+        release (str):
+            The release version of the images to return
+
+    Returns:
+        image (PIL Image or None):
+            If return_image is set, returns a PIL Image object to allow for image manipulation, else returns None.
+    '''
+
+    # check inputs
+    release = release if release else marvin.config.release
+    drpver, __ = marvin.config.lookUpVersions(release=release)
+    args = [path, plateifu]
+    assert any(args), 'A filepath or plateifu must be specified!'
+
+    # check path
+    if path:
+        if type(path) == list and len(path) > 1:
+            raise MarvinError('showImage currently only works on a single input at a time')
+        filepath = path[0] if type(path) == list else path
+
+        # Deal with the mode
+        if mode == 'local' and 'https://data.sdss.org' in filepath:
+            raise MarvinError('Remote url path not allowed in local mode')
+        elif mode == 'remote' and 'https://data.sdss.org' not in filepath:
+            raise MarvinError('Local path not allowed in remote mode')
+        elif mode == 'auto':
+            if 'https://data.sdss.org' in filepath:
+                mode = 'remote'
+            else:
+                mode = 'local'
+
+    def _do_local_plateifu():
+        full = http_access.full('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='*')
+        filepath = http_access.expand('', full=full)
+        if filepath:
+            filepath = filepath[0]
+            return filepath
+        else:
+            raise MarvinError('Error: No files found locally to match plateifu {0}.  \
+                Use one of the image utility functions to download them first or \
+                switch to remote mode'.format(plateifu))
+
+    def _do_remote_plateifu():
+        filepath = http_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
+        return filepath
+
+    # check plateifu
+    if plateifu:
+        plateid, ifu = plateifu.split('-')
+        http_access = HttpAccess(verbose=False)
+        if mode == 'local':
+            filepath = _do_local_plateifu()
+        elif mode == 'remote':
+            filepath = _do_remote_plateifu()
+        elif mode == 'auto':
+            try:
+                filepath = _do_local_plateifu()
+                mode = 'local'
+            except MarvinError as e:
+                warnings.warn('Local mode failed.  Trying remote.', MarvinUserWarning)
+                filepath = _do_remote_plateifu()
+                mode = 'remote'
+
+    # check if filepath exists either locally or remotely
+    if mode == 'local':
+        if not filepath or not os.path.isfile(filepath):
+            raise MarvinError('Error: local filepath {0} does not exist. '.format(filepath))
+        else:
+            fileobj = filepath
+    elif mode == 'remote':
+        r = requests.get(filepath)
+        if not r.ok:
+            raise MarvinError('Error: remote filepath {0} does not exist'.format(filepath))
+        else:
+            fileobj = stringio(r.content)
+
+    # Open the image
+    try:
+        image = PIL.Image.open(fileobj)
+    except IOError as e:
+        print('Error: cannot open image')
+        image = None
+    else:
+        image.filename = filepath
+
+    if image and show_image:
+        # show the image
+        image.show()
+
+    # return the PIL Image object
+    if return_image:
+        return image
+    else:
+        return None
+
+
+

@@ -19,6 +19,8 @@ What's New in Marvin 2.1 (January 2017)
 
 * Streamlined list of query parameters both in the :ref:`marvin-web` and :ref:`marvin-tools`.  Added new parameter ``ha_to_hb`` ratio.
 
+* Marvin has updated the :ref:`marvin-images` functions for downloading, showing, and locating.
+
 * New **check_marvin** utility to provide some basic system checks with regards to Marvin
 
 * Marvin :ref:`marvin-web` now has a "Provide Feedback" button in the navbar that directly links to a New Issue in Github.
