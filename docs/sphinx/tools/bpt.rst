@@ -130,7 +130,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
             25.93436365,  28.79926688,  29.91935251,  30.44388859,
             29.53938287,  27.72750152])
 
-If you want to know the spaxel x, y coordinates for the spaxels in given mask, you can use `Numpy's where <https://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html>`_ command.  Using Numpy's where on a boolean array will return the indices of that array that evaluate to ``True``. **Note that for 2d-arrays, numpy.where always returns a tuple of (array of y indices, array of x indices).**
+If you want to know the spaxel x, y coordinates for the spaxels in given mask, you can use `Numpy's where <https://docs.scipy.org/doc/numpy/reference/generated/numpy.where.html>`_ command.  Using Numpy's where on a boolean array will return the indices of that array that evaluate to ``True``. **Note that for 2d-arrays, numpy.where always returns a tuple of (array of y indices, array of x indices).  Numpy stores data in row major ordered.**
 
 ::
 
