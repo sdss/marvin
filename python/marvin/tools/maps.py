@@ -16,7 +16,7 @@ import itertools
 
 import astropy.io.fits
 import astropy.wcs
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 import numpy as np
 
 import marvin
@@ -700,15 +700,15 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         # If we don't want the figure but want to show the plot, we still need to
         # temporarily get it.
-        if return_figure or show_plot:
-            do_return_figure = True
+        do_return_figure = True if return_figure or show_plot else False
 
         bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr,
                                                        return_figure=do_return_figure,
                                                        use_oi=use_oi)
 
         if show_plot:
-            matplotlib.pyplot.show()
+            plt.ioff()
+            plt.show()
 
         # Returs what we actually asked for.
         if return_figure and do_return_figure:
