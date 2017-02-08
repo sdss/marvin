@@ -16,21 +16,21 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def get_snr(snr_cuts, emission_line, default=3):
-    """Convenience function to get the SNR cut for a certain emission line.
+def get_snr(snr_min, emission_line, default=3):
+    """Convenience function to get the minimum SNR for a certain emission line.
 
-    If ``snr_cuts`` is a dictionary and ``emision_line`` is one of the keys,
+    If ``snr_min`` is a dictionary and ``emision_line`` is one of the keys,
     returns that value. If the emission line is not included in the dictionary,
-    returns ``default``. If ``snr_cuts`` is a float, returns that value
+    returns ``default``. If ``snr_min`` is a float, returns that value
     regardless of the ``emission_line``.
 
     """
 
-    if not isinstance(snr_cuts, dict):
-        return snr_cuts
+    if not isinstance(snr_min, dict):
+        return snr_min
 
-    if emission_line in snr_cuts:
-        return snr_cuts[emission_line]
+    if emission_line in snr_min:
+        return snr_min[emission_line]
     else:
         return default
 
@@ -41,7 +41,7 @@ def get_masked(maps, emline, snr=1):
     gflux = maps['emline_gflux_' + emline]
     gflux_masked = gflux.masked
 
-    # Masks spaxels with flux < 0
+    # Masks spaxels with flux <= 0
     gflux_masked.mask |= (gflux_masked.data <= 0)
 
     # Masks all spaxels that don't reach the cutoff SNR
@@ -72,11 +72,11 @@ def _get_kewley06_axes(use_oi=True):
     gal_bpt = ImageGrid(fig, 212, nrows_ncols=(1, 1))
 
     # Plots the classification boundary lines
-    xx_sf_nii = np.linspace(-1.281, 0.045, 1e4)
-    xx_sf_sii = np.linspace(-2, 0.315, 1e4)
-    xx_sf_oi = np.linspace(-2.5, -0.7, 1e4)
+    xx_sf_nii = np.linspace(-1.281, 0.045, int(1e4))
+    xx_sf_sii = np.linspace(-2, 0.315, int(1e4))
+    xx_sf_oi = np.linspace(-2.5, -0.7, int(1e4))
 
-    xx_comp_nii = np.linspace(-2, 0.4, 1e4)
+    xx_comp_nii = np.linspace(-2, 0.4, int(1e4))
 
     xx_agn_sii = np.array([-0.308, 1.0])
     xx_agn_oi = np.array([-1.12, 0.5])
