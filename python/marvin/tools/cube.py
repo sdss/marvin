@@ -9,7 +9,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import warnings
-import sys
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -271,7 +270,7 @@ class Cube(MarvinToolsClass):
         # Python 2-3 compatibility
         try:
             bit = long(self.header['DRP3QUAL'])
-        except NameError as e:
+        except NameError:
             bit = int(self.header['DRP3QUAL'])
 
         labels = None
@@ -307,7 +306,7 @@ class Cube(MarvinToolsClass):
 
         # get labels
         if self.data_origin == 'db':
-            finaltargs['labels'] = [self.data.getTargFlags(type=i+1) for i in ind]
+            finaltargs['labels'] = [self.data.getTargFlags(type=i + 1) for i in ind]
         elif self.data_origin == 'file':
             pass
         elif self.data_origin == 'api':
