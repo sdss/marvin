@@ -25,7 +25,7 @@ plate = Blueprint("plate_page", __name__)
 
 
 class Plate(FlaskView):
-    route_base = '/plate'
+    route_base = '/plate/'
 
     def __init__(self):
         ''' Initialize the route '''

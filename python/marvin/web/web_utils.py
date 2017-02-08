@@ -12,8 +12,9 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from flask import session as current_session, render_template, request, g
+from flask import session as current_session, render_template, request, g, jsonify
 from marvin import config
+from marvin.utils.db import get_traceback
 from collections import defaultdict
 import re
 import traceback
@@ -67,8 +68,17 @@ def parseSession():
     return drpver, dapver, release
 
 
+def make_error_json(error, name, code):
+    ''' creates the error json dictionary for API errors '''
+    shortname = name.lower().replace(' ', '_')
+    messages = {'error': shortname,
+                'message': error.description,
+                'traceback': get_traceback(asstring=True)}
+    return jsonify({'api_error': messages}), code
+
+
 def make_error_page(app, name, code, sentry=None):
-    ''' creates the error page dictionary '''
+    ''' creates the error page dictionary for web errors '''
     shortname = name.lower().replace(' ', '_')
     error = {}
     error['title'] = 'Marvin | {0}'.format(name)

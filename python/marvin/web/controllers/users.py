@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-28 16:21:17
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-10-11 20:07:56
+# @Last Modified time: 2017-02-07 17:24:47
 
 from __future__ import print_function, division, absolute_import
 from flask import current_app, Blueprint, render_template, jsonify
@@ -23,7 +23,7 @@ users = Blueprint("users_page", __name__)
 
 
 class User(FlaskView):
-    route_base = '/user'
+    route_base = '/user/'
 
     def __init__(self):
         ''' Initialize the route '''
@@ -33,7 +33,7 @@ class User(FlaskView):
         self.user['error'] = None
 
     def index(self):
-        pass
+        return render_template('preferences.html', **self.user)
 
     def preferences(self):
         return render_template('preferences.html', **self.user)

@@ -23,7 +23,7 @@ images = Blueprint("images_page", __name__)
 
 
 class Random(FlaskView):
-    route_base = '/random'
+    route_base = '/random/'
 
     def __init__(self):
         ''' Initialize the route '''

@@ -1,10 +1,9 @@
-import json
 from flask_classy import route
 from flask import request, jsonify
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api import parse_params
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
 
 
@@ -80,10 +79,12 @@ class QueryView(BaseView):
 
         '''
         self.results['data'] = 'this is a query!'
+        self.results['status'] = 1
         return jsonify(self.results)
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
-    def cube_query(self):
+    @av.check_args(use_params='query', required='searchfilter')
+    def cube_query(self, args):
         ''' Performs a remote query
 
         .. :quickref: Query; Perform a remote query
@@ -152,6 +153,7 @@ class QueryView(BaseView):
            }
 
         '''
+        print('args', args)
         searchfilter = self.results['inconfig'].get('searchfilter', None)
         params = self.results['inconfig'].get('params', None)
         rettype = self.results['inconfig'].get('returntype', None)
@@ -175,7 +177,8 @@ class QueryView(BaseView):
         return jsonify(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
-    def query_getsubset(self):
+    @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
+    def query_getsubset(self, args):
         ''' Remotely grab a subset of results from a query
 
         .. :quickref: Query; Grab a subset of results from a remote query
@@ -270,7 +273,8 @@ class QueryView(BaseView):
         return jsonify(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
-    def getparamslist(self):
+    @av.check_args(use_params='query', required='paramdisplay')
+    def getparamslist(self, args):
         ''' Retrieve a list of all available input parameters into the query
 
         .. :quickref: Query; Get a list of all or "best" queryable parameters
@@ -324,7 +328,8 @@ class QueryView(BaseView):
         return output
 
     @route('/cleanup/', methods=['GET', 'POST'], endpoint='cleanupqueries')
-    def cleanup(self):
+    @av.check_args(use_params='query', required='task')
+    def cleanup(self, args):
         ''' Clean up idle server-side queries or retrieve the list of them
 
         Do not use!

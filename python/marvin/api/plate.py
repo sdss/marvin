@@ -12,11 +12,10 @@
 
 from __future__ import print_function
 from __future__ import division
-import json
-from flask import jsonify
+from flask import jsonify, current_app, request
 from flask_classy import route
 from marvin.tools.plate import Plate
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 
 
@@ -45,7 +44,8 @@ class PlateView(BaseView):
     route_base = '/plate/'
 
     @route('/<plateid>/', methods=['GET', 'POST'], endpoint='getPlate')
-    def get(self, plateid):
+    @av.check_args()
+    def get(self, args, plateid):
         """Retrieve basic info about a plate
 
         .. :quickref: Plate; Get a plate given a plateid
@@ -90,7 +90,6 @@ class PlateView(BaseView):
            }
 
         """
-
         plate, results = _getPlate(plateid, nocubes=True)
         self.update_results(results)
 
@@ -103,7 +102,8 @@ class PlateView(BaseView):
         return jsonify(self.results)
 
     @route('/<plateid>/cubes/', methods=['GET', 'POST'], endpoint='getPlateCubes')
-    def getPlateCubes(self, plateid):
+    @av.check_args()
+    def getPlateCubes(self, args, plateid):
         """Returns a list of all the cubes for this plate
 
         .. :quickref: Plate; Get a list of all cubes for this plate

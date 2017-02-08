@@ -230,7 +230,7 @@ class Cube(MarvinToolsClass):
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
-            response = self.ToolInteraction(url.format(name=self.plateifu))
+            response = self._toolInteraction(url.format(name=self.plateifu))
         except Exception as ee:
             raise MarvinError('found a problem when checking if remote cube '
                               'exists: {0}'.format(str(ee)))

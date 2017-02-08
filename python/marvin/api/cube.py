@@ -7,7 +7,7 @@ from flask_classy import route
 from flask import request, jsonify, abort
 
 from marvin.api import parse_params
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 from marvin.tools.cube import Cube
@@ -15,8 +15,6 @@ from marvin.tools.cube import Cube
 from brain.utils.general import parseRoutePath
 from brain.api.base import processRequest
 from brain.core.exceptions import BrainError
-from webargs import fields, validate
-from webargs.flaskparser import use_args, use_kwargs
 
 ''' stuff that runs server-side '''
 
@@ -54,17 +52,12 @@ def _getCube(name):
 
     return cube, results
 
-cube_args = {
-    'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
-    'release': fields.String(required=True, validate=validate.Regexp('MPL-[4-9]'))
-}
-
 
 class CubeView(BaseView):
     ''' Class describing API calls related to MaNGA Cubes '''
 
     route_base = '/cubes/'
-    # decorators = [parseRoutePath]
+    # decorators = [av.check_args()]
 
     def index(self):
         '''Returns general cube info
@@ -106,13 +99,12 @@ class CubeView(BaseView):
            }
 
         '''
-        abort(405)
         self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
         return jsonify(self.results)
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
-    @use_args(cube_args)
+    @av.check_args()
     def get(self, args, name):
         '''Returns the necessary information to instantiate a cube for a given plateifu.
 

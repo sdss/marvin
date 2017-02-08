@@ -12,14 +12,13 @@
 
 from __future__ import division
 from __future__ import print_function
-import json
 
 from flask_classy import route
 from flask import request, jsonify
 
 from marvin.api import parse_params
 from marvin.tools.modelcube import ModelCube
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 
@@ -64,7 +63,8 @@ class ModelCubeView(BaseView):
     route_base = '/modelcubes/'
 
     @route('/<name>/<bintype>/<template_kin>/', methods=['GET', 'POST'], endpoint='getModelCube')
-    def get(self, name, bintype, template_kin):
+    @av.check_args()
+    def get(self, args, name, bintype, template_kin):
         """Retrieves a ModelCube.
 
         .. :quickref: ModelCube; Get a modelcube given a name, bintype, and template_kin

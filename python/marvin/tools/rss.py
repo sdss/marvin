@@ -187,7 +187,7 @@ class RSS(MarvinToolsClass, list):
         url = marvin.config.urlmap['api']['getRSS']['url'].format(**routeparams)
 
         # Make the API call
-        self.ToolInteraction(url)
+        self._toolInteraction(url)
 
     def _init_fibers(self):
         """Initialises the object as a list of RSSFiber instances."""
@@ -206,7 +206,7 @@ class RSS(MarvinToolsClass, list):
             url = marvin.config.urlmap['api']['getRSSAllFibers']['url'].format(**routeparams)
 
             # Make the API call
-            response = self.ToolInteraction(url)
+            response = self._toolInteraction(url)
             data = response.getData()
 
             wavelength = np.array(data['wavelength'])

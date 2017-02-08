@@ -209,7 +209,7 @@ class MarvinToolsClass(object):
 
         return fullpath
 
-    def ToolInteraction(self, url, params=None):
+    def _toolInteraction(self, url, params=None):
         """Runs an Interaction and passes self._release."""
 
         params = params or {'release': self._release}

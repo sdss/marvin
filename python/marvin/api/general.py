@@ -17,19 +17,20 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
-import json
 from flask import jsonify
 from flask_classy import route
 
 from brain.api.general import BrainGeneralRequestsView
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 from marvin.utils.general import get_nsa_data
+from marvin.api.base import arg_validate as av
 
 
 class GeneralRequestsView(BrainGeneralRequestsView):
 
     @route('/mangaid2plateifu/<mangaid>/', endpoint='mangaid2plateifu', methods=['GET', 'POST'])
-    def mangaid2plateifu(self, mangaid):
+    @av.check_args()
+    def mangaid2plateifu(self, args, mangaid):
         """ Returns a plateifu given a mangaid
 
         .. :quickref: General; Returns a plateifu given a mangaid
@@ -82,7 +83,8 @@ class GeneralRequestsView(BrainGeneralRequestsView):
         return jsonify(self.results)
 
     @route('/nsa/full/<mangaid>/', endpoint='nsa_full', methods=['GET', 'POST'])
-    def get_nsa_data(self, mangaid):
+    @av.check_args()
+    def get_nsa_data(self, args, mangaid):
         """Returns the NSA data for a given mangaid from the full catalogue.
 
         .. :quickref: General; Returns for a given mangaid the NSA data from the full catalog
@@ -140,7 +142,8 @@ class GeneralRequestsView(BrainGeneralRequestsView):
         return jsonify(self.results)
 
     @route('/nsa/drpall/<mangaid>/', endpoint='nsa_drpall', methods=['GET', 'POST'])
-    def get_nsa_drpall_data(self, mangaid):
+    @av.check_args()
+    def get_nsa_drpall_data(self, args, mangaid):
         """Returns the NSA data in drpall for a given mangaid.
 
         .. :quickref: General; Returns for a given mangaid the NSA data from the drpall file

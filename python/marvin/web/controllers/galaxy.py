@@ -144,7 +144,7 @@ def make_nsa_dict(nsa, cols=None):
 
 
 class Galaxy(FlaskView):
-    route_base = '/galaxy'
+    route_base = '/galaxy/'
 
     def __init__(self):
         ''' Initialize the route '''
@@ -177,6 +177,7 @@ class Galaxy(FlaskView):
         self.galaxy['spectra'] = 'null'
         self.galaxy['maps'] = None
         self._drpver, self._dapver, self._release = parseSession()
+        print('request url', request.endpoint, request.url, request.blueprint)
 
     def index(self):
         ''' Main galaxy page '''

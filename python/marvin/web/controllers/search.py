@@ -33,7 +33,7 @@ def getRandomQuery():
 
 
 class Search(FlaskView):
-    route_base = '/search'
+    route_base = '/search/'
 
     def __init__(self):
         ''' Initialize the route '''
@@ -68,8 +68,8 @@ class Search(FlaskView):
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
 
-        from flask import abort
-        abort(500)
+        #from flask import abort
+        #abort(500)
 
         # If form parameters then try to search
         if form:

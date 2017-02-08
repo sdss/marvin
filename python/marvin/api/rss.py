@@ -12,7 +12,6 @@
 
 from __future__ import division
 from __future__ import print_function
-import json
 
 import flask
 from flask import jsonify
@@ -20,7 +19,7 @@ from flask_classy import route
 
 from marvin.api import parse_params
 from marvin.tools.rss import RSS
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 
@@ -64,7 +63,8 @@ class RSSView(BaseView):
     route_base = '/rss/'
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getRSS')
-    def get(self, name):
+    @av.check_args()
+    def get(self, args, name):
         """This method performs a get request at the url route /rss/<id>.
 
         .. :quickref: RSS; Get an RSS given a plate-ifu or mangaid
@@ -117,7 +117,8 @@ class RSSView(BaseView):
         return jsonify(self.results)
 
     @route('/<name>/fibers/', methods=['GET', 'POST'], endpoint='getRSSAllFibers')
-    def getAllFibers(self, name):
+    @av.check_args()
+    def getAllFibers(self, args, name):
         """Returns a list of all the flux, ivar, mask, and wavelength arrays for all fibres.
 
         .. :quickref: RSS; Get a list of flux, ivar, mask, and wavelength arrays for all fibers

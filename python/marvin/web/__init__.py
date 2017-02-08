@@ -14,7 +14,7 @@ from flask_featureflags import FeatureFlag
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import weberrors as web
 from marvin.utils.db import get_traceback
-from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
+from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request, make_error_json
 import sys
 import os
 import logging
@@ -168,31 +168,49 @@ def create_app(debug=False, local=False):
     # Error Handling
     # ----------------
 
+    def _is_api(request):
+        ''' Checks if the error comes from the api '''
+        return request.blueprint == 'api' or 'api' in request.url
+
     @app.errorhandler(404)
     def page_not_found(error):
-        return make_error_page(app, 'Page Not Found', 404, sentry=sentry)
+        name = 'Page Not Found'
+        if _is_api(request):
+            return make_error_json(error, name, 404)
+        else:
+            return make_error_page(app, name, 404, sentry=sentry)
 
     @app.errorhandler(500)
     def internal_server_error(error):
-        print('blah500', request.blueprint, request.url)
-        return make_error_page(app, 'Internal Server Error', 500, sentry=sentry)
+        name = 'Internal Server Error'
+        if _is_api(request):
+            return make_error_json(error, name, 500)
+        else:
+            return make_error_page(app, name, 500, sentry=sentry)
 
     @app.errorhandler(400)
     def bad_request(error):
-        return make_error_page(app, 'Bad Request', 400, sentry=sentry)
+        name = 'Bad Request'
+        if _is_api(request):
+            return make_error_json(error, name, 400)
+        else:
+            return make_error_page(app, name, 400, sentry=sentry)
 
     @app.errorhandler(405)
     def method_not_allowed(error):
-        print('blah405', request.blueprint, request.url)
-        if 'api' in request.url:
-            messages = {'error': 'method_not_allowed',
-                        'message': error.description,
-                        'traceback': get_traceback(asstring=True)}
-            return jsonify({
-                'api_error': messages,
-            }), 405
+        name = 'Method Not Allowed'
+        if _is_api(request):
+            return make_error_json(error, name, 405)
         else:
-            return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
+            return make_error_page(app, name, 405, sentry=sentry)
+
+    @app.errorhandler(422)
+    def handle_unprocessable_entity(error):
+        name = 'Unprocessable Entity'
+        if _is_api(request):
+            return make_error_json(error, name, 422)
+        else:
+            return make_error_page(app, name, 422, sentry=sentry)
 
     # These should be moved into the api module but they need the api blueprint to be registered on
     # I had these in the api.__init__ with the api blueprint defined there as theapi
@@ -213,26 +231,9 @@ def create_app(debug=False, local=False):
             'validation_errors': messages,
         }), 422
 
-    @api.errorhandler(500)
-    def api_internal_server_error(err):
-        messages = {'error': 'internal_server_error',
-                    'message': err.description,
-                    'traceback': get_traceback(asstring=True)}
-        return jsonify({
-            'api_error': messages,
-        }), 500
-
-    @api.errorhandler(405)
-    def api_method_not_allowed(err):
-        messages = {'error': 'method_not_allowed',
-                    'message': err.description,
-                    'traceback': get_traceback(asstring=True)}
-        return jsonify({
-            'api_error': messages,
-        }), 405
-
     # ----------------------------------
     # Registration
+    config.use_sentry = False
     #
     # API route registration
     CubeView.register(api)

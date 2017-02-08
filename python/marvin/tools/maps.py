@@ -423,7 +423,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                               template_kin=self.template_kin)
 
         try:
-            response = self.ToolInteraction(url_full)
+            response = self._toolInteraction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when checking if remote maps exists: {0}'.format(str(ee)))
@@ -616,7 +616,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                                   binid=binid)
 
             try:
-                response = self.ToolInteraction(url_full)
+                response = self._toolInteraction(url_full)
             except Exception as ee:
                 raise marvin.core.exceptions.MarvinError(
                     'found a problem requesting the spaxels for binid={0}: {1}'

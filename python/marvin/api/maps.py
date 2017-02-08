@@ -13,15 +13,11 @@ from __future__ import absolute_import
 import flask_classy
 from flask import request, jsonify, abort
 
-import json
-
 import marvin.api.base
 from marvin.api import parse_params
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.general
-from webargs import fields, validate
-from webargs.flaskparser import use_args
 
 
 def _getMaps(name, **kwargs):
@@ -60,13 +56,6 @@ def _getMaps(name, **kwargs):
         results['error'] = 'Failed to retrieve maps {0}: {1}'.format(name, str(ee))
 
     return maps, results
-
-maps_args = {
-    'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
-    'release': fields.String(required=True, validate=validate.Regexp('MPL-[4-9]')),
-    'bintype': fields.String(required=True, location='view_args'),
-    'template_kin': fields.String(required=True, location='view_args')
-}
 
 
 class MapsView(marvin.api.base.BaseView):
@@ -114,14 +103,13 @@ class MapsView(marvin.api.base.BaseView):
            }
 
         '''
-        abort(500)
         self.results['status'] = 1
         self.results['data'] = 'this is a maps!'
         return jsonify(self.results)
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @use_args(maps_args)
+    @marvin.api.base.arg_validate.check_args()
     def get(self, args, name, bintype, template_kin):
         '''Returns the parameters needed to initialise a Maps remotely.
 
@@ -180,12 +168,14 @@ class MapsView(marvin.api.base.BaseView):
            }
 
         '''
+        print('test inconfig', self.results['inconfig'])
+
         kwargs = {'bintype': bintype, 'template_kin': template_kin}
         maps, results = _getMaps(name, **kwargs)
         self.update_results(results)
 
         if maps is None:
-            return json.dumps(self.results)
+            return jsonify(self.results)
 
         header = maps.header.tostring()
         wcs_header = maps.wcs.to_header_string()
@@ -209,7 +199,7 @@ class MapsView(marvin.api.base.BaseView):
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
-    @use_args(maps_args)
+    @marvin.api.base.arg_validate.check_args()
     def getMap(self, args, name, bintype, template_kin, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
@@ -273,7 +263,7 @@ class MapsView(marvin.api.base.BaseView):
         self.update_results(results)
 
         if maps is None:
-            return json.dumps(self.results)
+            return jsonify(self.results)
 
         try:
             mmap = maps.getMap(property_name=str(property_name), channel=str(channel))
@@ -290,7 +280,8 @@ class MapsView(marvin.api.base.BaseView):
 
     @flask_classy.route('/<name>/<bintype>/<template_kin>/spaxels/<binid>/',
                         methods=['GET', 'POST'], endpoint='getbinspaxels')
-    def getBinSpaxels(self, name, bintype, template_kin, binid):
+    @marvin.api.base.arg_validate.check_args()
+    def getBinSpaxels(self, args, name, bintype, template_kin, binid):
         """Returns a list of x and y indices for spaxels belonging to ``binid``.
 
         .. :quickref: Maps; Get a list of x, y indices for spaxels in a given ``binid``.

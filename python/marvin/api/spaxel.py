@@ -12,7 +12,6 @@
 
 from __future__ import division
 from __future__ import print_function
-import json
 
 import numpy as np
 
@@ -21,7 +20,7 @@ from flask import request, jsonify
 
 from marvin.api import parse_params
 from marvin.tools.spaxel import Spaxel
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 
@@ -66,7 +65,8 @@ class SpaxelView(BaseView):
     route_base = '/spaxels/'
 
     @route('/<name>/spectra/<x>/<y>/', methods=['GET', 'POST'], endpoint='getSpectrum')
-    def spectrum(self, name, x, y):
+    @av.check_args()
+    def spectrum(self, args, name, x, y):
         """Returns a dictionary with the DRP spectrum for a spaxel.
 
         Loads a DRP Cube and uses getSpaxel to retrieve the ``(x,y)``
@@ -139,7 +139,8 @@ class SpaxelView(BaseView):
 
     @route('/<name>/properties/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getProperties')
-    def properties(self, name, x, y, template_kin):
+    @av.check_args()
+    def properties(self, args, name, x, y, template_kin):
         """Returns a dictionary with the DAP properties for a spaxel.
 
         Loads a DAP Maps and uses getSpaxel to retrieve the ``(x,y)``
@@ -223,7 +224,8 @@ class SpaxelView(BaseView):
 
     @route('/<name>/models/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getModels')
-    def getModels(self, name, x, y, template_kin):
+    @av.check_args()
+    def getModels(self, args, name, x, y, template_kin):
         """Returns a dictionary with the models for a spaxel.
 
         Loads a ModelCube and uses getSpaxel to retrieve the ``(x,y)``

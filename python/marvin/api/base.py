@@ -13,6 +13,9 @@ from __future__ import print_function
 from __future__ import division
 from brain.api.base import BrainBaseView
 from marvin import config
+from marvin.api import ArgValidator
+
+arg_validate = ArgValidator(urlmap=config.urlmap)
 
 
 class BaseView(BrainBaseView):
