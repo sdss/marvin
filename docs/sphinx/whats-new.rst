@@ -11,7 +11,7 @@ What's New in Marvin 2.1 (January 2017)
 
 * Marvin :ref:`marvin-maps` now include the ability to make and plot a BPT diagram.  See :ref:`marvin-bpt`.
 
-* Marvin :ref:`marvin-maps` have updated plotting display.
+* Marvin :ref:`marvin-maps` have updated plotting display, and now include a new signal-to-noise (snr) attribute on each map.
 
 * Check out the :ref:`visual-guide`.
 
