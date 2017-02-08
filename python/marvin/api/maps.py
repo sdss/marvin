@@ -273,7 +273,7 @@ class MapsView(marvin.api.base.BaseView):
             return jsonify(self.results)
 
         try:
-            mmap = maps.getMap(property_name=str(property_name), channel=str(chnnel))
+            mmap = maps.getMap(property_name=str(property_name), channel=str(channel))
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist() if mmap.ivar is not None else None
