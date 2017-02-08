@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import OrderedDict
-from unittest import TestCase
+import unittest
 from astropy.io import fits
 from astropy.wcs import WCS
 import os
@@ -32,7 +32,7 @@ from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
 
 
-class TestConvertCoords(TestCase):
+class TestConvertCoords(unittest.TestCase):
 
     __metaclass__ = TemplateTestCase
 
@@ -134,7 +134,7 @@ class TestConvertCoords(TestCase):
         self.assertIn('some indices are out of limits', str(cm.exception))
 
 
-class TestGetNSAData(TestCase):
+class TestGetNSAData(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -204,7 +204,7 @@ class TestGetNSAData(TestCase):
         self.assertEqual(data['iauname'], data.iauname)
 
 
-class TestPillowImage(TestCase):
+class TestPillowImage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -228,3 +228,6 @@ class TestPillowImage(TestCase):
                 self.assertEqual(err, e.args[0])
 
 
+if __name__ == '__main__':
+    verbosity = 2
+    unittest.main(verbosity=verbosity)
