@@ -12,7 +12,7 @@ FYIs
 Tools
 ^^^^^
 
-* **Python 3 compatibility** - Marvin should be generally compatible with Python 3 but beware that at this point we have not run systematic tests to confirm it. It is our intention, however, to make Marvin totally Python 3 compatible as soon as possible and we will appreciate users reporting issues and problems that they found while using Marvin with Python 3 (in this case, please remember to specify the version of Python 3 you were using).
+* **MaStar Products** - Since the mastar datamodel changed with MPL-5, Marvin does not currently handle any mastar data products.  Mastar products **may** be accessible in MPL-4, but this has not been thoroughly vetted and tested.
 
 * **Coordinates** - Although we have made significant effort to test them, spaxel selection from coordinates (both indices and spherical) should not be considered science-grade yet. +/- 1 pixel offsets around the real position position are not unexpected, and the behaviour of :func:`~marvin.tools.cube.Cube.getSpaxel()` may not be consistent in all access mode (file vs API). This is especially true in case of spaxel indices measured from the centre of the cube. When doing science analysis on the data please be careful and, if possible, double check the retrieved values independently. If you find any discrepancy between the values retreived and the ones you expect, `file and issue <https://github.com/sdss/marvin/issues>`_.
 
@@ -49,9 +49,6 @@ Tools
 ^^^^^
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
-
-* The elliptical Petrosian colours that can be used for querying (e.g., ``petroth50_el_g_r``)
-  are incorrect as they are calculated using ``petroth50_el``, which is the half-light radius and not the flux (!). This will be fixed in Marvin 2.0.10, but beware if you are using a previous version.
 
 Web
 ^^^

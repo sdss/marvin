@@ -54,7 +54,7 @@ Marvin Primer
    Frequently Asked Questions <faq>
    first-steps
    general
-
+   tools/visual-guide
 
 |
 

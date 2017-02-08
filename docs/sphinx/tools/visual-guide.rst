@@ -3,7 +3,7 @@
 Visual Guide to Marvin Tools
 ----------------------------
 
-All of the Marvin Tools are seamlessly linked together.  To better understand the flow amongst the various Tools, here is a visual guide.
+All **object-** and **search-based** tools in Marvin are seamlessly linked together.  To better understand the flow amongst the various Tools, here is a visual guide.
 
 |
 
