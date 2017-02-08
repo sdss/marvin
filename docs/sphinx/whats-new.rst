@@ -3,19 +3,19 @@ What's New in Marvin 2.1 (January 2017)
 
 * Marvin is now minimally compliant with Python 3.5+
 
-* The URL `<https://sas.sdss.org/marvin>`_ now points to Marvin 2.
+* `<https://sas.sdss.org/marvin>`_ now points to Marvin 2 (instead of Marvin 1).
 
 * The NSA catalog information is now available via **Cube.nsa** in Marvin Cubes.
 
 * Marvin :ref:`marvin-web` now has a new :ref:`nsa_display` tab with interactive scatter, and box-and-whisker plots.
 
-* Marvin :ref:`marvin-web` now has more python tips for working with Marvin :ref:`marvin-tools` objects.
+* Marvin :ref:`marvin-web` has more python tips for working with Marvin :ref:`marvin-tools` objects.
 
 * Marvin now uses Sentry to catch and send errors.
 
-* Marvin :ref:`marvin-maps` now include the ability to make and plot a BPT diagram.  See :ref:`marvin-bpt`.
+* Marvin :ref:`marvin-maps` now include the ability to make and plot a :ref:`marvin-bpt` diagram.
 
-* Marvin :ref:`marvin-maps` have updated plotting display, and now include a new signal-to-noise (snr) attribute on each map.
+* Marvin :ref:`marvin-maps` have updated plotting display and now include a new signal-to-noise (snr) attribute on each map.
 
 * Check out the :ref:`visual-guide`.
 
