@@ -122,7 +122,6 @@ class ArgValidator(object):
         ''' Adds all appropriate View arguments into dictionary for validation '''
         local_viewargs = self._extract_view_args()
 
-        print('my local viewargs', local_viewargs)
         # check if any local_view args need new validation
         props = ['bintype', 'template_kin', 'property_name', 'channel']
         ismatch = set(local_viewargs) & set(props)
@@ -165,7 +164,6 @@ class ArgValidator(object):
         self._add_view_args()
 
         # add form param args to the list
-        print('use_params', self.use_params)
         if self.use_params:
             self._add_param_args()
 
@@ -180,7 +178,6 @@ class ArgValidator(object):
         self._main_kwargs = tempkwargs
 
     def _check_mainkwargs(self, **kwargs):
-        print('checking kwargs', kwargs)
         self.use_params = kwargs.pop('use_params', None)
         self._required = kwargs.pop('required', None)
 
@@ -197,9 +194,7 @@ class ArgValidator(object):
         def decorator(func):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
-                print('args', args)
-                print('kwargs', kwargs)
-                print('release', args[0]._release)
+                # args and kwargs here are the view function args and kwargs
                 self.release = args[0]._release
                 self.endpoint = args[0]._endpoint
                 # check the kwargs for any parameters
@@ -208,7 +203,6 @@ class ArgValidator(object):
                 self.create_args()
                 # pop all the kwargs
                 self._pop_kwargs(**mainkwargs)
-                print('new mainkwargs', self._main_kwargs)
                 # pass into webargs use_args (use_args is a decorator in itself)
                 newfunc = use_args(self.final_args, self._main_kwargs)(func)
                 return newfunc(*args, **kwargs)
@@ -224,36 +218,17 @@ class ArgValidator(object):
         ''' Checks only the release '''
         return use_kwargs(self.base_args)
 
-    def list_params(self):
+    def list_params(self, param_type=None):
+        ''' List the globally defined parameters for validation
         '''
-            view_args
-            name = cube/maps/rss/spaxel
-            bintype = maps/modelcube
-            template_kin = maps/modelcube/spaxel
-            property_name = maps/spaxel
-            channel = maps
-            binid = maps
-            plateid = plate
-            x/y = spaxel
-            mangaid = general
+        total = {'viewargs': viewargs, 'params': params}
 
-            form params
-            release = all
-
-            in query
-            paramdisplay
-            task
-            searchfilter
-            params
-            start
-            end
-            rettype
-            limit
-            sort
-            order
-
-        '''
-        pass
+        if param_type == 'viewargs':
+            return total['viewargs']
+        elif param_type == 'params':
+            return total['params']
+        else:
+            return total
 
 
 

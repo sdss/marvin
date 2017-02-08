@@ -14,7 +14,6 @@ import flask_classy
 from flask import request, jsonify, abort
 
 import marvin.api.base
-from marvin.api import parse_params
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.general
@@ -28,7 +27,8 @@ def _getMaps(name, **kwargs):
     # Makes sure we don't use the wrong mode.
     kwargs.pop('mode', None)
 
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     # Parses name into either mangaid or plateifu
     try:
@@ -168,10 +168,13 @@ class MapsView(marvin.api.base.BaseView):
            }
 
         '''
-        print('test inconfig', self.results['inconfig'])
+        print('maps args', args)
+        # Pop any args we don't want going into Maps
+        args = self.pop_args(args, arglist='name')
 
-        kwargs = {'bintype': bintype, 'template_kin': template_kin}
-        maps, results = _getMaps(name, **kwargs)
+        #kwargs = {'bintype': bintype, 'template_kin': template_kin}
+        #maps, results = _getMaps(name, **kwargs)
+        maps, results = _getMaps(name, **args)
         self.update_results(results)
 
         if maps is None:
@@ -256,17 +259,21 @@ class MapsView(marvin.api.base.BaseView):
 
         """
 
-        kwargs = {'bintype': bintype, 'template_kin': template_kin}
+        print('map args', args)
+        # Pop any args we don't want going into Maps
+        args = self.pop_args(args, arglist=['name', 'property_name', 'channel'])
+
+        # kwargs = {'bintype': bintype, 'template_kin': template_kin}
 
         # Initialises the Maps object
-        maps, results = _getMaps(name, **kwargs)
+        maps, results = _getMaps(name, **args)
         self.update_results(results)
 
         if maps is None:
             return jsonify(self.results)
 
         try:
-            mmap = maps.getMap(property_name=str(property_name), channel=str(channel))
+            mmap = maps.getMap(property_name=str(property_name), channel=str(chnnel))
             self.results['data'] = {}
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist() if mmap.ivar is not None else None
@@ -327,11 +334,14 @@ class MapsView(marvin.api.base.BaseView):
            }
 
         """
+        print('map args', args)
+        # Pop any args we don't want going into Maps
+        args = self.pop_args(args, arglist=['name', 'binid'])
 
-        kwargs = {'bintype': bintype, 'template_kin': template_kin}
+        # kwargs = {'bintype': bintype, 'template_kin': template_kin}
 
         # Initialises the Maps object
-        maps, results = _getMaps(name, **kwargs)
+        maps, results = _getMaps(name, **args)
         self.update_results(results)
 
         if maps is None:
