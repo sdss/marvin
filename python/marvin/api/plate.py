@@ -19,17 +19,20 @@ from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 
 
-def _getPlate(plateid, nocubes=None):
+def _getPlate(plateid, nocubes=None, **kwargs):
     ''' Get a Plate Marvin Object '''
     plate = None
     results = {}
+
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     if not str(plateid).isdigit():
         results['error'] = 'Error: plateid is not a numeric value'
         return plate, results
 
     try:
-        plate = Plate(plateid=plateid, nocubes=nocubes, mode='local')
+        plate = Plate(plateid=plateid, nocubes=nocubes, mode='local', release=release)
     except Exception as e:
         results['error'] = 'Failed to retrieve Plate for id {0}: {1}'.format(plateid, str(e))
     else:
@@ -41,7 +44,7 @@ def _getPlate(plateid, nocubes=None):
 class PlateView(BaseView):
     """Class describing API calls related to plates."""
 
-    route_base = '/plate/'
+    route_base = '/plates/'
 
     @route('/<plateid>/', methods=['GET', 'POST'], endpoint='getPlate')
     @av.check_args()
@@ -90,7 +93,8 @@ class PlateView(BaseView):
            }
 
         """
-        plate, results = _getPlate(plateid, nocubes=True)
+        args = self.pop_args(args, arglist=['plateid'])
+        plate, results = _getPlate(plateid, nocubes=True, **args)
         self.update_results(results)
 
         if not isinstance(plate, type(None)):
@@ -147,7 +151,8 @@ class PlateView(BaseView):
 
         """
 
-        plate, results = _getPlate(plateid)
+        args = self.pop_args(args, arglist=['plateid'])
+        plate, results = _getPlate(plateid, **args)
         self.update_results(results)
 
         if not isinstance(plate, type(None)):

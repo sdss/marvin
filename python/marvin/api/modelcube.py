@@ -14,9 +14,8 @@ from __future__ import division
 from __future__ import print_function
 
 from flask_classy import route
-from flask import request, jsonify
+from flask import jsonify
 
-from marvin.api import parse_params
 from marvin.tools.modelcube import ModelCube
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
@@ -29,7 +28,8 @@ def _get_model_cube(name, **kwargs):
     model_cube = None
     results = {}
 
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     # parse name into either mangaid or plateifu
     try:
@@ -122,7 +122,10 @@ class ModelCubeView(BaseView):
 
         """
 
-        model_cube, results = _get_model_cube(name, bintype=bintype, template_kin=template_kin)
+        # Pop any args we don't want going into ModelCube
+        args = self.pop_args(args, arglist='name')
+
+        model_cube, results = _get_model_cube(name, **args)
 
         self.update_results(results)
 

@@ -11,7 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import flask_classy
-from flask import request, jsonify, abort
+from flask import jsonify
 
 import marvin.api.base
 import marvin.core.exceptions

@@ -4,9 +4,8 @@
 import numpy as np
 
 from flask_classy import route
-from flask import request, jsonify, abort
+from flask import jsonify
 
-from marvin.api import parse_params
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
@@ -19,11 +18,11 @@ from brain.core.exceptions import BrainError
 ''' stuff that runs server-side '''
 
 
-def _getCube(name):
+def _getCube(name, **kwargs):
     ''' Retrieve a cube using marvin tools '''
 
-    # Gets the drpver from the request
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     cube = None
     results = {}
@@ -165,11 +164,10 @@ class CubeView(BaseView):
 
         '''
 
-        print('testing args', name, args, args['name'])
-        form = processRequest(request)
-        print('test form', form)
+        # Pop any args we don't want going into Cube
+        args = self.pop_args(args, arglist='name')
 
-        cube, res = _getCube(name)
+        cube, res = _getCube(name, **args)
         self.update_results(res)
 
         if cube:

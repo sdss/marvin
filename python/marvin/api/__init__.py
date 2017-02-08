@@ -14,16 +14,6 @@ from webargs.flaskparser import use_args, use_kwargs
 config.use_sentry = False
 
 
-def parse_params(request):
-    """Parses the release from any type of request."""
-
-    form = processRequest(request)
-    print('parse', form)
-    release = form.get('release', None)
-
-    return release
-
-
 # List of global View arguments across all API routes
 viewargs = {'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
             'bintype': fields.String(required=True, location='view_args'),

@@ -13,24 +13,23 @@
 from __future__ import division
 from __future__ import print_function
 
-import flask
 from flask import jsonify
 from flask_classy import route
 
-from marvin.api import parse_params
 from marvin.tools.rss import RSS
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 
 
-def _getRSS(name):
+def _getRSS(name, **kwargs):
     """Retrieves a RSS Marvin object."""
 
     rss = None
     results = {}
 
-    release = parse_params(flask.request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     # parse name into either mangaid or plateifu
     try:
@@ -107,7 +106,10 @@ class RSSView(BaseView):
 
         """
 
-        rss, results = _getRSS(name)
+        # Pop any args we don't want going into Rss
+        args = self.pop_args(args, arglist='name')
+
+        rss, results = _getRSS(name, **args)
         self.update_results(results)
 
         if rss:
@@ -167,7 +169,10 @@ class RSSView(BaseView):
 
         """
 
-        rss, results = _getRSS(name)
+        # Pop any args we don't want going into Rss
+        args = self.pop_args(args, arglist='name')
+
+        rss, results = _getRSS(name, *args)
         self.update_results(results)
 
         if rss:

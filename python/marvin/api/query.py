@@ -2,30 +2,36 @@ from flask_classy import route
 from flask import request, jsonify
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
-from marvin.api import parse_params
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
 
 
-def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
-              limit=None, sort=None, order=None, release=None):
+# def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
+#               limit=None, sort=None, order=None, release=None):
+def _getCubes(searchfilter, **kwargs):
     """Run query locally at Utah."""
 
-    if release is None:
-        release = parse_params(request)
+    release = kwargs.pop('release', None)
 
     try:
-        q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
-                       mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+        # q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
+        #                mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+        q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
 
     results = r.results
 
+    # get the subset keywords
+    start = kwargs.get('start', None)
+    end = kwargs.get('end', None)
+    limit = kwargs.get('limit', None)
+    params = kwargs.get('params', None)
+
     # get a subset
     chunk = None
     if start:
-        chunk = int(end)-int(start)
+        chunk = int(end) - int(start)
         results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
@@ -154,19 +160,21 @@ class QueryView(BaseView):
 
         '''
         print('args', args)
-        searchfilter = self.results['inconfig'].get('searchfilter', None)
-        params = self.results['inconfig'].get('params', None)
-        rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', 100)
-        sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', 'asc')
-        release = self.results['inconfig'].get('release', None)
+        searchfilter = args.pop('searchfilter', None)
+        # searchfilter = self.results['inconfig'].get('searchfilter', None)
+        # params = self.results['inconfig'].get('params', None)
+        # rettype = self.results['inconfig'].get('returntype', None)
+        # limit = self.results['inconfig'].get('limit', 100)
+        # sort = self.results['inconfig'].get('sort', None)
+        # order = self.results['inconfig'].get('order', 'asc')
+        # release = self.results['inconfig'].get('release', None)
 
         print('inconfig', self.results['inconfig'])
-        print('cube_query', searchfilter, params, limit)
+        #print('cube_query', searchfilter, params, limit)
         try:
-            res = _getCubes(searchfilter, params=params, rettype=rettype,
-                            limit=limit, sort=sort, order=order, release=release)
+            # res = _getCubes(searchfilter, params=params, rettype=rettype,
+            #                 limit=limit, sort=sort, order=order, release=release)
+            res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
@@ -249,20 +257,23 @@ class QueryView(BaseView):
            }
 
         '''
-        searchfilter = self.results['inconfig'].get('searchfilter', None)
-        params = self.results['inconfig'].get('params', None)
-        start = self.results['inconfig'].get('start', None)
-        end = self.results['inconfig'].get('end', None)
-        rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', 100)
-        sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', 'asc')
-        release = self.results['inconfig'].get('release', None)
+        print('args', args)
+        searchfilter = args.pop('searchfilter', None)
+        # searchfilter = self.results['inconfig'].get('searchfilter', None)
+        # params = self.results['inconfig'].get('params', None)
+        # start = self.results['inconfig'].get('start', None)
+        # end = self.results['inconfig'].get('end', None)
+        # rettype = self.results['inconfig'].get('returntype', None)
+        # limit = self.results['inconfig'].get('limit', 100)
+        # sort = self.results['inconfig'].get('sort', None)
+        # order = self.results['inconfig'].get('order', 'asc')
+        # release = self.results['inconfig'].get('release', None)
 
         try:
-            res = _getCubes(searchfilter, params=params, start=int(start),
-                            end=int(end), rettype=rettype, limit=limit,
-                            sort=sort, order=order, release=release)
+            # res = _getCubes(searchfilter, params=params, start=int(start),
+            #                 end=int(end), rettype=rettype, limit=limit,
+            #                 sort=sort, order=order, release=release)
+            res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
@@ -316,7 +327,8 @@ class QueryView(BaseView):
            }
 
         '''
-        paramdisplay = self.results['inconfig'].get('paramdisplay', 'all')
+        #paramdisplay = self.results['inconfig'].get('paramdisplay', 'all')
+        paramdisplay = args.pop('paramdisplay', 'all')
         q = Query(mode='local')
         if paramdisplay == 'all':
             params = q.get_available_params()
@@ -374,7 +386,8 @@ class QueryView(BaseView):
            }
 
         '''
-        task = self.results['inconfig'].get('task', None)
+        #task = self.results['inconfig'].get('task', None)
+        task = args.pop('task', None)
         if task == 'clean':
             q = Query(mode='local')
             q._cleanUpQueries()

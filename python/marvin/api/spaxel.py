@@ -16,9 +16,8 @@ from __future__ import print_function
 import numpy as np
 
 from flask_classy import route
-from flask import request, jsonify
+from flask import jsonify
 
-from marvin.api import parse_params
 from marvin.tools.spaxel import Spaxel
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
@@ -31,7 +30,8 @@ def _getSpaxel(name, x, y, **kwargs):
     spaxel = None
     results = {}
 
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     # parse name into either mangaid or plateifu
     try:
@@ -123,8 +123,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, int(x), int(y),
-                                     maps=False, modelcube=False)
+        # Pop any args we don't want going into Spaxel
+        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, maps=False, modelcube=False, **args)
 
         self.update_results(results)
 
@@ -201,9 +203,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, int(x), int(y),
-                                     template_kin=template_kin,
-                                     cube=False, modelcube=False)
+        # Pop any args we don't want going into Spaxel
+        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, cube=False, modelcube=False, **args)
 
         self.update_results(results)
 
@@ -291,9 +294,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, x, y,
-                                     template_kin=template_kin,
-                                     cube=False, maps=False)
+        # Pop any args we don't want going into Spaxel
+        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, cube=False, maps=False, **args)
 
         self.update_results(results)
 
