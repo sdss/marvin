@@ -16,7 +16,7 @@ Tools
 
 * **Coordinates** - Although we have made significant effort to test them, spaxel selection from coordinates (both indices and spherical) should not be considered science-grade yet. +/- 1 pixel offsets around the real position position are not unexpected, and the behaviour of :func:`~marvin.tools.cube.Cube.getSpaxel()` may not be consistent in all access mode (file vs API). This is especially true in case of spaxel indices measured from the centre of the cube. When doing science analysis on the data please be careful and, if possible, double check the retrieved values independently. If you find any discrepancy between the values retreived and the ones you expect, `file and issue <https://github.com/sdss/marvin/issues>`_.
 
-* **Ivar propagation in ratio maps** - Inverse variation propagation in the ratio maps may be incorrect and should be checked carefully before using them for any science-grade purpose.
+* **Ivar propagation in ratio maps** - Inverse variation propagation in the ratio maps is set to ``None``.
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
@@ -35,8 +35,7 @@ Web
 
 * **Browser compatibility** - Marvin is not fully compatible with Safari. This is mostly due to the current
   stable version of Safari not being compliant with the latest HTML standards. In the future we will try to
-  make Marvin more stable in Safari, as long as that does not mean sacrificing functionality. In the meantime,
-  please use Chrome or Firefox. Alternatively, you can try the
+  make Marvin more stable in Safari, as long as that does not mean sacrificing functionality. In the meantime, please use Chrome or Firefox. Alternatively, you can try the
   `beta version of Safari <https://developer.apple.com/safari/technology-preview/>`_, which is significantly
   more HTML compliant.
 
@@ -52,8 +51,7 @@ Tools
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
 * The elliptical Petrosian colours that can be used for querying (e.g., ``petroth50_el_g_r``)
-  are incorrect as they are calculated using ``petroth50_el``, which is the half-light radius and not the flux (!).
-  This will be fixed in marvin 2.0.10, but beware if you are using a previous version.
+  are incorrect as they are calculated using ``petroth50_el``, which is the half-light radius and not the flux (!). This will be fixed in Marvin 2.0.10, but beware if you are using a previous version.
 
 Web
 ^^^
