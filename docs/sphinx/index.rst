@@ -69,12 +69,19 @@ Marvin Primer
    results
    tools/cube
 <<<<<<< HEAD
+<<<<<<< HEAD
    tools/bpt
 =======
    tools/modelcube
    tools/maps
    images
 >>>>>>> py3-dev
+=======
+   tools/bpt
+   tools/modelcube
+   tools/maps
+   images
+>>>>>>> 1daadeb169bf6e0d588d7d7e51d49b6f3eddc43e
 
 :doc:`api`
 ==========
