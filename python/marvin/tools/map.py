@@ -47,7 +47,7 @@ import warnings
 
 from astropy.io import fits
 import numpy as np
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
@@ -311,15 +311,16 @@ class Map(object):
 
         novalue = (self.mask & 2**4) > 0
         if use_mask:
-            # Flag a region as having no data if ivar = 0
-            ivar_zero = (self.ivar == 0.)
-
             badvalue = (self.mask & 2**5) > 0
             matherror = (self.mask & 2**6) > 0
             badfit = (self.mask & 2**7) > 0
             donotuse = (self.mask & 2**30) > 0
-            no_data = np.logical_or.reduce((ivar_zero, novalue, badvalue, matherror, badfit,
-                                            donotuse))
+            no_data = np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
+
+            if self.ivar is not None:
+                # Flag a region as having no data if ivar = 0
+                ivar_zero = (self.ivar == 0.)
+                no_data = np.logical_or.reduce((no_data, ivar_zero))
         else:
             no_data = novalue
 
@@ -348,16 +349,15 @@ class Map(object):
         Returns:
             array: Boolean array for mask (i.e., True corresponds to value to be masked out).
         """
-
-        if np.all(np.isnan(ivar)):
-            ivar = None
+        no_measure = np.zeros(data.shape, dtype=bool)
 
         if ivar is not None:
-            no_measure = (ivar == 0.)
-            if snr_min is not None:
-                no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
-            if log_cb:
-                no_measure[data <= 0.] = True
+            if not np.all(np.isnan(ivar)):
+                no_measure = (ivar == 0.)
+                if snr_min is not None:
+                    no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
+                if log_cb:
+                    no_measure[data <= 0.] = True
 
         return no_measure
 
@@ -396,14 +396,14 @@ class Map(object):
             dict
         """
 
-        # TODO test this with matplotlib 2.0
-        # if int(matplotlib.__version__.split('.')[0]) > 1:
-        #     matplotlib.rcParams['hatch_linewidth'] = 0.1
+        if int(mpl.__version__.split('.')[0]) > 1:
+            mpl.rcParams['hatch.linewidth'] = 0.5
+            mpl.rcParams['hatch.color'] = 'w'
 
         patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                          width=extent[1] - extent[0] - 0.02,
                          height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
-                         fill=True, fc=facecolor, ec='w', zorder=0)
+                         fill=True, facecolor=facecolor, edgecolor='w', zorder=0)
 
         return patch_kws
 
@@ -455,43 +455,47 @@ class Map(object):
 
         Parameters:
             cmap (str):
-                Default is 'RdBu_r' for velocities, 'inferno' for sigmas, and 'linear_Lab' for
-                other properties.
+                Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and ``linear_Lab``
+                for other properties.
             percentile_clip (list):
-                Percentile clip. Default is [10, 90] for velocities and sigmas and [5, 95] for
-                other properites.
+                Percentile clip. Default is ``[10, 90]`` for velocities and sigmas and ``[5, 95]``
+                for other properites.
             sigclip (list):
-                Sigma clip. Default is None.
+                Sigma clip. Default is ``None``.
             cbrange (list):
-                If None, set automatically. Default is None.
+                If ``None``, set automatically. Default is ``None``.
             symmetric (bool):
-                Draw a colorbar that is symmetric around zero. Default is True for velocities and
-                False for other properties.
+                Draw a colorbar that is symmetric around zero. Default is ``True`` for velocities
+                and ``False`` for other properties.
             snr_min (float):
-                Minimum signal-to-noise for keeping a valid measurement. Default is 1.
+                Minimum signal-to-noise for keeping a valid measurement. Default is ``1``.
             log_cb (bool):
-                Draw a log normalized colorbar. Default is False.
+                Draw a log normalized colorbar. Default is ``False``.
             title (str):
-                If None, set automatically from property (and channel) name(s). For no title, set
-                to ''. Default is None.
+                If ``None``, set automatically from property (and channel) name(s). For no title,
+                set to ''. Default is ``None``.
             cblabel (str):
-                If None, set automatically from unit. For no colorbar label, set to ''. Default is
-                None.
+                If ``None``, set automatically from unit. For no colorbar label, set to ''. Default
+                is ``None``.
             sky_coords (bool):
-                If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
-                coordinates. Default is False.
-            use_mask (bool): Use DAP bitmasks. Default is True.
-            fig (plt.figure object):
-                Use if creating subplot of a multi-panel plot. Default is None.
-            ax (plt.figure axis object):
-                Use if creating subplot of a multi-panel plot. Default is None.
+                If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates. Default is ``False``.
+            use_mask (bool): Use DAP bitmasks. Default is ``True``.
+            fig (matplotlib Figure object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
+            ax (matplotlib Axis object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
             imshow_kws (dict):
-                Keyword args to pass to ax.imshow. Default is None.
+                Keyword args to pass to `ax.imshow
+                <http://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow>`_.
+                Default is ``None``.
             cb_kws (dict):
-                Keyword args to set and draw colorbar. Default is None.
+                Keyword args to set and draw colorbar. Default is ``None``.
 
         Returns:
-            tuple: (plt.figure object, plt.figure axis object)
+            fig, ax (tuple):
+                `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_,
+                `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
 
         Example:
             >>> maps = Maps(plateifu='8485-1901')
@@ -553,7 +557,7 @@ class Map(object):
 
         extent = self._set_extent(self.value.shape, sky_coords)
         imshow_kws.setdefault('extent', extent)
-        imshow_kws.setdefault('interpolation', 'none')
+        imshow_kws.setdefault('interpolation', 'nearest')
         imshow_kws.setdefault('origin', 'lower')
         imshow_kws['norm'] = LogNorm() if log_cb else None
 
@@ -561,7 +565,7 @@ class Map(object):
 
         # Plot regions with no measurement as hatched by putting one large patch as lowest layer
         patch_kws = self._set_patch_style(extent=extent)
-        ax.add_patch(matplotlib.patches.Rectangle(**patch_kws))
+        ax.add_patch(mpl.patches.Rectangle(**patch_kws))
 
         # Plot regions of no data as a solid color (gray #A8A8A8)
         A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
@@ -576,6 +580,6 @@ class Map(object):
             ax.set_title(label=title)
 
         # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
-        matplotlib.rcParams['image.composite_image'] = False
+        mpl.rcParams['image.composite_image'] = False
 
         return fig, ax

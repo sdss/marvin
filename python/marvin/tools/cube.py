@@ -84,7 +84,6 @@ class Cube(MarvinToolsClass):
         self.shape = None
         self.wcs = None
         self.wavelength = None
-        self.redshift = None
         self._drpall_data = None
 
         super(Cube, self).__init__(*args, **kwargs)
@@ -170,18 +169,6 @@ class Cube(MarvinToolsClass):
         self.wavelength = self.data['WAVE'].data
         self.plateifu = self.header['PLATEIFU']
 
-        # Retrieves the redshift from the drpall file
-        self._drpall_data = marvin.utils.general.general.get_drpall_row(self.plateifu,
-                                                                        drpver=self._drpver,
-                                                                        drpall=self._drpall)
-        if 'nsa_z' in self._drpall_data.colnames:
-            self.redshift = self._drpall_data['nsa_z']
-        elif 'nsa_redshift' in self._drpall_data.colnames:
-            self.redshift = self._drpall_data['nsa_redshift']
-        else:
-            warnings.warn('cannot retrieve redshift from drpall.', MarvinUserWarning)
-            self.redshift = None
-
         # Checks and populates the release.
         file_drpver = self.header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
@@ -236,18 +223,6 @@ class Cube(MarvinToolsClass):
             self.shape = self.data.shape.shape
             self.wavelength = self.data.wavelength.wavelength
 
-            if not self.data.target:
-                warnings.warn('no NSA targets found for this cube.', MarvinUserWarning)
-            else:
-                nsaobjs = self.data.target.NSA_objects
-                if len(nsaobjs) > 1:
-                    warnings.warn('more than one NSA target found for this cube.',
-                                  MarvinUserWarning)
-                elif not nsaobjs:
-                    warnings.warn('no NSA target found for this cube', MarvinUserWarning)
-                else:
-                    self.redshift = nsaobjs[0].z
-
     def _load_cube_from_api(self):
         """Calls the API and retrieves the necessary information to instantiate the cube."""
 
@@ -262,7 +237,6 @@ class Cube(MarvinToolsClass):
         data = response.getData()
 
         self.header = fits.Header.fromstring(data['header'])
-        self.redshift = float(data['redshift'])
         self.shape = data['shape']
         self.wavelength = np.array(data['wavelength'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
@@ -367,6 +341,10 @@ class Cube(MarvinToolsClass):
             properties (bool):
                 If ``True``, the spaxel will be initiated with the DAP
                 properties from the default Maps matching this cube.
+            modelcube (:class:`~marvin.tools.modelcube.ModelCube` or None or bool):
+                A :class:`~marvin.tools.modelcube.ModelCube` object
+                representing the DAP modelcube entity. If None, the |spaxel|
+                will be returned without model information. Default is False.
 
         Returns:
             spaxels (list):
@@ -457,14 +435,16 @@ class Cube(MarvinToolsClass):
         Example:
             To get the mask for a circular aperture centred in spaxel (5, 7)
             and with radius 5 spaxels
-              >>> mask = cube.getAperture((5, 7), 5)
-              >>> mask.shape
-              (34, 34)
-            If you want to get the spaxels associated with that mask
-              >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
-              >>> len(spaxels)
-              15
 
+                >>> mask = cube.getAperture((5, 7), 5)
+                >>> mask.shape
+                (34, 34)
+
+            If you want to get the spaxels associated with that mask
+
+                >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
+                >>> len(spaxels)
+                15
         """
 
         assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
