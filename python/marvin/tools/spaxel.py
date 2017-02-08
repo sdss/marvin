@@ -574,11 +574,11 @@ class Spaxel(object):
 
                     properties[prop.fullname(channel=channel)] = AnalysisProperty(
                         prop.name,
-                        channel=channel,
+                        channel=None,
                         value=prop_hdu.data[self.y, self.x],
                         ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
                         mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None,
-                        unit=unit,
+                        unit=prop.unit,
                         description=prop.description)
 
         elif self.maps.data_origin == 'db':

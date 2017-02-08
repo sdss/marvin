@@ -548,12 +548,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         map_1.value /= map_2.value
 
-        # TODO: this is probably wrong (JSG)
-        map_1.ivar /= map_2.ivar
+        # TODO: do the error propogation (BHA)
+        map_1.ivar = None
 
         map_1.mask &= map_2.mask
 
         map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
+
+        if map_1.unit != map_2.unit:
+            map_1.unit = '{0}/{1}'.format(map_1.unit, map_2.unit)
+        else:
+            map_1.unit = ''
 
         return map_1
 

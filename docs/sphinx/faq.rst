@@ -77,9 +77,9 @@ You can also clear your browser cookies.
 
 As a reminder, we recommend these browsers for the best Marvin web experience:
 
- * Google Chrome 53+ or higher
- * Mozilla Firefox 50+ or higher
- * Safari 10+ or Safari Technology Preview
+* Google Chrome 53+ or higher
+* Mozilla Firefox 50+ or higher
+* Safari 10+ or Safari Technology Preview
 
 
 
