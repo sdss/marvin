@@ -445,7 +445,10 @@ class Map(object):
             ax.set_ylabel(ylabel)
 
         if 'seaborn' not in sys.modules:
-            ax.set_axis_bgcolor(facecolor)
+            if int(mpl.__version__.split('.')[0]) < 2:
+                ax.set_axis_bgcolor(facecolor)
+            else:
+                ax.set_facecolor(facecolor)
 
         ax.grid(False, which='both', axis='both')
 
