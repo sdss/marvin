@@ -141,10 +141,9 @@ class TestGetNSAData(unittest.TestCase):
         marvin.config.switchSasUrl('local')
         marvin.config.use_sentry = False
         marvin.config.add_github_message = False
-        cls.config_db = marvin.config.db
 
     def setUp(self):
-        marvin.config.db = self.config_db
+        marvin.config.forceDbOn()
 
     def _test_nsa(self, data):
         self.assertIsInstance(data, DotableCaseInsensitive)
@@ -182,7 +181,7 @@ class TestGetNSAData(unittest.TestCase):
         self._test_drpall(data)
 
     def test_auto_nsa_without_db(self):
-        marvin.config.db = None
+        marvin.config.forceDbOff()
         data = get_nsa_data('1-209232', source='nsa', mode='auto')
         self._test_nsa(data)
 

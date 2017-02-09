@@ -67,7 +67,7 @@ def checkPath(func):
     return wrapper
 
 
-def getDir3d(inputid, mode=None):
+def getDir3d(inputid, mode=None, release=None):
     ''' Get the 3d redux Image directory from an input plate or plate-IFU '''
 
     idtype = parseIdentifier(inputid)
@@ -76,7 +76,7 @@ def getDir3d(inputid, mode=None):
     elif idtype == 'plateifu':
         plateid, __ = inputid.split('-')
 
-    release = marvin.config.release
+    release = marvin.config.release if not release else release
     drpver, __ = marvin.config.lookUpVersions(release=release)
     drpstrict = StrictVersion(drpver.strip('v').replace('_', '.'))
     verstrict = StrictVersion('1.5.4')
@@ -84,7 +84,7 @@ def getDir3d(inputid, mode=None):
     if drpstrict >= verstrict:
         from marvin.tools.plate import Plate
         try:
-            plate = Plate(plateid=plateid, nocubes=True, mode=mode)
+            plate = Plate(plateid=plateid, nocubes=True, mode=mode, release=release)
         except Exception as e:
             raise MarvinError('Could not retrieve a remote plate.  If it is a mastar \
                 plate you are after, Marvin currently does not handle those: {0}'.format(e))
@@ -221,7 +221,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     # setup marvin inputs
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    dir3d = getDir3d(plateid, mode=mode)
+    dir3d = getDir3d(plateid, mode=mode, release=release)
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -329,7 +329,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
         # Get list of images
         listofimages = []
         for plateifu in inputlist:
-            dir3d = getDir3d(plateifu, mode=mode)
+            dir3d = getDir3d(plateifu, mode=mode, release=release)
             plateid, ifu = plateifu.split('-')
             if as_url:
                 path = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
@@ -346,7 +346,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
         rsync_access.remote()
         # Add plateifus to stream
         for plateifu in inputlist:
-            dir3d = getDir3d(plateifu, mode=mode)
+            dir3d = getDir3d(plateifu, mode=mode, release=release)
             plateid, ifu = plateifu.split('-')
             rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
 

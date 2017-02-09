@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-06 22:46:53
+# @Last Modified time: 2017-02-08 19:09:42
 
 from __future__ import print_function, division, absolute_import
 
@@ -79,6 +79,7 @@ class TestImagesBase(MarvinTest):
             if os.path.isfile(file):
                 os.remove(file)
         self._remove_cube(release='MPL-5')
+        self._remove_cube(release='MPL-4')
 
     def _update_release(self, release):
         config.setMPL(release)
@@ -90,7 +91,7 @@ class TestImagesBase(MarvinTest):
         for plateifu in inputs:
             plateid, ifu = plateifu.split('-')
             dir3d = getDir3d(plateifu, mode=mode)
-            thepath = os.path.join(basepath, self.drpver, plateid, dir3d, 'images', ifu+'.png')
+            thepath = os.path.join(basepath, self.drpver, plateid, dir3d, 'images', ifu + '.png')
             fullpaths.append(thepath)
         return fullpaths
 
@@ -117,7 +118,7 @@ class TestGetDir3d(TestImagesBase):
 
     def _getdir3d(self, expval, mode=None, plateifu=None):
         plateifu = self.plateifu if not plateifu else plateifu
-        dir3d = getDir3d(plateifu, mode=mode)
+        dir3d = getDir3d(plateifu, mode=mode, release=config.release)
         self.assertEqual(expval, dir3d)
 
     def test_getdir3d_local(self):
@@ -177,12 +178,21 @@ class TestGetDir3d(TestImagesBase):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_getdir3d_remote_newplate(self):
-        self._update_release('MPL-5')
+        self._update_release('MPL-4')
         config.forceDbOff()
         self._getdir3d('stack', mode='remote', plateifu=self.new_plate)
 
-    def test_getdir3d_auto_newplate(self):
+    @unittest.SkipTest
+    def test_getdir3d_remote_newplate_fail(self):
         self._update_release('MPL-5')
+        config.forceDbOff()
+        errmsg = 'Could not retrieve a remote plate.  If it is a mastar'
+        with self.assertRaises(MarvinError) as cm:
+            self._getdir3d('stack', mode='remote', plateifu=self.new_plate)
+        self.assertIn(errmsg, str(cm.exception))
+
+    def test_getdir3d_auto_newplate(self):
+        self._update_release('MPL-4')
         config.forceDbOff()
         self._getdir3d('stack', mode='auto', plateifu=self.new_plate)
 
@@ -318,7 +328,7 @@ class TestImagesByPlate(TestImagesBase):
         self._get_imageplate(paths, plate=self.plate, mode=mode)
 
     def test_get_images_download_remote(self):
-        self._update_release('MPL-5')
+        self._update_release('MPL-4')
         config.forceDbOff()
         self._get_cube()
         localpath = self._make_paths(self.mangaredux, mode='local', inputs=[self.new_plateifu])
