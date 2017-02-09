@@ -9,9 +9,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.utils.dap.datamodel import dap_datamodel as dm
 from marvin.tools.maps import _get_bintemps
 from webargs import fields, validate
-from webargs.flaskparser import use_args, use_kwargs
-
-config.use_sentry = False
+from webargs.flaskparser import use_args, use_kwargs, parser
 
 
 # List of global View arguments across all API routes
@@ -42,6 +40,18 @@ params = {'query': {'searchfilter': fields.String(),
           }
 
 
+@parser.location_handler('session')
+def parse_session(req, name, field):
+    from flask import session as current_session
+    print('arg dict', req.args)
+    print('flask session', current_session.keys())
+    print('other', name, field)
+    value = current_session.get(name, None)
+    return value
+
+parser.locations += ('session',)
+
+
 class ArgValidator(object):
     ''' Web/API Argument validator '''
 
@@ -49,10 +59,19 @@ class ArgValidator(object):
         self.release = None
         self.endpoint = None
         self.urlmap = urlmap
-        self.base_args = {'release': fields.String(required=True, validate=validate.Regexp('MPL-[4-9]'))}
+        self.base_args = {'release': fields.String(required=True,
+                          validate=validate.Regexp('MPL-[4-9]'))}
         self.use_params = None
         self._required = None
         self._main_kwargs = {}
+        self.final_args = {}
+        self.final_args.update(self.base_args)
+
+        self.use_args = use_args
+        self.use_kwargs = use_kwargs
+
+    def _reset_final_args(self):
+        ''' Resets the final args dict '''
         self.final_args = {}
         self.final_args.update(self.base_args)
 
@@ -150,6 +169,9 @@ class ArgValidator(object):
     def create_args(self):
         ''' Build the final argument list for webargs validation '''
 
+        # reset the final args
+        self._reset_final_args()
+
         # add view args to the list
         self._add_view_args()
 
@@ -185,6 +207,8 @@ class ArgValidator(object):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 # args and kwargs here are the view function args and kwargs
+                print('args', args)
+                print('kwargs', kwargs)
                 self.release = args[0]._release
                 self.endpoint = args[0]._endpoint
                 # check the kwargs for any parameters
@@ -194,7 +218,7 @@ class ArgValidator(object):
                 # pop all the kwargs
                 self._pop_kwargs(**mainkwargs)
                 # pass into webargs use_args (use_args is a decorator in itself)
-                newfunc = use_args(self.final_args, self._main_kwargs)(func)
+                newfunc = self.use_args(self.final_args, self._main_kwargs)(func)
                 return newfunc(*args, **kwargs)
             return wrapper
 
@@ -206,7 +230,7 @@ class ArgValidator(object):
 
     def check_release(self, **kwargs):
         ''' Checks only the release '''
-        return use_kwargs(self.base_args)
+        return self.use_kwargs(self.base_args)
 
     def list_params(self, param_type=None):
         ''' List the globally defined parameters for validation
@@ -221,5 +245,28 @@ class ArgValidator(object):
             return total
 
 
+"""
+web view args
+plateid = plate_page
+galid (name) = galaxy_page
 
+web form params
+
+galid (name) = index_page (getgalidlist)
+mplselect = index_page (selectmpl)
+username = index_page (login)
+password = index_page (login)
+toggle_on = galaxy_page (init_dynamic)
+plate_ifu = galaxy_page (init_dynamic, get_spaxel, update_maps, init_n)
+mouse_coords = galaxy_page (get_spaxel)
+type = galaxy_page (get_spaxel)
+imwidth = galaxy_page (get_spaxel)
+imheight = galaxy_page (get_spaxel)
+image = galaxy_page (get_spaxel)
+x = galaxy_page (get_spaxel)
+y = galaxy_page (get_spaxel)
+params[] = galaxy_page (update_maps)
+bintemp = galaxy_page (update_maps)
+
+"""
 

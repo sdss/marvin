@@ -31,7 +31,7 @@
                 <div id='marvinmpl' class='form-group'>
                     <select class='form-control selectpicker input-sm show-tick' id='mplselect' name='mplselect' title='Choose an MPL/DR' >
                         {% for ver in session.versions %}
-                            {% if ver.name == session.currentver %}
+                            {% if ver.name == session.release %}
                                 <option data-subtext='{{ver.subtext}}' id='{{ver.name}}' value='{{ver.name}}' selected>{{ver.name}}</option>
                             {% else %}
                                 <option data-subtext='{{ver.subtext}}' id='{{ver.name}}' value='{{ver.name}}'>{{ver.name}}</option>

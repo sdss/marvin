@@ -50,8 +50,8 @@ def setGlobalSession():
     current_session['versions'] = versions
 
     print('I am setting the Global Session')
-    if 'currentver' not in current_session:
-        current_session['currentver'] = config.release
+    if 'release' not in current_session:
+        current_session['release'] = config.release
         drpver, dapver = config.lookUpVersions(release=config.release)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
@@ -63,7 +63,7 @@ def parseSession():
     print('parsing the session')
     drpver = current_session['drpver']
     dapver = current_session['dapver']
-    release = current_session['currentver']
+    release = current_session['release']
     print('gotten vers', drpver, dapver, release)
     return drpver, dapver, release
 
@@ -77,13 +77,14 @@ def make_error_json(error, name, code):
     return jsonify({'api_error': messages}), code
 
 
-def make_error_page(app, name, code, sentry=None):
+def make_error_page(app, name, code, sentry=None, data=None):
     ''' creates the error page dictionary for web errors '''
     shortname = name.lower().replace(' ', '_')
     error = {}
     error['title'] = 'Marvin | {0}'.format(name)
     error['page'] = request.url
     error['event_id'] = g.get('sentry_event_id', None)
+    error['data'] = data
     if sentry:
         error['public_dsn'] = sentry.client.get_public_dsn('https')
     app.logger.error('{0} Exception {1}'.format(name, error))

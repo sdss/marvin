@@ -12,7 +12,6 @@ from marvin.utils.general import parseIdentifier
 from marvin.tools.cube import Cube
 
 from brain.utils.general import parseRoutePath
-from brain.api.base import processRequest
 from brain.core.exceptions import BrainError
 
 ''' stuff that runs server-side '''

@@ -18,6 +18,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
 from marvin.web.web_utils import parseSession
+from marvin.api.base import arg_validate as av
 import random
 import json
 
@@ -49,9 +50,11 @@ class Search(FlaskView):
         self.search['errmsg'] = None
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
+        self._endpoint = request.endpoint
 
     @route('/', methods=['GET', 'POST'])
-    def index(self):
+    @av.check_args()
+    def index(self, args):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)

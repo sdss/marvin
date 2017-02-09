@@ -82,7 +82,7 @@ class Marvin(FlaskView):
         f = processRequest(request=request)
         out = {'status': 1, 'msg': 'Success'}
         version = f['mplselect']
-        current_session['currentver'] = version
+        current_session['release'] = version
         drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver

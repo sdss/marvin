@@ -207,10 +207,17 @@ def create_app(debug=False, local=False):
     @app.errorhandler(422)
     def handle_unprocessable_entity(error):
         name = 'Unprocessable Entity'
+        data = getattr(error, 'data')
+        if data:
+            # Get validations from the ValidationError object
+            messages = data['messages']
+        else:
+            messages = ['Invalid request']
+
         if _is_api(request):
             return make_error_json(error, name, 422)
         else:
-            return make_error_page(app, name, 422, sentry=sentry)
+            return make_error_page(app, name, 422, sentry=sentry, data=messages)
 
     # These should be moved into the api module but they need the api blueprint to be registered on
     # I had these in the api.__init__ with the api blueprint defined there as theapi
