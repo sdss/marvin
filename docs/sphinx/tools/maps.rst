@@ -20,15 +20,18 @@ To save the plot:
 
 ::
     
-    import matplotlib.pyplot as plt
-    plt.savefig('haflux.pdf')
+    fig.savefig('haflux.pdf')
 
 Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
 
-* clips at 5th and 95th percentiles (10th and 90th percentiles for velocity and sigma plots)
-* velocity plots are symmetric about 0
-* **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``NOVALUE``, ``BADVALUE``, ``MATHERROR``, ``BADFIT``, or ``DONOTUSE`` set
-* **no measurement** (hatched): pass **no data** criteria but DAP did not produce a measurement or  signal-to-noise ratio < 1
+* Clip at 5th and 95th percentiles (10th and 90th percentiles for velocity and sigma plots).
+* Velocity plots are symmetric about 0.
+* **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``NOVALUE``, ``BADVALUE``, ``MATHERROR``, ``BADFIT``, or ``DONOTUSE`` set.
+* **no measurement** (hatched): pass **no data** criteria but DAP did not produce a measurement or  signal-to-noise ratio < 1.
+
+
+
+
 
 The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object.
 
