@@ -10,17 +10,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from unittest import TestCase
+import unittest
 
 from marvin import config
 from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 
 
-class TestMapsProperties(TestCase):
+class TestMapsProperties(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         config.setMPL('MPL-5')
+        config.use_sentry = False
+        config.add_github_message = False
 
     def test_dap_datamodel_mpl4(self):
         datamodel = get_dap_datamodel('1.1.1')
@@ -48,3 +50,8 @@ class TestMapsProperties(TestCase):
         self.assertIsInstance(maps_prop, MapsProperty)
         self.assertEqual(maps_prop.name, 'emline_gflux')
         self.assertEqual(channel, 'oii_3727')
+
+
+if __name__ == '__main__':
+    verbosity = 2
+    unittest.main(verbosity=verbosity)

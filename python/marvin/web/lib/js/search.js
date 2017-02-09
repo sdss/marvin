@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-14 10:29:12
+* @Last Modified time: 2017-01-18 21:02:39
 */
 
 'use strict';
@@ -57,7 +57,13 @@ var Search = function () {
             var _this = this;
             var typediv = typediv === undefined ? this.typeahead : $(typediv);
             var formdiv = formdiv === undefined ? this.searchform : $(formdiv);
-            var typeurl = url === undefined ? Flask.url_for('search_page.getparams') : url;
+            // get the typeahead search page getparams url
+            try {
+                var typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
+            } catch (error) {
+                Raven.captureException(error);
+                console.error('Error getting search getparams url:', error);
+            }
             var afterfxn = fxn === undefined ? null : fxn;
 
             function customQueryTokenizer(str) {

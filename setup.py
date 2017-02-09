@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2016-11-18 08:42:54
+# @Last Modified time: 2017-01-31 13:36:17
 #
 # This is the Marvin setup
 #
@@ -14,6 +14,7 @@
 from setuptools import setup, find_packages
 import os
 import warnings
+from get_version import generate_version_py
 
 
 def read(fname):
@@ -55,7 +56,9 @@ install_requires = [line.strip().replace('==', '>=') for line in open(requiremen
                     if not line.strip().startswith('#') and line.strip() != '']
 
 NAME = 'sdss-marvin'
-VERSION = '2.0.9'
+VERSION = '2.1.0dev'
+RELEASE = 'dev' not in VERSION
+generate_version_py(NAME, VERSION, RELEASE)
 
 setup(name=NAME,
       version=VERSION,
@@ -70,7 +73,7 @@ setup(name=NAME,
       package_dir={'': 'python'},
       package_data={'': data_files},
       install_requires=install_requires,
-      scripts=['bin/run_marvin'],
+      scripts=['bin/run_marvin', 'bin/check_marvin'],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
@@ -89,6 +92,7 @@ setup(name=NAME,
           'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
           'Topic :: Scientific/Engineering :: Astronomy',
           'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: Software Development :: User Interfaces',
+          'Topic :: Software Development :: User Interfaces'
+          #,
       ],
       )

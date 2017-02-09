@@ -12,6 +12,7 @@ Revision History:
 
 from __future__ import print_function
 from __future__ import division
+import sys
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from collections import defaultdict
@@ -81,7 +82,7 @@ class ParamFxnLookupDict(dict):
     def __getitem__(self, key):
 
         lowkey = key.lower()
-        mykeys = self.keys()
+        mykeys = list(self.keys())
 
         inkey = lowkey in mykeys
         if not inkey:
@@ -146,7 +147,13 @@ class ParamFormLookupDict(dict):
         """Returns the model class column in the WFTForm."""
 
         if not isinstance(keys, (list, tuple)):
-            keys = [keys]
+            str_types = [str]
+            if sys.version_info[0] < 3:
+                str_types.append(unicode)
+            if isinstance(keys, tuple(str_types)):
+                keys = [keys]
+            else:
+                keys = list(keys)
 
         columns = []
         for key in keys:

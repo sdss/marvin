@@ -16,6 +16,8 @@ class TestQuery(unittest.TestCase):
         cls.init_mode = config.mode
         cls.init_urlmap = config.urlmap
         cls.init_release = config.release
+        config.use_sentry = False
+        config.add_github_message = False
 
     def setUp(self):
         # cvars = ['mode', 'drpver', 'dapver', 'mplver']

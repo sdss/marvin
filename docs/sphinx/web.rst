@@ -120,11 +120,15 @@ The Galaxy page includes:
   FITS files and to view the galaxy in the `SDSS Skyserver
   <http://skyserver.sdss.org/dr12/en/home.aspx>`_,
 
+* **Map/Specview toggle button**: Click this toggle button to activate the interactive spectrum and map displays described below.
+
 * **galaxy image** that can be clicked on to show the nearest spectrum, and
 
 * **interactive spectrum display**.
 
 * **interactive map display**.
+
+* **interactive nsa display**.
 
 .. _web-spectrum:
 
@@ -196,5 +200,26 @@ flux map, and the d4000 spectral index map.  All maps are generated using the
 
 * **Saving a Map**: Click on the menu dropdown (three horizontal lines) just to the upper right of each map and select file format (PNG, JPG, PDF, SVG).
 
+.. _nsa_display:
+
+NSA Display
+^^^^^^^^^^^
+
+Clicking the NSA Display Tab will show you the NSA catalog information for this galaxy in a table format.  In addition, there are two tabs for interactive display.
+
+* **NSA table**: Most of the NSA galaxy properties are displayed in this table, in paginated form by default.  Click the arrow in the upper right corner to toggle the pagination and view all parameters at once.
+
+* **Scatter Plot**: This tab provides two convenient scatter plots highlighting the relative location of the specific galaxy amongst the NSA sample of MaNGA galaxies. The plots are interactive.  Drag a box inside to zoom in.  Hover over points to see pop up info. You can change the plotted parameters by dragging and dropping one of the twelve **bold** parameters displayed in the NSA table on the left.  As you drag, the drop location will be highlighted in red.
+
+* **Box and Whisker**: This tab provides a simplified interface to the Scatter Plot tab.  It displays the galaxy NSA parameter relative the entire sample in a series of box-and-whisker plots.  By default, the twelve **bold** parameters in the NSA table are displayed here. Hover over the red dot or the outliers to see their values.
+
+In each box-and-whisker plot:
+ * The red dot is the galaxy parameter value
+ * The horizontal line is the median value of the NSA sample
+ * The lower and upper bounds of the box are the 25th and 75th percentiles
+ * The whiskers of the box are 1.5*IQR (Interquartile Range)
+ * Outlier points are indicated as light grey open circles
+
+Find out more about box-and-whisker plots `here <https://en.wikipedia.org/wiki/Box_plot>`_.
 
 

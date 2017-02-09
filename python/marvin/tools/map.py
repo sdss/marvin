@@ -1,9 +1,39 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
+# Licensed under a 3-clause BSD license.
+#
+#
 # map.py
 #
 # Created by José Sánchez-Gallego on 26 Jun 2016.
+#
+# Includes code from mangadap.plot.maps.py licensed under the following 3-clause BSD license.
+#
+# Copyright (c) 2015, SDSS-IV/MaNGA Pipeline Group
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted
+# provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of
+# conditions and the following disclaimer in the documentation and/or other materials provided with
+# the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to
+# endorse or promote products derived from this software without specific prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 from __future__ import division
@@ -12,24 +42,26 @@ from __future__ import absolute_import
 
 from distutils import version
 import os
+import sys
 import warnings
 
 from astropy.io import fits
-import numpy
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 import marvin
 import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
+import marvin.utils.plot.colorbar as colorbar
 
-try:
-    import matplotlib.pyplot as plt
-    import mpl_toolkits.axes_grid1
-    pyplot = True
-except ImportError:
-    pyplot = False
-
+if 'seaborn' in sys.modules:
+    import seaborn as sns
+else:
+    plt.style.use('seaborn-darkgrid')
 
 try:
     import sqlalchemy
@@ -75,6 +107,8 @@ class Map(object):
         self.channel = channel.lower() if channel else None
         self.shape = self.maps.shape
 
+        self.release = maps.release
+
         self.maps_property = self.maps.properties[self.property_name]
         if (self.maps_property is None or
                 (self.maps_property.channels is not None and
@@ -96,13 +130,22 @@ class Map(object):
         elif maps.data_origin == 'api':
             self._load_map_from_api()
 
+        self.masked = np.ma.array(self.value, mask=(self.mask > 0
+                                                    if self.mask is not None else False))
+
     def __repr__(self):
 
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
 
+    @property
+    def snr(self):
+        """Returns the signal-to-noise ratio for each spaxel in the map."""
+
+        return np.abs(self.value * np.sqrt(self.ivar))
+
     def _load_map_from_file(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='file'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
 
         self.header = self.maps.data[self.property_name].header
 
@@ -128,7 +171,7 @@ class Map(object):
         return
 
     def _load_map_from_db(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='db'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='db'``."""
 
         mdb = marvin.marvindb
 
@@ -146,19 +189,19 @@ class Map(object):
         fullname_value = self.maps_property.fullname(channel=self.channel)
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-        self.value = numpy.array(value).reshape(self.shape)
+        self.value = np.array(value).reshape(self.shape).T
 
         if self.maps_property.ivar:
             fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.ivar = numpy.array(ivar).reshape(self.shape)
+            self.ivar = np.array(ivar).reshape(self.shape).T
 
         if self.maps_property.mask:
             fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.mask = numpy.array(mask).reshape(self.shape)
+            self.mask = np.array(mask).reshape(self.shape).T
 
         # Gets the header
         hdus = self.maps.data.hdus
@@ -175,8 +218,10 @@ class Map(object):
         else:
             self.header = fits.Header(header_dict)
 
+        self.unit = self.maps_property.unit
+
     def _load_map_from_api(self):
-        """Initialises de Map from a ``Maps`` with ``data_origin='api'``."""
+        """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
 
         url = marvin.config.urlmap['api']['getmap']['url']
 
@@ -200,9 +245,9 @@ class Map(object):
             raise marvin.core.exceptions.MarvinError(
                 'something went wrong. Error is: {0}'.format(response.results['error']))
 
-        self.value = numpy.array(data['value'])
-        self.ivar = numpy.array(data['ivar']) if data['ivar'] is not None else None
-        self.mask = numpy.array(data['mask']) if data['mask'] is not None else None
+        self.value = np.array(data['value'])
+        self.ivar = np.array(data['ivar']) if data['ivar'] is not None else None
+        self.mask = np.array(data['mask']) if data['mask'] is not None else None
         self.unit = data['unit']
         self.header = fits.Header(data['header'])
 
@@ -250,137 +295,292 @@ class Map(object):
 
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    def plot(self, array='value', xlim=None, ylim=None, zlim=None,
-             xlabel=None, ylabel=None, zlabel=None, cmap=None, kw_imshow=None,
-             figure=None, return_figure=False, show_masked=False):
-        """Plot a map using matplotlib.
-
-        Returns a |axes|_ object with a representation of this map.
-        The returned ``axes`` object can then be showed, modified, or saved to
-        a file. If running Marvin from an iPython console and
-        `matplotlib.pyplot.ion()
-        <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ion>`_,
-        the plot will be displayed interactivelly.
+    def _make_image(self, snr_min, log_cb, use_mask):
+        """Make masked array of image.
 
         Parameters:
-            array ({'value', 'ivar', 'mask'}):
-                The array to display, either the data itself, the inverse
-                variance, or the mask.
-            xlim,ylim (tuple-like or None):
-                The range to display for the x- and y-axis, respectively,
-                defined as a tuple of two elements ``[xmin, xmax]``. If
-                the range is ``None``, the range for the axis will be set
-                automatically by matploltib.
-            zlim (tuple or None):
-                The range to display in the z-axis (intensity level). If
-                ``None``, the default scaling provided by matplotlib will be
-                used.
-            xlabel,ylabel,zlabel (str or None):
-                The axis labels to be passed to the plot.
-            cmap (``matplotlib.pyplot.cm`` colourmap or None):
-                The matplotlib colourmap to use (see
-                `this <http://matplotlib.org/users/colormaps.html#list-colormaps>`_
-                page for possible colourmaps). If ``None``, defaults to
-                ``coolwarm_r``.
-            kw_imshow (dict):
-                Any other kwyword arguments to be passed to
-                `imshow <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_.
-            figure (matplotlib Figure object or None):
-                The matplotlib figure object from which the axes must be
-                created. If ``figure=None``, a new figure will be created.
-            return_figure (bool):
-                If ``True``, the matplotlib Figure object used will be returned
-                along with the axes object.
-            show_masked (bool):
-                By default, masked values are not shown.
-                If ``show_masked=True``, all spaxels are shown.
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool):
+                If True, use log colorbar.
+            use_mask (bool):
+                If True, use DAP bitmasks.
 
         Returns:
-            ax (`matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_):
-                The matplotlib axes object containing the plot representing
-                the map. If ``return_figure=True``, a tuple will be
-                returned of the form ``(ax, fig)``.
-
-        Example:
-
-          >>> maps = Maps(plateifu='8485-1901')
-          >>> ha_map = maps.getMap('emline_gflux', channel='ha_6564')
-          >>> ha_map.plot()
-
-        .. |axes| replace:: matplotlib.axes
-        .. _axes: http://matplotlib.org/api/axes_api.html
-
+            tuple: (masked array of image, tuple of (x, y) coordinates of bins with no measurement)
         """
 
-        # TODO: plot in sky coordinates. (JSG)
+        novalue = (self.mask & 2**4) > 0
+        if use_mask:
+            badvalue = (self.mask & 2**5) > 0
+            matherror = (self.mask & 2**6) > 0
+            badfit = (self.mask & 2**7) > 0
+            donotuse = (self.mask & 2**30) > 0
+            no_data = np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
 
-        if not pyplot:
-            raise marvin.core.exceptions.MarvinMissingDependency(
-                'matplotlib is not installed.')
-
-        array = array.lower()
-        validExensions = ['value', 'ivar', 'mask']
-        assert array in validExensions, 'array must be one of {0!r}'.format(validExensions)
-
-        if array == 'value':
-            data = self.value
-        elif array == 'ivar':
-            data = self.ivar
-        elif array == 'mask':
-            data = self.mask
-
-        fig = plt.figure() if figure is None else figure
-        ax = fig.add_subplot(111)
-
-        if zlim is not None:
-            assert len(zlim) == 2
-            vmin = zlim[0]
-            vmax = zlim[1]
+            if self.ivar is not None:
+                # Flag a region as having no data if ivar = 0
+                ivar_zero = (self.ivar == 0.)
+                no_data = np.logical_or.reduce((no_data, ivar_zero))
         else:
-            vmin = None
-            vmax = None
+            no_data = novalue
 
-        if kw_imshow is None:
-            kw_imshow = dict(vmin=vmin, vmax=vmax,
-                             origin='lower', aspect='auto',
-                             interpolation='none')
+        no_measure = self._make_mask_no_measurement(self.value, self.ivar, snr_min, log_cb)
 
-        if cmap is None:
-            cmap = plt.cm.coolwarm_r
+        no_data_no_measure = np.logical_or(no_data, no_measure)
 
-        if show_masked is False and array != 'mask':
-            data = numpy.ma.array(data, mask=(self.mask > 0))
+        image = np.ma.array(self.value, mask=no_data_no_measure)
+        mask_nodata = np.ma.array(np.ones(self.value.shape), mask=np.logical_not(no_data))
 
-        imPlot = ax.imshow(data, cmap=cmap, **kw_imshow)
+        return image, mask_nodata
 
-        divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
-        cax = divider.append_axes('right', size='5%', pad=0.1)
+    def _make_mask_no_measurement(self, data, ivar, snr_min, log_cb):
+        """Mask invalid measurements within a data array.
 
-        cBar = plt.colorbar(imPlot, cax=cax)
-        cBar.solids.set_edgecolor('face')
+        Parameters:
+            data (array):
+                Values for image.
+            ivar (array):
+                Inverse variance of values.
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement.
+            log_cb (bool):
+                 If True, use log colorbar.
 
-        if xlim is not None:
-            assert len(xlim) == 2
-            ax.set_xlim(*xlim)
+        Returns:
+            array: Boolean array for mask (i.e., True corresponds to value to be masked out).
+        """
+        no_measure = np.zeros(data.shape, dtype=bool)
 
-        if ylim is not None:
-            assert len(ylim) == 2
-            ax.set_ylim(*ylim)
+        if ivar is not None:
+            if not np.all(np.isnan(ivar)):
+                no_measure = (ivar == 0.)
+                if snr_min is not None:
+                    no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
+                if log_cb:
+                    no_measure[data <= 0.] = True
 
-        if xlabel is None:
-            xlabel = 'x [pixels]'
+        return no_measure
 
-        if ylabel is None:
-            ylabel = 'y [pixels]'
+    def _set_extent(self, cube_size, sky_coords):
+        """Set extent of map.
 
-        if zlabel is None:
-            zlabel = r'{0}'.format(self.unit)
+        Parameters:
+            cube_size (tuple):
+                Size of the cube in spaxels.
+            sky_coords (bool):
+                If True, use sky coordinates, otherwise use spaxel coordinates.
 
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        cBar.set_label(zlabel)
+        Returns:
+            array
+        """
 
-        if return_figure:
-            return (ax, fig)
+        if sky_coords:
+            spaxel_size = 0.5  # arcsec
+            extent = np.array([-(cube_size[0] * spaxel_size), (cube_size[0] * spaxel_size),
+                               -(cube_size[1] * spaxel_size), (cube_size[1] * spaxel_size)])
         else:
-            return ax
+            extent = np.array([0, cube_size[0], 0, cube_size[1]])
+
+        return extent
+
+    def _set_patch_style(self, extent, facecolor='#A8A8A8'):
+        """Set default parameters for a patch.
+
+        Parameters:
+            extent (tuple):
+                Extent of image (xmin, xmax, ymin, ymax).
+            facecolor (str):
+                Background color. Default is '#A8A8A8' (gray).
+
+        Returns:
+            dict
+        """
+
+        if int(mpl.__version__.split('.')[0]) > 1:
+            mpl.rcParams['hatch.linewidth'] = 0.5
+            mpl.rcParams['hatch.color'] = 'w'
+
+        patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
+                         width=extent[1] - extent[0] - 0.02,
+                         height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
+                         fill=True, facecolor=facecolor, edgecolor='w', zorder=0)
+
+        return patch_kws
+
+    def _ax_setup(self, sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
+        """Basic axis setup for maps.
+
+        Parameters:
+            sky_coords (bool):
+                If True, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates.
+            fig (plt.figure object):
+                Matplotlib plt.figure object. Use if creating subplot of a multi-panel plot.
+                Default is None.
+            ax (plt.figure axis object):
+                Matplotlib plt.figure axis object. Use if creating subplot of a multi-panel plot.
+                Default is None.
+            facecolor (str):
+                Axis facecolor. Default is '#A8A8A8'.
+
+        Returns:
+            tuple: (plt.figure object, plt.figure axis object)
+        """
+
+        xlabel = 'arcsec' if sky_coords else 'spaxel'
+        ylabel = 'arcsec' if sky_coords else 'spaxel'
+
+        if 'seaborn' in sys.modules:
+            if ax is None:
+                sns.set_context('poster', rc={'lines.linewidth': 2})
+            else:
+                sns.set_context('talk', rc={'lines.linewidth': 2})
+            sns.set_style(rc={'axes.facecolor': facecolor})
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_axes([0.12, 0.1, 2 / 3., 5 / 6.])
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+
+        if 'seaborn' not in sys.modules:
+            ax.set_axis_bgcolor(facecolor)
+
+        ax.grid(False, which='both', axis='both')
+
+        return fig, ax
+
+    def plot(self, *args, **kwargs):
+        """Make single panel map or one panel of multi-panel map plot.
+
+        Parameters:
+            cmap (str):
+                Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and ``linear_Lab``
+                for other properties.
+            percentile_clip (list):
+                Percentile clip. Default is ``[10, 90]`` for velocities and sigmas and ``[5, 95]``
+                for other properites.
+            sigclip (list):
+                Sigma clip. Default is ``None``.
+            cbrange (list):
+                If ``None``, set automatically. Default is ``None``.
+            symmetric (bool):
+                Draw a colorbar that is symmetric around zero. Default is ``True`` for velocities
+                and ``False`` for other properties.
+            snr_min (float):
+                Minimum signal-to-noise for keeping a valid measurement. Default is ``1``.
+            log_cb (bool):
+                Draw a log normalized colorbar. Default is ``False``.
+            title (str):
+                If ``None``, set automatically from property (and channel) name(s). For no title,
+                set to ''. Default is ``None``.
+            cblabel (str):
+                If ``None``, set automatically from unit. For no colorbar label, set to ''. Default
+                is ``None``.
+            sky_coords (bool):
+                If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise show in spaxel
+                coordinates. Default is ``False``.
+            use_mask (bool): Use DAP bitmasks. Default is ``True``.
+            fig (matplotlib Figure object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
+            ax (matplotlib Axis object):
+                Use if creating subplot of a multi-panel plot. Default is ``None``.
+            imshow_kws (dict):
+                Keyword args to pass to `ax.imshow
+                <http://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow>`_.
+                Default is ``None``.
+            cb_kws (dict):
+                Keyword args to set and draw colorbar. Default is ``None``.
+
+        Returns:
+            fig, ax (tuple):
+                `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_,
+                `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
+
+        Example:
+            >>> maps = Maps(plateifu='8485-1901')
+            >>> haflux = maps.getMap('emline_gflux', channel='ha_6564')
+            >>> haflux.plot()
+        """
+
+        valid_kwargs = ['cmap', 'percentile_clip', 'sigclip', 'cbrange', 'symmetric', 'snr_min',
+                        'log_cb', 'title', 'cblabel', 'sky_coords', 'use_mask', 'fig', 'ax',
+                        'imshow_kws', 'cb_kws']
+
+        assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
+        for kw in kwargs:
+            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+
+        sigclip = kwargs.get('sigclip', None)
+        cbrange = kwargs.get('cbrange', None)
+        snr_min = kwargs.get('snr_min', 1)
+        log_cb = kwargs.get('log_cb', False)
+        title = kwargs.get('title', None)
+        cblabel = kwargs.get('cblabel', None)
+        sky_coords = kwargs.get('sky_coords', False)
+        use_mask = kwargs.get('use_mask', True)
+        fig = kwargs.get('fig', None)
+        ax = kwargs.get('ax', None)
+        imshow_kws = kwargs.get('imshow_kws', {})
+        cb_kws = kwargs.get('cb_kws', {})
+
+        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb, use_mask=use_mask)
+
+        if title is None:
+            title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
+            title = ' '.join(title.split('_'))
+
+        if 'vel' in title:
+            cmap = kwargs.get('cmap', 'RdBu_r')
+            percentile_clip = kwargs.get('percentile_clip', [10, 90])
+            symmetric = kwargs.get('symmetric', True)
+        elif 'sigma' in title:
+            cmap = kwargs.get('cmap', 'inferno')
+            percentile_clip = kwargs.get('percentile_clip', [10, 90])
+            symmetric = kwargs.get('symmetric', False)
+        else:
+            cmap = kwargs.get('cmap', 'linear_Lab')
+            percentile_clip = kwargs.get('percentile_clip', [5, 95])
+            symmetric = kwargs.get('symmetric', False)
+
+        assert (percentile_clip is None or sigclip is None), ('Cannot set both percentile_clip and'
+                                                              'sigclip')
+
+        cb_kws['cmap'] = cmap
+        cb_kws['percentile_clip'] = percentile_clip
+        cb_kws['sigclip'] = sigclip
+        cb_kws['cbrange'] = cbrange
+        cb_kws['symmetric'] = symmetric
+        cb_kws['label'] = self.unit if cblabel is None else cblabel
+        cb_kws = colorbar.set_cb_kws(cb_kws)
+        cb_kws = colorbar.set_cbrange(image, cb_kws)
+
+        extent = self._set_extent(self.value.shape, sky_coords)
+        imshow_kws.setdefault('extent', extent)
+        imshow_kws.setdefault('interpolation', 'nearest')
+        imshow_kws.setdefault('origin', 'lower')
+        imshow_kws['norm'] = LogNorm() if log_cb else None
+
+        fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+
+        # Plot regions with no measurement as hatched by putting one large patch as lowest layer
+        patch_kws = self._set_patch_style(extent=extent)
+        ax.add_patch(mpl.patches.Rectangle(**patch_kws))
+
+        # Plot regions of no data as a solid color (gray #A8A8A8)
+        A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
+        ax.imshow(nodata, cmap=A8A8A8, zorder=1, **imshow_kws)
+
+        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+        p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
+
+        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+
+        if title is not '':
+            ax.set_title(label=title)
+
+        # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
+        mpl.rcParams['image.composite_image'] = False
+
+        return fig, ax

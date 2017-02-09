@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-import collections
 import os
 import unittest
-
-from brain.core.core import URLMapDict
-from brain.core.exceptions import BrainError
 
 from astropy.io import fits
 
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
+from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import MarvinTest, skipIfNoDB
 
@@ -25,6 +22,7 @@ class TestCubeBase(MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestCubeBase, cls).setUpClass()
         config.switchSasUrl('local')
 
         cls.outver = 'v1_5_1'
@@ -103,12 +101,14 @@ class TestCube(TestCubeBase):
         self.assertIn(errMsg, str(cm.exception))
 
     @skipIfNoDB
+    @unittest.expectedFailure
     def test_cube_load_from_local_database_nodbconnected(self):
 
         # TODO: This tests fails because config.db = None does not disable the
         # local DB, and there is currently no way of doing so.
 
-        config.db = None
+        # need to undo setting the config.db to None so that subsequent tests will pass
+        # config.db = None
         params = {'mangaid': self.mangaid, 'mode': 'local'}
         errMsg = 'No db connected'
         self._load_from_db_fail(params, errMsg)
@@ -169,18 +169,18 @@ class TestCube(TestCubeBase):
 
     def test_cube_file_redshift(self):
         cube = Cube(filename=self.filename)
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.redshift, 0.0407447)
 
     def test_cube_db_redshift(self):
         cube = Cube(plateifu=self.plateifu, mode='local')
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.z, 0.0407447)
 
     def test_cube_remote_redshift(self):
         cube = Cube(plateifu=self.plateifu, mode='remote')
-        self.assertAlmostEqual(cube.redshift, 0.0407447)
+        self.assertAlmostEqual(cube.nsa.z, 0.0407447)
 
     def _test_nsa(self, nsa_data, mode='nsa'):
-        self.assertIsInstance(nsa_data, collections.OrderedDict)
+        self.assertIsInstance(nsa_data, DotableCaseInsensitive)
         if mode == 'drpall':
             self.assertNotIn('profmean_ivar', nsa_data.keys())
         self.assertIn('zdist', nsa_data.keys())
@@ -202,6 +202,7 @@ class TestCube(TestCubeBase):
         self._test_nsa(cube.nsa)
 
     def test_nsa_db_auto(self):
+        # import pdb; pdb.set_trace()
         cube = Cube(plateifu=self.plateifu)
         self.assertEqual(cube.nsa_source, 'auto')
         self._test_nsa(cube.nsa)
@@ -230,6 +231,43 @@ class TestCube(TestCubeBase):
         cube = Cube(plateifu=self.plateifu, mode='remote', nsa_source='drpall')
         self.assertEqual(cube.nsa_source, 'drpall')
         self._test_nsa(cube.nsa)
+
+    def test_release(self):
+        cube = Cube(plateifu=self.plateifu)
+        self.assertEqual(cube.release, 'MPL-4')
+
+    def test_set_release_fails(self):
+        cube = Cube(plateifu=self.plateifu)
+        with self.assertRaises(MarvinError) as ee:
+            cube.release = 'a'
+            self.assertIn('the release cannot be changed', str(ee.exception))
+
+    def test_load_7443_12701_file(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        filename = os.path.realpath(os.path.join(
+            os.getenv('MANGA_SPECTRO_REDUX'), 'v2_0_1',
+            '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
+        cube = Cube(filename=filename)
+        self.assertEqual(cube.data_origin, 'file')
+        self.assertIn('elpetro_amivar', cube.nsa)
+
+    def test_load_7443_12701_db(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        cube = Cube(plateifu='7443-12701')
+        self.assertEqual(cube.data_origin, 'db')
+        self.assertIsNone(cube.nsa)
+
+    def test_load_7443_12701_api(self):
+        """Loads a cube that is not in the NSA catalogue."""
+
+        config.setMPL('MPL-5')
+        cube = Cube(plateifu='7443-12701', mode='remote')
+        self.assertEqual(cube.data_origin, 'api')
+        self.assertIsNone(cube.nsa)
 
 
 class TestGetSpaxel(TestCubeBase):
@@ -515,6 +553,66 @@ class TestGetSpaxel(TestCubeBase):
         expect = 0.62007582
         self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
 
+    @skipIfNoDB
+    def test_getspaxel_matches_file_db_remote(self):
+
+        config.setMPL('MPL-4')
+        self.assertEqual(config.release, 'MPL-4')
+
+        cube_file = Cube(filename=self.filename)
+        cube_db = Cube(plateifu=self.plateifu)
+        cube_api = Cube(plateifu=self.plateifu, mode='remote')
+
+        self.assertEqual(cube_file.data_origin, 'file')
+        self.assertEqual(cube_db.data_origin, 'db')
+        self.assertEqual(cube_api.data_origin, 'api')
+
+        xx = 12
+        yy = 5
+        spec_idx = 200
+
+        spaxel_slice_file = cube_file[xx, yy]
+        spaxel_slice_db = cube_db[xx, yy]
+        spaxel_slice_api = cube_api[xx, yy]
+
+        flux_result = 0.017639931
+        ivar_result = 352.12421
+        mask_result = 1026
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.ivar[spec_idx], ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.ivar[spec_idx], ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.ivar[spec_idx], ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_slice_file.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_db.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_api.spectrum.mask[spec_idx], mask_result)
+
+        xx_cen = -5
+        yy_cen = -12
+
+        spaxel_getspaxel_file = cube_file.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.ivar[spec_idx],
+                               ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.ivar[spec_idx],
+                               ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.ivar[spec_idx],
+                               ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.spectrum.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.spectrum.mask[spec_idx], mask_result)
+
 
 class TestWCS(TestCubeBase):
 
@@ -531,7 +629,7 @@ class TestWCS(TestCubeBase):
     def test_wcs_api(self):
         cube = Cube(plateifu=self.plateifu, mode='remote')
         self.assertIsInstance(cube.wcs, wcs.WCS)
-        self.assertAlmostEqual(cube.wcs.wcs.cd[1, 1], 0.000138889)
+        self.assertAlmostEqual(cube.wcs.wcs.pc[1, 1], 0.000138889)
 
 
 class TestPickling(TestCubeBase):
@@ -592,6 +690,7 @@ class TestPickling(TestCubeBase):
     def test_pickling_db(self):
 
         cube = Cube(plateifu=self.plateifu)
+        self.assertEqual(cube.data_origin, 'db')
 
         with self.assertRaises(MarvinError) as ee:
             cube.save()

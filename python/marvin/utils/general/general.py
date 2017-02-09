@@ -30,7 +30,7 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters')
 
 drpTable = {}
 
@@ -50,7 +50,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     Parameters:
         cube (:class:`~marvin.tools.cube.Cube` or None or bool)
-            A :class:`~marvin.tools.cube.Cube` object with th DRP cube
+            A :class:`~marvin.tools.cube.Cube` object with the DRP cube
             data from which the spaxel spectrum will be extracted. If None,
             the |spaxel| object(s) returned won't contain spectral information.
         maps (:class:`~marvin.tools.maps.Maps` or None or bool)
@@ -240,7 +240,10 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         if ((cubeCoords < 0).any() or
                 (cubeCoords[:, 0] > (shape[0] - 1)).any() or
                 (cubeCoords[:, 1] > (shape[1] - 1)).any()):
-            raise MarvinError('some indices are out of limits.')
+            raise MarvinError('some indices are out of limits.'
+                              '``xyorig`` is currently set to "{0}". '
+                              'Try setting ``xyorig`` to "{1}".'
+                              .format(xyorig, 'center' if xyorig is 'lower' else 'lower'))
 
     return cubeCoords
 
@@ -477,6 +480,9 @@ def getWCSFromPng(image):
     if mywcs:
         pngwcs = wcs.WCS(mywcs)
 
+    # Close the image
+    image.close()
+
     return pngwcs
 
 
@@ -682,13 +688,16 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux
 
+    Can download cubes, rss files, maps, mastar cubes, png images, default maps, or
+    the entire plate directory.
+
     Parameters:
         inputlist (list):
-            A list of objects to download.  Must be a list of plate IDs,
+            Required.  A list of objects to download.  Must be a list of plate IDs,
             plate-IFUs, or manga-ids
-        dltype (str):
-            Indicated the type of object to download.  Can be any of
-            plate, cube, mastar, rss, map, or default (default map).
+        dltype ({'cube', 'map', 'image', 'rss', 'mastar', 'default', 'plate'}):
+            Indicated type of object to download.  Can be any of
+            plate, cube, imagea, mastar, rss, map, or default (default map).
             If not specified, the dltype defaults to cube.
         release (str):
             The MPL/DR version of the data to download.
@@ -701,8 +710,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             The plan id number [1-12] of the DAP maps to download. Defaults to *
         daptype (str):
             The daptype of the default map to grab.  Defaults to *
+        dir3d (str):
+            The directory where the images are located.  Either 'stack' or 'mastar'. Defaults to *
         verbose (bool):
             Turns on verbosity during rsync
+        limit (int):
+            A limit to the number of items to download
     Returns:
         NA: Downloads
 
@@ -718,6 +731,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     bintype = kwargs.get('bintype', '*')
     binmode = kwargs.get('binmode', '*')
     daptype = kwargs.get('daptype', '*')
+    dir3d = kwargs.get('dir3d', '*')
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
 
@@ -727,8 +741,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # Assert correct dltype
     dltype = 'cube' if not dltype else dltype
-    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map',
-                      'default'], 'dltype must be one of plate, cube, mastar, rss, map, default'
+    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map', 'image',
+                      'default'], 'dltype must be one of plate, cube, mastar, image, rss, map, default'
+
+    # Assert correct dir3d
+    if dir3d != '*':
+        assert dir3d in ['stack', 'mastar'], 'dir3d must be either stack or mastar'
 
     # Parse and retrieve the input type and the download type
     idtype = parseIdentifier(inputlist[0])
@@ -751,6 +769,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
+    elif dltype == 'image':
+        name = 'mangaimage'
 
     # create rsync
     rsync_access = RsyncAccess(label='marvin_download', verbose=verbose)
@@ -771,7 +791,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             plateid = item
             ifu = '*'
 
-        rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver,
+        rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver, dir3d=dir3d,
                          mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype)
 
     # set the stream
@@ -786,7 +806,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
 
 def get_drpall_row(plateifu, drpver=None, drpall=None):
-    """Returns a row from drpall matching the plateifu."""
+    """Returns a dictionary from drpall matching the plateifu."""
 
     from marvin import config
 
@@ -929,6 +949,8 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     value = drpall_row[col]
                     if isinstance(value, np.ndarray):
                         value = value.tolist()
+                    else:
+                        value = np.asscalar(value)
                     nsa_data[col[4:]] = value
 
             return DotableCaseInsensitive(nsa_data)
@@ -951,3 +973,12 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                 return DotableCaseInsensitive(collections.OrderedDict(response.getData()))
             else:
                 raise MarvinError('get_nsa_data: %s', response['error'])
+
+
+def _check_file_parameters(obj1, obj2):
+    for param in ['plateifu', 'mangaid', 'plate', '_release', 'drpver', 'dapver']:
+        assert_msg = ('{0} is different between {1} {2}:\n {1}.{0}: {3} {2}.{0}:{4}'
+                      .format(param, obj1.__repr__, obj2.__repr__, getattr(obj1, param),
+                              getattr(obj2, param)))
+        assert getattr(obj1, param) == getattr(obj2, param), assert_msg
+

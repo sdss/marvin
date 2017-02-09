@@ -1,5 +1,5 @@
 from __future__ import print_function
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
@@ -12,11 +12,15 @@ import warnings
 import json
 import os
 import datetime
-import cPickle
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 try:
     import pandas as pd
@@ -25,28 +29,30 @@ except ImportError:
 
 __all__ = ['Results']
 
+breadcrumb = MarvinBreadCrumb()
 
-def local_mode_only(func):
+
+def local_mode_only(fxn):
     '''Decorator that bypasses function if in remote mode.'''
 
-    @wraps(func)
+    @wraps(fxn)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'remote':
-            raise MarvinError('{0} not available in remote mode'.format(func.__name__))
+            raise MarvinError('{0} not available in remote mode'.format(fxn.__name__))
         else:
-            return func(self, *args, **kwargs)
+            return fxn(self, *args, **kwargs)
     return wrapper
 
 
-def remote_mode_only(func):
+def remote_mode_only(fxn):
     '''Decorator that bypasses function if in local mode.'''
 
-    @wraps(func)
+    @wraps(fxn)
     def wrapper(self, *args, **kwargs):
         if self.mode == 'local':
-            raise MarvinError('{0} not available in local mode'.format(func.__name__))
+            raise MarvinError('{0} not available in local mode'.format(fxn.__name__))
         else:
-            return func(self, *args, **kwargs)
+            return fxn(self, *args, **kwargs)
     return wrapper
 
 
@@ -113,6 +119,10 @@ class Results(object):
         self.sortcol = None
         self.order = None
 
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinResults {0}'.format(self.__class__),
+                        category=self.__class__)
+
         # Convert remote results to NamedTuple
         if self.mode == 'remote':
             self._makeNamedTuple()
@@ -123,7 +133,7 @@ class Results(object):
 
         # Auto convert to Marvin Object
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
     def _updateQueryObj(self, **kwargs):
         ''' update parameters using the _queryobj '''
@@ -144,7 +154,15 @@ class Results(object):
                 querystring (str):
                     A string representation of the SQL query
         '''
-        if type(self.query) == unicode:
+
+        # check unicode or str
+        try:
+            isstr = type(self.query) == unicode
+        except NameError as e:
+            isstr = type(self.query) == str
+
+        # return the string query or compile the real query
+        if isstr:
             return self.query
         else:
             return str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
@@ -305,6 +323,24 @@ class Results(object):
         table.write(filename, format='fits')
         print('Writing new FITS file {0}'.format(filename))
 
+    def toCSV(self, filename='myresults.csv'):
+        ''' Output the results as a CSV file
+
+        Writes a new CSV file from search results using
+        the astropy Table.write()
+
+        Parameters:
+            filename (str):
+                Name of CSV file to output
+
+        '''
+        myext = os.path.splitext(filename)[1]
+        if not myext:
+            filename = filename+'.csv'
+        table = self.toTable()
+        table.write(filename, format='csv')
+        print('Writing new CSV file {0}'.format(filename))
+
     def toDF(self):
         '''Call toDataFrame().
         '''
@@ -372,6 +408,12 @@ class Results(object):
 
         # set Marvin query object to None, in theory this could be pickled as well
         self._queryobj = None
+        try:
+            isnotstr = type(self.query) != unicode
+        except NameError as e:
+            isnotstr = type(self.query) != str
+        if isnotstr:
+            self.query = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
@@ -396,7 +438,7 @@ class Results(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -462,7 +504,7 @@ class Results(object):
                 >>> [u'mangaid', u'name', u'nsa.z']
         '''
         try:
-            self.columns = self.results[0].keys() if self.results else None
+            self.columns = list(self.results[0].keys()) if self.results else None
         except Exception as e:
             raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
         return self.columns
@@ -495,7 +537,7 @@ class Results(object):
         if cols:
             if not self.coltoparam:
                 self.coltoparam = OrderedDict(zip(cols, self._params))
-            mapping = self.coltoparam[col] if col else self.coltoparam.values()
+            mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
         else:
             mapping = None
         return mapping
@@ -508,7 +550,7 @@ class Results(object):
         if cols:
             if not self.paramtocol:
                 self.paramtocol = OrderedDict(zip(self._params, cols))
-            mapping = self.paramtocol[param] if param else self.paramtocol.values()
+            mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
         else:
             mapping = None
         return mapping
@@ -816,7 +858,7 @@ class Results(object):
                 >>> (u'27-1170', u'1901', -9999.0),
                 >>> (u'27-1167', u'1902', -9999.0)]
         '''
-        start = 0 if start < 0 else int(start)
+        start = 0 if int(start) < 0 else int(start)
         end = start + int(limit)
         # if end > self.count:
         #     end = self.count
@@ -880,6 +922,9 @@ class Results(object):
                 limit (int):
                     Limit the number of results you convert to Marvin tools.  Useful
                     for extremely large result sets.  Default is None.
+                mode (str):
+                    The mode to use when attempting to convert to Tool. Default mode
+                    is to use the mode internal to Results. (most often remote mode)
 
             Example:
                 >>> # Get the results from some query
@@ -903,6 +948,7 @@ class Results(object):
         '''
 
         # set the desired tool type
+        mode = kwargs.get('mode', self.mode)
         limit = kwargs.get('limit', None)
         toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
         tooltype = tooltype if tooltype else self.returntype
@@ -910,13 +956,12 @@ class Results(object):
 
         # get the parameter list to check against
         paramlist = self.paramtocol.keys()
-        print(self.results[0])
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
             self.objects = [Cube(plateifu=res.__getattribute__(
                             self._getRefName('cube.plateifu')),
-                            mode=self.mode) for res in self.results[0:limit]]
+                            mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
 
             isbin = 'bintype.name' in paramlist
@@ -924,7 +969,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))
@@ -955,7 +1000,7 @@ class Results(object):
         elif tooltype == 'rss':
             self.objects = [RSS(plateifu=res.__getattribute__(
                             self._getRefName('cube.plateifu')),
-                            mode=self.mode) for res in self.results[0:limit]]
+                            mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
 
             isbin = 'bintype.name' in paramlist
@@ -963,7 +1008,7 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': self.mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
 
                 if isbin:
                     binval = res.__getattribute__(self._getRefName('bintype.name'))

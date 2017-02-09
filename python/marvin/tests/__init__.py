@@ -3,6 +3,8 @@
 
 from unittest import TestCase
 import warnings
+import os
+from marvin import config
 from marvin.core.exceptions import MarvinSkippedTestWarning
 from functools import wraps
 
@@ -68,6 +70,17 @@ def skipIfNoDB(test):
     return wrapper
 
 
+# Decorator to skip if not Brian
+def skipIfNoBrian(test):
+    @wraps(test)
+    def wrapper(self, *args, **kwargs):
+        if 'Brian' not in os.path.expanduser('~'):
+            return self.skipTest(test)
+        else:
+            return test(self, *args, **kwargs)
+    return wrapper
+
+
 class MarvinTest(TestCase):
     """Custom class for Marvin-tools tests."""
 
@@ -75,3 +88,13 @@ class MarvinTest(TestCase):
         """Issues a warning when we skip a test."""
         warnings.warn('Skipped test {0} because there is no DB connection.'
                       .format(test.__name__), MarvinSkippedTestWarning)
+
+    def skipBrian(self, test):
+        """Issues a warning when we skip a test."""
+        warnings.warn('Skipped test {0} because there is no Brian.'
+                      .format(test.__name__), MarvinSkippedTestWarning)
+
+    @classmethod
+    def setUpClass(cls):
+        config.use_sentry = False
+        config.add_github_message = False

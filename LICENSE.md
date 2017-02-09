@@ -1,4 +1,4 @@
-Copyright (c) 2016, The Marvin development team.
+Copyright (c) 2016-2017, The Marvin development team.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

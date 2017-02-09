@@ -15,15 +15,12 @@
 import sys
 import os
 
-from distutils.version import StrictVersion
-
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
 
 
 try:
-    StrictVersion(marvin.__version__)
     marvin_version = marvin.__version__
 except ValueError:
     marvin_version = 'dev'
@@ -49,6 +46,7 @@ extensions = [
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.autohttp.flaskqref',
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -66,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Marvin'
-copyright = u'2016, Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
+copyright = u'2016-2017, Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
 author = u'Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
 
 # The version info for the project you're documenting, acts as replacement for

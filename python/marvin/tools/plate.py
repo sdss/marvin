@@ -29,21 +29,47 @@ class Plate(MarvinToolsClass, list):
     This class represents a Plate, initialised either
     from a file, a database, or remotely via the Marvin API. The class
     inherits from Python's list class, and is defined as a list of
-    Cube objects.
+    Cube objects.  As it inherits from list, it can do all the standard Python
+    list operations.
+
+    When instanstantiated, Marvin Plate will attempt to discover and load all the Cubes
+    associated with this plate.
 
     Parameters:
         plateid (str):
             The plateid of the Plate to load.
         plateifu (str):
             The plate-ifu of the Plate to load
+        filename (str):
+            The path of the file containing the data cube to load.
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See
             :doc:`Mode secision tree</mode_decision>`..
-
+        release (str):
+            The MPL/DR version of the data to use.
+        nocubes (bool):
+            Set this to turn off the Cube loading
     Return:
         plate:
             An object representing the Plate entity. The object is a list of
             Cube objects, one for each IFU cube in the Plate entity.
+
+    Example:
+        >>> from marvin.tools.plate import Plate
+        >>> plate = Plate(plateid=8485)
+        >>> print(plate)
+        >>> <Marvin Plate (plateid=8485, mode='local', data_origin='db')>
+        >>>
+        >>> print('Cubes found in this plate: {0}'.format(len(plate)))
+        >>> Cubes found in this plate: 4
+        >>>
+        >>> # access the plate via index to access the individual cubes
+        >>> print(plate[0])
+        >>> <Marvin Cube (plateifu='8485-12701', mode='local', data_origin='db')>
+        >>>
+        >>> print(plate[1])
+        >>> <Marvin Cube (plateifu='8485-12702', mode='local', data_origin='db')>
+        >>>
     '''
 
     def __init__(self, *args, **kwargs):
@@ -52,12 +78,18 @@ class Plate(MarvinToolsClass, list):
         self._cubes = None
         self._plate = None
         self._pdict = None
+        self.platedir = None
         self.nocubes = kwargs.get('nocubes', None)
 
         # If plateid specified, force a temp plateifu
         if self.plateid:
             self.plateifu = '{0}-XXXX'.format(self.plateid)
             kwargs['plateifu'] = self.plateifu
+
+        self.plateifu = kwargs.get('plateifu', None)
+
+        args = [self.plateid, self.plateifu]
+        assert any(args), 'Enter plateid or plateifu!'
 
         MarvinToolsClass.__init__(self, *args, **kwargs)
 
@@ -85,10 +117,11 @@ class Plate(MarvinToolsClass, list):
 
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
-        self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver, plate=self.plateid, **kwargs)
-        platedir = self.filename
+        self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver,
+                                                        plate=self.plateid, **kwargs)
+        self.platedir = self.filename
         self._checkFilename()
-        return platedir, self.filename
+        return self.filename
 
     def _getPlateFromFile(self):
         ''' Initialize a Plate from a Cube/RSS File'''
@@ -120,24 +153,26 @@ class Plate(MarvinToolsClass, list):
                 mdb.datadb.PipelineInfo, mdb.datadb.PipelineVersion).\
                 filter(mdb.datadb.Cube.plate == self.plateid,
                        mdb.datadb.PipelineVersion.version == self._drpver).first()
-        except sqlalchemy.orm.exc.NoResultFound as e:
+        except sqlalchemy.orm.exc.NoResultFound as ee:
             raise MarvinError('Could not retrieve Cube for plate {0}: '
                               'No Results Found: {1}'
                               .format(self.plateid, ee))
 
-        except Exception as e:
+        except Exception as ee:
             raise MarvinError('Could not retrieve Cube for plate {0}: '
                               'Unknown exception: {1}'
                               .format(self.plateid, ee))
         else:
             # no cube
             if not cube:
-                raise MarvinError('No cube found in db for plate {0}, drpver {1}'.format(self.plateid, self._drpver))
+                raise MarvinError('No cube found in db for plate {0}, drpver {1}'
+                                  .format(self.plateid, self._drpver))
             # cube but no plateclass
             try:
                 self._plate = cube.plateclass
-            except AttributeError as e:
-                raise MarvinError('AttributeError: cube has no plateclass for plate {0}: {1}'.format(self.plateid, e))
+            except AttributeError as ee:
+                raise MarvinError('AttributeError: cube has no plateclass for plate {0}: {1}'
+                                  .format(self.plateid, ee))
             else:
                 self._hdr = self._plate._hdr
                 self._pdict = self._plate.__dict__
@@ -187,7 +222,7 @@ class Plate(MarvinToolsClass, list):
             response = self.ToolInteraction(url)
             data = response.getData()
             plateifus = data['plateifus']
-            _cubes = [Cube(plateifu=pifu, mode='remote', data_origin='api') for pifu in plateifus]
+            _cubes = [Cube(plateifu=pifu, mode='remote') for pifu in plateifus]
 
         list.__init__(self, _cubes)
 
@@ -251,3 +286,5 @@ class Plate(MarvinToolsClass, list):
             # load the file
             if file:
                 self.filename = file
+            else:
+                self.filename = None

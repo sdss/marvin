@@ -18,7 +18,7 @@
 
                 <div class='col-md-2'>
                     <div class='form-group'>
-                        <div id='searchtype'>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead')}}</div>
+                        <div id='searchtype'>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead', autocomplete='off')}}</div>
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@
                         </div>
                         {# Info PopUp #}
                         <div class='col-md-7 infopop' id='marvinquery'>
-                        {{infopopup('See how to do it in Marvin', 'Marvin Query - start iPython', querystring, 'marvinquery', 'warning')}}
+                        {{infopopup('See how to do it in Python', 'Marvin Query - start iPython', querystring, 'marvinquery', 'warning')}}
                         </div>
                     </div>
                 </div>
