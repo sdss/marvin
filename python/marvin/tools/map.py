@@ -464,9 +464,9 @@ class Map(object):
             percentile_clip (list):
                 Percentile clip. Default is ``[10, 90]`` for velocities and sigmas and ``[5, 95]``
                 for other properites.
-            sigclip (list):
+            sigclip (tuple-like):
                 Sigma clip. Default is ``None``.
-            cbrange (list):
+            cbrange (tuple-like):
                 If ``None``, set automatically. Default is ``None``.
             symmetric (bool):
                 Draw a colorbar that is symmetric around zero. Default is ``True`` for velocities
