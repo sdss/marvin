@@ -93,6 +93,8 @@ def create_app(debug=False, local=False):
             pass
     else:
         sentry = None
+        config.use_sentry = False
+        config.add_github_message = False
 
     # Change the implementation of "decimal" to a C-based version (much! faster)
     #
