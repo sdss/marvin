@@ -68,9 +68,7 @@ def create_app(debug=False, local=False):
         },
         'endpointRoot': 'marvin2/profiler',
         "basicAuth": {
-            "enabled": False,
-            "username": "admin",
-            "password": "admin"
+            "enabled": False
         }
     }
 
