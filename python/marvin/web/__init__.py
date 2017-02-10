@@ -51,10 +51,11 @@ def create_app(debug=False, local=False):
 
     # ----------------------------------
     # Create App
-    app = Flask(__name__, static_url_path='/marvin2/static')
-    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin2')
+    app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
+    api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
-    jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
+    jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(marvin_base)
     jsglue = jsg.JSGlue(app)
 
     # Add Marvin Logger
@@ -66,7 +67,7 @@ def create_app(debug=False, local=False):
         "storage": {
             "engine": "sqlite"
         },
-        'endpointRoot': 'marvin2/profiler',
+        'endpointRoot': '{0}/profiler'.format(marvin_base),
         "basicAuth": {
             "enabled": False
         }
@@ -117,8 +118,6 @@ def create_app(debug=False, local=False):
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
     os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
-    istest = os.environ.get('MARVIN_TEST', False)
-    marvin_base = 'test/marvin2' if istest else os.environ['SAS_PREFIX']
     url_prefix = '/marvin2' if local else '/{0}'.format(marvin_base)
 
     # ----------------------------------
