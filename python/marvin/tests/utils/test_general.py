@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import OrderedDict
-from unittest import TestCase
+import unittest
 from astropy.io import fits
 from astropy.wcs import WCS
 import os
@@ -32,7 +32,7 @@ from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
 
 
-class TestConvertCoords(TestCase):
+class TestConvertCoords(unittest.TestCase):
 
     __metaclass__ = TemplateTestCase
 
@@ -134,17 +134,16 @@ class TestConvertCoords(TestCase):
         self.assertIn('some indices are out of limits', str(cm.exception))
 
 
-class TestGetNSAData(TestCase):
+class TestGetNSAData(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         marvin.config.switchSasUrl('local')
         marvin.config.use_sentry = False
         marvin.config.add_github_message = False
-        cls.config_db = marvin.config.db
 
     def setUp(self):
-        marvin.config.db = self.config_db
+        marvin.config.forceDbOn()
 
     def _test_nsa(self, data):
         self.assertIsInstance(data, DotableCaseInsensitive)
@@ -182,7 +181,7 @@ class TestGetNSAData(TestCase):
         self._test_drpall(data)
 
     def test_auto_nsa_without_db(self):
-        marvin.config.db = None
+        marvin.config.forceDbOff()
         data = get_nsa_data('1-209232', source='nsa', mode='auto')
         self._test_nsa(data)
 
@@ -204,7 +203,7 @@ class TestGetNSAData(TestCase):
         self.assertEqual(data['iauname'], data.iauname)
 
 
-class TestPillowImage(TestCase):
+class TestPillowImage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -228,3 +227,6 @@ class TestPillowImage(TestCase):
                 self.assertEqual(err, e.args[0])
 
 
+if __name__ == '__main__':
+    verbosity = 2
+    unittest.main(verbosity=verbosity)

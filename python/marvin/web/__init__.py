@@ -54,10 +54,11 @@ def create_app(debug=False, local=False):
 
     # ----------------------------------
     # Create App
-    app = Flask(__name__, static_url_path='/marvin2/static')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin2')
+    app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
+    api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
-    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
-    jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
+    jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(marvin_base)
     jsglue = jsg.JSGlue(app)
 
     # Add Marvin Logger
@@ -69,11 +70,9 @@ def create_app(debug=False, local=False):
         "storage": {
             "engine": "sqlite"
         },
-        'endpointRoot': 'marvin2/profiler',
+        'endpointRoot': '{0}/profiler'.format(marvin_base),
         "basicAuth": {
-            "enabled": True,
-            "username": "admin",
-            "password": "admin"
+            "enabled": False
         }
     }
 
@@ -96,6 +95,8 @@ def create_app(debug=False, local=False):
             pass
     else:
         sentry = None
+        config.use_sentry = False
+        config.add_github_message = False
 
     # Change the implementation of "decimal" to a C-based version (much! faster)
     #
@@ -120,7 +121,7 @@ def create_app(debug=False, local=False):
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
     os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
-    url_prefix = '/marvin2' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
+    url_prefix = '/marvin2' if local else '/{0}'.format(marvin_base)
 
     # ----------------------------------
     # Load the appropriate Flask configuration file for debug or production
@@ -153,7 +154,7 @@ def create_app(debug=False, local=False):
     app.config["LIB_PATH"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib')
 
     # Add lib directory as a new static path
-    @app.route('/marvin2/lib/<path:filename>')
+    @app.route('/{0}/lib/<path:filename>'.format(marvin_base))
     def lib(filename):
         return send_from_directory(app.config["LIB_PATH"], filename)
 

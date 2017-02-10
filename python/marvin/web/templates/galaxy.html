@@ -224,6 +224,7 @@
 <!-- NSA Display Tab-->
 {# NSA Display Tab #}
 <div class='well tab-pane' role='tabpanel' id='nsatab'>
+{% if hasnsa %}
   <!-- NSA error message -->
   {# NSA error message #}
   <div class='row'>
@@ -263,6 +264,13 @@
       </div>
     </div>
   </div> {# end main NSA #}
+{% else %}
+  <div class='row'>
+    <div class='col-md-10'>
+      <h3 class='alert alert-danger'>This galaxy has no NSA information available in the MaNGA db.</h3>
+    </div>
+  </div>
+{% endif %}
 </div>
 
 </div> {# end tab-content div #}
@@ -280,6 +288,7 @@
         var toggleon = {{toggleon|tojson}};
         m.galaxy = new Galaxy(undefined, toggleon);
         m.galaxy.print();
+        m.galaxy.hasNSA({{hasnsa|tojson}});
     });
 </script>
 {% endblock code %}

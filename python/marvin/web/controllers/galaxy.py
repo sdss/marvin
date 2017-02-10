@@ -226,12 +226,15 @@ class Galaxy(FlaskView):
                 self.galaxy['mngtarget'] = cube.targetbit
 
                 # make the nsa dictionary
-                cols = self.galaxy.get('nsaplotcols')
-                nsadict, nsacols = make_nsa_dict(cube.nsa)
-                nsatmp = [nsacols.pop(nsacols.index(i)) for i in cols]
-                nsatmp.extend(nsacols)
-                self.galaxy['nsacols'] = nsatmp
-                self.galaxy['nsadict'] = nsadict
+                hasnsa = cube.nsa is not None
+                self.galaxy['hasnsa'] = hasnsa
+                if hasnsa:
+                    cols = self.galaxy.get('nsaplotcols')
+                    nsadict, nsacols = make_nsa_dict(cube.nsa)
+                    nsatmp = [nsacols.pop(nsacols.index(i)) for i in cols]
+                    nsatmp.extend(nsacols)
+                    self.galaxy['nsacols'] = nsatmp
+                    self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
                 self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)

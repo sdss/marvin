@@ -12,6 +12,14 @@ General Utilities
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-utils-bpt:
+
+BPT Diagrams
+------------
+
+.. autofunction:: marvin.utils.dap.bpt.bpt_kewley06
+
+
 .. _marvin-utils-general-images:
 
 Image Utilities
