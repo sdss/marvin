@@ -32,28 +32,36 @@ Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.
 * **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``NOVALUE``, ``BADVALUE``, ``MATHERROR``, ``BADFIT``, or ``DONOTUSE`` set.
 * **no measurement** (hatched): pass **no data** criteria but DAP did not produce a measurement or  signal-to-noise ratio < 1.
 
-The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object.
+The DAP map data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object:
 
 ::
 
     haflux.value
 
-The beauty of Marvin is that you can link to other data about the same galaxy (see :ref:`visual-guide`). Let's see the spectrum of the central spaxel (x=17, y=17).
+We can also grab the DRP and DAP data on any single spaxel. Let's get the central spaxel (x=17, y=17):
+
+::
+    
+    spax = maps[17, 17]
+
+Here ``maps[17, 17]`` is shorthand for ``maps.getSpaxel(x=17, y=17, xyorig='lower')``, which has additional options that can be invoked by using the :meth:`~marvin.tools.maps.Maps.getSpaxel` method. For example, set (``modelcube=True``) to return the model spectrum (``spax.model``).
+
+We can then get a dictionary of all of the DAP :ref:`marvin-tools-analprop`s with ``spax.properties`` and get the value of any one of them, such as stellar velocity, by using the appropriate key ("stellar_vel" in this case), and accessing the ``value`` attribute of the :ref:`marvin-tools-analprop` object:
 
 ::
 
-    spec = maps.cube[17, 17].spectrum
-    spec.plot()
+    spax.properties['stellar_vel'].value
+
+The beauty of Marvin is that you can link to other data about the same galaxy (see :ref:`visual-guide`). Let's see the spectrum.
+
+::
+
+    spax.spectrum.plot()
 
 .. image:: ../_static/spec_8485-1901_17-17.png
 
-The spectrum data is stored as 1-D arrays in the ``flux``, ``ivar``, and ``mask`` attributes of ``spec`` :ref:`marvin-tools-spectrum` object.
-
-::
-
-    spec.flux
-
-Head on over to :ref:`marvin-cube` to learn more about cube and spectrum-related operations.
+Head on over to :ref:`marvin-cube` to learn more about :ref:`marvin-tools-cube` and
+:ref:`marvin-tools-spectrum`-related operations.
 
 Advanced Maps Options
 ---------------------
