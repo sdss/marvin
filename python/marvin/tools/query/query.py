@@ -10,9 +10,8 @@
 #                - Added config drpver info
 #     2016-03-12 - Changed parameter input to be a natural language string
 
-from __future__ import print_function
-from __future__ import division
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from __future__ import print_function, division, unicode_literals
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
@@ -29,12 +28,19 @@ import datetime
 import numpy as np
 import warnings
 import os
-import cPickle
 from marvin.core import marvin_pickle
 from functools import wraps
+from marvin.tools.query.results import remote_mode_only
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 __all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
+
+breadcrumb = MarvinBreadCrumb()
 
 
 # Boom. Tree dictionary.
@@ -179,6 +185,10 @@ class Query(object):
         self.order = kwargs.get('order', 'asc')
         self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
 
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinQuery {0}'.format(self.__class__),
+                        category=self.__class__)
+
         # set the mode
         if self.mode is None:
             self.mode = config.mode
@@ -188,8 +198,10 @@ class Query(object):
         if self.mode == 'remote':
             self._doRemote()
         if self.mode == 'auto':
-            self._doLocal()
-            if self.mode == 'remote':
+            try:
+                self._doLocal()
+            except Exception as e:
+                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
                 self._doRemote()
 
         # get return type
@@ -240,8 +252,8 @@ class Query(object):
         ''' Tests if it is possible to perform queries locally. '''
 
         if not config.db or not self.session:
-            warnings.warn('No local database found. Setting mode to remote', MarvinUserWarning)
-            self.mode = 'remote'
+            warnings.warn('No local database found. Cannot perform queries.', MarvinUserWarning)
+            raise MarvinError('No local database found.  Query cannot be run in local mode')
         else:
             self.mode = 'local'
 
@@ -249,7 +261,7 @@ class Query(object):
         ''' Sets up to perform queries remotely. '''
 
         if not config.urlmap:
-            raise MarvinError('No URL Map found.  Cannot make remote calls!')
+            raise MarvinError('No URL Map found.  Cannot make remote query calls!')
         else:
             self.mode = 'remote'
 
@@ -384,7 +396,7 @@ class Query(object):
                 a list of all of the available queryable parameters
         '''
         if self.mode == 'local':
-            keys = self.marvinform._param_form_lookup.keys()
+            keys = list(self.marvinform._param_form_lookup.keys())
             keys.sort()
             rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
             # simplify the spaxelprop list down to one set
@@ -397,14 +409,41 @@ class Query(object):
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'all'}
             try:
-                ii = Interaction(route=url)
+                ii = Interaction(route=url, params=params)
             except MarvinError as e:
                 raise MarvinError('API Query call to get params failed: {0}'.format(e))
             else:
                 mykeys = ii.getData()
                 return mykeys
 
+    def _read_best_params(self):
+        bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best.cfg')
+        f = open(bestpath, 'r')
+        bestkeys = f.read().splitlines()
+        bestkeys = [k.strip() for k in bestkeys]
+        return bestkeys
+
+    def get_best_params(self):
+        ''' Retrieves a list of best parameters to query on '''
+        if self.mode == 'local':
+            keys = self.get_available_params()
+            bestkeys = self._read_best_params()
+            return bestkeys
+        elif self.mode == 'remote':
+            # Get the query route
+            url = config.urlmap['api']['getparams']['url']
+            params = {'paramdisplay': 'best'}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query call to get params failed: {0}'.format(e))
+            else:
+                bestkeys = ii.getData()
+                return bestkeys
+
+    @remote_mode_only
     def save(self, path=None, overwrite=False):
         ''' Save the query as a pickle object
 
@@ -446,7 +485,7 @@ class Query(object):
             os.makedirs(dirname)
 
         try:
-            cPickle.dump(self, open(path, 'w'))
+            pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -581,12 +620,12 @@ class Query(object):
     def _validateForms(self):
         ''' Validate all the data in the forms '''
 
-        formkeys = self.myforms.keys()
+        formkeys = list(self.myforms.keys())
         isgood = [form.validate() for form in self.myforms.values()]
         if not all(isgood):
             inds = np.where(np.invert(isgood))[0]
             for index in inds:
-                self._errors.append(self.myforms.values()[index].errors)
+                self._errors.append(list(self.myforms.values())[index].errors)
             raise MarvinError('Parameters failed to validate: {0}'.format(self._errors))
 
     def add_condition(self):
@@ -635,7 +674,8 @@ class Query(object):
 
     def update_params(self, param):
         ''' Update the input parameters '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        # param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
+        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else val.replace('*', '%').decode('UTF-8') for key, val in param.items() if key in self.filterparams.keys()}
         self.filterparams.update(param)
         self._setForms()
 

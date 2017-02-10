@@ -27,6 +27,10 @@ class MarvinDB(object):
         self.db = None
         self.log = kwargs.get('log', None)
         self.error = []
+        self.__init_the_db()
+
+    def __init_the_db(self):
+        ''' Initialize the db '''
         if self.dbtype:
             self._setupDB()
         if self.db:
@@ -122,6 +126,10 @@ class MarvinDB(object):
         self.datadb = None
         self.dapdb = None
         self.sampledb = None
+
+    def forceDbOn(self, dbtype=None):
+        ''' Force the database to turn on '''
+        self.__init_the_db()
 
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.

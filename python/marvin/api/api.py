@@ -33,7 +33,7 @@ class Interaction(BrainInteraction):
 
     Parameters:
         route (str):
-            Relative url path of the API call you want to make
+            Required.  Relative url path of the API call you want to make
 
         params (dict):
             dictionary of parameters you are passing into the API function call
@@ -48,17 +48,36 @@ class Interaction(BrainInteraction):
         timeout (float|tuple):
             A float or tuple of floats indicating the request timeout limit in seconds.
             If the server has not sent a respsonse by the time limit, an exception is raised.
+            The default timeout is set to 5 minutes.
             See http://docs.python-requests.org/en/master/user/advanced/#timeouts
 
     Returns:
         results (dict):
-            The results of the API call
+            The **Response JSON object** from the API call.  If the API is successful, the json data is extracted
+            from the response and stored in this dictionary.  See :ref:`marvin-api-routes` for a
+            description of the contents of results in each route.
 
     Examples:
+        >>> from marvin import config
+        >>> config.mode = 'remote'
         >>>
+        >>> # import the Marvin Interaction class
+        >>> from marvin.api.api import Interaction
         >>>
+        >>> # get and format an API url to retrieve basic Cube properties
+        >>> plateifu = '7443-12701'
+        >>> url = config.urlmap['api']['getCube']['url']
         >>>
-
+        >>> # create and send the request, and retrieve a response
+        >>> response = Interaction(url.format(name=plateifu))
+        >>>
+        >>> # check your response's status code
+        >>> print(response.status_code)
+        >>> 200
+        >>>
+        >>> # get the data in your response
+        >>> data = response.getData()
+        >>> print(data)
     '''
 
     def _loadConfigParams(self):

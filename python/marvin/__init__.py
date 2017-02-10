@@ -10,7 +10,17 @@ import os
 import re
 import warnings
 import sys
+import marvin
 from collections import OrderedDict
+from distutils.version import StrictVersion
+
+# Set the Marvin version
+try:
+    from marvin.version import get_version
+except ImportError as e:
+    __version__ = 'dev'
+else:
+    __version__ = get_version()
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -39,13 +49,29 @@ warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompa
 class MarvinConfig(object):
     ''' Global Marvin Configuration
 
-    The global configuration of Marvin.
+    The global configuration of Marvin.  Use the config object to globally set options for
+    your Marvin session.
 
     Parameters:
-        mplver (str):
-            The MPL version of the MaNGA data you want to use
+        release (str):
+            The release version of the MaNGA data you want to use.  Either MPL or DR.
         download (bool):
             Set to turn on downloading of objects with sdss_access
+        use_sentry (bool):
+            Set to turn on/off the Sentry error logging.  Default is True.
+        add_github_message (bool):
+            Set to turn on/off the additional Github Issue message in MarvinErrors. Default is True.
+        drpall (str):
+            The location to your DRPall file, based on which release you have set.
+        mode (str):
+            The current mode of Marvin.  Either 'auto', 'remote', or 'local'. Default is 'auto'
+        sasurl (str):
+            The url of the Marvin API on the Utah Science Archive Server (SAS)
+        urlmap (dict):
+            A dictionary containing the API routing information used by Marvin
+        xyorig (str):
+            Globally set the origin point for all your spaxel selections.  Either 'center' or 'lower'.
+            Default is 'center'
     '''
     def __init__(self):
 
@@ -59,6 +85,8 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
+        self.use_sentry = True
+        self.add_github_message = True
 
         self._plantTree()
         self._checkSDSSAccess()
@@ -117,7 +145,16 @@ class MarvinConfig(object):
         self._checkPaths('MANGA_SPECTRO_ANALYSIS')
 
     def setDefaultDrpAll(self, drpver=None):
-        """Tries to set the default location of drpall."""
+        """Tries to set the default location of drpall.
+
+        Sets the drpall attribute to the location of your DRPall file, based on the
+        drpver.  If drpver not set, it is extracted from the release attribute.  It sets the
+        location based on the MANGA_SPECTRO_REDUX environment variable
+
+        Parameters:
+            drpver (str):
+                The DRP version to set.  Defaults to the version corresponding to config.release.
+        """
 
         if not drpver:
             drpver, __ = self.lookUpVersions(self.release)
@@ -162,7 +199,7 @@ class MarvinConfig(object):
         value = value.upper()
         if value not in self._mpldict:
             raise MarvinError('trying to set an invalid release version. Valid releases are: {0}'
-                              .format(', '.join(sorted(self._mpldict.keys()))))
+                              .format(', '.join(sorted(list(self._mpldict)))))
         self._release = value
 
         drpver = self._mpldict[self.release][0]
@@ -245,13 +282,13 @@ class MarvinConfig(object):
                    'MPL-4': ('v1_5_1', '1.1.1'),
                    'MPL-3': ('v1_3_3', 'v1_0_0'),
                    'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None)}
+                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_1', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
         # Check the versioning config
         if not self.release:
-            topkey = self._mpldict.keys()[0]
+            topkey = list(self._mpldict)[0]
             log.info('No release version set. Setting default to {0}'.format(topkey))
             self.release = topkey
 
@@ -298,10 +335,9 @@ class MarvinConfig(object):
                 ``release`` value.
 
         Returns:
-            drpver (str):
-                The DRP version according to the input MPL version
-            dapver (str):
-                The DAP version according to the input MPL version
+            drpver, dapver (tuple):
+                A tuple of strings of the DRP and DAP versions according
+                to the input MPL version
 
         """
 
@@ -339,24 +375,28 @@ class MarvinConfig(object):
 
         return release
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None):
+    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000):
         ''' Switches the SAS url config attribute
 
         Easily switch the sasurl configuration variable between
-        Utah and local.  Utah sets it to the real API.  Local switches to
-        an Ngrok url address
+        utah and local.  utah sets it to the real API.  Local switches to
+        use localhost.
 
         Parameters:
-            sasmode (str):
+            sasmode ({'utah', 'local'}):
                 the SAS mode to switch to.  Default is Utah
-
+            ngrokid (str):
+                The ngrok id to use when using a 'localhost' sas mode.
+                This assumes localhost server is being broadcast by ngrok
+            port (int):
+                The port of your localhost server
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         if sasmode == 'local':
             if ngrokid:
                 self.sasurl = 'http://{0}.ngrok.io/marvin2/'.format(ngrokid)
             else:
-                self.sasurl = 'http://localhost:5000/marvin2/'
+                self.sasurl = 'http://localhost:{0}/marvin2/'.format(port)
         elif sasmode == 'utah':
             self.sasurl = 'https://api.sdss.org/marvin2/'
 
@@ -365,6 +405,12 @@ class MarvinConfig(object):
         config.db = None
         from marvin import marvindb
         marvindb.forceDbOff()
+
+    def forceDbOn(self):
+        ''' Force the database to be reconnected '''
+        self._setDbConfig()
+        from marvin import marvindb
+        marvindb.forceDbOn(dbtype=self.db)
 
     def _addExternal(self, name):
         ''' Adds an external product into the path '''
@@ -402,6 +448,7 @@ class MarvinConfig(object):
             else:
                 self._sdss_access_isloaded = True
 
+
 config = MarvinConfig()
 
 # Inits the Database session and ModelClasses
@@ -414,12 +461,3 @@ config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
 
-
-from pkg_resources import get_distribution, DistributionNotFound
-
-try:
-    dist = get_distribution('sdss-marvin')
-except DistributionNotFound:
-    __version__ = 'dev'
-else:
-    __version__ = dist.version

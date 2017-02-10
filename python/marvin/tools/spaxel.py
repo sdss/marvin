@@ -27,9 +27,11 @@ import marvin.tools.maps
 import marvin.tools.modelcube
 
 from marvin.api import api
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class Spaxel(object):
@@ -158,6 +160,11 @@ class Spaxel(object):
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
 
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
+                        category=self.__class__)
+
         # Checks versions
         input_release = kwargs.pop('release', marvin.config.release)
         self._release = self._check_version(input_release)
@@ -168,11 +175,11 @@ class Spaxel(object):
         self.mangaid = None
 
         if len(args) > 0:
-            self.x = args[0]
-            self.y = args[1]
+            self.x = int(args[0])
+            self.y = int(args[1])
         else:
-            self.x = kwargs.pop('x', None)
-            self.y = kwargs.pop('y', None)
+            self.x = int(kwargs.pop('x', None))
+            self.y = int(kwargs.pop('y', None))
 
         assert self.x is not None and self.y is not None, 'Spaxel requires x and y to initialise.'
 
@@ -567,11 +574,11 @@ class Spaxel(object):
 
                     properties[prop.fullname(channel=channel)] = AnalysisProperty(
                         prop.name,
-                        channel=channel,
+                        channel=None,
                         value=prop_hdu.data[self.y, self.x],
                         ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
                         mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None,
-                        unit=unit,
+                        unit=prop.unit,
                         description=prop.description)
 
         elif self.maps.data_origin == 'db':
@@ -762,3 +769,15 @@ class Spaxel(object):
             wavelength=self.modelcube.wavelength,
             wavelength_unit='Angstrom',
             mask=model_emline_mask)
+
+    @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')

@@ -173,7 +173,7 @@ insp = sa_inspect(db.engine)
 schemaName = 'mangasampledb'
 allTables = insp.get_table_names(schema=schemaName)
 
-done_names = db.Base.metadata.tables.keys()
+done_names = list(db.Base.metadata.tables.keys())
 for tableName in allTables:
     if schemaName + '.' + tableName in done_names:
         continue

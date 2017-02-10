@@ -32,6 +32,7 @@ class TestSpaxelBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestSpaxelBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver_out = 'v1_5_1'
@@ -229,6 +230,17 @@ class TestSpaxelInit(TestSpaxelBase):
 
         self.assertAlmostEqual(spaxel.ra, 232.54512, places=5)
         self.assertAlmostEqual(spaxel.dec, 48.690062, places=5)
+
+    def test_release(self):
+
+        cube = marvin.tools.cube.Cube(plateifu=self.plateifu)
+        spaxel = Spaxel(x=15, y=16, cube=cube)
+
+        self.assertEqual(spaxel.release, 'MPL-4')
+
+        with self.assertRaises(MarvinError) as ee:
+            spaxel.release = 'a'
+            self.assertIn('the release cannot be changed', str(ee.exception))
 
 
 class TestPickling(TestSpaxelBase):

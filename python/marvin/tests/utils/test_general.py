@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import OrderedDict
-from unittest import TestCase
+import unittest
 from astropy.io import fits
 from astropy.wcs import WCS
 import os
@@ -29,10 +29,10 @@ import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import TemplateTestCase, Call, template
-from marvin.utils.general import convertCoords, get_nsa_data
+from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
 
 
-class TestConvertCoords(TestCase):
+class TestConvertCoords(unittest.TestCase):
 
     __metaclass__ = TemplateTestCase
 
@@ -45,6 +45,8 @@ class TestConvertCoords(TestCase):
         cls.testHeader = fits.getheader(filename, 1)
         cls.testWcs = WCS(cls.testHeader)
         cls.testShape = fits.getdata(filename, 1).shape[1:]
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
     def test_pix_center(self):
         """Tests mode='pix', xyorig='center'."""
@@ -132,15 +134,16 @@ class TestConvertCoords(TestCase):
         self.assertIn('some indices are out of limits', str(cm.exception))
 
 
-class TestGetNSAData(TestCase):
+class TestGetNSAData(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         marvin.config.switchSasUrl('local')
-        cls.config_db = marvin.config.db
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
     def setUp(self):
-        marvin.config.db = self.config_db
+        marvin.config.forceDbOn()
 
     def _test_nsa(self, data):
         self.assertIsInstance(data, DotableCaseInsensitive)
@@ -178,7 +181,7 @@ class TestGetNSAData(TestCase):
         self._test_drpall(data)
 
     def test_auto_nsa_without_db(self):
-        marvin.config.db = None
+        marvin.config.forceDbOff()
         data = get_nsa_data('1-209232', source='nsa', mode='auto')
         self._test_nsa(data)
 
@@ -198,3 +201,32 @@ class TestGetNSAData(TestCase):
     def test_drpall_dotable(self):
         data = get_nsa_data('1-209232', source='drpall', mode='local')
         self.assertEqual(data['iauname'], data.iauname)
+
+
+class TestPillowImage(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
+        outver = 'v1_5_1'
+        cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),
+                                    outver,
+                                    '8485/stack/images/1901.png')
+
+    def test_image_has_wcs(self):
+        w = getWCSFromPng(self.filename)
+        self.assertEqual(type(w), WCS)
+
+    def test_use_pil(self):
+        try:
+            import PIL
+        except ImportError as e:
+            with self.assertRaises(ImportError):
+                err = 'No module named PIL'
+                self.assertEqual(err, e.args[0])
+
+
+if __name__ == '__main__':
+    verbosity = 2
+    unittest.main(verbosity=verbosity)

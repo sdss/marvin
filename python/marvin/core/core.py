@@ -20,11 +20,14 @@ import warnings
 
 import astropy.io.fits
 
+from brain.core.exceptions import BrainError
+
 import marvin
 import marvin.api.api
-import marvin_pickle
+from marvin.core import marvin_pickle
 
-from marvin.core.exceptions import MarvinUserWarning, MarvinError, MarvinMissingDependency
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
+from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
 from marvin.utils.db import testDbConnection
 from marvin.utils.general import mangaid2plateifu, get_nsa_data
 
@@ -43,7 +46,7 @@ __all__ = ['MarvinToolsClass', 'Dotable', 'DotableCaseInsensitive']
 
 
 def kwargsGet(kwargs, key, replacement):
-    """As kwargs.get but handles uses replacemente if the value is None."""
+    """As kwargs.get but uses replacement if the value is None."""
 
     if key not in kwargs:
         return replacement
@@ -51,6 +54,9 @@ def kwargsGet(kwargs, key, replacement):
         return replacement
     else:
         return kwargs[key]
+
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class MarvinToolsClass(object):
@@ -103,6 +109,10 @@ class MarvinToolsClass(object):
             self.plateifu = mangaid2plateifu(self.mangaid,
                                              drpall=self._drpall,
                                              drpver=self._drpver)
+
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
+                        category=self.__class__)
 
         if self.mode == 'local':
             self._doLocal()
@@ -267,12 +277,28 @@ class MarvinToolsClass(object):
             else:
                 nsa_source = self.nsa_source
 
-            self._nsa = get_nsa_data(self.mangaid, mode='auto',
-                                     source=nsa_source,
-                                     drpver=self._drpver,
-                                     drpall=self._drpall)
+            try:
+                self._nsa = get_nsa_data(self.mangaid, mode='auto',
+                                         source=nsa_source,
+                                         drpver=self._drpver,
+                                         drpall=self._drpall)
+            except (MarvinError, BrainError):
+                warnings.warn('cannot load NSA information for mangaid={0}.'.format(self.mangaid))
+                return None
 
         return self._nsa
+
+    @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')
 
 
 class Dotable(dict):
@@ -319,7 +345,7 @@ class DotableCaseInsensitive(Dotable):
         return self.__getitem__(value)
 
     def __getitem__(self, value):
-        key = self._match(self.keys(), value)
+        key = self._match(list(self.keys()), value)
         if key is False:
             raise KeyError('{0} key or attribute not found'.format(value))
         return dict.__getitem__(self, key)

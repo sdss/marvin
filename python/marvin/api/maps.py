@@ -94,7 +94,7 @@ class MapsView(marvin.api.base.BaseView):
             return json.dumps(self.results)
 
         header = maps.header.tostring()
-        wcs_header = maps.data.cube.wcs.makeHeader().tostring()
+        wcs_header = maps.wcs.to_header_string()
         shape = maps.shape
         bintype = maps.bintype
         template_kin = maps.template_kin

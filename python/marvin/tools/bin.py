@@ -12,10 +12,12 @@ from __future__ import absolute_import
 
 import warnings
 
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.maps import Maps, _is_MPL4
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
+
+breadcrumb = MarvinBreadCrumb()
 
 
 class Bin(object):
@@ -74,8 +76,14 @@ class Bin(object):
         kwargs.pop('bintype', None)
         kwargs.pop('mode', None)
 
+        # drop breadcrumb
+        breadcrumb.drop(message='Initializing MarvinBin {0}'.format(self.__class__),
+                        category=self.__class__)
+
         self._load_spaxels(**kwargs)
         self._load_data(**kwargs)
+
+        self.release = self._maps.release
 
     def __repr__(self):
         return ('<Marvin Bin (binid={0}, n_spaxels={1}, bintype={2}, template_kin={3})>'
@@ -99,17 +107,32 @@ class Bin(object):
         if _is_MPL4(maps._dapver):
             return maps, None
 
-        try:
-            kwargs_modelcube = kwargs.copy()
-            kwargs_modelcube.pop('maps_filename', None)
-            kwargs_modelcube['filename'] = kwargs_modelcube.pop('modelcube_filename', None)
-            kwargs_modelcube['plateifu'] = (self.plateifu if kwargs_modelcube['filename'] is None
-                                            else None)
-            modelcube = ModelCube(**kwargs_modelcube)
-        except Exception:
-            warnings.warn('cannot open a ModelCube for this combination of '
-                          'parameters. Some fetures will not be available.', MarvinUserWarning)
-            modelcube = False
+        # try:
+        kwargs_modelcube = kwargs.copy()
+        kwargs_modelcube.pop('maps_filename', None)
+        kwargs_modelcube['filename'] = kwargs_modelcube.pop('modelcube_filename', None)
+        kwargs_modelcube['plateifu'] = None
+
+        # TODO: we need a check here to make sure that if we open both Maps and ModelCube
+        # from files, their bintypes, templates, plate-ifu, etc are consistent.
+
+        # TODO: this is not a very good implementation and probably has corner cases in which
+        # it fails. It should be refactored.
+
+        if kwargs_modelcube['filename'] is None:
+            kwargs_modelcube['plateifu'] = self.plateifu
+            kwargs_modelcube['bintype'] = maps.bintype
+            kwargs_modelcube['template_kin'] = maps.template_kin
+            kwargs_modelcube['template_pop'] = maps.template_pop
+            kwargs_modelcube['release'] = maps._release
+
+        modelcube = ModelCube(**kwargs_modelcube)
+
+        # except Exception:
+        #
+        #     warnings.warn('cannot open a ModelCube for this combination of '
+        #                   'parameters. Some fetures will not be available.', MarvinUserWarning)
+        #     modelcube = False
 
         return maps, modelcube
 

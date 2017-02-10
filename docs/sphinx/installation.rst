@@ -12,11 +12,6 @@
     `homebrew <http://brew.sh/>`_. After installing one of these distribution,
     make sure you are actually using it by running ``which python`` and ``which pip``.
 
-.. warning::
-    :class: custom-warning
-
-    Marvin does not yet work with Python 3. Make sure you are using Python 2.
-
 |
 
 .. _marvin-installation:
@@ -74,9 +69,9 @@ Marvin dependencies on SDSS software
 
 Marvin depends on three pieces of SDSS-wide software:
 
-* `https://github.com/sdss/marvin_brain <marvin_brain>`_: contains some core functionality, such as the API call framework, the basic web server, etc.
-* `https://github.com/sdss/tree <tree>`_: defines the structure of the Science Archive Sever, relative paths to data products, etc.
-* `https://github.com/sdss/sdss_access <sdss_access>`_: tools for efficiently accessing data files, rsyncing data, etc.
+* `marvin_brain <https://github.com/sdss/marvin_brain>`_: contains some core functionality, such as the API call framework, the basic web server, etc.
+* `tree <https://github.com/sdss/tree>`_: defines the structure of the Science Archive Sever, relative paths to data products, etc.
+* `sdss_access <https://github.com/sdss/sdss_access>`_: tools for efficiently accessing data files, rsyncing data, etc.
 
 For convenience, marvin includes these products as external libraries. This means that
 you most likely do not need to worry about any of these products. However, if any

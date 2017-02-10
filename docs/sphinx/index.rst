@@ -39,7 +39,7 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 ^^^^^^^^^^^^^^^^^^^
 
 `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |
 
@@ -54,7 +54,7 @@ Marvin Primer
    Frequently Asked Questions <faq>
    first-steps
    general
-
+   tools/visual-guide
 
 |
 
@@ -68,6 +68,11 @@ Marvin Primer
    query
    results
    tools/cube
+   tools/bpt
+   tools/modelcube
+   tools/maps
+   images
+
 
 :doc:`api`
 ==========
@@ -99,6 +104,7 @@ General Reference
 
    data-access-modes
    Available Query Parameters <query_params>
+   tools/visual-guide
 
 |
 

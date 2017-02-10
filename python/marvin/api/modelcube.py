@@ -50,7 +50,7 @@ def _get_model_cube(name, **kwargs):
             raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
 
         model_cube = ModelCube(mangaid=mangaid, plateifu=plateifu,
-                              release=release, **kwargs)
+                               release=release, **kwargs)
         results['status'] = 1
     except Exception as err:
         results['error'] = 'Failed to retrieve ModelCube {0}: {1}'.format(name, str(err))

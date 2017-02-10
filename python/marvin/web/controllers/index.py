@@ -82,7 +82,6 @@ class Marvin(FlaskView):
         f = processRequest(request=request)
         out = {'status': 1, 'msg': 'Success'}
         version = f['mplselect']
-        print('setting new mpl', version)
         current_session['currentver'] = version
         drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver
@@ -95,9 +94,9 @@ class Marvin(FlaskView):
         ''' login for trac user '''
         form = processRequest(request=request)
         result = {}
-        username = form['username']
-        password = form['password']
-        auth = md5("%s:AS3Trac:%s" % (username.strip(), password.strip())).hexdigest() if username and password else None
+        username = form['username'].strip()
+        password = form['password'].strip()
+        auth = md5("{0}:AS3Trac:{1}".format(username, password).encode('utf-8')).hexdigest() if username and password else None
         try:
             inspection = Inspection(current_session, username=username, auth=auth)
         except Exception as e:

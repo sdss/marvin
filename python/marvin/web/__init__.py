@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
+from flask import session, request, render_template, g
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
@@ -11,7 +12,7 @@ from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
 from marvin.web.jinja_filters import jinjablue
-from marvin.web.web_utils import updateGlobalSession
+from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
 import sys
 import os
 import logging
@@ -50,13 +51,14 @@ def create_app(debug=False, local=False):
 
     # ----------------------------------
     # Create App
-    app = Flask(__name__, static_url_path='/marvin2/static')
-    api = Blueprint("api", __name__, url_prefix='/marvin2/api')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin2')
+    app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
+    api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
-    jsg.JSGLUE_JS_PATH = '/marvin2/jsglue.js'
+    jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(marvin_base)
     jsglue = jsg.JSGlue(app)
 
-    # Logger
+    # Add Marvin Logger
     app.logger.addHandler(log)
 
     # Setup the profile configuration
@@ -65,10 +67,9 @@ def create_app(debug=False, local=False):
         "storage": {
             "engine": "sqlite"
         },
+        'endpointRoot': '{0}/profiler'.format(marvin_base),
         "basicAuth": {
-            "enabled": True,
-            "username": "admin",
-            "password": "admin"
+            "enabled": False
         }
     }
 
@@ -78,7 +79,7 @@ def create_app(debug=False, local=False):
 
         # ----------------------------------------------------------
         # Set up getsentry.com logging - only use when in production
-        dsn = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
+        dsn = os.environ.get('SENTRY_DSN', None)
         app.config['SENTRY_DSN'] = dsn
         sentry = Sentry(app, logging=True, level=logging.ERROR)
 
@@ -89,6 +90,10 @@ def create_app(debug=False, local=False):
             app.use_x_sendfile = True
         except ImportError:
             pass
+    else:
+        sentry = None
+        config.use_sentry = False
+        config.add_github_message = False
 
     # Change the implementation of "decimal" to a C-based version (much! faster)
     #
@@ -113,7 +118,7 @@ def create_app(debug=False, local=False):
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
     os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
-    url_prefix = '/marvin2' if local else '/{0}'.format(os.environ['SAS_PREFIX'])
+    url_prefix = '/marvin2' if local else '/{0}'.format(marvin_base)
 
     # ----------------------------------
     # Load the appropriate Flask configuration file for debug or production
@@ -146,7 +151,7 @@ def create_app(debug=False, local=False):
     app.config["LIB_PATH"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib')
 
     # Add lib directory as a new static path
-    @app.route('/marvin2/lib/<path:filename>')
+    @app.route('/{0}/lib/<path:filename>'.format(marvin_base))
     def lib(filename):
         return send_from_directory(app.config["LIB_PATH"], filename)
 
@@ -155,6 +160,26 @@ def create_app(debug=False, local=False):
     def global_update():
         ''' updates the global session / config '''
         updateGlobalSession()
+        # send_request()
+
+    # ----------------
+    # Error Handling
+    # ----------------
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return make_error_page(app, 'Page Not Found', 404, sentry=sentry)
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return make_error_page(app, 'Internal Server Error', 500, sentry=sentry)
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return make_error_page(app, 'Bad Request', 400, sentry=sentry)
+
+    @app.errorhandler(405)
+    def internal_server_error(error):
+        return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
 
     # ----------------------------------
     # Registration

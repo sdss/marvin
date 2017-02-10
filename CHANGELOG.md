@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.0.10] - not yet released
+## [2.1.0] - not yet released
 ### Added:
 - Restructured documentation index page.
 - Improved installation documentation:
@@ -18,9 +18,56 @@
 - Added new script to perform somce basic system, os, and Marvin checks: bin/check_marvin
 - Added an alert banner when the user is using Safari. See #94.
 - Issue #122: added ra/dec to spaxel
+- Issue #145: Limited the number of query parameters in the web
+- Added more tests to Results for sorting, paging, and getting subsets
+- Added kwargs input for Spaxel when using Result.convertToTool
+- Added automatic Sentry error logging #147 into MarvinError, and Sentry in Flask for production mode
+- Added custom error handlers for the web, with potential user feedback form
+- Added Sentry tool for grabbing and displaying Sentry statistics
+- Added text to MarvinError with a Github Issues link and description of how to submit and issue
+- Added Results option to save to CSV
+- Added new parameters in Marvin Config to turn off Sentry error handling and Github Issue message
+- Added Python example code for getting a spectrum in galaxy page of web.
+- Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
+- Added new documentation on Image Utilities
+- Added new image utility function showImage, which displays images from your local SAS
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
+- Removed the cleanUpQueries method to assess db stability
+- Switched dogpile.cache from using a file to python-memcached
+- Syntax changes and bug fixes to get Marvin Web working when Marvin run on 3.5
+- Got Queries and Results working in 3.5
+- Changed all convertToTool options in Results from mangaid to plateifu
+- Added release explicitly into api query routes
+- Modified the decision tree in query to throw an error in local mode
+- Modified convertToTool to accept a mode keyword
+- Modifed the MarvinError for optional Sentry exception catching, and github issue inclusion
+- Updated all Marvin tests to turn off Sentry exception catching and the github message
+- Updated some of the Tools Snippets on the web
+- Overhauled Map plotting
+    - uses DAP bitmasks (NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE)
+    - adds percentile and sigma clipping
+    - adds hatching for regions with data (i.e., a spectrum) but no measurement by the DAP
+    - adds Linear Lab color map
+    - adds option for logarithmic colorbar
+    - adds option to use sky coordinates
+    - adds map property name as title
+    - makes plot square
+    - sets plotting defaults:
+        - cmap is linear_Lab (sequential)
+        - cmap is RdBu_r (diverging) for velocity plots (Note: this is reversed from the sense of the default coolwarm    colormap in v2.0---red for positive velocities and blue for negative velocities)
+        - cmap is inferno (sequential) for sigma plots
+        - clips at 5th and 95th percentiles
+        - clips at 10th and 90th percentiles for velocity and sigma plots
+        - velocity plots are symmetric about 0
+        - uses DAP bitmasks NOVALUE, BADVALUE, MATHERROR, BADFIT, and DONOTUSE
+        - also masks spaxels with ivar=0
+        - minimum SNR is 1
+- Changed Marvin Plate path back to the standard MarvinToolsClass use
+- Made sdss_access somewhat more Python 3 compatible
+- Modified the image utilities to return local paths in local/remote modes and url paths when as_url is True
+- downloadList utility function now downloads images
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
@@ -29,7 +76,10 @@
 - Issue #119: test_get_spaxel_no_db fails
 - Issue #121: bugfix with misspelled word in downloadList utility function
 - Issue #105: query results convertToTool not robust when null/default parameters not present
-
+- Issue #136: BinTest errors when nose2 run in py3.5 and marvin server in 3.5
+- Issue #137: PIL should work in py2.7 and py3.5
+- Issue #172: broken mode=auto in image utilities
+- Issue #158: version discrepancy in setup.py
 
 ## [2.0.9] - 2016/11/19
 ### Added:

@@ -30,6 +30,7 @@ class TestMapsBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestMapsBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver_out = 'v1_5_1'
@@ -55,6 +56,11 @@ class TestMapsBase(marvin.tests.MarvinTest):
             os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
             'SPX-GAU-MILESHC', str(cls.plate), str(cls.ifu),
             'manga-{0}-MAPS-SPX-GAU-MILESHC.fits.gz'.format(cls.plateifu))
+
+        cls.filename_mpl5_vor10 = os.path.join(
+            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
+            'VOR10-GAU-MILESHC', str(cls.plate), str(cls.ifu),
+            'manga-{0}-MAPS-VOR10-GAU-MILESHC.fits.gz'.format(cls.plateifu))
 
     @classmethod
     def tearDownClass(cls):
@@ -147,6 +153,22 @@ class TestMapsFile(TestMapsBase):
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 0.00031520479546875247)
         self.assertEqual(spaxel.bintype, 'SPX')
 
+    def test_bintype_maps_filename_vor10(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_vor10, release='MPL-5')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_filename_spx(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx, release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
+
+    def test_bintype_maps_filename_bad_input(self):
+
+        maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx, bintype='VOR10',
+                                      release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
+
 
 class TestMapsDB(TestMapsBase):
 
@@ -201,6 +223,16 @@ class TestMapsDB(TestMapsBase):
         self.assertTrue(len(spaxel_getitem.properties.keys()) > 0)
 
         self.assertAlmostEqual(spaxel_getitem.spectrum.flux[100], spaxel.spectrum.flux[100])
+
+    def test_bintype_maps_db_vor10(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10', release='MPL-5')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_db_spx(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5')
+        self.assertEqual(maps.bintype, 'SPX')
 
 
 class TestMapsAPI(TestMapsBase):
@@ -258,6 +290,17 @@ class TestMapsAPI(TestMapsBase):
 
         self.assertAlmostEqual(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
 
+    def test_bintype_maps_remote_vor10(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, bintype='VOR10',
+                                      release='MPL-5', mode='remote')
+        self.assertEqual(maps.bintype, 'VOR10')
+
+    def test_bintype_maps_remote_spx(self):
+
+        maps = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5', mode='remote')
+        self.assertEqual(maps.bintype, 'SPX')
+
 
 class TestGetMap(TestMapsBase):
 
@@ -265,7 +308,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         self.assertEqual(maps.data_origin, 'db')
 
-        map_db = maps.getMap('specindex', channel='fe5406')
+        map_db = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_db, marvin.tools.map.Map)
         self.assertIsInstance(map_db.header, astropy.io.fits.Header)
         self.assertEqual(map_db.header['C01'], 'D4000')
@@ -274,7 +317,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self.assertEqual(maps.data_origin, 'file')
 
-        map_file = maps.getMap('specindex', channel='fe5406')
+        map_file = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_file, marvin.tools.map.Map)
         self.assertIsInstance(map_file.header, astropy.io.fits.Header)
         self.assertEqual(map_file.header['C01'], 'D4000')
@@ -293,7 +336,7 @@ class TestGetMap(TestMapsBase):
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')
         self.assertEqual(maps.data_origin, 'api')
 
-        map_api = maps.getMap('specindex', channel='fe5406')
+        map_api = maps.getMap('specindex', channel='D4000')
         self.assertIsInstance(map_api, marvin.tools.map.Map)
         self.assertIsInstance(map_api.header, astropy.io.fits.Header)
         self.assertEqual(map_api.header['C01'], 'D4000')
@@ -326,8 +369,68 @@ class TestGetMap(TestMapsBase):
         maps_ellcoo = maps['spx_ellcoo_elliptical_radius']
         self.assertIsNone(maps_ellcoo.ivar)
 
+    def test_haflux_matches_file_db_api(self):
+
+        maps_file = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx)
+        maps_db = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5')
+        maps_api = marvin.tools.maps.Maps(plateifu=self.plateifu, release='MPL-5', mode='remote')
+
+        self.assertEqual(maps_file.data_origin, 'file')
+        self.assertEqual(maps_db.data_origin, 'db')
+        self.assertEqual(maps_api.data_origin, 'api')
+
+        self.assertEqual(maps_file._release, 'MPL-5')
+        self.assertEqual(maps_db._release, 'MPL-5')
+        self.assertEqual(maps_api._release, 'MPL-5')
+
+        self.assertEqual(maps_file.bintype, 'SPX')
+        self.assertEqual(maps_db.bintype, 'SPX')
+        self.assertEqual(maps_api.bintype, 'SPX')
+
+        xx = 12
+        yy = 10
+
+        flux_expected = 0.98572426396458579
+        ivar_expected = 295.06537566125365
+
+        haflux_file = maps_file['emline_gflux_ha_6564']
+        haflux_db = maps_db['emline_gflux_ha_6564']
+        haflux_api = maps_api['emline_gflux_ha_6564']
+
+        self.assertAlmostEqual(haflux_file.value[yy, xx], flux_expected)
+        self.assertAlmostEqual(haflux_db.value[yy, xx], flux_expected, places=6)
+        self.assertAlmostEqual(haflux_api.value[yy, xx], flux_expected, places=6)
+
+        self.assertAlmostEqual(haflux_file.ivar[yy, xx], ivar_expected)
+        self.assertAlmostEqual(haflux_db.ivar[yy, xx], ivar_expected, places=6)
+        self.assertAlmostEqual(haflux_api.ivar[yy, xx], ivar_expected, places=6)
+
+        haflux_spaxel_file = maps_file.getSpaxel(x=xx, y=yy,
+                                                 xyorig='lower').properties['emline_gflux_ha_6564']
+        haflux_spaxel_db = maps_db.getSpaxel(x=xx, y=yy,
+                                             xyorig='lower').properties['emline_gflux_ha_6564']
+        haflux_spaxel_api = maps_api.getSpaxel(x=xx, y=yy,
+                                               xyorig='lower').properties['emline_gflux_ha_6564']
+
+        self.assertAlmostEqual(haflux_spaxel_file.value, flux_expected)
+        self.assertAlmostEqual(haflux_spaxel_db.value, flux_expected, places=6)
+        self.assertAlmostEqual(haflux_spaxel_api.value, flux_expected, places=6)
+
+        self.assertAlmostEqual(haflux_spaxel_file.ivar, ivar_expected)
+        self.assertAlmostEqual(haflux_spaxel_db.ivar, ivar_expected, places=6)
+        self.assertAlmostEqual(haflux_spaxel_api.ivar, ivar_expected, places=6)
+
 
 class TestPickling(TestMapsBase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        for fn in ['~/test_map_ha.mpf', '~/test.mpf']:
+            if os.path.exists(fn):
+                os.remove(fn)
+
+        super(TestPickling, cls).setUpClass()
 
     def setUp(self):
         marvin.config.setMPL('MPL-4')

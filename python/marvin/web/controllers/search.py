@@ -50,6 +50,7 @@ class Search(FlaskView):
         self.search['filter'] = None
         self._drpver, self._dapver, self._release = parseSession()
 
+
     @route('/', methods=['GET', 'POST'])
     def index(self):
 
@@ -60,8 +61,9 @@ class Search(FlaskView):
         # set the marvin form
         searchform = self.mf.SearchForm(form)
         q = Query(release=self._release)
-        allparams = q.get_available_params()
-        searchform.returnparams.choices = [(k.lower(), k) for k in allparams]
+        # allparams = q.get_available_params()
+        bestparams = q.get_best_params()
+        searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
 
         # Add the forms
         self.search['searchform'] = searchform
@@ -113,14 +115,22 @@ class Search(FlaskView):
 
         return render_template('search.html', **self.search)
 
-    @route('/getparams/', methods=['GET', 'POST'], endpoint='getparams')
-    def getparams(self):
+    @route('/getparams/<paramdisplay>/', methods=['GET', 'POST'], endpoint='getparams')
+    def getparams(self, paramdisplay):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''
+        # set the paramdisplay if it is not
+        if not paramdisplay:
+            paramdisplay = 'all'
+
+        # run query and retrieve parameters
         q = Query(release=self._release)
-        allparams = q.get_available_params()
-        output = json.dumps(allparams)
+        if paramdisplay == 'all':
+            params = q.get_available_params()
+        elif paramdisplay == 'best':
+            params = q.get_best_params()
+        output = json.dumps(params)
         return output
 
     @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
@@ -132,7 +142,6 @@ class Search(FlaskView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        print('webtable', searchvalue, returnparams, self._release)
         limit = form.get('limit', 10)
         offset = form.get('offset', None)
         order = form.get('order', None)
@@ -154,7 +163,6 @@ class Search(FlaskView):
         # create output
         rows = res.getDictOf(format_type='listdict')
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        print('webtable output', output)
         output = json.dumps(output)
         return output
 

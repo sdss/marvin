@@ -31,6 +31,7 @@ class TestModelCubeBase(marvin.tests.MarvinTest):
     @classmethod
     def setUpClass(cls):
 
+        super(TestModelCubeBase, cls).setUpClass()
         marvin.config.switchSasUrl('local')
 
         cls.drpver = 'v2_0_1'
@@ -114,8 +115,8 @@ class TestModelCubeInit(TestModelCubeBase):
 
         marvin.config.setMPL('MPL-4')
         with self.assertRaises(MarvinError) as err:
-            __ = ModelCube(plateifu=self.plateifu)
-        self.assertEqual('ModelCube requires at least dapver=\'2.0.2\'',  str(err.exception))
+            ModelCube(plateifu=self.plateifu)
+        self.assertIn('ModelCube requires at least dapver=\'2.0.2\'', str(err.exception))
 
     def test_init_from_db_not_default(self):
 
@@ -138,8 +139,8 @@ class TestModelCubeInit(TestModelCubeBase):
 
         model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
         with self.assertRaises(MarvinError) as err:
-            __ = model_cube.flux
-        self.assertIn('cannot return a full cube in remote mode.',  str(err.exception))
+            model_cube.flux
+        self.assertIn('cannot return a full cube in remote mode.', str(err.exception))
 
     def test_get_cube_file(self):
 
@@ -199,6 +200,65 @@ class TestGetSpaxel(TestModelCubeBase):
         self.assertIsNone(spaxel.spectrum)
         self.assertIsNone(spaxel.maps)
         self.assertEqual(len(spaxel.properties), 0)
+
+    def test_getspaxel_matches_file_db_remote(self):
+
+        marvin.config.setMPL('MPL-5')
+        self.assertEqual(marvin.config.release, 'MPL-5')
+
+        modelcube_file = ModelCube(filename=self.filename)
+        modelcube_db = ModelCube(plateifu=self.plateifu)
+        modelcube_api = ModelCube(plateifu=self.plateifu, mode='remote')
+
+        self.assertEqual(modelcube_file.data_origin, 'file')
+        self.assertEqual(modelcube_db.data_origin, 'db')
+        self.assertEqual(modelcube_api.data_origin, 'api')
+
+        xx = 12
+        yy = 5
+        spec_idx = 200
+
+        spaxel_slice_file = modelcube_file[xx, yy]
+        spaxel_slice_db = modelcube_db[xx, yy]
+        spaxel_slice_api = modelcube_api[xx, yy]
+
+        flux_result = 0.016027471050620079
+        ivar_result = 361.13595581054693
+        mask_result = 33
+
+        self.assertAlmostEqual(spaxel_slice_file.model_flux.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_db.model_flux.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_slice_api.model_flux.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_slice_file.model_flux.ivar[spec_idx], ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_slice_db.model_flux.ivar[spec_idx], ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_slice_api.model_flux.ivar[spec_idx], ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_slice_file.model_flux.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_db.model_flux.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_slice_api.model_flux.mask[spec_idx], mask_result)
+
+        xx_cen = -5
+        yy_cen = -12
+
+        spaxel_getspaxel_file = modelcube_file.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_db = modelcube_db.getSpaxel(x=xx_cen, y=yy_cen)
+        spaxel_getspaxel_api = modelcube_api.getSpaxel(x=xx_cen, y=yy_cen)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.flux[spec_idx], flux_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.flux[spec_idx], flux_result)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.ivar[spec_idx],
+                               ivar_result, places=5)
+        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.ivar[spec_idx],
+                               ivar_result, places=3)
+        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.ivar[spec_idx],
+                               ivar_result, places=3)
+
+        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.mask[spec_idx], mask_result)
+        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.mask[spec_idx], mask_result)
 
 
 class TestPickling(TestModelCubeBase):

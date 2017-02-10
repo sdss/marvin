@@ -21,6 +21,8 @@ class TestSampleDB(marvin.tests.MarvinTest):
     def setUpClass(cls):
 
         marvin.config.switchSasUrl('local')
+        marvin.config.use_sentry = False
+        marvin.config.add_github_message = False
 
     @classmethod
     def tearDownClass(cls):
