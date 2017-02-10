@@ -151,7 +151,7 @@ def create_app(debug=False, local=False):
     app.config["LIB_PATH"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib')
 
     # Add lib directory as a new static path
-    @app.route('/marvin2/lib/<path:filename>')
+    @app.route('/{0}/lib/<path:filename>'.format(marvin_base))
     def lib(filename):
         return send_from_directory(app.config["LIB_PATH"], filename)
 
