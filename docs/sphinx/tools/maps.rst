@@ -3,12 +3,15 @@
 Maps
 ====
 
-Let's get the DAP maps of a galaxy by creating a :ref:`marvin-tools-maps` object from its ``mangaid``, ``plateifu``, or ``filename``. We also need to set our desired ``bintype``, which defaults to ``SPX`` (i.e., unbinned). Now we can get the H\ :math:`\alpha` flux :ref:`marvin-tools-map` object and plot it.
+First Steps
+-----------
+
+Let's get the DAP maps of a galaxy by creating a :ref:`marvin-tools-maps` object from its ``mangaid``, ``plateifu``, or ``filename`` (you must specify the full file path). Now we can get the H\ :math:`\alpha` flux :ref:`marvin-tools-map` object and plot it.
 
 ::
 
     from marvin.tools.maps import Maps
-    maps = Maps(mangaid='1-209232', bintype='SPX')
+    maps = Maps(mangaid='1-209232')
     haflux = maps['emline_gflux_ha_6564']
     fig, ax = haflux.plot()
 
@@ -29,16 +32,11 @@ Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.
 * **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``NOVALUE``, ``BADVALUE``, ``MATHERROR``, ``BADFIT``, or ``DONOTUSE`` set.
 * **no measurement** (hatched): pass **no data** criteria but DAP did not produce a measurement or  signal-to-noise ratio < 1.
 
-
-
-
-
 The DAP data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object.
 
 ::
 
     haflux.value
-
 
 The beauty of Marvin is that you can link to other data about the same galaxy (see :ref:`visual-guide`). Let's see the spectrum of the central spaxel (x=17, y=17).
 
@@ -47,9 +45,7 @@ The beauty of Marvin is that you can link to other data about the same galaxy (s
     spec = maps.cube[17, 17].spectrum
     spec.plot()
 
-
 .. image:: ../_static/spec_8485-1901_17-17.png
-
 
 The spectrum data is stored as 1-D arrays in the ``flux``, ``ivar``, and ``mask`` attributes of ``spec`` :ref:`marvin-tools-spectrum` object.
 
@@ -58,5 +54,40 @@ The spectrum data is stored as 1-D arrays in the ``flux``, ``ivar``, and ``mask`
     spec.flux
 
 Head on over to :ref:`marvin-cube` to learn more about cube and spectrum-related operations.
+
+Advanced Maps Options
+---------------------
+
+Bintype
+```````
+
+By default, :ref:`marvin-tools-maps` selects the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `MPL-5 Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
+
+* ``SPX`` - spaxels are unbinned,
+* ``VOR10`` - spaxels are Voronoi binned to a minimum continuum SNR of 10,
+* ``NRE`` - spaxels are binned into two radial bins, binning all spectra from 0-1 and 1-2 (elliptical Petrosian) effective radii, and
+* ``ALL`` - all spectra binned together.
+
+::
+    
+    maps = Maps(mangaid='1-209232', bintype='VOR10')
+
+Download
+````````
+
+Download the maps using ``rsync`` via `sdss_access <https://github.com/sdss/sdss_access>`_ (see :ref:`marvin-sdss-depends`):
+
+::
+    
+    maps.download()
+
+
+Plotting Options
+````````````````
+
+Minimum Signal-to-Noise Ratio
+:::::::::::::::::::::::::::::
+
+Next Steps
 
 |
