@@ -136,7 +136,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
             For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
-            (defaults to ``'ALL'``).
+            (defaults to ``'SPX'``).
         template_kin (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
@@ -265,7 +265,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         return super(Maps, self)._getFullPath(path_type, **params)
 
     def download(self):
-        """Downloads the cube using sdss_access - Rsync"""
+        """Downloads the maps using sdss_access - Rsync"""
 
         if not self.plateifu:
             return None
