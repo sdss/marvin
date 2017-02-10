@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request
+from flask import Blueprint, render_template, session as current_session, request, jsonify
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -20,7 +20,6 @@ from marvin.tools.query.forms import MarvinForm
 from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av
 import random
-import json
 
 search = Blueprint("search_page", __name__)
 
@@ -53,8 +52,7 @@ class Search(FlaskView):
         self._endpoint = request.endpoint
 
     @route('/', methods=['GET', 'POST'])
-    @av.check_args()
-    def index(self, args):
+    def index(self):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
@@ -127,10 +125,12 @@ class Search(FlaskView):
         return 'this is a post'
 
     @route('/getparams/<paramdisplay>/', methods=['GET', 'POST'], endpoint='getparams')
-    def getparams(self, paramdisplay):
+    @av.check_args(use_params='query', required='paramdisplay')
+    def getparams(self, args, paramdisplay):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''
+
         # set the paramdisplay if it is not
         if not paramdisplay:
             paramdisplay = 'all'
@@ -141,7 +141,7 @@ class Search(FlaskView):
             params = q.get_available_params()
         elif paramdisplay == 'best':
             params = q.get_best_params()
-        output = json.dumps(params)
+        output = jsonify(params)
         return output
 
     @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
@@ -149,6 +149,9 @@ class Search(FlaskView):
         ''' Do a query for Bootstrap Table interaction in Marvin web '''
 
         form = processRequest(request=request)
+        print('web table form', form)
+        args = av.manual_parse(self, request, use_params='query')
+        print('web table args', args)
 
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
@@ -161,7 +164,7 @@ class Search(FlaskView):
 
         # exit if no searchvalue is found
         if not searchvalue:
-            output = json.dumps({'webtable_error': 'No searchvalue found'})
+            output = jsonify({'webtable_error': 'No searchvalue found'})
             return output
 
         # do query
@@ -174,7 +177,7 @@ class Search(FlaskView):
         # create output
         rows = res.getDictOf(format_type='listdict')
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
-        output = json.dumps(output)
+        output = jsonify(output)
         return output
 
 Search.register(search)

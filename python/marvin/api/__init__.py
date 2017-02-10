@@ -40,16 +40,14 @@ params = {'query': {'searchfilter': fields.String(),
           }
 
 
+# Add a custom Flask session location handler
 @parser.location_handler('session')
 def parse_session(req, name, field):
     from flask import session as current_session
-    print('arg dict', req.args)
-    print('flask session', current_session.keys())
-    print('other', name, field)
     value = current_session.get(name, None)
     return value
 
-parser.locations += ('session',)
+# parser.locations += ('session',)
 
 
 class ArgValidator(object):
@@ -67,6 +65,7 @@ class ArgValidator(object):
         self.final_args = {}
         self.final_args.update(self.base_args)
 
+        self._parser = parser
         self.use_args = use_args
         self.use_kwargs = use_kwargs
 
@@ -80,6 +79,17 @@ class ArgValidator(object):
         blue, end = self.endpoint.split('.', 1)
         url = self.urlmap[blue][end]['url']
         print('blue, end', blue, end)
+
+        # if the blueprint is not api, add/remove session option location
+        if blue == 'api':
+            if 'session' in parser.locations:
+                pl = list(parser.locations)
+                pl.remove('session')
+                parser.locations = tuple(pl)
+        else:
+            if 'session' not in parser.locations:
+                parser.locations += ('session', )
+
         return url
 
     def _extract_view_args(self):
@@ -193,6 +203,11 @@ class ArgValidator(object):
         self.use_params = kwargs.pop('use_params', None)
         self._required = kwargs.pop('required', None)
 
+    def _get_release_endpoint(self, view):
+        ''' get the release and endpoint if you can '''
+        self.release = view._release
+        self.endpoint = view._endpoint
+
     def check_args(self, **mainkwargs):
         ''' Checks the input view and parameter arguments for validation using webargs
 
@@ -209,8 +224,9 @@ class ArgValidator(object):
                 # args and kwargs here are the view function args and kwargs
                 print('args', args)
                 print('kwargs', kwargs)
-                self.release = args[0]._release
-                self.endpoint = args[0]._endpoint
+                self._get_release_endpoint(args[0])
+                # self.release = args[0]._release
+                # self.endpoint = args[0]._endpoint
                 # check the kwargs for any parameters
                 self._check_mainkwargs(**mainkwargs)
                 # create the arguments dictionary
@@ -218,7 +234,7 @@ class ArgValidator(object):
                 # pop all the kwargs
                 self._pop_kwargs(**mainkwargs)
                 # pass into webargs use_args (use_args is a decorator in itself)
-                newfunc = self.use_args(self.final_args, self._main_kwargs)(func)
+                newfunc = self.use_args(self.final_args, **self._main_kwargs)(func)
                 return newfunc(*args, **kwargs)
             return wrapper
 
@@ -243,6 +259,21 @@ class ArgValidator(object):
             return total['params']
         else:
             return total
+
+    def manual_parse(self, view, req, **mainkwargs):
+        ''' Manually parse the args '''
+        # args = parser.parse(user_args, request)
+        self._get_release_endpoint(view)
+        url = self._get_url()
+        print('manual parse', url)
+        self._check_mainkwargs(**mainkwargs)
+        self.create_args()
+        self._pop_kwargs(**mainkwargs)
+        print('finalargs', self.final_args)
+        newargs = parser.parse(self.final_args, req, **self._main_kwargs)
+        print('newargs', newargs)
+        return newargs
+
 
 
 """

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-08 14:53:24
+# @Last Modified time: 2017-02-08 23:37:42
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
@@ -27,4 +27,8 @@ class BaseWebView(FlaskView):
         ''' this runs after every single request '''
 
         return response
+
+    def update_title(self, title):
+        ''' Update the title and page '''
+        pass
 
