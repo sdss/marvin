@@ -375,7 +375,7 @@ class MarvinConfig(object):
 
         return release
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000):
+    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False):
         ''' Switches the SAS url config attribute
 
         Easily switch the sasurl configuration variable between
@@ -390,6 +390,8 @@ class MarvinConfig(object):
                 This assumes localhost server is being broadcast by ngrok
             port (int):
                 The port of your localhost server
+            test (bool):
+                If ``True``, sets the Utah sasurl to the test production, test/marvin2
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         if sasmode == 'local':
@@ -398,7 +400,8 @@ class MarvinConfig(object):
             else:
                 self.sasurl = 'http://localhost:{0}/marvin2/'.format(port)
         elif sasmode == 'utah':
-            self.sasurl = 'https://api.sdss.org/marvin2/'
+            marvin_base = 'test/marvin2/' if test else 'marvin2/'
+            self.sasurl = 'https://api.sdss.org/{0}'.format(marvin_base)
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
