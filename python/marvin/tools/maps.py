@@ -707,6 +707,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # temporarily get it.
         do_return_figure = True if return_figure or show_plot else False
 
+        # Disables ion() if we are not showing the plot.
+        plt_was_interactive = plt.isinteractive()
+        if not show_plot and plt_was_interactive:
+            plt.ioff()
+
         bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr,
                                                        return_figure=do_return_figure,
                                                        use_oi=use_oi)
@@ -714,6 +719,10 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if show_plot:
             plt.ioff()
             plt.show()
+
+        # Restores original ion() status
+        if plt_was_interactive and not plt.isinteractive():
+            plt.ion()
 
         # Returs what we actually asked for.
         if return_figure and do_return_figure:
