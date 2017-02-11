@@ -180,7 +180,7 @@ def kewley_agn_oi(log_oi_ha):
 
 
 def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
-    """Returns ionisation regions, making use of the boundaries defined in Kewley+06.
+    """Returns a classification of ionisation regions, as defined in Kewley+06.
 
     Makes use of the classification system defined by
     `Kewley et al. (2006) <https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract>`_
@@ -207,28 +207,28 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
             If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
             which can be used to modify the style of the plot.
         use_oi (bool):
-            If ``True``, uses the OI diagnostic line during BPT spaxel classification
+            If ``True``, uses the OI diagnostic diagram for spaxel classification.
 
     Returns:
         bpt_return:
-            ``bpt_kewley06`` always returns a dictionary of dictionaries of classification masks.
+            ``bpt_kewley06`` returns a dictionary of dictionaries of classification masks.
             The classification masks (not to be confused with bitmasks) are boolean arrays with the
             same shape as the Maps or Cube (without the spectral dimension) that can be used
             to select spaxels belonging to a certain excitation process (e.g., star forming).
             The returned dictionary has the following keys: ``'sf'`` (star forming), ``'comp'``
             (composite), ``'agn'``, ``'seyfert'``, ``'liner'``, ``'invalid'``
             (spaxels that are masked out at the DAP level), and ``'ambiguous'`` (good spaxels that
-            do not fall in any  classification or fall in more than one). Each key provides a new
-            dictionary with keys ``'nii'`` (for the constraints in the diagram NII/Halpha vs
-            OIII/Hbeta),  ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha vs OIII/Hbeta,
-            only if ``use_oi=True``), and ``'global'``, which applies all the previous constraints
-            at once. The ``'ambiguous'`` mask only contains the ``'global'`` subclassification,
-            while the ``'comp'`` dictionary only contains ``'nii'``. ``'seyfert'`` and
-            ``'liner'`` are not available for ``'nii'``. All the global masks are unique (a spaxel
-            can only belong to one of them) with the exception of ``'agn'``, which intersects with
-            ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``, ``get_bpt``
-            will return a tuple, the first elemnt of which is the dictionary of classification
-            masks, and the second the matplotlib figure.
+            do not fall in any  classification or fall in more than one). Each key provides access
+            to a new dictionary with keys ``'nii'`` (for the constraints in the diagram NII/Halpha
+            vs OIII/Hbeta),  ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha vs
+            OIII/Hbeta; only if ``use_oi=True``), and ``'global'``, which applies all the previous
+            constraints at once. The ``'ambiguous'`` mask only contains the ``'global'``
+            subclassification, while the ``'comp'`` dictionary only contains ``'nii'``.
+            ``'nii'`` is not available for ``'seyfert'`` and ``'liner'``. All the global masks are
+            unique (a spaxel can only belong to one of them) with the exception of ``'agn'``, which
+            intersects with ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``,
+            ``bpt_kewley06`` will return a tuple, the first elemnt of which is the dictionary of
+            classification masks, and the second the matplotlib figure for the generated plot.
 
     Example:
         >>> maps_8485_1901 = Maps(plateifu='8485-1901')
