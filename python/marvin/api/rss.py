@@ -107,7 +107,7 @@ class RSSView(BaseView):
         """
 
         # Pop any args we don't want going into Rss
-        args = self.pop_args(args, arglist='name')
+        args = self._pop_args(args, arglist='name')
 
         rss, results = _getRSS(name, **args)
         self.update_results(results)
@@ -170,7 +170,7 @@ class RSSView(BaseView):
         """
 
         # Pop any args we don't want going into Rss
-        args = self.pop_args(args, arglist='name')
+        args = self._pop_args(args, arglist='name')
 
         rss, results = _getRSS(name, *args)
         self.update_results(results)

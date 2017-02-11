@@ -170,7 +170,7 @@ class MapsView(marvin.api.base.BaseView):
         '''
         print('maps args', args)
         # Pop any args we don't want going into Maps
-        args = self.pop_args(args, arglist='name')
+        args = self._pop_args(args, arglist='name')
 
         #kwargs = {'bintype': bintype, 'template_kin': template_kin}
         #maps, results = _getMaps(name, **kwargs)
@@ -261,7 +261,7 @@ class MapsView(marvin.api.base.BaseView):
 
         print('map args', args)
         # Pop any args we don't want going into Maps
-        args = self.pop_args(args, arglist=['name', 'property_name', 'channel'])
+        args = self._pop_args(args, arglist=['name', 'property_name', 'channel'])
 
         # kwargs = {'bintype': bintype, 'template_kin': template_kin}
 
@@ -336,7 +336,7 @@ class MapsView(marvin.api.base.BaseView):
         """
         print('map args', args)
         # Pop any args we don't want going into Maps
-        args = self.pop_args(args, arglist=['name', 'binid'])
+        args = self._pop_args(args, arglist=['name', 'binid'])
 
         # kwargs = {'bintype': bintype, 'template_kin': template_kin}
 

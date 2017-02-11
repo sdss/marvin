@@ -123,7 +123,7 @@ class ModelCubeView(BaseView):
         """
 
         # Pop any args we don't want going into ModelCube
-        args = self.pop_args(args, arglist='name')
+        args = self._pop_args(args, arglist='name')
 
         model_cube, results = _get_model_cube(name, **args)
 

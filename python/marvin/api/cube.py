@@ -164,7 +164,7 @@ class CubeView(BaseView):
         '''
 
         # Pop any args we don't want going into Cube
-        args = self.pop_args(args, arglist='name')
+        args = self._pop_args(args, arglist='name')
 
         cube, res = _getCube(name, **args)
         self.update_results(res)

@@ -25,8 +25,7 @@ class BaseView(BrainBaseView):
         utahconfig = {'utahconfig': {'mode': config.mode, 'release': config.release}}
         self.update_results(utahconfig)
 
-    def pop_args(self, kwargs, arglist=None):
-        ''' Pop a list of arguments out of the arg/kwargs '''
+    def _pop_args(self, kwargs, arglist=None):
         if arglist:
             arglist = [arglist] if not isinstance(arglist, (list, tuple)) else arglist
 

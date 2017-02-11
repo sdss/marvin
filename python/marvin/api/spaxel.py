@@ -124,7 +124,7 @@ class SpaxelView(BaseView):
         """
 
         # Pop any args we don't want going into Spaxel
-        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
 
         spaxel, results = _getSpaxel(name, x, y, maps=False, modelcube=False, **args)
 
@@ -204,7 +204,7 @@ class SpaxelView(BaseView):
         """
 
         # Pop any args we don't want going into Spaxel
-        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
 
         spaxel, results = _getSpaxel(name, x, y, cube=False, modelcube=False, **args)
 
@@ -295,7 +295,7 @@ class SpaxelView(BaseView):
         """
 
         # Pop any args we don't want going into Spaxel
-        args = self.pop_args(args, arglist=['name', 'x', 'y'])
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
 
         spaxel, results = _getSpaxel(name, x, y, cube=False, maps=False, **args)
 

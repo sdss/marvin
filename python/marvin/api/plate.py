@@ -93,7 +93,7 @@ class PlateView(BaseView):
            }
 
         """
-        args = self.pop_args(args, arglist=['plateid'])
+        args = self._pop_args(args, arglist=['plateid'])
         plate, results = _getPlate(plateid, nocubes=True, **args)
         self.update_results(results)
 
@@ -151,7 +151,7 @@ class PlateView(BaseView):
 
         """
 
-        args = self.pop_args(args, arglist=['plateid'])
+        args = self._pop_args(args, arglist=['plateid'])
         plate, results = _getPlate(plateid, **args)
         self.update_results(results)
 
