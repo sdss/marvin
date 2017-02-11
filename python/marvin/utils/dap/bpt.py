@@ -268,6 +268,7 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
     comp_mask = ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) & \
                 ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False)
+    comp_mask &= (sf_mask_sii & sf_mask_oi) if use_oi else sf_mask_sii
 
     agn_mask_nii = ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) |
                     (log_nii_ha > 0.465)).filled(False)

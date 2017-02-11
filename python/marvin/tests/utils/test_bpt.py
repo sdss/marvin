@@ -46,12 +46,12 @@ class TestBPT(unittest.TestCase):
             self.assertIn(em_mech, masks.keys())
 
         self.assertEqual(np.sum(masks['sf']['global']), 62)
-        self.assertEqual(np.sum(masks['comp']['global']), 28)
+        self.assertEqual(np.sum(masks['comp']['global']), 1)
 
         for em_mech in ['agn', 'seyfert', 'liner']:
             self.assertEqual(np.sum(masks[em_mech]['global']), 0)
 
-        self.assertEqual(np.sum(masks['ambiguous']['global']), 4)
+        self.assertEqual(np.sum(masks['ambiguous']['global']), 8)
         self.assertEqual(np.sum(masks['invalid']['global']), 1085)
 
         self.assertEqual(np.sum(masks['sf']['sii']), 176)
