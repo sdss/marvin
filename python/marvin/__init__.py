@@ -45,6 +45,11 @@ warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
 
+# Filters for PY3
+# TODO: undestand why these warnings are issued and fix the root of the problem (JSG)
+warnings.filterwarnings('ignore', 'can\'t resolve package(.)+')
+warnings.filterwarnings('ignore', 'unclosed file <_io.TextIOWrapper+')
+
 
 class MarvinConfig(object):
     ''' Global Marvin Configuration
@@ -460,4 +465,3 @@ from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 # config.sasurl = 'http://24147588.ngrok.io/marvin2/'  # this is a temporary measure REMOVE THIS
 # config.sasurl = 'http://localhost:5000/marvin2/'
-
