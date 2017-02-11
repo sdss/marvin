@@ -54,6 +54,8 @@ class TestBPT(unittest.TestCase):
         self.assertEqual(np.sum(masks['ambiguous']['global']), 4)
         self.assertEqual(np.sum(masks['invalid']['global']), 1085)
 
+        self.assertEqual(np.sum(masks['sf']['sii']), 176)
+
     def test_8485_1901_bpt_file(self):
 
         maps = Maps(filename=self.filename_8485_1901_mpl5_spx)
@@ -68,6 +70,27 @@ class TestBPT(unittest.TestCase):
 
         maps = Maps(plateifu='8485-1901', mode='remote')
         self._run_tests_8485_1901(maps)
+
+    def test_8485_1901_bpt_no_oi(self):
+
+        maps = Maps(plateifu='8485-1901')
+        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=False)
+        self.assertIsInstance(figure, plt.Figure)
+
+        for em_mech in self.emission_mechanisms:
+            self.assertIn(em_mech, masks.keys())
+
+        self.assertNotIn('oi', masks['sf'].keys())
+
+        self.assertEqual(np.sum(masks['sf']['global']), 149)
+        self.assertEqual(np.sum(masks['sf']['sii']), 176)
+
+    def test_8485_1901_bpt_no_figure(self):
+
+        maps = Maps(plateifu='8485-1901')
+        bpt_return = maps.get_bpt(show_plot=False, return_figure=False, use_oi=False)
+
+        self.assertIsInstance(bpt_return, dict)
 
 
 if __name__ == '__main__':
