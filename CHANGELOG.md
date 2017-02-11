@@ -31,6 +31,8 @@
 - Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
 - Added new documentation on Image Utilities
 - Added new image utility function showImage, which displays images from your local SAS
+- Added the Kewley+06 implementation of the BPT classification as `Maps.get_bpt()`
+- Added quick access to the NSA information for a Cube/Maps either from mangaSampleDB or drpall.
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.
