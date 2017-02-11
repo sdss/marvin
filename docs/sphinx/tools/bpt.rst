@@ -26,7 +26,7 @@ The BPT spaxel classifications that Marvin provides are
     Spaxels that cannot be strictly classified in one of the given categories.
 
 * **Invalid (invalid)**:
-    Spaxels that have emission line flux <= 0 or are rejected by any signal-to-noise ratio (SNR) cuts.
+    Spaxels that have emission line flux <= 0 or are below the minimum signal-to-noise ratio (SNR).
 
 Often the OI diagnostic line cannot be reliably measured.  If you wish to disable the use of the OI diagnostic line when classifying your spaxels, use may set the ``use_oi`` keyword to ``False``.  This turns off the OI line, and only uses the NII and SII BPTs during classification, giving you more spaxels to play with.
 
@@ -64,10 +64,10 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     :align: center
     :alt: BPT
 
-Signal-To-Noise Cuts
---------------------
+Minimum Signal-To-Noise Ratio
+-----------------------------
 
-Marvin's BPT code allows you to impose a cut on SNR over any or all of the emission line diagnostics used in spaxel classification.  Marvin accepts either a single number, which will be applied to all emission lines, or a dictionary of values for specific emission lines.  **Marvin uses a default minimum SNR of 3.**
+Marvin's BPT code allows you to impose a minimum SNR over any or all of the emission line diagnostics used in spaxel classification.  Marvin accepts either a single number, which will be applied to all emission lines, or a dictionary of values for specific emission lines.  **Marvin uses a default minimum SNR of 3.**
 
 When using a dictionary to define your minimum SNR, it takes the form of ``{emission_line: snr_min}``.  The emission lines available are ``ha``, ``hb``, ``nii``, ``sii``, ``oiii``, and ``oi``.  Any lines not specified in the dictionary take on the default value of 3.
 
