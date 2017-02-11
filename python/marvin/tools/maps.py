@@ -689,7 +689,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
             Now we can use the masks to select star forming spaxels from the cube
 
-            >>> sf_spaxels = cube.flux[bpt_masks['sf']]
+            >>> sf_spaxels = cube.flux[bpt_masks['sf']['global']]
 
             And we can save the figure as a PDF
 
