@@ -20,6 +20,8 @@ Tools
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
+* **Query Timing** - Queries work!, but timing is important.  You should craft your queries carefully so they will not crash or timeout.  See :ref:`marvin-query-practice` for best practices regarding large queries.
+
 * **getAperture** - :func:`~marvin.tools.cube.Cube.getAperture()` is currently broken due to a change in ``photutils``. This will be fixed and improved in a future version.
 
 * **Model Flux** - The ``model_flux`` attribute of :ref:`marvin-tools-spaxel` and :ref:`marvin-tools-bin` is the (binned) observed spectrum that the DAP fit. The ``model`` attribute is the fitted DAP spectrum.
@@ -51,6 +53,8 @@ Tools
 ^^^^^
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
+
+* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
 
 Web
 ^^^
