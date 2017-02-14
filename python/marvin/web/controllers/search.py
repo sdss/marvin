@@ -19,6 +19,7 @@ from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
 from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av
+from wtforms import validators, ValidationError
 import random
 
 search = Blueprint("search_page", __name__)
@@ -30,6 +31,17 @@ def getRandomQuery():
                'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
     q = random.choice(samples)
     return q
+
+
+def all_in(fullist):
+    ''' search form query parameter form validation '''
+    def _all_in(form, field):
+        myparams = [f for f in field.data if f]
+        outsiders = list(set(myparams) - set(fullist))
+        message = '{0} must be a given query parameter'.format(', '.join(outsiders))
+        if outsiders:
+            raise ValidationError(message)
+    return _all_in
 
 
 class Search(FlaskView):
@@ -58,12 +70,13 @@ class Search(FlaskView):
         form = processRequest(request=request)
         self.search['formparams'] = form
 
-        # set the marvin form
+        # set the search form and form validation
         searchform = self.mf.SearchForm(form)
         q = Query(release=self._release)
         # allparams = q.get_available_params()
         bestparams = q.get_best_params()
         searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
+        searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
 
         # Add the forms
         self.search['searchform'] = searchform
@@ -74,7 +87,7 @@ class Search(FlaskView):
 
         # If form parameters then try to search
         if form:
-            print('searchform', form)
+            print('searchform', form, searchform.parambox.data, type(searchform.parambox.data))
             self.search.update({'results': None, 'errmsg': None})
             searchvalue = form['searchbox']
             # Get the returnparams from the dropdown select
@@ -125,7 +138,7 @@ class Search(FlaskView):
         return 'this is a post'
 
     @route('/getparams/<paramdisplay>/', methods=['GET', 'POST'], endpoint='getparams')
-    @av.check_args(use_params='query', required='paramdisplay')
+    @av.check_args()
     def getparams(self, args, paramdisplay):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
@@ -149,29 +162,40 @@ class Search(FlaskView):
         ''' Do a query for Bootstrap Table interaction in Marvin web '''
 
         form = processRequest(request=request)
-        print('web table form', form)
         args = av.manual_parse(self, request, use_params='query')
         print('web table args', args)
+
+        #{'sort': u'cube.mangaid', 'task': None, 'end': None, 'searchfilter': None,
+        #'paramdisplay': None, 'start': None, 'rettype': None, 'limit': 10, 'offset': 30,
+        #'release': u'MPL-4', 'params': None, 'order': u'asc'}
+
+        # remove args
+        __tmp__ = args.pop('release', None)
+        __tmp__ = args.pop('searchfilter', None)
+        limit = args.get('limit')
+        offset = args.get('offset')
+
 
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        limit = form.get('limit', 10, type=int)
-        offset = form.get('offset', None, type=int)
-        order = form.get('order', None, type=str)
-        sort = form.get('sort', None, type=str)
-        search = form.get('search', None, type=str)
+        # limit = form.get('limit', 10, type=int)
+        # offset = form.get('offset', None, type=int)
+        # order = form.get('order', None, type=str)
+        # sort = form.get('sort', None, type=str)
+        # search = form.get('search', None, type=str)
 
         # exit if no searchvalue is found
         if not searchvalue:
-            output = jsonify({'webtable_error': 'No searchvalue found'})
+            output = jsonify({'webtable_error': 'No searchvalue found', 'status': -1})
             return output
 
         # do query
-        q, res = doQuery(searchfilter=searchvalue, release=self._release,
-                         limit=limit, order=order, sort=sort, returnparams=returnparams)
+        q, res = doQuery(searchfilter=searchvalue, release=self._release, **args)
+        # q, res = doQuery(searchfilter=searchvalue, release=self._release,
+        #                  limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
-        results = res.getSubset(offset, limit=limit)
+        __results__ = res.getSubset(offset, limit=limit)
         # get keys
         cols = res.mapColumnsToParams()
         # create output

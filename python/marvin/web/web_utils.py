@@ -40,6 +40,8 @@ def updateGlobalSession():
         drpver, dapver = config.lookUpVersions(release=config.release)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
+    elif 'release' not in current_session:
+        current_session['release'] = config.release
 
 
 def setGlobalSession():

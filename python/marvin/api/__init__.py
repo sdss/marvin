@@ -22,20 +22,26 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'plateid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=5)),
             'x': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'y': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
-            'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20))
+            'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
+            'paramdisplay': fields.String(required=True, validate=validate.OneOf(['all', 'best']))
             }
 
 # List of all form parameters that are needed in all the API routes
-params = {'query': {'searchfilter': fields.String(),
-                    'paramdisplay': fields.String(validate=validate.OneOf(['all', 'best'])),
-                    'task': fields.String(validate=validate.OneOf(['clean', 'getprocs'])),
-                    'start': fields.Integer(validate=validate.Range(min=0)),
-                    'end': fields.Integer(validate=validate.Range(min=0)),
+# allow_none = True allows for the parameter to be non-existent when required=False and missing is not set
+# setting missing = None by itself also works except when the parameter is also required
+# (i.e. required=True + missing=None does not trigger the "required" validation error when it should)
+params = {'query': {'searchfilter': fields.String(allow_none=True),
+                    'paramdisplay': fields.String(allow_none=True, validate=validate.OneOf(['all', 'best'])),
+                    'task': fields.String(allow_none=True, validate=validate.OneOf(['clean', 'getprocs'])),
+                    'start': fields.Integer(allow_none=True, validate=validate.Range(min=0)),
+                    'end': fields.Integer(allow_none=True, validate=validate.Range(min=0)),
+                    'offset': fields.Integer(allow_none=True, validate=validate.Range(min=0)),
                     'limit': fields.Integer(missing=100, validate=validate.Range(max=50000)),
-                    'sort': fields.String(),
+                    'sort': fields.String(allow_none=True),
                     'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
-                    'rettype': fields.String(validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
-                    'params': fields.DelimitedList(fields.String())
+                    'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
+                    'params': fields.DelimitedList(fields.String(), allow_none=True)
+                    #'params': fields.DelimitedList(fields.String(), allow_none=True, validate=validate.ContainsOnly(['cube.ra', 'cube.dec']))
                     }
           }
 
@@ -61,6 +67,7 @@ class ArgValidator(object):
                           validate=validate.Regexp('MPL-[4-9]'))}
         self.use_params = None
         self._required = None
+        self._setmissing = None
         self._main_kwargs = {}
         self.final_args = {}
         self.final_args.update(self.base_args)
@@ -110,7 +117,7 @@ class ArgValidator(object):
         for local_param in self.use_params:
             if local_param in params:
                 # update param validation
-                if self._required:
+                if self._required or self._setmissing:
                     newparams = self.update_param_validation(local_param)
                 else:
                     newparams = deepcopy(params)
@@ -118,20 +125,41 @@ class ArgValidator(object):
                 # add to params final args
                 self.final_args.update(newparams[local_param])
 
-    def update_param_validation(self, name):
-        ''' Update the validation of form params '''
+    def _set_params_required(self, subset):
+        ''' Set the param validation required parameter '''
 
         # make list or not
         self._required = [self._required] if not isinstance(self._required, (list, tuple)) else self._required
-
-        # deep copy the global parameter dict
-        newparams = deepcopy(params)
-        subset = newparams[name]
 
         # update the required attribute
         for req_param in self._required:
             if req_param in subset.keys():
                 subset[req_param].required = True
+
+        return subset
+
+    def _set_params_missing(self, subset):
+        ''' Set the param validation missing parameter '''
+
+        for miss_field in subset.values():
+            miss_field.missing = None
+
+        return subset
+
+    def update_param_validation(self, name):
+        ''' Update the validation of form params '''
+
+        # deep copy the global parameter dict
+        newparams = deepcopy(params)
+        subset = newparams[name]
+
+        # Set required params
+        if self._required:
+            subset = self._set_params_required(subset)
+
+        # Set missing params
+        if self._setmissing:
+            subset = self._set_params_missing(subset)
 
         # return the new params
         newparams[name] = subset
@@ -155,7 +183,7 @@ class ArgValidator(object):
     def _update_viewarg(self, name, choices):
         ''' Updates the global View arguments validator '''
         viewargs[name] = fields.String(required=True, location='view_args', validate=validate.OneOf(choices))
-        #viewargs[name].validate = validate.OneOf(choices)
+        # viewargs[name].validate = validate.OneOf(choices)
 
     def update_view_validation(self):
         ''' Update the validation of DAP MPL specific names based on the datamodel '''
@@ -202,6 +230,7 @@ class ArgValidator(object):
     def _check_mainkwargs(self, **kwargs):
         self.use_params = kwargs.pop('use_params', None)
         self._required = kwargs.pop('required', None)
+        self._setmissing = kwargs.pop('set_missing', None)
 
     def _get_release_endpoint(self, view):
         ''' get the release and endpoint if you can '''
@@ -266,12 +295,11 @@ class ArgValidator(object):
         self._get_release_endpoint(view)
         url = self._get_url()
         print('manual parse', url)
+        print('mainkwargs', mainkwargs)
         self._check_mainkwargs(**mainkwargs)
         self.create_args()
         self._pop_kwargs(**mainkwargs)
-        print('finalargs', self.final_args)
-        newargs = parser.parse(self.final_args, req, **self._main_kwargs)
-        print('newargs', newargs)
+        newargs = parser.parse(self.final_args, req, force_all=True, **self._main_kwargs)
         return newargs
 
 

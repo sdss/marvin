@@ -34,7 +34,7 @@ def register_blueprints(app=None):
 # ================================================================================
 
 
-def create_app(debug=False, local=False):
+def create_app(debug=False, local=False, use_profiler=True):
 
     #from marvin.api import theapi as api
     from marvin.api.cube import CubeView
@@ -269,9 +269,10 @@ def create_app(debug=False, local=False):
     app.register_blueprint(web)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
-    try:
-        flask_profiler.init_app(app)
-    except Exception as e:
-        pass
+    if use_profiler:
+        try:
+            flask_profiler.init_app(app)
+        except Exception as e:
+            pass
 
     return app
