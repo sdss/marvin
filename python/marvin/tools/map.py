@@ -461,10 +461,10 @@ class Map(object):
             cmap (str):
                 Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and ``linear_Lab``
                 for other properties.
-            percentile_clip (list):
-                Percentile clip. Default is ``[10, 90]`` for velocities and sigmas and ``[5, 95]``
-                for other properites.
-            sigclip (tuple-like):
+            percentile_clip (tuple-like):
+                Percentile clip. Default is ``(10, 90)`` for velocities and sigmas and ``(5, 95)``
+                for other properties.
+            sigma_clip (float):
                 Sigma clip. Default is ``None``.
             cbrange (tuple-like):
                 If ``None``, set automatically. Default is ``None``.
@@ -507,7 +507,7 @@ class Map(object):
             >>> haflux.plot()
         """
 
-        valid_kwargs = ['cmap', 'percentile_clip', 'sigclip', 'cbrange', 'symmetric', 'snr_min',
+        valid_kwargs = ['cmap', 'percentile_clip', 'sigma_clip', 'cbrange', 'symmetric', 'snr_min',
                         'log_cb', 'title', 'cblabel', 'sky_coords', 'use_mask', 'fig', 'ax',
                         'imshow_kws', 'cb_kws']
 
@@ -515,7 +515,12 @@ class Map(object):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        sigclip = kwargs.get('sigclip', None)
+        assert ((kwargs.get('percentile_clip', None) is not None) +
+                (kwargs.get('sigma_clip', None) is not None) +
+                (kwargs.get('cbrange', None) is not None) <= 1), \
+            'Only set one of percentile_clip, sigma_clip, or cbrange!'
+
+        sigma_clip = kwargs.get('sigma_clip', None)
         cbrange = kwargs.get('cbrange', None)
         snr_min = kwargs.get('snr_min', 1)
         log_cb = kwargs.get('log_cb', False)
@@ -547,12 +552,12 @@ class Map(object):
             percentile_clip = kwargs.get('percentile_clip', [5, 95])
             symmetric = kwargs.get('symmetric', False)
 
-        assert (percentile_clip is None or sigclip is None), ('Cannot set both percentile_clip and'
-                                                              'sigclip')
+        if sigma_clip is not None:
+            percentile_clip = None
 
         cb_kws['cmap'] = cmap
         cb_kws['percentile_clip'] = percentile_clip
-        cb_kws['sigclip'] = sigclip
+        cb_kws['sigma_clip'] = sigma_clip
         cb_kws['cbrange'] = cbrange
         cb_kws['symmetric'] = symmetric
         cb_kws['label'] = self.unit if cblabel is None else cblabel
