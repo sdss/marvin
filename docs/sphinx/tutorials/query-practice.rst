@@ -1,7 +1,7 @@
 
 .. _marvin-query-practice:
 
-Best Query Practices
+Query Best Practices
 ====================
 
 At this time, Marvin Queries are synchronous.  This means you can only submit one at a time, and when you do, it blocks your Python terminal until the query completes.  In addition, there is an implicit timeout of 5 minutes.  This means if your request to the server does not receive a response within 5 minutes, it will timeout and close the connection.  Large queries may be potentially problematic.
