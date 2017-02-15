@@ -82,7 +82,6 @@ DRP and DAP Known Issues
 Technical Reference Manual
 ''''''''''''''''''''''''''
 
-* `Active Dev <https://trac.sdss.org/wiki/MANGA/TRM/TRM_ActiveDev/knownissues>`_
 * `MPL-5 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/knownissues>`_
 * `MPL-4 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-4/knownissues>`_
 

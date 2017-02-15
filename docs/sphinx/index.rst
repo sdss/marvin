@@ -52,9 +52,9 @@ Marvin Primer
 
    overview
    installation
-   Frequently Asked Questions <faq>
    first-steps
    general
+   Frequently Asked Questions <faq>
    tools/visual-guide
 
 |
