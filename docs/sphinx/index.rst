@@ -5,6 +5,7 @@
 
 :tocdepth: 2
 
+|
 
 .. image:: _static/marvin.png
     :width: 200px
@@ -35,7 +36,7 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
-:doc:`known_issues`
+:doc:`known-issues`
 ^^^^^^^^^^^^^^^^^^^
 
 `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
@@ -51,9 +52,9 @@ Marvin Primer
 
    overview
    installation
-   Frequently Asked Questions <faq>
    first-steps
    general
+   Frequently Asked Questions <faq>
    tools/visual-guide
 
 |
@@ -90,8 +91,9 @@ Tutorials
    :titlesonly:
    :maxdepth: 1
 
+   Example Queries <tutorials/query-examples>
+   tutorials/query-practice
    tutorials/boolean-search-tutorial
-   tutorials/query-examples
    tutorials/jupyter-notebooks
 |
 
@@ -103,7 +105,7 @@ General Reference
    :maxdepth: 1
 
    data-access-modes
-   Available Query Parameters <query_params>
+   Available Query Parameters <query-params>
    tools/visual-guide
 
 |

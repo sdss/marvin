@@ -212,7 +212,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
-                'data_origin={0.data_origin!r}, bintype={0.bintype},'
+                'data_origin={0.data_origin!r}, bintype={0.bintype}, '
                 'template_kin={0.template_kin})>'.format(self))
 
     def __getitem__(self, value):
