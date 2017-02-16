@@ -52,13 +52,13 @@ If you use Marvin for work/research presented in a publication (whether directly
 
 Marvin's Bibtex entry to use:
 
-  @misc{brian_cherinka_2017_292632,
-    author       = {Brian Cherinka and
-                    José Sánchez-Gallego and
-                    Brett Andrews},
-    title        = {sdss/marvin: Marvin Beta 2.1.0},
-    month        = feb,
-    year         = 2017,
-    doi          = {10.5281/zenodo.292632},
-    url          = {https://doi.org/10.5281/zenodo.292632}
-  }
+      @misc{brian_cherinka_2017_292632,
+        author       = {Brian Cherinka and
+                        José Sánchez-Gallego and
+                        Brett Andrews},
+        title        = {sdss/marvin: Marvin Beta 2.1.0},
+        month        = feb,
+        year         = 2017,
+        doi          = {10.5281/zenodo.292632},
+        url          = {https://doi.org/10.5281/zenodo.292632}
+      }
