@@ -25,6 +25,12 @@ print('Full Version: {0}'.format(sysver))
 ispy2 = 2 == vinfo.major
 ispy3 = 3 == vinfo.major
 
+# Check the OS system version
+print('\nOS Checks')
+systuple = os.uname()
+print('Platform: {0}'.format(sys.platform))
+print('Full info: {0}'.format(systuple))
+
 # Anaconda checks
 print('\nDistribution Checks')
 isconda = 'Anaconda' in sysver or 'Miniconda' in sysver
