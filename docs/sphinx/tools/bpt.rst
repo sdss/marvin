@@ -42,7 +42,7 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
 
     # make a standard 3-plot BPT and retrieve the classifications
     masks, fig = maps.get_bpt()
-    
+
     # save the plot
     fig.savefig('bpt.png')
 
@@ -278,6 +278,7 @@ Modifying the Plot
 
 Once you return the BPT figure, you are free to modify it anyway you like.
 
+.. note:: Examples forthcoming
 
 Things to Try
 -------------
