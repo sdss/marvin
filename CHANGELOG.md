@@ -1,5 +1,14 @@
 # Marvin's Change Log
 
+## [2.1.1] - not yet released
+### Added:
+
+### Changed:
+- Removed the python 3 raise Exception in the check_marvin bin
+- Reverted the api/query return output from jsonify back to json.dumps
+
+### Fixed:
+
 ## [2.1.0] - 2017/02/16
 ### Added:
 - Restructured documentation index page.
