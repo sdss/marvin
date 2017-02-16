@@ -1,6 +1,6 @@
 .. _marvin-bpt:
 
-BPT diagrams
+BPT Diagrams
 ============
 
 Marvin now includes the ability to generate BPT (`Baldwin, Phillips, & Terlevich 1981 <https://ui.adsabs.harvard.edu/#abs/1981PASP...93....5B/abstract>`_) diagrams for a particular galaxy.  Marvin makes use of the classification system defined by |kewley2006|_  to return classification masks for different ionisation mechanisms.  By default, the Marvin BPT uses a strict selection criteria, utilizing all three BPT diagnostic criteria (NII, SII, and OI) from |kewley2006|_.  A spaxel only becomes classified if it meets the criteria in all three.

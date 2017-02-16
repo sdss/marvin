@@ -111,7 +111,7 @@ def set_vmin_vmax(d, cbrange):
     return d
 
 
-def _cbrange_sigclip(image, sigma):
+def _cbrange_sigma_clip(image, sigma):
     """Sigma clip colorbar range.
 
     Parameters:
@@ -185,8 +185,8 @@ def set_cbrange(image, cb_kws):
     Returns:
         dict: Colorbar kwargs.
     """
-    if cb_kws.get('sigclip') is not None:
-        cbr = _cbrange_sigclip(image, cb_kws['sigclip'])
+    if cb_kws.get('sigma_clip') is not None:
+        cbr = _cbrange_sigma_clip(image, cb_kws['sigma_clip'])
     elif cb_kws.get('percentile_clip', None) is not None:
         try:
             cbr = _cbrange_percentile_clip(image, *cb_kws['percentile_clip'])
