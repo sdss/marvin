@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.1.0] - not yet released
+## [2.1.0] - 2017/02/16
 ### Added:
 - Restructured documentation index page.
 - Improved installation documentation:
@@ -68,6 +68,7 @@
 - Made sdss_access somewhat more Python 3 compatible
 - Modified the image utilities to return local paths in local/remote modes and url paths when as_url is True
 - downloadList utility function now downloads images
+- updated the limit-as parameter in the uwsgi ini file to 4096 mb from 1024 mb for production environment
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.
