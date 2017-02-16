@@ -85,15 +85,17 @@ class Search(FlaskView):
         #from flask import abort
         #abort(500)
 
-        # If form parameters then try to search
+        # If form parameters then try to do a search
         if form:
-            print('searchform', form, searchform.parambox.data, type(searchform.parambox.data))
             self.search.update({'results': None, 'errmsg': None})
-            searchvalue = form['searchbox']
-            # Get the returnparams from the dropdown select
-            returnparams = form.getlist('returnparams', type=str)
-            # Get the returnparams from the autocomplete input
-            parambox = form.get('parambox', None, type=str)
+
+            args = av.manual_parse(self, request, use_params='search')
+            print('search args', args)
+
+            # get form parameters
+            searchvalue = form['searchbox']  # search filter input
+            returnparams = form.getlist('returnparams', type=str)  # dropdown select
+            parambox = form.get('parambox', None, type=str)  # from autocomplete
             if parambox:
                 parms = parambox.split(',')
                 parms = parms if parms[-1].strip() else parms[:-1]
@@ -103,6 +105,7 @@ class Search(FlaskView):
                 parambox if parambox and not returnparams else \
                 list(set(returnparams) | set(parambox)) if returnparams and parambox else None
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
+
             # if main form passes validation then do search
             if searchform.validate():
                 # try the query

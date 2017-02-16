@@ -20,6 +20,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.plate import Plate as mPlate
 from marvin.utils.general import getImagesByPlate
 from marvin.web.web_utils import buildImageDict, parseSession
+from marvin.api.base import arg_validate as av
 
 plate = Blueprint("plate_page", __name__)
 
@@ -40,20 +41,19 @@ class Plate(FlaskView):
         self.plate['plateid'] = None
         self.plate['error'] = None
         self._drpver, self._dapver, self._release = parseSession()
+        self._endpoint = request.endpoint
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
-
-        # Attempt to retrieve search parameters
-        form = processRequest(request=request)
 
         return render_template('plate.html', **self.plate)
 
     def get(self, plateid):
         ''' Retrieve info for a given plate id '''
 
-        print('plate page', self._drpver, self._dapver, self._release)
-        self.plate['plateid'] = int(plateid)
+        # validate the input
+        args = av.manual_parse(self, request)
+        self.plate['plateid'] = int(args['plateid'])
         pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
             plate = mPlate(**pinputs)

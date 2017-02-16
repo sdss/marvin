@@ -8,8 +8,13 @@ from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.utils.dap.datamodel import dap_datamodel as dm
 from marvin.tools.maps import _get_bintemps
-from webargs import fields, validate
+from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
+
+
+def plate_in_range(val):
+    if int(val) < 6500:
+        raise ValidationError('Plateid must be > 6500')
 
 
 # List of global View arguments across all API routes
@@ -19,7 +24,8 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'property_name': fields.String(required=True, location='view_args'),
             'channel': fields.String(required=True, location='view_args'),
             'binid': fields.Integer(required=True, location='view_args', validate=validate.Range(min=-1, max=5800)),
-            'plateid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=5)),
+            'plateid': fields.String(required=True, location='view_args', validate=[validate.Length(min=4, max=5),
+                                     plate_in_range]),
             'x': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'y': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
@@ -42,7 +48,10 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
                     'params': fields.DelimitedList(fields.String(), allow_none=True)
                     #'params': fields.DelimitedList(fields.String(), allow_none=True, validate=validate.ContainsOnly(['cube.ra', 'cube.dec']))
-                    }
+                    },
+          'search': {'searchbox': fields.String(required=True),
+                     'parambox': fields.DelimitedList(fields.String(), allow_none=True)
+                     }
           }
 
 
@@ -306,7 +315,6 @@ class ArgValidator(object):
 
 """
 web view args
-plateid = plate_page
 galid (name) = galaxy_page
 
 web form params
