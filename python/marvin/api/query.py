@@ -182,7 +182,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -281,7 +281,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
