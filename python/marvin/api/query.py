@@ -159,7 +159,6 @@ class QueryView(BaseView):
            }
 
         '''
-        print('args', args)
         searchfilter = args.pop('searchfilter', None)
         # searchfilter = self.results['inconfig'].get('searchfilter', None)
         # params = self.results['inconfig'].get('params', None)
@@ -169,8 +168,6 @@ class QueryView(BaseView):
         # order = self.results['inconfig'].get('order', 'asc')
         # release = self.results['inconfig'].get('release', None)
 
-        print('inconfig', self.results['inconfig'])
-        #print('cube_query', searchfilter, params, limit)
         try:
             # res = _getCubes(searchfilter, params=params, rettype=rettype,
             #                 limit=limit, sort=sort, order=order, release=release)
@@ -182,7 +179,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -281,7 +278,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return json.dumps(self.results)
+        return jsonify(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')

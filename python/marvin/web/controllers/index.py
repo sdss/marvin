@@ -5,7 +5,8 @@ from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
-import json
+from marvin.api.base import arg_validate as av
+
 from hashlib import md5
 try:
     from inspection.marvin import Inspection
@@ -23,6 +24,10 @@ class Marvin(FlaskView):
         self.base['title'] = 'Marvin'
         self.base['intro'] = 'Welcome to Marvin!'
         self.base['page'] = 'marvin-main'
+
+    def before_request(self, *args, **kwargs):
+        self._drpver, self._dapver, self._release = parseSession()
+        self._endpoint = request.endpoint
 
     def index(self):
         current_app.logger.info('Welcome to Marvin Web!')
@@ -43,8 +48,8 @@ class Marvin(FlaskView):
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')
     def galidselect(self):
         ''' Route that handle the Navbar plate/galaxy id search form '''
-        f = processRequest(request=request)
-        galid = f.get('galid', None)
+        args = av.manual_parse(self, request, use_params='index', required='galid')
+        galid = args.get('galid', None)
         if not galid:
             # if not galid return main page
             return redirect(url_for('index_page.Marvin:index'))
@@ -74,14 +79,14 @@ class Marvin(FlaskView):
             out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
-        return json.dumps(out)
+        return jsonify(out)
 
     @route('/selectmpl/', methods=['GET', 'POST'], endpoint='selectmpl')
     def selectmpl(self):
         ''' Global selection of the MPL/DR versions '''
-        f = processRequest(request=request)
+        args = av.manual_parse(self, request, use_params='index')
         out = {'status': 1, 'msg': 'Success'}
-        version = f['mplselect']
+        version = args.get('mplselect', None)
         current_session['release'] = version
         drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver

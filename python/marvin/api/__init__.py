@@ -19,6 +19,7 @@ def plate_in_range(val):
 
 # List of global View arguments across all API routes
 viewargs = {'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
+            'galid': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
             'bintype': fields.String(required=True, location='view_args'),
             'template_kin': fields.String(required=True, location='view_args'),
             'property_name': fields.String(required=True, location='view_args'),
@@ -51,6 +52,12 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
+                     },
+          'index': {'galid': fields.String(allow_none=True, validate=validate.Length(min=4)),
+                    'mplselect': fields.String(allow_none=True, validate=validate.Regexp('MPL-[1-9]'))
+                    },
+          'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Regexp('\d{4,5}-\d{3,5}'))
+
                      }
           }
 
@@ -73,7 +80,7 @@ class ArgValidator(object):
         self.endpoint = None
         self.urlmap = urlmap
         self.base_args = {'release': fields.String(required=True,
-                          validate=validate.Regexp('MPL-[4-9]'))}
+                          validate=validate.Regexp('MPL-[1-9]'))}
         self.use_params = None
         self._required = None
         self._setmissing = None
@@ -315,14 +322,9 @@ class ArgValidator(object):
 
 """
 web view args
-galid (name) = galaxy_page
 
 web form params
 
-galid (name) = index_page (getgalidlist)
-mplselect = index_page (selectmpl)
-username = index_page (login)
-password = index_page (login)
 toggle_on = galaxy_page (init_dynamic)
 plate_ifu = galaxy_page (init_dynamic, get_spaxel, update_maps, init_n)
 mouse_coords = galaxy_page (get_spaxel)

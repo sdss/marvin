@@ -24,6 +24,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
+from marvin.api.base import arg_validate as av
 from collections import OrderedDict
 import os
 import numpy as np
@@ -176,8 +177,8 @@ class Galaxy(FlaskView):
         self.galaxy['image'] = ''
         self.galaxy['spectra'] = 'null'
         self.galaxy['maps'] = None
+        self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
-        print('request url', request.endpoint, request.url, request.blueprint)
 
     def index(self):
         ''' Main galaxy page '''
@@ -188,7 +189,8 @@ class Galaxy(FlaskView):
         ''' Retrieve info for a given cube '''
 
         # determine type of galid
-        self.galaxy['id'] = galid
+        args = av.manual_parse(self, request)
+        self.galaxy['id'] = args['galid']
         idtype = parseIdentifier(galid)
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
