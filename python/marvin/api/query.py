@@ -26,7 +26,7 @@ def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
     # get a subset
     chunk = None
     if start:
-        chunk = int(end)-int(start)
+        chunk = int(end) - int(start)
         results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}

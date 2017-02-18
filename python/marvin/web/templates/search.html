@@ -57,6 +57,11 @@
                             <h3>Search results</h3>
                             <h4>Using filter: {{filter}}</h4>
                             <h5>Total Count: {{count}}, Showing Results: {{reslen}}</h5>
+                            {% if runtime < 20 %}
+                            <h5>Query Runtime: {{runtime}} seconds </h5>
+                            {% else %}
+                            <h5>Query Runtime: {{runtime}} seconds </h5><h5 class='text text-danger'>Your query took longer than 20 seconds.  Consider revising your query filter and limiting your return parameters.</h5>
+                            {% endif %}
                         </div>
                         {# Info PopUp #}
                         <div class='col-md-7 infopop' id='marvinquery'>

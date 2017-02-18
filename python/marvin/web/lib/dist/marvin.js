@@ -1506,7 +1506,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 15:07:00
+* @Last Modified time: 2017-02-18 12:38:58
 */
 
 'use strict';
@@ -1658,7 +1658,7 @@ var HeatMap = function () {
                             val = 'no-data';
                         }
                     };
-                    xyz.push([ii, jj, val]);
+                    xyz.push([jj, ii, val]);
                 };
             };
             return xyz;

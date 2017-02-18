@@ -1,5 +1,23 @@
 # Marvin's Change Log
 
+## [2.1.2] - not yet released
+### Added:
+
+### Changed:
+
+### Fixed:
+
+## [2.1.1] - 2017/02/18
+### Added:
+
+### Changed:
+- Removed the python 3 raise Exception in the check_marvin bin
+- Reverted the api/query return output from jsonify back to json.dumps
+    - This is an issue with python 2.7.3 namedtuple vs 2.7.11+
+
+### Fixed:
+- Issue #181: web display of maps were inverted; changed to xyz[jj, ii, val] in heatmap.js
+
 ## [2.1.0] - 2017/02/16
 ### Added:
 - Restructured documentation index page.
