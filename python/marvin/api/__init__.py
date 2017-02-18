@@ -11,6 +11,7 @@ from marvin.tools.maps import _get_bintemps
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 
+
 def plate_in_range(val):
     if int(val) < 6500:
         raise ValidationError('Plateid must be > 6500')
@@ -47,7 +48,6 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
                     'params': fields.DelimitedList(fields.String(), allow_none=True)
-                    #'params': fields.DelimitedList(fields.String(), allow_none=True, validate=validate.ContainsOnly(['cube.ra', 'cube.dec']))
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
@@ -76,8 +76,6 @@ def parse_session(req, name, field):
     from flask import session as current_session
     value = current_session.get(name, None)
     return value
-
-# parser.locations += ('session',)
 
 
 class ArgValidator(object):
@@ -110,7 +108,6 @@ class ArgValidator(object):
         ''' Retrieve the URL route from the map based on the request endpoint '''
         blue, end = self.endpoint.split('.', 1)
         url = self.urlmap[blue][end]['url']
-        print('blue, end', blue, end)
 
         # if the blueprint is not api, add/remove session option location
         if blue == 'api':
@@ -286,8 +283,6 @@ class ArgValidator(object):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 # args and kwargs here are the view function args and kwargs
-                print('args', args)
-                print('kwargs', kwargs)
                 self._get_release_endpoint(args[0])
                 # self.release = args[0]._release
                 # self.endpoint = args[0]._endpoint
@@ -329,30 +324,13 @@ class ArgValidator(object):
         # args = parser.parse(user_args, request)
         self._get_release_endpoint(view)
         url = self._get_url()
-        print('manual parse', url)
-        print('mainkwargs', mainkwargs)
         self._check_mainkwargs(**mainkwargs)
         self.create_args()
         self._pop_kwargs(**mainkwargs)
         newargs = parser.parse(self.final_args, req, force_all=True, **self._main_kwargs)
-        print('argtype', type(newargs))
         from werkzeug.datastructures import ImmutableMultiDict
-        test = ImmutableMultiDict(newargs.copy())
-        #print('testargs', test)
-        return test
+        manargs = ImmutableMultiDict(newargs.copy())
+        return manargs
 
 
-
-"""
-web view args
-
-web form params
-
-plate_ifu = galaxy_page (update_maps, init_n)
-
-
-params[] = galaxy_page (update_maps)
-bintemp = galaxy_page (update_maps)
-
-"""
 
