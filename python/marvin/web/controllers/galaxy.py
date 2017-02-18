@@ -189,7 +189,7 @@ class Galaxy(FlaskView):
         ''' Retrieve info for a given cube '''
 
         # determine type of galid
-        args = av.manual_parse(self, request)
+        args = av.manual_parse(self, request, use_params='galaxy')
         self.galaxy['id'] = args['galid']
         idtype = parseIdentifier(galid)
         if idtype in ['plateifu', 'mangaid']:
@@ -267,14 +267,16 @@ class Galaxy(FlaskView):
         ''' Route to run when the dynamic toggle is initialized
             This creates the web spectrum and dap heatmaps
         '''
-        f = processRequest(request=request)
+
+        # get the form parameters
+        args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         self._drpver, self._dapver, self._release = parseSession()
 
         # turning toggle on
-        current_session['toggleon'] = f['toggleon']
+        current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
-        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
+        cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         cube = Cube(**cubeinputs)
         output = {'specstatus': -1, 'mapstatus': -1}
 
@@ -313,26 +315,26 @@ class Galaxy(FlaskView):
 
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
-        f = processRequest(request=request)
+        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'])
         self._drpver, self._dapver, self._release = parseSession()
-        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
-        maptype = f.get('type', None)
+        cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
+        maptype = args.get('type', None)
 
         if maptype == 'optical':
             # for now, do this, but TODO - general processRequest to handle lists and not lists
             try:
-                mousecoords = f.getlist('mousecoords[]', type=float)
+                mousecoords = args.getlist('mousecoords[]', type=float)
             except Exception as e:
                 mousecoords = None
 
             if mousecoords:
-                pixshape = (f.get('imwidth', type=int), f.get('imheight', type=int))
+                pixshape = (args.get('imwidth', type=int), args.get('imheight', type=int))
                 if (mousecoords[0] < 0 or mousecoords[0] > pixshape[0]) or (mousecoords[1] < 0 or mousecoords[1] > pixshape[1]):
                     output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
                     self.galaxy['error'] = output['specmsg']
                 else:
                     # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
-                    infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), f['image'].split('redux/')[1])
+                    infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), args.get('image').split('redux/')[1])
                     arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
 
                     cube = Cube(**cubeinputs)
@@ -349,8 +351,8 @@ class Galaxy(FlaskView):
                 self.galaxy['error'] = output['specmsg']
         elif maptype == 'heatmap':
             # grab spectrum based on (x, y) coordinates
-            x = f.get('x', None, type=int)
-            y = f.get('y', None, type=int)
+            x = args.get('x', None, type=int)
+            y = args.get('y', None, type=int)
             if all([x, y]):
                 cube = Cube(**cubeinputs)
                 webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
@@ -372,11 +374,11 @@ class Galaxy(FlaskView):
 
     @route('updatemaps', methods=['POST'], endpoint='updatemaps')
     def updateMaps(self):
+        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'])
         self._drpver, self._dapver, self._release = parseSession()
-        f = processRequest(request=request)
-        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
-        params = f.getlist('params[]', type=str)
-        bintemp = f.get('bintemp', None, type=str)
+        cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
+        params = args.getlist('params[]', type=str)
+        bintemp = args.get('bintemp', None, type=str)
         current_session['bintemp'] = bintemp
         # get cube (self.galaxy['cube'] does not work)
         try:
@@ -399,9 +401,9 @@ class Galaxy(FlaskView):
 
     @route('initnsaplot', methods=['POST'], endpoint='initnsaplot')
     def init_nsaplot(self):
+        args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         self._drpver, self._dapver, self._release = parseSession()
-        f = processRequest(request=request)
-        cubeinputs = {'plateifu': f['plateifu'], 'release': self._release}
+        cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
 
         # get the default nsa choices
         nsachoices = self.galaxy.get('nsachoices', None)
@@ -425,7 +427,7 @@ class Galaxy(FlaskView):
             cols = self.galaxy.get('nsaplotcols')
             try:
                 nsadict, nsacols = make_nsa_dict(cube.nsa)
-                nsa = {f['plateifu']: nsadict}
+                nsa = {args.get('plateifu'): nsadict}
             except Exception as e:
                 output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
             else:

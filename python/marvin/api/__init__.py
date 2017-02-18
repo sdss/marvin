@@ -11,7 +11,6 @@ from marvin.tools.maps import _get_bintemps
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 
-
 def plate_in_range(val):
     if int(val) < 6500:
         raise ValidationError('Plateid must be > 6500')
@@ -56,8 +55,17 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
           'index': {'galid': fields.String(allow_none=True, validate=validate.Length(min=4)),
                     'mplselect': fields.String(allow_none=True, validate=validate.Regexp('MPL-[1-9]'))
                     },
-          'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Regexp('\d{4,5}-\d{3,5}'))
-
+          'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Length(min=8, max=11)),
+                     'toggleon': fields.String(allow_none=True, validate=validate.OneOf(['true', 'false'])),
+                     'image': fields.Url(allow_none=True),
+                     'imheight': fields.Integer(allow_none=True, validate=validate.Range(min=0, max=1000)),
+                     'imwidth': fields.Integer(allow_none=True, validate=validate.Range(min=0, max=1000)),
+                     'type': fields.String(allow_none=True, validate=validate.OneOf(['optical', 'heatmap'])),
+                     'x': fields.String(allow_none=True),
+                     'y': fields.String(allow_none=True),
+                     'mousecoords[]': fields.List(fields.String(), allow_none=True),
+                     'bintemp': fields.String(allow_none=True),
+                     'params[]': fields.List(fields.String(), allow_none=True)
                      }
           }
 
@@ -78,6 +86,7 @@ class ArgValidator(object):
     def __init__(self, urlmap={}):
         self.release = None
         self.endpoint = None
+        self.dapver = None
         self.urlmap = urlmap
         self.base_args = {'release': fields.String(required=True,
                           validate=validate.Regexp('MPL-[1-9]'))}
@@ -152,6 +161,11 @@ class ArgValidator(object):
             if req_param in subset.keys():
                 subset[req_param].required = True
 
+            if req_param == 'bintemp':
+                bintemps = self._get_bin_temps()
+                subset[req_param].validate = validate.OneOf(bintemps)
+                subset[req_param].validators.append(validate.OneOf(bintemps))
+
         return subset
 
     def _set_params_missing(self, subset):
@@ -201,18 +215,20 @@ class ArgValidator(object):
         viewargs[name] = fields.String(required=True, location='view_args', validate=validate.OneOf(choices))
         # viewargs[name].validate = validate.OneOf(choices)
 
+    def _get_bin_temps(self):
+        ''' Gets the bintemps for a given release '''
+        bintemps = _get_bintemps(self.dapver)
+        return bintemps
+
     def update_view_validation(self):
         ''' Update the validation of DAP MPL specific names based on the datamodel '''
 
-        # get the dapver
-        drpver, dapver = config.lookUpVersions(self.release)
-
         # update all the dap datamodel specific options
-        bintemps = _get_bintemps(dapver)
+        bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = dm[dapver].list_names()
-        channels = list(set(sum([i.channels for i in dm[dapver] if i.channels is not None], [])))
+        properties = dm[self.dapver].list_names()
+        channels = list(set(sum([i.channels for i in dm[self.dapver] if i.channels is not None], [])))
 
         # update the global viewargs for each property
         propfields = {'bintype': bintypes, 'template_kin': temps, 'property_name': properties,
@@ -222,6 +238,9 @@ class ArgValidator(object):
 
     def create_args(self):
         ''' Build the final argument list for webargs validation '''
+
+        # get the dapver
+        drpver, self.dapver = config.lookUpVersions(self.release)
 
         # reset the final args
         self._reset_final_args()
@@ -316,7 +335,11 @@ class ArgValidator(object):
         self.create_args()
         self._pop_kwargs(**mainkwargs)
         newargs = parser.parse(self.final_args, req, force_all=True, **self._main_kwargs)
-        return newargs
+        print('argtype', type(newargs))
+        from werkzeug.datastructures import ImmutableMultiDict
+        test = ImmutableMultiDict(newargs.copy())
+        #print('testargs', test)
+        return test
 
 
 
@@ -325,15 +348,9 @@ web view args
 
 web form params
 
-toggle_on = galaxy_page (init_dynamic)
-plate_ifu = galaxy_page (init_dynamic, get_spaxel, update_maps, init_n)
-mouse_coords = galaxy_page (get_spaxel)
-type = galaxy_page (get_spaxel)
-imwidth = galaxy_page (get_spaxel)
-imheight = galaxy_page (get_spaxel)
-image = galaxy_page (get_spaxel)
-x = galaxy_page (get_spaxel)
-y = galaxy_page (get_spaxel)
+plate_ifu = galaxy_page (update_maps, init_n)
+
+
 params[] = galaxy_page (update_maps)
 bintemp = galaxy_page (update_maps)
 
