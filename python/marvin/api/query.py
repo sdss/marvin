@@ -4,10 +4,9 @@ from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
+import json
 
 
-# def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
-#               limit=None, sort=None, order=None, release=None):
 def _getCubes(searchfilter, **kwargs):
     """Run query locally at Utah."""
 
@@ -179,7 +178,8 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
+        return json.dumps(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -254,7 +254,6 @@ class QueryView(BaseView):
            }
 
         '''
-        print('args', args)
         searchfilter = args.pop('searchfilter', None)
         # searchfilter = self.results['inconfig'].get('searchfilter', None)
         # params = self.results['inconfig'].get('params', None)
@@ -278,7 +277,8 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
+        return json.dumps(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
@@ -324,7 +324,6 @@ class QueryView(BaseView):
            }
 
         '''
-        #paramdisplay = self.results['inconfig'].get('paramdisplay', 'all')
         paramdisplay = args.pop('paramdisplay', 'all')
         q = Query(mode='local')
         if paramdisplay == 'all':
@@ -383,7 +382,6 @@ class QueryView(BaseView):
            }
 
         '''
-        #task = self.results['inconfig'].get('task', None)
         task = args.pop('task', None)
         if task == 'clean':
             q = Query(mode='local')
