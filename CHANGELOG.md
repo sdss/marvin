@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.1.1] - not yet released
+## [2.1.1] - 2017/02/18
 ### Added:
 
 ### Changed:
