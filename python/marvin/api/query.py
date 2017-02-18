@@ -172,7 +172,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     def query_getsubset(self):
@@ -267,7 +267,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     def getparamslist(self):
