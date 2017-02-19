@@ -328,9 +328,13 @@ class ArgValidator(object):
         self.create_args()
         self._pop_kwargs(**mainkwargs)
         newargs = parser.parse(self.final_args, req, force_all=True, **self._main_kwargs)
-        from werkzeug.datastructures import ImmutableMultiDict
-        manargs = ImmutableMultiDict(newargs.copy())
-        return manargs
+
+        # see if we make it a multidict
+        makemulti = mainkwargs.get('makemulti', None)
+        if makemulti:
+            from werkzeug.datastructures import ImmutableMultiDict
+            newargs = ImmutableMultiDict(newargs.copy())
+        return newargs
 
 
 

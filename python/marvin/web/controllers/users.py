@@ -6,31 +6,25 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-28 16:21:17
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-07 17:24:47
+# @Last Modified time: 2017-02-18 20:16:29
 
 from __future__ import print_function, division, absolute_import
-from flask import current_app, Blueprint, render_template, jsonify
-from flask import session as current_session, request, redirect, url_for
-from flask_classy import FlaskView, route
+from flask import Blueprint, render_template, request
+from flask_classy import route
 from marvin import config, marvindb
-from brain.api.base import processRequest
-from marvin.core.exceptions import MarvinError
-from marvin.utils.general.general import parseIdentifier
-from wtforms import SelectField, validators
-import json
+from marvin.web.controllers import BaseWebView
+
 
 users = Blueprint("users_page", __name__)
 
 
-class User(FlaskView):
+class User(BaseWebView):
     route_base = '/user/'
 
     def __init__(self):
         ''' Initialize the route '''
-        self.user = {}
-        self.user['title'] = 'Marvin | User'
-        self.user['page'] = 'marvin-user'
-        self.user['error'] = None
+        super(User, self).__init__('marvin-user')
+        self.user = self.base.copy()
 
     def index(self):
         return render_template('preferences.html', **self.user)

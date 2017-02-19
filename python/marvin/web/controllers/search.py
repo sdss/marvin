@@ -12,12 +12,12 @@ Revision History:
 '''
 from __future__ import print_function, division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classy import FlaskView, route
+from flask_classy import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
-from marvin.web.web_utils import parseSession
+from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
 from wtforms import validators, ValidationError
 import random
@@ -44,24 +44,22 @@ def all_in(fullist):
     return _all_in
 
 
-class Search(FlaskView):
+class Search(BaseWebView):
     route_base = '/search/'
 
     def __init__(self):
         ''' Initialize the route '''
-        self.search = {}
-        self.search['title'] = 'Marvin | Search'
-        self.search['page'] = 'marvin-search'
-        self.search['error'] = None
+        super(Search, self).__init__('marvin-search')
+        self.search = self.base.copy()
+        self.search['filter'] = None
+        self.search['results'] = None
+        self.search['errmsg'] = None
         self.mf = MarvinForm()
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
-        self.search['results'] = None
-        self.search['errmsg'] = None
-        self.search['filter'] = None
-        self._drpver, self._dapver, self._release = parseSession()
-        self._endpoint = request.endpoint
+        super(Search, self).before_request(*args, **kwargs)
+        self.reset_dict(self.search)
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
@@ -142,8 +140,7 @@ class Search(FlaskView):
         return 'this is a post'
 
     @route('/getparams/<paramdisplay>/', methods=['GET', 'POST'], endpoint='getparams')
-    @av.check_args()
-    def getparams(self, args, paramdisplay):
+    def getparams(self, paramdisplay):
         ''' Retrieves the list of query parameters for Bloodhound Typeahead
 
         '''

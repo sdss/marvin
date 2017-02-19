@@ -24,6 +24,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
+from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
 from collections import OrderedDict
 import os
@@ -144,15 +145,17 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
-class Galaxy(FlaskView):
+class Galaxy(BaseWebView):
     route_base = '/galaxy/'
 
     def __init__(self):
         ''' Initialize the route '''
-        self.galaxy = {}
-        self.galaxy['title'] = 'Marvin | Galaxy'
-        self.galaxy['page'] = 'marvin-galaxy'
-        self.galaxy['error'] = None
+        super(Galaxy, self).__init__('marvin-random')
+        self.galaxy = self.base.copy()
+        self.galaxy['cube'] = None
+        self.galaxy['image'] = ''
+        self.galaxy['spectra'] = 'null'
+        self.galaxy['maps'] = None
         self.galaxy['specmsg'] = None
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
@@ -172,13 +175,8 @@ class Galaxy(FlaskView):
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
-        self.galaxy['error'] = None
-        self.galaxy['cube'] = None
-        self.galaxy['image'] = ''
-        self.galaxy['spectra'] = 'null'
-        self.galaxy['maps'] = None
-        self._endpoint = request.endpoint
-        self._drpver, self._dapver, self._release = parseSession()
+        super(Galaxy, self).before_request(*args, **kwargs)
+        self.reset_dict(self.galaxy, exclude=['nsachoices', 'nsaplotcols'])
 
     def index(self):
         ''' Main galaxy page '''
@@ -270,7 +268,7 @@ class Galaxy(FlaskView):
 
         # get the form parameters
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
-        self._drpver, self._dapver, self._release = parseSession()
+        #self._drpver, self._dapver, self._release = parseSession()
 
         # turning toggle on
         current_session['toggleon'] = args.get('toggleon')
@@ -315,8 +313,8 @@ class Galaxy(FlaskView):
 
     @route('getspaxel', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
-        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'])
-        self._drpver, self._dapver, self._release = parseSession()
+        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
+        #self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         maptype = args.get('type', None)
 
@@ -374,8 +372,8 @@ class Galaxy(FlaskView):
 
     @route('updatemaps', methods=['POST'], endpoint='updatemaps')
     def updateMaps(self):
-        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'])
-        self._drpver, self._dapver, self._release = parseSession()
+        args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'], makemulti=True)
+        #self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         params = args.getlist('params[]', type=str)
         bintemp = args.get('bintemp', None, type=str)
@@ -402,7 +400,7 @@ class Galaxy(FlaskView):
     @route('initnsaplot', methods=['POST'], endpoint='initnsaplot')
     def init_nsaplot(self):
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
-        self._drpver, self._dapver, self._release = parseSession()
+        #self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
 
         # get the default nsa choices

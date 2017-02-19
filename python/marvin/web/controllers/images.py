@@ -18,24 +18,23 @@ from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import getRandomImages
 from marvin.web.web_utils import buildImageDict, parseSession
+from marvin.web.controllers import BaseWebView
 
 images = Blueprint("images_page", __name__)
 
 
-class Random(FlaskView):
+class Random(BaseWebView):
     route_base = '/random/'
 
     def __init__(self):
         ''' Initialize the route '''
-        self.random = {}
-        self.random['title'] = 'Marvin | Random'
-        self.random['page'] = 'marvin-random'
-        self.random['error'] = None
+        super(Random, self).__init__('marvin-random')
+        self.random = self.base.copy()
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
-        self.random['error'] = None
-        self._drpver, self._dapver, self._release = parseSession()
+        super(Random, self).before_request(*args, **kwargs)
+        self.reset_dict(self.random)
 
     @route('/', methods=['GET', 'POST'])
     def index(self):

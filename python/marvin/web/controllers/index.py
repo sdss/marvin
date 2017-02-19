@@ -1,11 +1,12 @@
 from flask import current_app, Blueprint, render_template, jsonify
 from flask import session as current_session, request, redirect, url_for
-from flask_classy import FlaskView, route
+from flask_classy import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av
+from marvin.web.controllers import BaseWebView
 
 from hashlib import md5
 try:
@@ -16,23 +17,21 @@ except:
 index = Blueprint("index_page", __name__)
 
 
-class Marvin(FlaskView):
+class Marvin(BaseWebView):
     route_base = '/'
 
     def __init__(self):
-        self.base = {}
-        self.base['title'] = 'Marvin'
-        self.base['intro'] = 'Welcome to Marvin!'
-        self.base['page'] = 'marvin-main'
+        super(Marvin, self).__init__('marvin-main')
+        self.main = self.base.copy()
 
     def before_request(self, *args, **kwargs):
-        self._drpver, self._dapver, self._release = parseSession()
-        self._endpoint = request.endpoint
+        super(Marvin, self).before_request(*args, **kwargs)
+        self.reset_dict(self.main)
 
     def index(self):
         current_app.logger.info('Welcome to Marvin Web!')
 
-        return render_template("index.html", **self.base)
+        return render_template("index.html", **self.main)
 
     def quote(self):
         return 'getting quote'
@@ -66,7 +65,6 @@ class Marvin(FlaskView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
-        self._drpver, self._dapver, self._release = parseSession()
         if marvindb.datadb is None:
             out = ['', '', '']
             current_app.logger.info('ERROR: Problem with marvindb.datadb.  Cannot build galaxy id auto complete list.')
