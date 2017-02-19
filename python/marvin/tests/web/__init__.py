@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-19 13:01:45
+# @Last Modified time: 2017-02-19 13:05:01
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase
@@ -34,6 +34,7 @@ class MarvinWebTester(MarvinTest, TestCase):
         self.long_message = True
         self.response = None
         self.data = None
+        self.json = None
         self.set_sasurl('local')
         self.urlmap = config.urlmap
         self.blue = None
@@ -46,6 +47,9 @@ class MarvinWebTester(MarvinTest, TestCase):
             self.response = self.client.get(page, data=params)
         elif reqtype == 'post':
             self.response = self.client.post(page, data=params, content_type='application/x-www-form-urlencoded')
+        self._load_data()
+
+    def _load_data(self):
         try:
             self.json = self.response.json
         except ValueError as e:

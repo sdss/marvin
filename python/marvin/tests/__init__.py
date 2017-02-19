@@ -6,6 +6,7 @@ import warnings
 import os
 from marvin import config
 from marvin.core.exceptions import MarvinSkippedTestWarning
+from marvin.api.api import Interaction
 from functools import wraps
 
 
@@ -105,6 +106,7 @@ class MarvinTest(TestCase):
         cls.init_urlmap = config.urlmap
         cls.init_xyorig = config.xyorig
         cls.init_traceback = config._traceback
+        cls.init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
 
         # testing data
         cls.mangaid = '1-209232'
@@ -116,12 +118,15 @@ class MarvinTest(TestCase):
         cls.redshift = 0.0407447
 
     def _reset_the_config(self):
-        keys = [k for k in self.__dict__.keys() if 'init' in k]
+        keys = self.init_keys
         for key in keys:
-            k = key.split('_')[1]
-            k = '_' + k if 'traceback' in k else k
-            config.__setattr__(k, self.__getattribute__(key))
+            ikey = 'init_{0}'.format(key)
+            if hasattr(self, ikey):
+                k = '_{0}'.format(key) if 'traceback' in key else key
+                config.__setattr__(k, self.__getattribute__(ikey))
 
-    def set_sasurl(self, loc='local'):
+    def set_sasurl(self, loc='local', port=5000):
         istest = True if loc == 'utah' else False
-        config.switchSasUrl(loc, test=istest)
+        config.switchSasUrl(loc, test=istest, port=port)
+        response = Interaction('api/general/getroutemap', request_type='get')
+        config.urlmap = response.getRouteMap()

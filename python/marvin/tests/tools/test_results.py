@@ -18,28 +18,16 @@ class TestResultsBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
         super(TestResultsBase, cls).setUpClass()
-        cls.mangaid = '1-209232'
-        cls.plate = 8485
-        cls.plateifu = '8485-1901'
-        cls.cubepk = 10179
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
-
-        cls.init_mode = config.mode
-        cls.init_sasurl = config.sasurl
-        cls.init_urlmap = config.urlmap
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        config.switchSasUrl('local')
-        config.sasurl = self.init_sasurl
+        self._reset_the_config()
+        self.set_sasurl('local', port=5000)
         self.mode = self.init_mode
-        config.urlmap = self.init_urlmap
         config.setMPL('MPL-5')
         config.forceDbOn()
 
@@ -73,12 +61,8 @@ class TestResultsBase(MarvinTest):
     def tearDown(self):
         pass
 
-    def _setRemote(self, mode='local', limit=100):
-        config.switchSasUrl(mode)
+    def _set_remote(self, mode='local', limit=100):
         self.mode = 'remote'
-        response = Interaction('api/general/getroutemap', request_type='get')
-        config.urlmap = response.getRouteMap()
-
         self.q = Query(searchfilter=self.filter, mode='remote', limit=limit)
 
     def _run_query(self):
@@ -106,7 +90,7 @@ class TestResults(TestResultsBase):
         self._check_cols()
 
     def test_columns_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._check_cols(mode='remote')
 
     def _getattribute(self, mode='local'):
@@ -121,7 +105,7 @@ class TestResults(TestResultsBase):
         self._getattribute()
 
     def test_res_getattribute_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._getattribute(mode='remote')
 
     def _refname(self, mode='local'):
@@ -135,7 +119,7 @@ class TestResults(TestResultsBase):
         self._refname()
 
     def test_refname_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._refname(mode='remote')
 
     def _get_list(self, name):
@@ -150,7 +134,7 @@ class TestResults(TestResultsBase):
             self._get_list(self.remotecols[i])
 
     def test_getList_remote(self):
-        self._setRemote()
+        self._set_remote()
         for i, col in enumerate(self.columns):
             self._get_list(col)
             self._get_list(self.remotecols[i])
@@ -192,19 +176,19 @@ class TestResults(TestResultsBase):
         self._get_dict(name='cube.mangaid', ftype='dictlist')
 
     def test_get_dict_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._get_dict()
 
     def test_get_dict_remote_param(self):
-        self._setRemote()
+        self._set_remote()
         self._get_dict(name='cube.mangaid')
 
     def test_get_dict_remote_dictlist(self):
-        self._setRemote()
+        self._set_remote()
         self._get_dict(ftype='dictlist')
 
     def test_get_dict_remote_dictlist_param(self):
-        self._setRemote()
+        self._set_remote()
         self._get_dict(name='cube.mangaid', ftype='dictlist')
 
 
@@ -250,11 +234,11 @@ class TestResultsConvertTool(TestResultsBase):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_convert_to_tool_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._convertTool()
 
     def test_convert_tool_auto(self):
-        self._setRemote()
+        self._set_remote()
         r = self._run_query()
         r.convertToTool('cube', mode='auto')
         self.assertEqual('remote', r.mode)
@@ -262,7 +246,7 @@ class TestResultsConvertTool(TestResultsBase):
         self.assertEqual('db', r.objects[0].data_origin)
 
     def test_convert_tool_auto_nodb(self):
-        self._setRemote()
+        self._set_remote()
         config.forceDbOff()
         r = self._run_query()
         r.convertToTool('cube', mode='auto', limit=1)
@@ -293,7 +277,7 @@ class TestResultsPickling(TestResultsBase):
                 os.remove(fp)
 
     def test_pickle_results(self):
-        self._setRemote()
+        self._set_remote()
         r = self._run_query()
         path = r.save('results_test.mpf', overwrite=True)
         self._files_created.append(path)
@@ -312,7 +296,7 @@ class TestResultsPage(TestResultsBase):
     def _setrun_query(self, limit=10):
         config.setRelease("MPL-4")
         self.filter = 'nsa.z < 0.1'
-        self._setRemote(limit=limit)
+        self._set_remote(limit=limit)
         r = self.q.run()
         r.sort('z')
         self.assertEqual(1213, r.totalcount)

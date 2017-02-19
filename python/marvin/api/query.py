@@ -11,6 +11,8 @@ def _getCubes(searchfilter, **kwargs):
     """Run query locally at Utah."""
 
     release = kwargs.pop('release', None)
+    kwargs['returnparams'] = kwargs.pop('params', None)
+    kwargs['returntype'] = kwargs.pop('rettype', None)
 
     try:
         # q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,

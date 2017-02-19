@@ -241,7 +241,7 @@ class Cube(MarvinToolsClass):
         self.wavelength = np.array(data['wavelength'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
 
-        if self.plateifu not in data:
+        if self.plateifu != data['plateifu']:
             raise MarvinError('remote cube has a different plateifu!')
 
         return
