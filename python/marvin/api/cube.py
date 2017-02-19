@@ -4,7 +4,7 @@
 import numpy as np
 
 from flask_classy import route
-from flask import jsonify
+from flask import jsonify, request
 
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
@@ -97,6 +97,7 @@ class CubeView(BaseView):
            }
 
         '''
+        args = av.manual_parse(self, request)
         self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
         return jsonify(self.results)

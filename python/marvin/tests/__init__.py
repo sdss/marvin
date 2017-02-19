@@ -98,3 +98,30 @@ class MarvinTest(TestCase):
     def setUpClass(cls):
         config.use_sentry = False
         config.add_github_message = False
+
+        # set initial config variables
+        cls.init_mode = config.mode
+        cls.init_sasurl = config.sasurl
+        cls.init_urlmap = config.urlmap
+        cls.init_xyorig = config.xyorig
+        cls.init_traceback = config._traceback
+
+        # testing data
+        cls.mangaid = '1-209232'
+        cls.plate = 8485
+        cls.plateifu = '8485-1901'
+        cls.cubepk = 10179
+        cls.ra = 232.544703894
+        cls.dec = 48.6902009334
+        cls.redshift = 0.0407447
+
+    def _reset_the_config(self):
+        keys = [k for k in self.__dict__.keys() if 'init' in k]
+        for key in keys:
+            k = key.split('_')[1]
+            k = '_' + k if 'traceback' in k else k
+            config.__setattr__(k, self.__getattribute__(key))
+
+    def set_sasurl(self, loc='local'):
+        istest = True if loc == 'utah' else False
+        config.switchSasUrl(loc, test=istest)

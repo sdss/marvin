@@ -18,8 +18,10 @@ def plate_in_range(val):
 
 
 # List of global View arguments across all API routes
-viewargs = {'name': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
-            'galid': fields.String(required=True, location='view_args', validate=validate.Length(min=4)),
+viewargs = {'name': fields.String(required=True, location='view_args', validate=[validate.Length(min=4),
+                                  validate.Regexp('^[0-9-]*$')]),
+            'galid': fields.String(required=True, location='view_args', validate=[validate.Length(min=4),
+                                   validate.Regexp('^[0-9-]*$')]),
             'bintype': fields.String(required=True, location='view_args'),
             'template_kin': fields.String(required=True, location='view_args'),
             'property_name': fields.String(required=True, location='view_args'),

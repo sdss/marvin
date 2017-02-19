@@ -75,6 +75,7 @@ def make_error_json(error, name, code):
     shortname = name.lower().replace(' ', '_')
     messages = {'error': shortname,
                 'message': error.description,
+                'status_code': code,
                 'traceback': get_traceback(asstring=True)}
     return jsonify({'api_error': messages}), code
 
