@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-18 20:55:19
+# @Last Modified time: 2017-02-19 02:34:56
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
@@ -24,51 +24,9 @@ class BaseWebView(FlaskView):
         self._endpoint = self._release = None
         self._drpver = self._dapver = None
 
-        # self.galaxy['title'] = 'Marvin | Galaxy'
-        # self.galaxy['page'] = 'marvin-galaxy'
-        # self.galaxy['error'] = None
-        # self.galaxy['specmsg'] = None
-        # self.galaxy['mapmsg'] = None
-        # self.galaxy['toggleon'] = 'false'
-        # self.galaxy['nsamsg'] = None
-        # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_logmass', 'xtitle': 'Stellar Mass',
-        #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-        #                              '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag_r', 'xtitle': 'AbsMag_r',
-        #                                    'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
-        #                              }
-        # self.galaxy['nsaplotcols'] = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag_r', 'elpetro_mag_g_r',
-        #                               'elpetro_th50_r', 'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba',
-        #                               'elpetro_phi', 'sersic_mtol_r', 'elpetro_th90_r']
-        # self.random['title'] = 'Marvin | Random'
-        # self.random['page'] = 'marvin-random'
-        # self.random['error'] = None
-
-        # self.base['title'] = 'Marvin'
-        # self.base['intro'] = 'Welcome to Marvin!'
-        # self.base['page'] = 'marvin-main'
-
-        # self.search['title'] = 'Marvin | Search'
-        # self.search['page'] = 'marvin-search'
-        # self.search['error'] = None
-        # # self.mf = MarvinForm()
-
-        # self.user['title'] = 'Marvin | User'
-        # self.user['page'] = 'marvin-user'
-        # self.user['error'] = None
-
-
     def before_request(self, *args, **kwargs):
         ''' this runs before every single request '''
         self.base['error'] = None
-
-        # self.galaxy['cube'] = None
-        # self.galaxy['image'] = ''
-        # self.galaxy['spectra'] = 'null'
-        # self.galaxy['maps'] = None
-        # self.search['results'] = None
-        # self.search['errmsg'] = None
-        # self.search['filter'] = None
-
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
 
