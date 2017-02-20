@@ -42,7 +42,6 @@ class TestSpaxelBase(marvin.tests.MarvinTest):
             cls.mangaanalysis, cls.drpver, cls.dapver,
             'default', str(cls.plate), 'mangadap-{0}-default.fits.gz'.format(cls.plateifu))
 
-
     @classmethod
     def tearDownClass(cls):
         pass

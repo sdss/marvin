@@ -35,7 +35,7 @@ class TestBPT(MarvinTest):
         self.set_sasurl('local')
         self.filename_8485_1901_mpl5_spx = os.path.join(
             self.mangaanalysis, self.drpver, self.dapver,
-            'SPX-GAU-MILESHC', str(self.plate), self.ifu, self.mapsspxname)
+            'SPX-GAU-MILESHC', str(self.plate), self.ifu, self.mapsname)
 
     def _run_tests_8485_1901(self, maps):
 
