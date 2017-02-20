@@ -27,43 +27,21 @@ class TestBinBase(marvin.tests.MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
         super(TestBinBase, cls).setUpClass()
-        marvin.config.switchSasUrl('local')
-
-        cls.drpver = 'v2_0_1'
-        cls.dapver = '2.0.2'
-        cls.bintype = 'VOR10'
-
-        cls.plate = 8485
-        cls.mangaid = '1-209232'
-        cls.plateifu = '8485-1901'
-        cls.ifu = cls.plateifu.split('-')[1]
-
-        cls.path_release = os.path.join(os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver, cls.dapver)
-
-        cls.path_gau_mileshc = os.path.join(
-            cls.path_release, '{0}-GAU-MILESHC'.format(cls.bintype), str(cls.plate), str(cls.ifu))
-
-        cls.maps_filename = os.path.join(
-            cls.path_gau_mileshc,
-            'manga-{0}-{1}-{2}-GAU-MILESHC.fits.gz'.format(cls.plateifu, 'MAPS', cls.bintype))
-
-        cls.modelcube_filename = os.path.join(
-            cls.path_gau_mileshc,
-            'manga-{0}-{1}-{2}-GAU-MILESHC.fits.gz'.format(cls.plateifu, 'LOGCUBE', cls.bintype))
-
-        cls.marvindb_session = marvin.marvindb.session
+        cls._update_release('MPL-5')
+        cls.set_sasurl('local')
+        cls.set_filepaths(bintype='VOR10')
+        cls.maps_filename = cls.mapspath
+        cls.modelcube_filename = cls.modelpath
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-
-        marvin.marvindb.session = self.marvindb_session
-        marvin.config.setMPL('MPL-5')
-
+        self._reset_the_config()
+        self._update_release('MPL-5')
+        self.set_sasurl('local')
         self.assertTrue(os.path.exists(self.maps_filename))
         self.assertTrue(os.path.exists(self.modelcube_filename))
 
@@ -155,8 +133,6 @@ class TestBinFileMismatch(TestBinBase):
 
         self.assertRaises(MarvinError,
                           marvin.utils.general._check_file_parameters(bb._maps, bb._modelcube))
-
-
 
 
 if __name__ == '__main__':

@@ -13,16 +13,16 @@ from __future__ import absolute_import
 import unittest
 
 from marvin import config
+from marvin.tests import MarvinTest
 from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 
 
-class TestMapsProperties(unittest.TestCase):
+class TestMapsProperties(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
+        super(TestMapsProperties, cls).setUpClass()
         config.setMPL('MPL-5')
-        config.use_sentry = False
-        config.add_github_message = False
 
     def test_dap_datamodel_mpl4(self):
         datamodel = get_dap_datamodel('1.1.1')

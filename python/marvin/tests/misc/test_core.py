@@ -22,26 +22,16 @@ class TestCore(marvin.tests.MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
-        marvin.config.switchSasUrl('local')
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
-
-        cls.plate = 8485
-        cls.mangaid = '1-209232'
-        cls.plateifu = '8485-1901'
-        cls.ifu = cls.plateifu.split('-')[1]
-
-        cls.marvindb_session = marvin.marvindb.session
+        super(TestCore, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-
-        marvin.marvindb.session = self.marvindb_session
-        marvin.config.setMPL('MPL-5')
+        self._reset_the_config()
+        self.set_sasurl('local')
+        self._update_release('MPL-5')
 
     def tearDown(self):
         pass

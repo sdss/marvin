@@ -31,51 +31,46 @@ class TestMapsBase(marvin.tests.MarvinTest):
     def setUpClass(cls):
 
         super(TestMapsBase, cls).setUpClass()
-        marvin.config.switchSasUrl('local')
+        cls.set_sasurl('local')
 
-        cls.drpver_out = 'v1_5_1'
-        cls.dapver_out = '1.1.1'
-
-        cls.plate = 8485
-        cls.mangaid = '1-209232'
-        cls.plateifu = '8485-1901'
-        cls.ifu = cls.plateifu.split('-')[1]
-        cls.filename_default = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver_out, cls.dapver_out,
-            'full', str(cls.plate), str(cls.ifu),
-            'manga-{0}-LOGCUBE_MAPS-NONE-013.fits.gz'.format(cls.plateifu))
-
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
-        cls.bintype = 'NONE'
-
-        cls.marvindb_session = marvin.marvindb.session
-        cls.db_orig = copy.copy(marvin.marvindb.db)
+        # set MPL-5 files
+        cls._update_release('MPL-5')
+        # this breaks 3 tests with bintemp moving back to MPL-4 and
+        # cls.set_filepaths()
+        # cls.filename_mpl5_spx = os.path.realpath(cls.mapspath)
+        # cls.set_filepaths(bintype='VOR10')
+        # cls.filename_mpl5_vor10 = os.path.realpath(cls.mapspath)
 
         cls.filename_mpl5_spx = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
+            cls.mangaanalysis, cls.drpver, cls.dapver,
             'SPX-GAU-MILESHC', str(cls.plate), str(cls.ifu),
             'manga-{0}-MAPS-SPX-GAU-MILESHC.fits.gz'.format(cls.plateifu))
 
         cls.filename_mpl5_vor10 = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
+            cls.mangaanalysis, cls.drpver, cls.dapver,
             'VOR10-GAU-MILESHC', str(cls.plate), str(cls.ifu),
             'manga-{0}-MAPS-VOR10-GAU-MILESHC.fits.gz'.format(cls.plateifu))
+
+        # set MPL-4 specifics
+        cls.drpver_out = 'v1_5_1'
+        cls.dapver_out = '1.1.1'
+        cls.bintype = 'NONE'
+        cls.filename_default = os.path.join(
+            cls.mangaanalysis, cls.drpver_out, cls.dapver_out,
+            'full', str(cls.plate), str(cls.ifu),
+            'manga-{0}-LOGCUBE_MAPS-NONE-013.fits.gz'.format(cls.plateifu))
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-
-        marvin.marvindb.session = self.marvindb_session
-        marvin.marvindb.db = self.db_orig
-
-        marvin.config.setMPL('MPL-4')
+        self._update_release('MPL-4')
+        marvin.config.forceDbOn()
         self.assertTrue(os.path.exists(self.filename_default))
 
     def tearDown(self):
-        marvin.marvindb.db = self.db_orig
+        pass
 
     def _assert_maps(self, maps):
         """Basic checks for a Maps object."""
@@ -102,7 +97,7 @@ class TestMapsFile(TestMapsBase):
 
     def test_load_file_mpl4_global_mpl5(self):
 
-        marvin.config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         maps = marvin.tools.maps.Maps(filename=self.filename_default)
         self.assertEqual(maps._release, 'MPL-4')
         self.assertEqual(maps._drpver, 'v1_5_1')
@@ -159,7 +154,6 @@ class TestMapsFile(TestMapsBase):
         self.assertEqual(maps.bintype, 'VOR10')
 
     def test_bintype_maps_filename_spx(self):
-
         maps = marvin.tools.maps.Maps(filename=self.filename_mpl5_spx, release='MPL-5')
         self.assertEqual(maps.bintype, 'SPX')
 
@@ -279,6 +273,7 @@ class TestMapsAPI(TestMapsBase):
 
     def test_get_spaxel_drp_differ_from_global_api(self):
 
+        #self._update_release('MPL-5')
         marvin.config.setMPL('MPL-5')
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote', release='MPL-4')
@@ -433,7 +428,7 @@ class TestPickling(TestMapsBase):
         super(TestPickling, cls).setUpClass()
 
     def setUp(self):
-        marvin.config.setMPL('MPL-4')
+        self._update_release('MPL-4')
         self.assertTrue(os.path.exists(self.filename_default))
         self._files_created = []
 

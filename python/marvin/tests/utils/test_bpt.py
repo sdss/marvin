@@ -17,25 +17,25 @@ import unittest
 from matplotlib import pyplot as plt
 import numpy as np
 
-from marvin import config
+from marvin.tests import MarvinTest
 from marvin.tools.maps import Maps
 
 
-class TestBPT(unittest.TestCase):
+class TestBPT(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
-        cls.filename_8485_1901_mpl5_spx = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), 'v2_0_1', '2.0.2',
-            'SPX-GAU-MILESHC', '8485', '1901', 'manga-8485-1901-MAPS-SPX-GAU-MILESHC.fits.gz')
-
-        config.setMPL('MPL-5')
-        config.switchSasUrl('local')
-        config.use_sentry = False
-        config.add_github_message = False
+        super(TestBPT, cls).setUpClass()
 
         cls.emission_mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
+
+    def setUp(self):
+        self._reset_the_config()
+        self._update_release('MPL-5')
+        self.set_sasurl('local')
+        self.filename_8485_1901_mpl5_spx = os.path.join(
+            self.mangaanalysis, self.drpver, self.dapver,
+            'SPX-GAU-MILESHC', str(self.plate), self.ifu, self.mapsspxname)
 
     def _run_tests_8485_1901(self, maps):
 
@@ -61,12 +61,12 @@ class TestBPT(unittest.TestCase):
 
     def test_8485_1901_bpt_db(self):
 
-        maps = Maps(plateifu='8485-1901')
+        maps = Maps(plateifu=self.plateifu)
         self._run_tests_8485_1901(maps)
 
     def test_8485_1901_bpt_api(self):
 
-        maps = Maps(plateifu='8485-1901', mode='remote')
+        maps = Maps(plateifu=self.plateifu, mode='remote')
         self._run_tests_8485_1901(maps)
 
 
