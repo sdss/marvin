@@ -125,7 +125,8 @@ class MarvinTest(TestCase):
         cls.dec = 48.6902009334
         cls.redshift = 0.0407447
         cls.dir3d = 'stack'
-        cls.drpver, cls.dapver = config.lookUpVersions(config.release)
+        cls.release = 'MPL-5'
+        cls.drpver, cls.dapver = config.lookUpVersions(cls.release)
         cls.bintemp = _get_bintemps(cls.dapver, default=True)
         cls.defaultbin, cls.defaulttemp = cls.bintemp.split('-', 1)
         cls.cubename = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu)

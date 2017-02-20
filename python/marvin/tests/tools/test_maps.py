@@ -35,21 +35,10 @@ class TestMapsBase(marvin.tests.MarvinTest):
 
         # set MPL-5 files
         cls._update_release('MPL-5')
-        # this breaks 3 tests with bintemp moving back to MPL-4 and
-        # cls.set_filepaths()
-        # cls.filename_mpl5_spx = os.path.realpath(cls.mapspath)
-        # cls.set_filepaths(bintype='VOR10')
-        # cls.filename_mpl5_vor10 = os.path.realpath(cls.mapspath)
-
-        cls.filename_mpl5_spx = os.path.join(
-            cls.mangaanalysis, cls.drpver, cls.dapver,
-            'SPX-GAU-MILESHC', str(cls.plate), str(cls.ifu),
-            'manga-{0}-MAPS-SPX-GAU-MILESHC.fits.gz'.format(cls.plateifu))
-
-        cls.filename_mpl5_vor10 = os.path.join(
-            cls.mangaanalysis, cls.drpver, cls.dapver,
-            'VOR10-GAU-MILESHC', str(cls.plate), str(cls.ifu),
-            'manga-{0}-MAPS-VOR10-GAU-MILESHC.fits.gz'.format(cls.plateifu))
+        cls.set_filepaths()
+        cls.filename_mpl5_spx = os.path.realpath(cls.mapspath)
+        cls.set_filepaths(bintype='VOR10')
+        cls.filename_mpl5_vor10 = os.path.realpath(cls.mapspath)
 
         # set MPL-4 specifics
         cls.drpver_out = 'v1_5_1'

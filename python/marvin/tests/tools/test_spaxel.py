@@ -33,33 +33,23 @@ class TestSpaxelBase(marvin.tests.MarvinTest):
     def setUpClass(cls):
 
         super(TestSpaxelBase, cls).setUpClass()
-        marvin.config.switchSasUrl('local')
+        cls.set_sasurl('local')
+        cls._update_release('MPL-4')
+        cls.set_filepaths()
 
-        cls.drpver_out = 'v1_5_1'
-        cls.dapver_out = '1.1.1'
-
-        cls.plate = 8485
-        cls.mangaid = '1-209232'
-        cls.plateifu = '8485-1901'
-
-        cls.filename_cube = os.path.join(
-            os.getenv('MANGA_SPECTRO_REDUX'), cls.drpver_out,
-            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
-
+        cls.filename_cube = os.path.realpath(cls.cubepath)
         cls.filename_maps_default = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver_out, cls.dapver_out,
+            cls.mangaanalysis, cls.drpver, cls.dapver,
             'default', str(cls.plate), 'mangadap-{0}-default.fits.gz'.format(cls.plateifu))
 
-        cls.marvindb_session = marvin.marvindb.session
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-
-        marvin.marvindb.session = self.marvindb_session
-        marvin.config.setMPL('MPL-4')
+        self._update_release('MPL-4')
+        marvin.config.forceDbOn()
 
         self.assertTrue(os.path.exists(self.filename_cube))
         self.assertTrue(os.path.exists(self.filename_maps_default))
