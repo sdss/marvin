@@ -4,11 +4,14 @@
 ### Added:
 
 ### Changed:
+- Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band
+  mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
 
 ### Fixed:
 
 ## [2.1.1] - 2017/02/18
 ### Added:
+- Added query runtime output in search page html. And a warning if query is larger than 20 seconds.
 
 ### Changed:
 - Removed the python 3 raise Exception in the check_marvin bin

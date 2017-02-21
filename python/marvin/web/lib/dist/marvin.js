@@ -510,7 +510,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-10 00:06:17
+* @Last Modified time: 2017-02-21 16:26:48
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -955,7 +955,6 @@ var Galaxy = function () {
     }, {
         key: 'hasNSA',
         value: function hasNSA(hasnsa) {
-            console.log('hasnsa', hasnsa);
             this.hasnsa = hasnsa;
         }
 
