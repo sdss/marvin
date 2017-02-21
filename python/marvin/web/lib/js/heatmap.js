@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-02-18 12:38:58
+* @Last Modified time: 2017-02-18 12:44:32
 */
 
 'use strict';
@@ -154,6 +154,7 @@ var HeatMap = function () {
                             val = 'no-data';
                         }
                     };
+                    // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
                     xyz.push([jj, ii, val]);
                 };
             };

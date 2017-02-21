@@ -46,8 +46,8 @@ Return Spaxels
     nii_to_ha > 0.1
 
 
-Test Queries
-------------
+Benchmark Queries
+-----------------
 
 1. ``emline_gflux_ha_6564 > 25``
 2. ``npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20``
@@ -56,8 +56,8 @@ Test Queries
 
 |
 
-Test Remote Query Timing
-------------------------
+Benchmark Remote Query Timing
+-----------------------------
 
 Query timing exercise post postgres 9.3 config optimization. From a laptop in Baltimore to Utah with explicit queries in remote mode
 
