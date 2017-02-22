@@ -42,7 +42,7 @@ class Marvin(BaseWebView):
 
     def database(self):
         onecube = marvindb.session.query(marvindb.datadb.Cube).first()
-        return str(onecube.plate)
+        return jsonify(result={'plate': onecube.plate, 'status': 1})
 
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')
     def galidselect(self):
@@ -83,12 +83,13 @@ class Marvin(BaseWebView):
     def selectmpl(self):
         ''' Global selection of the MPL/DR versions '''
         args = av.manual_parse(self, request, use_params='index')
-        out = {'status': 1, 'msg': 'Success'}
-        version = args.get('mplselect', None)
+        version = args.get('release', None)
         current_session['release'] = version
         drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
+        out = {'status': 1, 'msg': 'Success', 'current_release': version,
+               'current_drpver': drpver, 'current_dapver': dapver}
 
         return jsonify(result=out)
 

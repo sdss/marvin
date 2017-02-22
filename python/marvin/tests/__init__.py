@@ -110,6 +110,7 @@ class MarvinTest(TestCase):
         cls.init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
 
         # set db stuff
+        cls._marvindb = marvindb
         cls.session = marvindb.session
 
         # set paths
