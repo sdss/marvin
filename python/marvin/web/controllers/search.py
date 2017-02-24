@@ -95,6 +95,7 @@ class Search(FlaskView):
                 else:
                     self.search['filter'] = q.strfilter
                     self.search['count'] = res.totalcount
+                    self.search['runtime'] = res.query_runtime.total_seconds()
                     if res.count > 0:
                         cols = res.mapColumnsToParams()
                         rows = res.getDictOf(format_type='listdict')

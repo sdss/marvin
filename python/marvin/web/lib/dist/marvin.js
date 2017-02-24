@@ -510,7 +510,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-10 00:06:17
+* @Last Modified time: 2017-02-21 16:26:48
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -956,7 +956,6 @@ var Galaxy = function () {
     }, {
         key: 'hasNSA',
         value: function hasNSA(hasnsa) {
-            console.log('hasnsa', hasnsa);
             this.hasnsa = hasnsa;
         }
 
@@ -1506,7 +1505,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-05 15:07:00
+* @Last Modified time: 2017-02-18 12:44:32
 */
 
 'use strict';
@@ -1658,7 +1657,8 @@ var HeatMap = function () {
                             val = 'no-data';
                         }
                     };
-                    xyz.push([ii, jj, val]);
+                    // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
+                    xyz.push([jj, ii, val]);
                 };
             };
             return xyz;

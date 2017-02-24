@@ -1,4 +1,4 @@
-What's New in Marvin 2.1 (January 2017)
+What's New in Marvin 2.1 (February 2017)
 =======================================
 
 * Marvin is now minimally compliant with Python 3.5+

@@ -4,13 +4,18 @@
 Known Issues in Marvin
 ======================
 
-If you have find an issue or bug not listed here, please let us know or `submit a new Github Issue <https://github.com/sdss/marvin/issues/new>`_. For a `full list of Issues, Feature Requests, and Documentation Requests <https://github.com/sdss/marvin/issues>`_ please see the `Marvin Github repo <https://github.com/sdss/marvin>`_.
+|report new issue|_
+-------------------
+
+.. |report new issue| replace:: **Report New Issue**
+.. _report new issue: https://github.com/sdss/marvin/issues/new
+
 
 FYIs
-----
+````
 
 Tools
-^^^^^
+:::::
 
 * **MaStar Products** - Since the MaStar datamodel changed with MPL-5, Marvin does not currently handle any MaStar data products.  MaStar products **may** be accessible in MPL-4, but this has not been thoroughly vetted and tested.
 
@@ -20,12 +25,14 @@ Tools
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
+* **Query Timing** - Queries work!, but timing is important.  You should craft your queries carefully so they will not crash or timeout.  See :ref:`marvin-query-practice` for best practices regarding large queries.
+
 * **getAperture** - :func:`~marvin.tools.cube.Cube.getAperture()` is currently broken due to a change in ``photutils``. This will be fixed and improved in a future version.
 
 * **Model Flux** - The ``model_flux`` attribute of :ref:`marvin-tools-spaxel` and :ref:`marvin-tools-bin` is the (binned) observed spectrum that the DAP fit. The ``model`` attribute is the fitted DAP spectrum.
 
 Web
-^^^
+:::
 
 * **Point-and-Click Model Fits** - On the individual galaxy page, the modelfits shown in the point-and-click display is from the unbinned MODELCUBE FITS files, i.e. SPX-MILESHC.
 
@@ -43,17 +50,53 @@ Web
 
 
 Bugs
-----
+````
 
 Here are a list of known bugs:
 
 Tools
-^^^^^
+:::::
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
+* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
+
 Web
-^^^
+:::
 
 * **Autocomplete Galaxy ID list** - Upon intitial page load, this may initially crash and fail to load a list.  A list of possible ids should appear after navigating to a new page.
 
+
+Still having problems?
+``````````````````````
+
+Marvin
+::::::
+
+* `Full list of Issues, Feature Requests, and Documentation Requests <https://github.com/sdss/marvin/issues>`_
+* `Source code <https://github.com/sdss/marvin>`_
+
+DRP and DAP Known Issues
+::::::::::::::::::::::::
+
+Technical Reference Manual
+''''''''''''''''''''''''''
+
+* `MPL-5 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/knownissues>`_
+* `MPL-4 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-4/knownissues>`_
+
+Specific Measurements
+'''''''''''''''''''''
+
+* `How much should I trust the DAP measurements? <https://trac.sdss.org/wiki/MANGA/TRM/TRM_ActiveDev/dap/GettingStarted#ProductCertifications>`_
+* `Velocity Dispersion Measurements <https://trac.sdss.org/wiki/MANGA/TRM/TRM_ActiveDev/knownissues#Velocitydispersionmeasurements>`_
+* `Flagging <https://trac.sdss.org/wiki/MANGA/TRM/TRM_ActiveDev/knownissues#Flagging>`_
+
+MaNGA Technical Publications
+::::::::::::::::::::::::::::
+
+* `Bundy et al. (2015): MaNGA Overview <http://adsabs.harvard.edu/abs/2015ApJ...798....7B>`_
+* `Law et al. (2016): DRP <http://adsabs.harvard.edu/abs/2016AJ....152...83L>`_
+* `Full list of MaNGA technical publications <http://www.sdss.org/science/technical_publications/#sdss-iv-manga>`_
+
+|

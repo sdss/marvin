@@ -1,6 +1,27 @@
 # Marvin's Change Log
 
-## [2.1.0] - not yet released
+## [2.1.2] - not yet released
+### Added:
+
+### Changed:
+- Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band
+  mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
+
+### Fixed:
+
+## [2.1.1] - 2017/02/18
+### Added:
+- Added query runtime output in search page html. And a warning if query is larger than 20 seconds.
+
+### Changed:
+- Removed the python 3 raise Exception in the check_marvin bin
+- Reverted the api/query return output from jsonify back to json.dumps
+    - This is an issue with python 2.7.3 namedtuple vs 2.7.11+
+
+### Fixed:
+- Issue #181: web display of maps were inverted; changed to xyz[jj, ii, val] in heatmap.js
+
+## [2.1.0] - 2017/02/16
 ### Added:
 - Restructured documentation index page.
 - Improved installation documentation:
@@ -70,6 +91,7 @@
 - Made sdss_access somewhat more Python 3 compatible
 - Modified the image utilities to return local paths in local/remote modes and url paths when as_url is True
 - downloadList utility function now downloads images
+- updated the limit-as parameter in the uwsgi ini file to 4096 mb from 1024 mb for production environment
 
 ### Fixed:
 - Issue #115: drpall does not get updated when a tool sets a custom release.

@@ -134,10 +134,10 @@ def make_nsa_dict(nsa, cols=None):
 
     # make dictionary
     nsadict = {c: nsa[c] for c in cols}
-    nsadict.update({'sersic_absmag_r': nsadict['sersic_absmag'][4]})
-    nsadict.update({'sersic_mtol_r': nsadict['sersic_mtol'][4]})
-    cols.append('sersic_absmag_r')
-    cols.append('sersic_mtol_r')
+    nsadict.update({'elpetro_absmag_i': nsadict['elpetro_absmag'][5]})
+    nsadict.update({'elpetro_mtol_i': nsadict['elpetro_mtol'][5]})
+    cols.append('elpetro_absmag_i')
+    cols.append('elpetro_mtol_i')
     cols.sort()
 
     return nsadict, cols
@@ -156,18 +156,18 @@ class Galaxy(FlaskView):
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
         self.galaxy['nsamsg'] = None
-        self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_logmass', 'xtitle': 'Stellar Mass',
+        self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'elpetro_logmass', 'xtitle': 'Stellar Mass',
                                            'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag_r', 'xtitle': 'AbsMag_r',
-                                           'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}
+                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
+                                           'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag i'}
                                      }
         # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
         #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'}}
 
         # cols = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-        self.galaxy['nsaplotcols'] = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag_r', 'elpetro_mag_g_r',
+        self.galaxy['nsaplotcols'] = ['z', 'elpetro_logmass', 'sersic_n', 'elpetro_absmag_i', 'elpetro_mag_g_r',
                                       'elpetro_th50_r', 'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba',
-                                      'elpetro_phi', 'sersic_mtol_r', 'elpetro_th90_r']
+                                      'elpetro_phi', 'elpetro_mtol_i', 'elpetro_th90_r']
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -403,10 +403,10 @@ class Galaxy(FlaskView):
         # get the default nsa choices
         nsachoices = self.galaxy.get('nsachoices', None)
         if not nsachoices:
-            nsachoices = {'1': {'y': 'z', 'x': 'sersic_logmass', 'xtitle': 'Stellar Mass',
+            nsachoices = {'1': {'y': 'z', 'x': 'elpetro_logmass', 'xtitle': 'Stellar Mass',
                                 'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                          '2': {'y': 'elpetro_mag_g_r', 'x': 'sersic_absmag_r', 'xtitle': 'AbsMag_r',
-                                'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag r'}}
+                          '2': {'y': 'elpetro_mag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
+                                'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag i'}}
 
         # get cube (self.galaxy['cube'] does not work)
         try:
@@ -439,7 +439,7 @@ class Galaxy(FlaskView):
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}
                 else:
                     nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
-                    nsasamp = {c: [n[0][c.split('_r')[0]][4] if 'absmag_r' in c or 'mtol_r' in c else n[0][c] for n in nsadict] for c in cols}
+                    nsasamp = {c: [n[0][c.split('_i')[0]][5] if 'absmag_i' in c or 'mtol_i' in c else n[0][c] for n in nsadict] for c in cols}
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
                     nsa['sample'] = nsasamp
                     output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}

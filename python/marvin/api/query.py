@@ -26,7 +26,7 @@ def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
     # get a subset
     chunk = None
     if start:
-        chunk = int(end)-int(start)
+        chunk = int(end) - int(start)
         results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
@@ -172,7 +172,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     def query_getsubset(self):
@@ -267,7 +267,7 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        return jsonify(self.results)
+        return json.dumps(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     def getparamslist(self):

@@ -371,7 +371,9 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
 
     This utility function quickly allows you to display a PNG IFU image that is located in your
     local SAS or from the remote Utah SAS.  A PIL Image object is also returned which allows you to
-    manipulate the image after the fact.
+    manipulate the image after the fact.  See :ref:`marvin-image-show` for example usage.
+
+    Either the path or plateifu keyword is required.
 
     Parameters:
         path (str):
@@ -391,6 +393,7 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
     Returns:
         image (PIL Image or None):
             If return_image is set, returns a PIL Image object to allow for image manipulation, else returns None.
+
     '''
 
     # check inputs
