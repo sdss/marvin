@@ -20,7 +20,7 @@ import sys
 import marvin
 
 __all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
-           'MarvinNotImplemented', 'MarvinMissingDependency']
+           'MarvinNotImplemented', 'MarvinMissingDependency', 'MarvinDeprecationWarning']
 
 
 class MarvinSentry(object):
@@ -106,6 +106,11 @@ class MarvinSkippedTestWarning(MarvinUserWarning):
     pass
 
 
+class MarvinDeprecationWarning(MarvinUserWarning):
+    """A warning for deprecated features."""
+    pass
+
+
 class MarvinBreadCrumb(object):
     """ A Sentry Breadcrumb to help leave a trail to bugs """
 
@@ -156,4 +161,3 @@ class MarvinBreadCrumb(object):
         '''
 
         self.breadcrumbs.record(**kwargs)
-
