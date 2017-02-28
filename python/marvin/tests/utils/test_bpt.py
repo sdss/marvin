@@ -13,12 +13,14 @@ from __future__ import absolute_import
 
 import os
 import unittest
+import warnings
 
 from matplotlib import pyplot as plt
 import numpy as np
 
 from marvin import config
 from marvin.tools.maps import Maps
+from marvin.core.exceptions import MarvinDeprecationWarning
 
 
 class TestBPT(unittest.TestCase):
@@ -91,6 +93,35 @@ class TestBPT(unittest.TestCase):
         bpt_return = maps.get_bpt(show_plot=False, return_figure=False, use_oi=False)
 
         self.assertIsInstance(bpt_return, dict)
+
+    def test_8485_1901_bpt_snr_min(self):
+
+        maps = Maps(plateifu='8485-1901')
+        masks = maps.get_bpt(snr_min=5, return_figure=False, show_plot=False)
+
+        for em_mech in self.emission_mechanisms:
+            self.assertIn(em_mech, masks.keys())
+
+        self.assertEqual(np.sum(masks['sf']['global']), 28)
+        self.assertEqual(np.sum(masks['sf']['sii']), 112)
+
+    def test_8485_1901_bpt_snr_deprecated(self):
+
+        maps = Maps(plateifu='8485-1901')
+
+        with warnings.catch_warnings(record=True) as warning_list:
+            masks = maps.get_bpt(snr=5, return_figure=False, show_plot=False)
+
+        self.assertTrue(len(warning_list) == 1)
+        self.assertEqual(str(warning_list[0].message),
+                         'snr is deprecated. Use snr_min instead. '
+                         'snr will be removed in a future version of marvin')
+
+        for em_mech in self.emission_mechanisms:
+            self.assertIn(em_mech, masks.keys())
+
+        self.assertEqual(np.sum(masks['sf']['global']), 28)
+        self.assertEqual(np.sum(masks['sf']['sii']), 112)
 
 
 if __name__ == '__main__':
