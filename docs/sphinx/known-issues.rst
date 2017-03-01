@@ -61,10 +61,14 @@ Tools
 
 * **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
 
+* **BPT diagrams** - After the release of Marvin 2.1, a bug was found in the calculation of the
+  composite mask in the BPT diagrams. This will be fixed in Marvin 2.1.2 but until that time please
+  do not use the composite mask.
+
 Web
 :::
 
-* **Autocomplete Galaxy ID list** - Upon intitial page load, this may initially crash and fail to load a list.  A list of possible ids should appear after navigating to a new page.
+* **Autocomplete Galaxy ID list** - Upon initial page load, this may initially crash and fail to load a list.  A list of possible ids should appear after navigating to a new page.
 
 
 Still having problems?
