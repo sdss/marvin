@@ -43,7 +43,11 @@ class MarvinSentry(object):
                             'raven.processors.SanitizePasswordsProcessor',
                         )
                 )
-            self.client.context.merge({'user': {'name': os.getlogin(), 'system': '_'.join(os.uname())}})
+            try:
+                self.client.context.merge({'user': {'name': os.getlogin(),
+                                                    'system': '_'.join(os.uname())}})
+            except OSError:
+                self.client = None
         else:
             self.client = None
 
@@ -56,7 +60,7 @@ class MarvinError(Exception):
         from marvin import config
         message = 'Unknown Marvin Error' if not message else message
 
-        if config.use_sentry is True:
+        if config.use_sentry is True and ms.client is not None:
             # Send error to Sentry
             exc = sys.exc_info()
             if exc[0] is not None:
@@ -156,4 +160,3 @@ class MarvinBreadCrumb(object):
         '''
 
         self.breadcrumbs.record(**kwargs)
-
