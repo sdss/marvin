@@ -40,12 +40,15 @@ def add_data_file(directory):
         for filename in filenames:
             data_files.append(os.path.join('..', root.lstrip('python/'), filename))
 
+
 add_data_file('python/marvin/extern/')
-# add_data_file('python/marvin/web/configuration/')
-# add_data_file('python/marvin/web/lib/')
-# add_data_file('python/marvin/web/static/')
-# add_data_file('python/marvin/web/templates/')
-# add_data_file('python/marvin/web/uwsgi_conf_files/')
+
+add_data_file('python/marvin/web/configuration/')
+add_data_file('python/marvin/web/lib/')
+add_data_file('python/marvin/web/static/')
+add_data_file('python/marvin/web/templates/')
+add_data_file('python/marvin/web/uwsgi_conf_files/')
+
 data_files.append('../marvin/db/dbconfig.ini')
 data_files.append('../../requirements.txt')
 data_files.append('../../README.md')
