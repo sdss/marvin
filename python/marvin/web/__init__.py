@@ -130,6 +130,7 @@ def create_app(debug=False, local=False):
         else:
             app.logger.debug("Trying to run in debug mode, but not running on a development machine that has database access.")
             # sys.exit(1)
+            server_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configuration', 'localhost.cfg')
     else:
         try:
             import uwsgi
