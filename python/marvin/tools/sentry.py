@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-22 20:17:33
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-01-23 14:55:25
+# @Last Modified time: 2017-02-25 11:32:37
 
 from __future__ import print_function, division, absolute_import
 import requests
@@ -100,17 +100,17 @@ class Sentry(object):
             self.get_users()
         self.ips = [u['ipAddress'] for u in self.users if u['ipAddress']]
 
-    def lookup_ips(self, ip=None):
+    def lookup_ips(self, ip=None, method='whois'):
         ''' Look up the locations of the ips '''
 
         self.locations = []
 
         if ip and ip != '127.0.0.1':
-            self.locations.append(self.get_ip_dict(ip))
+            self.locations.append(self.get_ip_dict(ip, method=method))
         else:
             for ip in self.ips:
                 if ip is not None and ip != '127.0.0.1':
-                    self.locations.append(self.get_ip_dict(ip))
+                    self.locations.append(self.get_ip_dict(ip, method=method))
 
     def get_ip_dict(self, ip, method='whois'):
         ''' Get the ip lookup dictionary '''
@@ -122,10 +122,17 @@ class Sentry(object):
 
         ipwho = ipwhois.IPWhois(ip)
         self.ipmethod = method
+        ipdict = None
         if method == 'whois':
-            ipdict = ipwho.lookup_whois()
+            try:
+                ipdict = ipwho.lookup_whois()
+            except Exception as e:
+                print('Could not lookup ip {0}: {1}'.format(ip, e))
         elif method == 'rdap':
-            ipdict = ipwho.lookup_rdap()
+            try:
+                ipdict = ipwho.lookup_rdap()
+            except Exception as e:
+                print('Could not lookup ip {0}: {1}'.format(ip, e))
         return ipdict
 
     def extract_locations(self):
@@ -209,6 +216,13 @@ class Sentry(object):
             assert data is not None, 'Must provide some data to extract'
             vals = self.count_data(data)
             labels, sizes = self.get_pie_data(vals)
+        elif key == 'baseurl':
+            vals = self.tagvals['url']
+            names = [v['name'] for v in vals]
+            labels = set(['sas' if 'sas.sdss.org' in n else 'api' for n in names])
+            stats = [{'type': 'web' if l == 'sas' else l, 'count': sum(d['count'] for d in vals if l in d['name'])} for l in set(labels)]
+            labels = [s['type'] for s in stats]
+            sizes = [s['count'] for s in stats]
         else:
             sizes = None
             raise NameError('No sizes or labels found.  Make sure the data is somewhere')
