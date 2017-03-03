@@ -647,7 +647,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 show_plot=True, use_oi=True, **kwargs):
         """Returns the BPT diagram for this target.
 
-        This method calculates the BPT diagram for this target using emission line maps and
+        This method produces the BPT diagram for this target using emission line maps and
         returns a dictionary of classification masks, that can be used to select spaxels
         that have been classified as belonging to a certain excitation process. It also provides
         plotting functionalities.
