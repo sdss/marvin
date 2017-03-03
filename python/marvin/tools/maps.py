@@ -639,7 +639,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return spaxels
 
-    def get_bpt(self, method='kewley06', snr=3, return_figure=True, show_plot=True, use_oi=True):
+    def get_bpt(self, method='kewley06', snr_min=3, return_figure=True,
+                show_plot=True, use_oi=True, **kwargs):
         """Returns the BPT diagram for this target.
 
         This method calculates the BPT diagram for this target using emission line maps and
@@ -654,12 +655,12 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 Kewley et al. (2006). Other methods may be added in the future. For a detailed
                 explanation of the implementation of the method check the
                 :ref:`BPT documentation <marvin-bpt>`.
-            snr (float or dict):
+            snr_min (float or dict):
                 The signal-to-noise cutoff value for the emission lines used to generate the BPT
-                diagram. If ``snr`` is a single value, that signal-to-noise will be used for all
-                the lines. Alternatively, a dictionary of signal-to-noise values, with the
+                diagram. If ``snr_min`` is a single value, that signal-to-noise will be used for
+                all the lines. Alternatively, a dictionary of signal-to-noise values, with the
                 emission line channels as keys, can be used.
-                E.g., ``snr={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
+                E.g., ``snr_min={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
                 they will default to ``SNR>=3``.
             return_figure (bool):
                 If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
@@ -689,7 +690,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
             Now we can use the masks to select star forming spaxels from the cube
 
-            >>> sf_spaxels = cube.flux[bpt_masks['sf']]
+            >>> sf_spaxels = cube.flux[bpt_masks['sf']['global']]
 
             And we can save the figure as a PDF
 
@@ -699,9 +700,18 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
+        if 'snr' in kwargs:
+            warnings.warn('snr is deprecated. Use snr_min instead. '
+                          'snr will be removed in a future version of marvin',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            snr_min = kwargs.pop('snr')
+        elif len(kwargs.keys()) > 0:
+            raise marvin.core.exceptions.MarvinError(
+                'unknown keyword {0}'.format(list(kwargs.keys())[0]))
+
         # Makes sure all the keys in the snr keyword are lowercase
-        if isinstance(snr, dict):
-            snr = dict((kk.lower(), vv) for kk, vv in snr.items())
+        if isinstance(snr_min, dict):
+            snr_min = dict((kk.lower(), vv) for kk, vv in snr_min.items())
 
         # If we don't want the figure but want to show the plot, we still need to
         # temporarily get it.
@@ -712,7 +722,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if not show_plot and plt_was_interactive:
             plt.ioff()
 
-        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr=snr,
+        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
                                                        return_figure=do_return_figure,
                                                        use_oi=use_oi)
 

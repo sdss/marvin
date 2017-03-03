@@ -76,11 +76,11 @@ When using a dictionary to define your minimum SNR, it takes the form of ``{emis
     maps = Maps(plateifu='8485-1901')
 
     # generate a bpt plot using a sinlge minimum SNR of 5
-    masks, fig = maps.get_bpt(snr=5)
+    masks, fig = maps.get_bpt(snr_min=5)
 
     # generate a bpt plot using a minimum Halpha SNR of 5 and a minimum SII SNR of 2.  The remaining lines have minimum SNRs of 3.
     snrdict = {'ha': 5, 'sii': 2}
-    masks, fig = maps.get_bpt(snr=snrdict)
+    masks, fig = maps.get_bpt(snr_min=snrdict)
 
 Using the Masks
 ---------------
