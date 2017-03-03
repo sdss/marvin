@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-21 23:01:26
+# @Last Modified time: 2017-02-22 10:40:26
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web import MarvinWebTester
@@ -25,7 +25,7 @@ class TestIndexPage(MarvinWebTester):
         config.setRelease('MPL-5')
         self.release = config.release
 
-    def test_assert_index_used(self):
+    def test_assert_index_template_used(self):
         url = self.get_url('Marvin:index')
         self._load_page('get', url)
         self.assertEqual('', self.data)

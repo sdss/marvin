@@ -260,7 +260,7 @@ class Galaxy(BaseWebView):
 
         return render_template("galaxy.html", **self.galaxy)
 
-    @route('initdyamic', methods=['POST'], endpoint='initdynamic')
+    @route('/initdyamic/', methods=['POST'], endpoint='initdynamic')
     def initDynamic(self):
         ''' Route to run when the dynamic toggle is initialized
             This creates the web spectrum and dap heatmaps
@@ -311,7 +311,7 @@ class Galaxy(BaseWebView):
 
         return jsonify(result=output)
 
-    @route('getspaxel', methods=['POST'], endpoint='getspaxel')
+    @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
         #self._drpver, self._dapver, self._release = parseSession()
@@ -370,7 +370,7 @@ class Galaxy(BaseWebView):
 
         return jsonify(result=output)
 
-    @route('updatemaps', methods=['POST'], endpoint='updatemaps')
+    @route('/updatemaps/', methods=['POST'], endpoint='updatemaps')
     def updateMaps(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'], makemulti=True)
         #self._drpver, self._dapver, self._release = parseSession()
@@ -397,10 +397,11 @@ class Galaxy(BaseWebView):
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
-    @route('initnsaplot', methods=['POST'], endpoint='initnsaplot')
+    @route('/initnsaplot/', methods=['POST'], endpoint='initnsaplot')
     def init_nsaplot(self):
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         #self._drpver, self._dapver, self._release = parseSession()
+        print('args', args)
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
 
         # get the default nsa choices

@@ -6,8 +6,11 @@
 ### Changed:
 - Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band
   mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
+- Issue #188: deprecated snr in favour of snr_min for get_bpt. snr can still be used.
 
 ### Fixed:
+- A bug in the calculation of the composite mask for BPT.
+-
 
 ## [2.1.1] - 2017/02/18
 ### Added:
@@ -20,6 +23,7 @@
 
 ### Fixed:
 - Issue #181: web display of maps were inverted; changed to xyz[jj, ii, val] in heatmap.js
+
 
 ## [2.1.0] - 2017/02/16
 ### Added:
@@ -52,6 +56,8 @@
 - Added new test for image utilities getRandomImages, getImagesByPlate, getImagesByList
 - Added new documentation on Image Utilities
 - Added new image utility function showImage, which displays images from your local SAS
+- Added the Kewley+06 implementation of the BPT classification as `Maps.get_bpt()`
+- Added quick access to the NSA information for a Cube/Maps either from mangaSampleDB or drpall.
 
 ### Changed:
 - When marvin is running from source (not dist), `marvin.__version__` is `dev`.

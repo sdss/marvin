@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-21 22:09:22
+# @Last Modified time: 2017-02-22 17:49:32
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase
@@ -79,13 +79,13 @@ class MarvinWebTester(MarvinTest, TestCase):
         elif isinstance(data, list):
             self.assertListIn(data, self.json['result'])
 
-    def _route_no_valid_params(self, url, noparam, reqtype='get', params=None, errmsg=None):
+    def _route_no_valid_webparams(self, url, noparam, reqtype='get', params=None, errmsg=None):
         self._load_page(reqtype, url, params=params)
         self.assert422(self.response, message='response status should be 422 for invalid params')
-        self.assertIn('validation_errors', self.json.keys())
+        self.assert_template_used('errors/unprocessable_entity.html')
         noparam = [noparam] if not isinstance(noparam, list) else noparam
         invalid = {p: [errmsg] for p in noparam}
-        self.assertDictContainsSubset(invalid, self.json['validation_errors'])
+        self.assert_context('data', invalid, message='response should contain validation error dictionary')
 
     def test_db_stuff(self):
         self.assertIsNotNone(marvindb)
@@ -93,3 +93,12 @@ class MarvinWebTester(MarvinTest, TestCase):
         self.assertIsNotNone(marvindb.sampledb)
         self.assertIsNotNone(marvindb.dapdb)
         self.assertEqual('local', marvindb.dbtype)
+
+    # def assert_template_used(self, name):
+    #     ''' overriding the built-in one in Flask-Testing so we can also test against error templates '''
+    #     template_list = self.app.jinja_env.list_templates()
+    #     if name in template_list:
+    #         return True
+    #     else:
+    #         raise AssertionError("Template {0} not used. Templates were used: {1}".format(name, ', '.join(template_list)))
+

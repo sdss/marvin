@@ -12,9 +12,13 @@
 #
 
 from setuptools import setup, find_packages
+
 import os
 import warnings
 from get_version import generate_version_py
+
+import argparse
+import sys
 
 
 def read(fname):
@@ -31,24 +35,31 @@ def convert_md_to_rst(fp):
         return open(fp).read()
 
 
-data_files = []
-
-
-def add_data_file(directory):
+def add_data_file(directory, data_files):
     extern_path = os.path.join(os.path.dirname(__file__), directory)
     for root, __, filenames in os.walk(extern_path):
         for filename in filenames:
             data_files.append(os.path.join('..', root.lstrip('python/'), filename))
 
-add_data_file('python/marvin/extern/')
-# add_data_file('python/marvin/web/configuration/')
-# add_data_file('python/marvin/web/lib/')
-# add_data_file('python/marvin/web/static/')
-# add_data_file('python/marvin/web/templates/')
-# add_data_file('python/marvin/web/uwsgi_conf_files/')
-data_files.append('../marvin/db/dbconfig.ini')
-data_files.append('../../requirements.txt')
-data_files.append('../../README.md')
+
+def get_data_files(with_web=True):
+
+    data_files = []
+
+    add_data_file('python/marvin/extern/', data_files)
+
+    if with_web:
+        add_data_file('python/marvin/web/configuration/', data_files)
+        add_data_file('python/marvin/web/lib/', data_files)
+        add_data_file('python/marvin/web/static/', data_files)
+        add_data_file('python/marvin/web/templates/', data_files)
+        add_data_file('python/marvin/web/uwsgi_conf_files/', data_files)
+
+    data_files.append('../marvin/db/dbconfig.ini')
+    data_files.append('../../requirements.txt')
+    data_files.append('../../README.md')
+
+    return data_files
 
 
 requirements_file = os.path.join(os.path.dirname(__file__), 'requirements.txt')
@@ -60,39 +71,74 @@ VERSION = '2.1.2dev'
 RELEASE = 'dev' not in VERSION
 generate_version_py(NAME, VERSION, RELEASE)
 
-setup(name=NAME,
-      version=VERSION,
-      license='BSD3',
-      description='Toolsuite for dealing with the MaNGA dataset',
-      long_description=convert_md_to_rst('README.md'),
-      author='The Marvin Developers',
-      author_email='havok2063@hotmail.com',
-      keywords='marvin manga astronomy MaNGA',
-      url='https://github.com/sdss/marvin',
-      packages=find_packages(where='python', exclude=['marvin.web*']),
-      package_dir={'': 'python'},
-      package_data={'': data_files},
-      install_requires=install_requires,
-      scripts=['bin/run_marvin', 'bin/check_marvin'],
-      classifiers=[
-          'Development Status :: 4 - Beta',
-          'Environment :: Web Environment',
-          'Framework :: Flask',
-          'Intended Audience :: Science/Research',
-          'License :: OSI Approved :: BSD License',
-          'Natural Language :: English',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
-          'Topic :: Database :: Front-Ends',
-          'Topic :: Documentation :: Sphinx',
-          'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-          'Topic :: Scientific/Engineering :: Astronomy',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: Software Development :: User Interfaces'
-          #,
-      ],
-      )
+
+def run(data_files, packages):
+
+    setup(name=NAME,
+          version=VERSION,
+          license='BSD3',
+          description='Toolsuite for dealing with the MaNGA dataset',
+          long_description=convert_md_to_rst('README.md'),
+          author='The Marvin Developers',
+          author_email='havok2063@hotmail.com',
+          keywords='marvin manga astronomy MaNGA',
+          url='https://github.com/sdss/marvin',
+          packages=packages,
+          package_dir={'': 'python'},
+          package_data={'': data_files},
+          install_requires=install_requires,
+          scripts=['bin/run_marvin', 'bin/check_marvin'],
+          classifiers=[
+              'Development Status :: 4 - Beta',
+              'Environment :: Web Environment',
+              'Framework :: Flask',
+              'Intended Audience :: Science/Research',
+              'License :: OSI Approved :: BSD License',
+              'Natural Language :: English',
+              'Operating System :: OS Independent',
+              'Programming Language :: Python',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 2.7',
+              'Programming Language :: Python :: 3.3',
+              'Programming Language :: Python :: 3.4',
+              'Topic :: Database :: Front-Ends',
+              'Topic :: Documentation :: Sphinx',
+              'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+              'Topic :: Scientific/Engineering :: Astronomy',
+              'Topic :: Software Development :: Libraries :: Python Modules',
+              'Topic :: Software Development :: User Interfaces'
+          ],
+          )
+
+
+if __name__ == '__main__':
+
+    # Custom parser to decide whether we include or not the web. By default we do.
+
+    parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]))
+
+    parser.add_argument('-w', '--noweb', dest='noweb', default=False,
+                        action='store_true', help='Does not build the web.')
+
+    # We use parse_known_args because we want to leave the remaining args for distutils
+    args = parser.parse_known_args()[0]
+
+    if args.noweb:
+        packages = find_packages(where='python', exclude=['marvin.web*'])
+    else:
+        packages = find_packages(where='python')
+
+    data_files = get_data_files(with_web=not args.noweb)
+
+    # Now we remove all our custom arguments to make sure they don't interfere with distutils
+    arguments = []
+    for action in list(parser._get_optional_actions()):
+        if '--help' not in action.option_strings:
+            arguments += action.option_strings
+
+    for arg in arguments:
+        if arg in sys.argv:
+            sys.argv.remove(arg)
+
+    # Runs distutils
+    run(data_files, packages)

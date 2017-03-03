@@ -159,6 +159,7 @@ class ArgValidator(object):
         for req_param in self._required:
             if req_param in subset.keys():
                 subset[req_param].required = True
+                subset[req_param].allow_none = False
 
             if req_param == 'bintemp':
                 bintemps = self._get_bin_temps()
@@ -185,6 +186,7 @@ class ArgValidator(object):
         # Set required params
         if self._required:
             subset = self._set_params_required(subset)
+            print('subset', subset['plateifu'].required, subset['plateifu'].allow_none, subset['plateifu'].missing)
 
         # Set missing params
         if self._setmissing:

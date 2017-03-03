@@ -10,10 +10,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from mpl_toolkits.axes_grid1 import ImageGrid
+
+from marvin.core.exceptions import MarvinDeprecationWarning, MarvinError
 
 
 def get_snr(snr_min, emission_line, default=3):
@@ -179,8 +183,8 @@ def kewley_agn_oi(log_oi_ha):
     return 1.18 * log_oi_ha + 1.30
 
 
-def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
-    """Returns ionisation regions, making use of the boundaries defined in Kewley+06.
+def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
+    """Returns a classification of ionisation regions, as defined in Kewley+06.
 
     Makes use of the classification system defined by
     `Kewley et al. (2006) <https://ui.adsabs.harvard.edu/#abs/2006MNRAS.372..961K/abstract>`_
@@ -196,39 +200,39 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
         maps (a Marvin :class:`~marvin.tools.maps.Maps` object)
             The Marvin Maps object that contains the emission line maps to be used to determine
             the BPT classification.
-        snr (float or dict):
+        snr_min (float or dict):
             The signal-to-noise cutoff value for the emission lines used to generate the BPT
-            diagram. If ``snr`` is a single value, that signal-to-noise will be used for all
+            diagram. If ``snr_min`` is a single value, that signal-to-noise will be used for all
             the lines. Alternatively, a dictionary of signal-to-noise values, with the
             emission line channels as keys, can be used.
-            E.g., ``snr={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
+            E.g., ``snr_min={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
             they will default to ``SNR>=3``.
         return_figure (bool):
             If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
             which can be used to modify the style of the plot.
         use_oi (bool):
-            If ``True``, uses the OI diagnostic line during BPT spaxel classification
+            If ``True``, uses the OI diagnostic diagram for spaxel classification.
 
     Returns:
         bpt_return:
-            ``bpt_kewley06`` always returns a dictionary of dictionaries of classification masks.
+            ``bpt_kewley06`` returns a dictionary of dictionaries of classification masks.
             The classification masks (not to be confused with bitmasks) are boolean arrays with the
             same shape as the Maps or Cube (without the spectral dimension) that can be used
             to select spaxels belonging to a certain excitation process (e.g., star forming).
             The returned dictionary has the following keys: ``'sf'`` (star forming), ``'comp'``
             (composite), ``'agn'``, ``'seyfert'``, ``'liner'``, ``'invalid'``
             (spaxels that are masked out at the DAP level), and ``'ambiguous'`` (good spaxels that
-            do not fall in any  classification or fall in more than one). Each key provides a new
-            dictionary with keys ``'nii'`` (for the constraints in the diagram NII/Halpha vs
-            OIII/Hbeta),  ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha vs OIII/Hbeta,
-            only if ``use_oi=True``), and ``'global'``, which applies all the previous constraints
-            at once. The ``'ambiguous'`` mask only contains the ``'global'`` subclassification,
-            while the ``'comp'`` dictionary only contains ``'nii'``. ``'seyfert'`` and
-            ``'liner'`` are not available for ``'nii'``. All the global masks are unique (a spaxel
-            can only belong to one of them) with the exception of ``'agn'``, which intersects with
-            ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``, ``get_bpt``
-            will return a tuple, the first elemnt of which is the dictionary of classification
-            masks, and the second the matplotlib figure.
+            do not fall in any  classification or fall in more than one). Each key provides access
+            to a new dictionary with keys ``'nii'`` (for the constraints in the diagram NII/Halpha
+            vs OIII/Hbeta),  ``'sii'`` (SII/Halpha vs OIII/Hbeta), ``'oi'`` (OI/Halpha vs
+            OIII/Hbeta; only if ``use_oi=True``), and ``'global'``, which applies all the previous
+            constraints at once. The ``'ambiguous'`` mask only contains the ``'global'``
+            subclassification, while the ``'comp'`` dictionary only contains ``'nii'``.
+            ``'nii'`` is not available for ``'seyfert'`` and ``'liner'``. All the global masks are
+            unique (a spaxel can only belong to one of them) with the exception of ``'agn'``, which
+            intersects with ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``,
+            ``bpt_kewley06`` will return a tuple, the first elemnt of which is the dictionary of
+            classification masks, and the second the matplotlib figure for the generated plot.
 
     Example:
         >>> maps_8485_1901 = Maps(plateifu='8485-1901')
@@ -244,13 +248,21 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
     """
 
+    if 'snr' in kwargs:
+        warnings.warn('snr is deprecated. Use snr_min instead. '
+                      'snr will be removed in a future version of marvin',
+                      MarvinDeprecationWarning)
+        snr_min = kwargs.pop('snr')
+    elif len(kwargs.keys()) > 0:
+        raise MarvinError('unknown keyword {0}'.format(list(kwargs.keys())[0]))
+
     # Gets the necessary emission line maps
-    oiii = get_masked(maps, 'oiii_5008', snr=get_snr(snr, 'oiii'))
-    nii = get_masked(maps, 'nii_6585', snr=get_snr(snr, 'nii'))
-    ha = get_masked(maps, 'ha_6564', snr=get_snr(snr, 'ha'))
-    hb = get_masked(maps, 'hb_4862', snr=get_snr(snr, 'hb'))
-    sii = get_masked(maps, 'sii_6718', snr=get_snr(snr, 'sii'))
-    oi = get_masked(maps, 'oi_6302', snr=get_snr(snr, 'oi'))
+    oiii = get_masked(maps, 'oiii_5008', snr=get_snr(snr_min, 'oiii'))
+    nii = get_masked(maps, 'nii_6585', snr=get_snr(snr_min, 'nii'))
+    ha = get_masked(maps, 'ha_6564', snr=get_snr(snr_min, 'ha'))
+    hb = get_masked(maps, 'hb_4862', snr=get_snr(snr_min, 'hb'))
+    sii = get_masked(maps, 'sii_6718', snr=get_snr(snr_min, 'sii'))
+    oi = get_masked(maps, 'oi_6302', snr=get_snr(snr_min, 'oi'))
 
     # Calculate masked logarithms
     log_oiii_hb = np.ma.log10(oiii / hb)
@@ -268,6 +280,7 @@ def bpt_kewley06(maps, snr=3, return_figure=True, use_oi=True):
 
     comp_mask = ((log_oiii_hb > kewley_sf_nii(log_nii_ha)) & (log_nii_ha < 0.05)).filled(False) & \
                 ((log_oiii_hb < kewley_comp_nii(log_nii_ha)) & (log_nii_ha < 0.465)).filled(False)
+    comp_mask &= (sf_mask_sii & sf_mask_oi) if use_oi else sf_mask_sii
 
     agn_mask_nii = ((log_oiii_hb > kewley_comp_nii(log_nii_ha)) |
                     (log_nii_ha > 0.465)).filled(False)
