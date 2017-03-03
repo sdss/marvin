@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-08 19:09:42
+# @Last Modified time: 2017-02-19 16:51:20
 
 from __future__ import print_function, division, absolute_import
 
@@ -33,39 +33,25 @@ class TestImagesBase(MarvinTest):
     def setUpClass(cls):
 
         super(TestImagesBase, cls).setUpClass()
-        cls.mangaid = '1-209232'
-        cls.plate = 8485
-        cls.ifu = '1901'
-        cls.plateifu = '8485-1901'
-        cls.mastar_plateifu = '8705-1901'
-        cls.cubepk = 10179
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
         cls.imagelist = ['8485-1901', '7443-12701', '7443-1901']
+        cls.mastar_plateifu = '8705-1901'
 
         cls.new_plateifu = '7495-1901'
         cls.new_plate = 7495
         cls.new_ifu = '1901'
         cls.new_file = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.new_plateifu)
 
-        cls.sasbasedir = os.getenv("$SAS_BASE_DIR")
-        cls.mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
         cls.remoteredux = 'https://sdss@dtn01.sdss.org/sas/mangawork/manga/spectro/redux/'
         cls.remoteurl = 'https://data.sdss.org/sas/mangawork/manga/spectro/redux/'
-
-        cls.init_mode = config.mode
-        cls.init_sasurl = config.sasurl
-        cls.init_urlmap = config.urlmap
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        config.switchSasUrl('local')
-        config.sasurl = self.init_sasurl
+        self._reset_the_config()
+        self.set_sasurl('local')
         self.mode = self.init_mode
-        config.urlmap = self.init_urlmap
         config.setMPL('MPL-4')
         config.forceDbOn()
         self.drpver, __ = config.lookUpVersions(release=config.release)
@@ -80,10 +66,6 @@ class TestImagesBase(MarvinTest):
                 os.remove(file)
         self._remove_cube(release='MPL-5')
         self._remove_cube(release='MPL-4')
-
-    def _update_release(self, release):
-        config.setMPL(release)
-        self.drpver, __ = config.lookUpVersions(release=release)
 
     def _make_paths(self, basepath, mode=None, inputs=None):
         fullpaths = []

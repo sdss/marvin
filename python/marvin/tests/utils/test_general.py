@@ -30,23 +30,21 @@ from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
+from marvin.tests import MarvinTest
 
 
-class TestConvertCoords(unittest.TestCase):
+class TestConvertCoords(MarvinTest):
 
     __metaclass__ = TemplateTestCase
 
     @classmethod
     def setUpClass(cls):
+        super(TestConvertCoords, cls).setUpClass()
         outver = 'v1_5_1'
-        filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),
-                                outver,
-                                '8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+        filename = os.path.join(cls.mangaredux, outver, str(cls.plate), 'stack', cls.cubename)
         cls.testHeader = fits.getheader(filename, 1)
         cls.testWcs = WCS(cls.testHeader)
         cls.testShape = fits.getdata(filename, 1).shape[1:]
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
 
     def test_pix_center(self):
         """Tests mode='pix', xyorig='center'."""
@@ -65,7 +63,7 @@ class TestConvertCoords(unittest.TestCase):
                     [18, 12],
                     [12, 18],
                     [27, 27],
-                    [7,  7],
+                    [7, 7],
                     [20, 18],
                     [17, 17]]
 
@@ -134,13 +132,11 @@ class TestConvertCoords(unittest.TestCase):
         self.assertIn('some indices are out of limits', str(cm.exception))
 
 
-class TestGetNSAData(unittest.TestCase):
+class TestGetNSAData(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-        marvin.config.switchSasUrl('local')
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
+        super(TestGetNSAData, cls).setUpClass()
 
     def setUp(self):
         marvin.config.forceDbOn()
@@ -157,62 +153,59 @@ class TestGetNSAData(unittest.TestCase):
         self.assertEqual(data['iauname'], 'J153010.73+484124.8')
 
     def test_local_nsa(self):
-        data = get_nsa_data('1-209232', source='nsa', mode='local')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
         self._test_nsa(data)
 
     def test_local_drpall(self):
-        data = get_nsa_data('1-209232', source='drpall', mode='local')
+        data = get_nsa_data(self.mangaid, source='drpall', mode='local')
         self._test_drpall(data)
 
     def test_remote_nsa(self):
-        data = get_nsa_data('1-209232', source='nsa', mode='remote')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='remote')
         self._test_nsa(data)
 
     def test_remote_drpall(self):
-        data = get_nsa_data('1-209232', source='drpall', mode='remote')
+        data = get_nsa_data(self.mangaid, source='drpall', mode='remote')
         self._test_drpall(data)
 
     def test_auto_nsa_with_db(self):
-        data = get_nsa_data('1-209232', source='nsa', mode='auto')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='auto')
         self._test_nsa(data)
 
     def test_auto_drpall_with_drpall(self):
-        data = get_nsa_data('1-209232', source='drpall', mode='auto')
+        data = get_nsa_data(self.mangaid, source='drpall', mode='auto')
         self._test_drpall(data)
 
     def test_auto_nsa_without_db(self):
         marvin.config.forceDbOff()
-        data = get_nsa_data('1-209232', source='nsa', mode='auto')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='auto')
         self._test_nsa(data)
 
     def test_auto_drpall_without_drpall(self):
         marvin.config._drpall = None
-        data = get_nsa_data('1-209232', source='drpall', mode='auto')
+        data = get_nsa_data(self.mangaid, source='drpall', mode='auto')
         self._test_drpall(data)
 
     def test_hybrid_properties_populated(self):
-        data = get_nsa_data('1-209232', source='nsa', mode='local')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
         self.assertIn('elpetro_mag_g', data)
 
     def test_nsa_dotable(self):
-        data = get_nsa_data('1-209232', source='nsa', mode='local')
+        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
         self.assertEqual(data['elpetro_mag_g'], data.elpetro_mag_g)
 
     def test_drpall_dotable(self):
-        data = get_nsa_data('1-209232', source='drpall', mode='local')
+        data = get_nsa_data(self.mangaid, source='drpall', mode='local')
         self.assertEqual(data['iauname'], data.iauname)
 
 
-class TestPillowImage(unittest.TestCase):
+class TestPillowImage(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
+        super(TestPillowImage, cls).setUpClass()
         outver = 'v1_5_1'
-        cls.filename = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'),
-                                    outver,
-                                    '8485/stack/images/1901.png')
+        cls.filename = os.path.join(cls.mangaredux, outver, str(cls.plate), 'stack/images', cls.imgname)
 
     def test_image_has_wcs(self):
         w = getWCSFromPng(self.filename)

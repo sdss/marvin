@@ -1,0 +1,23 @@
+{% extends "errors/error.html" %}
+
+{% block error %}
+
+    <div class='errorcode' id='error_pnf'>
+        <h1 id='quote'>"This will all end in tears I just know it."</h1>
+
+        <h2>422: Invalid Parameters</h2>
+        <p>Your inputs just aren't up to snuff.</p>
+
+        {% if data %}
+            <h5 class='alert alert-danger'>Validation Errors:</h5>
+            <table class='table table-bordered table-condensed table-striped'>
+            <thead><th>Parameter</th><th>Message</th></thead>
+            <tbody>
+            {% for name, errmsg in data.items() %}
+                <tr><th>{{name}}</th><td class='text text-danger'>{{errmsg[0]}}</td></tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock error %}

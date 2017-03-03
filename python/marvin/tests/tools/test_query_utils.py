@@ -2,16 +2,16 @@ from __future__ import print_function, division, absolute_import
 
 import unittest
 from marvin import config
+from marvin.tests import MarvinTest
 from marvin.tools.query import query_utils
 
 
-class ExpandFilterAliasesTestCase(unittest.TestCase):
+class ExpandFilterAliasesTestCase(MarvinTest):
     """Tests from 'query_utils.py'."""
 
     @classmethod
     def setUpClass(cls):
-        config.use_sentry = False
-        config.add_github_message = False
+        super(ExpandFilterAliasesTestCase, cls).setUpClass()
 
     def test_D4000_value_gt_1(self):
         desired = ("specindex_type.name == 'D4000' and specindex.value > 1")

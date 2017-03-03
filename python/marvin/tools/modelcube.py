@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-05 00:07:24
+# @Last Modified time: 2017-02-10 17:54:00
 
 from __future__ import print_function, division, absolute_import
 
@@ -281,7 +281,7 @@ class ModelCube(MarvinToolsClass):
                               template_kin=self.template_kin)
 
         try:
-            response = self.ToolInteraction(url_full)
+            response = self._toolInteraction(url_full)
         except Exception as ee:
             raise MarvinError('found a problem when checking if remote model cube '
                               'exists: {0}'.format(str(ee)))

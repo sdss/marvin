@@ -1,27 +1,33 @@
-import json
 from flask_classy import route
 from flask import request, jsonify
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
-from marvin.api import parse_params
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
+import json
 
 
-def _getCubes(searchfilter, params=None, rettype=None, start=None, end=None,
-              limit=None, sort=None, order=None, release=None):
+def _getCubes(searchfilter, **kwargs):
     """Run query locally at Utah."""
 
-    if release is None:
-        release = parse_params(request)
+    release = kwargs.pop('release', None)
+    kwargs['returnparams'] = kwargs.pop('params', None)
+    kwargs['returntype'] = kwargs.pop('rettype', None)
 
     try:
-        q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
-                       mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+        # q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
+        #                mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
+        q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
 
     results = r.results
+
+    # get the subset keywords
+    start = kwargs.get('start', None)
+    end = kwargs.get('end', None)
+    limit = kwargs.get('limit', None)
+    params = kwargs.get('params', None)
 
     # get a subset
     chunk = None
@@ -80,10 +86,12 @@ class QueryView(BaseView):
 
         '''
         self.results['data'] = 'this is a query!'
+        self.results['status'] = 1
         return jsonify(self.results)
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
-    def cube_query(self):
+    @av.check_args(use_params='query', required='searchfilter')
+    def cube_query(self, args):
         ''' Performs a remote query
 
         .. :quickref: Query; Perform a remote query
@@ -152,19 +160,19 @@ class QueryView(BaseView):
            }
 
         '''
-        searchfilter = self.results['inconfig'].get('searchfilter', None)
-        params = self.results['inconfig'].get('params', None)
-        rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', 100)
-        sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', 'asc')
-        release = self.results['inconfig'].get('release', None)
+        searchfilter = args.pop('searchfilter', None)
+        # searchfilter = self.results['inconfig'].get('searchfilter', None)
+        # params = self.results['inconfig'].get('params', None)
+        # rettype = self.results['inconfig'].get('returntype', None)
+        # limit = self.results['inconfig'].get('limit', 100)
+        # sort = self.results['inconfig'].get('sort', None)
+        # order = self.results['inconfig'].get('order', 'asc')
+        # release = self.results['inconfig'].get('release', None)
 
-        print('inconfig', self.results['inconfig'])
-        print('cube_query', searchfilter, params, limit)
         try:
-            res = _getCubes(searchfilter, params=params, rettype=rettype,
-                            limit=limit, sort=sort, order=order, release=release)
+            # res = _getCubes(searchfilter, params=params, rettype=rettype,
+            #                 limit=limit, sort=sort, order=order, release=release)
+            res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
@@ -172,10 +180,12 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
+        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
         return json.dumps(self.results)
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
-    def query_getsubset(self):
+    @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
+    def query_getsubset(self, args):
         ''' Remotely grab a subset of results from a query
 
         .. :quickref: Query; Grab a subset of results from a remote query
@@ -246,20 +256,22 @@ class QueryView(BaseView):
            }
 
         '''
-        searchfilter = self.results['inconfig'].get('searchfilter', None)
-        params = self.results['inconfig'].get('params', None)
-        start = self.results['inconfig'].get('start', None)
-        end = self.results['inconfig'].get('end', None)
-        rettype = self.results['inconfig'].get('returntype', None)
-        limit = self.results['inconfig'].get('limit', 100)
-        sort = self.results['inconfig'].get('sort', None)
-        order = self.results['inconfig'].get('order', 'asc')
-        release = self.results['inconfig'].get('release', None)
+        searchfilter = args.pop('searchfilter', None)
+        # searchfilter = self.results['inconfig'].get('searchfilter', None)
+        # params = self.results['inconfig'].get('params', None)
+        # start = self.results['inconfig'].get('start', None)
+        # end = self.results['inconfig'].get('end', None)
+        # rettype = self.results['inconfig'].get('returntype', None)
+        # limit = self.results['inconfig'].get('limit', 100)
+        # sort = self.results['inconfig'].get('sort', None)
+        # order = self.results['inconfig'].get('order', 'asc')
+        # release = self.results['inconfig'].get('release', None)
 
         try:
-            res = _getCubes(searchfilter, params=params, start=int(start),
-                            end=int(end), rettype=rettype, limit=limit,
-                            sort=sort, order=order, release=release)
+            # res = _getCubes(searchfilter, params=params, start=int(start),
+            #                 end=int(end), rettype=rettype, limit=limit,
+            #                 sort=sort, order=order, release=release)
+            res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
@@ -267,10 +279,12 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
+        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
         return json.dumps(self.results)
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
-    def getparamslist(self):
+    @av.check_args(use_params='query', required='paramdisplay')
+    def getparamslist(self, args):
         ''' Retrieve a list of all available input parameters into the query
 
         .. :quickref: Query; Get a list of all or "best" queryable parameters
@@ -312,7 +326,7 @@ class QueryView(BaseView):
            }
 
         '''
-        paramdisplay = self.results['inconfig'].get('paramdisplay', 'all')
+        paramdisplay = args.pop('paramdisplay', 'all')
         q = Query(mode='local')
         if paramdisplay == 'all':
             params = q.get_available_params()
@@ -324,7 +338,8 @@ class QueryView(BaseView):
         return output
 
     @route('/cleanup/', methods=['GET', 'POST'], endpoint='cleanupqueries')
-    def cleanup(self):
+    @av.check_args(use_params='query', required='task')
+    def cleanup(self, args):
         ''' Clean up idle server-side queries or retrieve the list of them
 
         Do not use!
@@ -369,7 +384,7 @@ class QueryView(BaseView):
            }
 
         '''
-        task = self.results['inconfig'].get('task', None)
+        task = args.pop('task', None)
         if task == 'clean':
             q = Query(mode='local')
             q._cleanUpQueries()

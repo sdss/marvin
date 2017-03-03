@@ -17,19 +17,8 @@ import marvin.tests
 class TestSampleDB(marvin.tests.MarvinTest):
     """A series of tests for the SampleModelClasses."""
 
-    @classmethod
-    def setUpClass(cls):
-
-        marvin.config.switchSasUrl('local')
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
     def setUp(self):
-
+        self.set_sasurl('local')
         self.session = marvin.marvindb.session
         self.sampledb = marvin.marvindb.sampledb
 

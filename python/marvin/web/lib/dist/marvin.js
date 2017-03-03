@@ -884,13 +884,12 @@ var Galaxy = function () {
                 var popid = value.id;
                 // split id and grab the mngtarg
 
-                var _popid$split = popid.split('_');
-
-                var _popid$split2 = _slicedToArray(_popid$split, 2);
-
-                var base = _popid$split2[0];
-                var targ = _popid$split2[1];
+                var _popid$split = popid.split('_'),
+                    _popid$split2 = _slicedToArray(_popid$split, 2),
+                    base = _popid$split2[0],
+                    targ = _popid$split2[1];
                 // build the label list id
+
 
                 var listid = '#list_' + targ;
                 // init the specific popover
@@ -1168,19 +1167,15 @@ var Galaxy = function () {
                 var parentdiv = this.maindiv.find('#' + parentid);
                 var index = parseInt(parentid[parentid.length - 1]);
 
-                var _updateNSAData = this.updateNSAData(index, 'galaxy');
+                var _updateNSAData = this.updateNSAData(index, 'galaxy'),
+                    _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                    data = _updateNSAData2[0],
+                    options = _updateNSAData2[1];
 
-                var _updateNSAData2 = _slicedToArray(_updateNSAData, 2);
-
-                var data = _updateNSAData2[0];
-                var options = _updateNSAData2[1];
-
-                var _updateNSAData3 = this.updateNSAData(index, 'sample');
-
-                var _updateNSAData4 = _slicedToArray(_updateNSAData3, 2);
-
-                var sdata = _updateNSAData4[0];
-                var soptions = _updateNSAData4[1];
+                var _updateNSAData3 = this.updateNSAData(index, 'sample'),
+                    _updateNSAData4 = _slicedToArray(_updateNSAData3, 2),
+                    sdata = _updateNSAData4[0],
+                    soptions = _updateNSAData4[1];
 
                 options['altseries'] = { data: sdata, name: 'Sample' };
                 this.destroyChart(parentdiv, index);
@@ -1191,19 +1186,15 @@ var Galaxy = function () {
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy');
+                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy'),
+                        _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2),
+                        data = _this$updateNSAData2[0],
+                        options = _this$updateNSAData2[1];
 
-                    var _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2);
-
-                    var data = _this$updateNSAData2[0];
-                    var options = _this$updateNSAData2[1];
-
-                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample');
-
-                    var _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2);
-
-                    var sdata = _this$updateNSAData4[0];
-                    var soptions = _this$updateNSAData4[1];
+                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample'),
+                        _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2),
+                        sdata = _this$updateNSAData4[0],
+                        soptions = _this$updateNSAData4[1];
 
                     options['altseries'] = { data: sdata, name: 'Sample' };
                     _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
@@ -1322,14 +1313,13 @@ var Galaxy = function () {
             var _this = event.data;
             var param = event.originalEvent.dataTransfer.getData('Text');
 
-            var _param$split = param.split('+');
-
-            var _param$split2 = _slicedToArray(_param$split, 2);
-
-            var id = _param$split2[0];
-            var name = _param$split2[1];
+            var _param$split = param.split('+'),
+                _param$split2 = _slicedToArray(_param$split, 2),
+                id = _param$split2[0],
+                name = _param$split2[1];
 
             // Hide overlay elements
+
 
             $.each(_this.nsascatter, function (index, scat) {
                 scat.overgroup.hide();
@@ -1552,12 +1542,10 @@ var HeatMap = function () {
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 

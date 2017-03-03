@@ -23,27 +23,11 @@ class TestCubeBase(MarvinTest):
     def setUpClass(cls):
 
         super(TestCubeBase, cls).setUpClass()
-        config.switchSasUrl('local')
 
-        cls.outver = 'v1_5_1'
         cls.outrelease = 'MPL-4'
-        cls.filename = os.path.realpath(os.path.join(
-            os.getenv('MANGA_SPECTRO_REDUX'), cls.outver,
-            '8485/stack/manga-8485-1901-LOGCUBE.fits.gz'))
-        cls.mangaid = '1-209232'
-        cls.plate = 8485
-        cls.plateifu = '8485-1901'
-        cls.cubepk = 10179
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
-
-        cls.init_mode = config.mode
-        cls.init_sasurl = config.sasurl
-        cls.init_urlmap = config.urlmap
-        cls.init_xyorig = config.xyorig
-
-        cls.session = marvindb.session
-
+        cls._update_release(cls.outrelease)
+        cls.set_filepaths()
+        cls.filename = os.path.realpath(cls.cubepath)
         cls.cubeFromFile = Cube(filename=cls.filename)
 
     @classmethod
@@ -51,13 +35,10 @@ class TestCubeBase(MarvinTest):
         pass
 
     def setUp(self):
-
-        config.sasurl = self.init_sasurl
-        config.mode = self.init_mode
-        config.urlmap = self.init_urlmap
-        config.xyorig = self.init_xyorig
-
-        config.setMPL('MPL-4')
+        self._reset_the_config()
+        self.set_sasurl('local')
+        self._update_release('MPL-4')
+        self.set_filepaths()
 
     def tearDown(self):
         if self.session:
@@ -160,7 +141,7 @@ class TestCube(TestCubeBase):
         # This tests requires having the cube for 8485-1901 loaded for both
         # MPL-4 and MPL-5.
 
-        config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         self.assertEqual(config.release, 'MPL-5')
 
         cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
@@ -245,10 +226,10 @@ class TestCube(TestCubeBase):
     def test_load_7443_12701_file(self):
         """Loads a cube that is not in the NSA catalogue."""
 
-        config.setMPL('MPL-5')
+        self._update_release('MPL-5')
+        self.set_filepaths()
         filename = os.path.realpath(os.path.join(
-            os.getenv('MANGA_SPECTRO_REDUX'), 'v2_0_1',
-            '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
+            self.drppath, '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
         cube = Cube(filename=filename)
         self.assertEqual(cube.data_origin, 'file')
         self.assertIn('elpetro_amivar', cube.nsa)
@@ -256,7 +237,7 @@ class TestCube(TestCubeBase):
     def test_load_7443_12701_db(self):
         """Loads a cube that is not in the NSA catalogue."""
 
-        config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         cube = Cube(plateifu='7443-12701')
         self.assertEqual(cube.data_origin, 'db')
         self.assertIsNone(cube.nsa)
@@ -264,7 +245,7 @@ class TestCube(TestCubeBase):
     def test_load_7443_12701_api(self):
         """Loads a cube that is not in the NSA catalogue."""
 
-        config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         cube = Cube(plateifu='7443-12701', mode='remote')
         self.assertEqual(cube.data_origin, 'api')
         self.assertIsNone(cube.nsa)
@@ -546,7 +527,7 @@ class TestGetSpaxel(TestCubeBase):
 
     def test_getSpaxel_remote_drpver_differ_from_global(self):
 
-        config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         self.assertEqual(config.release, 'MPL-5')
 
         cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
@@ -556,7 +537,7 @@ class TestGetSpaxel(TestCubeBase):
     @skipIfNoDB
     def test_getspaxel_matches_file_db_remote(self):
 
-        config.setMPL('MPL-4')
+        self._update_release('MPL-4')
         self.assertEqual(config.release, 'MPL-4')
 
         cube_file = Cube(filename=self.filename)

@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 from flask import Flask, Blueprint, send_from_directory
 from flask_restful import Api
-from flask import session, request, render_template, g
+from flask import session, request, render_template, g, jsonify
 import flask_jsglue as jsg
 import flask_profiler
 from inspect import getmembers, isfunction
@@ -12,7 +12,9 @@ from brain.utils.general.general import getDbMachine
 from marvin import config, log
 from flask_featureflags import FeatureFlag
 from marvin.web.jinja_filters import jinjablue
-from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request
+from marvin.web.error_handlers import weberrors as web
+from marvin.utils.db import get_traceback
+from marvin.web.web_utils import updateGlobalSession, make_error_page, send_request, make_error_json
 import sys
 import os
 import logging
@@ -32,8 +34,9 @@ def register_blueprints(app=None):
 # ================================================================================
 
 
-def create_app(debug=False, local=False):
+def create_app(debug=False, local=False, use_profiler=True):
 
+    #from marvin.api import theapi as api
     from marvin.api.cube import CubeView
     from marvin.api.maps import MapsView
     from marvin.api.modelcube import ModelCubeView
@@ -167,24 +170,80 @@ def create_app(debug=False, local=False):
     # ----------------
     # Error Handling
     # ----------------
+
+    def _is_api(request):
+        ''' Checks if the error comes from the api '''
+        return request.blueprint == 'api' or 'api' in request.url
+
     @app.errorhandler(404)
     def page_not_found(error):
-        return make_error_page(app, 'Page Not Found', 404, sentry=sentry)
+        name = 'Page Not Found'
+        if _is_api(request):
+            return make_error_json(error, name, 404)
+        else:
+            return make_error_page(app, name, 404, sentry=sentry)
 
     @app.errorhandler(500)
     def internal_server_error(error):
-        return make_error_page(app, 'Internal Server Error', 500, sentry=sentry)
+        name = 'Internal Server Error'
+        if _is_api(request):
+            return make_error_json(error, name, 500)
+        else:
+            return make_error_page(app, name, 500, sentry=sentry)
 
     @app.errorhandler(400)
     def bad_request(error):
-        return make_error_page(app, 'Bad Request', 400, sentry=sentry)
+        name = 'Bad Request'
+        if _is_api(request):
+            return make_error_json(error, name, 400)
+        else:
+            return make_error_page(app, name, 400, sentry=sentry)
 
     @app.errorhandler(405)
-    def internal_server_error(error):
-        return make_error_page(app, 'Method Not Allowed', 405, sentry=sentry)
+    def method_not_allowed(error):
+        name = 'Method Not Allowed'
+        if _is_api(request):
+            return make_error_json(error, name, 405)
+        else:
+            return make_error_page(app, name, 405, sentry=sentry)
+
+    @app.errorhandler(422)
+    def handle_unprocessable_entity(error):
+        name = 'Unprocessable Entity'
+        data = getattr(error, 'data')
+        if data:
+            # Get validations from the ValidationError object
+            messages = data['messages']
+        else:
+            messages = ['Invalid request']
+
+        if _is_api(request):
+            return make_error_json(error, name, 422)
+        else:
+            return make_error_page(app, name, 422, sentry=sentry, data=messages)
+
+    # These should be moved into the api module but they need the api blueprint to be registered on
+    # I had these in the api.__init__ with the api blueprint defined there as theapi
+    # which was imported here, see line 39
+    # This should all be moved into the Brain and abstracted since it is
+    # general useful standardized stuff (what?)
+
+    @api.errorhandler(422)
+    def handle_unprocessable_entity(err):
+        # webargs attaches additional metadata to the `data` attribute
+        data = getattr(err, 'data')
+        if data:
+            # Get validations from the ValidationError object
+            messages = data['messages']
+        else:
+            messages = ['Invalid request']
+        return jsonify({
+            'validation_errors': messages,
+        }), 422
 
     # ----------------------------------
     # Registration
+    config.use_sentry = False
     #
     # API route registration
     CubeView.register(api)
@@ -208,10 +267,14 @@ def create_app(debug=False, local=False):
     # Register all custom Jinja filters in the file.
     app.register_blueprint(jinjablue)
 
+    # Register error handlers
+    app.register_blueprint(web)
+
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/flask-profiler
-    try:
-        flask_profiler.init_app(app)
-    except Exception as e:
-        pass
+    if use_profiler:
+        try:
+            flask_profiler.init_app(app)
+        except Exception as e:
+            pass
 
     return app

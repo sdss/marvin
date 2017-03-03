@@ -1,13 +1,12 @@
-import json
+#!/usr/bin/env python
+# encoding: utf-8
 
 import numpy as np
 
 from flask_classy import route
-from flask import Blueprint, redirect, url_for
-from flask import request, jsonify
+from flask import jsonify, request
 
-from marvin.api import parse_params
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 from marvin.tools.cube import Cube
@@ -17,14 +16,12 @@ from brain.core.exceptions import BrainError
 
 ''' stuff that runs server-side '''
 
-# api = Blueprint("api", __name__)
 
-
-def _getCube(name):
+def _getCube(name, **kwargs):
     ''' Retrieve a cube using marvin tools '''
 
-    # Gets the drpver from the request
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     cube = None
     results = {}
@@ -58,7 +55,7 @@ class CubeView(BaseView):
     ''' Class describing API calls related to MaNGA Cubes '''
 
     route_base = '/cubes/'
-    # decorators = [parseRoutePath]
+    # decorators = [av.check_args()]
 
     def index(self):
         '''Returns general cube info
@@ -100,12 +97,14 @@ class CubeView(BaseView):
            }
 
         '''
+        args = av.manual_parse(self, request)
         self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
         return jsonify(self.results)
 
     @route('/<name>/', methods=['GET', 'POST'], endpoint='getCube')
-    def get(self, name):
+    @av.check_args()
+    def get(self, args, name):
         '''Returns the necessary information to instantiate a cube for a given plateifu.
 
         .. :quickref: Cube; Get a cube given a plate-ifu or mangaid
@@ -165,7 +164,10 @@ class CubeView(BaseView):
 
         '''
 
-        cube, res = _getCube(name)
+        # Pop any args we don't want going into Cube
+        args = self._pop_args(args, arglist='name')
+
+        cube, res = _getCube(name, **args)
         self.update_results(res)
 
         if cube:
@@ -177,8 +179,10 @@ class CubeView(BaseView):
 
             wavelength = (cube.wavelength.tolist() if isinstance(cube.wavelength, np.ndarray)
                           else cube.wavelength)
-            self.results['data'] = {name: '{0}, {1}, {2}, {3}'.format(name, cube.plate,
-                                                                      cube.ra, cube.dec),
+            self.results['data'] = {'plateifu': name,
+                                    'mangaid': cube.mangaid,
+                                    'ra': cube.ra,
+                                    'dec': cube.dec,
                                     'header': cube.header.tostring(),
                                     'redshift': nsa_data.z if nsa_data else -9999,
                                     'shape': cube.shape,
@@ -187,48 +191,3 @@ class CubeView(BaseView):
 
         return jsonify(self.results)
 
-    # TODO: This is not used anymore, so maybe it should be removed.
-    @route('/<name>/spectra/', methods=['GET', 'POST'], endpoint='allspectra')
-    def getAllSpectra(self, name=None):
-        ''' placeholder to retrieve all spectra for a given cube.  For now, do nothing
-
-        .. :quickref: Cube; Get a spectrum from a cube
-
-        '''
-        self.results['data'] = '{0}, {1}'.format(name, url_for('api.getspectra', name=name, path=''))
-        return json.dumps(self.results)
-
-    # TODO: This is not used anymore, so maybe it should be removed.
-    @route('/<name>/spaxels/<path:path>', methods=['GET', 'POST'], endpoint='getspaxels')
-    @parseRoutePath
-    def getSpaxels(self, **kwargs):
-        """Returns a list of x, y positions for all the spaxels in a given cube.
-
-        .. :quickref: Cube; Get a spaxel from a cube
-
-        """
-
-        name = kwargs.pop('name')
-        for var in ['x', 'y', 'ra', 'dec']:
-            if var in kwargs:
-                kwargs[var] = eval(kwargs[var])
-
-        # Add ability to grab spectra from fits files
-        cube, res = _getCube(name)
-        self.update_results(res)
-        if not cube:
-            self.results['error'] = 'getSpaxels: No cube: {0}'.format(
-                res['error'])
-            return json.dumps(self.results)
-
-        try:
-            spaxels = cube.getSpaxel(**kwargs)
-            self.results['data'] = {}
-            self.results['data']['x'] = [spaxel.x for spaxel in spaxels]
-            self.results['data']['y'] = [spaxel.y for spaxel in spaxels]
-            self.results['status'] = 1
-        except Exception as e:
-            self.results['status'] = -1
-            self.results['error'] = 'getSpaxels: {0}'.format(str(e))
-
-        return json.dumps(self.results)

@@ -1,11 +1,13 @@
 from flask import current_app, Blueprint, render_template, jsonify
 from flask import session as current_session, request, redirect, url_for
-from flask_classy import FlaskView, route
+from flask_classy import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
-import json
+from marvin.api.base import arg_validate as av
+from marvin.web.controllers import BaseWebView
+
 from hashlib import md5
 try:
     from inspection.marvin import Inspection
@@ -15,19 +17,21 @@ except:
 index = Blueprint("index_page", __name__)
 
 
-class Marvin(FlaskView):
+class Marvin(BaseWebView):
     route_base = '/'
 
     def __init__(self):
-        self.base = {}
-        self.base['title'] = 'Marvin'
-        self.base['intro'] = 'Welcome to Marvin!'
-        self.base['page'] = 'marvin-main'
+        super(Marvin, self).__init__('marvin-main')
+        self.main = self.base.copy()
+
+    def before_request(self, *args, **kwargs):
+        super(Marvin, self).before_request(*args, **kwargs)
+        self.reset_dict(self.main)
 
     def index(self):
         current_app.logger.info('Welcome to Marvin Web!')
 
-        return render_template("index.html", **self.base)
+        return render_template("index.html", **self.main)
 
     def quote(self):
         return 'getting quote'
@@ -38,13 +42,13 @@ class Marvin(FlaskView):
 
     def database(self):
         onecube = marvindb.session.query(marvindb.datadb.Cube).first()
-        return str(onecube.plate)
+        return jsonify(result={'plate': onecube.plate, 'status': 1})
 
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')
     def galidselect(self):
         ''' Route that handle the Navbar plate/galaxy id search form '''
-        f = processRequest(request=request)
-        galid = f.get('galid', None)
+        args = av.manual_parse(self, request, use_params='index', required='galid')
+        galid = args.get('galid', None)
         if not galid:
             # if not galid return main page
             return redirect(url_for('index_page.Marvin:index'))
@@ -61,7 +65,6 @@ class Marvin(FlaskView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
-        self._drpver, self._dapver, self._release = parseSession()
         if marvindb.datadb is None:
             out = ['', '', '']
             current_app.logger.info('ERROR: Problem with marvindb.datadb.  Cannot build galaxy id auto complete list.')
@@ -74,18 +77,19 @@ class Marvin(FlaskView):
             out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
-        return json.dumps(out)
+        return jsonify(out)
 
     @route('/selectmpl/', methods=['GET', 'POST'], endpoint='selectmpl')
     def selectmpl(self):
         ''' Global selection of the MPL/DR versions '''
-        f = processRequest(request=request)
-        out = {'status': 1, 'msg': 'Success'}
-        version = f['mplselect']
-        current_session['currentver'] = version
+        args = av.manual_parse(self, request, use_params='index')
+        version = args.get('release', None)
+        current_session['release'] = version
         drpver, dapver = config.lookUpVersions(release=version)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
+        out = {'status': 1, 'msg': 'Success', 'current_release': version,
+               'current_drpver': drpver, 'current_dapver': dapver}
 
         return jsonify(result=out)
 

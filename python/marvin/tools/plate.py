@@ -189,7 +189,7 @@ class Plate(MarvinToolsClass, list):
         url = config.urlmap['api']['getPlate']['url'].format(**routeparams)
 
         # Make the API call
-        response = self.ToolInteraction(url)
+        response = self._toolInteraction(url)
         data = response.getData()
         self._hdr = data['header']
         self.data_origin = 'api'
@@ -219,7 +219,7 @@ class Plate(MarvinToolsClass, list):
             url = config.urlmap['api']['getPlateCubes']['url'].format(**routeparams)
 
             # Make the API call
-            response = self.ToolInteraction(url)
+            response = self._toolInteraction(url)
             data = response.getData()
             plateifus = data['plateifus']
             _cubes = [Cube(plateifu=pifu, mode='remote') for pifu in plateifus]

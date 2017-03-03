@@ -101,7 +101,7 @@ def _get_template_kin(dapver, template_kin=None):
         return __TEMPLATES_KIN_DEFAULT__
 
 
-def _get_bintemps(dapver):
+def _get_bintemps(dapver, default=None):
     ''' Get a list of all bin-template types for a given MPL '''
 
     if _is_MPL4(dapver):
@@ -112,6 +112,10 @@ def _get_bintemps(dapver):
         temps = __TEMPLATES_KIN__
 
     bintemps = ['-'.join(item) for item in list(itertools.product(bins, temps))]
+
+    if default:
+        bintemps = '{0}-{1}'.format(_get_bintype(dapver), _get_template_kin(dapver))
+
     return bintemps
 
 
@@ -425,7 +429,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                               template_kin=self.template_kin)
 
         try:
-            response = self.ToolInteraction(url_full)
+            response = self._toolInteraction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when checking if remote maps exists: {0}'.format(str(ee)))
@@ -618,7 +622,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
                                   binid=binid)
 
             try:
-                response = self.ToolInteraction(url_full)
+                response = self._toolInteraction(url_full)
             except Exception as ee:
                 raise marvin.core.exceptions.MarvinError(
                     'found a problem requesting the spaxels for binid={0}: {1}'

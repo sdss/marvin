@@ -18,40 +18,23 @@ class TestQueryBase(MarvinTest):
 
     @classmethod
     def setUpClass(cls):
-
         super(TestQueryBase, cls).setUpClass()
-        cls.mangaid = '1-209232'
-        cls.plate = 8485
-        cls.plateifu = '8485-1901'
-        cls.cubepk = 10179
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
-
-        cls.init_mode = config.mode
-        cls.init_sasurl = config.sasurl
-        cls.init_urlmap = config.urlmap
-        cls.init_traceback = config._traceback
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        config.sasurl = self.init_sasurl
+        self._reset_the_config()
+        self.set_sasurl('local', port=5000)
         self.mode = self.init_mode
-        config.urlmap = self.init_urlmap
-        config._traceback = self.init_traceback
         config.setMPL('MPL-4')
-        config.switchSasUrl('local')
         config.forceDbOn()
 
     def tearDown(self):
         pass
 
-    def _setRemote(self, mode='local'):
-        config.switchSasUrl(mode)
-        response = Interaction('api/general/getroutemap', request_type='get')
-        config.urlmap = response.getRouteMap()
+    def _set_remote(self, mode='local'):
         self.mode = 'remote'
 
 
@@ -89,7 +72,7 @@ class TestQuery(TestQueryBase):
         self._query_versions(mode='local')
 
     def test_query_versions_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._query_versions(mode='remote')
 
     def test_query_versions_local_othermpl(self):
@@ -97,12 +80,12 @@ class TestQuery(TestQueryBase):
         self._query_versions(mode='local', release='MPL-5')
 
     def test_query_versions_remote_othermpl(self):
-        self._setRemote()
+        self._set_remote()
         vers = ('v2_0_1', '2.0.2', 'MPL-5')
         self._query_versions(mode='remote', release='MPL-5')
 
     def test_query_versions_remote_utah(self):
-        self._setRemote(mode='utah')
+        self._set_remote(mode='utah')
         self._query_versions(mode='remote')
 
     def test_query_versions_local_mpl5(self):
@@ -111,12 +94,12 @@ class TestQuery(TestQueryBase):
 
     def test_query_versions_remote_mpl5(self):
         config.setMPL('MPL-5')
-        self._setRemote()
+        self._set_remote()
         self._query_versions(mode='remote')
 
     def test_query_versions_remote_utah_mpl5(self):
         config.setMPL('MPL-5')
-        self._setRemote(mode='utah')
+        self._set_remote(mode='utah')
         self._query_versions(mode='remote')
 
     def test_Query_drpver_and_dapver(self):
@@ -160,7 +143,7 @@ class TestQuery(TestQueryBase):
         self._queryparams(p, params, qps)
 
     def test_Query_remote_mpl4(self):
-        self._setRemote()
+        self._set_remote()
         p = 'nsa.z < 0.12 and ifu.name = 19*'
         q = Query(searchfilter=p, mode='remote')
         r = q.run()
@@ -169,7 +152,7 @@ class TestQuery(TestQueryBase):
 
     def test_Query_remote_mpl5(self):
         config.setMPL('MPL-5')
-        self._setRemote()
+        self._set_remote()
         p = 'nsa.z < 0.12 and ifu.name = 19*'
         q = Query(searchfilter=p, mode='remote')
         r = q.run()
@@ -186,7 +169,7 @@ class TestQuery(TestQueryBase):
         self.assertIn(tracemsg, config._traceback)
 
     def test_Query_remote_fail_traceback(self):
-        self._setRemote(mode='local')
+        self._set_remote(mode='local')
         p = 'nsa.z < 0.1'
         rt = 'nsa.hello'
         errmsg = 'nsa.hello does not match any column'
@@ -194,7 +177,7 @@ class TestQuery(TestQueryBase):
         self._fail_query(errmsg, tracemsg, searchfilter=p, returnparams=rt, mode=self.mode)
 
     def test_Query_remote_no_traceback(self):
-        self._setRemote(mode='local')
+        self._set_remote(mode='local')
         p = 'nsa.z < 0.1'
         q = Query(searchfilter=p)
         r = q.run()
@@ -269,7 +252,7 @@ class TestQuery(TestQueryBase):
         self.assertEqual(8, r.totalcount)
 
     def test_dap_query_2_remote(self):
-        self._setRemote()
+        self._set_remote()
         p = 'npergood(spaxelprop.emline_gflux_ha_6564 > 5) >= 20'
         q = Query(searchfilter=p, mode=self.mode)
         r = q.run()
@@ -288,7 +271,7 @@ class TestQueryReturnType(TestQueryBase):
             tool = Spaxel
 
         if mode == 'remote':
-            self._setRemote()
+            self._set_remote()
 
         config.setMPL('MPL-5')
         p = 'haflux > 25'
@@ -371,11 +354,11 @@ class TestQueryPickling(TestQueryBase):
         self.assertIn(errmsg, str(cm.exception))
 
     def test_pickle_save_remote(self):
-        self._setRemote()
+        self._set_remote()
         self._pickle_query(mode='remote', name='test_query.mpf')
 
     def test_pickle_save_auto(self):
-        self._setRemote()
+        self._set_remote()
         config.forceDbOff()
         self._pickle_query(mode='auto', name='test_query.mpf')
 
@@ -384,7 +367,7 @@ class TestQueryParams(TestQueryBase):
 
     def _get_params(self, pdisp, mode='local', expcount=None, inlist=None, outlist=None):
         if mode == 'remote':
-            self._setRemote()
+            self._set_remote()
         q = Query(mode=mode)
 
         if pdisp == 'all':
@@ -468,7 +451,7 @@ class TestQueryModes(TestQueryBase):
 
     def test_mode_auto_nodb(self):
         config.forceDbOff()
-        config.switchSasUrl('utah')
+        self.set_sasurl(loc='local')
         self.mode = 'auto'
         self._set_modes(expmode='remote')
 

@@ -16,7 +16,9 @@ import sys
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from collections import defaultdict
-from wtforms import StringField, validators, SelectMultipleField, ValidationError, SubmitField
+from wtforms import StringField, Field, FieldList, validators
+from wtforms import SelectMultipleField, ValidationError, SubmitField
+from wtforms.widgets import TextInput
 from wtforms_alchemy import model_form_factory
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -238,6 +240,43 @@ class ParamFormLookupDict(dict):
         return matches
 
 
+# Custom [Better]TagList Field for Search Parameter Box
+class TagListField(Field):
+    widget = TextInput()
+
+    def _value(self):
+        if self.data:
+            return u', '.join(self.data)
+        else:
+            return u''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = [x.strip() for x in valuelist[0].split(',') if x]
+        else:
+            self.data = []
+
+
+class BetterTagListField(TagListField):
+    def __init__(self, label='', validators=None, remove_duplicates=True, **kwargs):
+        super(BetterTagListField, self).__init__(label, validators, **kwargs)
+        self.remove_duplicates = remove_duplicates
+
+    def process_formdata(self, valuelist):
+        super(BetterTagListField, self).process_formdata(valuelist)
+        if self.remove_duplicates:
+            self.data = list(self._remove_duplicates(self.data))
+
+    @classmethod
+    def _remove_duplicates(cls, seq):
+        """Remove duplicates in a case insensitive, but case preserving manner"""
+        dups = {}
+        for item in seq:
+            if item.lower() not in dups:
+                dups[item.lower()] = True
+                yield item
+
+
 # Custom validator for MainForm
 class ValidOperand(object):
     def __init__(self, opstring='[<>=]', message=None):
@@ -257,7 +296,7 @@ class SearchForm(Form):
     searchbox = StringField('Search', [validators.Length(min=3, message='Input must have at least 3 characters'),
                             validators.DataRequired(message='Input filter string required'),
                             ValidOperand('[<>=]', message='Input must contain a valid operand.')])
-    parambox = StringField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Query Parameters</a>")
+    parambox = BetterTagListField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Query Parameters</a>")
     returnparams = SelectMultipleField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Return Parameters</a>")
     submit = SubmitField('Submit')
 

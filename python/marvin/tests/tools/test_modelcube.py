@@ -32,37 +32,21 @@ class TestModelCubeBase(marvin.tests.MarvinTest):
     def setUpClass(cls):
 
         super(TestModelCubeBase, cls).setUpClass()
-        marvin.config.switchSasUrl('local')
-
-        cls.drpver = 'v2_0_1'
-        cls.dapver = '2.0.2'
+        #marvin.config.switchSasUrl('local')
+        cls.set_sasurl('local')
         cls.release = 'MPL-5'
-
-        cls.plate = 8485
-        cls.ifu = 1901
-        cls.mangaid = '1-209232'
-        cls.plateifu = '8485-1901'
-
-        cls.bintype = 'SPX'
-        cls.template_kin = 'GAU-MILESHC'
-
-        cls.filename = os.path.join(
-            os.getenv('MANGA_SPECTRO_ANALYSIS'), cls.drpver, cls.dapver,
-            cls.bintype + '-' + cls.template_kin, str(cls.plate), str(cls.ifu),
-            'manga-{0}-LOGCUBE-{1}-{2}.fits.gz'.format(cls.plateifu,
-                                                       cls.bintype,
-                                                       cls.template_kin))
-
-        cls.marvindb_session = marvin.marvindb.session
+        cls._update_release(cls.release)
+        cls.set_filepaths()
+        cls.filename = os.path.realpath(cls.modelpath)
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-
-        marvin.marvindb.session = self.marvindb_session
-        marvin.config.setMPL('MPL-5')
+        self._reset_the_config()
+        self._update_release(self.release)
+        self.set_filepaths()
         self.assertTrue(os.path.exists(self.filename))
 
     def tearDown(self):
@@ -94,7 +78,6 @@ class TestModelCubeInit(TestModelCubeBase):
     def test_init_from_file_global_mpl4(self):
 
         marvin.config.setMPL('MPL-4')
-
         model_cube = ModelCube(filename=self.filename)
         self.assertEqual(model_cube.data_origin, 'file')
         self._test_init(model_cube)
@@ -203,7 +186,7 @@ class TestGetSpaxel(TestModelCubeBase):
 
     def test_getspaxel_matches_file_db_remote(self):
 
-        marvin.config.setMPL('MPL-5')
+        self._update_release('MPL-5')
         self.assertEqual(marvin.config.release, 'MPL-5')
 
         modelcube_file = ModelCube(filename=self.filename)

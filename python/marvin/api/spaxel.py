@@ -12,16 +12,14 @@
 
 from __future__ import division
 from __future__ import print_function
-import json
 
 import numpy as np
 
 from flask_classy import route
-from flask import request, jsonify
+from flask import jsonify
 
-from marvin.api import parse_params
 from marvin.tools.spaxel import Spaxel
-from marvin.api.base import BaseView
+from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 
@@ -32,7 +30,8 @@ def _getSpaxel(name, x, y, **kwargs):
     spaxel = None
     results = {}
 
-    release = parse_params(request)
+    # Pop the release to remove a duplicate input to Maps
+    release = kwargs.pop('release', None)
 
     # parse name into either mangaid or plateifu
     try:
@@ -66,7 +65,8 @@ class SpaxelView(BaseView):
     route_base = '/spaxels/'
 
     @route('/<name>/spectra/<x>/<y>/', methods=['GET', 'POST'], endpoint='getSpectrum')
-    def spectrum(self, name, x, y):
+    @av.check_args()
+    def spectrum(self, args, name, x, y):
         """Returns a dictionary with the DRP spectrum for a spaxel.
 
         Loads a DRP Cube and uses getSpaxel to retrieve the ``(x,y)``
@@ -123,8 +123,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, int(x), int(y),
-                                     maps=False, modelcube=False)
+        # Pop any args we don't want going into Spaxel
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, maps=False, modelcube=False, **args)
 
         self.update_results(results)
 
@@ -139,7 +141,8 @@ class SpaxelView(BaseView):
 
     @route('/<name>/properties/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getProperties')
-    def properties(self, name, x, y, template_kin):
+    @av.check_args()
+    def properties(self, args, name, x, y, template_kin):
         """Returns a dictionary with the DAP properties for a spaxel.
 
         Loads a DAP Maps and uses getSpaxel to retrieve the ``(x,y)``
@@ -200,9 +203,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, int(x), int(y),
-                                     template_kin=template_kin,
-                                     cube=False, modelcube=False)
+        # Pop any args we don't want going into Spaxel
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, cube=False, modelcube=False, **args)
 
         self.update_results(results)
 
@@ -223,7 +227,8 @@ class SpaxelView(BaseView):
 
     @route('/<name>/models/<template_kin>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getModels')
-    def getModels(self, name, x, y, template_kin):
+    @av.check_args()
+    def getModels(self, args, name, x, y, template_kin):
         """Returns a dictionary with the models for a spaxel.
 
         Loads a ModelCube and uses getSpaxel to retrieve the ``(x,y)``
@@ -289,9 +294,10 @@ class SpaxelView(BaseView):
 
         """
 
-        spaxel, results = _getSpaxel(name, x, y,
-                                     template_kin=template_kin,
-                                     cube=False, maps=False)
+        # Pop any args we don't want going into Spaxel
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+
+        spaxel, results = _getSpaxel(name, x, y, cube=False, maps=False, **args)
 
         self.update_results(results)
 

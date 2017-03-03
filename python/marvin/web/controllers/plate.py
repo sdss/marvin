@@ -13,47 +13,43 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 
-from flask import Blueprint, render_template, session as current_session, request
-from flask_classy import FlaskView, route
-from brain.api.base import processRequest
+from flask import Blueprint, render_template, request
+from flask_classy import route
 from marvin.core.exceptions import MarvinError
 from marvin.tools.plate import Plate as mPlate
 from marvin.utils.general import getImagesByPlate
-from marvin.web.web_utils import buildImageDict, parseSession
+from marvin.web.controllers import BaseWebView
+from marvin.web.web_utils import buildImageDict
+from marvin.api.base import arg_validate as av
 
 plate = Blueprint("plate_page", __name__)
 
 
-class Plate(FlaskView):
-    route_base = '/plate'
+class Plate(BaseWebView):
+    route_base = '/plate/'
 
     def __init__(self):
         ''' Initialize the route '''
-        self.plate = {}
-        self.plate['title'] = 'Marvin | Plate'
-        self.plate['page'] = 'marvin-plate'
-        self.plate['error'] = None
+        super(Plate, self).__init__('marvin-plate')
+        self.plate = self.base.copy()
         self.plate['plateid'] = None
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
-        self.plate['plateid'] = None
-        self.plate['error'] = None
-        self._drpver, self._dapver, self._release = parseSession()
+        super(Plate, self).before_request(*args, **kwargs)
+        self.reset_dict(self.plate)
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
-
-        # Attempt to retrieve search parameters
-        form = processRequest(request=request)
 
         return render_template('plate.html', **self.plate)
 
     def get(self, plateid):
         ''' Retrieve info for a given plate id '''
 
-        print('plate page', self._drpver, self._dapver, self._release)
-        self.plate['plateid'] = int(plateid)
+        # validate the input
+        args = av.manual_parse(self, request)
+        self.plate['plateid'] = args.get('plateid', type=int)
         pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
             plate = mPlate(**pinputs)
