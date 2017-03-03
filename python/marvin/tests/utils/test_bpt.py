@@ -75,7 +75,7 @@ class TestBPT(MarvinTest):
 
     def test_8485_1901_bpt_no_oi(self):
 
-        maps = Maps(plateifu='8485-1901')
+        maps = Maps(plateifu=self.plateifu)
         masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=False)
         self.assertIsInstance(figure, plt.Figure)
 
@@ -89,14 +89,14 @@ class TestBPT(MarvinTest):
 
     def test_8485_1901_bpt_no_figure(self):
 
-        maps = Maps(plateifu='8485-1901')
+        maps = Maps(plateifu=self.plateifu)
         bpt_return = maps.get_bpt(show_plot=False, return_figure=False, use_oi=False)
 
         self.assertIsInstance(bpt_return, dict)
 
     def test_8485_1901_bpt_snr_min(self):
 
-        maps = Maps(plateifu='8485-1901')
+        maps = Maps(plateifu=self.plateifu)
         masks = maps.get_bpt(snr_min=5, return_figure=False, show_plot=False)
 
         for em_mech in self.emission_mechanisms:
@@ -107,7 +107,7 @@ class TestBPT(MarvinTest):
 
     def test_8485_1901_bpt_snr_deprecated(self):
 
-        maps = Maps(plateifu='8485-1901')
+        maps = Maps(plateifu=self.plateifu)
 
         with warnings.catch_warnings(record=True) as warning_list:
             masks = maps.get_bpt(snr=5, return_figure=False, show_plot=False)
