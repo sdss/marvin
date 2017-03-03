@@ -649,8 +649,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         This method produces the BPT diagram for this target using emission line maps and
         returns a dictionary of classification masks, that can be used to select spaxels
-        that have been classified as belonging to a certain excitation process. It also provides
-        plotting functionalities.
+        that have been classified as belonging to a certain excitation process. It also
+        provides plotting functionalities.
 
         Parameters:
             method ({'kewley06'}):
