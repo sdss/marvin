@@ -20,7 +20,7 @@ import sys
 import marvin
 
 __all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
-           'MarvinNotImplemented', 'MarvinMissingDependency']
+           'MarvinNotImplemented', 'MarvinMissingDependency', 'MarvinDeprecationWarning']
 
 
 class MarvinSentry(object):
@@ -107,6 +107,11 @@ class MarvinUserWarning(UserWarning, MarvinWarning):
 
 class MarvinSkippedTestWarning(MarvinUserWarning):
     """A warning for when a test is skipped."""
+    pass
+
+
+class MarvinDeprecationWarning(MarvinUserWarning):
+    """A warning for deprecated features."""
     pass
 
 
