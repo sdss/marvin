@@ -17,6 +17,7 @@ WTForms-Components>=0.10.0
 validators>=0.10.3
 intervals>=0.8.0
 coveralls>=1.1
+sphinx_bootstrap_theme>=0.4.12
 
 # Web
 Flask>=0.11.1
