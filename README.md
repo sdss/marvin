@@ -6,6 +6,7 @@ Marvin is the ultimate tool to visualise and analyse MaNGA data. It is developed
 [![PyPI](https://img.shields.io/pypi/v/sdss-marvin.svg)](https://pypi.python.org/pypi/sdss-marvin)
 [![PyPI download](https://img.shields.io/pypi/dm/sdss-marvin.svg)](https://pypi.python.org/pypi/sdss-marvin)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.292632.svg)](https://doi.org/10.5281/zenodo.292632)
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 
 Installation
 ------------
