@@ -17,6 +17,8 @@ from __future__ import print_function
 
 import os
 import sys
+import warnings
+
 import marvin
 
 __all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
@@ -46,8 +48,15 @@ class MarvinSentry(object):
             try:
                 self.client.context.merge({'user': {'name': os.getlogin(),
                                                     'system': '_'.join(os.uname())}})
-            except OSError:
+            except (OSError, IOError) as ee:
+                warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
+                              MarvinWarning)
                 self.client = None
+            except:
+                warnings.warn('cannot initiate Sentry error reporting: unknown error.',
+                              MarvinWarning)
+                self.client = None
+
         else:
             self.client = None
 
