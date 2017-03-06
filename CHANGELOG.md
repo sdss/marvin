@@ -23,6 +23,7 @@
 
 ### Fixed:
 - Issue #181: web display of maps were inverted; changed to xyz[jj, ii, val] in heatmap.js
+- Added more code to handle MarvinSentry exceptions to fix #179.
 
 
 ## [2.1.0] - 2017/02/16
