@@ -50,11 +50,11 @@ class MarvinSentry(object):
                                                     'system': '_'.join(os.uname())}})
             except (OSError, IOError) as ee:
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
-                              MarvinWarning)
+                              UserWarning)
                 self.client = None
             except:
                 warnings.warn('cannot initiate Sentry error reporting: unknown error.',
-                              MarvinWarning)
+                              UserWarning)
                 self.client = None
 
         else:
