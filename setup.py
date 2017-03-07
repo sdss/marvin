@@ -67,7 +67,7 @@ install_requires = [line.strip().replace('==', '>=') for line in open(requiremen
                     if not line.strip().startswith('#') and line.strip() != '']
 
 NAME = 'sdss-marvin'
-VERSION = '2.1.2-dev0'
+VERSION = '2.1.2-dev1'
 RELEASE = 'dev' not in VERSION
 generate_version_py(NAME, VERSION, RELEASE)
 
