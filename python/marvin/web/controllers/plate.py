@@ -49,7 +49,7 @@ class Plate(BaseWebView):
 
         # validate the input
         args = av.manual_parse(self, request)
-        self.plate['plateid'] = args.get('plateid', type=int)
+        self.plate['plateid'] = args.get('plateid')
         pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
             plate = mPlate(**pinputs)

@@ -68,6 +68,7 @@ class Search(BaseWebView):
         form = processRequest(request=request)
         self.search['formparams'] = form
 
+        print('search form', form, type(form))
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
         q = Query(release=self._release)
@@ -102,6 +103,7 @@ class Search(BaseWebView):
             returnparams = returnparams if returnparams and not parambox else \
                 parambox if parambox and not returnparams else \
                 list(set(returnparams) | set(parambox)) if returnparams and parambox else None
+            print('return params', returnparams)
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
 
             # if main form passes validation then do search
@@ -164,7 +166,6 @@ class Search(BaseWebView):
 
         form = processRequest(request=request)
         args = av.manual_parse(self, request, use_params='query')
-        print('web table args', args)
 
         #{'sort': u'cube.mangaid', 'task': None, 'end': None, 'searchfilter': None,
         #'paramdisplay': None, 'start': None, 'rettype': None, 'limit': 10, 'offset': 30,
@@ -192,7 +193,7 @@ class Search(BaseWebView):
             return output
 
         # do query
-        q, res = doQuery(searchfilter=searchvalue, release=self._release, **args)
+        q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
         # q, res = doQuery(searchfilter=searchvalue, release=self._release,
         #                  limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
