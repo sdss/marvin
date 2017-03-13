@@ -26,6 +26,8 @@ from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
+from marvin.core.caching_query import FromCache
+from marvin.core import marvin_pickle
 from collections import OrderedDict
 import os
 import numpy as np
@@ -145,12 +147,42 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
+def get_nsa_dict(name, drpver):
+    ''' Gets a NSA dictionary from a pickle or a query '''
+    nsapath = os.environ.get('MANGA_SCRATCH_DIR', None)
+    if nsapath and os.path.isdir(nsapath):
+        nsapath = nsapath
+    else:
+        nsapath = os.path.expanduser('~')
+
+    nsaroot = os.path.join(nsapath, 'nsa_pickles')
+    if not os.path.isdir(nsaroot):
+        os.makedirs(nsaroot)
+
+    picklename = '{0}.pickle'.format(name)
+    nsapickle_file = os.path.join(nsaroot, picklename)
+    if os.path.isfile(nsapickle_file):
+        nsadict = marvin_pickle.restore(nsapickle_file)
+    else:
+        # make from scratch from db
+        #nsacache = 'nsa_mpl5' if drpver == 'v2_0_1' else 'nsa_mpl4' if drpver == 'v1_5_1' else None
+        session = marvindb.session
+        sampledb = marvindb.sampledb
+        allnsa = session.query(sampledb.NSA, marvindb.datadb.Cube.plateifu).\
+            join(sampledb.MangaTargetToNSA, sampledb.MangaTarget,
+                 marvindb.datadb.Cube, marvindb.datadb.PipelineInfo,
+                 marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
+            filter(marvindb.datadb.PipelineVersion.version == drpver).options(FromCache(name)).all()
+        nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
+    return nsadict
+
+
 class Galaxy(BaseWebView):
     route_base = '/galaxy/'
 
     def __init__(self):
         ''' Initialize the route '''
-        super(Galaxy, self).__init__('marvin-random')
+        super(Galaxy, self).__init__('marvin-galaxy')
         self.galaxy = self.base.copy()
         self.galaxy['cube'] = None
         self.galaxy['image'] = ''
@@ -432,17 +464,12 @@ class Galaxy(BaseWebView):
             else:
                 # get the sample nsa parameters
                 try:
-                    session = marvindb.session
-                    sampledb = marvindb.sampledb
-                    allnsa = session.query(sampledb.NSA, marvindb.datadb.Cube.plateifu).\
-                        join(sampledb.MangaTargetToNSA, sampledb.MangaTarget,
-                             marvindb.datadb.Cube, marvindb.datadb.PipelineInfo,
-                             marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
-                        filter(marvindb.datadb.PipelineVersion.version == self._drpver).all()
+                    nsacache = 'nsa_mpl5' if self._drpver == 'v2_0_1' else 'nsa_mpl4' if self._drpver == 'v1_5_1' else None
+                    nsadict = get_nsa_dict(nsacache, self._drpver)
                 except Exception as e:
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}
                 else:
-                    nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
+                    #nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
                     nsasamp = {c: [n[0][c.split('_i')[0]][5] if 'absmag_i' in c or 'mtol_i' in c else n[0][c] for n in nsadict] for c in cols}
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
                     nsa['sample'] = nsasamp

@@ -36,6 +36,16 @@ if not os.path.isdir(dogroot):
     os.makedirs(dogroot)
 
 
+# make an nsa region
+def make_nsa_region(name):
+    reg = make_region(key_mangler=md5_key_mangler).configure(
+            'dogpile.cache.dbm',
+            expiration_time=3600,
+            arguments={'filename': os.path.join(dogroot, '{0}_cache.dbm'.format(name))}
+        )
+    return reg
+
+
 # db hash key
 def md5_key_mangler(key):
     """Receive cache keys as long concatenated strings;
@@ -61,6 +71,8 @@ regions['default'] = make_region(
             # "filename": os.path.join(dogroot, "cache.dbm") # file option
         }
     )
+regions['nsa_mpl5'] = make_nsa_region('nsa_mpl5')
+regions['nsa_mpl4'] = make_nsa_region('nsa_mpl4')
 
 
 def clearSearchPathCallback(dbapi_con, connection_record):
