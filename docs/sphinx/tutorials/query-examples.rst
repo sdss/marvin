@@ -56,8 +56,8 @@ Benchmark Queries
 
 |
 
-Benchmark Remote Query Timing
------------------------------
+Benchmark Remote Query Timing in Marvin
+---------------------------------------
 
 Query timing exercise post postgres 9.3 config optimization. From a laptop in Baltimore to Utah with explicit queries in remote mode
 
@@ -81,4 +81,30 @@ Q4     1.1662       0.3331      783 ms per loop    810 ms per loop
     %timeit -n 10 -r 5 r = q.run()
 
 |
+
+Benchmark Query Timing Using Raw SQL
+------------------------------------
+
+Query timing from pasting the raw SQL into psql at Utah, pre postgres 9.6 config optimization.
+
+=====  ===========  =========== ==================
+Query  1st Run (s)  2nd Run (s) Best of 5 (1 loop)
+=====  ===========  =========== ==================
+Q1     16.994       0.9450      679 ms per loop
+Q2     285.67       82.263      30.9 s per loop
+Q3     234.72       35.032      33.7 s per loop
+Q4     0.7135       0.6954      716 ms per loop
+=====  ===========  =========== ==================
+
+Query timing from pasting the raw SQL into psql at Utah, post postgres 9.6 config optimization + parallel queries
+
+=====  ===========  =========== ==================
+Query  1st Run (s)  2nd Run (s) Best of 5 (1 loop)
+=====  ===========  =========== ==================
+Q1     1.0          0.517       514 ms per loop
+Q2     31.123       11.120      8.56 s per loop
+Q3     81.319       25.612      25.4 s per loop
+Q4     0.588        0.5668      566 ms per loop
+=====  ===========  =========== ==================
+
 
