@@ -3,6 +3,7 @@ from flask import session as current_session, request, redirect, url_for
 from flask_classy import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
+from brain.api.general import BrainGeneralRequestsView
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av
@@ -65,6 +66,7 @@ class Marvin(BaseWebView):
     @route('/getgalidlist/', methods=['GET', 'POST'], endpoint='getgalidlist')
     def getgalidlist(self):
         ''' Retrieves the list of galaxy ids and plates for Bloodhound Typeahead '''
+
         if marvindb.datadb is None:
             out = ['', '', '']
             current_app.logger.info('ERROR: Problem with marvindb.datadb.  Cannot build galaxy id auto complete list.')

@@ -6,12 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-19 02:34:56
+# @Last Modified time: 2017-03-12 22:40:41
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
 from flask import request
 from marvin.web.web_utils import parseSession
+from marvin import config
+from brain.api.general import BrainGeneralRequestsView
+import json
 
 
 class BaseWebView(FlaskView):
@@ -29,6 +32,12 @@ class BaseWebView(FlaskView):
         self.base['error'] = None
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
+
+        # try to get a local version of the urlmap
+        bv = BrainGeneralRequestsView()
+        r = bv.buildRouteMap()
+        print('a local urlmap', json.loads(r.get_data())['urlmap'])
+        config._urlmap = json.loads(r.get_data())['urlmap']
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
