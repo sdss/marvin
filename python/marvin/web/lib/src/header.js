@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-10-12 16:44:53
+* @Last Modified time: 2017-03-12 17:56:55
 */
 
 'use strict';
@@ -71,7 +71,6 @@ class Header {
         var _this = event.data;
         var url = 'index_page.selectmpl';
         var verform = m.utils.serializeForm('#mplform');
-        console.log('setting new mpl', verform);
         _this.sendAjax(verform, url, _this.reloadPage);
     }
 
