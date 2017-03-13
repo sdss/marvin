@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-13 11:17:04
+# @Last Modified time: 2017-03-13 11:43:39
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
@@ -34,12 +34,12 @@ class BaseWebView(FlaskView):
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
 
-        # try to get a local version of the urlmap
-        bv = BrainGeneralRequestsView()
-        r = bv.buildRouteMap()
-        config.urlmap = json.loads(r.get_data())['urlmap']
-        print('a local urlmap', config.urlmap, av.urlmap)
-        av.urlmap = config.urlmap
+        # try to get a local version of the urlmap for the arg_validator
+        if not av.urlmap:
+            bv = BrainGeneralRequestsView()
+            resp = bv.buildRouteMap()
+            config.urlmap = json.loads(resp.get_data())['urlmap']
+            av.urlmap = config.urlmap
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
