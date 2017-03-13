@@ -3,7 +3,6 @@ from flask import session as current_session, request, redirect, url_for
 from flask_classy import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
-from brain.api.general import BrainGeneralRequestsView
 from marvin.utils.general.general import parseIdentifier
 from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av

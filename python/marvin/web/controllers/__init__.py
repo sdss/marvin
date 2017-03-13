@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-12 22:40:41
+# @Last Modified time: 2017-03-13 10:21:55
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
@@ -37,7 +37,7 @@ class BaseWebView(FlaskView):
         bv = BrainGeneralRequestsView()
         r = bv.buildRouteMap()
         print('a local urlmap', json.loads(r.get_data())['urlmap'])
-        config._urlmap = json.loads(r.get_data())['urlmap']
+        config.urlmap = json.loads(r.get_data())['urlmap']
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
