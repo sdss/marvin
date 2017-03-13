@@ -4,6 +4,13 @@
 Jupyter Notebooks
 =================
 
+What's New in Marvin 2.1
+------------------------
+
+This notebook briefly describes some of the new features seen in Marvin 2.1.
+
+:download:`What's New in Marvin 2.1 <../jupyter/whats_new_v21.ipynb>`
+
 Shanghai Workshop Tutorials
 ---------------------------
 
