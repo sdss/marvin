@@ -11,7 +11,6 @@ import re
 import warnings
 import sys
 import marvin
-import json
 from collections import OrderedDict
 from distutils.version import StrictVersion
 
@@ -234,22 +233,14 @@ class MarvinConfig(object):
         """Retrieves the URLMap the first time it is needed."""
 
         if self._urlmap is None or (isinstance(self._urlmap, dict) and len(self._urlmap) == 0):
-            if self.db == 'utah':
-                # try to get a local version of the urlmap
-                from brain.api.general import BrainGeneralRequestsView
-                bv = BrainGeneralRequestsView()
-                r = bv.buildRouteMap()
-                print('a local urlmap', json.loads(r.get_data())['urlmap'])
-                self._urlmap = json.loads(r.get_data())['urlmap']
+            try:
+                response = Interaction('api/general/getroutemap', request_type='get')
+            except Exception as e:
+                warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
+                              MarvinUserWarning)
+                self._urlmap = URLMapDict()
             else:
-                try:
-                    response = Interaction('api/general/getroutemap', request_type='get')
-                except Exception as e:
-                    warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
-                                  MarvinUserWarning)
-                    self._urlmap = URLMapDict()
-                else:
-                    self._urlmap = response.getRouteMap()
+                self._urlmap = response.getRouteMap()
 
         return self._urlmap
 
