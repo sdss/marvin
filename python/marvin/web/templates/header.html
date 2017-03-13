@@ -29,7 +29,7 @@
             {# MPL Version Selection #}
             <form class='navbar-form navbar-left navbar-input-group' id='mplform' role='form' method="post">
                 <div id='marvinmpl' class='form-group'>
-                    <select class='form-control selectpicker input-sm show-tick' id='release' name='release' title='Choose an MPL/DR' >
+                    <select class='form-control selectpicker input-sm show-tick' id='mplselect' name='release' title='Choose an MPL/DR' >
                         {% for ver in session.versions %}
                             {% if ver.name == session.release %}
                                 <option data-subtext='{{ver.subtext}}' id='{{ver.name}}' value='{{ver.name}}' selected>{{ver.name}}</option>
