@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-22 10:38:28
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-23 11:29:06
+# @Last Modified time: 2017-03-13 14:14:00
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web import MarvinWebTester
@@ -44,7 +44,7 @@ class TestGalaxyPage(MarvinWebTester):
         url = self.get_url('Galaxy:index')
         self._load_page('get', url)
         self.assertEqual('', self.data)
-        self.assert_template_used('index.html')
+        self.assert_template_used('galaxy.html')
 
 
 class TestNSA(TestGalaxyPage):
