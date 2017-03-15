@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-22 17:49:32
+# @Last Modified time: 2017-03-15 16:13:59
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase
@@ -46,7 +46,7 @@ class MarvinWebTester(MarvinTest, TestCase):
 
     def _load_page(self, reqtype, page, params=None):
         if reqtype == 'get':
-            self.response = self.client.get(page, data=params)
+            self.response = self.client.get(page, query_string=params)
         elif reqtype == 'post':
             self.response = self.client.post(page, data=params, content_type='application/x-www-form-urlencoded')
         self._load_data()
