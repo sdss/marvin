@@ -31,7 +31,7 @@ install:
 
 before_script:
 - psql -c 'create database manga;' -U postgres
-- run_marvin -d -p 5000
+- $TRAVIS_BUILD_DIR/bin/run_marvin -d -p 5000
 
 script:
 - coverage run --source marvin setup.py nose2
