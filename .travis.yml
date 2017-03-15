@@ -34,7 +34,7 @@ before_script:
 - psql -c 'create database manga;' -U postgres
 
 script:
-- $TRAVIS_BUILD_DIR/bin/run_marvin -d -p 5000 > /dev/null & coverage run --source marvin setup.py nose2
+- $TRAVIS_BUILD_DIR/bin/run_marvin -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
 
 after_success:
 - coveralls
