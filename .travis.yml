@@ -1,24 +1,40 @@
-# Travis config file
-#  - this is used for auto-testing everything on every git push
-# ==================
-
 language: python
+
+cache: pip
 
 sudo: required
 
 python:
-  - "2.7"
+- '2.7'
+
+os:
+- linux
+
+services:
+- postgresql
+- memcached
+
+addons:
+  postgresql: '9.4'
+
+notifications:
+  slack:
+    secure: FZXERPoPv4n52hBx3bvEjJ5T0Ey2Es7Sa7sd/MA4AMr7l1771YZ1VTLpVtpw4qJR8vrt4NtSFbBowJiovDmx6FCjEb/2N6RipjbLowAtFRqjalOGO3KZOi3UPeiytP/IYD1DG7YmeYJOL8aof2awns8ckAWRSz6HO3cDpqg+hycDXasZQdQfIKgY17UZvONBJZCZGeC3lMw4IrbhkfhW7aQvhUhcXDtfEyObNt2+FGE6y7WDeOEjtfArKc/Iz4gybWLkYPpA6rtQfQciQvpZv94sanxli8vq4mXIpu/dxn73jfKSYsYIl7+OYrXKJQBy/8muwwuSe2et15mG90KGUsDOJ+PXKCLOSl8JohO/pH0l3hZKno6nX7byL6orEbBuQjpMJO0QFUs7o6hLSv3q4tgtuV0M99I8UHcIgmBYL9oXI4BHIsSwreTXHfV/8LiuZfyaB2NzwKuRHQTZQfCD+ujqXaspyQX70Xew2L7rruRuBuKLTntgklMFtAPYJYbW/4z6HsZ//X6Z2BHwe0Etv4FZaKsf8IK81p//oYi/3kw2ENRYNARu0HzU0Edba6ugBPjzw6wFyWsL35IFTSosby50iAWo7xYfRXBv1kH0tPOcmPoJzFcrdAmvEqt6K8bNwqgx72/qsBp4fhmGfQM5G07dkyQM+hu+e9OPEfTwOo4=
 
 branches:
-  - master
+- master
 
-# command to install dependencies
 install:
-  - pip install -r requirements.txt --quiet
+- pip install -r requirements.txt --quiet
+- pip install psycopg2 --quiet
+- pip install nose2 --quiet
 
-# command to run tests
+before_script:
+- psql -c 'create database manga;' -U postgres
+- run_marvin -d -p 5000
+
 script:
-  - coverage run --source marvin setup.py nosetests
+- coverage run --source marvin setup.py nose2
 
 after_success:
-  - coveralls
+- coveralls
