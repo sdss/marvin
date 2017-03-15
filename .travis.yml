@@ -30,6 +30,7 @@ install:
 - pip install nose2 --quiet
 
 before_script:
+- export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 - psql -c 'create database manga;' -U postgres
 - $TRAVIS_BUILD_DIR/bin/run_marvin -d -p 5000
 
