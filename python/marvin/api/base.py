@@ -12,8 +12,10 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.api.base import BrainBaseView
+from brain.api.general import BrainGeneralRequestsView
 from marvin import config
 from marvin.api import ArgValidator
+import json
 
 arg_validate = ArgValidator(urlmap=config.urlmap)
 
@@ -33,3 +35,14 @@ class BaseView(BrainBaseView):
                 tmp = kwargs.pop(item, None)
 
         return kwargs
+
+    def before_request(self, *args, **kwargs):
+        super(BaseView, self).before_request(*args, **kwargs)
+
+        # try to get a local version of the urlmap for the arg_validator
+        if not arg_validate.urlmap:
+            bv = BrainGeneralRequestsView()
+            resp = bv.buildRouteMap()
+            config.urlmap = json.loads(resp.get_data())['urlmap']
+            arg_validate.urlmap = config.urlmap
+

@@ -17,12 +17,12 @@ import marvin.tests
 import marvin.tools.cube
 
 
-class TestCore(marvin.tests.MarvinTest):
+class TestMisc(marvin.tests.MarvinTest):
     """A series of tests for MarvinToolsClass."""
 
     @classmethod
     def setUpClass(cls):
-        super(TestCore, cls).setUpClass()
+        super(TestMisc, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
