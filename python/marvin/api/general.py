@@ -139,6 +139,8 @@ class GeneralRequestsView(BrainGeneralRequestsView):
             self.results['status'] = -1
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
+        print('my nsa full results', self.results)
+
         return jsonify(self.results)
 
     @route('/nsa/drpall/<mangaid>/', endpoint='nsa_drpall', methods=['GET', 'POST'])
