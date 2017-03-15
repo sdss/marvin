@@ -74,7 +74,7 @@ def make_error_json(error, name, code):
     ''' creates the error json dictionary for API errors '''
     shortname = name.lower().replace(' ', '_')
     messages = {'error': shortname,
-                'message': error.description,
+                'message': error.description if hasattr(error, 'description') else None,
                 'status_code': code,
                 'traceback': get_traceback(asstring=True)}
     return jsonify({'api_error': messages}), code
