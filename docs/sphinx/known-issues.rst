@@ -34,7 +34,7 @@ Tools
 Web
 :::
 
-* **Point-and-Click Model Fits** - On the individual galaxy page, the modelfits shown in the point-and-click display is from the unbinned MODELCUBE FITS files, i.e. SPX-MILESHC.
+* **Point-and-Click Model Fits** - On the individual galaxy page, the modelfits shown in the point-and-click display is from the unbinned MODELCUBE FITS files, i.e. SPX-GAU-MILESHC.
 
 * **Dynamic DAP Maps** - For the DAP map display on the individual galaxy page, you can only choose one binning-template option for all the selected maps.
 
@@ -61,9 +61,6 @@ Tools
 
 * **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
 
-* **BPT diagrams** - After the release of Marvin 2.1, a bug was found in the calculation of the
-  composite mask in the BPT diagrams. This will be fixed in Marvin 2.1.2 but until that time please
-  do not use the composite mask.
 
 Web
 :::
