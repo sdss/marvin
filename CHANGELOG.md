@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.1.2] - not yet released
+## [2.1.2] - 2017/03/17
 ### Added:
 - API and Web argument validation using webargs and marshmallow.  If parameters invalid, returns 422 status.
 
