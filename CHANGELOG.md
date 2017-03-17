@@ -1,16 +1,19 @@
 # Marvin's Change Log
 
-## [2.1.2] - not yet released
+## [2.1.2] - 2017/03/17
 ### Added:
+- API and Web argument validation using webargs and marshmallow.  If parameters invalid, returns 422 status.
 
 ### Changed:
 - Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band
   mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
 - Issue #188: deprecated snr in favour of snr_min for get_bpt. snr can still be used.
+- Issue #187: Renamed NSA Display tab in web to Galaxy Properties.  Added a link to the NASA-Sloan Atlas catalogue to the table title.
+- Moved our documentation to readthedocs for version control.  Updated all Marvin web documenation links to point to readthedocs.
 
 ### Fixed:
 - A bug in the calculation of the composite mask for BPT.
--
+- Issue #179: Fixed a python 2/3 exception error compatibility with the 2.1 release.
 
 ## [2.1.1] - 2017/02/18
 ### Added:

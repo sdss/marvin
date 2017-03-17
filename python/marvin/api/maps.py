@@ -107,6 +107,10 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return jsonify(self.results)
 
+    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template_kin': None},
+                        methods=['GET', 'POST'], endpoint='getMaps')
+    @flask_classy.route('/<name>/<bintype>/', defaults={'template_kin': None},
+                        methods=['GET', 'POST'], endpoint='getMaps')
     @flask_classy.route('/<name>/<bintype>/<template_kin>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
@@ -156,15 +160,14 @@ class MapsView(marvin.api.base.BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"8485-1901": {"plateifu": "8485-1901",
-                            "mangaid": "1-209232",
-                            "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
-                            "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
-                            "shape": [34, 34],
-                            "bintype": "SPX",
-                            "template_kin": "GAU-MILESHC"
-                            }
-                      }
+              "data": {"plateifu": "8485-1901",
+                       "mangaid": "1-209232",
+                       "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
+                       "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
+                       "shape": [34, 34],
+                       "bintype": "SPX",
+                       "template_kin": "GAU-MILESHC"
+                       }
            }
 
         '''
@@ -190,16 +193,18 @@ class MapsView(marvin.api.base.BaseView):
         mangaid = maps.mangaid
         plateifu = maps.plateifu
 
-        self.results['data'] = {name: {'mangaid': mangaid,
-                                       'plateifu': plateifu,
-                                       'header': header,
-                                       'wcs': wcs_header,
-                                       'shape': shape,
-                                       'bintype': bintype,
-                                       'template_kin': template_kin}}
+        self.results['data'] = {'mangaid': mangaid,
+                                'plateifu': plateifu,
+                                'header': header,
+                                'wcs': wcs_header,
+                                'shape': shape,
+                                'bintype': bintype,
+                                'template_kin': template_kin}
 
         return jsonify(self.results)
 
+    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/',
+                        methods=['GET', 'POST'], endpoint='getmap', defaults={'channel': None})
     @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
     @marvin.api.base.arg_validate.check_args()

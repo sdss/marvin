@@ -229,7 +229,7 @@ class ArgValidator(object):
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
         properties = dm[self.dapver].list_names()
-        channels = list(set(sum([i.channels for i in dm[self.dapver] if i.channels is not None], [])))
+        channels = list(set(sum([i.channels for i in dm[self.dapver] if i.channels is not None], []))) + ['None']
 
         # update the global viewargs for each property
         propfields = {'bintype': bintypes, 'template_kin': temps, 'property_name': properties,

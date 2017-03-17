@@ -436,19 +436,19 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         data = response.getData()
 
-        if self.plateifu not in data:
+        if self.plateifu not in data['plateifu']:
             raise marvin.core.exceptions.MarvinError('remote maps has a different plateifu!')
 
-        self.header = astropy.io.fits.Header.fromstring(data[self.plateifu]['header'])
+        self.header = astropy.io.fits.Header.fromstring(data['header'])
 
         # Sets the mangaid
-        self.mangaid = data[self.plateifu]['mangaid']
+        self.mangaid = data['mangaid']
 
         # Gets the shape from the associated cube.
-        self.shape = data[self.plateifu]['shape']
+        self.shape = data['shape']
 
         # Sets the WCS
-        self.wcs = astropy.wcs.WCS(astropy.io.fits.Header.fromstring(data[self.plateifu]['wcs']))
+        self.wcs = astropy.wcs.WCS(astropy.io.fits.Header.fromstring(data['wcs']))
 
         return
 

@@ -172,7 +172,7 @@ class RSSView(BaseView):
         # Pop any args we don't want going into Rss
         args = self._pop_args(args, arglist='name')
 
-        rss, results = _getRSS(name, *args)
+        rss, results = _getRSS(name, **args)
         self.update_results(results)
 
         if rss:

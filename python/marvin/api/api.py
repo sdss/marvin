@@ -90,4 +90,3 @@ class Interaction(BrainInteraction):
                     self.params[k] = config.__getattribute__(k)
         else:
             self.params = {k: config.__getattribute__(k) for k in configkeys}
-        print('local marvin loadconfig', self.params)
