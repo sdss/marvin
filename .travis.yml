@@ -35,7 +35,7 @@ install:
 before_script:
 - export MANGA_LOCALHOST=1
 - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
-- rsync -avz --progress https://sas.sdss.org/marvin/data/local_mangadb_test.sql .
+- wget https://sas.sdss.org/marvin/data/local_mangadb_test.sql
 - createdb -U postgres -T template0 manga
 - pg_restore -Fc -j 8 -U postgres -d manga local_mangadb_test.sql
 
