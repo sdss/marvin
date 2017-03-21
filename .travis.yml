@@ -43,7 +43,6 @@ before_script:
 - createuser -U postgres -g utahuser sdss
 - createuser -U postgres -g utahuser u0857802
 - createuser -U postgres -g utahuser u0707758
-- createuser -U postgres -g utahuser u0857802
 - pg_restore -Fc -j 8 -U postgres -d manga local_mangadb_test.sql
 
 script:
