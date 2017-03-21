@@ -24,6 +24,9 @@ notifications:
 branches:
 - master
 
+before_install:
+- openssl aes-256-cbc -K $encrypted_34d6c89f986b_key -iv $encrypted_34d6c89f986b_iv -in etc/.netrc.enc -out ~/.netrc -d
+
 install:
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
@@ -32,7 +35,9 @@ install:
 before_script:
 - export MANGA_LOCALHOST=1
 - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
-- psql -c 'create database manga;' -U postgres
+- rsync -avz --progress https://sas.sdss.org/marvin/data/local_mangadb_test.sql .
+- createdb -U postgres -T template0 manga
+- pg_restore -Fc -j 8 -U postgres -d manga local_mangadb_test.sql
 
 script:
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests

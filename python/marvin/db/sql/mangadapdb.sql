@@ -189,6 +189,25 @@ ALTER TABLE ONLY mangadapdb.spaxelprop5
     FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
+-- ALTER TABLE ONLY mangadapdb.cleanspaxelprop
+--     ADD CONSTRAINT file_fk
+--     FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+--     ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ALTER TABLE ONLY mangadapdb.cleanspaxelprop
+--     ADD CONSTRAINT binid_fk
+--     FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+--     ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ALTER TABLE ONLY mangadapdb.cleanspaxelprop5
+--     ADD CONSTRAINT file_fk
+--     FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+--     ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- ALTER TABLE ONLY mangadapdb.cleanspaxelprop5
+--     ADD CONSTRAINT binid_fk
+--     FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+--     ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY pipeline_info_pk_idx ON mangadapdb.file using BTREE(pipeline_info_pk);
