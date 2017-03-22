@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import marvin
+from marvin import config
+try:
+    from sdss_access import RsyncAccess
+except ImportError as e:
+    RsyncAccess = None
+
+
+rsync_access = RsyncAccess(label='marvin_get_test_data')
+rsync_access.remote()
+
+
+def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
+
+    drpver, dapver = config.lookUpVersions(release)
+    if 'drpall' not in exclude:
+        rsync.add('drpall', drpver=drpver)
+    if 'mangacube' not in exclude:
+        rsync.add('mangacube', plate=plate, ifu=ifu, drpver=drpver)
+    if 'mangarss' not in exclude:
+        rsync.add('mangarss', plate=plate, ifu=ifu, drpver=drpver)
+    if 'mangaimage' not in exclude:
+        rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
+
+    if release == 'MPL-5':
+        if 'mangadap5' not in exclude:
+            rsync.add('mangadap5', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
+    elif release == 'MPL-4':
+        if 'mangamap' not in exclude:
+            rsync.add('mangamap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, bintype='*', mode='*', n='*')
+
+    return rsync
+
+# MPL-5
+rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901')
+rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701', exclude=['mangaimage', 'mangadap5'])
+
+# MPL-4
+rsync_access = add_data(rsync_access, release='MPL-4', plate='8485', ifu='1901')
+rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701', exclude=['mangaimage', 'mangamap'])
+
+# Download
+rsync_access.set_stream()
+rsync_access.commit()

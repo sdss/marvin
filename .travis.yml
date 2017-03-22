@@ -3,7 +3,6 @@ language: python
 cache: pip
 
 sudo: required
-dist: trusty
 
 python:
 - '2.7'
@@ -34,21 +33,7 @@ install:
 - pip install nose2 --quiet
 
 before_script:
-- export MANGA_LOCALHOST=1
-- export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
-- wget https://sas.sdss.org/marvin/data/local_mangadb_test.sql
-- createdb -U postgres -T template0 manga
-- createuser -U postgres -d -l -r -s Brian
-- createuser -U postgres -d -l -r utahuser
-- createuser -U postgres -g utahuser manga
-- createuser -U postgres -g utahuser sdss
-- createuser -U postgres -g utahuser u0857802
-- createuser -U postgres -g utahuser u0707758
-- createuser -U postgres -g utahuser u0931042
-- psql -U postgres -d manga -c "set shared_buffers to '1792MB';" -c "set default_statistics_target to 100;"
-- psql -U postgres -d manga -c "set effective_cache_size to '5376MB';" -c "set work_mem to '9175kB';"
-- psql -U postgres -d manga -c "set maintenance_work_mem to '448MB';"
-- pg_restore -Fc -j 8 -U postgres -d manga local_mangadb_test.sql
+- sh $TRAVIS_BUILD_DIR/bin/setup_travis
 
 script:
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
