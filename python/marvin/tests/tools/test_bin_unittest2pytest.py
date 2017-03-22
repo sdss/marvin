@@ -14,7 +14,6 @@ import os
 import pytest
 
 import marvin
-from marvin import config
 import marvin.tests
 import marvin.tools.bin
 import marvin.tools.maps
@@ -22,197 +21,18 @@ import marvin.tools.modelcube
 import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
-@pytest.fixture(scope='session')
-def setup_config(cls):
-    config.use_sentry = False
-    config.add_github_message = False
+params = [('8485-1901', 'MPL-5')]
 
 
-@pytest.fixture(scope='module')
-def setup_config_vars():
-    # set initial config variables
-    init_mode = config.mode
-    init_sasurl = config.sasurl
-    init_urlmap = config.urlmap
-    init_xyorig = config.xyorig
-    init_traceback = config._traceback
-    init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
-    return init_mode
+@pytest.fixture(scope='module', params=params)
+def set_galaxy(request, galaxy):
+    def fin():
+        pass
+    request.addfinalizer(fin)
 
 
-@pytest.fixture(scope='module')
-def setup_db():
-    # set db stuff
-    _marvindb = marvindb
-    session = marvindb.session
-    return session
-
-
-@pytest.fixture(scope='module')
-def setup_paths():
-    # set paths
-    sasbasedir = os.getenv("$SAS_BASE_DIR")
-    mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
-    mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
-    print('setup_paths')
-
-
-@pytest.fixture(scope='module',
-                params=dict(
-                    plateifu='8485-1901',
-                    mangaid='1-209232',
-                    ra=232.544703894,
-                    dec = 48.6902009334,
-                    redshift=0.0407447,
-                    dir3d='stack',
-                    release='MPL-5',
-                    cubename='manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu),
-                    rssname='manga-{0}-LOGRSS.fits.gz'.format(cls.plateifu),
-                    imgname='{0}.png'.format(cls.ifu),
-                    mapsname='manga-{0}-MAPS-{1}.fits.gz'.format(cls.plateifu, cls.bintemp),
-                    modelname='manga-{0}-LOGCUBE-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-                    ))
-
-def params_8485_1901():
-
-    # testing data for 8485-1901
-    cls.set_plateifu(plateifu='8485-1901')
-    cls.mangaid = '1-209232'
-    cls.cubepk = 10179
-    cls.ra = 232.544703894
-    cls.dec = 48.6902009334
-    cls.redshift = 0.0407447
-    cls.dir3d = 'stack'
-    cls.release = 'MPL-5'
-    cls.drpver, cls.dapver = config.lookUpVersions(cls.release)  # NEED TO INCLUDE
-    cls.bintemp = _get_bintemps(cls.dapver, default=True)  # NEED TO INCLUDE
-    cls.defaultbin, cls.defaulttemp = cls.bintemp.split('-', 1)  # NEED TO INCLUDE
-    cls.cubename = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu)
-    cls.rssname = 'manga-{0}-LOGRSS.fits.gz'.format(cls.plateifu)
-    cls.imgname = '{0}.png'.format(cls.ifu)
-    cls.mapsname = 'manga-{0}-MAPS-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-    cls.modelname = 'manga-{0}-LOGCUBE-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-
-def setUpClass(cls):
-    super(TestBinBase, cls).setUpClass()
-    cls._update_release('MPL-5')
-    cls.set_sasurl('local')
-    cls.set_filepaths(bintype='VOR10')
-    cls.maps_filename = cls.mapspath
-    cls.modelcube_filename = cls.modelpath
-
-
-class MarvinTest(TestCase):
-    """Custom class for Marvin-tools tests."""
-
-    def skipTest(self, test):
-        """Issues a warning when we skip a test."""
-        warnings.warn('Skipped test {0} because there is no DB connection.'
-                      .format(test.__name__), MarvinSkippedTestWarning)
-
-    def skipBrian(self, test):
-        """Issues a warning when we skip a test."""
-        warnings.warn('Skipped test {0} because there is no Brian.'
-                      .format(test.__name__), MarvinSkippedTestWarning)
-
-    @classmethod
-    def setUpClass(cls):
-        config.use_sentry = False
-        config.add_github_message = False
-
-        # set initial config variables
-        cls.init_mode = config.mode
-        cls.init_sasurl = config.sasurl
-        cls.init_urlmap = config.urlmap
-        cls.init_xyorig = config.xyorig
-        cls.init_traceback = config._traceback
-        cls.init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
-
-        # set db stuff
-        cls._marvindb = marvindb
-        cls.session = marvindb.session
-
-        # set paths
-        cls.sasbasedir = os.getenv("$SAS_BASE_DIR")
-        cls.mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
-        cls.mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
-
-        # testing data for 8485-1901
-        cls.set_plateifu(plateifu='8485-1901')
-        cls.mangaid = '1-209232'
-        cls.cubepk = 10179
-        cls.ra = 232.544703894
-        cls.dec = 48.6902009334
-        cls.redshift = 0.0407447
-        cls.dir3d = 'stack'
-        cls.release = 'MPL-5'
-        cls.drpver, cls.dapver = config.lookUpVersions(cls.release)
-        cls.bintemp = _get_bintemps(cls.dapver, default=True)
-        cls.defaultbin, cls.defaulttemp = cls.bintemp.split('-', 1)
-        cls.cubename = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu)
-        cls.rssname = 'manga-{0}-LOGRSS.fits.gz'.format(cls.plateifu)
-        cls.imgname = '{0}.png'.format(cls.ifu)
-        cls.mapsname = 'manga-{0}-MAPS-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-        cls.modelname = 'manga-{0}-LOGCUBE-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-
-    def _reset_the_config(self):
-        keys = self.init_keys
-        for key in keys:
-            ikey = 'init_{0}'.format(key)
-            if hasattr(self, ikey):
-                k = '_{0}'.format(key) if 'traceback' in key else key
-                config.__setattr__(k, self.__getattribute__(ikey))
-
-    @classmethod
-    def set_sasurl(cls, loc='local', port=5000):
-        istest = True if loc == 'utah' else False
-        config.switchSasUrl(loc, test=istest, port=port)
-        response = Interaction('api/general/getroutemap', request_type='get')
-        config.urlmap = response.getRouteMap()
-
-    @classmethod
-    def _update_release(cls, release):
-        config.setMPL(release)
-        cls.drpver, cls.dapver = config.lookUpVersions(release=release)
-
-    @classmethod
-    def update_names(cls, bintype=None, template=None):
-        if not bintype:
-            bintype = cls.defaultbin
-        if not template:
-            template = cls.defaulttemp
-
-        cls.bintype = bintype
-        cls.template = template
-        cls.bintemp = '{0}-{1}'.format(bintype, template)
-        cls.mapsname = 'manga-{0}-MAPS-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-        cls.modelname = 'manga-{0}-LOGCUBE-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
-
-    @classmethod
-    def set_filepaths(cls, bintype=None, template=None):
-        # Paths
-        cls.drppath = os.path.join(cls.mangaredux, cls.drpver)
-        cls.dappath = os.path.join(cls.mangaanalysis, cls.drpver, cls.dapver)
-        cls.imgpath = os.path.join(cls.mangaredux, cls.drpver, str(cls.plate), cls.dir3d, 'images')
-
-        # DRP filename paths
-        cls.cubepath = os.path.join(cls.drppath, str(cls.plate), cls.dir3d, cls.cubename)
-        cls.rsspath = os.path.join(cls.drppath, str(cls.plate), cls.dir3d, cls.rssname)
-
-        # DAP filename paths
-        if (bintype or template):
-            cls.update_names(bintype=bintype, template=template)
-        cls.analpath = os.path.join(cls.dappath, cls.bintemp, str(cls.plate), cls.ifu)
-        cls.mapspath = os.path.join(cls.analpath, cls.mapsname)
-        cls.modelpath = os.path.join(cls.analpath, cls.modelname)
-
-    @classmethod
-    def set_plateifu(cls, plateifu='8485-1901'):
-        cls.plateifu = plateifu
-        cls.plate, cls.ifu = cls.plateifu.split('-')
-        cls.plate = int(cls.plate)
-
-
+# TODO replace with module level fixture
+# TODO call Galaxy class
 class TestBinBase(marvin.tests.MarvinTest):
     """Defines the files and plateifus we will use in the tests."""
 
@@ -240,7 +60,7 @@ class TestBinBase(marvin.tests.MarvinTest):
         pass
 
 
-class TestBinInit(TestBinBase):
+class TestBinInit:
 
     def _check_bin_data(self, bb):
 
@@ -253,7 +73,7 @@ class TestBinInit(TestBinBase):
 
         assert bb.properties is not None
 
-    def test_init_from_files(self):
+    def test_init_from_files(self, set_galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename,
                                   modelcube_filename=self.modelcube_filename)
@@ -304,7 +124,7 @@ class TestBinInit(TestBinBase):
 
 
 class TestBinFileMismatch(TestBinBase):
-    @pytest.mark.skip(reason="doesn't work yet")
+    @pytest.mark.skip(reason="test doesn't work yet")
     def test_bintypes(self):
 
         wrong_bintype = 'SPX'

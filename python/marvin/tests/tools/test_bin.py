@@ -27,22 +27,49 @@ def setup_config(cls):
     config.use_sentry = False
     config.add_github_message = False
 
+@pytest.fixture(scope='module')
+def setup_config_vars():
     # set initial config variables
-    cls.init_mode = config.mode
-    cls.init_sasurl = config.sasurl
-    cls.init_urlmap = config.urlmap
-    cls.init_xyorig = config.xyorig
-    cls.init_traceback = config._traceback
-    cls.init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
+    init_mode = config.mode
+    init_sasurl = config.sasurl
+    init_urlmap = config.urlmap
+    init_xyorig = config.xyorig
+    init_traceback = config._traceback
+    init_keys = ['mode', 'sasurl', 'urlmap', 'xyorig', 'traceback']
+    return init_mode
 
+@pytest.fixture(scope='module')
+def setup_db():
     # set db stuff
-    cls._marvindb = marvindb
-    cls.session = marvindb.session
+    _marvindb = marvindb
+    session = marvindb.session
+    return session
 
+@pytest.fixture(scope='module')
+def setup_paths():
     # set paths
-    cls.sasbasedir = os.getenv("$SAS_BASE_DIR")
-    cls.mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
-    cls.mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
+    sasbasedir = os.getenv("$SAS_BASE_DIR")
+    mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
+    mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
+    print('setup_paths')
+
+@pytest.fixture(scope='module',
+                params=dict(
+                    plateifu='8485-1901',
+                    mangaid='1-209232',
+                    ra=232.544703894,
+                    dec = 48.6902009334,
+                    redshift=0.0407447,
+                    dir3d='stack',
+                    release='MPL-5',
+                    cubename='manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu),
+                    rssname='manga-{0}-LOGRSS.fits.gz'.format(cls.plateifu),
+                    imgname='{0}.png'.format(cls.ifu),
+                    mapsname='manga-{0}-MAPS-{1}.fits.gz'.format(cls.plateifu, cls.bintemp),
+                    modelname='manga-{0}-LOGCUBE-{1}.fits.gz'.format(cls.plateifu, cls.bintemp)
+                    ))
+
+def params_8485_1901():
 
     # testing data for 8485-1901
     cls.set_plateifu(plateifu='8485-1901')
@@ -53,9 +80,9 @@ def setup_config(cls):
     cls.redshift = 0.0407447
     cls.dir3d = 'stack'
     cls.release = 'MPL-5'
-    cls.drpver, cls.dapver = config.lookUpVersions(cls.release)
-    cls.bintemp = _get_bintemps(cls.dapver, default=True)
-    cls.defaultbin, cls.defaulttemp = cls.bintemp.split('-', 1)
+    cls.drpver, cls.dapver = config.lookUpVersions(cls.release)  # NEED TO INCLUDE
+    cls.bintemp = _get_bintemps(cls.dapver, default=True)  # NEED TO INCLUDE
+    cls.defaultbin, cls.defaulttemp = cls.bintemp.split('-', 1)  # NEED TO INCLUDE
     cls.cubename = 'manga-{0}-LOGCUBE.fits.gz'.format(cls.plateifu)
     cls.rssname = 'manga-{0}-LOGRSS.fits.gz'.format(cls.plateifu)
     cls.imgname = '{0}.png'.format(cls.ifu)
