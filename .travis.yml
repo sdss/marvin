@@ -44,10 +44,10 @@ before_script:
 - createuser -U postgres -g utahuser u0857802
 - createuser -U postgres -g utahuser u0707758
 - createuser -U postgres -g utahuser u0931042
-- psql -U postgres -d manga -c "set shared_buffers to 1792MB;" -c "set default_statistics_target to 100;"
-- psql -U postgres -d manga -c "set effective_cache_size to 5376MB;" -c "set work_mem to 9175kB;"
-- psql -U postgres -d manga -c "set maintenance_work_mem to 448MB;" -c "set checkpoint_segments to 32;"
-- psql -U postgres -d manga -c "set checkpoint_completion_target to 0.7;" -c "set wal_buffers to 16MB;"
+- psql -U postgres -d manga -c "set shared_buffers to '1792MB';" -c "set default_statistics_target to 100;"
+- psql -U postgres -d manga -c "set effective_cache_size to '5376MB';" -c "set work_mem to '9175kB';"
+- psql -U postgres -d manga -c "set maintenance_work_mem to '448MB';" -c "set checkpoint_segments to 32;"
+- psql -U postgres -d manga -c "set checkpoint_completion_target to 0.7;" -c "set wal_buffers to '16MB';"
 - pg_ctl restart
 - pg_restore -Fc -j 8 -U postgres -d manga local_mangadb_test.sql
 
