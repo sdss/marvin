@@ -11,6 +11,7 @@ import os
 import pytest
 
 from marvin import config, marvindb
+from marvin.api.api import Interaction
 from marvin.tools.maps import _get_bintemps
 
 # class MarvinTest
@@ -18,6 +19,9 @@ from marvin.tools.maps import _get_bintemps
 # TODO use monkeypatch to set initial config variables
 # TODO replace _reset_the_config with monkeypatch
 # TODO reimplement set_sasurl (use function-level fixture?)
+
+releases = ['MPL-5']
+plateifus = ['8485-1901']
 
 
 class Galaxy:
@@ -28,11 +32,11 @@ class Galaxy:
     mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
     dir3d = 'stack'
 
-    def __init__(self, plateifu, release):
+    def __init__(self, plateifu):
         self.plateifu = plateifu
         self.plate, self.ifu = self.plateifu.split('-')
         self.plate = int(self.plate)
-        self.release = release
+        self.release = config.release
         self.drpver, self.dapver = config.lookUpVersions(self.release)
 
     # TODO move to a mock data file/directory
@@ -46,7 +50,7 @@ class Galaxy:
 
     def set_galaxy_data(self):
         # Grab data from mock file
-        data = self.galaxies['plateifu']
+        data = self.galaxies[self.plateifu]
 
         self.mangaid = data['mangaid']
         self.cubepk = data['cubepk']
@@ -97,23 +101,27 @@ def set_config():
     config.add_github_message = False
 
 
-@pytest.fixture(scope='function')
-def _update_release(self, release):
-    config.setMPL(release)
-    self.drpver, self.dapver = config.lookUpVersions(release=release)
+@pytest.fixture(scope='session')
+def set_sasurl(loc='local', port=5000):
+    istest = True if loc == 'utah' else False
+    config.switchSasUrl(loc, test=istest, port=port)
+    response = Interaction('api/general/getroutemap', request_type='get')
+    config.urlmap = response.getRouteMap()
 
 
-@pytest.fixtures(scope='session')
+@pytest.fixture(scope='session', params=releases)
+def set_release(request):
+    config.setMPL(request.param)
+
+
+@pytest.fixture(scope='session')
 def start_marvin_session(set_config):
-    with DB() as db:
-        yield db
+    yield DB()
 
 
-@pytest.fixtures(scope='session')
-def galaxy(request, start_marvin_session):
-    with Galaxy(request.param) as gal:
-        gal.get_data()
-        gal.set_galaxy_data()
-        gal.set_filenames()
-        gal.set_filepaths()
-        yield gal
+@pytest.fixture(scope='session', params=plateifus)
+def init_galaxy(request, start_marvin_session, set_release):
+    gal = Galaxy(plateifu=request.param)
+    gal.get_data()
+    gal.set_galaxy_data()
+    yield gal
