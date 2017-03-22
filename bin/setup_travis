@@ -2,6 +2,8 @@
 export MANGA_LOCALHOST=1
 export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 python $TRAVIS_BUILD_DIR/bin/get_test_data.py
+sudo service mysql stop
+sudo rm -rf /var/ramfs/mysql
 wget https://sas.sdss.org/marvin/data/local_mangadb_test.sql
 createdb -U postgres -T template0 manga
 createuser -U postgres -d -l -r -s Brian
