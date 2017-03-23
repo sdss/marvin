@@ -29,7 +29,7 @@ before_install:
 - chmod 600 ~/.netrc
 
 install:
-- pip install ipython --quiet
+- pip install --user numpy scipy matplotlib ipython jupyter pandas --quiet
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
 - pip install nose2 --quiet
