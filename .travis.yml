@@ -29,10 +29,10 @@ before_install:
 - chmod 600 ~/.netrc
 
 install:
-- sudo pip install ipython --quiet
-- sudo pip install -r requirements.txt --quiet
-- sudo pip install psycopg2 --quiet
-- sudo pip install nose2 --quiet
+- pip install ipython --quiet
+- pip install -r requirements.txt --quiet
+- pip install psycopg2 --quiet
+- pip install nose2 --quiet
 
 before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
