@@ -37,6 +37,8 @@ install:
 - source activate test_env
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
+- pip install pypandoc --quiet
+- python setup.py install
 
 before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
