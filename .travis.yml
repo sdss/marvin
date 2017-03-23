@@ -37,14 +37,16 @@ install:
 - source activate test_env
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
+- brew install pandoc
 - pip install pypandoc --quiet
+- pip install nose2 --quiet
 - python setup.py install
 
 before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 
 script:
-- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
+- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nose2
 
 after_success:
 - coveralls
