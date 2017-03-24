@@ -31,7 +31,7 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
         if 'mangamap' not in exclude:
             rsync.add('mangamap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, bintype='*', mode='*', n='**')
         if 'mangadefault' not in exclude:
-            rsync_access.full('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
+            rsync_access.add('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
 
     return rsync
 
