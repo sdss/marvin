@@ -29,7 +29,9 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
             rsync.add('mangadap5', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
     elif release == 'MPL-4':
         if 'mangamap' not in exclude:
-            rsync.add('mangamap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, bintype='*', mode='*', n='*')
+            rsync.add('mangamap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, bintype='*', mode='*', n='**')
+        if 'mangadefault' not in exclude:
+            rsync_access.full('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
 
     return rsync
 
@@ -39,7 +41,7 @@ rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701'
 
 # MPL-4
 rsync_access = add_data(rsync_access, release='MPL-4', plate='8485', ifu='1901')
-rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701', exclude=['mangaimage', 'mangamap'])
+rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701', exclude=['mangaimage', 'mangamap', 'mangadefault'])
 
 # Download
 rsync_access.set_stream()

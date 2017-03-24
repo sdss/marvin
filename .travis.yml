@@ -18,6 +18,7 @@ addons:
   postgresql: '9.4'
   apt:
     packages:
+      wkhtmltopdf
       xvfb
       nano
 
