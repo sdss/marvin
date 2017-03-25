@@ -50,6 +50,7 @@ install:
 
 before_script:
 - export MANGA_LOCALHOST=1
+- export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null &
 - sleep 10

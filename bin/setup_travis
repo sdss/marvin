@@ -4,7 +4,6 @@ sh -e /etc/init.d/xvfb start
 sleep 3
 mkdir ~/.matplotlib
 echo 'backend: tkagg' > ~/.matplotlib/matplotlibrc
-export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 python $TRAVIS_BUILD_DIR/bin/get_test_data.py
 wget https://sas.sdss.org/marvin/data/local_mangadb_test.sql
 createdb -U postgres -T template0 manga
