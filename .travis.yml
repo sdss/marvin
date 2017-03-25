@@ -44,6 +44,7 @@ install:
 - pip install nose --quiet
 - pip install coverage --quiet
 - pip install pytest --quiet
+- pip install pytest-cov --quiet
 - pip install pytest-sugar --quiet
 - python setup.py install
 
@@ -51,8 +52,9 @@ before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 
 script:
-- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000
-#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
+- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > dev/null &
+#- coverage run --source marvin setup.py nosetests
+- py.test python/marvin/tests -v --cov python/marvin --cov-report html
 
 after_success:
 - coveralls
