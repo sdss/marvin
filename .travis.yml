@@ -52,6 +52,8 @@ before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null &
 - sleep 10
+- lsof -Pnl +M -i4
+- curl http://localhost:5000/marvin2/api/general/getroutemap/
 
 script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
