@@ -186,7 +186,6 @@ class ArgValidator(object):
         # Set required params
         if self._required:
             subset = self._set_params_required(subset)
-            print('subset', subset)
 
         # Set missing params
         if self._setmissing:
