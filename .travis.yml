@@ -52,8 +52,9 @@ before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 
 script:
-- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
+#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > dev/null & coverage run --source marvin setup.py nosetests
+- sh $TRAVIS_BUILD_DIR/bin/run_travis
 
 after_success:
 - coveralls
