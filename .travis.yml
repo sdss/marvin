@@ -53,6 +53,7 @@ before_script:
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null &
 - sleep 10
 - lsof -Pnl +M -i4
+- echo $MANGA_LOCALHOST
 - curl http://localhost:5000/marvin2/api/general/getroutemap/
 # - curl http://localhost:5000/marvin2/database/
 - python -c "from marvin import config, marvindb; print(config.db, marvindb.db); import os; print sorted(os.environ.keys()); from brain.utils.general.general import getDbMachine; print(getDbMachine()); import marvin.db.models.DataModelClasses as datadb;"
