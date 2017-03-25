@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-15 16:13:59
+# @Last Modified time: 2017-03-25 16:08:37
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase
@@ -19,7 +19,7 @@ class MarvinWebTester(MarvinTest, TestCase):
     ''' Base Marvin Web Tester for Flask and API '''
 
     def create_app(self):
-        app = create_app(debug=True, use_profiler=False)
+        app = create_app(debug=True, local=True, use_profiler=False)
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
         app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
