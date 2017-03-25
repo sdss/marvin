@@ -2,6 +2,8 @@
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
 sleep 3
+mkdir ~/.matplotlib
+echo 'backend: tkagg' > ~/.matplotlib/matplotlibrc
 export MANGA_LOCALHOST=1
 export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 python $TRAVIS_BUILD_DIR/bin/get_test_data.py

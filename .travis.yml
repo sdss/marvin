@@ -37,19 +37,22 @@ before_install:
 - conda update --yes conda
 
 install:
-- conda create --yes -n test_env python=$TRAVIS_PYTHON_VERSION pip numpy scipy matplotlib ipython
+- conda create --yes -n test_env python=$TRAVIS_PYTHON_VERSION pip numpy scipy matplotlib ipython --quiet
 - source activate test_env
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
 - pip install nose --quiet
 - pip install coverage --quiet
+- pip install pytest --quiet
+- pip install pytest-sugar --quiet
 - python setup.py install
 
 before_script:
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 
 script:
-- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
+- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000
+#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null & coverage run --source marvin setup.py nosetests
 
 after_success:
 - coveralls
