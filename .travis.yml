@@ -54,6 +54,8 @@ before_script:
 - sleep 10
 - lsof -Pnl +M -i4
 - curl http://localhost:5000/marvin2/api/general/getroutemap/
+- curl http://localhost:5000/marvin2/database/
+- python -c "import marvin; import marvin.db.models.DataModelClasses as datadb;"
 
 script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
