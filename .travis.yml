@@ -55,7 +55,7 @@ before_script:
 - lsof -Pnl +M -i4
 - curl http://localhost:5000/marvin2/api/general/getroutemap/
 # - curl http://localhost:5000/marvin2/database/
-- python -c "from marvin import config, marvindb; print(config.db, marvindb.db); import marvin.db.models.DataModelClasses as datadb;"
+- python -c "from marvin import config, marvindb; print(config.db, marvindb.db); import marvin.db.models.DataModelClasses as datadb; from brain.utils.general.general import getDbMachine; print(getDbMachine());"
 
 script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
