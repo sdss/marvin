@@ -5,7 +5,7 @@ cache: pip
 sudo: false
 
 python:
-#- '2.7'
+- '2.7'
 - '3.4'
 
 os:
@@ -57,7 +57,9 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - sleep 3
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
-- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null &
+- export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
+- echo $LOCAL_MARVIN_PORT
+- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT > /dev/null &
 - sleep 10
 - lsof -Pnl +M -i4
 - echo $MANGA_LOCALHOST
@@ -72,6 +74,7 @@ script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > dev/null & coverage run --source marvin setup.py nosetests
 # - sh $TRAVIS_BUILD_DIR/bin/run_travis
 #- nosetests --with-coverage --cover-package=python/marvin -w python/marvin/tests --cover-html
+# - if [ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]; then echo 'yes'; else echo 'no'; fi;
 - py.test python/marvin/tests -v --cov python/marvin --cov-report html
 
 after_success:

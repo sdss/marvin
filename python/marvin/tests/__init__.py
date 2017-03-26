@@ -145,7 +145,9 @@ class MarvinTest(TestCase):
                 config.__setattr__(k, self.__getattribute__(ikey))
 
     @classmethod
-    def set_sasurl(cls, loc='local', port=5000):
+    def set_sasurl(cls, loc='local', port=None):
+        if not port:
+            port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
         istest = True if loc == 'utah' else False
         config.switchSasUrl(loc, test=istest, port=port)
         response = Interaction('api/general/getroutemap', request_type='get')

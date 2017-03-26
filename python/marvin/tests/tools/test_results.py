@@ -26,7 +26,7 @@ class TestResultsBase(MarvinTest):
 
     def setUp(self):
         self._reset_the_config()
-        self.set_sasurl('local', port=5000)
+        self.set_sasurl('local')
         self.mode = self.init_mode
         config.setMPL('MPL-5')
         config.forceDbOn()
