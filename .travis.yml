@@ -41,6 +41,7 @@ install:
 - source activate test_env
 - pip install -r requirements.txt --quiet
 - pip install psycopg2 --quiet
+- pip install blinker --quiet
 - pip install nose --quiet
 - pip install coverage --quiet
 - pip install pytest --quiet
