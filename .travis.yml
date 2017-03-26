@@ -58,7 +58,9 @@ before_script:
 - echo $MANGA_LOCALHOST
 - curl http://localhost:5000/marvin2/api/general/getroutemap/
 # - curl http://localhost:5000/marvin2/database/
-- python -c "from marvin import config, marvindb; print(config.db, marvindb.db); import os; print sorted(os.environ.keys()); from brain.utils.general.general import getDbMachine; print(getDbMachine()); import marvin.db.models.DataModelClasses as datadb;"
+- cat ~/.matplotlib/matplotlibrc
+- python -c "from marvin import config, marvindb; print(config.db, marvindb.db); from brain.utils.general.general import getDbMachine; print(getDbMachine()); import marvin.db.models.DataModelClasses as datadb;"
+- python -c "from matplotlib import pyplot as plt;"
 
 script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
