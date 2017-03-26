@@ -63,15 +63,15 @@ before_script:
 - sleep 10
 - lsof -Pnl +M -i4
 - echo $MANGA_LOCALHOST
-- curl http://localhost:5000/marvin2/api/general/getroutemap/
-# - curl http://localhost:5000/marvin2/database/
+- curl http://localhost:$LOCAL_MARVIN_PORT/marvin2/api/general/getroutemap/
+# - curl http://localhost:$LOCAL_MARVIN_PORT/marvin2/database/
 - cat ~/.matplotlib/matplotlibrc
 - python -c "from marvin import config, marvindb; print(config.db, marvindb.db); from brain.utils.general.general import getDbMachine; print(getDbMachine()); import marvin.db.models.DataModelClasses as datadb;"
 - python -c "from matplotlib import pyplot as plt;"
 
 script:
-#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
-#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > dev/null & coverage run --source marvin setup.py nosetests
+#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT & py.test python/marvin/tests -v --cov python/marvin --cov-report html
+#- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT > dev/null & coverage run --source marvin setup.py nosetests
 # - sh $TRAVIS_BUILD_DIR/bin/run_travis
 #- nosetests --with-coverage --cover-package=python/marvin -w python/marvin/tests --cover-html
 # - if [ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]; then echo 'yes'; else echo 'no'; fi;
