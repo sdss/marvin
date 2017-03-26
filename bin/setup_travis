@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-export DISPLAY=:99.0
-sh -e /etc/init.d/xvfb start
-sleep 3
-mkdir ~/.matplotlib
-echo 'backend: tkagg' > ~/.matplotlib/matplotlibrc
 python $TRAVIS_BUILD_DIR/bin/get_test_data.py
 wget https://sas.sdss.org/marvin/data/local_mangadb_test.sql
 createdb -U postgres -T template0 manga
