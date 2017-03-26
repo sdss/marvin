@@ -66,7 +66,8 @@ script:
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 & py.test python/marvin/tests -v --cov python/marvin --cov-report html
 #- $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > dev/null & coverage run --source marvin setup.py nosetests
 # - sh $TRAVIS_BUILD_DIR/bin/run_travis
-- py.test python/marvin/tests -v --cov python/marvin --cov-report html
+- nosetests --with-coverage --cover-package=python/marvin -w python/marvin/tests --cover-html
+#- py.test python/marvin/tests -v --cov python/marvin --cov-report html
 
 after_success:
 - coveralls
