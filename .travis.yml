@@ -54,8 +54,6 @@ before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 - sleep 3
-- mkdir ~/.matplotlib
-- echo 'backend: tkagg' > ~/.matplotlib/matplotlibrc
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p 5000 > /dev/null &
 - sleep 10
