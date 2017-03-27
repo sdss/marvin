@@ -24,6 +24,16 @@ addons:
       xvfb
       nano
 
+env:
+  - MANGA_LOCALHOST=1
+  - DISPLAY=:99.0
+  - LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
+
+matrix:
+  fast_finish: true
+  allowed_failures:
+    - python: '3.6'
+
 notifications:
   slack:
     secure: FZXERPoPv4n52hBx3bvEjJ5T0Ey2Es7Sa7sd/MA4AMr7l1771YZ1VTLpVtpw4qJR8vrt4NtSFbBowJiovDmx6FCjEb/2N6RipjbLowAtFRqjalOGO3KZOi3UPeiytP/IYD1DG7YmeYJOL8aof2awns8ckAWRSz6HO3cDpqg+hycDXasZQdQfIKgY17UZvONBJZCZGeC3lMw4IrbhkfhW7aQvhUhcXDtfEyObNt2+FGE6y7WDeOEjtfArKc/Iz4gybWLkYPpA6rtQfQciQvpZv94sanxli8vq4mXIpu/dxn73jfKSYsYIl7+OYrXKJQBy/8muwwuSe2et15mG90KGUsDOJ+PXKCLOSl8JohO/pH0l3hZKno6nX7byL6orEbBuQjpMJO0QFUs7o6hLSv3q4tgtuV0M99I8UHcIgmBYL9oXI4BHIsSwreTXHfV/8LiuZfyaB2NzwKuRHQTZQfCD+ujqXaspyQX70Xew2L7rruRuBuKLTntgklMFtAPYJYbW/4z6HsZ//X6Z2BHwe0Etv4FZaKsf8IK81p//oYi/3kw2ENRYNARu0HzU0Edba6ugBPjzw6wFyWsL35IFTSosby50iAWo7xYfRXBv1kH0tPOcmPoJzFcrdAmvEqt6K8bNwqgx72/qsBp4fhmGfQM5G07dkyQM+hu+e9OPEfTwOo4=
@@ -54,16 +64,16 @@ install:
 - python setup.py install
 
 before_script:
-- export MANGA_LOCALHOST=1
+#- export MANGA_LOCALHOST=1
 - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 # Needed to handle GUI or QT based tests (e.g. matplotlib.pyplot import)
-- export DISPLAY=:99.0
+#- export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 - sleep 3
 # Run script to download test data files and db
 - sh $TRAVIS_BUILD_DIR/bin/setup_travis
 # Create unique web server port based on travis python version
-- export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
+#- export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 - echo $LOCAL_MARVIN_PORT
 # Start the web server on port 50XX and allow enough time to start up
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT &
