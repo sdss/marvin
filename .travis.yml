@@ -60,7 +60,7 @@ before_script:
 - export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 - echo $LOCAL_MARVIN_PORT
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT &
-- sleep 10
+- sleep 20
 - lsof -Pnl +M -i4
 - echo $MANGA_LOCALHOST
 - curl http://localhost:$LOCAL_MARVIN_PORT/marvin2/api/general/getroutemap/
