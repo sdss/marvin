@@ -25,9 +25,10 @@ addons:
       nano
 
 env:
-  - MANGA_LOCALHOST=1
-  - DISPLAY=:99.0
-  - LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
+  globals:
+    - MANGA_LOCALHOST=1
+    - DISPLAY=:99.0
+    - LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 
 matrix:
   fast_finish: true
