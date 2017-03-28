@@ -1,0 +1,8 @@
+[run]
+omit = 
+    # exclude things in test
+    python/marvin/tests/*
+
+[report]
+omit =
+    python/marvin/tests/*
