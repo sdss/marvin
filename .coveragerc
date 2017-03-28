@@ -1,5 +1,7 @@
 [run]
-omit = 
+branch = true
+
+omit =
     # exclude things in test
     python/marvin/tests/*
 
