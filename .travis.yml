@@ -5,6 +5,7 @@ cache: pip
 sudo: false
 
 python:
+- '2.6'
 - '2.7'
 - '3.4'
 - '3.5'
@@ -32,7 +33,9 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    - python: '3.6'
+    - python:
+        - '2.6'
+        - '3.6'
 
 notifications:
   slack:
@@ -64,10 +67,8 @@ install:
 - python setup.py install
 
 before_script:
-#- export MANGA_LOCALHOST=1
 - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 # Needed to handle GUI or QT based tests (e.g. matplotlib.pyplot import)
-#- export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 - sleep 3
 # Run script to download test data files and db
