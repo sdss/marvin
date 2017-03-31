@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 01:41:18
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-11-02 16:02:25
+* @Last Modified time: 2017-03-31 16:48:35
 */
 
 module.exports = function(grunt) {
@@ -66,8 +66,11 @@ module.exports = function(grunt) {
     },
     // CSS Minification
     cssmin: {
+      options: {
+        sourceMap: true,
+      },
       dist: {
-        src: 'dist/<%= pkg.name %>.css',
+        src: 'css/<%= pkg.name %>.css',
         dest: 'dist/<%= pkg.name %>.min.css'
       }
     },

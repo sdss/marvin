@@ -10,7 +10,7 @@
 	<meta charset="UTF-8">
 	<title>{{title}}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.css')}}"></script>
+	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.min.css')}}"></script>
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
@@ -55,8 +55,8 @@
 
 	<!-- Javascript Code Block -->
 	{{ JSGlue.include() }}
-	<script type='text/javascript' src="{{url_for('lib',filename='dist/marvin.js')}}"></script>
-	<script type='text/javascript'>
+	<script type='application/javascript' src="{{url_for('lib',filename='dist/marvin.js')}}"></script>
+	<script type='application/javascript'>
 		var m = new Marvin();
 	</script>
 	{% block code %}{% endblock code %}
