@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-21 16:26:48
+* @Last Modified time: 2017-03-31 19:15:06
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -12,7 +12,7 @@
 //
 // Javascript Galaxy object handling JS things for a single galaxy
 //
-
+//jshint esversion: 6
 'use strict';
 
 class Galaxy {
@@ -123,7 +123,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.specmsg.show();
         }
-        var newmsg = '<strong>'+specmsg+'</strong>';
+        var newmsg = `<strong>${specmsg}</strong>`;
         this.specmsg.empty();
         this.specmsg.html(newmsg);
     }
@@ -175,11 +175,11 @@ class Galaxy {
                 if (data.result.status !== -1) {
                     _this.updateSpaxel(data.result.spectra, data.result.specmsg);
                 } else {
-                    _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+                    _this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.status);
                 }
             })
             .fail(function(data) {
-                _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+                _this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.status);
             });
     }
 
@@ -258,20 +258,20 @@ class Galaxy {
                         if (data.result.specstatus !== -1) {
                             _this.loadSpaxel(spaxel, spectitle);
                         } else {
-                            _this.updateSpecMsg('Error: '+spectitle, data.result.specstatus);
+                            _this.updateSpecMsg(`Error: ${spectitle}`, data.result.specstatus);
                         }
 
                         // Try to load the Maps
                         if (data.result.mapstatus !== -1) {
                             _this.initHeatmap(maps);
                         } else {
-                            _this.updateMapMsg('Error: '+mapmsg, data.result.mapstatus);
+                            _this.updateMapMsg(`Error: ${mapmsg}`, data.result.mapstatus);
                         }
 
                     })
                     .fail(function(data) {
-                        _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.specstatus);
-                        _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.mapstatus);
+                        _this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.specstatus);
+                        _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.mapstatus);
                         _this.toggleload.hide();
                     });
             }
@@ -331,7 +331,7 @@ class Galaxy {
             // split id and grab the mngtarg
             var [base, targ] = popid.split('_');
             // build the label list id
-            var listid = '#list_'+targ;
+            var listid = `#list_${targ}`;
             // init the specific popover
             $('#'+popid).popover({html:true,content:$(listid).html()});
         });
@@ -354,12 +354,12 @@ class Galaxy {
                     _this.dapmapsbut.button('reset');
                     _this.initHeatmap(data.result.maps);
                 } else {
-                    _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
+                    _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
                     _this.dapmapsbut.button('reset');
                 }
             })
             .fail(function(data) {
-                _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
+                _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
                 _this.dapmapsbut.button('reset');
             });
     }
@@ -370,7 +370,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.mapmsg.show();
         }
-        var newmsg = '<strong>'+mapmsg+'</strong>';
+        var newmsg = `<strong>${mapmsg}</strong>`;
         this.mapmsg.empty();
         this.mapmsg.html(newmsg);
     }
@@ -411,11 +411,11 @@ class Galaxy {
                         _this.initNSABoxPlot(data.result.nsaplotcols);
                         _this.nsaload.hide();
                     } else {
-                        _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+                        _this.updateNSAMsg(`Error: ${data.result.nsamsg}`, data.result.status);
                     }
                 })
                 .fail(function(data) {
-                    _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+                    _this.updateNSAMsg(`Error: ${data.result.nsamsg}`, data.result.status);
                 });
         }
 
@@ -427,7 +427,7 @@ class Galaxy {
         if (data[this.plateifu]) {
             this.mygalaxy = data[this.plateifu];
         } else {
-            this.updateNSAMsg('Error: No NSA data found for '+this.plateifu, -1);
+            this.updateNSAMsg(`Error: No NSA data found for ${this.plateifu}`, -1);
             return;
         }
         // the manga sample
@@ -517,7 +517,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.nsamsg.show();
         }
-        var newmsg = '<strong>'+nsamsg+'</strong>';
+        var newmsg = `<strong>${nsamsg}</strong>`;
         this.nsamsg.empty();
         this.nsamsg.html(newmsg);
     }
@@ -570,7 +570,7 @@ class Galaxy {
             var index = parseInt(parentid[parentid.length-1]);
             var [data, options] = this.updateNSAData(index, 'galaxy');
             var [sdata, soptions] = this.updateNSAData(index, 'sample');
-            options['altseries'] = {data:sdata, name:'Sample'};
+            options.altseries = {data:sdata, name:'Sample'};
             this.destroyChart(parentdiv, index);
             this.nsascatter[index] = new Scatter(parentdiv, data, options);
         } else {
@@ -580,7 +580,7 @@ class Galaxy {
                 var plotdiv = $(plot);
                 var [data, options] = _this.updateNSAData(index+1, 'galaxy');
                 var [sdata, soptions] = _this.updateNSAData(index+1, 'sample');
-                options['altseries'] = {data:sdata,name:'Sample'};
+                options.altseries = {data:sdata,name:'Sample'};
                 _this.nsascatter[index+1] = new Scatter(plotdiv, data, options);
             });
         }
@@ -628,7 +628,7 @@ class Galaxy {
         var params = $(nsasp).selectpicker('val');
 
         // Construct the new NSA data
-        var parentid = 'nsahighchart'+index;
+        var parentid = `nsahighchart${index}`;
         _this.updateNSAChoices(index, params);
         _this.initNSAScatter(parentid);
         _this.addNSAEvents();

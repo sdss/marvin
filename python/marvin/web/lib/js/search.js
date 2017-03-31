@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-01-18 21:02:39
+* @Last Modified time: 2017-03-31 17:05:44
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -55,8 +56,8 @@ var Search = function () {
         value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
-            var typediv = typediv === undefined ? this.typeahead : $(typediv);
-            var formdiv = formdiv === undefined ? this.searchform : $(formdiv);
+            typediv = typediv === undefined ? this.typeahead : $(typediv);
+            formdiv = formdiv === undefined ? this.searchform : $(formdiv);
             // get the typeahead search page getparams url
             try {
                 var typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;

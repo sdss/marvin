@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:05:15
+* @Last Modified time: 2017-03-31 16:55:42
 */
 
+//jshint esversion: 6
 'use strict';
 
 

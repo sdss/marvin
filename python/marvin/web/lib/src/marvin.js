@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:46:11
+* @Last Modified time: 2017-03-31 16:55:18
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Marvin {

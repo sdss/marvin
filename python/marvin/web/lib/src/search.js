@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-01-18 21:02:39
+* @Last Modified time: 2017-03-31 17:05:44
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Search {
@@ -39,8 +40,8 @@ class Search {
     initTypeahead(typediv, formdiv, url, fxn) {
 
         var _this = this;
-        var typediv = (typediv === undefined) ? this.typeahead : $(typediv);
-        var formdiv = (formdiv === undefined) ? this.searchform : $(formdiv);
+        typediv = (typediv === undefined) ? this.typeahead : $(typediv);
+        formdiv = (formdiv === undefined) ? this.searchform : $(formdiv);
         // get the typeahead search page getparams url
         try {
             var typeurl = (url === undefined) ? Flask.url_for('search_page.getparams', {'paramdisplay':'best'}) : url;
@@ -91,15 +92,15 @@ class Search {
             // used to determined if a query matches an item
             var tquery = _this.extractor(this.query);
             if(!tquery) return false;
-            return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+            return ~item.toLowerCase().indexOf(tquery.toLowerCase());
         },
         highlighter: function (item) {
           // used to highlight autocomplete results ; returns html
           var oquery = _this.extractor(this.query);
           var query = oquery.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
           return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
-            return '<strong>' + match + '</strong>'
-          })
+            return '<strong>' + match + '</strong>';
+          });
         }
         });
     }

@@ -2,11 +2,11 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:54:41
+* @Last Modified time: 2017-03-31 17:01:21
 */
 
 // Javascript code for general things
-
+//jshint esversion: 6
 'use strict';
 
 class Utils {
@@ -84,7 +84,7 @@ class Utils {
                   // good submit
                   if (data.result.message !== ''){
                       var stat = (data.result.status === 0) ? 'danger' : 'success';
-                      var htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result.message + "</h4></div>";
+                      var htmlstr = `<div class='alert alert-${stat}' role='alert'><h4>${data.result.message}</h4></div>`;
                       $('#loginmessage').html(htmlstr);
                   }
                   if (data.result.status === 1){

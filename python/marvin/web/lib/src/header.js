@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-12 17:56:55
+* @Last Modified time: 2017-03-31 17:10:20
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Header {
@@ -32,8 +33,8 @@ class Header {
     initTypeahead(typediv, formdiv, url, fxn) {
 
         var _this = this;
-        var typediv = (typediv === undefined) ? this.typeahead : $(typediv);
-        var formdiv = (formdiv === undefined) ? this.galidform : $(formdiv);
+        typediv = (typediv === undefined) ? this.typeahead : $(typediv);
+        formdiv = (formdiv === undefined) ? this.galidform : $(formdiv);
         var typeurl = (url === undefined) ? Flask.url_for('index_page.getgalidlist') : url;
         var afterfxn = (fxn === undefined) ? null : fxn;
 

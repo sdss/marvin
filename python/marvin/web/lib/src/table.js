@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-09 16:52:45
+* @Last Modified time: 2017-03-31 16:54:58
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Table {

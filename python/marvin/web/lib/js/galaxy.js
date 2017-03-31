@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-21 16:26:48
+* @Last Modified time: 2017-03-31 19:15:06
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -12,7 +12,7 @@
 //
 // Javascript Galaxy object handling JS things for a single galaxy
 //
-
+//jshint esversion: 6
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -675,7 +675,7 @@ var Galaxy = function () {
                 var sdata = _updateNSAData4[0];
                 var soptions = _updateNSAData4[1];
 
-                options['altseries'] = { data: sdata, name: 'Sample' };
+                options.altseries = { data: sdata, name: 'Sample' };
                 this.destroyChart(parentdiv, index);
                 this.nsascatter[index] = new Scatter(parentdiv, data, options);
             } else {
@@ -698,7 +698,7 @@ var Galaxy = function () {
                     var sdata = _this$updateNSAData4[0];
                     var soptions = _this$updateNSAData4[1];
 
-                    options['altseries'] = { data: sdata, name: 'Sample' };
+                    options.altseries = { data: sdata, name: 'Sample' };
                     _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }

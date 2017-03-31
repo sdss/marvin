@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-15 17:20:57
+* @Last Modified time: 2017-03-31 18:41:41
 */
 
 // Using Mike Bostocks box.js code
@@ -16,6 +16,7 @@
 
 // Dec-13-2016 - converted to D3 v4
 
+//jshint esversion: 6
 'use strict';
 
 function iqr(k) {
@@ -224,7 +225,7 @@ d3.box = function () {
             // Update box ticks.
             var boxTick = g.selectAll("text.box").data(quartileData);
 
-            if (showLabels == true) {
+            if (showLabels === true) {
                 boxTick.enter().append("text").attr("class", "box").attr("dy", ".3em").attr("dx", function (d, i) {
                     return i & 1 ? 6 : -6;
                 }).attr("x", function (d, i) {
@@ -292,7 +293,7 @@ d3.box = function () {
 
     box.domain = function (x) {
         if (!arguments.length) return domain;
-        domain = x == null ? x : d3.functor(x);
+        domain = x === null ? x : d3.functor(x);
         return box;
     };
 

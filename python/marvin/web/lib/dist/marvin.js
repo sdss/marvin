@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-15 17:20:57
+* @Last Modified time: 2017-03-31 18:41:41
 */
 
 // Using Mike Bostocks box.js code
@@ -16,6 +16,7 @@
 
 // Dec-13-2016 - converted to D3 v4
 
+//jshint esversion: 6
 'use strict';
 
 function iqr(k) {
@@ -224,7 +225,7 @@ d3.box = function () {
             // Update box ticks.
             var boxTick = g.selectAll("text.box").data(quartileData);
 
-            if (showLabels == true) {
+            if (showLabels === true) {
                 boxTick.enter().append("text").attr("class", "box").attr("dy", ".3em").attr("dx", function (d, i) {
                     return i & 1 ? 6 : -6;
                 }).attr("x", function (d, i) {
@@ -292,7 +293,7 @@ d3.box = function () {
 
     box.domain = function (x) {
         if (!arguments.length) return domain;
-        domain = x == null ? x : d3.functor(x);
+        domain = x === null ? x : d3.functor(x);
         return box;
     };
 
@@ -332,9 +333,10 @@ d3.box = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:05:15
+* @Last Modified time: 2017-03-31 16:55:42
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -438,10 +440,11 @@ var BoxWhisker = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 09:29:24
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 09:45:04
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-03-31 16:55:37
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -510,7 +513,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-21 16:26:48
+* @Last Modified time: 2017-03-31 19:15:06
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -519,7 +522,7 @@ var Carousel = function () {
 //
 // Javascript Galaxy object handling JS things for a single galaxy
 //
-
+//jshint esversion: 6
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -1182,7 +1185,7 @@ var Galaxy = function () {
                 var sdata = _updateNSAData4[0];
                 var soptions = _updateNSAData4[1];
 
-                options['altseries'] = { data: sdata, name: 'Sample' };
+                options.altseries = { data: sdata, name: 'Sample' };
                 this.destroyChart(parentdiv, index);
                 this.nsascatter[index] = new Scatter(parentdiv, data, options);
             } else {
@@ -1205,7 +1208,7 @@ var Galaxy = function () {
                     var sdata = _this$updateNSAData4[0];
                     var soptions = _this$updateNSAData4[1];
 
-                    options['altseries'] = { data: sdata, name: 'Sample' };
+                    options.altseries = { data: sdata, name: 'Sample' };
                     _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
@@ -1382,9 +1385,10 @@ var Galaxy = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-12 17:56:55
+* @Last Modified time: 2017-03-31 17:10:20
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1425,8 +1429,8 @@ var Header = function () {
         value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
-            var typediv = typediv === undefined ? this.typeahead : $(typediv);
-            var formdiv = formdiv === undefined ? this.galidform : $(formdiv);
+            typediv = typediv === undefined ? this.typeahead : $(typediv);
+            formdiv = formdiv === undefined ? this.galidform : $(formdiv);
             var typeurl = url === undefined ? Flask.url_for('index_page.getgalidlist') : url;
             var afterfxn = fxn === undefined ? null : fxn;
 
@@ -1504,9 +1508,10 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-02-18 12:44:32
+* @Last Modified time: 2017-03-31 17:09:50
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -1536,20 +1541,20 @@ var HeatMap = function () {
         }
     }
 
+    // test print
+
+
     _createClass(HeatMap, [{
         key: 'print',
-
-
-        // test print
         value: function print() {
             console.log('We are now printing heatmap for ', this.title);
         }
-    }, {
-        key: 'parseTitle',
-
 
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
+
+    }, {
+        key: 'parseTitle',
         value: function parseTitle() {
             var _title$split = this.title.split(':');
 
@@ -1572,9 +1577,9 @@ var HeatMap = function () {
     }, {
         key: 'getRange',
         value: function getRange() {
-            var xylength = this.data['values'].length;
+            var xylength = this.data.values.length;
             var xyrange = Array.apply(null, { length: xylength }).map(Number.call, Number);
-            var zrange = [].concat.apply([], this.data['values']);
+            var zrange = [].concat.apply([], this.data.values);
             return [xyrange, zrange];
         }
 
@@ -1612,6 +1617,8 @@ var HeatMap = function () {
             for (var ii = 0; ii < values.length; ii++) {
                 for (var jj = 0; jj < values.length; jj++) {
                     var val = values[ii][jj];
+                    var noData = void 0,
+                        badData = void 0;
 
                     if (mask !== null) {
                         var noValue = mask[ii][jj] && Math.pow(2, 0);
@@ -1620,11 +1627,11 @@ var HeatMap = function () {
                         var badFit = mask[ii][jj] && Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] && Math.pow(2, 30);
                         //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                        var noData = noValue;
-                        var badData = badValue || mathError || badFit || doNotUse;
+                        noData = noValue;
+                        badData = badValue || mathError || badFit || doNotUse;
                     } else {
-                        noData == null;
-                        badData == null;
+                        noData = null;
+                        badData = null;
                     }
 
                     if (ivar !== null) {
@@ -1655,11 +1662,11 @@ var HeatMap = function () {
                             // set zero values to no-data
                             val = 'no-data';
                         }
-                    };
+                    }
                     // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
                     xyz.push([jj, ii, val]);
-                };
-            };
+                }
+            }
             return xyz;
         }
     }, {
@@ -1693,7 +1700,7 @@ var HeatMap = function () {
                 return RdBuHex;
             } else {
                 return ["#000000", "#FFFFFF"];
-            };
+            }
         }
     }, {
         key: 'setColorStops',
@@ -1703,7 +1710,7 @@ var HeatMap = function () {
             var colormap = new Array(stopLocations);
             for (var ii = 0; ii < stopLocations; ii++) {
                 colormap[ii] = [ii / (stopLocations - 1), colorHex[ii]];
-            };
+            }
             return colormap;
         }
     }, {
@@ -1724,7 +1731,7 @@ var HeatMap = function () {
             } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
                 quantLow = 5;
                 quantHigh = 95;
-            };
+            }
 
             if (range.length > 0) {
                 if (quantLow > 0) {
@@ -1787,17 +1794,18 @@ var HeatMap = function () {
             zmax = _quantileClip2[1];
 
 
+            var cmap = void 0;
             if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                var cmap = "RdBu";
+                cmap = "RdBu";
                 // make velocity maps symmetric
                 var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
                 zmin = -zabsmax;
                 zmax = zabsmax;
             } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-                var cmap = "inferno";
+                cmap = "inferno";
             } else {
-                var cmap = "linearLab";
-            };
+                cmap = "linearLab";
+            }
 
             var cstops = this.setColorStops(cmap);
 
@@ -1905,9 +1913,10 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:46:11
+* @Last Modified time: 2017-03-31 16:55:18
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1971,14 +1980,14 @@ var Marvin = function () {
 ;/*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 18:12:18
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-03-31 17:06:55
 */
 
 //
 // Javascript object handling all things related to OpenLayers Map
 //
-
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2005,30 +2014,30 @@ var OLMap = function () {
         }
     }
 
+    // test print
+
+
     _createClass(OLMap, [{
         key: 'print',
-
-
-        // test print
         value: function print() {
             console.log('We are now printing openlayers map');
         }
-    }, {
-        key: 'getImageSize',
-
 
         // Get the natural size of the input static image
+
+    }, {
+        key: 'getImageSize',
         value: function getImageSize() {
             if (this.staticimdiv !== undefined) {
                 this.imwidth = this.staticimdiv.naturalWidth;
                 this.imheight = this.staticimdiv.naturalHeight;
             }
         }
-    }, {
-        key: 'setMouseControl',
-
 
         // Set the mouse position control
+
+    }, {
+        key: 'setMouseControl',
         value: function setMouseControl() {
             var mousePositionControl = new ol.control.MousePosition({
                 coordinateFormat: ol.coordinate.createStringXY(4),
@@ -2040,11 +2049,11 @@ var OLMap = function () {
             });
             return mousePositionControl;
         }
-    }, {
-        key: 'setProjection',
-
 
         // Set the image Projection
+
+    }, {
+        key: 'setProjection',
         value: function setProjection() {
             this.extent = [0, 0, this.imwidth, this.imheight];
             this.projection = new ol.proj.Projection({
@@ -2053,11 +2062,11 @@ var OLMap = function () {
                 extent: this.extent
             });
         }
-    }, {
-        key: 'setBaseImageLayer',
-
 
         // Set the base image Layer
+
+    }, {
+        key: 'setBaseImageLayer',
         value: function setBaseImageLayer() {
             var imagelayer = new ol.layer.Image({
                 source: new ol.source.ImageStatic({
@@ -2068,11 +2077,11 @@ var OLMap = function () {
             });
             return imagelayer;
         }
-    }, {
-        key: 'setView',
-
 
         // Set the image View
+
+    }, {
+        key: 'setView',
         value: function setView() {
             this.view = new ol.View({
                 projection: this.projection,
@@ -2082,11 +2091,11 @@ var OLMap = function () {
                 maxResolution: 1.4
             });
         }
-    }, {
-        key: 'initMap',
-
 
         // Initialize the Map
+
+    }, {
+        key: 'initMap',
         value: function initMap() {
             var mousePositionControl = this.setMouseControl();
             var baseimage = this.setBaseImageLayer();
@@ -2101,11 +2110,11 @@ var OLMap = function () {
                 view: this.view
             });
         }
-    }, {
-        key: 'addDrawInteraction',
-
 
         // Add a Draw Interaction
+
+    }, {
+        key: 'addDrawInteraction',
         value: function addDrawInteraction() {
             // set up variable for last saved feature & vector source for point
             var lastFeature;
@@ -2136,11 +2145,11 @@ var OLMap = function () {
             // add draw interaction onto the map
             this.map.addInteraction(this.draw);
         }
-    }, {
-        key: 'newVectorLayer',
-
 
         // New Vector Layer
+
+    }, {
+        key: 'newVectorLayer',
         value: function newVectorLayer(source) {
             // default set to Point, but eventually expand this to different vector layer types
             var vector = new ol.layer.Vector({
@@ -2171,9 +2180,10 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-15 13:27:14
+* @Last Modified time: 2017-03-31 16:55:09
 */
 
+//jshint esversion: 6
 'use strict';
 
 // Creates a Scatter Plot Highcharts Object
@@ -2386,9 +2396,10 @@ var Scatter = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-01-18 21:02:39
+* @Last Modified time: 2017-03-31 17:05:44
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2439,8 +2450,8 @@ var Search = function () {
         value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
-            var typediv = typediv === undefined ? this.typeahead : $(typediv);
-            var formdiv = formdiv === undefined ? this.searchform : $(formdiv);
+            typediv = typediv === undefined ? this.typeahead : $(typediv);
+            formdiv = formdiv === undefined ? this.searchform : $(formdiv);
             // get the typeahead search page getparams url
             try {
                 var typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
@@ -2510,9 +2521,10 @@ var Search = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-09 16:52:45
+* @Last Modified time: 2017-03-31 16:54:58
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2637,11 +2649,11 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:54:41
+* @Last Modified time: 2017-03-31 17:01:21
 */
 
 // Javascript code for general things
-
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2746,7 +2758,7 @@ var Utils = function () {
                     // good submit
                     if (data.result.message !== '') {
                         var stat = data.result.status === 0 ? 'danger' : 'success';
-                        var htmlstr = "<div class='alert alert-" + stat + "' role='alert'><h4>" + data.result.message + "</h4></div>";
+                        var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
                         $('#loginmessage').html(htmlstr);
                     }
                     if (data.result.status === 1) {

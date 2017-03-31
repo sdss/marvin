@@ -1,14 +1,14 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 18:12:18
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-03-31 17:06:55
 */
 
 //
 // Javascript object handling all things related to OpenLayers Map
 //
-
+//jshint esversion: 6
 'use strict';
 
 class OLMap {
@@ -28,12 +28,12 @@ class OLMap {
             this.addDrawInteraction();
         }
 
-    };
+    }
 
     // test print
     print() {
         console.log('We are now printing openlayers map');
-    };
+    }
 
     // Get the natural size of the input static image
     getImageSize() {
@@ -41,7 +41,7 @@ class OLMap {
             this.imwidth = this.staticimdiv.naturalWidth;
             this.imheight = this.staticimdiv.naturalHeight;
         }
-    };
+    }
 
     // Set the mouse position control
     setMouseControl() {
@@ -54,7 +54,7 @@ class OLMap {
             undefinedHTML: '&nbsp;'
         });
         return mousePositionControl;
-    };
+    }
 
     // Set the image Projection
     setProjection() {
@@ -64,7 +64,7 @@ class OLMap {
         units: 'pixels',
         extent: this.extent
       });
-    };
+    }
 
     // Set the base image Layer
     setBaseImageLayer() {
@@ -74,9 +74,9 @@ class OLMap {
                 projection: this.projection,
                 imageExtent: this.extent
                 })
-        })
+        });
         return imagelayer;
-    };
+    }
 
     // Set the image View
     setView() {
@@ -86,8 +86,8 @@ class OLMap {
             zoom: 1,
             maxZoom: 8,
             maxResolution: 1.4
-        })
-    };
+        });
+    }
 
     // Initialize the Map
     initMap() {
@@ -103,7 +103,7 @@ class OLMap {
             target: this.mapdiv,
             view: this.view
         });
-    };
+    }
 
     // Add a Draw Interaction
     addDrawInteraction() {
@@ -136,7 +136,7 @@ class OLMap {
         // add draw interaction onto the map
         this.map.addInteraction(this.draw);
 
-    };
+    }
 
     // New Vector Layer
     newVectorLayer(source) {
@@ -160,7 +160,7 @@ class OLMap {
             })
         });
         return vector;
-    };
+    }
 
 }
 

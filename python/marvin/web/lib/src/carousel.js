@@ -1,10 +1,11 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 09:29:24
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 09:45:04
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-03-31 16:55:37
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Carousel {

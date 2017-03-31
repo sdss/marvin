@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-02-18 12:44:32
+* @Last Modified time: 2017-03-31 17:09:50
 */
 
+//jshint esversion: 6
 'use strict';
 
 class HeatMap {
@@ -25,12 +26,12 @@ class HeatMap {
             this.setColorNoData(this, Highcharts);
         }
 
-    };
+    }
 
     // test print
     print() {
         console.log('We are now printing heatmap for ', this.title);
-    };
+    }
 
     // Parse the heatmap title into category, parameter, channel
     // e.g. 7443-1901: emline_gflux_ha-6564
@@ -41,9 +42,9 @@ class HeatMap {
 
     // Get range of x (or y) data and z (DAP property) data
     getRange(){
-        var xylength  = this.data['values'].length;
+        var xylength  = this.data.values.length;
         var xyrange = Array.apply(null, {length: xylength}).map(Number.call, Number);
-        var zrange = [].concat.apply([], this.data['values']);
+        var zrange = [].concat.apply([], this.data.values);
         return [xyrange, zrange];
     }
 
@@ -74,6 +75,7 @@ class HeatMap {
         for (var ii=0; ii < values.length; ii++) {
             for (var jj=0; jj < values.length; jj++){
                 var val = values[ii][jj];
+                let noData, badData;
 
                 if (mask !== null) {
                     var noValue = (mask[ii][jj] && Math.pow(2, 0));
@@ -82,11 +84,11 @@ class HeatMap {
                     var badFit = (mask[ii][jj] && Math.pow(2, 7));
                     var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
                     //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                    var noData = noValue;
-                    var badData = (badValue || mathError || badFit || doNotUse);
+                    noData = noValue;
+                    badData = (badValue || mathError || badFit || doNotUse);
                 } else {
-                    noData == null;
-                    badData == null;
+                    noData = null;
+                    badData = null;
                 }
 
                 if (ivar !== null) {
@@ -117,11 +119,11 @@ class HeatMap {
                         // set zero values to no-data
                         val = 'no-data';
                     }
-                };
+                }
                 // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
                 xyz.push([jj, ii, val]);
-            };
-        };
+            }
+        }
         return xyz;
     }
 
@@ -256,7 +258,7 @@ class HeatMap {
             return RdBuHex;
         } else {
             return ["#000000", "#FFFFFF"];
-        };
+        }
     }
 
     setColorStops(cmap){
@@ -265,7 +267,7 @@ class HeatMap {
         var colormap = new Array(stopLocations);
         for (var ii = 0; ii < stopLocations; ii++) {
             colormap[ii] = [ii / (stopLocations - 1), colorHex[ii]];
-        };
+        }
         return colormap;
     }
 
@@ -277,7 +279,7 @@ class HeatMap {
             [quantLow, quantHigh] = [10, 90];
         } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
             [quantLow, quantHigh] = [5, 95];
-        };
+        }
 
         if (range.length > 0) {
             if (quantLow > 0) {
@@ -287,7 +289,7 @@ class HeatMap {
                 zQuantHigh = math.quantileSeq(range, quantHigh / 100);
             }
         }
-        return [zQuantLow, zQuantHigh]
+        return [zQuantLow, zQuantHigh];
     }
 
     // initialize the heat map
@@ -312,17 +314,17 @@ class HeatMap {
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
 
-
+        let cmap;
         if (this.title.toLowerCase().indexOf("vel") >= 0) {
-            var cmap = "RdBu";
+            cmap = "RdBu";
             // make velocity maps symmetric
             var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
             [zmin, zmax] = [-zabsmax, zabsmax];
         } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-            var cmap = "inferno";
+            cmap = "inferno";
         } else {
-            var cmap = "linearLab";
-        };
+            cmap = "linearLab";
+        }
 
         var cstops = this.setColorStops(cmap);
 
