@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:09
+* @Last Modified time: 2017-04-01 01:03:57
 */
 
 //jshint esversion: 6
@@ -57,7 +57,7 @@ class Scatter {
 
         //Put all of the options into a variable called cfg
         if('undefined' !== typeof options){
-          for(var i in options){
+          for(let i in options){
             if('undefined' !== typeof options[i]){ this.cfg[i] = options[i]; }
           }
         }

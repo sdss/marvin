@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:01:21
+* @Last Modified time: 2017-04-01 01:38:44
 */
 
 // Javascript code for general things
@@ -86,27 +86,28 @@ var Utils = function () {
         value: function initInfoPopOvers() {
             $('.infopop [data-toggle="popover"]').popover();
         }
-    }, {
-        key: 'initToolTips',
-
 
         // Initialize tooltips
+
+    }, {
+        key: 'initToolTips',
         value: function initToolTips() {
             $('[data-toggle="tooltip"]').tooltip();
         }
-    }, {
-        key: 'login',
-
 
         // Login function
+
+    }, {
+        key: 'login',
         value: function login() {
+            var _this2 = this;
+
             var form = $('#loginform').serialize();
-            var _this = this;
 
             $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
                 if (data.result.status < 0) {
                     // bad submit
-                    _this.resetLogin();
+                    _this2.resetLogin();
                 } else {
                     // good submit
                     if (data.result.message !== '') {
@@ -122,20 +123,21 @@ var Utils = function () {
                 alert('Bad login attempt');
             });
         }
-    }, {
-        key: 'resetLogin',
-
 
         // Reset Login
+
+    }, {
+        key: 'resetLogin',
         value: function resetLogin() {
+            console.log('reset');
             $('#loginform').trigger('reset');
             $('#loginmessage').empty();
         }
-    }, {
-        key: 'submitLogin',
-
 
         // Submit Login on Keyups
+
+    }, {
+        key: 'submitLogin',
         value: function submitLogin(event) {
             var _this = event.data;
             // login
@@ -145,20 +147,20 @@ var Utils = function () {
                 }
             }
         }
-    }, {
-        key: 'marvinBanner',
-
 
         // Shows a banner
+
+    }, {
+        key: 'marvinBanner',
         value: function marvinBanner(text, expiryDays, cookieName, url, urlText) {
 
             var _this = this;
-            var expiryDays = expiryDays === undefined ? 0 : expiryDays;
-            var cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
-            var url = url === undefined ? "" : url;
-            var urlText = urlText === undefined ? "Learn more" : urlText;
+            expiryDays = expiryDays === undefined ? 0 : expiryDays;
+            cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
+            url = url === undefined ? "" : url;
+            urlText = urlText === undefined ? "Learn more" : urlText;
 
-            if (urlText == "" || url == "") {
+            if (urlText === "" || url === "") {
                 urlText = "";
                 url = "";
             }
@@ -184,9 +186,9 @@ var Utils = function () {
                     "link": urlText }
             });
 
-            if (expiryDays == 0) {
+            if (expiryDays === 0) {
                 document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
-            };
+            }
         }
     }]);
 

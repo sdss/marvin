@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:54:58
+* @Last Modified time: 2017-04-01 01:39:10
 */
 
 //jshint esversion: 6
@@ -31,10 +31,11 @@ class Table {
     // initialize a table
     initTable(url, data) {
         this.url = url;
+        let cols;
 
         // if data
         if (data.columns !== null) {
-            var cols = this.makeColumns(data.columns);
+            let cols = this.makeColumns(data.columns);
         }
 
         // init the Bootstrap table
@@ -56,20 +57,18 @@ class Table {
             showToggle : true,
             sortName: 'cube.mangaid',
             sortOrder: 'asc',
-            formatNoMatches: function () {
-                return "This table is empty...";
-            }
-        })
+            formatNoMatches: ()=>{ return "This table is empty..."; }
+        });
     }
 
     // make the Table Columns
     makeColumns(columns) {
-        var cols = [];
-        columns.forEach(function (name, index) {
-            var colmap = {};
-            colmap['field'] = name;
-            colmap['title'] = name;
-            colmap['sortable'] = true;
+        let cols = [];
+        columns.forEach((name, index)=>{
+            let colmap = {};
+            colmap.field = name;
+            colmap.title = name;
+            colmap.sortable = true;
             cols.push(colmap);
         });
         return cols;
@@ -78,20 +77,18 @@ class Table {
     // Handle the Bootstrap table JSON response
     handleResponse(results) {
         // load the bootstrap table div
-        //console.log(this.table, this.table===null, this);
         if (this.table === null) {
             this.setTable();
         }
         this.table = $('#table');
-        //console.log('after', this.table, this.table===null, $('#table'));
         // Get new columns
-        var cols = results.columns;
-        var cols = [];
-        results.columns.forEach(function (name, index) {
-            var colmap = {};
-            colmap['field'] = name;
-            colmap['title'] = name;
-            colmap['sortable'] = true;
+        let cols = results.columns;
+        cols = [];
+        results.columns.forEach((name, index)=>{
+            let colmap = {};
+            colmap.field = name;
+            colmap.title = name;
+            colmap.sortable = true;
             cols.push(colmap);
         });
 

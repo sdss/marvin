@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:05:44
+* @Last Modified time: 2017-04-01 01:42:36
 */
 
 //jshint esversion: 6
@@ -26,9 +26,9 @@ class Search {
 
     // Extract
     extractor(input) {
-        var regexp = new RegExp('([^,]+)$');
+        let regexp = new RegExp('([^,]+)$');
         // parse input for newly typed text
-        var result = regexp.exec(input);
+        let result = regexp.exec(input);
         // select last entry after comma
         if(result && result[1]) {
             return result[1].trim();
@@ -39,20 +39,21 @@ class Search {
     // Initialize Query Param Typeahead
     initTypeahead(typediv, formdiv, url, fxn) {
 
-        var _this = this;
+        const _this = this;
+        let typeurl;
         typediv = (typediv === undefined) ? this.typeahead : $(typediv);
         formdiv = (formdiv === undefined) ? this.searchform : $(formdiv);
         // get the typeahead search page getparams url
         try {
-            var typeurl = (url === undefined) ? Flask.url_for('search_page.getparams', {'paramdisplay':'best'}) : url;
+            typeurl = (url === undefined) ? Flask.url_for('search_page.getparams', {'paramdisplay':'best'}) : url;
         } catch (error) {
             Raven.captureException(error);
             console.error('Error getting search getparams url:',error);
         }
-        var afterfxn = (fxn === undefined) ? null : fxn;
+        const afterfxn = (fxn === undefined) ? null : fxn;
 
         function customQueryTokenizer(str) {
-            var newstr = str.toString();
+            let newstr = str.toString();
             return [_this.extractor(newstr)];
         };
 
@@ -64,9 +65,7 @@ class Search {
         prefetch: typeurl,
         remote: {
             url: typeurl,
-            filter: function(qpars) {
-                return qpars;
-            }
+            filter: (qpars)=>{ return qpars; }
         }
         });
 
@@ -83,21 +82,21 @@ class Search {
         updater: function(item) {
             // used to updated the input box with selected option
             // item = selected item from dropdown
-            var currenttext = this.$element.val();
-            var removedtemptype = currenttext.replace(/[^,]*$/,'');
-            var newtext = removedtemptype+item+', ';
+            let currenttext = this.$element.val();
+            let removedtemptype = currenttext.replace(/[^,]*$/,'');
+            let newtext = removedtemptype+item+', ';
             return newtext;
         },
         matcher: function (item) {
             // used to determined if a query matches an item
-            var tquery = _this.extractor(this.query);
+            let tquery = _this.extractor(this.query);
             if(!tquery) return false;
             return ~item.toLowerCase().indexOf(tquery.toLowerCase());
         },
         highlighter: function (item) {
           // used to highlight autocomplete results ; returns html
-          var oquery = _this.extractor(this.query);
-          var query = oquery.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+          let oquery = _this.extractor(this.query);
+          let query = oquery.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
           return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
             return '<strong>' + match + '</strong>';
           });

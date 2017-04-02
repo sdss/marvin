@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-03-31 19:15:06
+* @Last Modified time: 2017-04-01 13:22:16
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -193,6 +193,8 @@ var Galaxy = function () {
     }, {
         key: 'getSpaxel',
         value: function getSpaxel(event) {
+            var _this2 = this;
+
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
             var maptype = divid !== undefined && divid.search('highcharts') !== -1 ? 'heatmap' : 'optical';
@@ -200,17 +202,16 @@ var Galaxy = function () {
             var y = event.point === undefined ? null : event.point.y;
             var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
             var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords, maptype, x, y);
-            var _this = this;
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
                 if (data.result.status !== -1) {
-                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                    _this2.updateSpaxel(data.result.spectra, data.result.specmsg);
                 } else {
-                    _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                    _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
                 }
             }).fail(function (data) {
-                _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
 
@@ -511,7 +512,10 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            var data, options;
+            var _this3 = this;
+
+            var data = void 0,
+                options = void 0;
             var _this = this;
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
@@ -523,17 +527,19 @@ var Galaxy = function () {
                     title: this.nsachoices[index].title, galaxy: { name: this.plateifu }, xrev: xrev,
                     yrev: yrev };
             } else if (type === 'sample') {
-                var x = this.nsasample[this.nsachoices[index].x];
-                var y = this.nsasample[this.nsachoices[index].y];
-                data = [];
-                $.each(x, function (index, value) {
-                    if (value > -9999 && y[index] > -9999) {
-                        var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
-                        data.push(tmp);
-                    }
-                });
-                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
-                    title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
+                (function () {
+                    var x = _this3.nsasample[_this3.nsachoices[index].x];
+                    var y = _this3.nsasample[_this3.nsachoices[index].y];
+                    data = [];
+                    $.each(x, function (index, value) {
+                        if (value > -9999 && y[index] > -9999) {
+                            var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                            data.push(tmp);
+                        }
+                    });
+                    options = { xtitle: _this3.nsachoices[index].xtitle, ytitle: _this3.nsachoices[index].ytitle,
+                        title: _this3.nsachoices[index].title, altseries: { name: 'Sample' } };
+                })();
             }
             return [data, options];
         }
@@ -613,11 +619,18 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
+            var _this4 = this;
+
             var data = [];
             var _this = this;
-            $.each(this.nsaplotcols, function (index, column) {
-                var goodsample = _this.nsasample[column].filter(_this.filterArray);
-                var tmp = { 'value': _this.mygalaxy[column], 'title': column, 'sample': goodsample };
+            // $.each(this.nsaplotcols, function(index, column) {
+            //     let goodsample = _this.nsasample[column].filter(_this.filterArray);
+            //     let tmp = {'value':_this.mygalaxy[column], 'title':column, 'sample':goodsample};
+            //     data.push(tmp);
+            // });
+            this.nsaplotcols.forEach(function (column, index) {
+                var goodsample = _this4.nsasample[column].filter(_this4.filterArray);
+                var tmp = { 'value': _this4.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -636,7 +649,8 @@ var Galaxy = function () {
             }
 
             // generate the data format
-            var data, options;
+            var data = void 0,
+                options = void 0;
             data = this.createD3data();
             this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
         }

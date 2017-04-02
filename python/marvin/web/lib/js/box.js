@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 18:41:41
+* @Last Modified time: 2017-04-01 01:20:05
 */
 
 // Using Mike Bostocks box.js code
@@ -20,7 +20,7 @@
 'use strict';
 
 function iqr(k) {
-    return function (d, i) {
+    return function (d, index) {
         var q1 = d.quartiles[0],
             q3 = d.quartiles[2],
             iqr = (q3 - q1) * k,

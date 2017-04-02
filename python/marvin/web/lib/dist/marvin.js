@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 18:41:41
+* @Last Modified time: 2017-04-01 01:20:05
 */
 
 // Using Mike Bostocks box.js code
@@ -20,7 +20,7 @@
 'use strict';
 
 function iqr(k) {
-    return function (d, i) {
+    return function (d, index) {
         var q1 = d.quartiles[0],
             q3 = d.quartiles[2],
             iqr = (q3 - q1) * k,
@@ -333,7 +333,7 @@ d3.box = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:42
+* @Last Modified time: 2017-04-01 01:18:52
 */
 
 //jshint esversion: 6
@@ -404,7 +404,7 @@ var BoxWhisker = function () {
     }, {
         key: 'iqr',
         value: function iqr(k) {
-            return function (d, i) {
+            return function (d, index) {
                 var q1 = d.quartiles[0],
                     q3 = d.quartiles[2],
                     iqr = (q3 - q1) * k,
@@ -423,7 +423,7 @@ var BoxWhisker = function () {
         value: function initBoxplot() {
 
             // // Define the div for the tooltip
-            // var tooltip = d3.select(this.tooltip).append("div")
+            // let tooltip = d3.select(this.tooltip).append("div")
             //     .attr("class", "tooltip")
             //     .style("opacity", 0);
 
@@ -441,7 +441,7 @@ var BoxWhisker = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 09:29:24
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:37
+* @Last Modified time: 2017-04-01 01:11:43
 */
 
 //jshint esversion: 6
@@ -513,7 +513,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-03-31 19:15:06
+* @Last Modified time: 2017-04-01 13:22:16
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -703,6 +703,8 @@ var Galaxy = function () {
     }, {
         key: 'getSpaxel',
         value: function getSpaxel(event) {
+            var _this2 = this;
+
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
             var maptype = divid !== undefined && divid.search('highcharts') !== -1 ? 'heatmap' : 'optical';
@@ -710,17 +712,16 @@ var Galaxy = function () {
             var y = event.point === undefined ? null : event.point.y;
             var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
             var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords, maptype, x, y);
-            var _this = this;
 
             // send the form data
             $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
                 if (data.result.status !== -1) {
-                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                    _this2.updateSpaxel(data.result.spectra, data.result.specmsg);
                 } else {
-                    _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                    _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
                 }
             }).fail(function (data) {
-                _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
             });
         }
 
@@ -1021,7 +1022,10 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            var data, options;
+            var _this3 = this;
+
+            var data = void 0,
+                options = void 0;
             var _this = this;
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
@@ -1033,17 +1037,19 @@ var Galaxy = function () {
                     title: this.nsachoices[index].title, galaxy: { name: this.plateifu }, xrev: xrev,
                     yrev: yrev };
             } else if (type === 'sample') {
-                var x = this.nsasample[this.nsachoices[index].x];
-                var y = this.nsasample[this.nsachoices[index].y];
-                data = [];
-                $.each(x, function (index, value) {
-                    if (value > -9999 && y[index] > -9999) {
-                        var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
-                        data.push(tmp);
-                    }
-                });
-                options = { xtitle: this.nsachoices[index].xtitle, ytitle: this.nsachoices[index].ytitle,
-                    title: this.nsachoices[index].title, altseries: { name: 'Sample' } };
+                (function () {
+                    var x = _this3.nsasample[_this3.nsachoices[index].x];
+                    var y = _this3.nsasample[_this3.nsachoices[index].y];
+                    data = [];
+                    $.each(x, function (index, value) {
+                        if (value > -9999 && y[index] > -9999) {
+                            var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                            data.push(tmp);
+                        }
+                    });
+                    options = { xtitle: _this3.nsachoices[index].xtitle, ytitle: _this3.nsachoices[index].ytitle,
+                        title: _this3.nsachoices[index].title, altseries: { name: 'Sample' } };
+                })();
             }
             return [data, options];
         }
@@ -1123,11 +1129,18 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
+            var _this4 = this;
+
             var data = [];
             var _this = this;
-            $.each(this.nsaplotcols, function (index, column) {
-                var goodsample = _this.nsasample[column].filter(_this.filterArray);
-                var tmp = { 'value': _this.mygalaxy[column], 'title': column, 'sample': goodsample };
+            // $.each(this.nsaplotcols, function(index, column) {
+            //     let goodsample = _this.nsasample[column].filter(_this.filterArray);
+            //     let tmp = {'value':_this.mygalaxy[column], 'title':column, 'sample':goodsample};
+            //     data.push(tmp);
+            // });
+            this.nsaplotcols.forEach(function (column, index) {
+                var goodsample = _this4.nsasample[column].filter(_this4.filterArray);
+                var tmp = { 'value': _this4.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -1146,7 +1159,8 @@ var Galaxy = function () {
             }
 
             // generate the data format
-            var data, options;
+            var data = void 0,
+                options = void 0;
             data = this.createD3data();
             this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
         }
@@ -1385,7 +1399,7 @@ var Galaxy = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:10:20
+* @Last Modified time: 2017-04-01 13:09:41
 */
 
 //jshint esversion: 6
@@ -1508,7 +1522,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:09:50
+* @Last Modified time: 2017-04-01 13:07:31
 */
 
 //jshint esversion: 6
@@ -1619,6 +1633,8 @@ var HeatMap = function () {
                     var val = values[ii][jj];
                     var noData = void 0,
                         badData = void 0;
+                    var signalToNoise = void 0,
+                        signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
                         var noValue = mask[ii][jj] && Math.pow(2, 0);
@@ -1626,7 +1642,7 @@ var HeatMap = function () {
                         var mathError = mask[ii][jj] && Math.pow(2, 6);
                         var badFit = mask[ii][jj] && Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                        //let noData = (noValue || badValue || mathError || badFit || doNotUse);
                         noData = noValue;
                         badData = badValue || mathError || badFit || doNotUse;
                     } else {
@@ -1635,8 +1651,8 @@ var HeatMap = function () {
                     }
 
                     if (ivar !== null) {
-                        var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        var signalToNoiseThreshold = 1.;
+                        signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
+                        signalToNoiseThreshold = 1.0;
                     }
 
                     // value types
@@ -1716,7 +1732,10 @@ var HeatMap = function () {
     }, {
         key: 'quantileClip',
         value: function quantileClip(range) {
-            var quantLow, quantHigh, zQuantLow, zQuantHigh;
+            var quantLow = void 0,
+                quantHigh = void 0,
+                zQuantLow = void 0,
+                zQuantHigh = void 0;
 
             var _getMinMax = this.getMinMax(range);
 
@@ -1753,8 +1772,9 @@ var HeatMap = function () {
             var _galthis = this.galthis;
 
             // get the ranges
-            //var range  = this.getXRange();
-            var xyrange, zrange;
+            //let range  = this.getXRange();
+            var xyrange = void 0,
+                zrange = void 0;
 
             // get the min and max of the ranges
             var _getRange = this.getRange();
@@ -1763,7 +1783,10 @@ var HeatMap = function () {
 
             xyrange = _getRange2[0];
             zrange = _getRange2[1];
-            var xymin, xymax, zmin, zmax;
+            var xymin = void 0,
+                xymax = void 0,
+                zmin = void 0,
+                zmax = void 0;
 
             var _getMinMax3 = this.getMinMax(xyrange);
 
@@ -1913,7 +1936,7 @@ var HeatMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:18
+* @Last Modified time: 2017-04-01 01:05:33
 */
 
 //jshint esversion: 6
@@ -1981,7 +2004,7 @@ var Marvin = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:06:55
+* @Last Modified time: 2017-04-01 01:43:36
 */
 
 //
@@ -2117,7 +2140,7 @@ var OLMap = function () {
         key: 'addDrawInteraction',
         value: function addDrawInteraction() {
             // set up variable for last saved feature & vector source for point
-            var lastFeature;
+            var lastFeature = void 0;
             var drawsource = new ol.source.Vector({ wrapX: false });
             // create new point vectorLayer
             var pointVector = this.newVectorLayer(drawsource);
@@ -2126,7 +2149,8 @@ var OLMap = function () {
 
             // New draw event ; default to Point
             var value = 'Point';
-            var geometryFunction, maxPoints;
+            var geometryFunction = void 0,
+                maxPoints = void 0;
             this.draw = new ol.interaction.Draw({
                 source: drawsource,
                 type: /** @type {ol.geom.GeometryType} */value,
@@ -2180,7 +2204,7 @@ var OLMap = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-12-09 01:38:32
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:09
+* @Last Modified time: 2017-04-01 01:03:57
 */
 
 //jshint esversion: 6
@@ -2396,7 +2420,7 @@ var Scatter = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:05:44
+* @Last Modified time: 2017-04-01 01:42:36
 */
 
 //jshint esversion: 6
@@ -2450,11 +2474,12 @@ var Search = function () {
         value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
+            var typeurl = void 0;
             typediv = typediv === undefined ? this.typeahead : $(typediv);
             formdiv = formdiv === undefined ? this.searchform : $(formdiv);
             // get the typeahead search page getparams url
             try {
-                var typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
+                typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
             } catch (error) {
                 Raven.captureException(error);
                 console.error('Error getting search getparams url:', error);
@@ -2521,7 +2546,7 @@ var Search = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:54:58
+* @Last Modified time: 2017-04-01 01:39:10
 */
 
 //jshint esversion: 6
@@ -2566,10 +2591,11 @@ var Table = function () {
         key: 'initTable',
         value: function initTable(url, data) {
             this.url = url;
+            var cols = void 0;
 
             // if data
             if (data.columns !== null) {
-                var cols = this.makeColumns(data.columns);
+                var _cols = this.makeColumns(data.columns);
             }
 
             // init the Bootstrap table
@@ -2605,9 +2631,9 @@ var Table = function () {
             var cols = [];
             columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
                 cols.push(colmap);
             });
             return cols;
@@ -2619,20 +2645,18 @@ var Table = function () {
         key: 'handleResponse',
         value: function handleResponse(results) {
             // load the bootstrap table div
-            //console.log(this.table, this.table===null, this);
             if (this.table === null) {
                 this.setTable();
             }
             this.table = $('#table');
-            //console.log('after', this.table, this.table===null, $('#table'));
             // Get new columns
             var cols = results.columns;
-            var cols = [];
+            cols = [];
             results.columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
                 cols.push(colmap);
             });
 
@@ -2649,7 +2673,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:01:21
+* @Last Modified time: 2017-04-01 01:38:44
 */
 
 // Javascript code for general things
@@ -2733,27 +2757,28 @@ var Utils = function () {
         value: function initInfoPopOvers() {
             $('.infopop [data-toggle="popover"]').popover();
         }
-    }, {
-        key: 'initToolTips',
-
 
         // Initialize tooltips
+
+    }, {
+        key: 'initToolTips',
         value: function initToolTips() {
             $('[data-toggle="tooltip"]').tooltip();
         }
-    }, {
-        key: 'login',
-
 
         // Login function
+
+    }, {
+        key: 'login',
         value: function login() {
+            var _this2 = this;
+
             var form = $('#loginform').serialize();
-            var _this = this;
 
             $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
                 if (data.result.status < 0) {
                     // bad submit
-                    _this.resetLogin();
+                    _this2.resetLogin();
                 } else {
                     // good submit
                     if (data.result.message !== '') {
@@ -2769,20 +2794,21 @@ var Utils = function () {
                 alert('Bad login attempt');
             });
         }
-    }, {
-        key: 'resetLogin',
-
 
         // Reset Login
+
+    }, {
+        key: 'resetLogin',
         value: function resetLogin() {
+            console.log('reset');
             $('#loginform').trigger('reset');
             $('#loginmessage').empty();
         }
-    }, {
-        key: 'submitLogin',
-
 
         // Submit Login on Keyups
+
+    }, {
+        key: 'submitLogin',
         value: function submitLogin(event) {
             var _this = event.data;
             // login
@@ -2792,20 +2818,20 @@ var Utils = function () {
                 }
             }
         }
-    }, {
-        key: 'marvinBanner',
-
 
         // Shows a banner
+
+    }, {
+        key: 'marvinBanner',
         value: function marvinBanner(text, expiryDays, cookieName, url, urlText) {
 
             var _this = this;
-            var expiryDays = expiryDays === undefined ? 0 : expiryDays;
-            var cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
-            var url = url === undefined ? "" : url;
-            var urlText = urlText === undefined ? "Learn more" : urlText;
+            expiryDays = expiryDays === undefined ? 0 : expiryDays;
+            cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
+            url = url === undefined ? "" : url;
+            urlText = urlText === undefined ? "Learn more" : urlText;
 
-            if (urlText == "" || url == "") {
+            if (urlText === "" || url === "") {
                 urlText = "";
                 url = "";
             }
@@ -2831,9 +2857,9 @@ var Utils = function () {
                     "link": urlText }
             });
 
-            if (expiryDays == 0) {
+            if (expiryDays === 0) {
                 document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
-            };
+            }
         }
     }]);
 

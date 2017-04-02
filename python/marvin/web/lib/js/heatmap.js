@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:09:50
+* @Last Modified time: 2017-04-01 13:07:31
 */
 
 //jshint esversion: 6
@@ -113,6 +113,8 @@ var HeatMap = function () {
                     var val = values[ii][jj];
                     var noData = void 0,
                         badData = void 0;
+                    var signalToNoise = void 0,
+                        signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
                         var noValue = mask[ii][jj] && Math.pow(2, 0);
@@ -120,7 +122,7 @@ var HeatMap = function () {
                         var mathError = mask[ii][jj] && Math.pow(2, 6);
                         var badFit = mask[ii][jj] && Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
+                        //let noData = (noValue || badValue || mathError || badFit || doNotUse);
                         noData = noValue;
                         badData = badValue || mathError || badFit || doNotUse;
                     } else {
@@ -129,8 +131,8 @@ var HeatMap = function () {
                     }
 
                     if (ivar !== null) {
-                        var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        var signalToNoiseThreshold = 1.;
+                        signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
+                        signalToNoiseThreshold = 1.0;
                     }
 
                     // value types
@@ -210,7 +212,10 @@ var HeatMap = function () {
     }, {
         key: 'quantileClip',
         value: function quantileClip(range) {
-            var quantLow, quantHigh, zQuantLow, zQuantHigh;
+            var quantLow = void 0,
+                quantHigh = void 0,
+                zQuantLow = void 0,
+                zQuantHigh = void 0;
 
             var _getMinMax = this.getMinMax(range);
 
@@ -247,8 +252,9 @@ var HeatMap = function () {
             var _galthis = this.galthis;
 
             // get the ranges
-            //var range  = this.getXRange();
-            var xyrange, zrange;
+            //let range  = this.getXRange();
+            var xyrange = void 0,
+                zrange = void 0;
 
             // get the min and max of the ranges
             var _getRange = this.getRange();
@@ -257,7 +263,10 @@ var HeatMap = function () {
 
             xyrange = _getRange2[0];
             zrange = _getRange2[1];
-            var xymin, xymax, zmin, zmax;
+            var xymin = void 0,
+                xymax = void 0,
+                zmin = void 0,
+                zmax = void 0;
 
             var _getMinMax3 = this.getMinMax(xyrange);
 

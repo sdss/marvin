@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:05:44
+* @Last Modified time: 2017-04-01 01:42:36
 */
 
 //jshint esversion: 6
@@ -56,11 +56,12 @@ var Search = function () {
         value: function initTypeahead(typediv, formdiv, url, fxn) {
 
             var _this = this;
+            var typeurl = void 0;
             typediv = typediv === undefined ? this.typeahead : $(typediv);
             formdiv = formdiv === undefined ? this.searchform : $(formdiv);
             // get the typeahead search page getparams url
             try {
-                var typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
+                typeurl = url === undefined ? Flask.url_for('search_page.getparams', { 'paramdisplay': 'best' }) : url;
             } catch (error) {
                 Raven.captureException(error);
                 console.error('Error getting search getparams url:', error);

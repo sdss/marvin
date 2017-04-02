@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 16:55:42
+* @Last Modified time: 2017-04-01 01:18:52
 */
 
 //jshint esversion: 6
@@ -73,7 +73,7 @@ var BoxWhisker = function () {
     }, {
         key: 'iqr',
         value: function iqr(k) {
-            return function (d, i) {
+            return function (d, index) {
                 var q1 = d.quartiles[0],
                     q3 = d.quartiles[2],
                     iqr = (q3 - q1) * k,
@@ -92,7 +92,7 @@ var BoxWhisker = function () {
         value: function initBoxplot() {
 
             // // Define the div for the tooltip
-            // var tooltip = d3.select(this.tooltip).append("div")
+            // let tooltip = d3.select(this.tooltip).append("div")
             //     .attr("class", "tooltip")
             //     .style("opacity", 0);
 

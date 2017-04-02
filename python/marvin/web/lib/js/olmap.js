@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:06:55
+* @Last Modified time: 2017-04-01 01:43:36
 */
 
 //
@@ -138,7 +138,7 @@ var OLMap = function () {
         key: 'addDrawInteraction',
         value: function addDrawInteraction() {
             // set up variable for last saved feature & vector source for point
-            var lastFeature;
+            var lastFeature = void 0;
             var drawsource = new ol.source.Vector({ wrapX: false });
             // create new point vectorLayer
             var pointVector = this.newVectorLayer(drawsource);
@@ -147,7 +147,8 @@ var OLMap = function () {
 
             // New draw event ; default to Point
             var value = 'Point';
-            var geometryFunction, maxPoints;
+            var geometryFunction = void 0,
+                maxPoints = void 0;
             this.draw = new ol.interaction.Draw({
                 source: drawsource,
                 type: /** @type {ol.geom.GeometryType} */value,

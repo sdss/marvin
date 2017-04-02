@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-31 17:10:20
+* @Last Modified time: 2017-04-01 13:09:41
 */
 
 //jshint esversion: 6
@@ -32,11 +32,11 @@ class Header {
     // Initialize the Typeahead
     initTypeahead(typediv, formdiv, url, fxn) {
 
-        var _this = this;
+        const _this = this;
         typediv = (typediv === undefined) ? this.typeahead : $(typediv);
         formdiv = (formdiv === undefined) ? this.galidform : $(formdiv);
-        var typeurl = (url === undefined) ? Flask.url_for('index_page.getgalidlist') : url;
-        var afterfxn = (fxn === undefined) ? null : fxn;
+        let typeurl = (url === undefined) ? Flask.url_for('index_page.getgalidlist') : url;
+        let afterfxn = (fxn === undefined) ? null : fxn;
 
         // create the bloodhound engine
         this.galids = new Bloodhound({
@@ -46,9 +46,7 @@ class Header {
         prefetch: typeurl,
         remote: {
             url: typeurl,
-            filter: function(galids) {
-                return galids;
-            }
+            filter: (galids)=>{ return galids; }
         }
         });
 
@@ -61,17 +59,15 @@ class Header {
         showHintOnFocus: true,
         items: 30,
         source:this.galids.ttAdapter(),
-        afterSelect: function() {
-            formdiv.submit();
-        }
+        afterSelect: ()=>{ formdiv.submit(); }
         });
     }
 
     // Select the MPL version on the web
     selectMPL(event) {
-        var _this = event.data;
-        var url = 'index_page.selectmpl';
-        var verform = m.utils.serializeForm('#mplform');
+        const _this = event.data;
+        let url = 'index_page.selectmpl';
+        let verform = m.utils.serializeForm('#mplform');
         _this.sendAjax(verform, url, _this.reloadPage);
     }
 
@@ -82,7 +78,7 @@ class Header {
 
     // Send an AJAX request
     sendAjax(form, url, fxn) {
-        var _this = this;
+        const _this = this;
         $.post(Flask.url_for(url), form, 'json')
         .done(function(data){
             // reload the current page, this re-instantiates a new Header with new version info from session
