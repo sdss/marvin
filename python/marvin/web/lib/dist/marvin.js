@@ -513,7 +513,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-04-01 13:22:16
+* @Last Modified time: 2017-04-02 14:24:15
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -1026,7 +1026,7 @@ var Galaxy = function () {
 
             var data = void 0,
                 options = void 0;
-            var _this = this;
+            //let _this = this;
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
                 var y = this.mygalaxy[this.nsachoices[index].y];
@@ -1043,7 +1043,7 @@ var Galaxy = function () {
                     data = [];
                     $.each(x, function (index, value) {
                         if (value > -9999 && y[index] > -9999) {
-                            var tmp = { 'name': _this.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                            var tmp = { 'name': _this3.nsasample.plateifu[index], 'x': value, 'y': y[index] };
                             data.push(tmp);
                         }
                     });
@@ -1059,23 +1059,24 @@ var Galaxy = function () {
     }, {
         key: 'setTableEvents',
         value: function setTableEvents() {
+            var _this4 = this;
+
             var tabledata = this.nsatable.bootstrapTable('getData');
-            var _this = this;
 
             $.each(this.nsamovers, function (index, mover) {
                 var id = mover.id;
-                $('#' + id).on('dragstart', _this, _this.dragStart);
-                $('#' + id).on('dragover', _this, _this.dragOver);
-                $('#' + id).on('drop', _this, _this.moverDrop);
+                $('#' + id).on('dragstart', _this4, _this4.dragStart);
+                $('#' + id).on('dragover', _this4, _this4.dragOver);
+                $('#' + id).on('drop', _this4, _this4.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
                     var id = $(mover).attr('id');
-                    $('#' + id).on('dragstart', _this, _this.dragStart);
-                    $('#' + id).on('dragover', _this, _this.dragOver);
-                    $('#' + id).on('drop', _this, _this.moverDrop);
+                    $('#' + id).on('dragstart', _this4, _this4.dragStart);
+                    $('#' + id).on('dragover', _this4, _this4.dragOver);
+                    $('#' + id).on('drop', _this4, _this4.moverDrop);
                 });
             });
         }
@@ -1085,7 +1086,9 @@ var Galaxy = function () {
     }, {
         key: 'addNSAEvents',
         value: function addNSAEvents() {
-            var _this = this;
+            var _this5 = this;
+
+            //let _this = this;
             // NSA plot events
             this.nsaplots = $('.marvinplot');
             $.each(this.nsaplots, function (index, plot) {
@@ -1093,12 +1096,12 @@ var Galaxy = function () {
                 var highx = $('#' + id).find('.highcharts-xaxis');
                 var highy = $('#' + id).find('.highcharts-yaxis');
 
-                highx.on('dragover', _this, _this.dragOver);
-                highx.on('dragenter', _this, _this.dragEnter);
-                highx.on('drop', _this, _this.dropElement);
-                highy.on('dragover', _this, _this.dragOver);
-                highy.on('dragenter', _this, _this.dragEnter);
-                highy.on('drop', _this, _this.dropElement);
+                highx.on('dragover', _this5, _this5.dragOver);
+                highx.on('dragenter', _this5, _this5.dragEnter);
+                highx.on('drop', _this5, _this5.dropElement);
+                highy.on('dragover', _this5, _this5.dragOver);
+                highy.on('dragenter', _this5, _this5.dragEnter);
+                highy.on('drop', _this5, _this5.dropElement);
             });
         }
 
@@ -1129,18 +1132,12 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
-            var _this4 = this;
+            var _this6 = this;
 
             var data = [];
-            var _this = this;
-            // $.each(this.nsaplotcols, function(index, column) {
-            //     let goodsample = _this.nsasample[column].filter(_this.filterArray);
-            //     let tmp = {'value':_this.mygalaxy[column], 'title':column, 'sample':goodsample};
-            //     data.push(tmp);
-            // });
             this.nsaplotcols.forEach(function (column, index) {
-                var goodsample = _this4.nsasample[column].filter(_this4.filterArray);
-                var tmp = { 'value': _this4.mygalaxy[column], 'title': column, 'sample': goodsample };
+                var goodsample = _this6.nsasample[column].filter(_this6.filterArray);
+                var tmp = { 'value': _this6.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -1179,7 +1176,8 @@ var Galaxy = function () {
     }, {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
-            var _this = this;
+            var _this7 = this;
+
             // only update the single parent div element
             if (parentid !== undefined) {
                 var parentdiv = this.maindiv.find('#' + parentid);
@@ -1204,26 +1202,26 @@ var Galaxy = function () {
                 this.nsascatter[index] = new Scatter(parentdiv, data, options);
             } else {
                 // try updating all of them
-                _this.nsascatter = {};
+                this.nsascatter = {};
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _this$updateNSAData = _this.updateNSAData(index + 1, 'galaxy');
+                    var _updateNSAData5 = _this7.updateNSAData(index + 1, 'galaxy');
 
-                    var _this$updateNSAData2 = _slicedToArray(_this$updateNSAData, 2);
+                    var _updateNSAData6 = _slicedToArray(_updateNSAData5, 2);
 
-                    var data = _this$updateNSAData2[0];
-                    var options = _this$updateNSAData2[1];
+                    var data = _updateNSAData6[0];
+                    var options = _updateNSAData6[1];
 
-                    var _this$updateNSAData3 = _this.updateNSAData(index + 1, 'sample');
+                    var _updateNSAData7 = _this7.updateNSAData(index + 1, 'sample');
 
-                    var _this$updateNSAData4 = _slicedToArray(_this$updateNSAData3, 2);
+                    var _updateNSAData8 = _slicedToArray(_updateNSAData7, 2);
 
-                    var sdata = _this$updateNSAData4[0];
-                    var soptions = _this$updateNSAData4[1];
+                    var sdata = _updateNSAData8[0];
+                    var soptions = _updateNSAData8[1];
 
                     options.altseries = { data: sdata, name: 'Sample' };
-                    _this.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                    _this7.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
         }

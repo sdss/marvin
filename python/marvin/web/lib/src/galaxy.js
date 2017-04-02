@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-04-01 13:23:08
+* @Last Modified time: 2017-04-02 14:24:46
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -442,7 +442,6 @@ class Galaxy {
     // get new NSA data based on drag-drop axis change
     updateNSAData(index, type) {
         let data, options;
-        let _this = this;
         if (type === 'galaxy') {
             let x = this.mygalaxy[this.nsachoices[index].x];
             let y = this.mygalaxy[this.nsachoices[index].y];
@@ -456,9 +455,9 @@ class Galaxy {
             let x = this.nsasample[this.nsachoices[index].x];
             let y = this.nsasample[this.nsachoices[index].y];
             data = [];
-            $.each(x, function(index, value) {
+            $.each(x, (index, value)=>{
                 if (value > -9999 && y[index] > -9999) {
-                    let tmp = {'name':_this.nsasample.plateifu[index],'x':value, 'y':y[index]};
+                    let tmp = {'name':this.nsasample.plateifu[index],'x':value, 'y':y[index]};
                     data.push(tmp);
                 }
             });
@@ -471,42 +470,41 @@ class Galaxy {
     // Update the Table event handlers when the table state changes
     setTableEvents() {
         let tabledata = this.nsatable.bootstrapTable('getData');
-        let _this = this;
 
-        $.each(this.nsamovers, function(index, mover) {
+        $.each(this.nsamovers, (index, mover)=>{
             let id = mover.id;
-            $('#'+id).on('dragstart', _this, _this.dragStart);
-            $('#'+id).on('dragover', _this, _this.dragOver);
-            $('#'+id).on('drop', _this, _this.moverDrop);
+            $('#'+id).on('dragstart', this, this.dragStart);
+            $('#'+id).on('dragover', this, this.dragOver);
+            $('#'+id).on('drop', this, this.moverDrop);
         });
 
-        this.nsatable.on('page-change.bs.table', function() {
-            $.each(tabledata, function(index, row) {
+        this.nsatable.on('page-change.bs.table', ()=>{
+            $.each(tabledata, (index, row)=>{
                 let mover = row[0];
                 let id = $(mover).attr('id');
-                $('#'+id).on('dragstart', _this, _this.dragStart);
-                $('#'+id).on('dragover', _this, _this.dragOver);
-                $('#'+id).on('drop', _this, _this.moverDrop);
+                $('#'+id).on('dragstart', this, this.dragStart);
+                $('#'+id).on('dragover', this, this.dragOver);
+                $('#'+id).on('drop', this, this.moverDrop);
             });
         });
     }
 
     // Add event handlers to the Highcharts scatter plots
     addNSAEvents() {
-        let _this = this;
+        //let _this = this;
         // NSA plot events
         this.nsaplots = $('.marvinplot');
-        $.each(this.nsaplots, function(index, plot) {
+        $.each(this.nsaplots, (index, plot)=>{
             let id = plot.id;
             let highx = $('#'+id).find('.highcharts-xaxis');
             let highy = $('#'+id).find('.highcharts-yaxis');
 
-            highx.on('dragover', _this, _this.dragOver);
-            highx.on('dragenter', _this, _this.dragEnter);
-            highx.on('drop', _this, _this.dropElement);
-            highy.on('dragover', _this, _this.dragOver);
-            highy.on('dragenter', _this, _this.dragEnter);
-            highy.on('drop', _this, _this.dropElement);
+            highx.on('dragover', this, this.dragOver);
+            highx.on('dragenter', this, this.dragEnter);
+            highx.on('drop', this, this.dropElement);
+            highy.on('dragover', this, this.dragOver);
+            highy.on('dragenter', this, this.dragEnter);
+            highy.on('drop', this, this.dropElement);
         });
     }
 
@@ -561,7 +559,6 @@ class Galaxy {
 
     // Init the NSA Scatter plot
     initNSAScatter(parentid) {
-        let _this = this;
         // only update the single parent div element
         if (parentid !== undefined) {
             let parentdiv = this.maindiv.find('#'+parentid);
@@ -573,13 +570,13 @@ class Galaxy {
             this.nsascatter[index] = new Scatter(parentdiv, data, options);
         } else {
             // try updating all of them
-            _this.nsascatter = {};
-            $.each(this.nsaplots, function(index, plot) {
+            this.nsascatter = {};
+            $.each(this.nsaplots, (index, plot)=>{
                 let plotdiv = $(plot);
-                let [data, options] = _this.updateNSAData(index+1, 'galaxy');
-                let [sdata, soptions] = _this.updateNSAData(index+1, 'sample');
+                let [data, options] = this.updateNSAData(index+1, 'galaxy');
+                let [sdata, soptions] = this.updateNSAData(index+1, 'sample');
                 options.altseries = {data:sdata,name:'Sample'};
-                _this.nsascatter[index+1] = new Scatter(plotdiv, data, options);
+                this.nsascatter[index+1] = new Scatter(plotdiv, data, options);
             });
         }
 
@@ -642,9 +639,7 @@ class Galaxy {
         event.originalEvent.dataTransfer.setData('Text', param);
 
         // show the overlay elements
-        $.each(_this.nsascatter, function(index, scat) {
-            scat.overgroup.show();
-        });
+        $.each(_this.nsascatter, (index, scat)=>{ scat.overgroup.show(); });
     }
     // Element drag over
     dragOver(event) {
@@ -672,9 +667,7 @@ class Galaxy {
         let [id, name] = param.split('+');
 
         // Hide overlay elements
-        $.each(_this.nsascatter, function(index, scat) {
-            scat.overgroup.hide();
-        });
+        $.each(_this.nsascatter, (index, scat)=>{ scat.overgroup.hide(); });
 
         // Determine which axis and plot the name was dropped on
         let classes = $(this).attr('class');
