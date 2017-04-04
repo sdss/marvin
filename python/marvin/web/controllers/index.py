@@ -41,7 +41,7 @@ class Marvin(BaseWebView):
         return 'new test'
 
     def database(self):
-        onecube = marvindb.session.query(marvindb.datadb.Cube).first()
+        onecube = marvindb.session.query(marvindb.datadb.Cube).order_by(marvindb.datadb.Cube.pk).first()
         return jsonify(result={'plate': onecube.plate, 'status': 1})
 
     @route('/galidselect/', methods=['GET', 'POST'], endpoint='galidselect')

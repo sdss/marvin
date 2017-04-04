@@ -63,3 +63,8 @@ Marvin's Bibtex entry to use:
         doi          = {10.5281/zenodo.292632},
         url          = {https://doi.org/10.5281/zenodo.292632}
       }
+      
+License
+-------
+Marvin is licensed under a 3-clause BSD style license - see the
+``LICENSE.md`` file.      

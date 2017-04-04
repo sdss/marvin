@@ -26,7 +26,7 @@ class TestResultsBase(MarvinTest):
 
     def setUp(self):
         self._reset_the_config()
-        self.set_sasurl('local', port=5000)
+        self.set_sasurl('local')
         self.mode = self.init_mode
         config.setMPL('MPL-5')
         config.forceDbOn()
@@ -338,14 +338,14 @@ class TestResultsPage(TestResultsBase):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'next', chunk=20)
         self.assertEqual(r.results[0], self.resdict['11'])
-        self.assertEqual(r.results[10], self.resdict['21'])
+        self.assertEqual(r.results[11], self.resdict['21'])
 
     @skipIfNoBrian
     def test_getPrevious_10(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'set', index=30)
         r = self._get_set(r, 'prev')
-        self.assertEqual(r.results[0], self.resdict['21'])
+        self.assertEqual(r.results[1], self.resdict['21'])
         self.assertEqual(10, len(r.results))
 
     @skipIfNoBrian

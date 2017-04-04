@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+$TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT > /dev/null &
+py.test python/marvin/tests -v --cov python/marvin --cov-report html

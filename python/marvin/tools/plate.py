@@ -263,13 +263,17 @@ class Plate(MarvinToolsClass, list):
             plate, ifu = self.plateifu.split('-')
             self.plateid = int(plate)
 
-    @checkPath
     def _checkFilename(self):
         ''' Checks the filename for a proper FITS file '''
 
         # if filename is not FITS, then try to load one
         if 'fits' not in self.filename.lower():
-            sdss_path = Path()
+
+            if not Path:
+                raise MarvinError('sdss_access is not installed')
+            else:
+                sdss_path = Path()
+
             # try a cube
             full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*')
             cubeexists = sdss_path.any('', full=full)

@@ -37,10 +37,10 @@ def perform_query(db, mangaData):
     return xfocal
 
 
-db_name = 'manga'
-db, mangaData = create_connection(db_name)
-print(perform_query(db, mangaData))
+# db_name = 'manga'
+# db, mangaData = create_connection(db_name)
+# print(perform_query(db, mangaData))
 
-db_name_copy = 'manga_copy'
-db, mangaData = create_connection(db_name_copy)
-print(perform_query(db, mangaData))
+# db_name_copy = 'manga_copy'
+# db, mangaData = create_connection(db_name_copy)
+# print(perform_query(db, mangaData))

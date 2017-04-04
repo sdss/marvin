@@ -289,9 +289,7 @@ class TestPickling(TestSpaxelBase):
 
     def test_pickling_all_api(self):
 
-        marvin.config.marvindb = None
-        marvin.config.switchSasUrl('local')
-        marvin.config.setMPL('MPL-5')
+        self._update_release('MPL-5')
 
         cube = marvin.tools.cube.Cube(plateifu=self.plateifu, mode='remote')
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='remote')

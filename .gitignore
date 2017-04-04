@@ -19,6 +19,7 @@ python/marvin/web/templates/__pycache__
 
 docs/sphinx/_build
 etc/node_modules
+etc/.netrc
 python/marvin/web/lib/.sass-cache
 python/marvin/web/lib/node_modules
 python/marvin/web/static/node_modules
