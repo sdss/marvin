@@ -25,16 +25,15 @@ import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
 
-# TODO Generalize!
-# move to conftest?
-# allow wrapper to take bintypes as args
-def check_bintype(f):
-    @wraps(f)
-    def decorated_function(self, *args, **kwargs):
-        if kwargs['galaxy'].bintype != 'VOR10':
-            pytest.skip('Only do VOR10)')
-        return f(self, *args, **kwargs)
-    return decorated_function
+def skip_bintypes(*bintypes):
+    def check_bintype(f):
+        @wraps(f)
+        def decorated_function(self, *args, **kwargs):
+            if kwargs['galaxy'].bintype in bintypes:
+                pytest.skip('Only do VOR10)')
+            return f(self, *args, **kwargs)
+        return decorated_function
+    return check_bintype
 
 
 class TestBinInit:
@@ -50,7 +49,7 @@ class TestBinInit:
 
         assert bb.properties is not None
 
-    @check_bintype
+    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_files(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename,
@@ -61,7 +60,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @check_bintype
+    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_file_only_maps(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename)
@@ -73,7 +72,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @check_bintype
+    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_db(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, bintype=galaxy.bintype)
@@ -84,7 +83,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @check_bintype
+    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_api(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, mode='remote',
@@ -96,7 +95,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @check_bintype
+    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_bin_does_not_exist(self, galaxy):
 
         with pytest.raises(MarvinError) as ee:
