@@ -12,6 +12,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+from functools import wraps
+
 import pytest
 
 import marvin
@@ -21,6 +23,18 @@ import marvin.tools.maps
 import marvin.tools.modelcube
 import marvin.utils.general
 from marvin.core.exceptions import MarvinError
+
+
+# TODO Generalize!
+# move to conftest?
+# allow wrapper to take bintypes as args
+def check_bintype(f):
+    @wraps(f)
+    def decorated_function(self, *args, **kwargs):
+        if kwargs['galaxy'].bintype != 'VOR10':
+            pytest.skip('Only do VOR10)')
+        return f(self, *args, **kwargs)
+    return decorated_function
 
 
 class TestBinInit:
@@ -36,6 +50,7 @@ class TestBinInit:
 
         assert bb.properties is not None
 
+    @check_bintype
     def test_init_from_files(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename,
@@ -46,6 +61,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
+    @check_bintype
     def test_init_from_file_only_maps(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename)
@@ -57,6 +73,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
+    @check_bintype
     def test_init_from_db(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, bintype=galaxy.bintype)
@@ -67,6 +84,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
+    @check_bintype
     def test_init_from_api(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, mode='remote',
@@ -78,6 +96,7 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
+    @check_bintype
     def test_bin_does_not_exist(self, galaxy):
 
         with pytest.raises(MarvinError) as ee:
@@ -87,7 +106,7 @@ class TestBinInit:
 
 
 class TestBinFileMismatch:
-    @pytest.mark.skip(reason="test doesn't work yet")
+    @pytest.mark.skip('test not working yet')
     def test_bintypes(self):
 
         wrong_bintype = 'SPX'

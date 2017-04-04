@@ -135,7 +135,7 @@ def get_bintype(request):
 
 
 @pytest.fixture(scope='session')
-def galaxy(request, start_marvin_session, set_release, get_plateifu, get_bintype):
+def galaxy(start_marvin_session, set_release, get_plateifu, get_bintype):
     gal = Galaxy(plateifu=get_plateifu)
     gal.get_data()
     gal.set_galaxy_data()
