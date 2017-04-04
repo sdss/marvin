@@ -23,6 +23,11 @@ from marvin.tools.maps import _get_bintemps
 releases = ['MPL-5']
 plateifus = ['8485-1901']
 
+bintypes = {}
+for release in releases:
+    __, dapver = config.lookUpVersions(release)
+    bintypes[release] = [bintemp.split('-')[0] for bintemp in _get_bintemps(dapver)]
+
 
 class Galaxy:
     """An example galaxy for Marvin-tools testing."""
@@ -120,8 +125,22 @@ def start_marvin_session(set_config):
 
 
 @pytest.fixture(scope='session', params=plateifus)
-def init_galaxy(request, start_marvin_session, set_release):
-    gal = Galaxy(plateifu=request.param)
+def get_plateifu(request):
+    return request.param
+
+
+@pytest.fixture(scope='session', params=bintypes[config.release])
+def get_bintype(request):
+    return request.param
+
+
+@pytest.fixture(scope='session')
+def galaxy(request, start_marvin_session, set_release, get_plateifu, get_bintype):
+    gal = Galaxy(plateifu=get_plateifu)
     gal.get_data()
     gal.set_galaxy_data()
+    gal.set_filenames(bintype=get_bintype)
+    gal.set_filepaths()
+    gal.maps_filename = gal.mapspath
+    gal.modelcube_filename = gal.modelpath
     yield gal

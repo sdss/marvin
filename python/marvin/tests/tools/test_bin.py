@@ -23,19 +23,6 @@ import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
 
-bintype = 'VOR10'
-
-
-@pytest.fixture(scope='module')
-def galaxy(request, init_galaxy, set_sasurl):
-    galaxy = init_galaxy
-    galaxy.set_filenames(bintype=bintype)
-    galaxy.set_filepaths()
-    galaxy.maps_filename = galaxy.mapspath
-    galaxy.modelcube_filename = galaxy.modelpath
-    yield galaxy
-
-
 class TestBinInit:
 
     def _check_bin_data(self, bb, gal):
