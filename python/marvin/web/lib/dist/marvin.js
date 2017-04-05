@@ -513,7 +513,7 @@ var Carousel = function () {
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-04-02 14:24:15
+* @Last Modified time: 2017-04-04 22:42:14
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -530,6 +530,44 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var SpaxelError = function (_Error) {
+    _inherits(SpaxelError, _Error);
+
+    function SpaxelError(message) {
+        _classCallCheck(this, SpaxelError);
+
+        var _this2 = _possibleConstructorReturn(this, (SpaxelError.__proto__ || Object.getPrototypeOf(SpaxelError)).call(this, message));
+
+        _this2.message = message;
+        _this2.name = 'SpaxelError';
+        _this2.status = -1;
+        return _this2;
+    }
+
+    return SpaxelError;
+}(Error);
+
+var MapError = function (_Error2) {
+    _inherits(MapError, _Error2);
+
+    function MapError(message) {
+        _classCallCheck(this, MapError);
+
+        var _this3 = _possibleConstructorReturn(this, (MapError.__proto__ || Object.getPrototypeOf(MapError)).call(this, message));
+
+        _this3.message = message;
+        _this3.name = 'MapError';
+        _this3.status = -1;
+        return _this3;
+    }
+
+    return MapError;
+}(Error);
 
 var Galaxy = function () {
 
@@ -703,7 +741,7 @@ var Galaxy = function () {
     }, {
         key: 'getSpaxel',
         value: function getSpaxel(event) {
-            var _this2 = this;
+            var _this4 = this;
 
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
@@ -714,14 +752,14 @@ var Galaxy = function () {
             var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth, this.olmap.imheight, mousecoords, maptype, x, y);
 
             // send the form data
-            $.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json').done(function (data) {
-                if (data.result.status !== -1) {
-                    _this2.updateSpaxel(data.result.spectra, data.result.specmsg);
-                } else {
-                    _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+            Promise.resolve($.post(Flask.url_for('galaxy_page.getspaxel'), form, 'json')).then(function (data) {
+                if (data.result.status === -1) {
+                    throw new SpaxelError('Error: ' + data.result.specmsg);
                 }
-            }).fail(function (data) {
-                _this2.updateSpecMsg('Error: ' + data.result.specmsg, data.result.status);
+                _this4.updateSpaxel(data.result.spectra, data.result.specmsg);
+            }).catch(function (error) {
+                var errmsg = error.message === undefined ? 'The getSpaxel javascript Ajax request failed!' : error.message;
+                _this4.updateSpecMsg(errmsg, -1);
             });
         }
 
@@ -797,7 +835,6 @@ var Galaxy = function () {
                     _this.toggleload.show();
 
                     $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json').done(function (data) {
-
                         var image = data.result.image;
                         var spaxel = data.result.spectra;
                         var spectitle = data.result.specmsg;
@@ -826,51 +863,6 @@ var Galaxy = function () {
                         _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.mapstatus);
                         _this.toggleload.hide();
                     });
-                }
-            }
-        }
-
-        // Toggle the interactive OpenLayers map and Dygraph spectra
-        // DEPRECATED - REMOVE
-
-    }, {
-        key: 'toggleInteract',
-        value: function toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
-            if (this.togglediv.hasClass('active')) {
-                // Turning Off
-                this.toggleon = false;
-                this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-                this.togglediv.button('reset');
-                this.dynamicdiv.hide();
-                this.staticdiv.show();
-            } else {
-                // Turning On
-                this.toggleon = true;
-                this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-                this.togglediv.button('complete');
-                this.staticdiv.hide();
-                this.dynamicdiv.show();
-
-                // check for empty divs
-                var specempty = this.graphdiv.is(':empty');
-                var imageempty = this.imagediv.is(':empty');
-                var mapempty = this.mapdiv.is(':empty');
-                // load the spaxel if the div is initially empty;
-                if (this.graphdiv !== undefined && specempty) {
-                    this.loadSpaxel(spaxel, spectitle);
-                }
-                // load the image if div is empty
-                if (imageempty) {
-                    this.initOpenLayers(image);
-                }
-                // load the map if div is empty
-                if (mapempty) {
-                    this.initHeatmap(maps);
-                }
-
-                // possibly update an initial map message
-                if (mapmsg !== null) {
-                    this.updateMapMsg(mapmsg, -1);
                 }
             }
         }
@@ -907,6 +899,8 @@ var Galaxy = function () {
     }, {
         key: 'getDapMaps',
         value: function getDapMaps(event) {
+            var _this5 = this;
+
             var _this = event.data;
             var params = _this.dapselect.selectpicker('val');
             var bintemp = _this.dapbt.selectpicker('val');
@@ -916,18 +910,33 @@ var Galaxy = function () {
             $(this).button('loading');
 
             // send the form data
-            $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json').done(function (data) {
-                if (data.result.status !== -1) {
-                    _this.dapmapsbut.button('reset');
-                    _this.initHeatmap(data.result.maps);
-                } else {
-                    _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
-                    _this.dapmapsbut.button('reset');
+            Promise.resolve($.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')).then(function (data) {
+                if (data.result.status === -1) {
+                    throw new MapError('Error: ' + data.result.mapmsg);
                 }
-            }).fail(function (data) {
-                _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.status);
                 _this.dapmapsbut.button('reset');
+                _this.initHeatmap(data.result.maps);
+            }).catch(function (error) {
+                var errmsg = error.message === undefined ? 'The getDapMaps javascript Ajax request failed!' : error.message;
+                _this5.updateMapMsg(errmsg, -1);
+                _this5.dapmapsbut.button('reset');
             });
+
+            // // send the form data
+            // $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
+            //     .done(function(data) {
+            //         if (data.result.status !== -1) {
+            //             _this.dapmapsbut.button('reset');
+            //             _this.initHeatmap(data.result.maps);
+            //         } else {
+            //             _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
+            //             _this.dapmapsbut.button('reset');
+            //         }
+            //     })
+            //     .fail(function(data) {
+            //         _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
+            //         _this.dapmapsbut.button('reset');
+            //     });
         }
 
         // Update the Map Msg
@@ -1022,11 +1031,10 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            var _this3 = this;
+            var _this6 = this;
 
             var data = void 0,
                 options = void 0;
-            //let _this = this;
             if (type === 'galaxy') {
                 var x = this.mygalaxy[this.nsachoices[index].x];
                 var y = this.mygalaxy[this.nsachoices[index].y];
@@ -1038,17 +1046,17 @@ var Galaxy = function () {
                     yrev: yrev };
             } else if (type === 'sample') {
                 (function () {
-                    var x = _this3.nsasample[_this3.nsachoices[index].x];
-                    var y = _this3.nsasample[_this3.nsachoices[index].y];
+                    var x = _this6.nsasample[_this6.nsachoices[index].x];
+                    var y = _this6.nsasample[_this6.nsachoices[index].y];
                     data = [];
                     $.each(x, function (index, value) {
                         if (value > -9999 && y[index] > -9999) {
-                            var tmp = { 'name': _this3.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                            var tmp = { 'name': _this6.nsasample.plateifu[index], 'x': value, 'y': y[index] };
                             data.push(tmp);
                         }
                     });
-                    options = { xtitle: _this3.nsachoices[index].xtitle, ytitle: _this3.nsachoices[index].ytitle,
-                        title: _this3.nsachoices[index].title, altseries: { name: 'Sample' } };
+                    options = { xtitle: _this6.nsachoices[index].xtitle, ytitle: _this6.nsachoices[index].ytitle,
+                        title: _this6.nsachoices[index].title, altseries: { name: 'Sample' } };
                 })();
             }
             return [data, options];
@@ -1059,24 +1067,24 @@ var Galaxy = function () {
     }, {
         key: 'setTableEvents',
         value: function setTableEvents() {
-            var _this4 = this;
+            var _this7 = this;
 
             var tabledata = this.nsatable.bootstrapTable('getData');
 
             $.each(this.nsamovers, function (index, mover) {
                 var id = mover.id;
-                $('#' + id).on('dragstart', _this4, _this4.dragStart);
-                $('#' + id).on('dragover', _this4, _this4.dragOver);
-                $('#' + id).on('drop', _this4, _this4.moverDrop);
+                $('#' + id).on('dragstart', _this7, _this7.dragStart);
+                $('#' + id).on('dragover', _this7, _this7.dragOver);
+                $('#' + id).on('drop', _this7, _this7.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
                     var id = $(mover).attr('id');
-                    $('#' + id).on('dragstart', _this4, _this4.dragStart);
-                    $('#' + id).on('dragover', _this4, _this4.dragOver);
-                    $('#' + id).on('drop', _this4, _this4.moverDrop);
+                    $('#' + id).on('dragstart', _this7, _this7.dragStart);
+                    $('#' + id).on('dragover', _this7, _this7.dragOver);
+                    $('#' + id).on('drop', _this7, _this7.moverDrop);
                 });
             });
         }
@@ -1086,7 +1094,7 @@ var Galaxy = function () {
     }, {
         key: 'addNSAEvents',
         value: function addNSAEvents() {
-            var _this5 = this;
+            var _this8 = this;
 
             //let _this = this;
             // NSA plot events
@@ -1096,12 +1104,12 @@ var Galaxy = function () {
                 var highx = $('#' + id).find('.highcharts-xaxis');
                 var highy = $('#' + id).find('.highcharts-yaxis');
 
-                highx.on('dragover', _this5, _this5.dragOver);
-                highx.on('dragenter', _this5, _this5.dragEnter);
-                highx.on('drop', _this5, _this5.dropElement);
-                highy.on('dragover', _this5, _this5.dragOver);
-                highy.on('dragenter', _this5, _this5.dragEnter);
-                highy.on('drop', _this5, _this5.dropElement);
+                highx.on('dragover', _this8, _this8.dragOver);
+                highx.on('dragenter', _this8, _this8.dragEnter);
+                highx.on('drop', _this8, _this8.dropElement);
+                highy.on('dragover', _this8, _this8.dragOver);
+                highy.on('dragenter', _this8, _this8.dragEnter);
+                highy.on('drop', _this8, _this8.dropElement);
             });
         }
 
@@ -1132,12 +1140,12 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
-            var _this6 = this;
+            var _this9 = this;
 
             var data = [];
             this.nsaplotcols.forEach(function (column, index) {
-                var goodsample = _this6.nsasample[column].filter(_this6.filterArray);
-                var tmp = { 'value': _this6.mygalaxy[column], 'title': column, 'sample': goodsample };
+                var goodsample = _this9.nsasample[column].filter(_this9.filterArray);
+                var tmp = { 'value': _this9.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -1176,7 +1184,7 @@ var Galaxy = function () {
     }, {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
-            var _this7 = this;
+            var _this10 = this;
 
             // only update the single parent div element
             if (parentid !== undefined) {
@@ -1206,14 +1214,14 @@ var Galaxy = function () {
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _updateNSAData5 = _this7.updateNSAData(index + 1, 'galaxy');
+                    var _updateNSAData5 = _this10.updateNSAData(index + 1, 'galaxy');
 
                     var _updateNSAData6 = _slicedToArray(_updateNSAData5, 2);
 
                     var data = _updateNSAData6[0];
                     var options = _updateNSAData6[1];
 
-                    var _updateNSAData7 = _this7.updateNSAData(index + 1, 'sample');
+                    var _updateNSAData7 = _this10.updateNSAData(index + 1, 'sample');
 
                     var _updateNSAData8 = _slicedToArray(_updateNSAData7, 2);
 
@@ -1221,7 +1229,7 @@ var Galaxy = function () {
                     var soptions = _updateNSAData8[1];
 
                     options.altseries = { data: sdata, name: 'Sample' };
-                    _this7.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                    _this10.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
         }
@@ -2544,7 +2552,7 @@ var Search = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 01:39:10
+* @Last Modified time: 2017-04-02 19:54:07
 */
 
 //jshint esversion: 6
@@ -2593,7 +2601,7 @@ var Table = function () {
 
             // if data
             if (data.columns !== null) {
-                var _cols = this.makeColumns(data.columns);
+                cols = this.makeColumns(data.columns);
             }
 
             // init the Bootstrap table
@@ -2671,7 +2679,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 01:38:44
+* @Last Modified time: 2017-04-04 11:43:37
 */
 
 // Javascript code for general things
@@ -2772,26 +2780,48 @@ var Utils = function () {
             var _this2 = this;
 
             var form = $('#loginform').serialize();
-
-            $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
+            Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json')).then(function (data) {
                 if (data.result.status < 0) {
-                    // bad submit
-                    _this2.resetLogin();
-                } else {
-                    // good submit
-                    if (data.result.message !== '') {
-                        var stat = data.result.status === 0 ? 'danger' : 'success';
-                        var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
-                        $('#loginmessage').html(htmlstr);
-                    }
-                    if (data.result.status === 1) {
-                        location.reload(true);
-                    }
+                    throw new Error('Bad status login');
                 }
-            }).fail(function (data) {
+                if (data.result.message !== '') {
+                    var stat = data.result.status === 0 ? 'danger' : 'success';
+                    var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
+                    $('#loginmessage').html(htmlstr);
+                }
+                if (data.result.status === 1) {
+                    location.reload(true);
+                }
+            }).catch(function (error) {
+                _this2.resetLogin();
                 alert('Bad login attempt');
             });
         }
+
+        // // Login function
+        // login() {
+        //     const form = $('#loginform').serialize();
+
+        //   $.post(Flask.url_for('index_page.login'), form, 'json')
+        //       .done((data)=>{
+        //           if (data.result.status < 0) {
+        //               // bad submit
+        //               this.resetLogin();
+        //           } else {
+        //               // good submit
+        //               if (data.result.message !== ''){
+        //                   const stat = (data.result.status === 0) ? 'danger' : 'success';
+        //                   const htmlstr = `<div class='alert alert-${stat}' role='alert'><h4>${data.result.message}</h4></div>`;
+        //                   $('#loginmessage').html(htmlstr);
+        //               }
+        //               if (data.result.status === 1){
+        //                   location.reload(true);
+        //               }
+
+        //           }
+        //       })
+        //       .fail((data)=>{ alert('Bad login attempt'); });
+        // }
 
         // Reset Login
 

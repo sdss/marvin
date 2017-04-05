@@ -6,13 +6,49 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-25 16:08:37
+# @Last Modified time: 2017-04-05 15:21:40
 
 from __future__ import print_function, division, absolute_import
-from flask_testing import TestCase
+from flask_testing import TestCase, LiveServerTestCase
 from marvin.web import create_app
 from marvin import config, marvindb
 from marvin.tests import MarvinTest
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import requests
+
+
+class MarvinFrontEnd(MarvinTest, LiveServerTestCase):
+
+    def create_app(self):
+        app = create_app(debug=True, local=True, use_profiler=False)
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+        app.config['LIVESERVER_PORT'] = 8943
+        app.config['LIVESERVER_TIMEOUT'] = 10
+        return app
+
+    @classmethod
+    def setUpClass(cls):
+        super(MarvinFrontEnd, cls).setUpClass()
+        cls.desired_cap = {'os': 'OS X', 'os_version': 'El Capitan', 'browser': 'chrome', 'browser_version': '55', 'project': 'marvin'}
+
+    def setUp(self):
+        #self.driver = webdriver.Chrome()
+        self.driver = webdriver.Remote(
+            command_executor='http://briancherinka1:RzufnqxUTip24gDaG6P6@hub.browserstack.com:80/wd/hub',
+            desired_capabilities=self.desired_cap)
+
+        self.url = '{0}/marvin2/'.format(self.get_server_url())
+        self.driver.get(self.url)
+
+    def tearDown(self):
+        self.driver.quit()
+
+    def test_server_is_up_and_running(self):
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200)
 
 
 class MarvinWebTester(MarvinTest, TestCase):

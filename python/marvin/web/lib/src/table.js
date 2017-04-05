@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 01:39:10
+* @Last Modified time: 2017-04-02 19:54:07
 */
 
 //jshint esversion: 6
@@ -35,7 +35,7 @@ class Table {
 
         // if data
         if (data.columns !== null) {
-            let cols = this.makeColumns(data.columns);
+            cols = this.makeColumns(data.columns);
         }
 
         // init the Bootstrap table

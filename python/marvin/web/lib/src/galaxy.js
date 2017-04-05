@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-04-02 14:24:46
+* @Last Modified time: 2017-04-04 22:42:14
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -14,6 +14,24 @@
 //
 //jshint esversion: 6
 'use strict';
+
+class SpaxelError extends Error {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'SpaxelError';
+    this.status = -1;
+  }
+}
+
+class MapError extends Error {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'MapError';
+    this.status = -1;
+  }
+}
 
 class Galaxy {
 
@@ -169,16 +187,16 @@ class Galaxy {
             this.olmap.imheight, mousecoords, maptype, x, y);
 
         // send the form data
-        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
-            .done((data)=>{
-                if (data.result.status !== -1) {
-                    this.updateSpaxel(data.result.spectra, data.result.specmsg);
-                } else {
-                    this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.status);
+        Promise.resolve($.post(Flask.url_for('galaxy_page.getspaxel'), form,'json'))
+            .then((data)=>{
+                if (data.result.status === -1) {
+                    throw new SpaxelError(`Error: ${data.result.specmsg}`);
                 }
+                this.updateSpaxel(data.result.spectra, data.result.specmsg);
             })
-            .fail((data)=>{
-                this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.status);
+            .catch((error)=>{
+                let errmsg = (error.message === undefined) ? 'The getSpaxel javascript Ajax request failed!' : error.message;
+                this.updateSpecMsg(errmsg, -1);
             });
     }
 
@@ -242,7 +260,6 @@ class Galaxy {
 
                 $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')
                     .done(function(data) {
-
                         let image = data.result.image;
                         let spaxel = data.result.spectra;
                         let spectitle = data.result.specmsg;
@@ -277,48 +294,6 @@ class Galaxy {
         }
     }
 
-    // Toggle the interactive OpenLayers map and Dygraph spectra
-    // DEPRECATED - REMOVE
-    toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
-        if (this.togglediv.hasClass('active')){
-            // Turning Off
-            this.toggleon = false;
-            this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-            this.togglediv.button('reset');
-            this.dynamicdiv.hide();
-            this.staticdiv.show();
-        } else {
-            // Turning On
-            this.toggleon = true;
-            this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-            this.togglediv.button('complete');
-            this.staticdiv.hide();
-            this.dynamicdiv.show();
-
-            // check for empty divs
-            let specempty = this.graphdiv.is(':empty');
-            let imageempty = this.imagediv.is(':empty');
-            let mapempty = this.mapdiv.is(':empty');
-            // load the spaxel if the div is initially empty;
-            if (this.graphdiv !== undefined && specempty) {
-                this.loadSpaxel(spaxel, spectitle);
-            }
-            // load the image if div is empty
-            if (imageempty) {
-                this.initOpenLayers(image);
-            }
-            // load the map if div is empty
-            if (mapempty) {
-                this.initHeatmap(maps);
-            }
-
-            // possibly update an initial map message
-            if (mapmsg !== null) {
-                this.updateMapMsg(mapmsg, -1);
-            }
-        }
-    }
-
     //  Initialize the Quality and Target Popovers
     initFlagPopovers() {
         // DRP Quality Popovers
@@ -347,20 +322,35 @@ class Galaxy {
         $(this).button('loading');
 
         // send the form data
-        $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
-            .done(function(data) {
-                if (data.result.status !== -1) {
-                    _this.dapmapsbut.button('reset');
-                    _this.initHeatmap(data.result.maps);
-                } else {
-                    _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
-                    _this.dapmapsbut.button('reset');
+        Promise.resolve($.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json'))
+            .then(function(data) {
+                if (data.result.status === -1) {
+                    throw new MapError(`Error: ${data.result.mapmsg}`);
                 }
-            })
-            .fail(function(data) {
-                _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
                 _this.dapmapsbut.button('reset');
+                _this.initHeatmap(data.result.maps);
+            })
+            .catch((error)=>{
+                let errmsg = (error.message === undefined) ? 'The getDapMaps javascript Ajax request failed!' : error.message;
+                this.updateMapMsg(errmsg, -1);
+                this.dapmapsbut.button('reset');
             });
+
+        // // send the form data
+        // $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
+        //     .done(function(data) {
+        //         if (data.result.status !== -1) {
+        //             _this.dapmapsbut.button('reset');
+        //             _this.initHeatmap(data.result.maps);
+        //         } else {
+        //             _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
+        //             _this.dapmapsbut.button('reset');
+        //         }
+        //     })
+        //     .fail(function(data) {
+        //         _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
+        //         _this.dapmapsbut.button('reset');
+        //     });
     }
 
     // Update the Map Msg

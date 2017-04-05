@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 01:38:44
+* @Last Modified time: 2017-04-04 11:43:37
 */
 
 // Javascript code for general things
@@ -103,26 +103,48 @@ var Utils = function () {
             var _this2 = this;
 
             var form = $('#loginform').serialize();
-
-            $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
+            Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json')).then(function (data) {
                 if (data.result.status < 0) {
-                    // bad submit
-                    _this2.resetLogin();
-                } else {
-                    // good submit
-                    if (data.result.message !== '') {
-                        var stat = data.result.status === 0 ? 'danger' : 'success';
-                        var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
-                        $('#loginmessage').html(htmlstr);
-                    }
-                    if (data.result.status === 1) {
-                        location.reload(true);
-                    }
+                    throw new Error('Bad status login');
                 }
-            }).fail(function (data) {
+                if (data.result.message !== '') {
+                    var stat = data.result.status === 0 ? 'danger' : 'success';
+                    var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
+                    $('#loginmessage').html(htmlstr);
+                }
+                if (data.result.status === 1) {
+                    location.reload(true);
+                }
+            }).catch(function (error) {
+                _this2.resetLogin();
                 alert('Bad login attempt');
             });
         }
+
+        // // Login function
+        // login() {
+        //     const form = $('#loginform').serialize();
+
+        //   $.post(Flask.url_for('index_page.login'), form, 'json')
+        //       .done((data)=>{
+        //           if (data.result.status < 0) {
+        //               // bad submit
+        //               this.resetLogin();
+        //           } else {
+        //               // good submit
+        //               if (data.result.message !== ''){
+        //                   const stat = (data.result.status === 0) ? 'danger' : 'success';
+        //                   const htmlstr = `<div class='alert alert-${stat}' role='alert'><h4>${data.result.message}</h4></div>`;
+        //                   $('#loginmessage').html(htmlstr);
+        //               }
+        //               if (data.result.status === 1){
+        //                   location.reload(true);
+        //               }
+
+        //           }
+        //       })
+        //       .fail((data)=>{ alert('Bad login attempt'); });
+        // }
 
         // Reset Login
 
