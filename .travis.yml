@@ -66,6 +66,7 @@ install:
 - pip install pytest --quiet
 - pip install pytest-cov --quiet
 - pip install pytest-sugar --quiet
+- pip install selenium --quiet
 - python setup.py install
 
 before_script:
