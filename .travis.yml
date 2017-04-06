@@ -23,11 +23,16 @@ addons:
     packages:
       xvfb
       nano
+  browserstack:
+    username: 'briancherinka1'
+    access_key:
+      secure: "nYBKSl0X3zcIWS68j2LGxmJvRWEEoVENck4SMDrkjh8WXbrMmAUk54FobYRnSqxF6RZ6MtSczSXVskNOkrkju1xih6Tq6paht5NRF6UFKYe4tTMejKNu4yt+stCpwa7QSK4vA695LZrlwIvA5YNQMnJ8B83niw72VyM1MMs6QUTDqqZJdr72RyyZeCM4JQpKbWkntvjj9ylPVC7T0AG2skBPC9b6je6gkUHjc/4zHUwz4IHRlr+49zF8ZmV2BIhTAwv+bVkME3ufUzsYmsiQ+7c84QKUtd7bXWg9HYYW+MxraVU7UqlTRJ09nX0ph3RAKWdQdlh1r9XPuFEIbKInF0N8QjGre2KCa2MwkgvYqJklSH9mjtZtvYTvRXEQj8qqH+5OZSZ/l52CPb/RXxnZgSST409FZoP+keHdyQCSAZJAfIODRLrqDBP7WjjAYlv8a2rscEBMvjFCCkEeZahDynZvlj+P+jeH5XqIfR+S0qAusKI19c4EsQ9IL/jgFy9kH/pCdbmbjFMlcQxX9P/ubWIIm2T4SfALGZPAn7n3S8BMd0ckcG3PlktoJ68hPrYifMH9uKpY6oOoKHO+hA3bW2kM7voL5v2T1kbdaF7WjLI/E+TPz6AJ+qJ6NcVNdilYSlZko66YwGYQjirFgfa67j6PZRbImbtk3F97sEtwLDM="
 
 env:
   globals:
     - MANGA_LOCALHOST=1
     - DISPLAY=:99.0
+    - USE_BROWSERSTACK=1
 
 matrix:
   fast_finish: true
@@ -39,8 +44,8 @@ notifications:
     secure: FZXERPoPv4n52hBx3bvEjJ5T0Ey2Es7Sa7sd/MA4AMr7l1771YZ1VTLpVtpw4qJR8vrt4NtSFbBowJiovDmx6FCjEb/2N6RipjbLowAtFRqjalOGO3KZOi3UPeiytP/IYD1DG7YmeYJOL8aof2awns8ckAWRSz6HO3cDpqg+hycDXasZQdQfIKgY17UZvONBJZCZGeC3lMw4IrbhkfhW7aQvhUhcXDtfEyObNt2+FGE6y7WDeOEjtfArKc/Iz4gybWLkYPpA6rtQfQciQvpZv94sanxli8vq4mXIpu/dxn73jfKSYsYIl7+OYrXKJQBy/8muwwuSe2et15mG90KGUsDOJ+PXKCLOSl8JohO/pH0l3hZKno6nX7byL6orEbBuQjpMJO0QFUs7o6hLSv3q4tgtuV0M99I8UHcIgmBYL9oXI4BHIsSwreTXHfV/8LiuZfyaB2NzwKuRHQTZQfCD+ujqXaspyQX70Xew2L7rruRuBuKLTntgklMFtAPYJYbW/4z6HsZ//X6Z2BHwe0Etv4FZaKsf8IK81p//oYi/3kw2ENRYNARu0HzU0Edba6ugBPjzw6wFyWsL35IFTSosby50iAWo7xYfRXBv1kH0tPOcmPoJzFcrdAmvEqt6K8bNwqgx72/qsBp4fhmGfQM5G07dkyQM+hu+e9OPEfTwOo4=
 
 # repo branches to test
-branches:
-- master
+#branches:
+#- master
 
 before_install:
 # Set up the .netrc file we need to download test data
@@ -73,6 +78,8 @@ before_script:
 # Create unique web server port based on travis python version
 - export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 - echo $LOCAL_MARVIN_PORT
+# Create unique Browserstack envvar for local test
+- export BROWSERSTACK_LOCAL_IDENTIFIER='marvin_frontend_'$LOCAL_MARVIN_PORT
 # Start the web server on port 50XX and allow enough time to start up
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT &
 - sleep 20

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-05 15:21:40
+# @Last Modified time: 2017-04-06 13:20:02
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase, LiveServerTestCase
@@ -16,6 +16,7 @@ from marvin.tests import MarvinTest
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import requests
+import os
 
 
 class MarvinFrontEnd(MarvinTest, LiveServerTestCase):
@@ -32,13 +33,18 @@ class MarvinFrontEnd(MarvinTest, LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super(MarvinFrontEnd, cls).setUpClass()
-        cls.desired_cap = {'os': 'OS X', 'os_version': 'El Capitan', 'browser': 'chrome', 'browser_version': '55', 'project': 'marvin'}
 
     def setUp(self):
-        #self.driver = webdriver.Chrome()
-        self.driver = webdriver.Remote(
-            command_executor='http://briancherinka1:RzufnqxUTip24gDaG6P6@hub.browserstack.com:80/wd/hub',
-            desired_capabilities=self.desired_cap)
+        browserstack = os.environ.get('USE_BROWSERSTACK', None)
+        if browserstack:
+            self.desired_cap = {'os': 'OS X', 'os_version': 'El Capitan', 'browser': 'chrome', 'browser_version': '55', 'project': 'marvin'}
+            self.desired_cap['browserstack.local'] = True
+            self.desired_cap['browserstack.localIdentifier'] = os.environ['BROWSERSTACK_LOCAL_IDENTIFIER']
+            self.driver = webdriver.Remote(
+                command_executor='http://briancherinka1:RzufnqxUTip24gDaG6P6@hub.browserstack.com:80/wd/hub',
+                desired_capabilities=self.desired_cap)
+        else:
+            self.driver = webdriver.Chrome()
 
         self.url = '{0}/marvin2/'.format(self.get_server_url())
         self.driver.get(self.url)
