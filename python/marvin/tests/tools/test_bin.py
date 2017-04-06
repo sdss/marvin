@@ -12,6 +12,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import inspect
 from functools import wraps
 
 import pytest
@@ -25,17 +26,33 @@ import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
 
-def skip_bintypes(*bintypes):
+def use_bintypes(*bintypes):
+    """Decorates test to run only for the given bintypes."""
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
-            if kwargs['galaxy'].bintype in bintypes:
-                pytest.skip('Only do VOR10)')
+            if kwargs['galaxy'].bintype not in bintypes:
+                pytest.skip('Only use {}'.format(', '.join(bintypes)))
             return f(self, *args, **kwargs)
         return decorated_function
     return check_bintype
 
 
+class UseBintypes:
+    """Decorate all tests in a class to run only for the given bintypes."""
+    def __init__(self, *args):
+        self.args = args
+
+    def __call__(self, decorated_class):
+        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
+            # only decorate public functions
+            if attr[0][0] != '_':
+                setattr(decorated_class, attr[0],
+                        use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
+        return decorated_class
+
+
+@UseBintypes('VOR10')
 class TestBinInit:
 
     def _check_bin_data(self, bb, gal):
@@ -49,7 +66,6 @@ class TestBinInit:
 
         assert bb.properties is not None
 
-    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_files(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename,
@@ -60,7 +76,6 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_file_only_maps(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename)
@@ -72,7 +87,6 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_db(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, bintype=galaxy.bintype)
@@ -83,7 +97,6 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_init_from_api(self, galaxy):
 
         bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, mode='remote',
@@ -95,7 +108,6 @@ class TestBinInit:
 
         self._check_bin_data(bb, galaxy)
 
-    @skip_bintypes('ALL', 'NRE', 'SPX')
     def test_bin_does_not_exist(self, galaxy):
 
         with pytest.raises(MarvinError) as ee:
