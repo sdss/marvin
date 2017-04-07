@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-06 20:30:43
+# @Last Modified time: 2017-04-07 17:52:51
 
 from __future__ import print_function, division, absolute_import
 from flask_testing import TestCase, LiveServerTestCase
@@ -19,44 +19,45 @@ import requests
 import os
 
 
-class MarvinFrontEnd(MarvinTest, LiveServerTestCase):
+# class MarvinFrontEnd(MarvinTest, LiveServerTestCase):
 
-    def create_app(self):
-        app = create_app(debug=True, local=True, use_profiler=False)
-        app.config['TESTING'] = True
-        app.config['WTF_CSRF_ENABLED'] = False
-        app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-        app.config['LIVESERVER_PORT'] = 8943
-        app.config['LIVESERVER_TIMEOUT'] = 10
-        return app
+#     def create_app(self):
+#         app = create_app(debug=True, local=True, use_profiler=False)
+#         app.config['TESTING'] = True
+#         app.config['WTF_CSRF_ENABLED'] = False
+#         app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+#         app.config['LIVESERVER_PORT'] = 8943
+#         app.config['LIVESERVER_TIMEOUT'] = 10
+#         return app
 
-    @classmethod
-    def setUpClass(cls):
-        super(MarvinFrontEnd, cls).setUpClass()
+#     @classmethod
+#     def setUpClass(cls):
+#         super(MarvinFrontEnd, cls).setUpClass()
 
-    def setUp(self):
-        browserstack = os.environ.get('USE_BROWSERSTACK', None)
-        if browserstack:
-            username = os.environ.get('BROWSERSTACK_USER', None)
-            access = os.environ.get('BROWSERSTACK_ACCESS_KEY', None)
-            self.desired_cap = {'os': 'OS X', 'os_version': 'El Capitan', 'browser': 'chrome', 'browser_version': '55', 'project': 'marvin'}
-            self.desired_cap['browserstack.local'] = True
-            self.desired_cap['browserstack.localIdentifier'] = os.environ['BROWSERSTACK_LOCAL_IDENTIFIER']
-            self.driver = webdriver.Remote(
-                command_executor='http://{0}:{1}@hub.browserstack.com:80/wd/hub'.format(username, access),
-                desired_capabilities=self.desired_cap)
-        else:
-            self.driver = webdriver.Chrome()
+#     def setUp(self):
+#         browserstack = os.environ.get('USE_BROWSERSTACK', None)
+#         if browserstack:
+#             username = os.environ.get('BROWSERSTACK_USER', None)
+#             access = os.environ.get('BROWSERSTACK_ACCESS_KEY', None)
+#             self.desired_cap = {'os': 'OS X', 'os_version': 'El Capitan', 'browser': 'chrome', 'browser_version': '55', 'project': 'marvin'}
+#             self.desired_cap['browserstack.local'] = True
+#             self.desired_cap['browserstack.debug'] = True
+#             self.desired_cap['browserstack.localIdentifier'] = os.environ['BROWSERSTACK_LOCAL_IDENTIFIER']
+#             self.driver = webdriver.Remote(
+#                 command_executor='http://{0}:{1}@hub.browserstack.com:80/wd/hub'.format(username, access),
+#                 desired_capabilities=self.desired_cap)
+#         else:
+#             self.driver = webdriver.Chrome()
 
-        self.url = '{0}/marvin2/'.format(self.get_server_url())
-        self.driver.get(self.url)
+#         self.url = '{0}/marvin2/'.format(self.get_server_url())
+#         self.driver.get(self.url)
 
-    def tearDown(self):
-        self.driver.quit()
+#     def tearDown(self):
+#         self.driver.quit()
 
-    def test_server_is_up_and_running(self):
-        response = requests.get(self.url)
-        self.assertEqual(response.status_code, 200)
+#     def test_server_is_up_and_running(self):
+#         response = requests.get(self.url)
+#         self.assertEqual(response.status_code, 200)
 
 
 class MarvinWebTester(MarvinTest, TestCase):
