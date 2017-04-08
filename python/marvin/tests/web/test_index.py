@@ -6,44 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-07 17:53:41
+# @Last Modified time: 2017-04-08 11:16:15
 
 from __future__ import print_function, division, absolute_import
+import unittest
 from marvin.tests.web import MarvinWebTester
 from marvin import config, marvindb
-from flask import session, url_for
-import unittest
-import time
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-
-
-# class TestIndexFront(MarvinFrontEnd):
-
-#     def setUp(self):
-#         super(TestIndexFront, self).setUp()
-
-#     def test_stuff(self):
-#         self.assertIn('Marvin', self.driver.title)
-
-#     def test_image(self):
-#         self.driver.find_element_by_id("image_link").click()
-#         time.sleep(1)
-#         self.assertIn('random', self.driver.current_url)
-
-#     def test_search(self):
-#         self.driver.find_element_by_id("search_link").click()
-#         time.sleep(1)
-#         self.assertIn('Search', self.driver.title)
-#         self.assertIn('search', self.driver.current_url)
-#         results = self.driver.find_elements(By.ID, "search_results")
-#         self.assertFalse(results)
-#         self.driver.find_element_by_id("searchbox").send_keys('nsa.z < 0.1')
-#         self.driver.find_element_by_id("searchbox").send_keys(Keys.RETURN)
-#         results = self.driver.find_elements(By.ID, "search_results")
-#         self.assertTrue(results)
-#         table = self.driver.find_elements(By.ID, "searchtablediv")
-#         self.assertTrue(table)
+from flask import url_for
 
 
 class TestIndexPage(MarvinWebTester):
