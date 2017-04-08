@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-07 22:13:09
+# @Last Modified time: 2017-04-08 11:21:06
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -59,6 +59,8 @@ def base_url(live_server):
 def driver(base_url, osinfo, browserinfo):
     ostype, os_version = osinfo
     browser, browser_version = browserinfo
+    buildid = '{0}_{1}_{2}_{3}'.format(ostype.lower().replace(' ', '_'),
+                                       os_version.lower().replace(' ', '_'), browser, browser_version)
     # skip some combinations
     if os_version == 'Sierra' and browser == 'safari' and browser_version == '9.1':
         pytest.skip('cannot have Sierra running safari 9.1')
@@ -69,7 +71,7 @@ def driver(base_url, osinfo, browserinfo):
     if browserstack:
         username = os.environ.get('BROWSERSTACK_USER', None)
         access = os.environ.get('BROWSERSTACK_ACCESS_KEY', None)
-        desired_cap = {'os': ostype, 'os_version': os_version, 'browser': browser,
+        desired_cap = {'os': ostype, 'os_version': os_version, 'browser': browser, 'build': buildid,
                        'browser_version': browser_version, 'project': 'marvin', 'resolution': '1920x1080'}
         desired_cap['browserstack.local'] = True
         desired_cap['browserstack.debug'] = True
