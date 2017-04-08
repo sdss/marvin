@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-07 17:51:47
+# @Last Modified time: 2017-04-07 22:13:09
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -20,8 +20,8 @@ from marvin.tests.web.live_server import live_server
 browserstack = os.environ.get('USE_BROWSERSTACK', None)
 
 if browserstack:
-    osdict = {'OS X': ['El Capitan', 'Sierra'], 'Windows': ['10', '7']}
-    browserdict = {'chrome': ['55', '54', '53'], 'firefox': ['52', '51'], 'safari': ['10', '9.1']}
+    osdict = {'OS X': ['El Capitan', 'Sierra']}
+    browserdict = {'chrome': ['55', '54'], 'firefox': ['52', '51'], 'safari': ['10', '9.1']}
 else:
     osdict = {'OS X': ['El Capitan']}
     browserdict = {'chrome': ['55']}
@@ -59,6 +59,13 @@ def base_url(live_server):
 def driver(base_url, osinfo, browserinfo):
     ostype, os_version = osinfo
     browser, browser_version = browserinfo
+    # skip some combinations
+    if os_version == 'Sierra' and browser == 'safari' and browser_version == '9.1':
+        pytest.skip('cannot have Sierra running safari 9.1')
+    elif os_version == 'El Capitan' and browser == 'safari' and browser_version == '10':
+        pytest.skip('cannot have El Capitan running safari 10')
+
+    # set driver
     if browserstack:
         username = os.environ.get('BROWSERSTACK_USER', None)
         access = os.environ.get('BROWSERSTACK_ACCESS_KEY', None)
