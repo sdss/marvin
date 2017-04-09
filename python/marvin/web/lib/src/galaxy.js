@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-04-04 22:42:14
+* @Last Modified time: 2017-04-09 08:58:10
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -175,6 +175,11 @@ class Galaxy {
         });
     }
 
+    // Make Promise error message
+    makeError(name) {
+        return `Unknown Error: the ${name} javascript Ajax request failed!`;
+    }
+
     // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
     getSpaxel(event) {
         let mousecoords = (event.coordinate === undefined) ? null : event.coordinate;
@@ -195,7 +200,7 @@ class Galaxy {
                 this.updateSpaxel(data.result.spectra, data.result.specmsg);
             })
             .catch((error)=>{
-                let errmsg = (error.message === undefined) ? 'The getSpaxel javascript Ajax request failed!' : error.message;
+                let errmsg = (error.message === undefined) ? this.makeError('getSpaxel') : error.message;
                 this.updateSpecMsg(errmsg, -1);
             });
     }
@@ -323,7 +328,7 @@ class Galaxy {
 
         // send the form data
         Promise.resolve($.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json'))
-            .then(function(data) {
+            .then((data)=>{
                 if (data.result.status === -1) {
                     throw new MapError(`Error: ${data.result.mapmsg}`);
                 }
@@ -331,26 +336,10 @@ class Galaxy {
                 _this.initHeatmap(data.result.maps);
             })
             .catch((error)=>{
-                let errmsg = (error.message === undefined) ? 'The getDapMaps javascript Ajax request failed!' : error.message;
-                this.updateMapMsg(errmsg, -1);
-                this.dapmapsbut.button('reset');
+                let errmsg = (error.message === undefined) ? _this.makeError('getDapMaps') : error.message;
+                _this.updateMapMsg(errmsg, -1);
+                _this.dapmapsbut.button('reset');
             });
-
-        // // send the form data
-        // $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
-        //     .done(function(data) {
-        //         if (data.result.status !== -1) {
-        //             _this.dapmapsbut.button('reset');
-        //             _this.initHeatmap(data.result.maps);
-        //         } else {
-        //             _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
-        //             _this.dapmapsbut.button('reset');
-        //         }
-        //     })
-        //     .fail(function(data) {
-        //         _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.status);
-        //         _this.dapmapsbut.button('reset');
-        //     });
     }
 
     // Update the Map Msg
@@ -389,22 +378,22 @@ class Galaxy {
         let nsaempty = _this.nsaplots.is(':empty');
         if (nsaempty & _this.hasnsa) {
             // send the form data
-            $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json')
-                .done(function(data) {
-                    if (data.result.status !== -1) {
-                        _this.addNSAData(data.result.nsa);
-                        _this.refreshNSASelect(data.result.nsachoices);
-                        _this.initNSAScatter();
-                        _this.setTableEvents();
-                        _this.addNSAEvents();
-                        _this.initNSABoxPlot(data.result.nsaplotcols);
-                        _this.nsaload.hide();
-                    } else {
-                        _this.updateNSAMsg(`Error: ${data.result.nsamsg}`, data.result.status);
+            Promise.resolve($.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json'))
+                .then((data)=>{
+                    if (data.result.status !== 1) {
+                        throw new Error(`Error: ${data.result.nsamsg}`);
                     }
+                    _this.addNSAData(data.result.nsa);
+                    _this.refreshNSASelect(data.result.nsachoices);
+                    _this.initNSAScatter();
+                    _this.setTableEvents();
+                    _this.addNSAEvents();
+                    _this.initNSABoxPlot(data.result.nsaplotcols);
+                    _this.nsaload.hide();
                 })
-                .fail(function(data) {
-                    _this.updateNSAMsg(`Error: ${data.result.nsamsg}`, data.result.status);
+                .catch((error)=>{
+                    let errmsg = (error.message === undefined) ? _this.makeError('displayNSA') : error.message;
+                    _this.updateNSAMsg(errmsg, -1);
                 });
         }
 
