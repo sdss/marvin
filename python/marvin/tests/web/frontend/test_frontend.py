@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 16:41:53
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-07 17:50:20
+# @Last Modified time: 2017-04-08 15:06:59
 
 from __future__ import print_function, division, absolute_import
 import time
@@ -14,6 +14,13 @@ import os
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from marvin.tests.web.frontend.models import IndexPage
+
+
+@pytest.fixture()
+def page(driver, base_url):
+    page = IndexPage(driver, root_uri=base_url)
+    return page
 
 
 @pytest.mark.usefixtures('live_server')
