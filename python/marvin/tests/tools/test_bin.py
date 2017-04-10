@@ -26,6 +26,7 @@ import marvin.utils.general
 from marvin.core.exceptions import MarvinError
 
 
+# TODO make available to all tests
 def use_bintypes(*bintypes):
     """Decorates test to run only for the given bintypes."""
     def check_bintype(f):
@@ -38,6 +39,7 @@ def use_bintypes(*bintypes):
     return check_bintype
 
 
+# TODO make available to all tests
 class UseBintypes:
     """Decorate all tests in a class to run only for the given bintypes."""
     def __init__(self, *args):
@@ -55,6 +57,7 @@ class UseBintypes:
 @UseBintypes('VOR10')
 class TestBinInit:
 
+    # TODO parameterize this?
     def _check_bin_data(self, bb, gal):
 
         assert bb.binid == 100
