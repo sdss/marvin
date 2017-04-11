@@ -1,5 +1,12 @@
 # Marvin's Change Log
 
+## [2.1.3] - Under Development
+### Added:
+### Changed:
+### Fixed:
+- Interactive prompt for username in sdss_access now works for Python 3.
+
+
 ## [2.1.2] - 2017/03/17
 ### Added:
 - API and Web argument validation using webargs and marshmallow.  If parameters invalid, returns 422 status.
