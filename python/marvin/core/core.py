@@ -121,9 +121,13 @@ class MarvinToolsClass(object):
         elif self.mode == 'auto':
             try:
                 self._doLocal()
-            except Exception:
-                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
-                self._doRemote()
+            except Exception as ee:
+                if self.filename:
+                    # If the input contains a filename we don't want to go into remote mode.
+                    raise(ee)
+                else:
+                    warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
+                    self._doRemote()
 
         # Sanity check to make sure data_origin has been properly set.
         assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
