@@ -333,7 +333,7 @@ def _string_to_cmap(cm_name):
         if 'linear_Lab' in cm_name:
             try:
                 cmap, cmap_r = linear_Lab()
-            except FileNotFoundError or IOError:
+            except IOError:
                 cmap = cm.viridis
             else:
                 if '_r' in cm_name:
