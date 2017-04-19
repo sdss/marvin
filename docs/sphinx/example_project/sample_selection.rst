@@ -27,7 +27,7 @@ Marvin uses a simplified query syntax (for both the `Web <https://sas.sdss.org/m
 Example: find galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 `````````````````````````````````````````````````````````````````````````````````````
 
-Create the Query and run it:
+Create the query and run it (limit to only 5 results for demo purposes):
 
 .. ipython:: python
 
@@ -35,12 +35,20 @@ Create the Query and run it:
     
     q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=5)
 
+**Tip** see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
+
 View the results:
 
 .. ipython:: python
 
-    results = r.toDF()
+    df = r.toDF()
+    df
 
+Convert to :ref:`marvin-maps`:
 
+.. ipython:: python
 
-See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.  See the :ref:`marvin-query-examples` for examples of how to write MaNGA specific filter strings.
+    r.convertToTool('maps')
+    r.objects
+
+|
