@@ -58,6 +58,7 @@ def get_data_files(with_web=True):
     data_files.append('../marvin/db/dbconfig.ini')
     data_files.append('../../requirements.txt')
     data_files.append('../../README.md')
+    data_files.append('python/marvin/utils/plot/Linear_L_0-1.csv')
 
     return data_files
 
