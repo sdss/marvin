@@ -27,13 +27,13 @@ Marvin uses a simplified query syntax (for both the `Web <https://sas.sdss.org/m
 Example: find galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 `````````````````````````````````````````````````````````````````````````````````````
 
-Create the query and run it (limit to only 5 results for demo purposes):
+Create the query and run it (limit to only 3 results for demo purposes):
 
 .. ipython:: python
 
     from marvin.tools.query import doQuery
     
-    q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=5)
+    q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
 
 **Tip** see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
 
@@ -49,6 +49,42 @@ Convert to :ref:`marvin-maps`:
 .. ipython:: python
 
     r.convertToTool('maps')
+
     r.objects
+    
+    galaxies = r.objects
+
+
+Alternatively, if we already know our galaxy IDs:
+
+.. ipython:: python
+
+    from marvin.tools.maps import Maps
+    
+    mangaids = ['1-245458', '1-22301', '1-605884']
+    
+    galaxies = [Maps(mangaid=mangaid) for mangaid in mangaids]
+
+
+Get the Halpha maps:
+
+.. ipython:: python
+
+    haflux_maps = [galaxy['emline_gflux_ha_6564'] for galaxy in galaxies]
+
+
+Plot second map and save it:
+
+.. ipython:: python
+    
+    import matplotlib.pyplot as plt
+    
+    fig, ax = haflux_maps[1].plot()
+    
+    plt.savefig('haflux_7992-6101.png')
+
+
+.. image:: ../_static/haflux_7992-6101.png
+
 
 |
