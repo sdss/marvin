@@ -91,10 +91,12 @@ Tutorials
    :titlesonly:
    :maxdepth: 1
 
+   tutorials/lean_tutorial
    Example Queries <tutorials/query-examples>
    tutorials/query-practice
    tutorials/boolean-search-tutorial
    tutorials/jupyter-notebooks
+   
 |
 
 General Reference
