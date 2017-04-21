@@ -31,8 +31,6 @@ developed and maintained by the MaNGA team.  Check out the
 If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
-|
-
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
@@ -66,7 +64,6 @@ Components
   * :ref:`marvin-results`
   * :ref:`marvin-cube`
   * :ref:`marvin-bpt`
-  * :ref:`marvin-modelcube`
   * :ref:`marvin-modelcube`
   * :ref:`marvin-maps`
   * :ref:`marvin-images`
