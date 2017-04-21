@@ -33,9 +33,6 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
 |
 
-:doc:`overview`
-^^^^^^^^^^^^^^^^
-
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
 
@@ -45,51 +42,38 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 :doc:`known-issues`
 ^^^^^^^^^^^^^^^^^^^
 
-:doc:`installation`
-^^^^^^^^^^^^^^^^^^^
+Marvin at a Glance
+==================
 
-:doc:`faq`
-^^^^^^^^^^
-
-:doc:`getting-started`
-^^^^^^^^^^^^^^^^^^^^^^
-
-:doc:`tutorials`
-^^^^^^^^^^^^^^^^
+* :doc:`overview`
+* :doc:`installation`
+* :doc:`faq`
+* :doc:`getting-started`
+* :doc:`tutorials`
 
 Components
 ==========
 
-:doc:`core`
------------
+* :doc:`core`
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
+  * :ref:`marvin-config-info`
+  * :ref:`marvin-dma`
+  * :ref:`marvin-download-objects`
 
-   core/config
-   core/downloads
+* :doc:`tools`
 
-:doc:`tools`
-------------
+  * :ref:`marvin-query`
+  * :ref:`marvin-results`
+  * :ref:`marvin-cube`
+  * :ref:`marvin-bpt`
+  * :ref:`marvin-modelcube`
+  * :ref:`marvin-modelcube`
+  * :ref:`marvin-maps`
+  * :ref:`marvin-images`
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
+* :doc:`api`
 
-   query
-   results
-   tools/cube
-   tools/bpt
-   tools/modelcube
-   tools/maps
-   images
-
-:doc:`api`
-----------
-
-:doc:`web`
-----------
+* :doc:`web`
 
 General Reference
 =================

@@ -1,8 +1,8 @@
 
 .. _marvin-config-info:
 
-Marvin Configuration Class (marvin.config)
-------------------------------------------
+Configuration Class (marvin.config)
+-----------------------------------
 The Marvin :ref:`marvin-config-class` class controls the global configuration of Marvin.  It has
 several attributes that control how you interact with MaNGA data.
 
@@ -40,8 +40,8 @@ several attributes that control how you interact with MaNGA data.
 
 .. _marvin-modes:
 
-Marvin Modes
-------------
+Data Access Modes
+-----------------
 * **Local mode** - Use this mode to deal with local FITS files either in your local SAS or through explicit file locations.
 * **Remote mode** - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API.  Depending on your use,
   it may be returned as a JSON object or used to complete the Tool function you are using.
