@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 16:41:53
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-08 15:06:59
+# @Last Modified time: 2017-04-09 09:15:33
 
 from __future__ import print_function, division, absolute_import
 import time
@@ -27,14 +27,14 @@ def page(driver, base_url):
 class TestIndexPage(object):
     ''' Tests for the main Index page '''
 
-    def test_title(self, driver):
-        assert 'Marvin' in driver.title
+    def test_title(self, page):
+        assert 'Marvin' in page.w.title
 
-    def test_goto_random(self, driver):
-        assert 'Marvin' in driver.title
-        driver.find_element_by_id("image_link").click()
+    def test_goto_random(self, page):
+        assert 'Marvin' in page.w.title
+        page.imagepage.click()
         time.sleep(1)
-        assert 'random' in driver.current_url
+        assert 'random' in page.w.current_url
 
     def test_goto_search(self, driver):
         driver.find_element_by_id("search_link").click()
