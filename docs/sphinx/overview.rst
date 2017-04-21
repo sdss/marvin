@@ -1,6 +1,8 @@
 
-Overview
-========
+.. _marvin-overview:
+
+What is Marvin?
+===============
 
 MaNGA
 -----

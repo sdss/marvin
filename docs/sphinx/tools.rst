@@ -1,7 +1,7 @@
 .. _marvin-tools:
 
-Tools
-=====
+Tools (marvin.tools)
+====================
 
 Marvin provides tools that are convenience classes and functions for searching, accessing, interacting with, and visualzing MaNGA
 data. The tools make up the common core components of Marvin and are utilized within the tools itself, as well as by the Web and API.

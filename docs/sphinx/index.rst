@@ -33,34 +33,45 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
 |
 
-:doc:`whats-new`
+:doc:`overview`
 ^^^^^^^^^^^^^^^^
 
-:doc:`known-issues`
-^^^^^^^^^^^^^^^^^^^
+:doc:`whats-new`
+^^^^^^^^^^^^^^^^
 
 `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|
+:doc:`known-issues`
+^^^^^^^^^^^^^^^^^^^
 
-Marvin Primer
-=============
+:doc:`installation`
+^^^^^^^^^^^^^^^^^^^
+
+:doc:`faq`
+^^^^^^^^^^
+
+:doc:`getting-started`
+^^^^^^^^^^^^^^^^^^^^^^
+
+:doc:`tutorials`
+^^^^^^^^^^^^^^^^
+
+Components
+==========
+
+:doc:`core`
+-----------
 
 .. toctree::
    :titlesonly:
+   :maxdepth: 1
 
-   overview
-   installation
-   first-steps
-   general
-   Frequently Asked Questions <faq>
-   tools/visual-guide
-
-|
+   core/config
+   core/downloads
 
 :doc:`tools`
-============
+------------
 
 .. toctree::
    :titlesonly:
@@ -74,28 +85,11 @@ Marvin Primer
    tools/maps
    images
 
-
 :doc:`api`
-==========
-
+----------
 
 :doc:`web`
-==========
-
-|
-
-Tutorials
-=========
-
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-
-   Example Queries <tutorials/query-examples>
-   tutorials/query-practice
-   tutorials/boolean-search-tutorial
-   tutorials/jupyter-notebooks
-|
+----------
 
 General Reference
 =================
@@ -104,11 +98,8 @@ General Reference
    :titlesonly:
    :maxdepth: 1
 
-   data-access-modes
    Available Query Parameters <query-params>
    tools/visual-guide
-
-|
 
 Documentation
 =============
