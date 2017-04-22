@@ -107,15 +107,17 @@ Marvin has the ability to quickly access and display DAP Maps
     print(maps)
     maps = <Marvin Maps (plateifu='8485-1901', mode='remote', data_origin='api', bintype=SPX, template_kin=GAU-MILESHC)>
 
-The default Maps object created is the unbinned maps DAP object.  You can request a map with a different bintype or stellar template model using the **bintype** and **template_kin** keywords.  To access individial maps, you can
+The default Maps object created is the unbinned maps DAP object.  You can request a map with a different bintype or stellar template model using the **bintype** and **template_kin** keywords.  To access individial maps, you can do so either via array indexing, or using the **getMap** method on Marvin Maps.  Individual maps are uniquely identified by **property** name and **channel**.  This is the same syntax used by DAP data model for MaNGA MAPS objects.
+
+With the array-indexing mode, you specify the full **property+channel**, as a lowercase, underscore-spaced string.  When using the **getMap** method, you specify property and channel individual via keywords.
 
 ::
 
-    # grab the H-alpha emission line map
+    # grab the H-alpha emission line map by array indexing
     hamap = maps['emline_gflux_ha_6564']
 
     # alternatively, use getMap
-    hamap = maps.getMap('emline_glux', channel='ha_6564')
+    hamap = maps.getMap('emline_gflux', channel='ha_6564')
 
     # display the Map object
     print(hamap)
@@ -138,7 +140,7 @@ You have now accessed an individual Marvin Map.  The **property** **channel** ke
     # DAP mask array
     hamap.mask
 
-You can plot any map simply by using the **plot** method on your Map object.  Marvin uses the Python packacke Matplotlib for all default plotting.  Many matplotlib plotting options are usable in Marvin's **plot** method.
+You can plot any map simply by using the **plot** method on your Map object.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.
 
 ::
 
@@ -191,7 +193,7 @@ In the previous section, you downloaded the data files for 8485-1901 directly to
     print(cube)
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
-Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.
+Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.  Please see the Astropy documentation for a full description of FITS handling. (add link)
 
 ::
 
@@ -204,9 +206,32 @@ Notice that the **mode** is now **local**, and the **data_origin** is now set to
 
     # retrieve a list of file HDUs
     hdus = cube.data
-    print(hdus)
+    hdus.info()
 
-When you open a Marvin Cube in local mode, you immediately get access to the data with the **flux**, **ivar**, and **mask** attributes.
+    Filename: /Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz
+    No.    Name         Type      Cards   Dimensions   Format
+      0  PRIMARY     PrimaryHDU      74   ()
+      1  FLUX        ImageHDU        99   (34, 34, 4563)   float32
+      2  IVAR        ImageHDU        17   (34, 34, 4563)   float32
+      3  MASK        ImageHDU        17   (34, 34, 4563)   int32
+      4  WAVE        ImageHDU         9   (4563,)   float64
+      5  SPECRES     ImageHDU         9   (4563,)   float64
+      6  SPECRESD    ImageHDU         9   (4563,)   float64
+      7  OBSINFO     BinTableHDU    144   9R x 63C   [25A, 17A, 5A, J, I, 8A, E, E, E, E, E, E, J, J, I, J, E, 12A, J, 8A, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, 13A, E, E, E, E, D, D, D, D, E, E, J, J, J, E, E, E, E, J, J, E, E, E, E]
+      8  GIMG        ImageHDU        28   (34, 34)   float32
+      9  RIMG        ImageHDU        28   (34, 34)   float32
+     10  IIMG        ImageHDU        28   (34, 34)   float32
+     11  ZIMG        ImageHDU        28   (34, 34)   float32
+     12  GPSF        ImageHDU        28   (34, 34)   float32
+     13  RPSF        ImageHDU        28   (34, 34)   float32
+     14  IPSF        ImageHDU        28   (34, 34)   float32
+     15  ZPSF        ImageHDU        28   (34, 34)   float32
+     16  GCORREL     BinTableHDU     32   20155R x 5C   [J, J, J, J, D]
+     17  RCORREL     BinTableHDU     32   21023R x 5C   [J, J, J, J, D]
+     18  ICORREL     BinTableHDU     32   21718R x 5C   [J, J, J, J, D]
+     19  ZCORREL     BinTableHDU     32   21983R x 5C   [J, J, J, J, D]
+
+When you open a Marvin Cube in local mode, Marvin provides convenient quick access to the first 5 extensions of your file.  In your Marvin Cube, you have the **header**, **flux**, **ivar**, **mask**, and **wavelength** attributes.  The extension for spectral resolution is stored in Marvin Spaxels under **specres**.
 
 ::
 
@@ -226,15 +251,106 @@ When you open a Marvin Cube in local mode, you immediately get access to the dat
 Querying the Sample
 -------------------
 
+Previously, you have been dealing with individual objects, on a case by case basis.  But what if you want to perform a query on the MaNGA sample and retrieve a subset of data.  You can do this using the Marvin Query tool.
+
+::
+
+    # import the Marvin Query Tool
+    import marvin.tools.query import Query
+
+    # create a filter condition using a pseudo natural language SQL syntax
+
+    # let's look for low-mass galaxies (< 1e9) at redshifts less than 0.2.  These parameters come from the NSA catalog.  You don't need to
+    # specify the nsa table, but we recommend keeping the syntax
+    myfilter = 'nsa.z < 0.2 and nsa.sersic_mass < 1e9'
+
+    # create the Marvin Query
+    myquery = Query(searchfilter=myfilter)
+
+    # run your query
+    myresults = myquery.run()
+
+    # your results are stored in a Marvin Results Tool
+    print(myresults)
+
+
+You can do much more with Queries and Results.  See what else at the :ref:`marvin-query` and :ref:`marvin-results` pages.
+
+
 Download Objects in Bulk
 ------------------------
+
+Marvin Queries return a subset of results based on your query and filter parameters.  This is all remote data.  If you want to download the MaNGA FITS files associated with your subset of results, just use the **download** method from your results.  The files are stored in their respective locations in your local **SAS**.
+
+::
+
+    # download the results
+    results.download()
+
 
 Converting to Marvin Objects
 ----------------------------
 
+Marvin Queries return a paginated list of results as tuples of data values.  This is useful for quickly seeing data results, but what if you want to use the other Marvin Tools to interact with these results.  You can convert your list of results into a list of Marvin objects using the **convertToTool** method on Marvin Results.
+
+::
+
+    # convert my list of results into a list of Marvin Cube objects
+    r.convertToTool('cube')
+
+    # they are stored in the objects attribute.
+    cubes = r.objects
+    print(cubes)
+
+    # access the first Marvin Cube
+    cube1 = cubes[0]
+    print(cube1)
+
+Now you have the full power of the Marvin Tools at your disposal with your list of Query results.
+
+
 Looking at Images
 -----------------
 
+Sometimes it can helpful to see the optical SDSS image for the MaNGA target of interest.  You can easily do this right now with a Marvin Image utility function called **showImage**.  This function will display the PNG image of your target, from your local system if you have it, or remotely, if you do not.
+
+::
+
+    # import the utility function
+    from marvin.utils.general.images import showImage
+
+    # display the optical image for 8485-1901
+    image = showImage(plateifu='8485-1901')
+
+    # for a local image, see the image file name and path
+    image.filename
+    '/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/1901.png'
+
+This creates and returns a Python Image Library object (add link), which you can manipulate as you see fit.  These images contain full WCS information in the **info** attribute, if you need to overlay things.  **info** returns a standard Python dictionary.  If you wish to convert to
+
+::
+
+    print(image)
+    <PIL.PngImagePlugin.PngImageFile image mode=RGBA size=562x562 at 0x11696FD10>
+
+    # access the WCS information directly
+    wcs_info = image.info
+
+    # extract and convert to a full Astropy WCS object
+    from marvin.utils.general.general import getWCSFromPng
+    wcs = getWCSFromPng(image.filename)
+    print(wcs)
+
+    WCS Keywords
+
+    Number of WCS axes: 2
+    CTYPE : 'RA---TAN'  'DEC--TAN'
+    CRVAL : 232.54470000000001  48.690201000000002
+    CRPIX : 281.0  281.0
+    PC1_1 PC1_2  : -2.47222222222e-05  0.0
+    PC2_1 PC2_2  : 0.0  2.47222222222e-05
+    CDELT : 1.0  1.0
+    NAXIS : 0  0
 
 
 
