@@ -6,15 +6,14 @@
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
 - The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
-
+- Fixed #143: prevents access mode to go in to remote if filename is present.
 
 ## [2.1.2] - 2017/03/17
 ### Added:
 - API and Web argument validation using webargs and marshmallow.  If parameters invalid, returns 422 status.
 
 ### Changed:
-- Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band
-  mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
+- Per Issue #186: Switched to using the elpetro version of stellar mass, absolute magnitude i-band, and i-band mass-to-light ratio for NSA web display, from sersic values. (elpetro_logmass, elpetro_absmag_i, elpetro_mtol_i)
 - Issue #188: deprecated snr in favour of snr_min for get_bpt. snr can still be used.
 - Issue #187: Renamed NSA Display tab in web to Galaxy Properties.  Added a link to the NASA-Sloan Atlas catalogue to the table title.
 - Moved our documentation to readthedocs for version control.  Updated all Marvin web documenation links to point to readthedocs.
