@@ -31,10 +31,16 @@ Once the tool is imported, you can instantiate a particular target object with t
     print(cube)
     <Marvin Cube (plateifu='8485-1901', mode='remote', data_origin='api')>
 
-You have just created a Marvin Cube for plate-ifu **8485-1901**.  You will also see **mode** and **data_origin** keywords.  These keywords inform you of how your cube was accessed.  You can see that your cube was opened remotely via the Marvin API.  (If you already have this cube locally, you may see a different indicator for mode and data_origin.  That's ok!). With a cube
+You have just created a Marvin Cube for plate-ifu **8485-1901**.  You will also see the **mode** and **data_origin** keywords.  These keywords inform you of how your cube was accessed.  You can see that your cube was opened remotely via the Marvin API.  (If you already have this cube locally, you may see a different indicator for mode and data_origin.  That's ok!). For all remote access, Marvin loads things lazily, meaning it loads the bare minimum it needs to in order to provide you a working cube quickly.  Additional information is loaded on demand via the Marvin API.  For a remote Cube, you have access to the full header of your datacube and a few select properties of the Cube.
 
+::
 
+    # view the datacube primary header for 8485-1901
+    print(cube.header)
 
+    # some select properties, e.g. RA, Dec, are added as Cube attributes
+    cube.ra
+    cube.dec
 
 Marvin has many Tools available that all behave in a similar way to the Marvin Cube.  See :ref:`marvin-tools` for a description of all the Tools currently available.
 
@@ -83,20 +89,27 @@ To plot the spectrum for this Marvin Spaxel, you must first access the Marvin Sp
 
     # access the data as Numpy arrays
     spectrum.flux
+    array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
+            0.        ,  0.        ], dtype=float32)
 
-    # ivar
+    # the ivar array
     spectrum.ivar
+    array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
+            0.        ,  0.        ], dtype=float32)
 
-    # mask
+    # the mask array
     spectrum.mask
+    array([   0,    0,    0, ..., 1026, 1026, 1026], dtype=int32)
 
-    # wavelength
+    # the wavelength array
     spectrum.wavelength
+    array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
+            10349.03843826,  10351.42166679,  10353.80544415])
 
 Accessing and Displaying Maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Marvin has the ability to quickly access and display DAP Maps
+Marvin has the ability to quickly access and display any of DAP Maps available in a given MPL.
 
 ::
 
@@ -131,8 +144,16 @@ You have now accessed an individual Marvin Map.  The **property** **channel** ke
     data = hamap.value
 
     print(type(data))
+    <type 'numpy.ndarray'>
 
     print(data)
+    array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           ...,
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
 
     # 2-d inverse variance array
     hamap.ivar
@@ -140,15 +161,22 @@ You have now accessed an individual Marvin Map.  The **property** **channel** ke
     # DAP mask array
     hamap.mask
 
-You can plot any map simply by using the **plot** method on your Map object.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.
+You can plot any map simply by using the **plot** method on your Map object.
 
 ::
 
     # plot the H-alpha flux map
     hamap.plot()
 
-    # change some default plot values
-    hamap.plot(options=..)
+You should see a pop-up window containing the H-alpha emission line flux map for 8485-1901.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.  To see a full list of available options, use **plot?**, or go here (describe in new page in Maps).  Help for all Marvin Tools and methods can be displayed by appending a **?** to the end of the name, excluding the parantheses.
+
+::
+
+    # see the help for the plot command
+    hamap.plot?
+
+    # change some default plot options. Let's change the S/N cutoff using in the plot, and change the default color map used.
+    hamap.plot(snr_min=5, cmap='inferno')
 
 
 Downloading Your Object
@@ -237,6 +265,13 @@ When you open a Marvin Cube in local mode, Marvin provides convenient quick acce
 
     # access the 3-d array of flux values
     cube.flux
+    array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            ...,
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.]]], dtype=float32)
 
     # see the dimensions as (z, y, x) or (spectral, y spatial, x spatial)
     cube.flux.shape
@@ -247,6 +282,19 @@ When you open a Marvin Cube in local mode, Marvin provides convenient quick acce
 
     cube.mask
 
+We just loaded this Cube locally using the identifier **plateifu**.  You can also use **mangaid** as a valid identifier.  When using these keywords, Marvin will look for the file in your local **SAS** directory system.  Alternatively you can specify a full filename and path using the **filename** keyword.  This keyword is for loading explicit files stored anywhere and named anything.
+
+::
+
+    # Here I am specifying an explicit file on my hard drive
+    myfile = '/Users/Brian/Work/mybestcube.fits'
+
+    # load this cube
+    cube = Cube(filename=myfile)
+
+    # display it
+    print(cube)
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
 Querying the Sample
 -------------------
@@ -256,7 +304,7 @@ Previously, you have been dealing with individual objects, on a case by case bas
 ::
 
     # import the Marvin Query Tool
-    import marvin.tools.query import Query
+    from marvin.tools.query import Query
 
     # create a filter condition using a pseudo natural language SQL syntax
 
@@ -272,7 +320,7 @@ Previously, you have been dealing with individual objects, on a case by case bas
 
     # your results are stored in a Marvin Results Tool
     print(myresults)
-
+    Marvin Results(results=..., query=u'SELECT ...', count=1, mode=remote)
 
 You can do much more with Queries and Results.  See what else at the :ref:`marvin-query` and :ref:`marvin-results` pages.
 
@@ -286,6 +334,8 @@ Marvin Queries return a subset of results based on your query and filter paramet
 
     # download the results
     results.download()
+
+This downloads your results subset.  You can also download in bulk using a list of plate-ifus or manga-ids using **downloadList**.  See :ref:`marvin-download-objects` for more.
 
 
 Converting to Marvin Objects
