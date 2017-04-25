@@ -4,7 +4,7 @@
 # test_bin.py
 #
 # Created by José Sánchez-Gallego on 6 Nov 2016.
-# Modified by Brett Andrews on 3 Apr 2017.
+# Modified by Brett Andrews on 24 Apr 2017.
 
 
 from __future__ import division
@@ -12,52 +12,22 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
-import inspect
-from functools import wraps
 
 import pytest
 
 import marvin
-import marvin.tests
 import marvin.tools.bin
 import marvin.tools.maps
 import marvin.tools.modelcube
 import marvin.utils.general
+import marvin.tests
+from marvin.tests import UseBintypes
 from marvin.core.exceptions import MarvinError
-
-
-# TODO make available to all tests
-def use_bintypes(*bintypes):
-    """Decorates test to run only for the given bintypes."""
-    def check_bintype(f):
-        @wraps(f)
-        def decorated_function(self, *args, **kwargs):
-            if kwargs['galaxy'].bintype not in bintypes:
-                pytest.skip('Only use {}'.format(', '.join(bintypes)))
-            return f(self, *args, **kwargs)
-        return decorated_function
-    return check_bintype
-
-
-# TODO make available to all tests
-class UseBintypes:
-    """Decorate all tests in a class to run only for the given bintypes."""
-    def __init__(self, *args):
-        self.args = args
-
-    def __call__(self, decorated_class):
-        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
-            # only decorate public functions
-            if attr[0][0] != '_':
-                setattr(decorated_class, attr[0],
-                        use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
-        return decorated_class
 
 
 @UseBintypes('VOR10')
 class TestBinInit:
 
-    # TODO parameterize this?
     def _check_bin_data(self, bb, gal):
 
         assert bb.binid == 100

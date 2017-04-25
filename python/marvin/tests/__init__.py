@@ -2,13 +2,44 @@
 # encoding: utf-8
 
 from unittest import TestCase
+
 import warnings
 import os
+import inspect
+from functools import wraps
+
+import pytest
+
 from marvin import config, marvindb
 from marvin.core.exceptions import MarvinSkippedTestWarning
 from marvin.api.api import Interaction
 from marvin.tools.maps import _get_bintemps
-from functools import wraps
+
+
+def use_bintypes(*bintypes):
+    """Decorates test to run only for the given bintypes."""
+    def check_bintype(f):
+        @wraps(f)
+        def decorated_function(self, *args, **kwargs):
+            if kwargs['galaxy'].bintype not in bintypes:
+                pytest.skip('Only use {}'.format(', '.join(bintypes)))
+            return f(self, *args, **kwargs)
+        return decorated_function
+    return check_bintype
+
+
+class UseBintypes:
+    """Decorate all tests in a class to run only for the given bintypes."""
+    def __init__(self, *args):
+        self.args = args
+
+    def __call__(self, decorated_class):
+        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
+            # only decorate public functions
+            if attr[0][0] != '_':
+                setattr(decorated_class, attr[0],
+                        use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
+        return decorated_class
 
 
 # Moved from init in utils/test
