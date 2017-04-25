@@ -1,5 +1,14 @@
+.. _marvin-dma:
+
 Data Access Modes
 =================
+
+.. _auto-mode:
+
+Auto Mode
+---------
+
+This is the default mode for Marvin.  It is recommended to leave Marvin in this mode and let it handle everything.  When in Auto mode, Marvin will always first try to access data in `Local Mode`_, and if that attempt fails, it automatically switches to `Remote Mode`_ .
 
 .. _local-mode:
 
@@ -57,14 +66,6 @@ New data are grabbed on demand.
     # grabs the necessary information from Utah, returns it to instantiate the Cube tool
     cc = Cube(plateifu='8485-1901')
 
-.. _auto-mode:
-
-Auto Mode
----------
-
-In Auto mode, Marvin first tries `Local Mode`_, but if that attempt fails, it
-automatically switches to `Remote Mode`_ .
-
 .. _mode-decision-tree:
 
 Mode Decision Tree
@@ -72,7 +73,7 @@ Mode Decision Tree
 
 |
 
-.. image:: ../Mode_Decision_Tree.png
+.. image:: ../../Mode_Decision_Tree.png
     :width: 800px
     :align: center
     :alt: Mode decision tree
