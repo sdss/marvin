@@ -1,4 +1,4 @@
-.. _example-project-sample-selection:
+.. _marvin-lean-tutorial:
 
 .. ipython:: python
    :suppress:
@@ -16,13 +16,6 @@ This tutorial runs through all of the steps for doing a project with Marvin from
 
 **Project**: Calculate the [NII]/Halpha ratio for star-forming spaxels in galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 
-.. If you already know which galaxies you want, skip to :ref:`example-project-get-maps`.
-
-.. Otherwise, select a sample of galaxies by running a query on the MaNGA database either via:
-.. - `Marvin-Web <https://sas.sdss.org/marvin2/search/>`_
-.. - Marvin-Tools (continue below)
-
-.. _example-project-run-query:
 
 Sample Selection
 ----------------
@@ -56,8 +49,6 @@ Convert to :ref:`marvin-tools-maps` objects:
     galaxies = r.objects
 
 
-.. _example-project-get-maps:
-
 Get Maps
 --------
 
@@ -85,7 +76,7 @@ Plot Halpha map of the second galaxy:
     haflux_map = haflux_maps[1]
     fig, ax = haflux_map.plot()
 
-.. image:: _static/haflux_7992-6101.png
+.. image:: ../_static/haflux_7992-6101.png
 
 
 The dark blue region near the center of the galaxy looks suspicious, so let's take a look at the model fits of those spaxels.
@@ -94,8 +85,6 @@ The easiest way is to navigate to the `Galaxy page for 7992-6101 <https://sas.sd
 
 However, we can also plot the spectrum and model fits in Python. First, we can find the coordinates of a spaxel by moving our cursor around the interactive matplotlib plotting window. When the cursor is over the spaxel of interest, the coordinates will appear in the lower right.
 
-
-.. _example-project-spectrum:
 
 Get Spectrum and Model Fit
 --------------------------
@@ -119,12 +108,11 @@ Now let's plot the spectrum and model fit:
     ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength_unit));
     ax.set_ylabel('flux [{}]'.format(spax.spectrum.units));
 
-.. image:: _static/spec_7992-6101.png
+.. image:: ../_static/spec_7992-6101.png
 
 Clearly something went horribly horribly wrong in the fit. In fact, the DAP did not even try to fit a emission line component to the Halpha and [NII] lines. This is unfortunate, but let's press on.
 
 
-.. _example-project-bpt:
 
 Plot BPT Diagram
 ----------------
@@ -135,9 +123,9 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
     masks, fig = haflux_map.maps.get_bpt()
 
-.. image:: _static/bpt_7992-6101.png
+.. image:: ../_static/bpt_7992-6101.png
 
-For a detailed description see :ref:`marvin-bpt` 
+For a detailed description see :ref:`marvin-bpt`.
 
 
 Select Star-forming Spaxels
@@ -150,28 +138,12 @@ Select the star-forming spaxels that are in the star-forming region of each diag
     sf = masks['sf']['global']
 
 
-Use the DAP bitmasks to flag spaxels that we don't want to include:
+Create the image to display and the background using the star-forming mask:
 
 .. ipython:: python
 
-    def parse_dap_bits(mask):
-        novalue = (mask & 2**4) > 0
-        badvalue = (mask & 2**5) > 0
-        matherror = (mask & 2**6) > 0
-        badfit = (mask & 2**7) > 0
-        donotuse = (mask & 2**30) > 0
-        return np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
-
-    no_data = parse_dap_bits(haflux_map.mask)
-
-
-Identify the star-forming spaxels that are not flagged by the DAP and create a masked array (``np.ma.array``) that will become the image we display.
-
-.. ipython:: python
-
-    sf_mask = ~np.logical_and(sf, ~no_data)
-    image = np.ma.array(haflux_map.value, mask=sf_mask)
-    mask_nodata = np.ma.array(np.ones(haflux_map.value.shape), mask=~sf_mask)
+    image = np.ma.array(haflux_map.value, mask=~sf)
+    mask_nodata = np.ma.array(np.ones(haflux_map.value.shape), mask=sf)
 
 If we wanted to do additional calculations instead of creating a plot, this masked array would also be the object on which we would perform operations.
 
@@ -192,14 +164,14 @@ Plot the star-forming spaxels:
 .. ipython:: python
 
     fig, ax = plt.subplots()
-    ax.imshow(mask_nodata, cmap=A8A8A8, zorder=1, origin='lower');
-    p = ax.imshow(image, cmap='viridis', origin='lower')
+    ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
+    p = ax.imshow(image, cmap='viridis', origin='lower', zorder=10)
     ax.set_xlabel('spaxel');
     ax.set_ylabel('spaxel');
     cb = fig.colorbar(p)
     cb.set_label('flux [{}]'.format(haflux_map.unit))
 
-.. image:: _static/haflux_sf_7992-6101.png
+.. image:: ../_static/haflux_sf_7992-6101.png
 
 .. We should make the map plotting a util.plot function instead of a tools.map function.
 .. Want to be able to take in arbitrary masks (e.g., BPT masks)
@@ -223,14 +195,14 @@ Plot the [NII]/Halpha flux ratio for the star-forming spaxels:
 .. ipython:: python
 
     fig, ax = plt.subplots()
-    ax.imshow(mask_nodata, cmap=A8A8A8, zorder=1, origin='lower');
+    ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
     ax.set_xlabel('spaxel');
     ax.set_ylabel('spaxel');
-    p = ax.imshow(np.ma.array(nii_ha.value, mask=sf_mask), origin='lower', cmap='viridis')
+    p = ax.imshow(np.ma.array(nii_ha.value, mask=~sf), origin='lower', cmap='viridis', zorder=10)
     cb = fig.colorbar(p)
     cb.set_label('[NII]6585 / Halpha flux ratio')
 
-.. image:: _static/niiha_sf_7992-6101.png
+.. image:: ../_static/niiha_sf_7992-6101.png
 
 
 Next Steps
