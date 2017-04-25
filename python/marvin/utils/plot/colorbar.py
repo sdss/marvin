@@ -437,7 +437,7 @@ def reverse_cmap(cdict):
 
 
 def linear_Lab_filename():
-    return join(os.path.dirname(marvin.__file__), 'utils', 'plot', 'Linear_L_0-1.csv')
+    return join(os.path.dirname(marvin.__file__), 'data', 'Linear_L_0-1.csv')
 
 
 def linear_Lab():
