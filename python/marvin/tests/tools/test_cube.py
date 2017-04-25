@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import re
 import unittest
 
 from astropy.io import fits
 
-from marvin import config, marvindb
+from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
@@ -249,6 +250,26 @@ class TestCube(TestCubeBase):
         cube = Cube(plateifu='7443-12701', mode='remote')
         self.assertEqual(cube.data_origin, 'api')
         self.assertIsNone(cube.nsa)
+
+    def test_load_filename_does_not_exist(self):
+        """Tries to load a file that does not exists, in auto mode."""
+
+        config.mode = 'auto'
+
+        with self.assertRaises(MarvinError) as ee:
+            Cube(filename='hola.fits')
+
+        self.assertIsNotNone(re.match(r'input file .+hola.fits not found', str(ee.exception)))
+
+    def test_load_filename_remote(self):
+        """Tries to load a filename in remote mode and fails."""
+
+        config.mode = 'remote'
+
+        with self.assertRaises(MarvinError) as ee:
+            Cube(filename='hola.fits')
+
+        self.assertIn('filename not allowed in remote mode', str(ee.exception))
 
 
 class TestGetSpaxel(TestCubeBase):
