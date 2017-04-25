@@ -2,6 +2,7 @@
 
 ## [2.1.3] - Under Development
 ### Added:
+- Issue #204: added elpetro_absmag colours to mangaSampleDB models.
 ### Changed:
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
