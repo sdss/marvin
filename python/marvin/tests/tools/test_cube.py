@@ -46,7 +46,7 @@ class TestCube(object):
             Cube(filename=self.filename)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_success(self):
+    def test_cube_load_from_local_database_success(self, start_marvin_session):
         """Tests for Cube Load by Database."""
 
         cube = Cube(mangaid=self.mangaid)
