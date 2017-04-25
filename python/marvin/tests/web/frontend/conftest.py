@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-08 11:21:06
+# @Last Modified time: 2017-04-24 21:51:26
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -15,7 +15,7 @@ import requests
 from flask import url_for
 from selenium import webdriver
 from marvin.web import create_app
-from marvin.tests.web.live_server import live_server
+from marvin.tests.web.frontend.live_server import live_server
 
 browserstack = os.environ.get('USE_BROWSERSTACK', None)
 
