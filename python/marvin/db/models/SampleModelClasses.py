@@ -314,7 +314,7 @@ for index, band in enumerate('FNugriz'):
 setattr(NSA, 'elpetro_absmag_colour', HybridColour('elpetro_absmag'))
 for colour_a, colour_b in itertools.combinations('FNugriz', 2):
     setattr(NSA, 'elpetro_absmag_{0}_{1}'.format(colour_a, colour_b),
-            HybridMethodToProperty('elpetro_abs_colour', colour_a, colour_b))
+            HybridMethodToProperty('elpetro_absmag_colour', colour_a, colour_b))
 
 
 # Add stellar mass hybrid attributes to NSA catalog
