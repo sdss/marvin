@@ -1382,7 +1382,7 @@ var Galaxy = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-12 17:52:41
+* @Last Modified time: 2017-03-12 17:56:55
 */
 
 'use strict';
@@ -1466,7 +1466,6 @@ var Header = function () {
             var _this = event.data;
             var url = 'index_page.selectmpl';
             var verform = m.utils.serializeForm('#mplform');
-            console.log('setting new mpl', verform);
             _this.sendAjax(verform, url, _this.reloadPage);
         }
 
@@ -1484,7 +1483,6 @@ var Header = function () {
         key: 'sendAjax',
         value: function sendAjax(form, url, fxn) {
             var _this = this;
-            console.log('sending ajax to', url);
             $.post(Flask.url_for(url), form, 'json').done(function (data) {
                 // reload the current page, this re-instantiates a new Header with new version info from session
                 if (data.result.status == 1) {
@@ -1616,11 +1614,11 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] && Math.pow(2, 0);
-                        var badValue = mask[ii][jj] && Math.pow(2, 5);
-                        var mathError = mask[ii][jj] && Math.pow(2, 6);
-                        var badFit = mask[ii][jj] && Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                        var noValue = mask[ii][jj] & Math.pow(2, 4);
+                        var badValue = mask[ii][jj] & Math.pow(2, 5);
+                        var mathError = mask[ii][jj] & Math.pow(2, 6);
+                        var badFit = mask[ii][jj] & Math.pow(2, 7);
+                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
                         //var noData = (noValue || badValue || mathError || badFit || doNotUse);
                         var noData = noValue;
                         var badData = badValue || mathError || badFit || doNotUse;
@@ -1723,7 +1721,7 @@ var HeatMap = function () {
             if (this.title.toLowerCase().indexOf("vel") >= 0 || this.title.toLowerCase().indexOf("sigma") >= 0) {
                 quantLow = 10;
                 quantHigh = 90;
-            } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
+            } else {
                 quantLow = 5;
                 quantHigh = 95;
             };

@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-26 21:47:05
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-03-12 17:52:41
+* @Last Modified time: 2017-03-12 17:56:55
 */
 
 'use strict';
@@ -86,7 +86,6 @@ var Header = function () {
             var _this = event.data;
             var url = 'index_page.selectmpl';
             var verform = m.utils.serializeForm('#mplform');
-            console.log('setting new mpl', verform);
             _this.sendAjax(verform, url, _this.reloadPage);
         }
 
@@ -104,7 +103,6 @@ var Header = function () {
         key: 'sendAjax',
         value: function sendAjax(form, url, fxn) {
             var _this = this;
-            console.log('sending ajax to', url);
             $.post(Flask.url_for(url), form, 'json').done(function (data) {
                 // reload the current page, this re-instantiates a new Header with new version info from session
                 if (data.result.status == 1) {

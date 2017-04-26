@@ -112,11 +112,11 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] && Math.pow(2, 0);
-                        var badValue = mask[ii][jj] && Math.pow(2, 5);
-                        var mathError = mask[ii][jj] && Math.pow(2, 6);
-                        var badFit = mask[ii][jj] && Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                        var noValue = mask[ii][jj] & Math.pow(2, 4);
+                        var badValue = mask[ii][jj] & Math.pow(2, 5);
+                        var mathError = mask[ii][jj] & Math.pow(2, 6);
+                        var badFit = mask[ii][jj] & Math.pow(2, 7);
+                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
                         //var noData = (noValue || badValue || mathError || badFit || doNotUse);
                         var noData = noValue;
                         var badData = badValue || mathError || badFit || doNotUse;
@@ -219,7 +219,7 @@ var HeatMap = function () {
             if (this.title.toLowerCase().indexOf("vel") >= 0 || this.title.toLowerCase().indexOf("sigma") >= 0) {
                 quantLow = 10;
                 quantHigh = 90;
-            } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
+            } else {
                 quantLow = 5;
                 quantHigh = 95;
             };
