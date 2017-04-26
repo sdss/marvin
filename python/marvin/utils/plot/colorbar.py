@@ -333,7 +333,7 @@ def _string_to_cmap(cm_name):
         if 'linear_Lab' in cm_name:
             try:
                 cmap, cmap_r = linear_Lab()
-            except FileNotFoundError or IOError:
+            except IOError:
                 cmap = cm.viridis
             else:
                 if '_r' in cm_name:
@@ -436,6 +436,10 @@ def reverse_cmap(cdict):
     return cdict_r
 
 
+def linear_Lab_filename():
+    return join(os.path.dirname(marvin.__file__), 'data', 'Linear_L_0-1.csv')
+
+
 def linear_Lab():
     """Make linear Lab color map.
 
@@ -447,7 +451,7 @@ def linear_Lab():
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object and reversed
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
     """
-    LinL_file = join(os.path.dirname(marvin.__file__), 'utils', 'plot', 'Linear_L_0-1.csv')
+    LinL_file = linear_Lab_filename()
     LinL = np.loadtxt(LinL_file, delimiter=',')
 
     b3 = LinL[:, 2]  # value of blue at sample n

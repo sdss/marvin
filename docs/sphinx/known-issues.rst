@@ -31,6 +31,8 @@ Tools
 
 * **Model Flux** - The ``model_flux`` attribute of :ref:`marvin-tools-spaxel` and :ref:`marvin-tools-bin` is the (binned) observed spectrum that the DAP fit. The ``model`` attribute is the fitted DAP spectrum.
 
+* In auto or local more, if a tools is instantiated from a plate-ifu or mangaid, Marvin will first try to find the appropriate file in the user's local SAS. Note that any modification to the file path in the local SAS will make Marvin fail when trying to find the file. This include un-gzipping the file.
+
 Web
 :::
 
