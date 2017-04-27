@@ -4,7 +4,8 @@
 import numpy as np
 
 from flask_classy import route
-from flask import jsonify, request
+from flask import jsonify, request, Response
+import json
 
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
@@ -191,3 +192,18 @@ class CubeView(BaseView):
 
         return jsonify(self.results)
 
+    @route('/<name>/extensions/<cube_extension>/', methods=['GET', 'POST'],
+           endpoint='getCubeExtension')
+    # @av.check_args()
+    def getCubeExtension(self, name, cube_extension):
+        """Returns the necessary information to instantiate a cube for a given plateifu."""
+
+        cube, res = _getCube(name)
+        self.update_results(res)
+
+        if cube:
+
+            self.results['data'] = {'cube_extension':
+                                    cube._getExtensionData(cube_extension.upper()).tolist()}
+
+        return Response(json.dumps(self.results), mimetype='application/json')

@@ -32,7 +32,9 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'x': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'y': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
-            'paramdisplay': fields.String(required=True, validate=validate.OneOf(['all', 'best']))
+            'paramdisplay': fields.String(required=True, validate=validate.OneOf(['all', 'best'])),
+            'cube_extension': fields.String(required=True,
+                                            validate=validate.OneOf(['flux', 'ivar', 'mask']))
             }
 
 # List of all form parameters that are needed in all the API routes
@@ -338,6 +340,3 @@ class ArgValidator(object):
             from werkzeug.datastructures import ImmutableMultiDict
             newargs = ImmutableMultiDict(newargs.copy())
         return newargs
-
-
-
