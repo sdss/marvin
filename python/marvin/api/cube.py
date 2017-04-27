@@ -198,7 +198,9 @@ class CubeView(BaseView):
     def getCubeExtension(self, name, cube_extension):
         """Returns the necessary information to instantiate a cube for a given plateifu."""
 
-        cube, res = _getCube(name)
+        # Manually getting the release for now until we fix the problem with the validator.
+        release = request.form.get('release')
+        cube, res = _getCube(name, release=release)
         self.update_results(res)
 
         if cube:

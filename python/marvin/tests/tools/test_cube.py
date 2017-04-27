@@ -137,6 +137,16 @@ class TestCube(TestCubeBase):
 
         self.assertTrue(np.allclose(flux, cubeFlux))
 
+    def test_cube_flux_from_api(self):
+
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        flux = cube.flux
+        self.assertEqual(cube.data_origin, 'api')
+
+        cubeFlux = fits.getdata(self.filename)
+
+        self.assertTrue(np.allclose(flux, cubeFlux, rtol=1e-5))
+
     def test_cube_remote_drpver_differ_from_global(self):
 
         # This tests requires having the cube for 8485-1901 loaded for both
