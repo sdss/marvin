@@ -36,8 +36,7 @@ class TestSampleDB(object):
                                                ('z', 16.20534984)])
     def test_elpetro_mag(self, band, expected):
 
-        assert abs(getattr(self.nsa_target,
-                           'elpetro_mag_{0}'.format(band)) - expected) < 1e-6
+        assert pytest.approx(getattr(self.nsa_target, 'elpetro_mag_{0}'.format(band)), expected)
 
     @pytest.mark.parametrize('bands,expected', [(('u', 'g'), 1.24315324),
                                                 (('g', 'r'), 0.64608403),
@@ -46,10 +45,10 @@ class TestSampleDB(object):
     def test_elpetro_colour(self, bands, expected):
 
         bandA, bandB = bands
-        assert abs(self.nsa_target.elpetro_colour(bandA, bandB) - expected) < 1e-6
+        assert pytest.approx(self.nsa_target.elpetro_colour(bandA, bandB), expected)
         elpetro_mag_colour = getattr(self.nsa_target,
                                      'elpetro_mag_{0}_{1}'.format(bandA, bandB))
-        assert abs(elpetro_mag_colour - expected) < 1e-6
+        assert pytest.approx(elpetro_mag_colour, expected)
 
     def test_query_elpetro_mag(self):
 
@@ -57,7 +56,7 @@ class TestSampleDB(object):
             self.sampledb.MangaTargetToNSA, self.sampledb.MangaTarget).filter(
                 self.sampledb.MangaTarget.mangaid == '1-209232').first()
 
-        assert abs(elpetro_mag_g[0] - 17.454505782813705) < 1e-6
+        assert pytest.approx(elpetro_mag_g[0], 17.454505782813705)
 
     @pytest.mark.parametrize('bands,expected', [(('u', 'g'), 1.1655902862549006),
                                                 (('g', 'r'), 0.5961246490479013),
@@ -66,7 +65,7 @@ class TestSampleDB(object):
     def test_elpetro_absmag_colour(self, bands, expected):
 
         bandA, bandB = bands
-        assert abs(self.nsa_target.elpetro_absmag_colour(bandA, bandB) - expected) < 1e-6
+        assert pytest.approx(self.nsa_target.elpetro_absmag_colour(bandA, bandB), expected)
         elpetro_absmag_colour = getattr(self.nsa_target,
                                         'elpetro_absmag_{0}_{1}'.format(bandA, bandB))
-        assert abs(elpetro_absmag_colour - expected) < 1e-6
+        assert pytest.approx(elpetro_absmag_colour, expected)
