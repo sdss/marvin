@@ -335,7 +335,7 @@ class Map(object):
         return image, mask_nodata
 
     def _make_mask_no_measurement(self, data, ivar, snr_min, log_cb):
-        """Mask invalid measurements within a data array.
+        """Mask spaxels with a signal-to-noise ratio lower than some threshold.
 
         Parameters:
             data (array):
@@ -350,17 +350,17 @@ class Map(object):
         Returns:
             array: Boolean array for mask (i.e., True corresponds to value to be masked out).
         """
-        no_measure = np.zeros(data.shape, dtype=bool)
 
-        if ivar is not None:
-            if not np.all(np.isnan(ivar)):
-                no_measure = (ivar == 0.)
-                if snr_min is not None:
-                    no_measure[(np.abs(data * np.sqrt(ivar)) < snr_min)] = True
-                if log_cb:
-                    no_measure[data <= 0.] = True
+        low_snr = np.zeros(data.shape, dtype=bool)
 
-        return no_measure
+        if (ivar is not None) and (not np.all(np.isnan(ivar))):
+            low_snr = (ivar == 0.)
+            if snr_min is not None:
+                low_snr[np.abs(data * np.sqrt(ivar)) < snr_min] = True
+            if log_cb:
+                low_snr[data <= 0.] = True
+
+        return low_snr
 
     def _set_extent(self, cube_size, sky_coords):
         """Set extent of map.
@@ -533,8 +533,6 @@ class Map(object):
         imshow_kws = kwargs.get('imshow_kws', {})
         cb_kws = kwargs.get('cb_kws', {})
 
-        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb, use_mask=use_mask)
-
         if title is None:
             title = self.property_name + ('' if self.channel is None else ' ' + self.channel)
             title = ' '.join(title.split('_'))
@@ -543,6 +541,7 @@ class Map(object):
             cmap = kwargs.get('cmap', 'RdBu_r')
             percentile_clip = kwargs.get('percentile_clip', [10, 90])
             symmetric = kwargs.get('symmetric', True)
+            snr_min = None
         elif 'sigma' in title:
             cmap = kwargs.get('cmap', 'inferno')
             percentile_clip = kwargs.get('percentile_clip', [10, 90])
@@ -554,6 +553,8 @@ class Map(object):
 
         if sigma_clip is not None:
             percentile_clip = None
+
+        image, nodata = self._make_image(snr_min=snr_min, log_cb=log_cb, use_mask=use_mask)
 
         cb_kws['cmap'] = cmap
         cb_kws['percentile_clip'] = percentile_clip
