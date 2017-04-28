@@ -6,13 +6,17 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 17:38:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-25 16:08:37
+# @Last Modified time: 2017-04-08 11:15:13
 
 from __future__ import print_function, division, absolute_import
-from flask_testing import TestCase
+import requests
+import os
+from flask_testing import TestCase, LiveServerTestCase
 from marvin.web import create_app
 from marvin import config, marvindb
 from marvin.tests import MarvinTest
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class MarvinWebTester(MarvinTest, TestCase):

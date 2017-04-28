@@ -1,10 +1,11 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 09:29:24
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 09:45:04
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-04-01 01:11:43
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Carousel {
@@ -31,10 +32,10 @@ class Carousel {
 
     // Handle the carousel thumbnails
     handleThumbs(event) {
-        var _this = event.data;
-        var id_selector = $(this).attr("id");
+        let _this = event.data;
+        let id_selector = $(this).attr("id");
         try {
-            var id = /-(\d+)$/.exec(id_selector)[1];
+            let id = /-(\d+)$/.exec(id_selector)[1];
             //console.log(id_selector, id);
             _this.carouseldiv.carousel(parseInt(id));
         } catch (e) {
@@ -44,8 +45,8 @@ class Carousel {
 
     // When carousel slides, auto update the text
     updateText(event) {
-        var _this = event.data;
-        var id = $('.item.active').data('slide-number');
+        let _this = event.data;
+        let id = $('.item.active').data('slide-number');
         $('#carousel-text').html($('#slide-content-'+id).html());
     }
 

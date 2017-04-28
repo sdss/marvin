@@ -312,7 +312,6 @@ class Galaxy(BaseWebView):
 
         # get web spectrum
         webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-
         daplist = get_dap_maplist(self._dapver, web=True)
         dapdefaults = get_default_mapset(self._dapver)
 

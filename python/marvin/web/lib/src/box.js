@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:41:40
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-15 17:20:57
+* @Last Modified time: 2017-04-01 01:20:05
 */
 
 // Using Mike Bostocks box.js code
@@ -16,11 +16,12 @@
 
 // Dec-13-2016 - converted to D3 v4
 
+//jshint esversion: 6
 'use strict';
 
 function iqr(k) {
-      return function(d, i) {
-        var q1 = d.quartiles[0],
+      return function(d, index) {
+        let q1 = d.quartiles[0],
             q3 = d.quartiles[2],
             iqr = (q3 - q1) * k,
             i = -1,
@@ -44,7 +45,7 @@ function boxQuartiles(d) {
 }
 
 function getTooltip() {
-    var tooltip = d3.select('body').append("div")
+    let tooltip = d3.select('body').append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
     return tooltip;
@@ -52,7 +53,7 @@ function getTooltip() {
 
 // Inspired by http://informationandvisualization.de/blog/box-plot
 d3.box = function() {
-  var width = 1,
+  let width = 1,
       height = 1,
       duration = 0,
       domain = null,
@@ -64,43 +65,43 @@ d3.box = function() {
       x0 = null, // the old y-axis
       tickFormat = null;
 
-  var tooltip = getTooltip();
+  let tooltip = getTooltip();
 
   // For each small multiple…
   function box(g) {
     g.each(function(d, i) {
-      var origd = d;
+      let origd = d;
       d = d.sample.map(value).sort(d3.ascending);
-      var g = d3.select(this),
+      let g = d3.select(this),
           n = d.length,
           min = d[0],
           max = d[n - 1];
 
 
       // Compute quartiles. Must return exactly 3 elements.
-      var quartileData = d.quartiles = quartiles(d);
-      var q10 = d3.quantile(d, .10);
-      var q90 = d3.quantile(d, .90);
-      var myiqr = quartileData[2]-quartileData[0];
+      let quartileData = d.quartiles = quartiles(d);
+      let q10 = d3.quantile(d, .10);
+      let q90 = d3.quantile(d, .90);
+      let myiqr = quartileData[2]-quartileData[0];
 
       // compute the 2.5*iqr indices and values
-      var iqr25inds = iqr(2.5).call(this, d, i);
-      var iqr25data = iqr25inds.map(function(i) {return d[i];});
+      let iqr25inds = iqr(2.5).call(this, d, i);
+      let iqr25data = iqr25inds.map(function(i) {return d[i];});
 
       // Compute whiskers. Must return exactly 2 elements, or null.
-      var whiskerIndices = whiskers && whiskers.call(this, d, i),
+      let whiskerIndices = whiskers && whiskers.call(this, d, i),
           whiskerData = whiskerIndices && whiskerIndices.map(function(i) { return d[i]; });
 
       // Compute outliers. If no whiskers are specified, all data are "outliers".
       // We compute the outliers as indices, so that we can join across transitions!
-      var outlierIndices = whiskerIndices
+      let outlierIndices = whiskerIndices
           ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n))
           : d3.range(n);
 
       // Compute the new x-scale.
-      var q50 = quartileData[1];
-      var zero = Math.max(iqr25data[1]-q50,q50-iqr25data[0]); //rescales the axis to center each plot on the median
-      var diff = Math.min(max-whiskerData[1], min-whiskerData[0]);
+      let q50 = quartileData[1];
+      let zero = Math.max(iqr25data[1]-q50,q50-iqr25data[0]); //rescales the axis to center each plot on the median
+      let diff = Math.min(max-whiskerData[1], min-whiskerData[0]);
 
       x1 = d3.scaleLinear()
           .domain([q50-zero, q50, q50+zero])
@@ -122,7 +123,7 @@ d3.box = function() {
       // elements also fade in and out.
 
       // Update center line: the vertical line spanning the whiskers.
-      var center = g.selectAll("line.center")
+      let center = g.selectAll("line.center")
           .data(whiskerData ? [whiskerData] : []);
 
       center.enter().insert("line", "rect")
@@ -152,7 +153,7 @@ d3.box = function() {
           .remove();
 
       // Update innerquartile box.
-      var box = g.selectAll("rect.box")
+      let box = g.selectAll("rect.box")
           .data([quartileData]);
 
       box.enter().append("rect")
@@ -172,7 +173,7 @@ d3.box = function() {
           .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
 
       // Update median line.
-      var medianLine = g.selectAll("line.median")
+      let medianLine = g.selectAll("line.median")
           .data([quartileData[1]]);
 
       medianLine.enter().append("line")
@@ -192,7 +193,7 @@ d3.box = function() {
           .attr("y2", x1);
 
       // Update whiskers.
-      var whisker = g.selectAll("line.whisker")
+      let whisker = g.selectAll("line.whisker")
           .data(whiskerData || []);
 
       whisker.enter().insert("line", "circle, text")
@@ -224,7 +225,7 @@ d3.box = function() {
      // update datapoint circle
      if (origd.value) {
 
-         var datapoint = g.selectAll('circle.datapoint')
+         let datapoint = g.selectAll('circle.datapoint')
             .data([origd.value]);
 
         datapoint.enter().append('circle')
@@ -251,8 +252,8 @@ d3.box = function() {
 
     // update title
      if (origd.title) {
-        var title = g.selectAll('text.title')
-            .data([origd.title])
+        let title = g.selectAll('text.title')
+            .data([origd.title]);
         title.enter().append('text')
         .text(origd.title)
         .attr('x', width/2)
@@ -264,7 +265,7 @@ d3.box = function() {
      }
 
       // Update outliers.
-      var outlier = g.selectAll("circle.outlier")
+      let outlier = g.selectAll("circle.outlier")
           .data(outlierIndices, Number);
 
       outlier.enter().insert("circle", "text")
@@ -303,18 +304,18 @@ d3.box = function() {
       //     .remove();
 
       // Compute the tick format.
-      var format = tickFormat || x1.tickFormat(8);
+      let format = tickFormat || x1.tickFormat(8);
 
       // Update box ticks.
-      var boxTick = g.selectAll("text.box")
+      let boxTick = g.selectAll("text.box")
           .data(quartileData);
 
-      if (showLabels == true) {
+      if (showLabels === true) {
           boxTick.enter().append("text")
               .attr("class", "box")
               .attr("dy", ".3em")
-              .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
-              .attr("x", function(d, i) { return i & 1 ? width : 0 })
+              .attr("dx", function(d, i) { return i & 1 ? 6 : -6; })
+              .attr("x", function(d, i) { return i & 1 ? width : 0; })
               .attr("y", x0)
               .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
               .text(format)
@@ -331,7 +332,7 @@ d3.box = function() {
       // Update whisker ticks. These are handled separately from the box
       // ticks because they may or may not exist, and we want don't want
       // to join box ticks pre-transition with whisker ticks post-.
-      var whiskerTick = g.selectAll("text.whisker")
+      let whiskerTick = g.selectAll("text.whisker")
           .data(whiskerData || []);
 
       whiskerTick.enter().append("text")
@@ -404,7 +405,7 @@ box.x0 = function(x) {
 
   box.domain = function(x) {
     if (!arguments.length) return domain;
-    domain = x == null ? x : d3.functor(x);
+    domain = x === null ? x : d3.functor(x);
     return box;
   };
 

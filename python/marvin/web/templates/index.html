@@ -25,7 +25,7 @@
                             <li>
                                 <a class="btn btn-default btn-lg" onclick='m.utils.scrollTo("#about")'><i class="fa fa-info fa-fw" aria-hidden="true"></i> <span class="network-name">About</span></a>
                             </li>
-                            <li>
+                            <li id='image_link'>
                                 <a href="{{url_for('images_page.Random:index')}}" class="btn btn-default btn-lg"><i class="fa fa-camera-retro fa-fw" aria-hidden="true"></i> <span class="network-name">Image Roulette</span></a>
                             </li>
                             <li>
@@ -170,7 +170,7 @@
 
 <!-- JS Code -->
 {% block code %}
-<script type='text/javascript'>
+<script type='application/javascript'>
     $(function() {
         m.header.initTypeahead('#mainform .typeahead', '#mainform');
     });
