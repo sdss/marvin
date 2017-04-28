@@ -189,7 +189,8 @@ class ParamFormLookupDict(dict):
     def _init_name_shortcuts(self):
         ''' initialize the name shortcuts '''
         self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
-                               'g_r': 'elpetro_mag_g_r'}
+                               'g_r': 'elpetro_mag_g_r',
+                               'abs_g_r': 'elpetro_absmag_g_r'}
 
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''
