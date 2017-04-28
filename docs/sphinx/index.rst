@@ -31,71 +31,46 @@ developed and maintained by the MaNGA team.  Check out the
 If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
-|
-
 :doc:`whats-new`
 ^^^^^^^^^^^^^^^^
-
-:doc:`known-issues`
-^^^^^^^^^^^^^^^^^^^
 
 `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|
+:doc:`known-issues`
+^^^^^^^^^^^^^^^^^^^
 
-Marvin Primer
-=============
+Marvin at a Glance
+==================
 
-.. toctree::
-   :titlesonly:
+* :doc:`overview`
+* :doc:`installation`
+* :doc:`faq`
+* :doc:`getting-started`
+* :doc:`tutorials`
 
-   overview
-   installation
-   first-steps
-   general
-   Frequently Asked Questions <faq>
-   tools/visual-guide
-
-|
-
-:doc:`tools`
-============
-
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-
-   query
-   results
-   tools/cube
-   tools/bpt
-   tools/modelcube
-   tools/maps
-   images
-
-
-:doc:`api`
+Components
 ==========
 
+* :doc:`core`
 
-:doc:`web`
-==========
+  * :ref:`marvin-config-info`
+  * :ref:`marvin-dma`
+  * :ref:`marvin-download-objects`
 
-|
+* :doc:`tools`
 
-Tutorials
-=========
+  * :ref:`marvin-query`
+  * :ref:`marvin-results`
+  * :ref:`marvin-cube`
+  * :ref:`marvin-bpt`
+  * :ref:`marvin-modelcube`
+  * :ref:`marvin-maps`
+  * :ref:`marvin-images`
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
+* :doc:`api`
 
-   Example Queries <tutorials/query-examples>
-   tutorials/query-practice
-   tutorials/boolean-search-tutorial
-   tutorials/jupyter-notebooks
-|
+* :doc:`web`
 
 General Reference
 =================
@@ -104,11 +79,8 @@ General Reference
    :titlesonly:
    :maxdepth: 1
 
-   data-access-modes
    Available Query Parameters <query-params>
    tools/visual-guide
-
-|
 
 Documentation
 =============
