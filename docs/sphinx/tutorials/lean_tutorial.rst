@@ -33,7 +33,7 @@ Create the query and run it (limit to only 3 results for demo purposes):
 
 **Tip** see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
 
-View the :doc:`results`:
+View the :ref:`marvin-results`:
 
 .. ipython:: python
 
@@ -71,7 +71,7 @@ Get the Halpha maps:
 Plot Halpha map of the second galaxy:
 
 .. ipython:: python
-    
+
     import matplotlib.pyplot as plt
     haflux_map = haflux_maps[1]
     fig, ax = haflux_map.plot()

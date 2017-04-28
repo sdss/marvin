@@ -15,10 +15,10 @@ This is the default mode for Marvin.  It is recommended to leave Marvin in this 
 Local Mode
 ----------
 
-In Local mode, :doc:`marvin_tools` will access data stored locally on your
+In Local mode, :ref:`marvin-tools` will access data stored locally on your
 machine. If you specify a file name, then it will open that file. Alternatively,
 you can provide a MaNGA-ID or a plate-IFU identifier. Marvin will check to see
-if you have a database (e.g., running :doc:`marvin_tools` at Utah) and use that
+if you have a database (e.g., running :ref:`marvin-tools` at Utah) and use that
 if possible. More likely, you will not have access to the database, so it will
 look for a FITS file. If neither of those options is successful, then it will
 download the requested data if automatic downloading is enabled.
@@ -48,8 +48,8 @@ Local SAS
 Remote Mode
 -----------
 
-In Remote mode, :doc:`marvin_tools` will retrieve the data remotely via the
-:doc:`api`.  When dealing with Marvin Tools like Cubes or Spaxels, if a MaNGA-ID or a plate-IFU identifier
+In Remote mode, :ref:`marvin-tools` will retrieve the data remotely via the
+:ref:`marvin-api`.  When dealing with Marvin Tools like Cubes or Spaxels, if a MaNGA-ID or a plate-IFU identifier
 is provided, a remote API call is made to Marvin running at Utah, where it retrieves the data requested
 and returns it as a JSON object.  Once the data has been acquired, the Marvin Tool object you are dealing with
 will work as if you had the data locally.
