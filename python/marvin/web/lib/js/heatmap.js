@@ -49,12 +49,10 @@ var HeatMap = function () {
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 

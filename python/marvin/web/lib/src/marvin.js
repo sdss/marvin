@@ -44,12 +44,11 @@ class Marvin {
     // check the browser for banner display
     checkBrowser(event) {
         var _this = event.data;
-        if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+        if (!!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/)) {
             m.utils.marvinBanner(
                 'We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.',
-                1, 'safari_banner', 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser');
+                1, 'safari_banner', 'http://sdss-marvin.readthedocs.io/en/latest/known-issues.html#known-browser');
         }
 
     }
 }
-
