@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-09 16:52:45
+* @Last Modified time: 2017-04-02 19:54:07
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -46,10 +47,11 @@ var Table = function () {
         key: 'initTable',
         value: function initTable(url, data) {
             this.url = url;
+            var cols = void 0;
 
             // if data
             if (data.columns !== null) {
-                var cols = this.makeColumns(data.columns);
+                cols = this.makeColumns(data.columns);
             }
 
             // init the Bootstrap table
@@ -85,9 +87,9 @@ var Table = function () {
             var cols = [];
             columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
                 cols.push(colmap);
             });
             return cols;
@@ -99,20 +101,18 @@ var Table = function () {
         key: 'handleResponse',
         value: function handleResponse(results) {
             // load the bootstrap table div
-            //console.log(this.table, this.table===null, this);
             if (this.table === null) {
                 this.setTable();
             }
             this.table = $('#table');
-            //console.log('after', this.table, this.table===null, $('#table'));
             // Get new columns
             var cols = results.columns;
-            var cols = [];
+            cols = [];
             results.columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
                 cols.push(colmap);
             });
 

@@ -6,8 +6,8 @@
     or have questions that should be addressed here, please
     `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
 
-Frequently Asked Questions and known issues
--------------------------------------------
+Frequently Asked Questions
+--------------------------
 
 How do I update marvin?
 ^^^^^^^^^^^^^^^^^^^^^^^

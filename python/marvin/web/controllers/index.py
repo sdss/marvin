@@ -36,6 +36,9 @@ class Marvin(BaseWebView):
     def quote(self):
         return 'getting quote'
 
+    def status(self):
+        return 'OK'
+
     @route('/test/')
     def test(self):
         return 'new test'

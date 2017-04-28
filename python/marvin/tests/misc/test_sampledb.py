@@ -13,47 +13,42 @@ from __future__ import absolute_import
 import marvin
 import marvin.tests
 
+import pytest
 
-class TestSampleDB(marvin.tests.MarvinTest):
+
+class TestSampleDB(object):
     """A series of tests for the SampleModelClasses."""
 
-    def setUp(self):
-        self.set_sasurl('local')
-        self.session = marvin.marvindb.session
-        self.sampledb = marvin.marvindb.sampledb
+    @classmethod
+    def setup_class(cls):
+        marvin.config.switchSasUrl('local')
+        cls.session = marvin.marvindb.session
+        cls.sampledb = marvin.marvindb.sampledb
+        cls.nsa_target = cls.session.query(
+            cls.sampledb.NSA).join(cls.sampledb.MangaTargetToNSA,
+                                   cls.sampledb.MangaTarget).filter(
+                cls.sampledb.MangaTarget.mangaid == '1-209232').one()
 
-    def tearDown(self):
-        pass
+    @pytest.mark.parametrize('band,expected', [('u', 18.69765903),
+                                               ('g', 17.45450578),
+                                               ('r', 16.80842176),
+                                               ('i', 16.43652498),
+                                               ('z', 16.20534984)])
+    def test_elpetro_mag(self, band, expected):
 
-    def test_elpetro_mag(self):
+        assert pytest.approx(getattr(self.nsa_target, 'elpetro_mag_{0}'.format(band)), expected)
 
-        expected = [18.69765903, 17.45450578, 16.80842176, 16.43652498, 16.20534984]
+    @pytest.mark.parametrize('bands,expected', [(('u', 'g'), 1.24315324),
+                                                (('g', 'r'), 0.64608403),
+                                                (('r', 'i'), 0.37189678),
+                                                (('i', 'z'), 0.23117514)])
+    def test_elpetro_colour(self, bands, expected):
 
-        nsa_target = self.session.query(
-            self.sampledb.NSA).join(self.sampledb.MangaTargetToNSA,
-                                    self.sampledb.MangaTarget).filter(
-                self.sampledb.MangaTarget.mangaid == '1-209232').one()
-
-        for ii, band in enumerate(['u', 'g', 'r', 'i', 'z']):
-            self.assertAlmostEqual(
-                getattr(nsa_target, 'elpetro_mag_{0}'.format(band)), expected[ii])
-
-    def test_elpetro_colour(self):
-
-        expected = [1.24315324, 0.64608403, 0.37189678, 0.23117514]
-        colours = [('u', 'g'), ('g', 'r'), ('r', 'i'), ('i', 'z')]
-
-        nsa_target = self.session.query(
-            self.sampledb.NSA).join(self.sampledb.MangaTargetToNSA,
-                                    self.sampledb.MangaTarget).filter(
-                self.sampledb.MangaTarget.mangaid == '1-209232').one()
-
-        for ii, bands in enumerate(colours):
-            bandA, bandB = bands
-            self.assertAlmostEqual(nsa_target.elpetro_colour(bandA, bandB), expected[ii])
-            self.assertAlmostEqual(getattr(nsa_target,
-                                           'elpetro_mag_{0}_{1}'.format(bandA, bandB)),
-                                   expected[ii])
+        bandA, bandB = bands
+        assert pytest.approx(self.nsa_target.elpetro_colour(bandA, bandB), expected)
+        elpetro_mag_colour = getattr(self.nsa_target,
+                                     'elpetro_mag_{0}_{1}'.format(bandA, bandB))
+        assert pytest.approx(elpetro_mag_colour, expected)
 
     def test_query_elpetro_mag(self):
 
@@ -61,4 +56,16 @@ class TestSampleDB(marvin.tests.MarvinTest):
             self.sampledb.MangaTargetToNSA, self.sampledb.MangaTarget).filter(
                 self.sampledb.MangaTarget.mangaid == '1-209232').first()
 
-        self.assertAlmostEqual(elpetro_mag_g[0], 17.454505782813705)
+        assert pytest.approx(elpetro_mag_g[0], 17.454505782813705)
+
+    @pytest.mark.parametrize('bands,expected', [(('u', 'g'), 1.1655902862549006),
+                                                (('g', 'r'), 0.5961246490479013),
+                                                (('r', 'i'), 0.3375816345214986),
+                                                (('i', 'z'), 0.20068740844720168)])
+    def test_elpetro_absmag_colour(self, bands, expected):
+
+        bandA, bandB = bands
+        assert pytest.approx(self.nsa_target.elpetro_absmag_colour(bandA, bandB), expected)
+        elpetro_absmag_colour = getattr(self.nsa_target,
+                                        'elpetro_absmag_{0}_{1}'.format(bandA, bandB))
+        assert pytest.approx(elpetro_absmag_colour, expected)

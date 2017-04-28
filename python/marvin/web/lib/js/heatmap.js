@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-02-18 12:44:32
+* @Last Modified time: 2017-04-01 13:07:31
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -34,20 +35,20 @@ var HeatMap = function () {
         }
     }
 
+    // test print
+
+
     _createClass(HeatMap, [{
         key: 'print',
-
-
-        // test print
         value: function print() {
             console.log('We are now printing heatmap for ', this.title);
         }
-    }, {
-        key: 'parseTitle',
-
 
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
+
+    }, {
+        key: 'parseTitle',
         value: function parseTitle() {
             var _title$split = this.title.split(':');
 
@@ -70,9 +71,9 @@ var HeatMap = function () {
     }, {
         key: 'getRange',
         value: function getRange() {
-            var xylength = this.data['values'].length;
+            var xylength = this.data.values.length;
             var xyrange = Array.apply(null, { length: xylength }).map(Number.call, Number);
-            var zrange = [].concat.apply([], this.data['values']);
+            var zrange = [].concat.apply([], this.data.values);
             return [xyrange, zrange];
         }
 
@@ -110,6 +111,10 @@ var HeatMap = function () {
             for (var ii = 0; ii < values.length; ii++) {
                 for (var jj = 0; jj < values.length; jj++) {
                     var val = values[ii][jj];
+                    var noData = void 0,
+                        badData = void 0;
+                    var signalToNoise = void 0,
+                        signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
                         var noValue = mask[ii][jj] && Math.pow(2, 0);
@@ -117,17 +122,17 @@ var HeatMap = function () {
                         var mathError = mask[ii][jj] && Math.pow(2, 6);
                         var badFit = mask[ii][jj] && Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                        var noData = noValue;
-                        var badData = badValue || mathError || badFit || doNotUse;
+                        //let noData = (noValue || badValue || mathError || badFit || doNotUse);
+                        noData = noValue;
+                        badData = badValue || mathError || badFit || doNotUse;
                     } else {
-                        noData == null;
-                        badData == null;
+                        noData = null;
+                        badData = null;
                     }
 
                     if (ivar !== null) {
-                        var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        var signalToNoiseThreshold = 1.;
+                        signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
+                        signalToNoiseThreshold = 1.0;
                     }
 
                     // value types
@@ -153,11 +158,11 @@ var HeatMap = function () {
                             // set zero values to no-data
                             val = 'no-data';
                         }
-                    };
+                    }
                     // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
                     xyz.push([jj, ii, val]);
-                };
-            };
+                }
+            }
             return xyz;
         }
     }, {
@@ -191,7 +196,7 @@ var HeatMap = function () {
                 return RdBuHex;
             } else {
                 return ["#000000", "#FFFFFF"];
-            };
+            }
         }
     }, {
         key: 'setColorStops',
@@ -201,13 +206,16 @@ var HeatMap = function () {
             var colormap = new Array(stopLocations);
             for (var ii = 0; ii < stopLocations; ii++) {
                 colormap[ii] = [ii / (stopLocations - 1), colorHex[ii]];
-            };
+            }
             return colormap;
         }
     }, {
         key: 'quantileClip',
         value: function quantileClip(range) {
-            var quantLow, quantHigh, zQuantLow, zQuantHigh;
+            var quantLow = void 0,
+                quantHigh = void 0,
+                zQuantLow = void 0,
+                zQuantHigh = void 0;
 
             var _getMinMax = this.getMinMax(range);
 
@@ -222,7 +230,7 @@ var HeatMap = function () {
             } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
                 quantLow = 5;
                 quantHigh = 95;
-            };
+            }
 
             if (range.length > 0) {
                 if (quantLow > 0) {
@@ -244,8 +252,9 @@ var HeatMap = function () {
             var _galthis = this.galthis;
 
             // get the ranges
-            //var range  = this.getXRange();
-            var xyrange, zrange;
+            //let range  = this.getXRange();
+            var xyrange = void 0,
+                zrange = void 0;
 
             // get the min and max of the ranges
             var _getRange = this.getRange();
@@ -254,7 +263,10 @@ var HeatMap = function () {
 
             xyrange = _getRange2[0];
             zrange = _getRange2[1];
-            var xymin, xymax, zmin, zmax;
+            var xymin = void 0,
+                xymax = void 0,
+                zmin = void 0,
+                zmax = void 0;
 
             var _getMinMax3 = this.getMinMax(xyrange);
 
@@ -285,17 +297,18 @@ var HeatMap = function () {
             zmax = _quantileClip2[1];
 
 
+            var cmap = void 0;
             if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                var cmap = "RdBu";
+                cmap = "RdBu";
                 // make velocity maps symmetric
                 var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
                 zmin = -zabsmax;
                 zmax = zabsmax;
             } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-                var cmap = "inferno";
+                cmap = "inferno";
             } else {
-                var cmap = "linearLab";
-            };
+                cmap = "linearLab";
+            }
 
             var cstops = this.setColorStops(cmap);
 

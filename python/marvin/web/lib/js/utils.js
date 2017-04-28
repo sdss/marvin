@@ -2,11 +2,11 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:54:41
+* @Last Modified time: 2017-04-09 09:00:18
 */
 
 // Javascript code for general things
-
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -86,56 +86,55 @@ var Utils = function () {
         value: function initInfoPopOvers() {
             $('.infopop [data-toggle="popover"]').popover();
         }
-    }, {
-        key: 'initToolTips',
-
 
         // Initialize tooltips
+
+    }, {
+        key: 'initToolTips',
         value: function initToolTips() {
             $('[data-toggle="tooltip"]').tooltip();
         }
-    }, {
-        key: 'login',
-
 
         // Login function
-        value: function login() {
-            var form = $('#loginform').serialize();
-            var _this = this;
 
-            $.post(Flask.url_for('index_page.login'), form, 'json').done(function (data) {
+    }, {
+        key: 'login',
+        value: function login() {
+            var _this2 = this;
+
+            var form = $('#loginform').serialize();
+            Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json')).then(function (data) {
                 if (data.result.status < 0) {
-                    // bad submit
-                    _this.resetLogin();
-                } else {
-                    // good submit
-                    if (data.result.message !== '') {
-                        var stat = data.result.status === 0 ? 'danger' : 'success';
-                        var htmlstr = "<div class='alert alert-" + stat + "' role='alert'><h4>" + data.result.message + "</h4></div>";
-                        $('#loginmessage').html(htmlstr);
-                    }
-                    if (data.result.status === 1) {
-                        location.reload(true);
-                    }
+                    throw new Error('Bad status login');
                 }
-            }).fail(function (data) {
+                if (data.result.message !== '') {
+                    var stat = data.result.status === 0 ? 'danger' : 'success';
+                    var htmlstr = '<div class=\'alert alert-' + stat + '\' role=\'alert\'><h4>' + data.result.message + '</h4></div>';
+                    $('#loginmessage').html(htmlstr);
+                }
+                if (data.result.status === 1) {
+                    location.reload(true);
+                }
+            }).catch(function (error) {
+                _this2.resetLogin();
                 alert('Bad login attempt');
             });
         }
-    }, {
-        key: 'resetLogin',
-
 
         // Reset Login
+
+    }, {
+        key: 'resetLogin',
         value: function resetLogin() {
+            console.log('reset');
             $('#loginform').trigger('reset');
             $('#loginmessage').empty();
         }
-    }, {
-        key: 'submitLogin',
-
 
         // Submit Login on Keyups
+
+    }, {
+        key: 'submitLogin',
         value: function submitLogin(event) {
             var _this = event.data;
             // login
@@ -145,20 +144,20 @@ var Utils = function () {
                 }
             }
         }
-    }, {
-        key: 'marvinBanner',
-
 
         // Shows a banner
+
+    }, {
+        key: 'marvinBanner',
         value: function marvinBanner(text, expiryDays, cookieName, url, urlText) {
 
             var _this = this;
-            var expiryDays = expiryDays === undefined ? 0 : expiryDays;
-            var cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
-            var url = url === undefined ? "" : url;
-            var urlText = urlText === undefined ? "Learn more" : urlText;
+            expiryDays = expiryDays === undefined ? 0 : expiryDays;
+            cookieName = cookieName === undefined ? "marvin_banner_cookie" : cookieName;
+            url = url === undefined ? "" : url;
+            urlText = urlText === undefined ? "Learn more" : urlText;
 
-            if (urlText == "" || url == "") {
+            if (urlText === "" || url === "") {
                 urlText = "";
                 url = "";
             }
@@ -184,9 +183,9 @@ var Utils = function () {
                     "link": urlText }
             });
 
-            if (expiryDays == 0) {
+            if (expiryDays === 0) {
                 document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
-            };
+            }
         }
     }]);
 

@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:05:15
+* @Last Modified time: 2017-04-01 01:18:52
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -72,7 +73,7 @@ var BoxWhisker = function () {
     }, {
         key: 'iqr',
         value: function iqr(k) {
-            return function (d, i) {
+            return function (d, index) {
                 var q1 = d.quartiles[0],
                     q3 = d.quartiles[2],
                     iqr = (q3 - q1) * k,
@@ -91,7 +92,7 @@ var BoxWhisker = function () {
         value: function initBoxplot() {
 
             // // Define the div for the tooltip
-            // var tooltip = d3.select(this.tooltip).append("div")
+            // let tooltip = d3.select(this.tooltip).append("div")
             //     .attr("class", "tooltip")
             //     .style("opacity", 0);
 

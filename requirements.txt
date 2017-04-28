@@ -1,4 +1,5 @@
 # Tools
+ipython>=5.0.0
 numpy>=1.11.2
 scipy>=0.18.1
 astropy>=1.2.1

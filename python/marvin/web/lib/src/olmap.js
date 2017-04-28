@@ -1,14 +1,14 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 17:38:25
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-26 18:12:18
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-04-01 01:43:36
 */
 
 //
 // Javascript object handling all things related to OpenLayers Map
 //
-
+//jshint esversion: 6
 'use strict';
 
 class OLMap {
@@ -28,12 +28,12 @@ class OLMap {
             this.addDrawInteraction();
         }
 
-    };
+    }
 
     // test print
     print() {
         console.log('We are now printing openlayers map');
-    };
+    }
 
     // Get the natural size of the input static image
     getImageSize() {
@@ -41,11 +41,11 @@ class OLMap {
             this.imwidth = this.staticimdiv.naturalWidth;
             this.imheight = this.staticimdiv.naturalHeight;
         }
-    };
+    }
 
     // Set the mouse position control
     setMouseControl() {
-        var mousePositionControl = new ol.control.MousePosition({
+        let mousePositionControl = new ol.control.MousePosition({
             coordinateFormat: ol.coordinate.createStringXY(4),
             projection: 'EPSG:4326',
             // comment the following two lines to have the mouse position be placed within the map.
@@ -54,7 +54,7 @@ class OLMap {
             undefinedHTML: '&nbsp;'
         });
         return mousePositionControl;
-    };
+    }
 
     // Set the image Projection
     setProjection() {
@@ -64,19 +64,19 @@ class OLMap {
         units: 'pixels',
         extent: this.extent
       });
-    };
+    }
 
     // Set the base image Layer
     setBaseImageLayer() {
-        var imagelayer = new ol.layer.Image({
+        let imagelayer = new ol.layer.Image({
             source: new ol.source.ImageStatic({
                 url: this.image,
                 projection: this.projection,
                 imageExtent: this.extent
                 })
-        })
+        });
         return imagelayer;
-    };
+    }
 
     // Set the image View
     setView() {
@@ -86,13 +86,13 @@ class OLMap {
             zoom: 1,
             maxZoom: 8,
             maxResolution: 1.4
-        })
-    };
+        });
+    }
 
     // Initialize the Map
     initMap() {
-        var mousePositionControl = this.setMouseControl();
-        var baseimage = this.setBaseImageLayer();
+        let mousePositionControl = this.setMouseControl();
+        let baseimage = this.setBaseImageLayer();
         this.map = new ol.Map({
             controls: ol.control.defaults({
             attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -103,21 +103,21 @@ class OLMap {
             target: this.mapdiv,
             view: this.view
         });
-    };
+    }
 
     // Add a Draw Interaction
     addDrawInteraction() {
         // set up variable for last saved feature & vector source for point
-        var lastFeature;
-        var drawsource = new ol.source.Vector({wrapX: false});
+        let lastFeature;
+        let drawsource = new ol.source.Vector({wrapX: false});
         // create new point vectorLayer
-        var pointVector = this.newVectorLayer(drawsource);
+        let pointVector = this.newVectorLayer(drawsource);
         // add the layer to the map
         this.map.addLayer(pointVector);
 
         // New draw event ; default to Point
-        var value = 'Point';
-        var geometryFunction, maxPoints;
+        let value = 'Point';
+        let geometryFunction, maxPoints;
         this.draw = new ol.interaction.Draw({
           source: drawsource,
           type: /** @type {ol.geom.GeometryType} */ (value),
@@ -126,7 +126,7 @@ class OLMap {
         });
 
         // On draw end, remove the last saved feature (point)
-        this.draw.on('drawend', function(e) {
+        this.draw.on('drawend', (e)=>{
           if (lastFeature) {
             drawsource.removeFeature(lastFeature);
           }
@@ -136,12 +136,12 @@ class OLMap {
         // add draw interaction onto the map
         this.map.addInteraction(this.draw);
 
-    };
+    }
 
     // New Vector Layer
     newVectorLayer(source) {
         // default set to Point, but eventually expand this to different vector layer types
-        var vector = new ol.layer.Vector({
+        let vector = new ol.layer.Vector({
             source: source,
             style: new ol.style.Style({
                 fill: new ol.style.Fill({
@@ -160,7 +160,7 @@ class OLMap {
             })
         });
         return vector;
-    };
+    }
 
 }
 

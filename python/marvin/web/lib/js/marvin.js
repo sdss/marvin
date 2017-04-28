@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:46:11
+* @Last Modified time: 2017-04-28 10:24:41
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -57,8 +58,8 @@ var Marvin = function () {
         key: 'checkBrowser',
         value: function checkBrowser(event) {
             var _this = event.data;
-            if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
-                m.utils.marvinBanner('We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.', 1, 'safari_banner', 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser');
+            if (!!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/)) {
+                m.utils.marvinBanner('We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.', 1, 'safari_banner', 'http://sdss-marvin.readthedocs.io/en/latest/known-issues.html#known-browser');
             }
         }
     }]);

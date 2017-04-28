@@ -207,6 +207,26 @@ class TestCube(object):
         assert cube.data_origin == 'api'
         assert cube.nsa is None
 
+    def test_load_filename_does_not_exist(self):
+        """Tries to load a file that does not exists, in auto mode."""
+
+        config.mode = 'auto'
+
+        with self.assertRaises(MarvinError) as ee:
+            Cube(filename='hola.fits')
+
+        self.assertIsNotNone(re.match(r'input file .+hola.fits not found', str(ee.exception)))
+
+    def test_load_filename_remote(self):
+        """Tries to load a filename in remote mode and fails."""
+
+        config.mode = 'remote'
+
+        with self.assertRaises(MarvinError) as ee:
+            Cube(filename='hola.fits')
+
+        self.assertIn('filename not allowed in remote mode', str(ee.exception))
+
 
 class TestGetSpaxel(object):
 

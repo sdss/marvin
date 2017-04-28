@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 11:24:07
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:46:11
+* @Last Modified time: 2017-04-28 10:24:41
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Marvin {
@@ -43,13 +44,12 @@ class Marvin {
 
     // check the browser for banner display
     checkBrowser(event) {
-        var _this = event.data;
-        if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+        const _this = event.data;
+        if (!!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/)) {
             m.utils.marvinBanner(
                 'We have detected that you are using Safari. Some features may not work as expected. We recommend using Chrome or Firefox.',
-                1, 'safari_banner', 'https://api.sdss.org/doc/manga/marvin/known_issues.html#known-browser');
+                1, 'safari_banner', 'http://sdss-marvin.readthedocs.io/en/latest/known-issues.html#known-browser');
         }
 
     }
 }
-

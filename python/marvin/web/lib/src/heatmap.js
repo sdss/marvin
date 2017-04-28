@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-02-18 12:44:32
+* @Last Modified time: 2017-04-01 13:07:31
 */
 
+//jshint esversion: 6
 'use strict';
 
 class HeatMap {
@@ -25,25 +26,25 @@ class HeatMap {
             this.setColorNoData(this, Highcharts);
         }
 
-    };
+    }
 
     // test print
     print() {
         console.log('We are now printing heatmap for ', this.title);
-    };
+    }
 
     // Parse the heatmap title into category, parameter, channel
     // e.g. 7443-1901: emline_gflux_ha-6564
     parseTitle() {
-        var [plateifu, newtitle] = this.title.split(':');
+        let [plateifu, newtitle] = this.title.split(':');
         [this.category, this.parameter, this.channel] = newtitle.split('_');
     }
 
     // Get range of x (or y) data and z (DAP property) data
     getRange(){
-        var xylength  = this.data['values'].length;
-        var xyrange = Array.apply(null, {length: xylength}).map(Number.call, Number);
-        var zrange = [].concat.apply([], this.data['values']);
+        let xylength  = this.data.values.length;
+        let xyrange = Array.apply(null, {length: xylength}).map(Number.call, Number);
+        let zrange = [].concat.apply([], this.data.values);
         return [xyrange, zrange];
     }
 
@@ -59,39 +60,41 @@ class HeatMap {
     // return the min and max of a range
     getMinMax(range) {
         // var range = (range === undefined) ? this.getRange() : range;
-        var min = Math.min.apply(null, range);
-        var max = Math.max.apply(null, range);
+        let min = Math.min.apply(null, range);
+        let max = Math.max.apply(null, range);
         return [min, max];
     }
 
     setNull(x) {
-        var values = x.values;
-        var ivar = x.ivar;
-        var mask = x.mask;
+        let values = x.values;
+        let ivar = x.ivar;
+        let mask = x.mask;
 
-        var xyz = Array();
+        let xyz = Array();
 
-        for (var ii=0; ii < values.length; ii++) {
-            for (var jj=0; jj < values.length; jj++){
-                var val = values[ii][jj];
+        for (let ii=0; ii < values.length; ii++) {
+            for (let jj=0; jj < values.length; jj++){
+                let val = values[ii][jj];
+                let noData, badData;
+                let signalToNoise, signalToNoiseThreshold;
 
                 if (mask !== null) {
-                    var noValue = (mask[ii][jj] && Math.pow(2, 0));
-                    var badValue = (mask[ii][jj] && Math.pow(2, 5));
-                    var mathError = (mask[ii][jj] && Math.pow(2, 6));
-                    var badFit = (mask[ii][jj] && Math.pow(2, 7));
-                    var doNotUse = (mask[ii][jj] && Math.pow(2, 30));
-                    //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                    var noData = noValue;
-                    var badData = (badValue || mathError || badFit || doNotUse);
+                    let noValue = (mask[ii][jj] && Math.pow(2, 0));
+                    let badValue = (mask[ii][jj] && Math.pow(2, 5));
+                    let mathError = (mask[ii][jj] && Math.pow(2, 6));
+                    let badFit = (mask[ii][jj] && Math.pow(2, 7));
+                    let doNotUse = (mask[ii][jj] && Math.pow(2, 30));
+                    //let noData = (noValue || badValue || mathError || badFit || doNotUse);
+                    noData = noValue;
+                    badData = (badValue || mathError || badFit || doNotUse);
                 } else {
-                    noData == null;
-                    badData == null;
+                    noData = null;
+                    badData = null;
                 }
 
                 if (ivar !== null) {
-                    var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                    var signalToNoiseThreshold = 1.;
+                    signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
+                    signalToNoiseThreshold = 1.0;
                 }
 
                 // value types
@@ -117,11 +120,11 @@ class HeatMap {
                         // set zero values to no-data
                         val = 'no-data';
                     }
-                };
+                }
                 // need to push as jj, ii since the numpy 2-d arrays are y, x based (row, col)
                 xyz.push([jj, ii, val]);
-            };
-        };
+            }
+        }
         return xyz;
     }
 
@@ -142,7 +145,7 @@ class HeatMap {
 
     setColorMapHex(cmap){
 
-        var linearLabHex = ['#040404', '#0a0308', '#0d040b', '#10050e', '#120510', '#150612',
+        let linearLabHex = ['#040404', '#0a0308', '#0d040b', '#10050e', '#120510', '#150612',
         '#160713', '#180815', '#1a0816', '#1b0918', '#1c0a19', '#1e0b1a', '#1f0c1b', '#200c1c',
         '#210d1d', '#230e1f', '#240e20', '#250f20', '#260f21', '#271022', '#281123', '#291124',
         '#2a1226', '#2b1326', '#2c1327', '#2e1429', '#2e142d', '#2e1532', '#2d1537', '#2d153c',
@@ -176,7 +179,7 @@ class HeatMap {
         '#f8f4f1', '#f8f6f4', '#f8f7f6', '#f8f8f8', '#f9f9f9', '#fbfbfb', '#fcfcfc', '#fdfdfd',
         '#fefefe', '#ffffff'];
 
-        var infernoHex = ['#000004', '#010005',  '#010106',  '#010108',  '#02010a',  '#02020c',
+        let infernoHex = ['#000004', '#010005',  '#010106',  '#010108',  '#02010a',  '#02020c',
         '#02020e',  '#030210',  '#040312',  '#040314',  '#050417',  '#060419',  '#07051b',
         '#08051d',  '#09061f',  '#0a0722',  '#0b0724',  '#0c0826',  '#0d0829',  '#0e092b',
         '#10092d',  '#110a30',  '#120a32',  '#140b34',  '#150b37',  '#160b39',  '#180c3c',
@@ -214,7 +217,7 @@ class HeatMap {
         '#f1f179',  '#f2f27d',  '#f2f482',  '#f3f586',  '#f3f68a',  '#f4f88e',  '#f5f992',
         '#f6fa96',  '#f8fb9a',  '#f9fc9d',  '#fafda1',  '#fcffa4'];
 
-        var RdBuHex = ['#053061', '#063264', '#073467', '#08366a', '#09386d', '#0a3b70',
+        let RdBuHex = ['#053061', '#063264', '#073467', '#08366a', '#09386d', '#0a3b70',
         '#0c3d73', '#0d3f76', '#0e4179', '#0f437b', '#10457e', '#114781', '#124984', '#134c87',
         '#144e8a', '#15508d', '#175290', '#185493', '#195696', '#1a5899', '#1b5a9c', '#1c5c9f',
         '#1d5fa2', '#1e61a5', '#1f63a8', '#2065ab', '#2267ac', '#2369ad', '#246aae', '#266caf',
@@ -256,28 +259,28 @@ class HeatMap {
             return RdBuHex;
         } else {
             return ["#000000", "#FFFFFF"];
-        };
+        }
     }
 
     setColorStops(cmap){
-        var colorHex = this.setColorMapHex(cmap);
-        var stopLocations = colorHex.length;
-        var colormap = new Array(stopLocations);
-        for (var ii = 0; ii < stopLocations; ii++) {
+        let colorHex = this.setColorMapHex(cmap);
+        let stopLocations = colorHex.length;
+        let colormap = new Array(stopLocations);
+        for (let ii = 0; ii < stopLocations; ii++) {
             colormap[ii] = [ii / (stopLocations - 1), colorHex[ii]];
-        };
+        }
         return colormap;
     }
 
     quantileClip(range){
-        var quantLow, quantHigh, zQuantLow, zQuantHigh;
+        let quantLow, quantHigh, zQuantLow, zQuantHigh;
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
         if (this.title.toLowerCase().indexOf("vel") >= 0 ||
             this.title.toLowerCase().indexOf("sigma") >= 0) {
             [quantLow, quantHigh] = [10, 90];
         } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
             [quantLow, quantHigh] = [5, 95];
-        };
+        }
 
         if (range.length > 0) {
             if (quantLow > 0) {
@@ -287,44 +290,44 @@ class HeatMap {
                 zQuantHigh = math.quantileSeq(range, quantHigh / 100);
             }
         }
-        return [zQuantLow, zQuantHigh]
+        return [zQuantLow, zQuantHigh];
     }
 
     // initialize the heat map
     initMap() {
         // set the galaxy class self to a variable
-        var _galthis = this.galthis;
+        let _galthis = this.galthis;
 
         // get the ranges
-        //var range  = this.getXRange();
-        var xyrange, zrange;
+        //let range  = this.getXRange();
+        let xyrange, zrange;
         [xyrange, zrange]  = this.getRange();
 
         // get the min and max of the ranges
-        var xymin, xymax, zmin, zmax;
+        let xymin, xymax, zmin, zmax;
         [xymin, xymax] = this.getMinMax(xyrange);
         [zmin, zmax] = this.getMinMax(zrange);
 
         // set null data and create new zrange, min, and max
-        var data = this.setNull(this.data);
-        zrange = data.map(function(o){return o[2];});
+        let data = this.setNull(this.data);
+        zrange = data.map((o)=>{ return o[2]; });
         zrange = zrange.filter(this.filterRange);
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
 
-
+        let cmap;
         if (this.title.toLowerCase().indexOf("vel") >= 0) {
-            var cmap = "RdBu";
+            cmap = "RdBu";
             // make velocity maps symmetric
-            var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
+            let zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
             [zmin, zmax] = [-zabsmax, zabsmax];
         } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-            var cmap = "inferno";
+            cmap = "inferno";
         } else {
-            var cmap = "linearLab";
-        };
+            cmap = "linearLab";
+        }
 
-        var cstops = this.setColorStops(cmap);
+        let cstops = this.setColorStops(cmap);
 
         // make the highcharts
         this.mapdiv.highcharts({
@@ -407,18 +410,14 @@ class HeatMap {
                 title: {text: this.parameter},
             },
             tooltip: {
-                formatter: function () {
-                    return '<br>('+this.point.x+', '+this.point.y+'): <b>'+this.point.value+'</b><br>';
-                }
+                formatter: function () { return '<br>('+this.point.x+', '+this.point.y+'): <b>'+this.point.value+'</b><br>'; }
             },
             series:[{
                 type: "heatmap",
                 data: data,
                 dataLabels: {enabled: false},
                 events: {
-                    click: function (event) {
-                        _galthis.getSpaxel(event);
-                    }
+                    click: function (event) { _galthis.getSpaxel(event); }
                 }
             }]
         });

@@ -6,13 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-22 10:40:26
+# @Last Modified time: 2017-04-08 11:16:15
 
 from __future__ import print_function, division, absolute_import
+import unittest
 from marvin.tests.web import MarvinWebTester
 from marvin import config, marvindb
-from flask import session, url_for
-import unittest
+from flask import url_for
 
 
 class TestIndexPage(MarvinWebTester):
