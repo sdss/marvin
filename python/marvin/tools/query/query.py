@@ -28,6 +28,7 @@ import datetime
 import numpy as np
 import warnings
 import os
+import re
 from marvin.core import marvin_pickle
 from functools import wraps
 from marvin.tools.query.results import remote_mode_only
@@ -293,7 +294,11 @@ class Query(object):
         # name shortcuts
         for key in self.marvinform._param_form_lookup._nameShortcuts.keys():
             if key in strfilter:
-                strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
+                # strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
+                param_form_lookup = self.marvinform._param_form_lookup
+                strfilter = re.sub(r'\b{0}\b'.format(key),
+                                   '{0}'.format(param_form_lookup._nameShortcuts[key]),
+                                   strfilter)
         return strfilter
 
     def _adjust_defaults(self):
