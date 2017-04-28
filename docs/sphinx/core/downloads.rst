@@ -2,7 +2,7 @@
 .. _marvin-download-objects:
 
 Downloading Objects
--------------------
+===================
 Marvin allows you to download objects in several ways, when acting in **LOCAL** mode. Marvin downloads all objects
 using the SDSS Python package **sdss_access**.  When downloading files, Marvin places the files in your local
 SAS as specified by the ``$SAS_BASE_DIR`` environment variable.
@@ -20,7 +20,7 @@ SAS as specified by the ``$SAS_BASE_DIR`` environment variable.
     Calling the downloadList utility function
 
 Download Authentication
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 Downloading with sdss_access requires authentication to the SAS, using a .netrc file placed in your local home directory.
 ::
 
@@ -36,7 +36,7 @@ Downloading with sdss_access requires authentication to the SAS, using a .netrc 
 **Note**: For API Authentication, please go to :ref:`marvin-authentication`
 
 Via Config
-^^^^^^^^^^
+----------
 ::
 
     from marvin import config
@@ -58,7 +58,7 @@ Both cubes will be downloaded and placed in
     $SAS_BASE_DIR/mangawork/manga/spectro/redux/v1_5_1/7443/stack/
 
 Via Tools
-^^^^^^^^^^
+---------
 ::
 
     from marvin import config
@@ -72,7 +72,7 @@ Via Tools
 The cube for 8485-1901 will be explicitly downloaded but the cube for 12-98126 will not be.
 
 Via Query Results
-^^^^^^^^^^^^^^^^^
+-----------------
 ::
 
     from marvin.tools.query import Query
@@ -90,7 +90,7 @@ Via Query Results
 All cubes from the query results will be downloaded and placed in their respective locations in your local SAS.
 
 Via Explicit Call
-^^^^^^^^^^^^^^^^^
+-----------------
 **downloadList** lets you download the files for cubes, images, maps, rss, mastar cubes, or the entire plate directory.
 ::
 

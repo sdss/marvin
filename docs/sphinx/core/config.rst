@@ -2,7 +2,7 @@
 .. _marvin-config-info:
 
 Configuration Class (marvin.config)
------------------------------------
+===================================
 The Marvin :ref:`marvin-config-class` class controls the global configuration of Marvin.  It has
 several attributes that control how you interact with MaNGA data.
 
@@ -41,7 +41,7 @@ several attributes that control how you interact with MaNGA data.
 .. _marvin-modes:
 
 Data Access Modes
------------------
+=================
 * **Local mode** - Use this mode to deal with local FITS files either in your local SAS or through explicit file locations.
 * **Remote mode** - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API.  Depending on your use,
   it may be returned as a JSON object or used to complete the Tool function you are using.
@@ -51,7 +51,7 @@ Data Access Modes
 .. _marvin-set-versions:
 
 Setting Versions
-----------------
+================
 You can globally control the version of the data you want to access using several convienence methods in the :ref:`marvin-config-class` class. Setting the release will also internally set up the appropriate DRP and DAP versions.
 
 :py:meth:`~marvin.Config.setRelease`: main method to set the release version (e.g. MPL-5 or DR13).  Accepts either MPL or DR strings.
