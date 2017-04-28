@@ -43,11 +43,11 @@ Base = db.Base
 
 
 # The softening parameter for asinh magnitudes
-bb = {'u':	1.4e-10,
-      'g':	0.9e-10,
-      'r':	1.2e-10,
-      'i':	1.8e-10,
-      'z':	7.4e-10}
+bb = {'u': 1.4e-10,
+      'g': 0.9e-10,
+      'r': 1.2e-10,
+      'i': 1.8e-10,
+      'z': 7.4e-10}
 
 
 def cameliseClassname(tableName):
@@ -163,6 +163,7 @@ class MangaTargetToNSA(Base):
 
     def __repr__(self):
         return '<MangaTargetToNSA (pk={0})>'.format(self.pk)
+
 
 # Relationship between NSA and MangaTarget
 NSA.mangaTargets = relationship(
@@ -282,16 +283,38 @@ def HybridMethodToProperty(method, bandA, bandB):
     return colour_property
 
 
+def HybridPropertyArrayIndex(column, index):
+    """Creates a hybrid property for a certain index of a column of type array."""
+
+    @hybrid_property
+    def array_band(self):
+        return getattr(self, column)[index]
+
+    return array_band
+
+
 # Adds hybrid properties defining asinh magnitudes for each of the SDSS bands.
 for ii, band in enumerate('ugriz'):
     propertyName = 'elpetro_mag_{0}'.format(band)
     setattr(NSA, propertyName, HybridMag('elpetro_flux', band, ii + 2))
 
-# Creates an attribute for each colour.
+# Creates attributes for apparent magnitudes.
 setattr(NSA, 'elpetro_colour', HybridColour('elpetro_mag'))
 for colour_a, colour_b in itertools.combinations('ugriz', 2):
     setattr(NSA, 'elpetro_mag_{0}_{1}'.format(colour_a, colour_b),
             HybridMethodToProperty('elpetro_colour', colour_a, colour_b))
+
+# Expands elpetro_absmag into independent bands.
+# TODO: see issue #211 about allowing direct queries on array. If we implement
+# that we don't need to expand the bands.
+for index, band in enumerate('FNugriz'):
+    setattr(NSA, 'elpetro_absmag_{0}'.format(band),
+            HybridPropertyArrayIndex('elpetro_absmag', index))
+
+setattr(NSA, 'elpetro_absmag_colour', HybridColour('elpetro_absmag'))
+for colour_a, colour_b in itertools.combinations('FNugriz', 2):
+    setattr(NSA, 'elpetro_absmag_{0}_{1}'.format(colour_a, colour_b),
+            HybridMethodToProperty('elpetro_absmag_colour', colour_a, colour_b))
 
 
 # Add stellar mass hybrid attributes to NSA catalog
@@ -310,11 +333,12 @@ def logmass(parameter):
 
     return mass
 
+
 setattr(NSA, 'elpetro_logmass', logmass('elpetro_mass'))
 setattr(NSA, 'sersic_logmass', logmass('sersic_mass'))
 #
 configure_mappers()
 
 sample_cache = RelationshipCache(MangaTarget.NSA_objects).\
-               and_(RelationshipCache(MangaTarget.character)).\
-               and_(RelationshipCache(CurrentCatalogue.catalogue))
+    and_(RelationshipCache(MangaTarget.character)).\
+    and_(RelationshipCache(CurrentCatalogue.catalogue))

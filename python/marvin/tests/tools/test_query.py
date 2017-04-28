@@ -258,6 +258,14 @@ class TestQuery(TestQueryBase):
         r = q.run()
         self.assertEqual(8, r.totalcount)
 
+    def test_dap_query_abs_g_r_remote(self):
+        # This uses MPL-4 (it will return 4 results if MPL-5)
+        self._set_remote()
+        p = 'abs_g_r>-1'
+        q = Query(searchfilter=p, mode=self.mode)
+        r = q.run()
+        self.assertEqual(1313, r.totalcount)
+
 
 class TestQueryReturnType(TestQueryBase):
 

@@ -194,15 +194,15 @@ class Galaxy(BaseWebView):
         self.galaxy['nsamsg'] = None
         self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'elpetro_logmass', 'xtitle': 'Stellar Mass',
                                            'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                                     '2': {'y': 'elpetro_mag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
-                                           'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag i'}
+                                     '2': {'y': 'elpetro_absmag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
+                                           'ytitle': 'Abs. g-r', 'title': 'Abs. g-r vs Abs. Mag i'}
                                      }
         # self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'sersic_mass', 'xtitle': 'Stellar Mass',
         #                                    'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'}}
 
         # cols = ['z', 'sersic_logmass', 'sersic_n', 'sersic_absmag', 'elpetro_mag_g_r', 'elpetro_th50_r']
-        self.galaxy['nsaplotcols'] = ['z', 'elpetro_logmass', 'sersic_n', 'elpetro_absmag_i', 'elpetro_mag_g_r',
-                                      'elpetro_th50_r', 'elpetro_mag_u_r', 'elpetro_mag_i_z', 'elpetro_ba',
+        self.galaxy['nsaplotcols'] = ['z', 'elpetro_logmass', 'sersic_n', 'elpetro_absmag_i', 'elpetro_absmag_g_r',
+                                      'elpetro_th50_r', 'elpetro_absmag_u_r', 'elpetro_absmag_i_z', 'elpetro_ba',
                                       'elpetro_phi', 'elpetro_mtol_i', 'elpetro_th90_r']
 
     def before_request(self, *args, **kwargs):
@@ -440,8 +440,8 @@ class Galaxy(BaseWebView):
         if not nsachoices:
             nsachoices = {'1': {'y': 'z', 'x': 'elpetro_logmass', 'xtitle': 'Stellar Mass',
                                 'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
-                          '2': {'y': 'elpetro_mag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
-                                'ytitle': 'g-r', 'title': 'g-r vs Abs. Mag i'}}
+                          '2': {'y': 'elpetro_absmag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
+                                'ytitle': 'Abs. g-r', 'title': 'Abs. g-r vs Abs. Mag i'}}
 
         # get cube (self.galaxy['cube'] does not work)
         try:
