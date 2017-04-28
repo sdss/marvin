@@ -42,7 +42,6 @@ from __future__ import absolute_import
 
 from distutils import version
 import os
-import sys
 import warnings
 
 from astropy.io import fits
@@ -58,10 +57,6 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.colorbar as colorbar
 
-if 'seaborn' in sys.modules:
-    import seaborn as sns
-else:
-    plt.style.use('seaborn-darkgrid')
 
 try:
     import sqlalchemy
@@ -431,24 +426,16 @@ class Map(object):
         xlabel = 'arcsec' if sky_coords else 'spaxel'
         ylabel = 'arcsec' if sky_coords else 'spaxel'
 
-        if 'seaborn' in sys.modules:
-            if ax is None:
-                sns.set_context('poster', rc={'lines.linewidth': 2})
-            else:
-                sns.set_context('talk', rc={'lines.linewidth': 2})
-            sns.set_style(rc={'axes.facecolor': facecolor})
-
         if ax is None:
             fig = plt.figure()
             ax = fig.add_axes([0.12, 0.1, 2 / 3., 5 / 6.])
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
 
-        if 'seaborn' not in sys.modules:
-            if int(mpl.__version__.split('.')[0]) < 2:
-                ax.set_axis_bgcolor(facecolor)
-            else:
-                ax.set_facecolor(facecolor)
+        if int(mpl.__version__.split('.')[0]) < 2:
+            ax.set_axis_bgcolor(facecolor)
+        else:
+            ax.set_facecolor(facecolor)
 
         ax.grid(False, which='both', axis='both')
 

@@ -16,11 +16,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-if 'seaborn' in sys.modules:
-    import seaborn as sns
-else:
-    plt.style.use('seaborn-darkgrid')
-
 
 class Spectrum(object):
     """A class representing an spectrum with extra functionality.
