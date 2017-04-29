@@ -170,6 +170,12 @@ class TestCube(object):
         assert cube.nsa_source == 'drpall'
         self._test_nsa(cube.nsa)
 
+    def test_nsa_12_nsa(self):
+        cube = Cube(mangaid='12-98126', nsa_source='nsa')
+        self.assertEqual(cube.nsa_source, 'nsa')
+        self.assertEqual(cube.nsa['nsaid'], 341153)
+        self.assertAlmostEqual(cube.nsa['sersic_flux_ivar'][0], 0.046455454081)
+
     def test_release(self):
         cube = Cube(plateifu=self.plateifu)
         assert cube.release == 'MPL-4'
