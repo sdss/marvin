@@ -148,7 +148,7 @@ class TestQuery(TestQueryBase):
         q = Query(searchfilter=p, mode='remote')
         r = q.run()
         self.assertEqual([], q.joins)
-        self.assertEqual(151, r.totalcount)  # MPL-4 count
+        self.assertEqual(163, r.totalcount)  # MPL-4 count
 
     def test_Query_remote_mpl5(self):
         config.setMPL('MPL-5')
@@ -264,7 +264,7 @@ class TestQuery(TestQueryBase):
         p = 'abs_g_r>-1'
         q = Query(searchfilter=p, mode=self.mode)
         r = q.run()
-        self.assertEqual(1313, r.totalcount)
+        self.assertEqual(1389, r.totalcount)
 
 
 class TestQueryReturnType(TestQueryBase):
