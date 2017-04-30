@@ -1,3 +1,15 @@
+What's New in Marvin 2.1.3 (May 2017)
+=====================================
+
+* Slicing in tool objects now behaves as in a Numpy array. That means that `cube[i, j]` returns the same result as `cube.getSpaxel(x=j, y=i, xyorig='lower')`.
+
+* Now it is possible to query on absolute magnitude colours from NSA's `elpetro_absmag`. Absolute magnitudes are now the default for plotting on the web.
+
+* The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid `FileNotFoundError` if the data file is missing.
+
+* Query shortcuts are now only applied on full words, to avoid blind replacements. This fixes a bug that made parameters such as `elpetro_absmag_r` being replaced by `elpetro_absmaelpetro_mag_g_r`.
+
+
 What's New in Marvin 2.1 (February 2017)
 =======================================
 
@@ -82,8 +94,3 @@ The major improvements and additions in this release:
   * Interactive spectrum selection from the galaxy image.
 
   * An image roulette if you are feeling lucky.
-
-
-
-
-
