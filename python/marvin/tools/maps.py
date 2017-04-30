@@ -224,7 +224,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         if isinstance(value, tuple):
             assert len(value) == 2, 'slice must have two elements.'
-            x, y = value
+            y, x = value
             return self.getSpaxel(x=x, y=y, xyorig='lower')
         elif isinstance(value, marvin.utils.six.string_types):
             parsed_property = self.properties.get(value)

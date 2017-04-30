@@ -199,7 +199,7 @@ class TestMapsDB(TestMapsBase):
 
         maps = marvin.tools.maps.Maps(plateifu=self.plateifu, mode='local')
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
-        spaxel_getitem = maps[15, 8]
+        spaxel_getitem = maps[8, 15]
 
         self.assertTrue(isinstance(spaxel_getitem, marvin.tools.spaxel.Spaxel))
         self.assertIsNotNone(spaxel_getitem.spectrum)

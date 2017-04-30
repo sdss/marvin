@@ -4,6 +4,7 @@
 ### Added:
 - Issue #204: added elpetro_absmag colours to mangaSampleDB models.
 ### Changed:
+- Issue #243: inverted `__getitem__` behaviour for Cube/Maps/ModelCube and fixed tests.
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
 - The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
