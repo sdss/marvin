@@ -234,7 +234,7 @@ class CubeView(BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"cube_extension": ["8485-1901"]
+              "data": {"cube_extension": [[0,0,..0], [], ... [0, 0, 0,... 0]]
               }
            }
         '''
