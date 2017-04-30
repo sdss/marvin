@@ -240,6 +240,7 @@ class CubeView(BaseView):
         '''
 
         # Pass the args in and get the cube
+        args = self._pop_args(args, arglist='name')
         cube, res = _getCube(name, **args)
         self.update_results(res)
 

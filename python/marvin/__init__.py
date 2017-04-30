@@ -466,5 +466,4 @@ marvindb = MarvinDB(dbtype=config.db)
 # Inits the URL Route Map
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
-config.switchSasUrl('local')
 
