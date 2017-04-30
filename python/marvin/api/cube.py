@@ -194,17 +194,56 @@ class CubeView(BaseView):
 
     @route('/<name>/extensions/<cube_extension>/', methods=['GET', 'POST'],
            endpoint='getCubeExtension')
-    # @av.check_args()
-    def getCubeExtension(self, name, cube_extension):
-        """Returns the necessary information to instantiate a cube for a given plateifu."""
+    @av.check_args()
+    def getCubeExtension(self, args, name, cube_extension):
+        ''' Returns the 3d flux, ivar, or mask for a cube given a plateifu/mangaid.
 
-        # Manually getting the release for now until we fix the problem with the validator.
-        release = request.form.get('release')
-        cube, res = _getCube(name, release=release)
+        .. :quickref: Cube; Get the full cube 3d flux, ivar, or mask given a plate-ifu or mangaid
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param cube_extension: The name of the cube extension.  Either flux, ivar, or mask.
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string cube_extension: the 3d data for the specified extension
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/8485-1901/extensions/flux/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"cube_extension": ["8485-1901"]
+              }
+           }
+        '''
+
+        # Pass the args in and get the cube
+        cube, res = _getCube(name, **args)
         self.update_results(res)
 
         if cube:
-
             self.results['data'] = {'cube_extension':
                                     cube._getExtensionData(cube_extension.upper()).tolist()}
 

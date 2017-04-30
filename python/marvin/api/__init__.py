@@ -32,8 +32,8 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'x': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'y': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
-            'paramdisplay': fields.String(required=True, validate=validate.OneOf(['all', 'best'])),
-            'cube_extension': fields.String(required=True,
+            'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
+            'cube_extension': fields.String(required=True, location='view_args',
                                             validate=validate.OneOf(['flux', 'ivar', 'mask']))
             }
 
@@ -112,7 +112,6 @@ class ArgValidator(object):
         ''' Retrieve the URL route from the map based on the request endpoint '''
         blue, end = self.endpoint.split('.', 1)
         url = self.urlmap[blue][end]['url']
-
         # if the blueprint is not api, add/remove session option location
         if blue == 'api':
             if 'session' in parser.locations:

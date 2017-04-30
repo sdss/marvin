@@ -1,5 +1,5 @@
 from flask_classy import route
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
@@ -181,7 +181,7 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return json.dumps(self.results)
+        return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -280,7 +280,7 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return json.dumps(self.results)
+        return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
