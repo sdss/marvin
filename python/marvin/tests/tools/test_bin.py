@@ -4,6 +4,7 @@
 # test_bin.py
 #
 # Created by José Sánchez-Gallego on 6 Nov 2016.
+# Modified by Brett Andrews on 24 Apr 2017.
 
 
 from __future__ import division
@@ -11,114 +12,89 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
-import unittest
+
+import pytest
 
 import marvin
-import marvin.tests
 import marvin.tools.bin
 import marvin.tools.maps
 import marvin.tools.modelcube
 import marvin.utils.general
+import marvin.tests
+from marvin.tests import UseBintypes
 from marvin.core.exceptions import MarvinError
 
 
-class TestBinBase(marvin.tests.MarvinTest):
-    """Defines the files and plateifus we will use in the tests."""
+@UseBintypes('VOR10')
+class TestBinInit:
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestBinBase, cls).setUpClass()
-        cls._update_release('MPL-5')
-        cls.set_sasurl('local')
-        cls.set_filepaths(bintype='VOR10')
-        cls.maps_filename = cls.mapspath
-        cls.modelcube_filename = cls.modelpath
+    def _check_bin_data(self, bb, gal):
 
-    @classmethod
-    def tearDownClass(cls):
-        pass
+        assert bb.binid == 100
+        assert bb.plateifu == gal.plateifu
+        assert bb.mangaid == gal.mangaid
 
-    def setUp(self):
-        self._reset_the_config()
-        self._update_release('MPL-5')
-        self.set_sasurl('local')
-        self.assertTrue(os.path.exists(self.maps_filename))
-        self.assertTrue(os.path.exists(self.modelcube_filename))
+        assert len(bb.spaxels) == 2
+        assert not bb.spaxels[0].loaded
 
-    def tearDown(self):
-        pass
+        assert bb.properties is not None
 
+    def test_init_from_files(self, galaxy):
 
-class TestBinInit(TestBinBase):
+        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename,
+                                  modelcube_filename=galaxy.modelcube_filename)
 
-    def _check_bin_data(self, bb):
+        assert isinstance(bb._maps, marvin.tools.maps.Maps)
+        assert isinstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
 
-        self.assertEqual(bb.binid, 100)
-        self.assertEqual(bb.plateifu, self.plateifu)
-        self.assertEqual(bb.mangaid, self.mangaid)
+        self._check_bin_data(bb, galaxy)
 
-        self.assertTrue(len(bb.spaxels) == 2)
-        self.assertFalse(bb.spaxels[0].loaded)
+    def test_init_from_file_only_maps(self, galaxy):
 
-        self.assertIsNotNone(bb.properties)
+        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename)
 
-    def test_init_from_files(self):
+        assert isinstance(bb._maps, marvin.tools.maps.Maps)
+        assert bb._modelcube is not None
+        assert bb._modelcube.data_origin == 'db'
+        assert bb._modelcube.bintype == galaxy.bintype
 
-        bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename,
-                                  modelcube_filename=self.modelcube_filename)
+        self._check_bin_data(bb, galaxy)
 
-        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+    def test_init_from_db(self, galaxy):
 
-        self._check_bin_data(bb)
+        bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+        assert bb._maps.data_origin == 'db'
+        assert isinstance(bb._maps, marvin.tools.maps.Maps)
+        assert isinstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+        assert bb._modelcube.bintype == galaxy.bintype
 
-    def test_init_from_file_only_maps(self):
+        self._check_bin_data(bb, galaxy)
 
-        bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename)
+    def test_init_from_api(self, galaxy):
 
-        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertIsNotNone(bb._modelcube)
-        self.assertEqual(bb._modelcube.data_origin, 'db')
-        self.assertEqual(bb._modelcube.bintype, self.bintype)
+        bb = marvin.tools.bin.Bin(binid=100, plateifu=galaxy.plateifu, mode='remote',
+                                  bintype=galaxy.bintype)
 
-        self._check_bin_data(bb)
+        assert isinstance(bb._maps, marvin.tools.maps.Maps)
+        assert isinstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+        assert bb._modelcube.bintype == galaxy.bintype
 
-    def test_init_from_db(self):
+        self._check_bin_data(bb, galaxy)
 
-        bb = marvin.tools.bin.Bin(binid=100, plateifu=self.plateifu, bintype=self.bintype)
-        self.assertEqual(bb._maps.data_origin, 'db')
-        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
-        self.assertEqual(bb._modelcube.bintype, self.bintype)
+    def test_bin_does_not_exist(self, galaxy):
 
-        self._check_bin_data(bb)
-
-    def test_init_from_api(self):
-
-        bb = marvin.tools.bin.Bin(binid=100, plateifu=self.plateifu, mode='remote',
-                                  bintype=self.bintype)
-
-        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
-        self.assertEqual(bb._modelcube.bintype, self.bintype)
-
-        self._check_bin_data(bb)
-
-    def test_bin_does_not_exist(self):
-
-        with self.assertRaises(MarvinError) as ee:
-            marvin.tools.bin.Bin(binid=99999, plateifu=self.plateifu, mode='local',
-                                 bintype=self.bintype)
-            self.assertIn('there are no spaxels associated with binid=99999.', str(ee.exception))
+        with pytest.raises(MarvinError) as ee:
+            marvin.tools.bin.Bin(binid=99999, plateifu=galaxy.plateifu, mode='local',
+                                 bintype=galaxy.bintype)
+            assert 'there are no spaxels associated with binid=99999.' in str(ee.exception)
 
 
-class TestBinFileMismatch(TestBinBase):
-
-    @unittest.expectedFailure
+class TestBinFileMismatch:
+    @pytest.mark.skip('test not working yet')
     def test_bintypes(self):
 
         wrong_bintype = 'SPX'
-        self.assertNotEqual(wrong_bintype, self.bintype)
+        assert wrong_bintype != self.bintype
 
         wrong_modelcube_filename = os.path.join(
             self.path_release,
@@ -128,14 +104,8 @@ class TestBinFileMismatch(TestBinBase):
         bb = marvin.tools.bin.Bin(binid=100, maps_filename=self.maps_filename,
                                   modelcube_filename=wrong_modelcube_filename)
 
-        self.assertIsInstance(bb._maps, marvin.tools.maps.Maps)
-        self.assertIsInstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
+        assert isinstance(bb._maps, marvin.tools.maps.Maps)
+        assert isinstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
 
-        self.assertRaises(MarvinError,
-                          marvin.utils.general._check_file_parameters(bb._maps, bb._modelcube))
-
-
-if __name__ == '__main__':
-    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
+        with pytest.raises(MarvinError):
+            marvin.utils.general._check_file_parameters(bb._maps, bb._modelcube)()
