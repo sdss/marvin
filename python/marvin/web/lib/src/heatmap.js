@@ -76,14 +76,14 @@ class HeatMap {
                 var val = values[ii][jj];
 
                 if (mask !== null) {
-                    var noValue = (mask[ii][jj] & Math.pow(2, 4));
-                    var badValue = (mask[ii][jj] & Math.pow(2, 5));
+                    var noCov = (mask[ii][jj] & Math.pow(2, 0));
+                    var unreliable = (mask[ii][jj] & Math.pow(2, 5));
                     var mathError = (mask[ii][jj] & Math.pow(2, 6));
-                    var badFit = (mask[ii][jj] & Math.pow(2, 7));
+                    var fitFailed = (mask[ii][jj] & Math.pow(2, 7));
                     var doNotUse = (mask[ii][jj] & Math.pow(2, 30));
-                    //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                    var noData = noValue;
-                    var badData = (badValue || mathError || badFit || doNotUse);
+                    //var noData = (noCov || unreliable || mathError || fitFailed || doNotUse);
+                    var noData = noCov;
+                    var badData = (unreliable || mathError || fitFailed || doNotUse);
                 } else {
                     noData == null;
                     badData == null;
@@ -97,17 +97,16 @@ class HeatMap {
                 // value types
                 // val=no-data => gray color
                 // val=null => hatch area
-                // val=low-sn => nothing at the moment
 
                 if (noData) {
-                    // for data that is outside the range "nocov" mask
+                    // for data that is outside the range "NOCOV" mask
                     val = 'no-data';
                 } else if (badData) {
                     // for data that is bad - masked in some way
                     val = null;
                 } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
                     // for data that is low S/N
-                    val = null ; //val = 'low-sn';
+                    val = null ;
                 } else if (ivar === null) {
                     // for data with no mask or no inverse variance extensions
                     if (this.title.search('binid') !== -1) {
