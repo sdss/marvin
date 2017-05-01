@@ -62,7 +62,7 @@ create table modelcube (pk serial primary key not null, file_pk integer);
 create table modelspaxel (pk serial primary key not null, flux real[], ivar real[], mask integer[], model real[],
     emline double precision[], emline_base real[], emline_mask integer[], x integer, y integer, modelcube_pk integer);
 
-create table redcorr (pk serial primary key not null, value numeric[], modelcube_pk integer);
+create table redcorr (pk serial primary key not null, value double precision[], modelcube_pk integer);
 
 ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT cube_fk

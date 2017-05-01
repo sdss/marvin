@@ -20,7 +20,7 @@ SET search_path TO mangadatadb;
 
 CREATE TABLE mangadatadb.cube (pk serial PRIMARY KEY NOT NULL, plate INTEGER, mangaid TEXT, designid INTEGER,
 					pipeline_info_pk INTEGER, wavelength_pk INTEGER, ifudesign_pk INTEGER, manga_target_pk integer,
-					specres numeric[], xfocal double precision, yfocal double precision, ra DOUBLE PRECISION,
+					specres double precision[], xfocal double precision, yfocal double precision, ra DOUBLE PRECISION,
 					dec DOUBLE PRECISION, cube_shape_pk INTEGER);
 
 CREATE INDEX q3c_cube_idx ON mangadatadb.cube (functions.q3c_ang2ipix(ra, dec));
@@ -29,14 +29,14 @@ CREATE TABLE mangadatadb.cart (pk serial PRIMARY KEY NOT NULL, id INTEGER);
 
 CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, cart_pk INTEGER);
 
-CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux numeric[],
+CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux double precision[],
 				ivar double precision[], mask INTEGER[], xpos double precision[],
 				ypos double precision[], exposure_no INTEGER, mjd INTEGER, exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER);
 
-CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux numeric[], ivar double precision[],
+CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux double precision[], ivar double precision[],
 				mask integer[], cube_pk INTEGER, x INTEGER, y INTEGER);
 
-CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength numeric[],
+CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength double precision[],
 				bintype TEXT);
 
 CREATE INDEX CONCURRENTLY wave_idx ON mangadatadb.wavelength USING GIN(wavelength);
@@ -1705,43 +1705,43 @@ CREATE INDEX CONCURRENTLY pipeline_version_pk_idx ON mangadatadb.pipeline_info u
 SET search_path TO functions;
 
 /* return the sum of cube.specres for a given index range */
-CREATE OR REPLACE FUNCTION specres_sum_segment(cube mangadatadb.cube, index1 integer, index2 integer) RETURNS numeric
+CREATE OR REPLACE FUNCTION specres_sum_segment(cube mangadatadb.cube, index1 integer, index2 integer) RETURNS double precision
     LANGUAGE plpgsql STABLE
     AS $$
 
-DECLARE result numeric;
+DECLARE result double precision;
 BEGIN
 	select sum(f) from unnest(cube.specres[index1:index2]) as f into result;
 	return result;
 END; $$;
 
 /* return the sum of cube.specres for a given index range */
-CREATE OR REPLACE FUNCTION new_specres_sum_segment(specres real[], index1 integer, index2 integer) RETURNS numeric
+CREATE OR REPLACE FUNCTION new_specres_sum_segment(specres real[], index1 integer, index2 integer) RETURNS double precision
     LANGUAGE plpgsql STABLE
     AS $$
 
-DECLARE result numeric;
+DECLARE result double precision;
 BEGIN
 	select sum(f) from unnest(specres[index1:index2]) as f into result;
 	return result;
 END; $$;
 
 /* return a wavelength subset based on input range */
-CREATE OR REPLACE FUNCTION filter_wavelength(wavelength real[], minwave integer, maxwave integer) RETURNS numeric[]
+CREATE OR REPLACE FUNCTION filter_wavelength(wavelength real[], minwave integer, maxwave integer) RETURNS double precision[]
     LANGUAGE plpgsql STABLE
     AS $$
 
-DECLARE result numeric[];
+DECLARE result double precision[];
 BEGIN
 	select array_agg(f) from (select unnest(wavelength) as f) as g where (f between minwave and maxwave) into result;
 	return result;
 END; $$;
 
-CREATE OR REPLACE FUNCTION rest_wavelength(nsaz double precision) returns numeric[]
+CREATE OR REPLACE FUNCTION rest_wavelength(nsaz double precision) returns double precision[]
     LANGUAGE plpgsql STABLE
     AS $$
 
-DECLARE result numeric[];
+DECLARE result double precision[];
 BEGIN
 	select array_agg(f) from (select unnest(w.wavelength)/(1+nsaz) as f from mangadatadb.wavelength as w) as g into result;
 	return result;
