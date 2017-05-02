@@ -30,36 +30,36 @@ mask_daplike = np.array([[0b0000000000000000000000000000000,
                           0b1000000000000000000000011100001,
                           0b0000000000000000000000000000000]])
 
-nocov_mask = np.array([[0, 1, 0],
-                       [1, 0, 1],
-                       [0, 0, 1]])
-nocov = np.ma.array(np.ones(values.shape), mask=nocov_mask)
+nocov = np.array([[0, 1, 0],
+                  [1, 0, 1],
+                  [0, 1, 0]], dtype=bool)
 
-bad_data_mask = np.array([[0, 0, 1],
-                          [1, 1, 1],
-                          [0, 1, 0]])
+bad_data = np.array([[0, 0, 1],
+                     [1, 1, 1],
+                     [0, 1, 0]])
 
 # SNR = value * np.sqrt(ivar)
 # [[  2.00e+00,  -6.32e+00,   3.00e+00],
 #  [ -4.00e-01,   1.00e+00,   6.00e-02],
 #  [  2.21e+03,   0.00e+00,   9.00e+00]]
 
-low_snr_mask_1_false = np.array([[0, 0, 0],
-                                 [1, 0, 1],
-                                 [0, 1, 0]])
+snr_min_1 = np.array([[0, 0, 0],
+                      [1, 0, 1],
+                      [0, 1, 0]])
 
-low_snr_mask_3_false = np.array([[1, 0, 0],
-                                 [1, 1, 1],
-                                 [0, 1, 0]])
+snr_min_3 = np.array([[1, 0, 0],
+                      [1, 1, 1],
+                      [0, 1, 0]])
 
-low_snr_mask_1_true = np.array([[0, 1, 0],
-                                [1, 0, 1],
-                                [0, 1, 0]])
 
-low_snr_mask_3_true = np.array([[1, 1, 0],
-                                [1, 1, 1],
-                                [0, 1, 0]])
 
+log_cb_true = np.array([[0, 1, 0],
+                                [1, 0, 0],
+                                [0, 0, 0]])
+
+log_cb_false = np.zeros(values.shape, dtype=bool)
+
+image_1_false = np.array()
 
 class TestMasks(object):
 
@@ -70,7 +70,7 @@ class TestMasks(object):
         nocov = mapplot.no_coverage_mask(values, mask)
         assert np.all(nocov == expected)
 
-    @pytest.mark.parametrize("values, mask, expected", [(values, mask_daplike, bad_data_mask)])
+    @pytest.mark.parametrize("values, mask, expected", [(values, mask_daplike, bad_data)])
     def test_bad_data_mask(self, values, mask, expected):
         bad_data = mapplot.bad_data_mask(values, mask)
         assert np.all(bad_data == expected)
@@ -86,6 +86,14 @@ class TestMasks(object):
         assert np.all(low_snr == expected)
 
 
+    @pytest.mark.parametrize("values, nocov, bad_data, low_snr, expected",
+                             [(values, nocov, bad_data, low_snr_mask_1_false),
+                              (values, nocov, bad_data, low_snr_mask_3_false),
+                              (values, nocov, bad_data, low_snr_mask_1_true),
+                              (values, nocov, bad_data, low_snr_mask_3_true)])
+    def test_make_image(self, values, nocov, bad_data, low_snr, expected):
+        image = mapplot.make_image(values, nocov, bad_data, low_snr)
+        assert np.all(image == expected)
 
 
 

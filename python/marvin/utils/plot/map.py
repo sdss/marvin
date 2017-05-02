@@ -59,8 +59,9 @@ def no_coverage_mask(values, mask):
         array: Boolean array for mask (i.e., True corresponds to value to be masked out).
     """
 
-    nocov = (mask & 2**0).astype(bool)
-    return np.ma.array(np.ones(values.shape), mask=nocov)
+    return (mask & 2**0).astype(bool)
+    # TODO create this later
+    # return np.ma.array(np.ones(values.shape), mask=nocov)
 
 def bad_data_mask(values, mask):
     """Make mask of spaxels that are masked as bad data by the DAP.
@@ -93,8 +94,6 @@ def low_snr_mask(values, ivar, snr_min, log_cb):
             Inverse variance of values.
         snr_min (float):
             Minimum signal-to-noise for keeping a valid measurement.
-        log_cb (bool):
-            If True, use log colorbar.
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be masked out).
@@ -108,10 +107,29 @@ def low_snr_mask(values, ivar, snr_min, log_cb):
         if snr_min is not None:
             low_snr[np.abs(values * np.sqrt(ivar)) < snr_min] = True
         
-        if log_cb:
-            low_snr[values <= 0.] = True
+
 
     return low_snr
+
+def log_colorbar_mask(values, log_cb):
+    """Mask spaxels with negative values when using a logarithmic colorbar.
+
+    Parameters:
+        values (array):
+            Values for image.
+        log_cb (bool):
+            Use logarithmic colorbar.
+
+    Returns:
+        array: Boolean array for mask (i.e., True corresponds to value to be masked out).
+    """
+
+    mask = np.zeros(values.shape, dtype=bool)
+
+    if log_cb:
+        mask[values <= 0.] = True
+
+    return mask
 
 def _make_image(values, mask, snr_min, log_cb, use_mask):
     """Make masked array of image.
@@ -155,6 +173,9 @@ def _make_image(values, mask, snr_min, log_cb, use_mask):
     image = np.ma.array(self.values, mask=np.logical_or(nocov, bad_data))
 
     return image, mask_nocov
+
+def make_image(values, nocov, bad_data, low_snr):
+    return np.ma.array(values, mask=np.logical_or(nocov, bad_data, low_snr))
 
 
     def _set_extent(self, cube_size, sky_coords):
