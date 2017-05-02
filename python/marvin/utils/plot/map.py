@@ -281,7 +281,7 @@ def set_title(title=None, property_name=None, channel=None):
 
     return title
 
-def plot(self, *args, **kwargs):
+def plot(*args, **kwargs):
     """Make single panel map or one panel of multi-panel map plot.
 
     Parameters:
@@ -374,7 +374,7 @@ def plot(self, *args, **kwargs):
 
     assert (value or dapmap) is not None, 'Map.plot() requires specifying ``value`` or ``dapmap``.'
 
-    # user-specified value, ivar, or mask overrides dapmap attribute
+    # user-specified value, ivar, or mask override dapmap attribute
     value = value or dapmap.value
     ivar = ivar or dapmap.ivar
     mask = mask or dapmap.mask
@@ -401,36 +401,38 @@ def plot(self, *args, **kwargs):
         percentile_clip = None
     
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov = np.ma.array(np.ones(value.shape), mask=no_coverage_mask(value, mask))
+    nocov_mask = no_coverage_mask(value, mask)
     bad_data = bad_data_mask(value, mask)
     low_snr = low_snr_mask(value, ivar, snr_min)
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
-    image = make_image(value, nocov, bad_data, low_snr, log_cb_mask)
+    image = make_image(value, nocov_mask, bad_data, low_snr, log_cb_mask)
 
     cb_kws['cmap'] = cmap
     cb_kws['percentile_clip'] = percentile_clip
     cb_kws['sigma_clip'] = sigma_clip
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
-    cb_kws['label'] = self.unit if cblabel is None else cblabel
+    cb_kws['label'] = cblabel or dapmap.unit or ''
     cb_kws = colorbar.set_cb_kws(cb_kws)
     cb_kws = colorbar.set_cbrange(image, cb_kws)
 
-    extent = self._set_extent(self.value.shape, sky_coords)
+    extent = set_extent(value.shape, sky_coords)
     imshow_kws.setdefault('extent', extent)
     imshow_kws.setdefault('interpolation', 'nearest')
     imshow_kws.setdefault('origin', 'lower')
     imshow_kws['norm'] = LogNorm() if log_cb else None
 
-    fig, ax = self._ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+    fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
 
-    # Plot regions with no measurement as hatched by putting one large patch as lowest layer
-    patch_kws = self._set_patch_style(extent=extent)
+    # Plot hatched regions by putting one large patch as lowest layer
+    # hatched regions are bad data, low SNR, or negative values if the colorbar is logarithmic
+    patch_kws = set_patch_style(extent=extent)
     ax.add_patch(mpl.patches.Rectangle(**patch_kws))
 
     # Plot regions without IFU coverage as a solid color (gray #A8A8A8)
+    nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
     A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
     ax.imshow(nocov, cmap=A8A8A8, zorder=1, **imshow_kws)
 
