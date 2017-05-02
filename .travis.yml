@@ -46,6 +46,9 @@ notifications:
 # repo branches to test
 #branches:
 #- master
+branches:
+  except:
+    - pytest
 
 before_install:
 # Set up the .netrc file we need to download test data
