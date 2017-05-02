@@ -148,7 +148,7 @@ class ModelCube(MarvinToolsClass):
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
 
-        return self.getSpaxel(x=xy[0], y=xy[1], xyorig='lower')
+        return self.getSpaxel(x=xy[1], y=xy[0], xyorig='lower')
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
