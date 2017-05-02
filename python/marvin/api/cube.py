@@ -4,7 +4,8 @@
 import numpy as np
 
 from flask_classy import route
-from flask import jsonify, request
+from flask import jsonify, request, Response
+import json
 
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
@@ -191,3 +192,60 @@ class CubeView(BaseView):
 
         return jsonify(self.results)
 
+    @route('/<name>/extensions/<cube_extension>/', methods=['GET', 'POST'],
+           endpoint='getCubeExtension')
+    @av.check_args()
+    def getCubeExtension(self, args, name, cube_extension):
+        ''' Returns the 3d flux, ivar, or mask for a cube given a plateifu/mangaid.
+
+        .. :quickref: Cube; Get the full cube 3d flux, ivar, or mask given a plate-ifu or mangaid
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param cube_extension: The name of the cube extension.  Either flux, ivar, or mask.
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string cube_extension: the 3d data for the specified extension
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/8485-1901/extensions/flux/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"cube_extension": [[0,0,..0], [], ... [0, 0, 0,... 0]]
+              }
+           }
+        '''
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist='name')
+        cube, res = _getCube(name, **args)
+        self.update_results(res)
+
+        if cube:
+            self.results['data'] = {'cube_extension':
+                                    cube._getExtensionData(cube_extension.upper()).tolist()}
+
+        return Response(json.dumps(self.results), mimetype='application/json')
