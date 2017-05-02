@@ -5,13 +5,14 @@
 - Issue #204: added elpetro_absmag colours to mangaSampleDB models.
 
 ### Changed:
+- Issue #243: inverted `__getitem__` behaviour for Cube/Maps/ModelCube and fixed tests.
 - Modified Flask Profiler File to always point to $MARVIN_DIR/flask_profiler.sql
 
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
 - The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
 - Fixed #143: prevents access mode to go in to remote if filename is present.
-- Fixed #213: shortcuts are not only applied on full words, to avoid blind replacements.
+- Fixed #213: shortcuts are now only applied on full words, to avoid blind replacements.
 
 ## [2.1.2] - 2017/03/17
 ### Added:

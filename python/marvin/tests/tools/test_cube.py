@@ -563,9 +563,9 @@ class TestGetSpaxel(TestCubeBase):
         yy = 5
         spec_idx = 200
 
-        spaxel_slice_file = cube_file[xx, yy]
-        spaxel_slice_db = cube_db[xx, yy]
-        spaxel_slice_api = cube_api[xx, yy]
+        spaxel_slice_file = cube_file[yy, xx]
+        spaxel_slice_db = cube_db[yy, xx]
+        spaxel_slice_api = cube_api[yy, xx]
 
         flux_result = 0.017639931
         ivar_result = 352.12421
