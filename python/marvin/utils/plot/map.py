@@ -47,8 +47,20 @@ import marvin.utils.plot.colorbar as colorbar
 
 
 def no_coverage_mask(value, mask):
+    """Make mask of spaxels that are not covered 
+    """
     nocov = (mask & 2**0).astype(bool)
-    mask_nocov = np.ma.array(np.ones(value.shape), mask=nocov)
+    return np.ma.array(np.ones(value.shape), mask=nocov)
+
+def bad_data_mask(value, mask):
+    badvalue = (mask & 2**5).astype(bool)
+    matherror = (mask & 2**6).astype(bool)
+    badfit = (mask & 2**7).astype(bool)
+    donotuse = (mask & 2**30).astype(bool)
+    return np.logical_or.reduce((badvalue, matherror, badfit, donotuse))
+
+def low_snr_mask(value, ivar, snr_min, log_cb):
+    low_snr = make_mask_low_snr(value, ivar, snr_min, log_cb)
 
 
 
@@ -56,6 +68,10 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
     """Make masked array of image.
 
     Parameters:
+        value (array):
+            2D array of values.
+        mask (array):
+            2D bitmask array.
         snr_min (float):
             Minimum signal-to-noise for keeping a valid measurement.
         log_cb (bool):
@@ -93,7 +109,7 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
 
 
 
-    def _make_mask_low_snr(self, data, ivar, snr_min, log_cb):
+    def make_mask_low_snr(self, data, ivar, snr_min, log_cb):
         """Mask spaxels with a signal-to-noise ratio lower than some threshold.
 
         Parameters:
