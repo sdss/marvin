@@ -46,25 +46,74 @@ from matplotlib.colors import LogNorm
 import marvin.utils.plot.colorbar as colorbar
 
 
-def no_coverage_mask(value, mask):
-    """Make mask of spaxels that are not covered 
-    """
-    nocov = (mask & 2**0).astype(bool)
-    return np.ma.array(np.ones(value.shape), mask=nocov)
+def no_coverage_mask(values, mask):
+    """Make mask of spaxels that are not covered by the IFU.
+    
+    Parameters:
+        values (array):
+            Values for image.
+        mask (array):
+            Mask for values.
 
-def bad_data_mask(value, mask):
+    Returns:
+        array: Boolean array for mask (i.e., True corresponds to value to be masked out).
+    """
+
+    nocov = (mask & 2**0).astype(bool)
+    return np.ma.array(np.ones(values.shape), mask=nocov)
+
+def bad_data_mask(values, mask):
+    """Make mask of spaxels that are masked as bad data by the DAP.
+    
+    The masks that are considered bad data are "BADVALUE," "MATHERROR," "BADFIT," and "DONOTUSE,"
+    which correspond to the DAPPIXEL bitmasks 5, 6, 7, and 30, respectively.
+    
+    Parameters:
+        values (array):
+            Values for image.
+        mask (array):
+            Mask for values.
+
+    Returns:
+        array: Boolean array for mask (i.e., True corresponds to value to be masked out).
+    """
     badvalue = (mask & 2**5).astype(bool)
     matherror = (mask & 2**6).astype(bool)
     badfit = (mask & 2**7).astype(bool)
     donotuse = (mask & 2**30).astype(bool)
     return np.logical_or.reduce((badvalue, matherror, badfit, donotuse))
 
-def low_snr_mask(value, ivar, snr_min, log_cb):
-    low_snr = make_mask_low_snr(value, ivar, snr_min, log_cb)
+def low_snr_mask(values, ivar, snr_min, log_cb):
+    """Mask spaxels with a signal-to-noise ratio lower than some threshold.
 
+    Parameters:
+        values (array):
+            Values for image.
+        ivar (array):
+            Inverse variance of values.
+        snr_min (float):
+            Minimum signal-to-noise for keeping a valid measurement.
+        log_cb (bool):
+            If True, use log colorbar.
 
+    Returns:
+        array: Boolean array for mask (i.e., True corresponds to value to be masked out).
+    """
 
-def _make_image(value, mask, snr_min, log_cb, use_mask):
+    low_snr = np.zeros(values.shape, dtype=bool)
+
+    if (ivar is not None) and (not np.all(np.isnan(ivar))):
+        low_snr = (ivar == 0.)
+        
+        if snr_min is not None:
+            low_snr[np.abs(values * np.sqrt(ivar)) < snr_min] = True
+        
+        if log_cb:
+            low_snr[values <= 0.] = True
+
+    return low_snr
+
+def _make_image(values, mask, snr_min, log_cb, use_mask):
     """Make masked array of image.
 
     Parameters:
@@ -84,7 +133,7 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
     """
 
     # spaxels outside of the coverage of the IFU are gray
-    mask_nocov = no_coverage_mask(value, mask)
+    mask_nocov = no_coverage_mask(values, mask)
 
     # hatch bad data (flagged and low SNR)
     if use_mask:
@@ -92,7 +141,7 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
         matherror = (self.mask & 2**6).astype(bool)
         badfit = (self.mask & 2**7).astype(bool)
         donotuse = (self.mask & 2**30).astype(bool)
-        low_snr = self._make_mask_low_snr(self.value, self.ivar, snr_min, log_cb)
+        low_snr = self._make_mask_low_snr(self.values, self.ivar, snr_min, log_cb)
         bad_data = np.logical_or.reduce((badvalue, matherror, badfit, donotuse, low_snr))
 
         # TODO can I remove this because it is redundant with _make_mask_low_snr()?
@@ -103,39 +152,9 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
     else:
         bad_data = ~nocov  # set to None?
 
-    image = np.ma.array(self.value, mask=np.logical_or(nocov, bad_data))
+    image = np.ma.array(self.values, mask=np.logical_or(nocov, bad_data))
 
     return image, mask_nocov
-
-
-
-    def make_mask_low_snr(self, data, ivar, snr_min, log_cb):
-        """Mask spaxels with a signal-to-noise ratio lower than some threshold.
-
-        Parameters:
-            data (array):
-                Values for image.
-            ivar (array):
-                Inverse variance of values.
-            snr_min (float):
-                Minimum signal-to-noise for keeping a valid measurement.
-            log_cb (bool):
-                 If True, use log colorbar.
-
-        Returns:
-            array: Boolean array for mask (i.e., True corresponds to value to be masked out).
-        """
-
-        low_snr = np.zeros(data.shape, dtype=bool)
-
-        if (ivar is not None) and (not np.all(np.isnan(ivar))):
-            low_snr = (ivar == 0.)
-            if snr_min is not None:
-                low_snr[np.abs(data * np.sqrt(ivar)) < snr_min] = True
-            if log_cb:
-                low_snr[data <= 0.] = True
-
-        return low_snr
 
 
     def _set_extent(self, cube_size, sky_coords):
