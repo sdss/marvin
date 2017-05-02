@@ -68,7 +68,8 @@ def create_app(debug=False, local=False, use_profiler=True):
     app.config["flask_profiler"] = {
         "enabled": True,
         "storage": {
-            "engine": "sqlite"
+            "engine": "sqlite",
+            "FILE": os.path.join(os.environ['MARVIN_DIR'], 'flask_profiler.sql')
         },
         'endpointRoot': '{0}/profiler'.format(marvin_base),
         "basicAuth": {

@@ -74,6 +74,7 @@ before_script:
 - export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 - echo $LOCAL_MARVIN_PORT
 # Start the web server on port 50XX and allow enough time to start up
+- export MARVIN_DIR=$TRAVIS_BUILD_DIR
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT &
 - sleep 20
 # Various checks to ensure things properly start up
