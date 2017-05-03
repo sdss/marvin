@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib
 import pytest
 
+from marvin.tools.maps import Maps
 import marvin.utils.plot.map as mapplot
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
@@ -85,6 +86,11 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
+@pytest.fixture(scope='module')
+def maps(galaxy):
+    yield Maps(plateifu=galaxy.plateifu)
+
+
 class TestMasks(object):
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, nocov),
@@ -103,7 +109,9 @@ class TestMasks(object):
                              [(value, ivar, None, snr_min_none),
                               (value, ivar, 0, snr_min_0),
                               (value, ivar, 1, snr_min_1),
-                              (value, ivar, 3, snr_min_3)])
+                              (value, ivar, 3, snr_min_3),
+                              (value, None, None, np.zeros(value.shape, dtype=bool)),
+                              (value, None, 1, np.zeros(value.shape, dtype=bool))])
     def test_low_snr_mask(self, value, ivar, snr_min, expected):
         low_snr = mapplot.low_snr_mask(value, ivar, snr_min)
         assert np.all(low_snr == expected)
@@ -180,9 +188,8 @@ class TestMapPlot(object):
                               ('stellar_sigma', None),
                               ('specindex', 'd4000')])
     def test_plot_dapmap(self, maps, property_name, channel):
-        map_ = maps.getMap(property_name, channel=None)
+        map_ = maps.getMap(property_name, channel=channel)
         fig, ax = mapplot.plot(dapmap=map_)
-        # fig, ax = mapplot.plot(value=np.array([[0, 1], [2, 3]]))  # dapmap=ha
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
