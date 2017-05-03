@@ -84,6 +84,7 @@ image_3_false = np.array([[1, 1, 1],
                           [1, 1, 1],
                           [0, 1, 0]])
 
+
 class TestMasks(object):
 
     @pytest.mark.parametrize('values, mask, expected', [(values, mask_simple, nocov),
@@ -97,7 +98,6 @@ class TestMasks(object):
     def test_bad_data_mask(self, values, mask, expected):
         bad_data = mapplot.bad_data_mask(values, mask)
         assert np.all(bad_data == expected)
-
 
     @pytest.mark.parametrize('values, ivar, snr_min, expected',
                              [(values, ivar, None, snr_min_none),
@@ -129,7 +129,7 @@ class TestMasks(object):
 
 
 class TestMapPlot(object):
-    
+
     @pytest.mark.parametrize('cube_size, sky_coords, expected',
                              [([36, 36], True, np.array([-18, 18, -18, 18])),
                               ([35, 35], True, np.array([-17.5, 17.5, -17.5, 17.5])),
@@ -138,18 +138,17 @@ class TestMapPlot(object):
         extent = mapplot.set_extent(cube_size, sky_coords)
         assert np.all(extent == expected)
 
-
     @matplotlib_2
     def test_set_hatch_linewidth(self):
-        patch_kws = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
+        __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
         assert matplotlib.rcParams['hatch.linewidth'] == 0.5
 
     @matplotlib_2
     def test_set_hatch_color(self):
-        patch_kws = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
+        __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
-    def test_ax_setup(self):
+    def test_ax_facecolor(self):
         fig, ax = mapplot.ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_facecolor() == (0.6588235294117647, 0.6588235294117647, 0.6588235294117647,
                                       1.0)
@@ -157,7 +156,7 @@ class TestMapPlot(object):
     @pytest.mark.parametrize('sky_coords, expected',
                              [(True, 'arcsec'),
                               (False, 'spaxel')])
-    def test_ax_setup(self, sky_coords, expected):
+    def test_ax_labels(self, sky_coords, expected):
         fig, ax = mapplot.ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_xlabel() == expected
         assert ax.get_ylabel() == expected
@@ -169,8 +168,7 @@ class TestMapPlot(object):
                               (None, 'emline_gflux', 'ha_6564', 'emline gflux ha 6564'),
                               (None, 'prop_flux', None, 'prop flux'),
                               (None, None, 'channel', 'channel'),
-                              (None, None, None, '')
-                             ])
+                              (None, None, None, '')])
     def test_set_title(self, title, property_name, channel, expected):
         title = mapplot.set_title(title, property_name, channel)
         assert title == expected

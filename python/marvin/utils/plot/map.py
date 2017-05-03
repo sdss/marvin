@@ -48,7 +48,7 @@ import marvin.utils.plot.colorbar as colorbar
 
 def no_coverage_mask(value, mask):
     """Make mask of spaxels that are not covered by the IFU.
-    
+
     Parameters:
         value (array):
             Value for image.
@@ -61,12 +61,13 @@ def no_coverage_mask(value, mask):
 
     return (mask & 2**0).astype(bool)
 
+
 def bad_data_mask(value, mask):
     """Make mask of spaxels that are masked as bad data by the DAP.
-    
+
     The masks that are considered bad data are "BADVALUE," "MATHERROR," "BADFIT," and "DONOTUSE,"
     which correspond to the DAPPIXEL bitmasks 5, 6, 7, and 30, respectively.
-    
+
     Parameters:
         value (array):
             Value for image.
@@ -81,6 +82,7 @@ def bad_data_mask(value, mask):
     badfit = (mask & 2**7).astype(bool)
     donotuse = (mask & 2**30).astype(bool)
     return np.logical_or.reduce((badvalue, matherror, badfit, donotuse))
+
 
 def low_snr_mask(value, ivar, snr_min):
     """Mask spaxels with a signal-to-noise ratio lower than some threshold.
@@ -101,11 +103,12 @@ def low_snr_mask(value, ivar, snr_min):
 
     if (ivar is not None) and (not np.all(np.isnan(ivar))):
         low_snr = (ivar == 0.)
-        
+
         if snr_min is not None:
             low_snr[np.abs(value * np.sqrt(ivar)) < snr_min] = True
 
     return low_snr
+
 
 def log_colorbar_mask(value, log_cb):
     """Mask spaxels with negative value when using a logarithmic colorbar.
@@ -172,8 +175,10 @@ def _make_image(value, mask, snr_min, log_cb, use_mask):
 
     return image, mask_nocov
 
+
 def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
     return np.ma.array(value, mask=np.logical_or.reduce((nocov, bad_data, low_snr, log_cb_mask)))
+
 
 def set_extent(cube_size, sky_coords):
     """Set extent of map.
@@ -196,6 +201,7 @@ def set_extent(cube_size, sky_coords):
         extent = np.array([0, cube_size[0] - 1, 0, cube_size[1] - 1])
 
     return extent
+
 
 def set_patch_style(extent, facecolor='#A8A8A8'):
     """Set default parameters for a patch.
@@ -221,6 +227,7 @@ def set_patch_style(extent, facecolor='#A8A8A8'):
 
     return patch_kws
 
+
 def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
     """Basic axis setup for maps.
 
@@ -240,10 +247,10 @@ def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
    Returns:
         tuple: (plt.figure object, plt.figure axis object)
     """
-    
+
     xlabel = 'arcsec' if sky_coords else 'spaxel'
     ylabel = 'arcsec' if sky_coords else 'spaxel'
-    
+
     if ax is None:
         fig = plt.figure()
         ax = fig.add_axes([0.12, 0.1, 2 / 3., 5 / 6.])
@@ -255,8 +262,9 @@ def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
     else:
         ax.set_facecolor(facecolor)
         ax.grid(False, which='both', axis='both')
-    
+
     return fig, ax
+
 
 def set_title(title=None, property_name=None, channel=None):
     """Set title for map.
@@ -280,6 +288,7 @@ def set_title(title=None, property_name=None, channel=None):
         title = ' '.join(title.split('_')).strip()
 
     return title
+
 
 def plot(*args, **kwargs):
     """Make single panel map or one panel of multi-panel map plot.
@@ -349,7 +358,7 @@ def plot(*args, **kwargs):
 
     for kw in kwargs:
         assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
-        
+
     assert ((kwargs.get('percentile_clip', None) is not None) +
             (kwargs.get('sigma_clip', None) is not None) +
             (kwargs.get('cbrange', None) is not None) <= 1), \
@@ -440,7 +449,7 @@ def plot(*args, **kwargs):
     p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
     fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
-    
+
     if title is not '':
         ax.set_title(label=title)
 
