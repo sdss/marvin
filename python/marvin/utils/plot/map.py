@@ -389,26 +389,26 @@ def plot(*args, **kwargs):
     imshow_kws.setdefault('origin', 'lower')
     imshow_kws['norm'] = LogNorm() if log_cb else None
 
-    fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+    patch_rc = {'hatch.color': 'w',
+                'hatch.linewidth': '0.5'}
+    # with plt.style.context(('seaborn-darkgrid')), plt.rc_context({'hatch.linewidth': 5}):
+    with mpl.rc_context(rc={'hatch.color': 'w'}):
 
-    # Plot hatched regions by putting one large patch as lowest layer
-    # hatched regions are bad data, low SNR, or negative values if the colorbar is logarithmic
-    patch_kws = set_patch_style(extent=extent)
-    ax.add_patch(mpl.patches.Rectangle(**patch_kws))
-
-    # Plot regions without IFU coverage as a solid color (gray #A8A8A8)
-    nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
-    A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
-    ax.imshow(nocov, cmap=A8A8A8, zorder=1, **imshow_kws)
-
-    imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
-    p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
-
-    # TODO output cb
-    fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
-
-    if title is not '':
-        ax.set_title(label=title)
+        # mpl.rc('hatch', color='w', linewidth=0.5)
+        fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+        # Plot hatched regions by putting one large patch as lowest layer
+        # hatched regions are bad data, low SNR, or negative values if the colorbar is logarithmic
+        patch_kws = set_patch_style(extent=extent)
+        ax.add_patch(mpl.patches.Rectangle(**patch_kws))
+        # Plot regions without IFU coverage as a solid color (gray #A8A8A8)
+        nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
+        A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
+        ax.imshow(nocov, cmap=A8A8A8, zorder=1, **imshow_kws)
+        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+        p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
+        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+        if title is not '':
+            ax.set_title(label=title)
 
     # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
     mpl.rcParams['image.composite_image'] = False
