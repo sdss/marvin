@@ -49,10 +49,12 @@ var HeatMap = function () {
         // Parse the heatmap title into category, parameter, channel
         // e.g. 7443-1901: emline_gflux_ha-6564
         value: function parseTitle() {
-            var _title$split = this.title.split(':'),
-                _title$split2 = _slicedToArray(_title$split, 2),
-                plateifu = _title$split2[0],
-                newtitle = _title$split2[1];
+            var _title$split = this.title.split(':');
+
+            var _title$split2 = _slicedToArray(_title$split, 2);
+
+            var plateifu = _title$split2[0];
+            var newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 
@@ -110,11 +112,11 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] && Math.pow(2, 0);
-                        var badValue = mask[ii][jj] && Math.pow(2, 5);
-                        var mathError = mask[ii][jj] && Math.pow(2, 6);
-                        var badFit = mask[ii][jj] && Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] && Math.pow(2, 30);
+                        var noValue = mask[ii][jj] & Math.pow(2, 0);
+                        var badValue = mask[ii][jj] & Math.pow(2, 5);
+                        var mathError = mask[ii][jj] & Math.pow(2, 6);
+                        var badFit = mask[ii][jj] & Math.pow(2, 7);
+                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
                         //var noData = (noValue || badValue || mathError || badFit || doNotUse);
                         var noData = noValue;
                         var badData = badValue || mathError || badFit || doNotUse;
@@ -125,7 +127,11 @@ var HeatMap = function () {
 
                     if (ivar !== null) {
                         var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        var signalToNoiseThreshold = 1.;
+                        if (this.title.toLowerCase().indexOf("vel") >= 0) {
+                            var signalToNoiseThreshold = 0.;
+                        } else {
+                            var signalToNoiseThreshold = 1.;
+                        };
                     }
 
                     // value types
