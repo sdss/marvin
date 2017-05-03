@@ -131,51 +131,6 @@ def log_colorbar_mask(value, log_cb):
     return mask
 
 
-# TODO deprecate me!!!!!!!
-def _make_image(value, mask, snr_min, log_cb, use_mask):
-    """Make masked array of image.
-
-    Parameters:
-        value (array):
-            2D array of value.
-        mask (array):
-            2D bitmask array.
-        snr_min (float):
-            Minimum signal-to-noise for keeping a valid measurement.
-        log_cb (bool):
-            If True, use log colorbar.
-        use_mask (bool):
-            If True, use DAP bitmasks.
-
-    Returns:
-        tuple: (masked array of image, tuple of (x, y) coordinates of bins with no measurement)
-    """
-
-    # spaxels outside of the coverage of the IFU are gray
-    mask_nocov = no_coverage_mask(value, mask)
-
-    # hatch bad data (flagged and low SNR)
-    if use_mask:
-        badvalue = (self.mask & 2**5).astype(bool)
-        matherror = (self.mask & 2**6).astype(bool)
-        badfit = (self.mask & 2**7).astype(bool)
-        donotuse = (self.mask & 2**30).astype(bool)
-        low_snr = self._make_mask_low_snr(self.value, self.ivar, snr_min, log_cb)
-        bad_data = np.logical_or.reduce((badvalue, matherror, badfit, donotuse, low_snr))
-
-        # TODO can I remove this because it is redundant with _make_mask_low_snr()?
-        # if self.ivar is not None:
-        #     # Flag a region as having no data if ivar = 0
-        #     ivar_zero = (self.ivar == 0.)
-        #     bad_data = np.logical_or.reduce((bad_data, ivar_zero))
-    else:
-        bad_data = ~nocov  # set to None?
-
-    image = np.ma.array(self.value, mask=np.logical_or(nocov, bad_data))
-
-    return image, mask_nocov
-
-
 def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
     return np.ma.array(value, mask=np.logical_or.reduce((nocov, bad_data, low_snr, log_cb_mask)))
 
@@ -381,17 +336,20 @@ def plot(*args, **kwargs):
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
 
-    assert (value or dapmap) is not None, 'Map.plot() requires specifying ``value`` or ``dapmap``.'
+    assert (value is not None) or (dapmap is not None), \
+        'Map.plot() requires specifying ``value`` or ``dapmap``.'
 
     # user-specified value, ivar, or mask override dapmap attribute
-    value = value or dapmap.value
-    ivar = ivar or dapmap.ivar
-    mask = mask or dapmap.mask
+    value = value if dapmap is None else dapmap.value
+    ivar = ivar if dapmap is None else dapmap.ivar
+    mask = mask if dapmap is None else dapmap.mask
+    mask = mask if mask is not None else np.zeros(value.shape)
 
     title = set_title(title,
                       property_name=dapmap and dapmap.property_name,
                       channel=dapmap and dapmap.channel)
 
+    # TODO factor out this section
     if 'vel' in title:
         cmap = kwargs.get('cmap', 'RdBu_r')
         percentile_clip = kwargs.get('percentile_clip', [10, 90])
@@ -408,11 +366,11 @@ def plot(*args, **kwargs):
 
     if sigma_clip is not None:
         percentile_clip = None
-    
+
     # create no coverage, bad data, low SNR, and log colorbar masks
     nocov_mask = no_coverage_mask(value, mask)
-    bad_data = bad_data_mask(value, mask)
-    low_snr = low_snr_mask(value, ivar, snr_min)
+    bad_data = bad_data_mask(value, mask) if use_mask else np.zeros(value.shape)
+    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
@@ -448,6 +406,7 @@ def plot(*args, **kwargs):
     imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
     p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
+    # TODO output cb
     fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
 
     if title is not '':
