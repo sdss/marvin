@@ -344,8 +344,8 @@ def plot(*args, **kwargs):
     mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
     title = set_title(title,
-                      property_name=dapmap and dapmap.property_name,
-                      channel=dapmap and dapmap.channel)
+                      property_name=getattr(dapmap, 'property_name', None),
+                      channel=getattr(dapmap, 'channel', None))
 
     # TODO factor out this section
     if 'vel' in title:
