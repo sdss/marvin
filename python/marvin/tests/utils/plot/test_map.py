@@ -7,9 +7,9 @@ import marvin.utils.plot.map as mapplot
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
                                   reason='matplotlib-2.0 or higher required')
 
-values = np.array([[1, -2, 3],
-                   [-4, 5, 6],
-                   [7, 8, 9]])
+value = np.array([[1, -2, 3],
+                  [-4, 5, 6],
+                  [7, 8, 9]])
 
 ivar = np.array([[4, 10, 1],
                  [0.01, 0.04, 0.0001],
@@ -66,7 +66,7 @@ log_cb_true = np.array([[0, 1, 0],
                         [1, 0, 0],
                         [0, 0, 0]])
 
-log_cb_false = np.zeros(values.shape, dtype=bool)
+log_cb_false = np.zeros(value.shape, dtype=bool)
 
 image_none_true = np.array([[0, 1, 1],
                             [1, 1, 1],
@@ -87,43 +87,43 @@ image_3_false = np.array([[1, 1, 1],
 
 class TestMasks(object):
 
-    @pytest.mark.parametrize('values, mask, expected', [(values, mask_simple, nocov),
-                                                        (values, mask_binary, nocov),
-                                                        (values, mask_daplike, nocov)])
-    def test_no_coverage_mask(self, values, mask, expected):
-        nocov = mapplot.no_coverage_mask(values, mask)
+    @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, nocov),
+                                                       (value, mask_binary, nocov),
+                                                       (value, mask_daplike, nocov)])
+    def test_no_coverage_mask(self, value, mask, expected):
+        nocov = mapplot.no_coverage_mask(value, mask)
         assert np.all(nocov == expected)
 
-    @pytest.mark.parametrize('values, mask, expected', [(values, mask_daplike, bad_data)])
-    def test_bad_data_mask(self, values, mask, expected):
-        bad_data = mapplot.bad_data_mask(values, mask)
+    @pytest.mark.parametrize('value, mask, expected', [(value, mask_daplike, bad_data)])
+    def test_bad_data_mask(self, value, mask, expected):
+        bad_data = mapplot.bad_data_mask(value, mask)
         assert np.all(bad_data == expected)
 
-    @pytest.mark.parametrize('values, ivar, snr_min, expected',
-                             [(values, ivar, None, snr_min_none),
-                              (values, ivar, 0, snr_min_0),
-                              (values, ivar, 1, snr_min_1),
-                              (values, ivar, 3, snr_min_3)])
-    def test_low_snr_mask(self, values, ivar, snr_min, expected):
-        low_snr = mapplot.low_snr_mask(values, ivar, snr_min)
+    @pytest.mark.parametrize('value, ivar, snr_min, expected',
+                             [(value, ivar, None, snr_min_none),
+                              (value, ivar, 0, snr_min_0),
+                              (value, ivar, 1, snr_min_1),
+                              (value, ivar, 3, snr_min_3)])
+    def test_low_snr_mask(self, value, ivar, snr_min, expected):
+        low_snr = mapplot.low_snr_mask(value, ivar, snr_min)
         assert np.all(low_snr == expected)
 
-    @pytest.mark.parametrize('values, log_cb, expected',
-                             [(values, True, log_cb_true),
-                              (values, False, log_cb_false)])
-    def test_log_colorbar_mask(self, values, log_cb, expected):
-        log_colorbar = mapplot.log_colorbar_mask(values, log_cb)
+    @pytest.mark.parametrize('value, log_cb, expected',
+                             [(value, True, log_cb_true),
+                              (value, False, log_cb_false)])
+    def test_log_colorbar_mask(self, value, log_cb, expected):
+        log_colorbar = mapplot.log_colorbar_mask(value, log_cb)
         assert np.all(log_colorbar == expected)
 
-    @pytest.mark.parametrize('values, nocov, bad_data, snr_min, log_cb, expected_mask',
-                             [(values, nocov, bad_data, snr_min_none, log_cb_true, image_none_true),
-                              (values, nocov, bad_data, snr_min_3, log_cb_true, image_3_true),
-                              (values, nocov, bad_data, snr_min_none, log_cb_false,
+    @pytest.mark.parametrize('value, nocov, bad_data, snr_min, log_cb, expected_mask',
+                             [(value, nocov, bad_data, snr_min_none, log_cb_true, image_none_true),
+                              (value, nocov, bad_data, snr_min_3, log_cb_true, image_3_true),
+                              (value, nocov, bad_data, snr_min_none, log_cb_false,
                                image_none_false),
-                              (values, nocov, bad_data, snr_min_3, log_cb_false, image_3_false)])
-    def test_make_image(self, values, nocov, bad_data, snr_min, log_cb, expected_mask):
-        image = mapplot.make_image(values, nocov, bad_data, snr_min, log_cb)
-        expected = np.ma.array(values, mask=expected_mask)
+                              (value, nocov, bad_data, snr_min_3, log_cb_false, image_3_false)])
+    def test_make_image(self, value, nocov, bad_data, snr_min, log_cb, expected_mask):
+        image = mapplot.make_image(value, nocov, bad_data, snr_min, log_cb)
+        expected = np.ma.array(value, mask=expected_mask)
         assert np.all(image.data == expected.data)
         assert np.all(image.mask == expected.mask)
 
@@ -172,3 +172,27 @@ class TestMapPlot(object):
     def test_set_title(self, title, property_name, channel, expected):
         title = mapplot.set_title(title, property_name, channel)
         assert title == expected
+
+    @pytest.mark.parametrize('property_name, channel',
+                             [('emline_gflux', 'ha_6564'),
+                              ('emline_gflux', 'oiii_5008'),
+                              ('stellar_vel', None),
+                              ('stellar_sigma', None),
+                              ('specindex', 'd4000')])
+    def test_plot_dapmap(self, maps, property_name, channel):
+        map_ = maps.getMap(property_name, channel=None)
+        fig, ax = mapplot.plot(dapmap=map_)
+        # fig, ax = mapplot.plot(value=np.array([[0, 1], [2, 3]]))  # dapmap=ha
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(ax, matplotlib.axes._axes.Axes)
+
+    @pytest.mark.parametrize('mask', [None, mask_simple, mask_binary, mask_daplike])
+    @pytest.mark.parametrize('ivar', [None, ivar])
+    @pytest.mark.parametrize('value', [value])
+    def test_plot_user_defined_map(self, value, ivar, mask):
+        fig, ax = mapplot.plot(value=value, ivar=ivar, mask=mask)
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(ax, matplotlib.axes._axes.Axes)
+
+
+# TODO add more asserts to test_plot
