@@ -13,6 +13,9 @@
 - The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
 - Fixed #143: prevents access mode to go in to remote if filename is present.
 - Fixed #213: shortcuts are now only applied on full words, to avoid blind replacements.
+- Fixed #206: no longer masks spaxels close to zero velocity contour in web and tools map plots
+- Fixed #229: corrects web bitmask parsing for map plots
+- Fixed #231: hatch regions within IFU but without data in map plots
 
 ## [2.1.2] - 2017/03/17
 ### Added:
