@@ -237,8 +237,8 @@ def set_title(title=None, property_name=None, channel=None):
     """
 
     if title is None:
-        property_name = property_name or ''
-        channel = channel or ''
+        property_name = property_name if property_name is not None else ''
+        channel = channel if channel is not None else ''
         title = ' '.join((property_name, channel))
         title = ' '.join(title.split('_')).strip()
 
@@ -336,14 +336,12 @@ def plot(*args, **kwargs):
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
 
-    assert (value is not None) or (dapmap is not None), \
-        'Map.plot() requires specifying ``value`` or ``dapmap``.'
+    value = value if value is not None else getattr(dapmap, 'value', None)
 
-    # user-specified value, ivar, or mask override dapmap attribute
-    value = value if dapmap is None else dapmap.value
-    ivar = ivar if dapmap is None else dapmap.ivar
-    mask = mask if dapmap is None else dapmap.mask
-    mask = mask if mask is not None else np.zeros(value.shape)
+    assert value is not None, 'Map.plot() requires specifying ``value`` or ``dapmap``.'
+
+    ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
+    mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
     title = set_title(title,
                       property_name=dapmap and dapmap.property_name,
@@ -381,7 +379,7 @@ def plot(*args, **kwargs):
     cb_kws['sigma_clip'] = sigma_clip
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
-    cb_kws['label'] = cblabel or dapmap.unit or ''
+    cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
     cb_kws = colorbar.set_cb_kws(cb_kws)
     cb_kws = colorbar.set_cbrange(image, cb_kws)
 
