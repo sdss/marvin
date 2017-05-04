@@ -162,7 +162,8 @@ def _cbrange_user_defined(cbrange, cbrange_user):
         cbrange (list):
             Input colorbar range.
         cbrange_user (list):
-            User-specified colorbar range. If a value is None, then use the previous value.
+            User-specified colorbar range. If a value is None, then use the
+            previous value.
 
     Returns:
         list: Colorbar range.
@@ -221,8 +222,8 @@ def set_cbrange(image, cb_kws):
 def _set_cbticks(cbrange, cb_kws):
     """Set colorbar ticks.
 
-    Adjust colorbar range if using a discrete colorbar so that the ticks fall in the middle of each
-        level.
+    Adjust colorbar range if using a discrete colorbar so that the ticks fall
+        in the middle of each level.
 
     Parameters:
         cbrange (list):
@@ -241,7 +242,7 @@ def _set_cbticks(cbrange, cb_kws):
         except AttributeError:
             print('AttributeError: MaxNLocator instance has no attribute ``tick_values``.')
 
-    # if discrete colorbar, offset upper and lower cbrange so that ticks are in center of each level
+    # if discrete colorbar, offset upper and lower cbrange so ticks are in center of each level
     if cb_kws.get('n_levels', None) is not None:
         offset = (ticks[1] - ticks[0]) / 2.
         cbrange = [ticks[0] - offset, ticks[-1] + offset]
@@ -251,18 +252,19 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws=None,
-                  tick_params_kws=None, log_cb=False, **extras):
+def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, log_cb=False,
+                  label_kws=None, tick_params_kws=None, **extras):
     """Make colorbar.
 
     Parameters:
         fig:
-            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ object from which the
-            axes must be created.
+            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_
+            object from which the axes must be created.
         mappable (matplotlib image object):
             Matplotlib plotting element to map to colorbar.
         axloc (list):
-            Specify (left, bottom, width, height) of colorbar axis. Default is ``None``.
+            Specify (left, bottom, width, height) of colorbar axis. Default is
+            ``None``.
         cbrange (list):
             Colorbar min and max.
         ticks (list):
@@ -304,8 +306,8 @@ def _set_cmap(cm_name, n_levels=None):
         cm_name (str):
             Name of colormap.
         n_levels (int):
-            Number of discrete levels of colormap. If ``None``, then produce continuous colormap.
-            Default is ``None``.
+            Number of discrete levels of colormap. If ``None``, then produce
+            continuous colormap. Default is ``None``.
 
     Returns:
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
@@ -326,7 +328,8 @@ def _string_to_cmap(cm_name):
             Name of colormap.
 
     Returns:
-        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+        object
     """
 
     if isinstance(cm_name, str):
@@ -386,7 +389,8 @@ def cmap_discretize(cmap_in, N):
 
     Parameters:
         cmap_in:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object.
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object.
         N (int):
             Number of colors.
 
@@ -493,7 +497,8 @@ def get_cmap_rgb(cmap, n_colors=256):
 
     Parameters:
         cmap:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object
         n_colors (int):
             Number of color tuples in colormap. Default is ``256``.
 
@@ -511,7 +516,8 @@ def output_cmap_rgb(cmap, path=None, n_colors=256):
 
     Parameters:
         cmap:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object
         path (str):
             Path to generate output file. Default is ``None``.
         n_colors (int):
@@ -537,7 +543,8 @@ def one_color_cmap(color):
             Color.
 
     Returns:
-        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+        object
     """
     cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
     return cmap
