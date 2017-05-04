@@ -208,5 +208,10 @@ class TestMapPlot(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
+    def test_plot_matplotlib_rc_restore(self, maps):
+        rcparams = matplotlib.rc_params()
+        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        fig, ax = mapplot.plot(dapmap=map_)
+        assert rcparams == matplotlib.rc_params()
 
 # TODO add more asserts to test_plot
