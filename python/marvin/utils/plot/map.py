@@ -38,6 +38,8 @@
 
 from __future__ import division, print_function, absolute_import
 
+import copy
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -335,11 +337,12 @@ def plot(*args, **kwargs):
     ax = kwargs.get('ax', None)
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
+    
+    assert (value is not None) or (dapmap is not None), \
+        'Map.plot() requires specifying ``value`` or ``dapmap``.'
 
+    # user-defined value, ivar, or mask overrides dapmap attributes 
     value = value if value is not None else getattr(dapmap, 'value', None)
-
-    assert value is not None, 'Map.plot() requires specifying ``value`` or ``dapmap``.'
-
     ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
     mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
@@ -374,6 +377,7 @@ def plot(*args, **kwargs):
     # final masked array to show
     image = make_image(value, nocov_mask, bad_data, low_snr, log_cb_mask)
 
+    # setup colorbar
     cb_kws['cmap'] = cmap
     cb_kws['percentile_clip'] = percentile_clip
     cb_kws['sigma_clip'] = sigma_clip
@@ -383,32 +387,49 @@ def plot(*args, **kwargs):
     cb_kws = colorbar.set_cb_kws(cb_kws)
     cb_kws = colorbar.set_cbrange(image, cb_kws)
 
+    # setup unmasked spaxels
     extent = set_extent(value.shape, sky_coords)
     imshow_kws.setdefault('extent', extent)
     imshow_kws.setdefault('interpolation', 'nearest')
     imshow_kws.setdefault('origin', 'lower')
     imshow_kws['norm'] = LogNorm() if log_cb else None
+    
+    # setup background
+    nocov_kws = copy.deepcopy(imshow_kws)
+    nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
+    A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
 
-    patch_rc = {'hatch.color': 'w',
-                'hatch.linewidth': '0.5'}
-    # with plt.style.context(('seaborn-darkgrid')), plt.rc_context({'hatch.linewidth': 5}):
-    with mpl.rc_context(rc={'hatch.color': 'w'}):
+    # setup masked spaxels
+    patch_kws = set_patch_style(extent=extent)
 
-        # mpl.rc('hatch', color='w', linewidth=0.5)
+    # finish setup of unmasked spaxels and colorbar range
+    imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+
+    # set hatch color and linewidths
+    mpl_rc = {it: mpl.rcParams[it] for it in ['hatch.color', 'hatch.linewidth']}
+    mpl.rc_context({'hatch.color': 'w', 'hatch.linewidth': '0.5'})
+    
+    with plt.style.context('seaborn-darkgrid'):
+
         fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
-        # Plot hatched regions by putting one large patch as lowest layer
+
+        # plot hatched regions by putting one large patch as lowest layer
         # hatched regions are bad data, low SNR, or negative values if the colorbar is logarithmic
-        patch_kws = set_patch_style(extent=extent)
         ax.add_patch(mpl.patches.Rectangle(**patch_kws))
-        # Plot regions without IFU coverage as a solid color (gray #A8A8A8)
-        nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
-        A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
-        ax.imshow(nocov, cmap=A8A8A8, zorder=1, **imshow_kws)
-        imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+
+        # plot regions without IFU coverage as a solid color (gray #A8A8A8)
+        ax.imshow(nocov, cmap=A8A8A8, zorder=1, **nocov_kws)
+        
+        # plot unmasked spaxels
         p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
+
         fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+
         if title is not '':
             ax.set_title(label=title)
+
+    # restore previous matplotlib rc parameters
+    mpl.rc_context(mpl_rc)
 
     # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
     mpl.rcParams['image.composite_image'] = False
