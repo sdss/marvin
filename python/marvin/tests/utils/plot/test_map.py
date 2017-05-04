@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# test_maps.py
+#
+# Created by Brett Andrews on 1 May 2017.
+
 import numpy as np
 import matplotlib
 import pytest
