@@ -58,10 +58,9 @@ def no_coverage_mask(value, mask):
             Mask for value.
 
     Returns:
-        array: Boolean array for mask (i.e., True corresponds to value
-            to be masked out).
+        array: Boolean array for mask (i.e., True corresponds to value to be
+        masked out).
     """
-
     return (mask & 2**0).astype(bool)
 
 
@@ -69,8 +68,8 @@ def bad_data_mask(value, mask):
     """Make mask of spaxels that are masked as bad data by the DAP.
 
     The masks that are considered bad data are "BADVALUE," "MATHERROR,"
-    "BADFIT," and "DONOTUSE," which correspond to the DAPPIXEL bitmasks
-    5, 6, 7, and 30, respectively.
+    "BADFIT," and "DONOTUSE," which correspond to the DAPPIXEL bitmasks 5, 6,
+    7, and 30, respectively.
 
     Parameters:
         value (array):
@@ -79,8 +78,8 @@ def bad_data_mask(value, mask):
             Mask for value.
 
     Returns:
-        array: Boolean array for mask (i.e., True corresponds to value
-            to be masked out).
+        array: Boolean array for mask (i.e., True corresponds to value to be
+        masked out).
     """
     badvalue = (mask & 2**5).astype(bool)
     matherror = (mask & 2**6).astype(bool)
@@ -101,10 +100,9 @@ def low_snr_mask(value, ivar, snr_min):
             Minimum signal-to-noise for keeping a valid measurement.
 
     Returns:
-        array: Boolean array for mask (i.e., True corresponds to value
-            to be masked out).
+        array: Boolean array for mask (i.e., True corresponds to value to be
+        masked out).
     """
-
     low_snr = np.zeros(value.shape, dtype=bool)
 
     if (ivar is not None) and (not np.all(np.isnan(ivar))):
@@ -126,10 +124,9 @@ def log_colorbar_mask(value, log_cb):
             Use logarithmic colorbar.
 
     Returns:
-        array: Boolean array for mask (i.e., True corresponds to value
-            to be masked out).
+        array: Boolean array for mask (i.e., True corresponds to value to be
+        masked out).
     """
-
     mask = np.zeros(value.shape, dtype=bool)
 
     if log_cb:
@@ -139,6 +136,24 @@ def log_colorbar_mask(value, log_cb):
 
 
 def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
+    """Create masked array of spaxels to display.
+
+    Parameters:
+        value (array):
+            Value for image.
+        nocov (array):
+            Mask for spaxels without IFU coverage.
+        bad_data (array):
+            Mask for data flagged as unreliable.
+        low_snr (array):
+            Mask for data below the signal-to-noise ratio threshold.
+        low_cb_mask (array):
+            Mask for negative elements of ``value`` if using a logarithmic
+            colorbar.
+
+    Returns:
+        masked array: spaxels to display in plot.
+    """
     return np.ma.array(value, mask=np.logical_or.reduce((nocov, bad_data, low_snr, log_cb_mask)))
 
 
@@ -149,13 +164,11 @@ def set_extent(cube_size, sky_coords):
         cube_size (tuple):
             Size of the cube in spaxels.
         sky_coords (bool):
-            If True, use sky coordinates, otherwise use spaxel
-            coordinates.
+            If True, use sky coordinates, otherwise use spaxel coordinates.
 
     Returns:
         array
     """
-
     if sky_coords:
         spaxel_size = 0.5  # arcsec
         extent = np.array([-(cube_size[0] * spaxel_size), (cube_size[0] * spaxel_size),
@@ -178,7 +191,6 @@ def set_patch_style(extent, facecolor='#A8A8A8'):
     Returns:
         dict
     """
-
     if int(mpl.__version__.split('.')[0]) >= 2:
         mpl.rcParams['hatch.linewidth'] = 0.5
         mpl.rcParams['hatch.color'] = 'w'
@@ -192,25 +204,24 @@ def set_patch_style(extent, facecolor='#A8A8A8'):
 
 
 def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
-    """Basic axis setup for maps.
+    """Do basic axis setup for maps.
 
     Parameters:
         sky_coords (bool):
-            If True, show plot in sky coordinates (i.e., arcsec),
-            otherwise show in spaxel coordinates.
+            If True, show plot in sky coordinates (i.e., arcsec), otherwise
+            show in spaxel coordinates.
         fig (plt.figure object):
             Matplotlib plt.figure object. Use if creating subplot of a
             multi-panel plot. Default is None.
         ax (plt.figure axis object):
-            Matplotlib plt.figure axis object. Use if creating subplot
-            of a multi-panel plot. Default is None.
+            Matplotlib plt.figure axis object. Use if creating subplot of a
+            multi-panel plot. Default is None.
         facecolor (str):
             Axis facecolor. Default is '#A8A8A8'.
 
-   Returns:
+    Returns:
         tuple: (plt.figure object, plt.figure axis object)
     """
-
     xlabel = 'arcsec' if sky_coords else 'spaxel'
     ylabel = 'arcsec' if sky_coords else 'spaxel'
 
@@ -234,17 +245,15 @@ def set_title(title=None, property_name=None, channel=None):
 
     Parameters:
         title (str):
-            If ``None``, try to set automatically from property (and
-            channel) name(s). For no title, set to ''. Default is
-            ``None``.
+            If ``None``, try to set automatically from property (and channel)
+            name(s). For no title, set to ''. Default is ``None``.
         property_str (str):
             Map property name. Default is ``None``.
         channel (str):
             Map channel name. Default is ``None``.
-   Returns:
+    Returns:
         str
     """
-
     if title is None:
         property_name = property_name if property_name is not None else ''
         channel = channel if channel is not None else ''
@@ -267,39 +276,37 @@ def plot(*args, **kwargs):
         mask (array):
             Mask array. Default is ``None``.
         cmap (str):
-            Default is ``RdBu_r`` for velocities, ``inferno`` for
-            sigmas, and ``linear_Lab`` for other properties.
+            Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and
+            ``linear_Lab`` for other properties.
         percentile_clip (tuple-like):
-            Percentile clip. Default is ``(10, 90)`` for velocities and
-            sigmas and ``(5, 95)`` for other properties.
+            Percentile clip. Default is ``(10, 90)`` for velocities and sigmas
+            and ``(5, 95)`` for other properties.
         sigma_clip (float):
             Sigma clip. Default is ``None``.
         cbrange (tuple-like):
             If ``None``, set automatically. Default is ``None``.
         symmetric (bool):
-            Draw a colorbar that is symmetric around zero. Default is
-            ``True`` for velocities and ``False`` for other properties.
+            Draw a colorbar that is symmetric around zero. Default is ``True``
+            for velocities and ``False`` for other properties.
         snr_min (float):
-            Minimum signal-to-noise for keeping a valid measurement.
-            Default is ``1``.
+            Minimum signal-to-noise for keeping a valid measurement. Default is
+            ``1``.
         log_cb (bool):
             Draw a log normalized colorbar. Default is ``False``.
         title (str):
-            If ``None``, set automatically from property (and channel)
-            name(s). For no title, set to ''. Default is ``None``.
+            If ``None``, set automatically from property (and channel) name(s).
+            For no title, set to ''. Default is ``None``.
         cblabel (str):
-            If ``None``, set automatically from unit. For no colorbar
-            label, set to ''. Default is ``None``.
+            If ``None``, set automatically from unit. For no colorbar label,
+            set to ''. Default is ``None``.
         sky_coords (bool):
-            If ``True``, show plot in sky coordinates (i.e., arcsec),
-            otherwise show in spaxel coordinates. Default is ``False``.
+            If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise
+            show in spaxel coordinates. Default is ``False``.
         use_mask (bool): Use DAP bitmasks. Default is ``True``.
         fig (matplotlib Figure object):
-            Use if creating subplot of a multi-panel plot. Default is
-            ``None``.
+            Use if creating subplot of a multi-panel plot. Default is ``None``.
         ax (matplotlib Axis object):
-            Use if creating subplot of a multi-panel plot. Default is
-            ``None``.
+            Use if creating subplot of a multi-panel plot. Default is ``None``.
         imshow_kws (dict):
             Keyword args to pass to `ax.imshow
             <http://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow>`_.
@@ -311,13 +318,12 @@ def plot(*args, **kwargs):
         fig, ax (tuple):
             `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_,
             `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
-    
+
     Example:
         >>> maps = Maps(plateifu='8485-1901')
         >>> haflux = maps.getMap('emline_gflux', channel='ha_6564')
         >>> haflux.plot()
     """
-
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
                     'use_mask', 'fig', 'ax', 'imshow_kws', 'cb_kws']
