@@ -252,7 +252,7 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, log_cb=False,
+def draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None, log_cb=False,
                   label_kws=None, tick_params_kws=None, **extras):
     """Make colorbar.
 
@@ -262,6 +262,9 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, log_cb=Fa
             object from which the axes must be created.
         mappable (matplotlib image object):
             Matplotlib plotting element to map to colorbar.
+        ax:
+            `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ object
+            from which to steal space.
         axloc (list):
             Specify (left, bottom, width, height) of colorbar axis. Default is
             ``None``.
@@ -286,7 +289,7 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, log_cb=Fa
 
     cax = (fig.add_axes(axloc) if axloc is not None else None)
     try:
-        cb = fig.colorbar(mappable, cax, ticks=ticks)
+        cb = fig.colorbar(mappable=mappable, cax=cax, ax=ax, ticks=ticks)
     except ValueError:
         cb = None
     else:
@@ -331,7 +334,6 @@ def _string_to_cmap(cm_name):
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
         object
     """
-
     if isinstance(cm_name, str):
         if 'linear_Lab' in cm_name:
             try:
@@ -367,8 +369,8 @@ def set_cb_kws(cb_kws):
     Returns:
         dict
     """
-    cb_kws_default = dict(axloc=[0.8, 0.1, 0.03, 5/6.], cbrange=None, n_levels=None,
-                          label_kws=dict(size=16), tick_params_kws=dict(labelsize=16))
+    cb_kws_default = {'axloc': None, 'cbrange': None, 'n_levels': None, 'label_kws': {'size': 16},
+                      'tick_params_kws': {'labelsize': 16}}
 
     # Load default kwargs
     for k, v in cb_kws_default.items():
@@ -410,7 +412,7 @@ def cmap_discretize(cmap_in, N):
         # N colors
         colors_i = np.linspace(0, 1., N)
         # N+1 indices
-        indices = np.linspace(0, 1., N+1)
+        indices = np.linspace(0, 1., N + 1)
         for key in ('red', 'green', 'blue'):
             # Find the N colors
             D = np.array(cdict[key])
@@ -431,6 +433,7 @@ def cmap_discretize(cmap_in, N):
 
 
 def reverse_cmap(cdict):
+    """Reverse colormap dictionary."""
     cdict_r = {}
     for k, v in cdict.items():
         out = []
@@ -441,6 +444,7 @@ def reverse_cmap(cdict):
 
 
 def linear_Lab_filename():
+    """Get filename and path for linear Lab colormap."""
     return join(os.path.dirname(marvin.__file__), 'data', 'Linear_L_0-1.csv')
 
 

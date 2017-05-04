@@ -226,10 +226,10 @@ def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
     ylabel = 'arcsec' if sky_coords else 'spaxel'
 
     if ax is None:
-        fig = plt.figure()
-        ax = fig.add_axes([0.12, 0.1, 2 / 3., 5 / 6.])
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        fig, ax = plt.subplots()
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     if int(mpl.__version__.split('.')[0]) <= 1:
         ax.set_axis_bgcolor(facecolor)
@@ -444,7 +444,7 @@ def plot(*args, **kwargs):
         # plot unmasked spaxels
         p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
-        fig, cb = colorbar.draw_colorbar(fig, p, **cb_kws)
+        fig, cb = colorbar.draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
 
         if title is not '':
             ax.set_title(label=title)
