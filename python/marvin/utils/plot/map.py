@@ -302,7 +302,10 @@ def plot(*args, **kwargs):
         sky_coords (bool):
             If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise
             show in spaxel coordinates. Default is ``False``.
-        use_mask (bool): Use DAP bitmasks. Default is ``True``.
+        use_mask (bool):
+            Use DAP bitmasks. Default is ``True``.
+        plt_style (str):
+            Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
         fig (matplotlib Figure object):
             Use if creating subplot of a multi-panel plot. Default is ``None``.
         ax (matplotlib Axis object):
@@ -326,7 +329,7 @@ def plot(*args, **kwargs):
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
-                    'use_mask', 'fig', 'ax', 'imshow_kws', 'cb_kws']
+                    'use_mask', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
@@ -350,6 +353,7 @@ def plot(*args, **kwargs):
     cblabel = kwargs.get('cblabel', None)
     sky_coords = kwargs.get('sky_coords', False)
     use_mask = kwargs.get('use_mask', True)
+    plt_style = kwargs.get('plt_style', 'seaborn-darkgrid')
     fig = kwargs.get('fig', None)
     ax = kwargs.get('ax', None)
     imshow_kws = kwargs.get('imshow_kws', {})
@@ -426,7 +430,7 @@ def plot(*args, **kwargs):
     mpl_rc = {it: mpl.rcParams[it] for it in ['hatch.color', 'hatch.linewidth']}
     mpl.rc_context({'hatch.color': 'w', 'hatch.linewidth': '0.5'})
 
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context(plt_style):
 
         fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
 

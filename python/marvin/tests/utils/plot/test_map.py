@@ -214,4 +214,8 @@ class TestMapPlot(object):
         fig, ax = mapplot.plot(dapmap=map_)
         assert rcparams == matplotlib.rc_params()
 
-# TODO add more asserts to test_plot
+    def test_plot_matplotlib_style_sheet(self, maps):
+        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        fig, ax = mapplot.plot(dapmap=map_, plt_style='ggplot')
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(ax, matplotlib.axes._axes.Axes)
