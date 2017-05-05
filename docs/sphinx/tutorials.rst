@@ -12,5 +12,6 @@ Tutorials
    tutorials/query-practice
    tutorials/boolean-search-tutorial
    tutorials/jupyter-notebooks
+   tutorials/lean-tutorial
 
 This is the end.
