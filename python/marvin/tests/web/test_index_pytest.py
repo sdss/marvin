@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-05 18:44:53
+# @Last Modified time: 2017-05-05 19:17:37
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -25,20 +25,6 @@ def page(client, request):
 @pytest.mark.parametrize('page', [('index_page', 'Marvin:index')], ids=['index'], indirect=True)
 class TestIndexPage(object):
 
-    # def setUp(self):
-    #     super(TestIndexPage, self).setUp()
-    #     self.blue = 'index_page'
-    #     config.setRelease('MPL-5')
-    #     self.release = config.release
-
-    # @pytest.mark.parametrize('assert_template_used', ['index.html'], indirect=True)
-    # def test_assert_index_template_used(self, assert_template_used, page):
-    #     #url = get_url('index_page', 'Marvin:index')
-    #     print('page', page)
-    #     page.load_page('get', page.url)
-    #     assert '' == page.data
-    #     assert_template_used('index.html')
-
     def test_assert_index_template_used(self, page, get_templates):
         page.load_page('get', page.url)
         assert '' == page.data
@@ -50,16 +36,12 @@ class TestIndexPage(object):
 class TestDb(object):
 
     def test_db_works(self, page, release):
-        #url = self.get_url('Marvin:database')
         page.load_page('get', page.url, params={'release': release})
-        #self._load_page('get', url, params={'release': self.release})
         data = {'plate': 7443}
         page.assert_webjson_success(data)
 
     def test_db_post_fails(self, page, release):
-        #url = self.get_url('Marvin:database')
         page.load_page('post', page.url, params={'release': release})
-        #self._load_page('post', url, params={'release': self.release})
         assert405(page.response, 'allowed method should be get')
 
 
@@ -83,7 +65,6 @@ class TestSelectMPL(object):
 class TestGetGalIdList(object):
 
     def test_getgalid_success(self, page, release):
-        #url = self.get_url('getgalidlist')
         page.load_page('post', page.url, params={'release': release})
         data = ['8485', '8485-1901', '7443', '7443-12701', '1-209232', '12-98126']
         assert200(page.response, message='response status should be 200 for ok')
@@ -91,7 +72,6 @@ class TestGetGalIdList(object):
 
     def test_getgalid_fail(self, page, release):
         marvindb.datadb = None
-        #url = self.get_url('getgalidlist')
         page.load_page('post', page.url, params={'release': release})
         data = ['']
         assert200(page.response, message='response status should be 200 for ok')
@@ -123,42 +103,21 @@ class TestGalIdSelect(object):
         assert_redirects(page.response, redirect_url, 'page should be redirected to {0} page'.format(name))
 
 
-    # def _get_galid(self, name, galid, redirect_url):
-    #     data = {'galid': galid, 'release': self.release}
-    #     url = self.get_url('galidselect')
-    #     self._load_page('get', url, params=data)
-    #     self.assert_redirects(self.response, redirect_url, 'page should be redirected to {0} page'.format(name))
+@pytest.mark.parametrize('page', [('index_page', 'login')], ids=['login'], indirect=True)
+@pytest.mark.parametrize('data, exp',
+                         [({'username': '', 'password': ''}, {'ready': False, 'status': -1, 'message': ''}),
+                          ({'username': 'sdss', 'password': 'password'}, {'ready': False, 'status': 0, 'message': 'Failed login for sdss. Please retry.', 'membername': 'Unknown user'}),
+                          ({'username': 'bac29', 'password': 'password'}, {'ready': False, 'status': 0, 'message': 'Failed login for bac29. Username unrecognized.', 'membername': 'Unknown user'}),
+                          pytest.mark.xfail(reason="not real login")(({'username': 'sdss', 'password': 'password'}, {'ready': True, 'status': 1, 'message': 'Logged in as sdss. ', 'membername': 'SDSS User'}))],
+                         ids=['no_input', 'wrong_pass', 'wrong_user', 'success'])
+class TestLogin(object):
 
-    # def test_get_plate(self):
-    #     self._get_galid('plate', self.plate, url_for('plate_page.Plate:get', plateid=self.plate))
-
-    # def test_get_plateifu(self):
-    #     self._get_galid('galaxy', self.plateifu, url_for('galaxy_page.Galaxy:get', galid=self.plateifu))
-
-    # def test_get_mangaid(self):
-    #     self._get_galid('galaxy', self.mangaid, url_for('galaxy_page.Galaxy:get', galid=self.mangaid))
-
-    # def test_get_none(self):
-    #     self._get_galid('main', 'galname', url_for('index_page.Marvin:index'))
-
-
-# class TestGalIdSelect(TestIndexPage):
-
-#     def _get_galid(self, name, galid, redirect_url):
-#         data = {'galid': galid, 'release': self.release}
-#         url = self.get_url('galidselect')
-#         self._load_page('get', url, params=data)
-#         self.assert_redirects(self.response, redirect_url, 'page should be redirected to {0} page'.format(name))
-
-#     def test_get_plate(self):
-#         self._get_galid('plate', self.plate, url_for('plate_page.Plate:get', plateid=self.plate))
-
-#     def test_get_plateifu(self):
-#         self._get_galid('galaxy', self.plateifu, url_for('galaxy_page.Galaxy:get', galid=self.plateifu))
-
-#     def test_get_mangaid(self):
-#         self._get_galid('galaxy', self.mangaid, url_for('galaxy_page.Galaxy:get', galid=self.mangaid))
-
-#     def test_get_none(self):
-#         self._get_galid('main', 'galname', url_for('index_page.Marvin:index'))
+    def test_login(self, page, release, data, exp):
+        data['release'] = release
+        page.load_page('post', page.url, params=data)
+        assert200(page.response, 'response status should be 200 for ok')
+        assert exp['status'] == page.json['result']['status']
+        assert exp['message'] == page.json['result']['message']
+        if 'membername' in exp:
+            assert exp['membername'] == page.json['result']['membername']
 
