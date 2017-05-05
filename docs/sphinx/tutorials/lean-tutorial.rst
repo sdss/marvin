@@ -9,8 +9,8 @@
    config.mode = 'remote'
 
 
-A Lean Marvin Tutorial
-======================
+Lean Tutorial
+=============
 
 This tutorial runs through all of the steps for doing a project with Marvin from start-to-finish with no extra fat.
 
@@ -26,7 +26,7 @@ Marvin uses a simplified query syntax (in both `Web <https://sas.sdss.org/marvin
 
 Create the query and run it (limit to only 3 results for demo purposes):
 
-.. ipython:: python
+.. code-block:: python
 
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
@@ -35,14 +35,18 @@ Create the query and run it (limit to only 3 results for demo purposes):
 
 View the :ref:`marvin-results`:
 
-.. ipython:: python
+.. code-block:: python
 
     df = r.toDF()
     df
+    #    mangaid  plate    plateifu   name  sersic_logmass
+    # 0  1-24246   8626   8626-1902   1902       10.971793
+    # 1  1-24482   8626  8626-12703  12703       10.706346
+    # 2  1-24476   7990  7990-12705  12705       10.503103
 
 Convert to :ref:`marvin-tools-maps` objects:
 
-.. ipython:: python
+.. code-block:: python
 
     r.convertToTool('maps')
     r.objects
@@ -54,7 +58,7 @@ Get Maps
 
 Alternatively, maybe we already knew our galaxy IDs, which we can use to create :ref:`marvin-tools-maps` objects:
 
-.. ipython:: python
+.. code-block:: python
 
     from marvin.tools.maps import Maps
     mangaids = ['1-245458', '1-22301', '1-605884']
@@ -63,14 +67,14 @@ Alternatively, maybe we already knew our galaxy IDs, which we can use to create 
 
 Get the Halpha maps:
 
-.. ipython:: python
+.. code-block:: python
 
     haflux_maps = [galaxy['emline_gflux_ha_6564'] for galaxy in galaxies]
 
 
 Plot Halpha map of the second galaxy:
 
-.. ipython:: python
+.. code-block:: python
 
     import matplotlib.pyplot as plt
     haflux_map = haflux_maps[1]
@@ -91,22 +95,22 @@ Get Spectrum and Model Fit
 
 Then we can create a :ref:`marvin-tools-spaxel` object from the :ref:`marvin-tools-map` object and retrieve the model fit.
 
-.. ipython:: python
+.. code-block:: python
 
     spax = haflux_map.maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
 
 
 Now let's plot the spectrum and model fit:
 
-.. ipython:: python
+.. code-block:: python
 
-    fig, ax = plt.subplots()
-    pObs = ax.plot(spax.spectrum.wavelength, spax.spectrum.flux)
-    pModel = ax.plot(spax.spectrum.wavelength, spax.model.flux)
-    ax.axis([7100, 7500, 0.3, 0.65]);
-    plt.legend(pObs + pModel, ['observed', 'model']);
-    ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength_unit));
-    ax.set_ylabel('flux [{}]'.format(spax.spectrum.units));
+    # Set matplotlib style sheet. Undo with matplotib.rcdefaults().
+    plt.style.use('seaborn-darkgrid')
+
+    ax = spax.spectrum.plot()
+    ax.plot(spax.model.wavelength, spax.model.flux)
+    ax.legend(list(ax.get_lines()), ['observed', 'model'])
+    ax.axis([7100, 7500, 0.3, 0.65])
 
 .. image:: ../_static/spec_7992-6101.png
 
@@ -119,7 +123,7 @@ Plot BPT Diagram
 
 The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of different ionization types and the Figure object.
 
-.. ipython:: python
+.. code-block:: python
 
     masks, fig = haflux_map.maps.get_bpt()
 
@@ -133,15 +137,16 @@ Select Star-forming Spaxels
 
 Select the star-forming spaxels that are in the star-forming region of each diagnostic diagram (hence the "global" keyword):
 
-.. ipython:: python
+.. code-block:: python
 
     sf = masks['sf']['global']
 
 
 Create the image to display and the background using the star-forming mask:
 
-.. ipython:: python
+.. code-block:: python
 
+    import numpy as np
     image = np.ma.array(haflux_map.value, mask=~sf)
     mask_nodata = np.ma.array(np.ones(haflux_map.value.shape), mask=sf)
 
@@ -153,7 +158,7 @@ Plot Star-forming Spaxels
 
 Let's set the background to gray:
 
-.. ipython:: python
+.. code-block:: python
 
     from marvin.utils.plot import colorbar
     A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
@@ -161,7 +166,7 @@ Let's set the background to gray:
 
 Plot the star-forming spaxels:
 
-.. ipython:: python
+.. code-block:: python
 
     fig, ax = plt.subplots()
     ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
@@ -173,10 +178,6 @@ Plot the star-forming spaxels:
 
 .. image:: ../_static/haflux_sf_7992-6101.png
 
-.. We should make the map plotting a util.plot function instead of a tools.map function.
-.. Want to be able to take in arbitrary masks (e.g., BPT masks)
-.. Expose map._make_image and map._make_mask_no_measurement because they are useful for making masks
-.. Factor out bitmask bits.
 
 
 Plot [NII]/Halpha Flux Ratio for Star-forming Spaxels
@@ -184,7 +185,7 @@ Plot [NII]/Halpha Flux Ratio for Star-forming Spaxels
 
 Calculate [NII]6585/Halpha flux ratio:
 
-.. ipython:: python
+.. code-block:: python
 
     maps_7992_6101 = galaxies[1]
     nii_ha = maps_7992_6101.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
@@ -192,7 +193,7 @@ Calculate [NII]6585/Halpha flux ratio:
 
 Plot the [NII]/Halpha flux ratio for the star-forming spaxels:
 
-.. ipython:: python
+.. code-block:: python
 
     fig, ax = plt.subplots()
     ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
