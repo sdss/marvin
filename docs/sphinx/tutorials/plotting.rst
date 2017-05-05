@@ -1,7 +1,29 @@
 .. _marvin-plotting-tutorial:
 
+.. TODO 
+
+
 Plotting with Marvin
 ====================
+
+General Tips
+------------
+
+Choose a Matplotlib Style Sheet
+```````````````````````````````
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    plt.style.use('seaborn-darkgrid')
+
+
+Reset the Default Style
+```````````````````````
+
+.. code-block:: python
+
+    import matplotlib
+    matplotlib.rcdefaults()
 
 
 Quick Map Plot
@@ -14,15 +36,49 @@ Quick Map Plot
     ha = maps['emline_gflux_ha_6564']
     ha.plot()
 
-.. image:: ../_static/quick_plot.png
+.. image:: ../_static/quick_map_plot.png
+
+
+Quick Spectrum Plot
+-------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    spax = maps[17, 17]
+    spax.spectrum.plot()
+
+.. image:: ../_static/quick_spectrum_plot.png
+
+
+Quick Model Fit Plot
+--------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    spax = maps.getSpaxel(x=17, y=17, xyorig='lower', modelcube=True)
+    ax = spax.spectrum.plot()
+    ax.plot(spax.model.wavelength, spax.model.flux)
+    ax.legend(list(ax.get_lines()), ['observed', 'model'])
+
+.. image:: ../_static/quick_model_plot.png
+
 
 
 BPT Plot
 --------
 
-from marvin.tools.maps import Maps
-maps = Maps(plateifu='8485-1901')
-masks, fig = maps.get_bpt()
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    masks, fig = maps.get_bpt()
+
+.. image:: ../_static/bpt.png
+
 
 Multi-panel Map Plot
 --------------------
@@ -32,9 +88,7 @@ Multi-panel Map Plot
     import matplotlib.pyplot as plt
     from marvin.tools.maps import Maps
     import marvin.utils.plot.map as mapplot
-
-    # need to manually set the matplotlib style sheet for user-defined `fig` and `ax`
-    plt.style.use('seaborn-darkgrid')
+    plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
 
     maps = Maps(plateifu='8485-1901')
     stvel = maps['stellar_vel']
@@ -57,9 +111,7 @@ Custom Axis and Colorbar Locations for Map Plot
 
     import matplotlib.pyplot as plt
     from marvin.tools.maps import Maps
-
-    # need to manually set the matplotlib style sheet for user-defined `fig` and `ax`
-    plt.style.use('seaborn-darkgrid')
+    plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
     
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
@@ -71,8 +123,8 @@ Custom Axis and Colorbar Locations for Map Plot
 .. image:: ../_static/custom_axes.png
 
 
-Spectrum and Model Fit
-----------------------
+Custom Spectrum and Model Fit
+-----------------------------
 
 .. code-block:: python
 
@@ -80,7 +132,7 @@ Spectrum and Model Fit
     from marvin.tools.maps import Maps
     plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
 
-    maps = Maps(plateifu='8485-1901')
+    maps = Maps(mangaid='1-22301')
     spax = maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
 
     fig, ax = plt.subplots()
@@ -92,5 +144,18 @@ Spectrum and Model Fit
     ax.set_ylabel('flux [{}]'.format(spax.spectrum.units))
 
 .. image:: ../_static/spec_7992-6101.png
+
+
+Map Using BPT Mask
+-----------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    masks, __ = maps.get_bpt(show_plot=False)
+    ha.plot(mask=~masks['sf']['global'])
+
 
 |
