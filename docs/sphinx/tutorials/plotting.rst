@@ -1,24 +1,26 @@
 .. _marvin-plotting-tutorial:
 
-.. TODO 
 
-
-Plotting with Marvin
-====================
+Plotting Tutorial
+=================
 
 General Tips
 ------------
 
-Choose a Matplotlib Style Sheet
-```````````````````````````````
+Matplotlib Style Sheets
+```````````````````````
+
+Set Style Sheet
+:::::::::::::::
+
 .. code-block:: python
 
     import matplotlib.pyplot as plt
     plt.style.use('seaborn-darkgrid')
 
 
-Reset the Default Style
-```````````````````````
+Restore Default Style
+:::::::::::::::::::::
 
 .. code-block:: python
 
@@ -157,5 +159,6 @@ Map Using BPT Mask
     masks, __ = maps.get_bpt(show_plot=False)
     ha.plot(mask=~masks['sf']['global'])
 
+.. image:: ../_static/map_bpt_mask.png
 
 |
