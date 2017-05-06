@@ -10,7 +10,7 @@
 class HeatMap {
 
     // Constructor
-    constructor(mapdiv, data, title, galthis) {
+    constructor(mapdiv, data, title, plotparams, galthis) {
         if (data === undefined) {
             console.error('Must specify input map data to initialize a HeatMap!');
         } else if (mapdiv === undefined) {
@@ -19,6 +19,7 @@ class HeatMap {
             this.mapdiv = mapdiv; // div element for map
             this.data = data; // map data
             this.title = title; // map title
+            this.plotparams = plotparams; // default plotting parameters
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
@@ -29,7 +30,7 @@ class HeatMap {
 
     // test print
     print() {
-        console.log('We are now printing heatmap for ', this.title);
+        console.log('We are now printing heatmap for ', this.title, 'test');
     };
 
     // Parse the heatmap title into category, parameter, channel
@@ -76,6 +77,7 @@ class HeatMap {
                 var val = values[ii][jj];
 
                 if (mask !== null) {
+                    // TODO add this to the data model
                     var noCov = (mask[ii][jj] & Math.pow(2, 0));
                     var unreliable = (mask[ii][jj] & Math.pow(2, 5));
                     var mathError = (mask[ii][jj] & Math.pow(2, 6));
@@ -270,6 +272,7 @@ class HeatMap {
 
     quantileClip(range){
         var quantLow, quantHigh, zQuantLow, zQuantHigh;
+        // [quantLow, quantHigh] = this.plotparams['']
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
         if (this.title.toLowerCase().indexOf("vel") >= 0 ||
             this.title.toLowerCase().indexOf("sigma") >= 0) {
