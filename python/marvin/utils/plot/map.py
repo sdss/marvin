@@ -49,9 +49,12 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
+from marvin import config
 import marvin.utils.plot.colorbar as colorbar
+from marvin.utils.general import get_plot_params
 
 
+# TODO ADD TO DATAMODEL
 def no_coverage_mask(value, mask):
     """Make mask of spaxels that are not covered by the IFU.
 
@@ -68,6 +71,7 @@ def no_coverage_mask(value, mask):
     return (mask & 2**0).astype(bool)
 
 
+# TODO ADD TO DATAMODEL
 def bad_data_mask(value, mask):
     """Make mask of spaxels that are masked as bad data by the DAP.
 
@@ -351,7 +355,6 @@ def plot(*args, **kwargs):
     mask = kwargs.get('mask', None)
     sigma_clip = kwargs.get('sigma_clip', None)
     cbrange = kwargs.get('cbrange', None)
-    snr_min = kwargs.get('snr_min', 1)
     log_cb = kwargs.get('log_cb', False)
     title = kwargs.get('title', None)
     cblabel = kwargs.get('cblabel', None)
@@ -375,20 +378,19 @@ def plot(*args, **kwargs):
                       property_name=getattr(dapmap, 'property_name', None),
                       channel=getattr(dapmap, 'channel', None))
 
-    # TODO factor out this section
     if 'vel' in title:
-        cmap = kwargs.get('cmap', 'RdBu_r')
-        percentile_clip = kwargs.get('percentile_clip', [10, 90])
-        symmetric = kwargs.get('symmetric', True)
-        snr_min = None
+        prop = 'vel'
     elif 'sigma' in title:
-        cmap = kwargs.get('cmap', 'inferno')
-        percentile_clip = kwargs.get('percentile_clip', [10, 90])
-        symmetric = kwargs.get('symmetric', False)
+        prop = 'sigma'
     else:
-        cmap = kwargs.get('cmap', 'linear_Lab')
-        percentile_clip = kwargs.get('percentile_clip', [5, 95])
-        symmetric = kwargs.get('symmetric', False)
+        prop = 'default'            
+
+    dapver = config.lookUpVersions()[1]
+    params = get_plot_params(dapver, prop)
+    cmap = kwargs.get('cmap', params['cmap'])
+    percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
+    symmetric = kwargs.get('symmetric', params['symmetric'])
+    snr_min = kwargs.get('snr_min', params['snr_min'])
 
     if sigma_clip is not None:
         percentile_clip = None
