@@ -14,7 +14,8 @@ from marvin import config
 
 
 __all__ = ('MapsProperty', 'MapsPropertyList', 'dap_datamodel',
-           'get_dap_datamodel', 'get_dap_maplist', 'get_default_mapset')
+           'get_dap_datamodel', 'get_dap_maplist', 'get_default_mapset',
+           'get_default_plot_params')
 
 
 class MapsPropertyList(list):
@@ -306,3 +307,30 @@ def get_default_mapset(dapver=None):
     return dapdefaults[dapver] if dapver in dapdefaults else []
 
 
+def get_default_plot_params(dapver=None):
+    """Returns default map plotting parameters."""
+    plot_defaults = {
+        '1.1.1': {'default': {'cmap': 'linear_Lab',
+                              'percentile_clip': [5, 95],
+                              'symmetric': False,
+                              'snr_min': 1},
+                  'vel': {'cmap': 'RdBu_r',
+                          'percentile_clip': [10, 90],
+                          'symmetric': True,
+                          'snr_min': None},
+                  'sigma': {'cmap': 'inferno',
+                            'percentile_clip': [10, 90]}},
+        '2.0.2': {'default': {'cmap': 'linear_Lab',
+                              'percentile_clip': [5, 95],
+                              'symmetric': False,
+                              'snr_min': 1},
+                  'vel': {'cmap': 'RdBu_r',
+                          'percentile_clip': [10, 90],
+                          'symmetric': True,
+                          'snr_min': None},
+                  'sigma': {'cmap': 'inferno',
+                            'percentile_clip': [10, 90],
+                            'symmetric': False,
+                            'snr_min': 1}}
+    }
+    return plot_defaults[dapver] if dapver in plot_defaults else {}
