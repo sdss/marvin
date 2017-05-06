@@ -16,8 +16,8 @@ from flask import Blueprint, render_template, session as current_session, reques
 from flask_classy import FlaskView, route
 from brain.api.base import processRequest
 from marvin import marvindb
-from marvin.utils.general.general import convertImgCoords, parseIdentifier
-from marvin.utils.general.general import getDefaultMapPath, getDapRedux, _db_row_to_dict
+from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
+                                          getDapRedux, _db_row_to_dict, get_plot_params)
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
@@ -96,7 +96,7 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
     return webmap, mapmsg
 
 
-def buildMapDict(cube, params, bintemp=None):
+def buildMapDict(cube, params, dapver, bintemp=None):
     ''' Build a list of dictionaries of maps
 
     params - list of string parameter names in form of category_channel
@@ -119,7 +119,8 @@ def buildMapDict(cube, params, bintemp=None):
             parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template_kin=temp)
-        mapdict.append({'data': webmap, 'msg': mapmsg})
+        plotparams = get_plot_params(dapver=dapver, prop=parameter)
+        mapdict.append({'data': webmap, 'msg': mapmsg, 'plotparams': plotparams})
 
     anybad = [m['data'] is None for m in mapdict]
     if any(anybad):
@@ -318,10 +319,10 @@ class Galaxy(BaseWebView):
 
         # build the uber map dictionary
         try:
-            mapdict = buildMapDict(cube, dapdefaults)
+            mapdict = buildMapDict(cube, dapdefaults, self._dapver)
             mapmsg = None
         except Exception as e:
-            mapdict = [{'data': None, 'msg': 'Error'} for m in dapdefaults]
+            mapdict = [{'data': None, 'msg': 'Error', 'plotparams': None} for m in dapdefaults]
             mapmsg = 'Error getting maps: {0}'.format(e)
         else:
             output['mapstatus'] = 1
@@ -422,7 +423,7 @@ class Galaxy(BaseWebView):
             output = {'mapmsg': 'No parameters selected', 'maps': None, 'status': -1}
         else:
             try:
-                mapdict = buildMapDict(cube, params, bintemp=bintemp)
+                mapdict = buildMapDict(cube, params, self._dapver, bintemp=bintemp)
             except Exception as e:
                 output = {'mapmsg': e.message, 'status': -1, 'maps': None}
             else:

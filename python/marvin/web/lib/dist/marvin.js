@@ -689,7 +689,8 @@ var Galaxy = function () {
                 var mapdiv = $(child).find('div').first();
                 mapdiv.empty();
                 if (maps[index] !== undefined && maps[index].data !== null) {
-                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                    console.log('plotparams galaxy', maps[index].plotparams);
+                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, maps[index].plotparams, _this);
                     this.heatmap.mapdiv.highcharts().reflow();
                 }
             });
@@ -1518,7 +1519,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var HeatMap = function () {
 
     // Constructor
-    function HeatMap(mapdiv, data, title, galthis) {
+    function HeatMap(mapdiv, data, title, plotparams, galthis) {
         _classCallCheck(this, HeatMap);
 
         if (data === undefined) {
@@ -1529,6 +1530,7 @@ var HeatMap = function () {
             this.mapdiv = mapdiv; // div element for map
             this.data = data; // map data
             this.title = title; // map title
+            this.plotparams = plotparams; // default plotting parameters
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
@@ -1542,7 +1544,7 @@ var HeatMap = function () {
 
         // test print
         value: function print() {
-            console.log('We are now printing heatmap for ', this.title);
+            console.log('We are now printing heatmap for ', this.title, 'test');
         }
     }, {
         key: 'parseTitle',
@@ -1614,14 +1616,15 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] & Math.pow(2, 4);
-                        var badValue = mask[ii][jj] & Math.pow(2, 5);
+                        // TODO add this to the data model
+                        var noCov = mask[ii][jj] & Math.pow(2, 0);
+                        var unreliable = mask[ii][jj] & Math.pow(2, 5);
                         var mathError = mask[ii][jj] & Math.pow(2, 6);
-                        var badFit = mask[ii][jj] & Math.pow(2, 7);
+                        var fitFailed = mask[ii][jj] & Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] & Math.pow(2, 30);
-                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
-                        var noData = noValue;
-                        var badData = badValue || mathError || badFit || doNotUse;
+                        //var noData = (noCov || unreliable || mathError || fitFailed || doNotUse);
+                        var noData = noCov;
+                        var badData = unreliable || mathError || fitFailed || doNotUse;
                     } else {
                         noData == null;
                         badData == null;
@@ -1635,17 +1638,16 @@ var HeatMap = function () {
                     // value types
                     // val=no-data => gray color
                     // val=null => hatch area
-                    // val=low-sn => nothing at the moment
 
                     if (noData) {
-                        // for data that is outside the range "nocov" mask
+                        // for data that is outside the range "NOCOV" mask
                         val = 'no-data';
                     } else if (badData) {
                         // for data that is bad - masked in some way
                         val = null;
                     } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
                         // for data that is low S/N
-                        val = null; //val = 'low-sn';
+                        val = null;
                     } else if (ivar === null) {
                         // for data with no mask or no inverse variance extensions
                         if (this.title.search('binid') !== -1) {
@@ -1710,6 +1712,7 @@ var HeatMap = function () {
         key: 'quantileClip',
         value: function quantileClip(range) {
             var quantLow, quantHigh, zQuantLow, zQuantHigh;
+            // [quantLow, quantHigh] = this.plotparams['']
 
             var _getMinMax = this.getMinMax(range);
 
