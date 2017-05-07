@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:54:18
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 14:54:52
+# @Last Modified time: 2017-05-07 17:36:36
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -14,7 +14,7 @@ import pytest
 
 
 @pytest.fixture()
-def page(client, request):
+def page(client, request, init_api):
     blue, endpoint = request.param
     page = ApiPage(client, 'api', endpoint)
     yield page

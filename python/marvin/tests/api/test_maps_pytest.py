@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 15:56:18
+# @Last Modified time: 2017-05-07 17:41:25
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -14,7 +14,7 @@ import pytest
 
 
 @pytest.fixture()
-def page(client, request):
+def page(client, request, init_api):
     blue, endpoint = request.param
     page = ApiPage(client, 'api', endpoint)
     yield page
@@ -75,7 +75,7 @@ class TestGetSingleMap(object):
     def test_map_success(self, galaxy, page, params, reqtype, prop, channel):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
                        'template_kin': galaxy.template, 'property_name': prop, 'channel': channel})
-        data = ['header', 'unit', 'value', 'mask', 'ivar']
+        data = {'header': '', 'unit': '', 'value': '', 'mask': '', 'ivar': ''}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data, keys=True)
 
