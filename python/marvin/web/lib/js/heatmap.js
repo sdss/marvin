@@ -126,10 +126,9 @@ var HeatMap = function () {
                         noData == null;
                         badData == null;
                     }
-                    // TODO use plotparams (snr_min = None for velocity)
+                    var signalToNoiseThreshold = this.plotparams["snr_min"];
                     if (ivar !== null) {
                         var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        var signalToNoiseThreshold = 1.;
                     }
 
                     // value types
@@ -285,10 +284,8 @@ var HeatMap = function () {
 
             var cmap = this.plotparams["cmap"];
 
-            // TODO use plotparams
-            // if (this.title.toLowerCase().indexOf("vel") >= 0) {
+            // make color bar symmetric
             if (this.plotparams["symmetric"]) {
-                // make map symmetric
                 var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
                 zmin = -zabsmax;
                 zmax = zabsmax;
