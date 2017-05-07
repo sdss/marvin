@@ -6,11 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-05 19:17:37
+# @Last Modified time: 2017-05-05 23:27:23
 
 from __future__ import print_function, division, absolute_import
 import pytest
-from marvin.tests.web.conftest import Page, assert405, assert200, assertListIn, assert_redirects
+from marvin.tests.web.conftest import Page
 from marvin import marvindb
 from flask import url_for
 
@@ -42,7 +42,7 @@ class TestDb(object):
 
     def test_db_post_fails(self, page, release):
         page.load_page('post', page.url, params={'release': release})
-        assert405(page.response, 'allowed method should be get')
+        page.assert405('allowed method should be get')
 
 
 @pytest.mark.parametrize('page', [('index_page', 'selectmpl')], ids=['selectmpl'], indirect=True)
@@ -67,14 +67,14 @@ class TestGetGalIdList(object):
     def test_getgalid_success(self, page, release):
         page.load_page('post', page.url, params={'release': release})
         data = ['8485', '8485-1901', '7443', '7443-12701', '1-209232', '12-98126']
-        assert200(page.response, message='response status should be 200 for ok')
-        assertListIn(data, page.json)
+        page.assert200(message='response status should be 200 for ok')
+        page.assertListIn(data, page.json)
 
     def test_getgalid_fail(self, page, release):
         marvindb.datadb = None
         page.load_page('post', page.url, params={'release': release})
         data = ['']
-        assert200(page.response, message='response status should be 200 for ok')
+        page.assert200(message='response status should be 200 for ok')
         assert data == page.json
 
 
@@ -100,7 +100,7 @@ class TestGalIdSelect(object):
         data = {'galid': galid, 'release': release}
         page.load_page('get', page.url, params=data)
         redirect_url = self.get_url(id, galid)
-        assert_redirects(page.response, redirect_url, 'page should be redirected to {0} page'.format(name))
+        page.assert_redirects(redirect_url, 'page should be redirected to {0} page'.format(name))
 
 
 @pytest.mark.parametrize('page', [('index_page', 'login')], ids=['login'], indirect=True)
@@ -115,7 +115,7 @@ class TestLogin(object):
     def test_login(self, page, release, data, exp):
         data['release'] = release
         page.load_page('post', page.url, params=data)
-        assert200(page.response, 'response status should be 200 for ok')
+        page.assert200('response status should be 200 for ok')
         assert exp['status'] == page.json['result']['status']
         assert exp['message'] == page.json['result']['message']
         if 'membername' in exp:
