@@ -307,26 +307,15 @@ class HeatMap {
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
 
-        // TODO use plotparams
-        console.log(this.title, "cmap", this.plotparams["cmap"]);
         var cmap = this.plotparams["cmap"];
-        if (this.title.toLowerCase().indexOf("vel") >= 0) {
-            // make velocity maps symmetric
+
+        // TODO use plotparams
+        // if (this.title.toLowerCase().indexOf("vel") >= 0) {
+        if (this.plotparams["symmetric"]){
+            // make map symmetric
             var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
             [zmin, zmax] = [-zabsmax, zabsmax];
         };
-        /*
-        if (this.title.toLowerCase().indexOf("vel") >= 0) {
-            var cmap = "RdBu";
-            // make velocity maps symmetric
-            var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
-            [zmin, zmax] = [-zabsmax, zabsmax];
-        } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-            var cmap = "inferno";
-        } else {
-            var cmap = "linearLab";
-        };
-        */
 
         var cstops = this.setColorStops(cmap);
 
