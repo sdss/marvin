@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 12:46:11
+# @Last Modified time: 2017-05-07 14:45:02
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -51,20 +51,6 @@ def app():
     return app
 
 
-@pytest.fixture()
-def load_page(client, reqtype, page, params=None):
-    if reqtype == 'get':
-        response = client.get(page, query_string=params)
-    elif reqtype == 'post':
-        response = client.post(page, data=params, content_type='application/x-www-form-urlencoded')
-    yield response
-
-
-@pytest.fixture(scope='session')
-def get_urlmap():
-    return config.urlmap
-
-
 def set_sasurl(loc='local', port=None):
     if not port:
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
@@ -72,21 +58,6 @@ def set_sasurl(loc='local', port=None):
     config.switchSasUrl(loc, test=istest, port=port)
     response = Interaction('api/general/getroutemap', request_type='get')
     config.urlmap = response.getRouteMap()
-
-
-@pytest.fixture(scope='function')
-def get_url(urlmap, blue, endpoint):
-    return urlmap[blue][endpoint]['url']
-
-
-@pytest.fixture()
-def load_data(response):
-    try:
-        jsondata = response.json
-    except ValueError as e:
-        jsondata = None
-    data = jsondata['data'] if jsondata and 'data' in jsondata else ''
-    yield data
 
 
 def test_db_stuff():
@@ -118,16 +89,6 @@ class Page(object):
         self.data = None
         self.response = None
         self.client = client
-        self.set_sasurl('local')
-
-    def set_sasurl(self, loc='local', port=None):
-        if not port:
-            port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
-        istest = True if loc == 'utah' else False
-        config.switchSasUrl(loc, test=istest, port=port)
-        response = Interaction('api/general/getroutemap', request_type='get')
-        config.urlmap = response.getRouteMap()
-        self.urlmap = config.urlmap
 
     def get_url(self, blue, endpoint):
         return config.urlmap[blue][endpoint]['url']
@@ -167,6 +128,10 @@ class Page(object):
         ''' assert all items in list a are in b '''
         for item in a:
             assert item in b
+
+    def assert_dict_contains_subset(self, first, second):
+        subset = all(k in second and second[k] == v for k, v in first.items())
+        assert subset is True, '{0} dictionary should be subset of {1}'.format(first, second)
 
     def assert_status(self, status_code, message=None):
         message = message or 'HTTP Status {0} expected but got {1}'.format(status_code, self.response.status_code)

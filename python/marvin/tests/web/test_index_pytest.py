@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-05 23:27:23
+# @Last Modified time: 2017-05-07 14:09:44
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -16,7 +16,7 @@ from flask import url_for
 
 
 @pytest.fixture()
-def page(client, request):
+def page(client, request, init_web):
     blue, endpoint = request.param
     page = Page(client, blue, endpoint)
     yield page

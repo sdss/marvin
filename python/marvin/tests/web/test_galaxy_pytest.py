@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-22 10:38:28
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 13:16:08
+# @Last Modified time: 2017-05-07 14:27:07
 
 from __future__ import print_function, division, absolute_import
 from marvin.web.controllers.galaxy import make_nsa_dict
@@ -56,6 +56,7 @@ class TestNSA(object):
     def test_nsadict_correct(self, page, cube, exp_nsa_plotcols):
         nsa, cols = make_nsa_dict(cube.nsa)
         assert exp_nsa_plotcols.items() <= nsa.items()
+        page.assert_dict_contains_subset(exp_nsa_plotcols, nsa)
         page.assertListIn(exp_nsa_plotcols.keys(), cols)
 
     def test_initnsa_method_not_allowed(self, page, params, get_templates):
