@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 15:40:25
+# @Last Modified time: 2017-05-07 15:56:18
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -32,6 +32,39 @@ class TestMapsView(object):
         page.load_page('get', page.url, params=params)
         data = 'this is a maps'
         page.assert_success(data)
+
+
+@pytest.mark.parametrize('page', [('api', 'getMaps')], ids=['getMaps'], indirect=True)
+class TestGetMaps(object):
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    def test_map_success(self, galaxy, page, params, reqtype):
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
+        data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
+                'template_kin': galaxy.template, 'shape': [34, 34]}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
+
+    @pytest.mark.parametrize('name, missing, errmsg, bintype, template',
+                             [(None, 'release', 'Missing data for required field.', None, None),
+                              ('badname', 'name', 'String does not match expected pattern.', None, None),
+                              ('84', 'name', 'Shorter than minimum length 4.', None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC'),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN'),
+                              ('8485-1901', 'bintype', 'Field may not be null.', None, None),
+                              ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
+                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
+                                  'wrongmplbintype', 'wrongmpltemplate', 'nobintype', 'notemplate'])
+    def test_map_failures(self, galaxy, page, params, name, missing, errmsg, bintype, template):
+        params.update({'name': name, 'bintype': bintype, 'template_kin': template})
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
+        else:
+            url = page.url.format(**params)
+            url = url.replace('None/', '') if missing in ['bintype', 'template_kin'] else url
+            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 
 
 @pytest.mark.parametrize('page', [('api', 'getmap')], ids=['getmap'], indirect=True)
