@@ -90,7 +90,7 @@ class HeatMap {
                     noData == null;
                     badData == null;
                 }
-
+                // TODO use plotparams (snr_min = None for velocity)
                 if (ivar !== null) {
                     var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
                     var signalToNoiseThreshold = 1.;
@@ -272,14 +272,18 @@ class HeatMap {
 
     quantileClip(range){
         var quantLow, quantHigh, zQuantLow, zQuantHigh;
-        // [quantLow, quantHigh] = this.plotparams['']
+        // TODO use plotparams
+        [quantLow, quantHigh] = this.plotparams['percentile_clip'];
+        console.log(this.title, "percentile_clip", this.plotparams['percentile_clip']);
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
+        /*
         if (this.title.toLowerCase().indexOf("vel") >= 0 ||
             this.title.toLowerCase().indexOf("sigma") >= 0) {
             [quantLow, quantHigh] = [10, 90];
         } else {
             [quantLow, quantHigh] = [5, 95];
         };
+        */
 
         if (range.length > 0) {
             if (quantLow > 0) {
@@ -314,7 +318,7 @@ class HeatMap {
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
 
-
+        // TODO use plotparams
         if (this.title.toLowerCase().indexOf("vel") >= 0) {
             var cmap = "RdBu";
             // make velocity maps symmetric

@@ -85,13 +85,11 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
         vals = data.value
-        ivar = data.ivar  # TODO
-        mask = data.mask  # TODO
-        # TODO How does highcharts read in values? Pass ivar and mask with webmap.
+        ivar = data.ivar
+        mask = data.mask
         webmap = {'values': [it.tolist() for it in data.value],
                   'ivar': [it.tolist() for it in data.ivar] if data.ivar is not None else None,
                   'mask': [it.tolist() for it in data.mask] if data.mask is not None else None}
-        # webmap = [[ii, jj, vals[ii][jj]] for ii in range(len(vals)) for jj in range(len(vals[0]))]
         mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template_kin)
     return webmap, mapmsg
 
