@@ -113,15 +113,12 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        // TODO add this to the data model
-                        var noCov = mask[ii][jj] & Math.pow(2, 0);
-                        var unreliable = mask[ii][jj] & Math.pow(2, 5);
-                        var mathError = mask[ii][jj] & Math.pow(2, 6);
-                        var fitFailed = mask[ii][jj] & Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
-                        //var noData = (noCov || unreliable || mathError || fitFailed || doNotUse);
-                        var noData = noCov;
-                        var badData = unreliable || mathError || fitFailed || doNotUse;
+                        var bitmasks = this.plotparams["bitmasks"];
+                        var noData = mask[ii][jj] & Math.pow(2, bitmasks["nocov"]);
+                        var badData = false;
+                        for (var key in bitmasks["badData"]) {
+                            badData = badData || mask[ii][jj] & Math.pow(2, bitmasks["badData"][key]);
+                        };
                     } else {
                         noData == null;
                         badData == null;
@@ -304,7 +301,10 @@ var HeatMap = function () {
                     plotBackgroundColor: '#A8A8A8'
                 },
                 credits: { enabled: false },
-                title: { text: this.title },
+                title: {
+                    text: this.title.replace(/[_]/g, " "),
+                    style: { fontSize: "14px" }
+                },
                 navigation: {
                     buttonOptions: {
                         theme: { fill: null }

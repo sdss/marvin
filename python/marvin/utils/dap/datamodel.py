@@ -309,26 +309,40 @@ def get_default_mapset(dapver=None):
 
 def get_default_plot_params(dapver=None):
     """Returns default map plotting parameters."""
+    bitmasks = {'nocov': 0,
+                'badData': {'unreliable': 5,
+                            'mathError': 6,
+                            'fitFailed': 7,
+                            'doNotUse': 30}
+                }    
     plot_defaults = {
-        '1.1.1': {'default': {'cmap': 'linearlab',
+        '1.1.1': {'default': {'bitmasks': bitmasks,
+                              'cmap': 'linearlab',
                               'percentile_clip': [5, 95],
                               'symmetric': False,
                               'snr_min': 1},
-                  'vel': {'cmap': 'RdBur',
+                  'vel': {'bitmasks': bitmasks,
+                          'cmap': 'RdBur',
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},
-                  'sigma': {'cmap': 'inferno',
-                            'percentile_clip': [10, 90]}},
-        '2.0.2': {'default': {'cmap': 'linearlab',  # TODO take underscore out of other functions in tools
+                  'sigma': {'bitmasks': bitmasks,
+                            'cmap': 'inferno',
+                            'percentile_clip': [10, 90],
+                            'symmetric': True,
+                            'snr_min': None}},
+        '2.0.2': {'default': {'bitmasks': bitmasks,
+                              'cmap': 'linearlab',
                               'percentile_clip': [5, 95],
                               'symmetric': False,
                               'snr_min': 1},
-                  'vel': {'cmap': 'RdBur',  # TODO take underscore out of other functions in tools
+                  'vel': {'bitmasks': bitmasks,
+                          'cmap': 'RdBur',
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},
-                  'sigma': {'cmap': 'inferno',
+                  'sigma': {'bitmasks': bitmasks,
+                            'cmap': 'inferno',
                             'percentile_clip': [10, 90],
                             'symmetric': False,
                             'snr_min': 1}}
