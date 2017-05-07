@@ -249,7 +249,7 @@ class HeatMap {
             return linearLabHex;
         } else if (cmap === "inferno") {
             return infernoHex;
-        } else if (cmap === "RdBur") {
+        } else if (cmap === "RdBu_r") {
             return RdBuHex;
         } else {
             return ["#000000", "#FFFFFF"];

@@ -219,3 +219,13 @@ class TestMapPlot(object):
         fig, ax = mapplot.plot(dapmap=map_, plt_style='ggplot')
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
+
+    @pytest.mark.parametrize('title, expected',
+                             [('emline_gflux_ha_6564', 'default'),
+                              ('emline_gvel_ha_6564', 'vel'),
+                              ('emline_gsigma_hb_4862', 'sigma'),
+                              ('stellar_vel', 'vel'),
+                              ('stellar_sigma', 'sigma')])
+    def test_get_prop(self, title, expected):
+        assert mapplot._get_prop(title) == expected
+        

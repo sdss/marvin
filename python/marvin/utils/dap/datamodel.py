@@ -314,7 +314,7 @@ def get_default_plot_params(dapver=None):
                             'mathError': 6,
                             'fitFailed': 7,
                             'doNotUse': 30}
-                }    
+                }
     plot_defaults = {
         '1.1.1': {'default': {'bitmasks': bitmasks,
                               'cmap': 'linearlab',
@@ -322,7 +322,7 @@ def get_default_plot_params(dapver=None):
                               'symmetric': False,
                               'snr_min': 1},
                   'vel': {'bitmasks': bitmasks,
-                          'cmap': 'RdBur',
+                          'cmap': 'RdBu_r',
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},
@@ -337,7 +337,7 @@ def get_default_plot_params(dapver=None):
                               'symmetric': False,
                               'snr_min': 1},
                   'vel': {'bitmasks': bitmasks,
-                          'cmap': 'RdBur',
+                          'cmap': 'RdBu_r',
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},

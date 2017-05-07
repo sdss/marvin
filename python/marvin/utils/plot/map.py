@@ -54,8 +54,9 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-# TODO ADD TO DATAMODEL
-def no_coverage_mask(value, mask):
+# TODO which methods should be private?
+
+def no_coverage_mask(value, mask, bit):
     """Make mask of spaxels that are not covered by the IFU.
 
     Parameters:
@@ -63,37 +64,39 @@ def no_coverage_mask(value, mask):
             Value for image.
         mask (array):
             Mask for value.
+        bit (int):
+            Bit for "NOCOV."
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    return (mask & 2**0).astype(bool)
+    return (mask & 2**bit).astype(bool)
 
 
-# TODO ADD TO DATAMODEL
-def bad_data_mask(value, mask):
+def bad_data_mask(value, mask, bits):
     """Make mask of spaxels that are masked as bad data by the DAP.
 
-    The masks that are considered bad data are "BADVALUE," "MATHERROR,"
-    "BADFIT," and "DONOTUSE," which correspond to the DAPPIXEL bitmasks 5, 6,
-    7, and 30, respectively.
+    The masks that are considered bad data are "UNRELIABLE," "MATHERROR,"
+    "FITFAILED," and "DONOTUSE."
 
     Parameters:
         value (array):
             Value for image.
         mask (array):
             Mask for value.
+        bits (dict):
+            Bits that indicate bad data.
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    badvalue = (mask & 2**5).astype(bool)
-    matherror = (mask & 2**6).astype(bool)
-    badfit = (mask & 2**7).astype(bool)
-    donotuse = (mask & 2**30).astype(bool)
-    return np.logical_or.reduce((badvalue, matherror, badfit, donotuse))
+    unreliable = (mask & 2**bits['unreliable']).astype(bool)
+    matherror = (mask & 2**bits['mathError']).astype(bool)
+    fitfailed = (mask & 2**bits['fitFailed']).astype(bool)
+    donotuse = (mask & 2**bits['doNotUse']).astype(bool)
+    return np.logical_or.reduce((unreliable, matherror, fitfailed, donotuse))
 
 
 def low_snr_mask(value, ivar, snr_min):
@@ -142,6 +145,22 @@ def log_colorbar_mask(value, log_cb):
 
     return mask
 
+def _get_prop(title):
+    """Gets property name from plot title.
+    
+    Parameters:
+        title (str):
+            Plot title.
+    
+    Returns:
+        str
+    """
+    if 'vel' in title:
+        return 'vel'
+    elif 'sigma' in title:
+        return 'sigma'
+    else:
+        return 'default'
 
 def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
     """Create masked array of spaxels to display.
@@ -272,6 +291,8 @@ def set_title(title=None, property_name=None, channel=None):
 
 
 def plot(*args, **kwargs):
+    
+    # TODO update for datamodel changes
     """Make single panel map or one panel of multi-panel map plot.
 
     Parameters:
@@ -378,15 +399,11 @@ def plot(*args, **kwargs):
                       property_name=getattr(dapmap, 'property_name', None),
                       channel=getattr(dapmap, 'channel', None))
 
-    if 'vel' in title:
-        prop = 'vel'
-    elif 'sigma' in title:
-        prop = 'sigma'
-    else:
-        prop = 'default'            
-
+    # get plotparams from datamodel
     dapver = config.lookUpVersions()[1]
+    prop = _get_prop(title)
     params = get_plot_params(dapver, prop)
+    print(params)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
     symmetric = kwargs.get('symmetric', params['symmetric'])
@@ -396,8 +413,9 @@ def plot(*args, **kwargs):
         percentile_clip = None
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(value, mask)
-    bad_data = bad_data_mask(value, mask) if use_mask else np.zeros(value.shape)
+    nocov_mask = no_coverage_mask(value, mask, params['bitmasks']['nocov'])
+    badData = params['bitmasks']['badData']
+    bad_data = bad_data_mask(value, mask, badData) if use_mask else np.zeros(value.shape)
     low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
