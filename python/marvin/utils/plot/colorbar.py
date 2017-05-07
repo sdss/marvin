@@ -339,9 +339,9 @@ def _string_to_cmap(cm_name):
         object
     """
     if isinstance(cm_name, str):
-        if 'linear_Lab' in cm_name:
+        if 'linearlab' in cm_name:
             try:
-                cmap, cmap_r = linear_Lab()
+                cmap, cmap_r = linearlab()
             except IOError:
                 cmap = cm.viridis
             else:
@@ -447,15 +447,15 @@ def reverse_cmap(cdict):
     return cdict_r
 
 
-def linear_Lab_filename():
-    """Get filename and path for linear Lab colormap."""
-    return join(os.path.dirname(marvin.__file__), 'data', 'Linear_L_0-1.csv')
+def linearlab_filename():
+    """Get filename and path for linearlab colormap."""
+    return join(os.path.dirname(marvin.__file__), 'data', 'linearlab.csv')
 
 
-def linear_Lab():
-    """Make linear Lab color map.
+def linearlab():
+    """Make linearlab color map.
 
-    `Description of linear Lab palatte
+    `Description of linearlab palatte
     <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
     Returns:
@@ -463,8 +463,8 @@ def linear_Lab():
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object and reversed
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
     """
-    LinL_file = linear_Lab_filename()
-    LinL = np.loadtxt(LinL_file, delimiter=',')
+    linearlab_file = linearlab_filename()
+    LinL = np.loadtxt(linearlab_file, delimiter=',')
 
     b3 = LinL[:, 2]  # value of blue at sample n
     b2 = LinL[:, 2]  # value of blue at sample n
@@ -494,8 +494,8 @@ def linear_Lab():
 
     LinearL_r = reverse_cmap(LinearL)
 
-    cmap = LinearSegmentedColormap('linearL', LinearL)
-    cmap_r = LinearSegmentedColormap('linearL_r', LinearL_r)
+    cmap = LinearSegmentedColormap('linearlab', LinearL)
+    cmap_r = LinearSegmentedColormap('linearlab_r', LinearL_r)
 
     return (cmap, cmap_r)
 

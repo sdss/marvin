@@ -285,7 +285,7 @@ def plot(*args, **kwargs):
             Mask array. Default is ``None``.
         cmap (str):
             Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and
-            ``linear_Lab`` for other properties.
+            ``linearlab`` for other properties.
         percentile_clip (tuple-like):
             Percentile clip. Default is ``(10, 90)`` for velocities and sigmas
             and ``(5, 95)`` for other properties.

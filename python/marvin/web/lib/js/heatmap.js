@@ -126,7 +126,7 @@ var HeatMap = function () {
                         noData == null;
                         badData == null;
                     }
-
+                    // TODO use plotparams (snr_min = None for velocity)
                     if (ivar !== null) {
                         var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
                         var signalToNoiseThreshold = 1.;
@@ -184,11 +184,11 @@ var HeatMap = function () {
 
             var RdBuHex = ['#053061', '#063264', '#073467', '#08366a', '#09386d', '#0a3b70', '#0c3d73', '#0d3f76', '#0e4179', '#0f437b', '#10457e', '#114781', '#124984', '#134c87', '#144e8a', '#15508d', '#175290', '#185493', '#195696', '#1a5899', '#1b5a9c', '#1c5c9f', '#1d5fa2', '#1e61a5', '#1f63a8', '#2065ab', '#2267ac', '#2369ad', '#246aae', '#266caf', '#276eb0', '#2870b1', '#2a71b2', '#2b73b3', '#2c75b4', '#2e77b5', '#2f79b5', '#307ab6', '#327cb7', '#337eb8', '#3480b9', '#3681ba', '#3783bb', '#3885bc', '#3a87bd', '#3b88be', '#3c8abe', '#3e8cbf', '#3f8ec0', '#408fc1', '#4291c2', '#4393c3', '#4695c4', '#4997c5', '#4c99c6', '#4f9bc7', '#529dc8', '#569fc9', '#59a1ca', '#5ca3cb', '#5fa5cd', '#62a7ce', '#65a9cf', '#68abd0', '#6bacd1', '#6eaed2', '#71b0d3', '#75b2d4', '#78b4d5', '#7bb6d6', '#7eb8d7', '#81bad8', '#84bcd9', '#87beda', '#8ac0db', '#8dc2dc', '#90c4dd', '#93c6de', '#96c7df', '#98c8e0', '#9bc9e0', '#9dcbe1', '#a0cce2', '#a2cde3', '#a5cee3', '#a7d0e4', '#a9d1e5', '#acd2e5', '#aed3e6', '#b1d5e7', '#b3d6e8', '#b6d7e8', '#b8d8e9', '#bbdaea', '#bddbea', '#c0dceb', '#c2ddec', '#c5dfec', '#c7e0ed', '#cae1ee', '#cce2ef', '#cfe4ef', '#d1e5f0', '#d2e6f0', '#d4e6f1', '#d5e7f1', '#d7e8f1', '#d8e9f1', '#dae9f2', '#dbeaf2', '#ddebf2', '#deebf2', '#e0ecf3', '#e1edf3', '#e3edf3', '#e4eef4', '#e6eff4', '#e7f0f4', '#e9f0f4', '#eaf1f5', '#ecf2f5', '#edf2f5', '#eff3f5', '#f0f4f6', '#f2f5f6', '#f3f5f6', '#f5f6f7', '#f6f7f7', '#f7f6f6', '#f7f5f4', '#f8f4f2', '#f8f3f0', '#f8f2ef', '#f8f1ed', '#f9f0eb', '#f9efe9', '#f9eee7', '#f9ede5', '#f9ebe3', '#faeae1', '#fae9df', '#fae8de', '#fae7dc', '#fbe6da', '#fbe5d8', '#fbe4d6', '#fbe3d4', '#fce2d2', '#fce0d0', '#fcdfcf', '#fcdecd', '#fdddcb', '#fddcc9', '#fddbc7', '#fdd9c4', '#fcd7c2', '#fcd5bf', '#fcd3bc', '#fbd0b9', '#fbceb7', '#fbccb4', '#facab1', '#fac8af', '#f9c6ac', '#f9c4a9', '#f9c2a7', '#f8bfa4', '#f8bda1', '#f8bb9e', '#f7b99c', '#f7b799', '#f7b596', '#f6b394', '#f6b191', '#f6af8e', '#f5ac8b', '#f5aa89', '#f5a886', '#f4a683', '#f3a481', '#f2a17f', '#f19e7d', '#f09c7b', '#ef9979', '#ee9677', '#ec9374', '#eb9172', '#ea8e70', '#e98b6e', '#e8896c', '#e6866a', '#e58368', '#e48066', '#e37e64', '#e27b62', '#e17860', '#df765e', '#de735c', '#dd7059', '#dc6e57', '#db6b55', '#da6853', '#d86551', '#d7634f', '#d6604d', '#d55d4c', '#d35a4a', '#d25849', '#d05548', '#cf5246', '#ce4f45', '#cc4c44', '#cb4942', '#c94741', '#c84440', '#c6413e', '#c53e3d', '#c43b3c', '#c2383a', '#c13639', '#bf3338', '#be3036', '#bd2d35', '#bb2a34', '#ba2832', '#b82531', '#b72230', '#b61f2e', '#b41c2d', '#b3192c', '#b1182b', '#ae172a', '#ab162a', '#a81529', '#a51429', '#a21328', '#9f1228', '#9c1127', '#991027', '#960f27', '#930e26', '#900d26', '#8d0c25', '#8a0b25', '#870a24', '#840924', '#810823', '#7f0823', '#7c0722', '#790622', '#760521', '#730421', '#700320', '#6d0220', '#6a011f', '#67001f'];
 
-            if (cmap === "linearLab") {
+            if (cmap === "linearlab") {
                 return linearLabHex;
             } else if (cmap === "inferno") {
                 return infernoHex;
-            } else if (cmap === "RdBu") {
+            } else if (cmap === "RdBur") {
                 return RdBuHex;
             } else {
                 return ["#000000", "#FFFFFF"];
@@ -209,7 +209,11 @@ var HeatMap = function () {
         key: 'quantileClip',
         value: function quantileClip(range) {
             var quantLow, quantHigh, zQuantLow, zQuantHigh;
-            // [quantLow, quantHigh] = this.plotparams['']
+
+            var _plotparams$percentil = _slicedToArray(this.plotparams["percentile_clip"], 2);
+
+            quantLow = _plotparams$percentil[0];
+            quantHigh = _plotparams$percentil[1];
 
             var _getMinMax = this.getMinMax(range);
 
@@ -217,14 +221,6 @@ var HeatMap = function () {
 
             zQuantLow = _getMinMax2[0];
             zQuantHigh = _getMinMax2[1];
-
-            if (this.title.toLowerCase().indexOf("vel") >= 0 || this.title.toLowerCase().indexOf("sigma") >= 0) {
-                quantLow = 10;
-                quantHigh = 90;
-            } else {
-                quantLow = 5;
-                quantHigh = 95;
-            };
 
             if (range.length > 0) {
                 if (quantLow > 0) {
@@ -279,25 +275,33 @@ var HeatMap = function () {
             zrange = zrange.filter(this.filterRange);
             // [zmin, zmax] = this.getMinMax(zrange);
 
+            // TODO use plotparams
             var _quantileClip = this.quantileClip(zrange);
 
             var _quantileClip2 = _slicedToArray(_quantileClip, 2);
 
             zmin = _quantileClip2[0];
             zmax = _quantileClip2[1];
-
-
+            console.log(this.title, "cmap", this.plotparams["cmap"]);
+            var cmap = this.plotparams["cmap"];
             if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                var cmap = "RdBu";
                 // make velocity maps symmetric
                 var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
                 zmin = -zabsmax;
                 zmax = zabsmax;
+            };
+            /*
+            if (this.title.toLowerCase().indexOf("vel") >= 0) {
+                var cmap = "RdBu";
+                // make velocity maps symmetric
+                var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
+                [zmin, zmax] = [-zabsmax, zabsmax];
             } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
                 var cmap = "inferno";
             } else {
                 var cmap = "linearLab";
             };
+            */
 
             var cstops = this.setColorStops(cmap);
 

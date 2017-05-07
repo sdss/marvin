@@ -249,11 +249,11 @@ class HeatMap {
         '#810823', '#7f0823', '#7c0722', '#790622', '#760521', '#730421', '#700320', '#6d0220',
         '#6a011f', '#67001f'];
 
-        if (cmap === "linearLab") {
+        if (cmap === "linearlab") {
             return linearLabHex;
         } else if (cmap === "inferno") {
             return infernoHex;
-        } else if (cmap === "RdBu") {
+        } else if (cmap === "RdBur") {
             return RdBuHex;
         } else {
             return ["#000000", "#FFFFFF"];
@@ -272,19 +272,8 @@ class HeatMap {
 
     quantileClip(range){
         var quantLow, quantHigh, zQuantLow, zQuantHigh;
-        // TODO use plotparams
-        [quantLow, quantHigh] = this.plotparams['percentile_clip'];
-        console.log(this.title, "percentile_clip", this.plotparams['percentile_clip']);
+        [quantLow, quantHigh] = this.plotparams["percentile_clip"];
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
-        /*
-        if (this.title.toLowerCase().indexOf("vel") >= 0 ||
-            this.title.toLowerCase().indexOf("sigma") >= 0) {
-            [quantLow, quantHigh] = [10, 90];
-        } else {
-            [quantLow, quantHigh] = [5, 95];
-        };
-        */
-
         if (range.length > 0) {
             if (quantLow > 0) {
                 zQuantLow = math.quantileSeq(range, quantLow / 100);
@@ -319,6 +308,14 @@ class HeatMap {
         [zmin, zmax] = this.quantileClip(zrange);
 
         // TODO use plotparams
+        console.log(this.title, "cmap", this.plotparams["cmap"]);
+        var cmap = this.plotparams["cmap"];
+        if (this.title.toLowerCase().indexOf("vel") >= 0) {
+            // make velocity maps symmetric
+            var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
+            [zmin, zmax] = [-zabsmax, zabsmax];
+        };
+        /*
         if (this.title.toLowerCase().indexOf("vel") >= 0) {
             var cmap = "RdBu";
             // make velocity maps symmetric
@@ -329,6 +326,7 @@ class HeatMap {
         } else {
             var cmap = "linearLab";
         };
+        */
 
         var cstops = this.setColorStops(cmap);
 

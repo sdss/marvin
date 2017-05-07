@@ -310,21 +310,21 @@ def get_default_mapset(dapver=None):
 def get_default_plot_params(dapver=None):
     """Returns default map plotting parameters."""
     plot_defaults = {
-        '1.1.1': {'default': {'cmap': 'linear_Lab',
+        '1.1.1': {'default': {'cmap': 'linearlab',
                               'percentile_clip': [5, 95],
                               'symmetric': False,
                               'snr_min': 1},
-                  'vel': {'cmap': 'RdBu_r',
+                  'vel': {'cmap': 'RdBur',
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},
                   'sigma': {'cmap': 'inferno',
                             'percentile_clip': [10, 90]}},
-        '2.0.2': {'default': {'cmap': 'linear_Lab',
+        '2.0.2': {'default': {'cmap': 'linearlab',  # TODO take underscore out of other functions in tools
                               'percentile_clip': [5, 95],
                               'symmetric': False,
                               'snr_min': 1},
-                  'vel': {'cmap': 'RdBu_r',
+                  'vel': {'cmap': 'RdBur',  # TODO take underscore out of other functions in tools
                           'percentile_clip': [10, 90],
                           'symmetric': True,
                           'snr_min': None},

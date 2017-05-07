@@ -222,7 +222,7 @@ class TestPillowImage(MarvinTest):
 class TestDataModelPlotParams(MarvinTest):
 
     def test_get_plot_params_default(self):
-        desired = {'cmap': 'linear_Lab',
+        desired = {'cmap': 'linearlab',
                    'percentile_clip': [5, 95],
                    'symmetric': False,
                    'snr_min': 1}
@@ -230,7 +230,7 @@ class TestDataModelPlotParams(MarvinTest):
         self.assertDictEqual(actual, desired)
 
     def test_get_plot_params_vel(self):
-        desired = {'cmap': 'RdBu_r',
+        desired = {'cmap': 'RdBur',
                    'percentile_clip': [10, 90],
                    'symmetric': True,
                    'snr_min': None}
