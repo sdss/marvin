@@ -292,7 +292,7 @@ class Galaxy(BaseWebView):
 
         return render_template("galaxy.html", **self.galaxy)
 
-    @route('/initdyamic/', methods=['POST'], endpoint='initdynamic')
+    @route('/initdynamic/', methods=['POST'], endpoint='initdynamic')
     def initDynamic(self):
         ''' Route to run when the dynamic toggle is initialized
             This creates the web spectrum and dap heatmaps
