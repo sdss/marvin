@@ -229,9 +229,18 @@ class TestPillowImage(MarvinTest):
                 self.assertEqual(err, e.args[0])
 
 class TestDataModelPlotParams(MarvinTest):
+    
+    def bitmasks(self):
+        return {'nocov': 0,
+                'badData': {'unreliable': 5,
+                            'mathError': 6,
+                            'fitFailed': 7,
+                            'doNotUse': 30}
+                }
 
     def test_get_plot_params_default(self):
-        desired = {'cmap': 'linearlab',
+        desired = {'bitmasks': self.bitmasks(),
+                   'cmap': 'linearlab',
                    'percentile_clip': [5, 95],
                    'symmetric': False,
                    'snr_min': 1}
@@ -239,7 +248,8 @@ class TestDataModelPlotParams(MarvinTest):
         self.assertDictEqual(actual, desired)
 
     def test_get_plot_params_vel(self):
-        desired = {'cmap': 'RdBur',
+        desired = {'bitmasks': self.bitmasks(),
+                   'cmap': 'RdBur',
                    'percentile_clip': [10, 90],
                    'symmetric': True,
                    'snr_min': None}
@@ -247,7 +257,8 @@ class TestDataModelPlotParams(MarvinTest):
         self.assertDictEqual(actual, desired)
     
     def test_get_plot_params_vel(self):
-        desired = {'cmap': 'inferno',
+        desired = {'bitmasks': self.bitmasks(),
+                   'cmap': 'inferno',
                    'percentile_clip': [10, 90],
                    'symmetric': False,
                    'snr_min': 1}
