@@ -67,6 +67,7 @@ except Exception as e:
 else:
     marvinmode = marvin.config.mode is not None
     print('Marvin imported? {0}'.format(marvinmode))
+    print('Marvin version: {0}'.format(marvin.__version__))
     marvinmap = True if marvin.config.urlmap else False
     print('Does Marvin have a URLMap for API use? {0}'.format(marvinmap))
     print('DB connected?', marvin.marvindb.isdbconnected)

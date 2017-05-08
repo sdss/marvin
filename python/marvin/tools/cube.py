@@ -86,6 +86,10 @@ class Cube(MarvinToolsClass):
         self.wavelength = None
         self._drpall_data = None
 
+        self._flux = None
+        self._ivar = None
+        self._mask = None
+
         super(Cube, self).__init__(*args, **kwargs)
 
         if self.data_origin == 'file':
@@ -136,7 +140,7 @@ class Cube(MarvinToolsClass):
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
 
-        return self.getSpaxel(x=xy[0], y=xy[1], xyorig='lower')
+        return self.getSpaxel(x=xy[1], y=xy[0], xyorig='lower')
 
     def _init_attributes(self):
         """Initialises several attributes."""
@@ -251,17 +255,45 @@ class Cube(MarvinToolsClass):
 
         if self.data_origin == 'file':
             return self.data[extName.upper()].data
+
         elif self.data_origin == 'db':
             return self.data.get3DCube(extName.lower())
-        elif self.data_origin == 'api':
-            raise MarvinError('this feature does not work in remote mode. Use getSpaxel()')
 
-    flux = property(lambda self: self._getExtensionData('FLUX'),
-                    doc='Gets the `FLUX` data extension.')
-    ivar = property(lambda self: self._getExtensionData('IVAR'),
-                    doc='Gets the `IVAR` data extension.')
-    mask = property(lambda self: self._getExtensionData('MASK'),
-                    doc='Gets the `MASK` data extension.')
+        elif self.data_origin == 'api':
+
+            url = marvin.config.urlmap['api']['getCubeExtension']['url']
+
+            try:
+                response = self._toolInteraction(url.format(name=self.plateifu,
+                                                            cube_extension=extName.lower()))
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote cube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            return np.array(data['cube_extension'])
+
+    @property
+    def flux(self):
+        """Gets the ``FLUX`` data extension."""
+        if not self._flux:
+            self._flux = self._getExtensionData('FLUX')
+        return self._flux
+
+    @property
+    def ivar(self):
+        """Gets the ``IVAR`` data extension."""
+        if not self._ivar:
+            self._ivar = self._getExtensionData('IVAR')
+        return self._ivar
+
+    @property
+    def mask(self):
+        """Gets the ``MASK`` data extension."""
+        if not self._mask:
+            self._mask = self._getExtensionData('MASK')
+        return self._mask
 
     @property
     def qualitybit(self):

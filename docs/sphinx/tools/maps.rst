@@ -22,7 +22,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 To save the plot:
 
 ::
-    
+
     fig.savefig('haflux.pdf')
 
 Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
@@ -41,10 +41,10 @@ The DAP map data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`
 We can also grab the DRP and DAP data on any single spaxel. Let's get the central spaxel (x=17, y=17):
 
 ::
-    
+
     spax = maps[17, 17]
 
-Here ``maps[17, 17]`` is shorthand for ``maps.getSpaxel(x=17, y=17, xyorig='lower')``, which has additional options that can be invoked by using the :meth:`~marvin.tools.maps.Maps.getSpaxel` method. For example, set (``modelcube=True``) to return the model spectrum (``spax.model``).
+Here ``maps[i, j]`` is shorthand for ``maps.getSpaxel(x=j, y=i, xyorig='lower')``, which has additional options that can be invoked by using the :meth:`~marvin.tools.maps.Maps.getSpaxel` method. For example, set (``modelcube=True``) to return the model spectrum (``spax.model``).
 
 We can then get a dictionary of all of the DAP :ref:`marvin-tools-analprop`s with ``spax.properties`` and get the value of any one of them, such as stellar velocity, by using the appropriate key ("stellar_vel" in this case), and accessing the ``value`` attribute of the :ref:`marvin-tools-analprop` object:
 
@@ -77,7 +77,7 @@ By default, :ref:`marvin-tools-maps` selects the unbinned maps ``SPX``, but we c
 * ``ALL`` - all spectra binned together.
 
 ::
-    
+
     maps = Maps(mangaid='1-209232', bintype='VOR10')
 
 Download
@@ -86,7 +86,7 @@ Download
 Download the maps using ``rsync`` via `sdss_access <https://github.com/sdss/sdss_access>`_ (see :ref:`marvin-sdss-depends`):
 
 ::
-    
+
     maps.download()
 
 

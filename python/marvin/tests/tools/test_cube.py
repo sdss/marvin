@@ -137,6 +137,17 @@ class TestCube(TestCubeBase):
 
         self.assertTrue(np.allclose(flux, cubeFlux))
 
+    @unittest.expectedFailure
+    def test_cube_flux_from_api(self):
+
+        cube = Cube(plateifu=self.plateifu, mode='remote')
+        flux = cube.flux
+        self.assertEqual(cube.data_origin, 'api')
+
+        cubeFlux = fits.getdata(self.filename)
+
+        self.assertTrue(np.allclose(flux, cubeFlux, rtol=1e-5))
+
     def test_cube_remote_drpver_differ_from_global(self):
 
         # This tests requires having the cube for 8485-1901 loaded for both
@@ -214,6 +225,12 @@ class TestCube(TestCubeBase):
         self.assertEqual(cube.nsa_source, 'drpall')
         self._test_nsa(cube.nsa)
 
+    def test_nsa_12_nsa(self):
+        cube = Cube(mangaid='12-98126', nsa_source='nsa')
+        self.assertEqual(cube.nsa_source, 'nsa')
+        self.assertEqual(cube.nsa['nsaid'], 341153)
+        self.assertAlmostEqual(cube.nsa['sersic_flux_ivar'][0], 0.046455454081)
+
     def test_release(self):
         cube = Cube(plateifu=self.plateifu)
         self.assertEqual(cube.release, 'MPL-4')
@@ -223,33 +240,6 @@ class TestCube(TestCubeBase):
         with self.assertRaises(MarvinError) as ee:
             cube.release = 'a'
             self.assertIn('the release cannot be changed', str(ee.exception))
-
-    def test_load_7443_12701_file(self):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        self._update_release('MPL-5')
-        self.set_filepaths()
-        filename = os.path.realpath(os.path.join(
-            self.drppath, '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
-        cube = Cube(filename=filename)
-        self.assertEqual(cube.data_origin, 'file')
-        self.assertIn('elpetro_amivar', cube.nsa)
-
-    def test_load_7443_12701_db(self):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        self._update_release('MPL-5')
-        cube = Cube(plateifu='7443-12701')
-        self.assertEqual(cube.data_origin, 'db')
-        self.assertIsNone(cube.nsa)
-
-    def test_load_7443_12701_api(self):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        self._update_release('MPL-5')
-        cube = Cube(plateifu='7443-12701', mode='remote')
-        self.assertEqual(cube.data_origin, 'api')
-        self.assertIsNone(cube.nsa)
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exists, in auto mode."""
@@ -573,9 +563,9 @@ class TestGetSpaxel(TestCubeBase):
         yy = 5
         spec_idx = 200
 
-        spaxel_slice_file = cube_file[xx, yy]
-        spaxel_slice_db = cube_db[xx, yy]
-        spaxel_slice_api = cube_api[xx, yy]
+        spaxel_slice_file = cube_file[yy, xx]
+        spaxel_slice_db = cube_db[yy, xx]
+        spaxel_slice_api = cube_api[yy, xx]
 
         flux_result = 0.017639931
         ivar_result = 352.12421

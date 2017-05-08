@@ -1,24 +1,113 @@
 
 .. _marvin-api:
 
-API
-===
+API (marvin.api)
+================
+
+.. note:: Redo to describe the 3 ways of using the API
 
 API stands for Application Programming Interface.  It describes a set of rules designed to faciliate remote acquisition of data, without using a user interface.  It is typically designed as a set of HTTP Request methods (i.e. GET or POST), that you can interact with in a browser, or via code packages, e.g. the Python package `Requests <http://docs.python-requests.org/en/master/>`_.  These URL routes, along with all their parameters, can sometimes be tedious to deal with explicitly.
 
-Marvin makes this easy for you in two ways:
+.. _marvin-apilevels:
 
-1. The Marvin API wraps this functionality into an :ref:`marvin-interaction-class`, making it easy for you to make these calls if you want.
-2. All Marvin Tools have an API call built in when interacting in 'remote' mode, that uses the :ref:`marvin-interaction-class` already, so you don't have to.
+Marvin API
+----------
 
-With the Marvin API, you can build your own application, website, or scripts very easily, and forego the rest of Marvin, if so desired.  Currently all API requests will timeout after 5 minutes.  See :ref:`marvin-api-routes` for a list of the routes available in the Marvin API.
+Marvin has three entry points into the API, each providing different levels of fine-grain control over the data. See the figure below for a visual guide to the Marvin API.
+
+* **Low Level**: This level is direct API access to the HTTP routes.  This gives you direct access to the data in a code agnostic way, completely outside of Marvin.  Use this level if you are comfortable with interacting with JSON data objects, and wish to integrate the raw data directly into your workflow scripts.  See :ref:`marvin-api-routes` for a list of the routes available in the Marvin API.
+
+* **Mid Level**: Marvin wraps some of the explicit nature of dealing with HTTP requests into a convenient Python :ref:`marvin-interaction-class`, making it easier to make the API calls if you want. Use this mode if you don't want to write straight requests but would still prefer to access the data directly.
+
+* **Top Level**: All Marvin Tools have an API call built in when interacting in 'remote' mode, that uses the :ref:`marvin-interaction-class` already, so you don't have to.  This is most of Marvin.  It is recommended to use this mode for complete ease.
+
+With the Marvin API, you can build your own application, website, or workflow scripts very easily, and forego the rest of Marvin, if so desired.  Currently all API requests will timeout after 5 minutes.
+
+|
+
+.. image:: ../Marvin_API.png
+    :width: 800px
+    :align: center
+    :alt: marvin api
+
+|
+
+
+.. _marvin-api_gettingstarted:
+
+Getting Started
+---------------
+
+To use the Marvin API, you must have a **.netrc** file in your local home directory following from the installation instructions.  See :ref:`marvin-authentication`.  Let's see how to access the data for a cube along each of the three entry points.  In each example we will be accessing the data for the MPL-5 version of plate-ifu **8485-1901**.
+
+Top Level
+^^^^^^^^^
+To use the top level API, simply use Marvin in all its glory.
+
+::
+
+    # import the Cube tool
+    from marvin.tools.cube import Cube
+
+    # load 8485-1901 remotely
+    cube = Cube(plateifu='8485-1901', mode='remote')
+
+
+Mid Level
+^^^^^^^^^
+To use the mid level API, your main two tools are the Marvin :ref:`marvin-interaction-class` and Marvin's URL map (:ref:`marvin-urlmap`)
+
+Low Level
+^^^^^^^^^
+To use the low level API, all you need is the HTTP route of the data you wish to access and an appropriate program to perform the request, like **curl** (link), **httpie** (links), or Python `Requests <http://docs.python-requests.org/en/master/>`_. to make HTTP calls.  All of Marvin's HTTP routes return a JSON dictionary containing a specific key called **data**.  The **data** key contains whatever content is returned by the route, e.g. a single string output, or a dictionary containing cube or map properties.
+
+In the following example we will
+
+With the command-line curl:
+
+::
+
+    # use curl to make a POST request
+    curl stuff
+
+With the command-line http:
+
+::
+
+    # use http to make a POST request
+    http api.sdss.org/marvin2/api/cubes/8485-1901/ -v release=MPL-5
+
+
+With Python requests:
+
+::
+
+    # import the requests package
+    import requests
+
+    # set the url
+    url = 'https://api.sdss.org/marvin2/api/cube/8485-1901/'
+
+    # submit the request as a POST request
+    response = requests.post(url)
+
+    # check the status code is 200 for OK
+    response.status_code
+
+    # retrieve the JSON data from the response.  This is like a Python dictionary.
+    json_data = response.json()
+
+    # retrieve the data for plateifu 8485-1901 from the JSON
+    data = json_data['data']
+    print(data)
+
 
 .. _marvin-urlmap:
 
-Config.Urlmap
+config.urlmap
 -------------
 
-The Marvin.config.urlmap is a nested lookup dictionary that contains all of the API routes used in Marvin.  If you have a connection
+The marvin.config.urlmap is a nested lookup dictionary that contains all of the API routes used in Marvin.  If you have a connection
 to the internet, upon intial import, Marvin will attempt to build the urlmap by contacting Marvin at Utah.  With a valid
 internet connection, and config.sasurl variable, Marvin will populate the urlmap with all of the API routes available to use.
 

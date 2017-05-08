@@ -139,6 +139,7 @@ class TestGetNSAData(MarvinTest):
         super(TestGetNSAData, cls).setUpClass()
 
     def setUp(self):
+        self.set_sasurl('local')
         marvin.config.forceDbOn()
 
     def _test_nsa(self, data):
@@ -197,6 +198,14 @@ class TestGetNSAData(MarvinTest):
     def test_drpall_dotable(self):
         data = get_nsa_data(self.mangaid, source='drpall', mode='local')
         self.assertEqual(data['iauname'], data.iauname)
+
+    def test_nsa_old_target_selection(self):
+        data = get_nsa_data('1-178482', source='nsa', mode='local')
+        self.assertAlmostEqual(data['sersic_flux_ivar'][0], 1.33179831504822)
+
+    def test_nsa_12(self):
+        data = get_nsa_data('12-84679', source='nsa', mode='local')
+        self.assertAlmostEqual(data['sersic_flux_ivar'][0], 0.127634227275848)
 
 
 class TestPillowImage(MarvinTest):
