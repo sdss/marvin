@@ -1,11 +1,37 @@
 # Marvin's Change Log
 
+## [2.1.4] - Under Development
+### Added:
+- Plotting tutorial.
+- Uses matplotlib style sheets context managers for plotting (map, spectrum, and BPT) and restores previous defaults before methods finish.
+- Map plotting accepts user-defined value, ivar, and/or mask.
+
+### Changed:
+- Moved map plotting methods from tools/map to utils/plot/map
+- Switch to new gray/hatching scheme (in tools and web):
+  - gray: spaxels with NOCOV.
+  - hatched: spaxels with bad data (UNRELIABLE, MATHERROR, FITFAILED, DONOTUSE) or S/N below some minimum value.
+  - colored: good data.
+- Move plot defaults to datamodel (i.e., bitmasks, colormaps, percentile clips, symmetric, minimum SNR).
+- Simplified default colormap name to "linearlab."
+- Decreased map plot title font size in web so that it does not run onto second line and overlap plot.
+
+### Fixed:
+- Lean tutorial code cells did not work with the ipython directive, so they now use the python directive.
+- Highcharts draggable legend cdn.
+
+### Removed:
+- Automatic setting of matplotlib style sheets via seaborn import or plt.style.use.
+
+
 ## [2.1.3] - Under Development
 ### Added:
+
 ### Changed:
+
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
-- The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
+- The data file for the default colormap for Map.plot() ("linearlab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
 
 
 ## [2.1.2] - 2017/03/17
