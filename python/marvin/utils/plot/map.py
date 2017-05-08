@@ -54,8 +54,6 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-# TODO which methods should be private?
-
 def no_coverage_mask(value, mask, bit):
     """Make mask of spaxels that are not covered by the IFU.
 
@@ -291,8 +289,6 @@ def set_title(title=None, property_name=None, channel=None):
 
 
 def plot(*args, **kwargs):
-    
-    # TODO update for datamodel changes
     """Make single panel map or one panel of multi-panel map plot.
 
     Parameters:
@@ -305,21 +301,19 @@ def plot(*args, **kwargs):
         mask (array):
             Mask array. Default is ``None``.
         cmap (str):
-            Default is ``RdBu_r`` for velocities, ``inferno`` for sigmas, and
-            ``linearlab`` for other properties.
+            Colormap (see datamodel for defaults).
         percentile_clip (tuple-like):
-            Percentile clip. Default is ``(10, 90)`` for velocities and sigmas
-            and ``(5, 95)`` for other properties.
+            Percentile clip (see datamodel for defaults.
         sigma_clip (float):
             Sigma clip. Default is ``None``.
         cbrange (tuple-like):
             If ``None``, set automatically. Default is ``None``.
         symmetric (bool):
-            Draw a colorbar that is symmetric around zero. Default is ``True``
-            for velocities and ``False`` for other properties.
+            Draw a colorbar that is symmetric around zero (see datamodel for
+            default).
         snr_min (float):
-            Minimum signal-to-noise for keeping a valid measurement. Default is
-            ``1``.
+            Minimum signal-to-noise for keeping a valid measurement (see
+            datamodel for default).
         log_cb (bool):
             Draw a log normalized colorbar. Default is ``False``.
         title (str):
