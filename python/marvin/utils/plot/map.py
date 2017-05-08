@@ -397,7 +397,6 @@ def plot(*args, **kwargs):
     dapver = config.lookUpVersions()[1]
     prop = _get_prop(title)
     params = get_plot_params(dapver, prop)
-    print(params)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
     symmetric = kwargs.get('symmetric', params['symmetric'])
