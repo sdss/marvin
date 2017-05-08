@@ -117,7 +117,6 @@ var HeatMap = function () {
                         var mathError = mask[ii][jj] & Math.pow(2, 6);
                         var badFit = mask[ii][jj] & Math.pow(2, 7);
                         var doNotUse = mask[ii][jj] & Math.pow(2, 30);
-                        //var noData = (noValue || badValue || mathError || badFit || doNotUse);
                         var noData = noValue;
                         var badData = badValue || mathError || badFit || doNotUse;
                     } else {
