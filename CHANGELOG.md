@@ -3,6 +3,7 @@
 ## [2.1.4] - Under Development
 ### Added:
 - Plotting tutorial.
+- Easy multi-panel map plotting (with correctly placed colorbars).
 - Uses matplotlib style sheets context managers for plotting (map, spectrum, and BPT) and restores previous defaults before methods finish.
 - Map plotting accepts user-defined value, ivar, and/or mask.
 
@@ -13,6 +14,7 @@
   - hatched: spaxels with bad data (UNRELIABLE, MATHERROR, FITFAILED, DONOTUSE) or S/N below some minimum value.
   - colored: good data.
 - Move plot defaults to datamodel (i.e., bitmasks, colormaps, percentile clips, symmetric, minimum SNR).
+- SNR minimum to None (effectively 0) for velocity maps so that they aren't hatched near the zero velocity contour.
 - Simplified default colormap name to "linearlab."
 - Decreased map plot title font size in web so that it does not run onto second line and overlap plot.
 

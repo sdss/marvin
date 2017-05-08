@@ -9,8 +9,11 @@ import numpy as np
 import matplotlib
 import pytest
 
+from marvin import config
 from marvin.tools.maps import Maps
 import marvin.utils.plot.map as mapplot
+from marvin.utils.general import get_plot_params
+
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
                                   reason='matplotlib-2.0 or higher required')
@@ -25,7 +28,7 @@ ivar = np.array([[4, 10, 1],
 
 mask_simple = np.array([[0, 1, 0],
                         [1, 0, 1],
-                        [0, 1, 0]])
+                        [0, 1, 0]], dtype=bool)
 
 mask_binary = np.array([[0b000, 0b001, 0b010],
                         [0b011, 0b100, 0b101],
@@ -98,18 +101,26 @@ def maps(galaxy):
     yield Maps(plateifu=galaxy.plateifu)
 
 
+@pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
+                                        'specindex'])
+def bits(request):
+    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
+    return params['bitmasks']
+
+
+
 class TestMasks(object):
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, nocov),
                                                        (value, mask_binary, nocov),
                                                        (value, mask_daplike, nocov)])
-    def test_no_coverage_mask(self, value, mask, expected):
-        nocov = mapplot.no_coverage_mask(value, mask)
+    def test_no_coverage_mask(self, value, mask, bits, expected):
+        nocov = mapplot.no_coverage_mask(value, mask, bits['nocov'])
         assert np.all(nocov == expected)
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_daplike, bad_data)])
-    def test_bad_data_mask(self, value, mask, expected):
-        bad_data = mapplot.bad_data_mask(value, mask)
+    def test_bad_data_mask(self, value, mask, bits, expected):
+        bad_data = mapplot.bad_data_mask(value, mask, bits['badData'])
         assert np.all(bad_data == expected)
 
     @pytest.mark.parametrize('value, ivar, snr_min, expected',
