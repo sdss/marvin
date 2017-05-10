@@ -221,10 +221,6 @@ def set_patch_style(extent, facecolor='#A8A8A8'):
     Returns:
         dict
     """
-    if int(mpl.__version__.split('.')[0]) >= 2:
-        mpl.rcParams['hatch.linewidth'] = 0.5
-        mpl.rcParams['hatch.color'] = 'w'
-
     patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
                      width=extent[1] - extent[0] - 0.02,
                      height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
@@ -448,9 +444,12 @@ def plot(*args, **kwargs):
     # finish setup of unmasked spaxels and colorbar range
     imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
-    # set hatch color and linewidths
-    mpl_rc = {it: mpl.rcParams[it] for it in ['hatch.color', 'hatch.linewidth']}
-    mpl.rc_context({'hatch.color': 'w', 'hatch.linewidth': '0.5'})
+    # set hatch color and linewidths (in matplotlib 2.0+)
+    try:
+        mpl_rc = {it: mpl.rcParams[it] for it in ['hatch.color', 'hatch.linewidth']}
+        mpl.rc_context({'hatch.color': 'w', 'hatch.linewidth': '0.5'})
+    except KeyError as ee:
+        mpl_rc = {}
 
     with plt.style.context(plt_style):
 
