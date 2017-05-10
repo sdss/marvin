@@ -170,8 +170,8 @@ class TestMasks(object):
                               (value, nocov, bad_data, snr_min_none, log_cb_false,
                                image_none_false),
                               (value, nocov, bad_data, snr_min_3, log_cb_false, image_3_false)])
-    def test_make_image(self, value, nocov, bad_data, snr_min, log_cb, expected_mask):
-        image = mapplot.make_image(value, nocov, bad_data, snr_min, log_cb)
+    def test_select_good_spaxels(self, value, nocov, bad_data, snr_min, log_cb, expected_mask):
+        image = mapplot.select_good_spaxels(value, nocov, bad_data, snr_min, log_cb)
         expected = np.ma.array(value, mask=expected_mask)
         assert np.all(image.data == expected.data)
         assert np.all(image.mask == expected.mask)

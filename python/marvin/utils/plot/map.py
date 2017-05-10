@@ -165,7 +165,7 @@ def _get_prop(title):
     else:
         return 'default'
 
-def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
+def select_good_spaxels(value, nocov, bad_data, low_snr, log_cb_mask):
     """Create masked array of spaxels to display.
 
     Parameters:
@@ -418,7 +418,7 @@ def plot(*args, **kwargs):
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
-    image = make_image(value, nocov_mask, bad_data, low_snr, log_cb_mask)
+    image = select_good_spaxels(value, nocov_mask, bad_data, low_snr, log_cb_mask)
 
     # setup colorbar
     cb_kws['cmap'] = cmap
