@@ -54,12 +54,14 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-def no_coverage_mask(value, mask, bit):
+def no_coverage_mask(value, ivar, mask, bit):
     """Make mask of spaxels that are not covered by the IFU.
 
     Parameters:
         value (array):
             Value for image.
+        ivar (array):
+            Inverse variance for image.
         mask (array):
             Mask for value.
         bit (int):
@@ -69,14 +71,15 @@ def no_coverage_mask(value, mask, bit):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    return (mask & 2**bit).astype(bool)
+    return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
 
 
 def bad_data_mask(value, mask, bits):
     """Make mask of spaxels that are masked as bad data by the DAP.
 
-    The masks that are considered bad data are "UNRELIABLE," "MATHERROR,"
-    "FITFAILED," and "DONOTUSE."
+    The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
+    Note: MPL-4 used only a good = 0 and bad = 1 mask. The "bad" flag
+    corresponds most closely to "DONOTUSE."
 
     Parameters:
         value (array):
@@ -90,11 +93,13 @@ def bad_data_mask(value, mask, bits):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    unreliable = (mask & 2**bits['unreliable']).astype(bool)
-    matherror = (mask & 2**bits['mathError']).astype(bool)
-    fitfailed = (mask & 2**bits['fitFailed']).astype(bool)
+    if 'unreliable' in bits.keys():     
+        unreliable = (mask & 2**bits['unreliable']).astype(bool)
+    else:
+        unreliable = np.zeros(value.shape, dtype=bool)
+
     donotuse = (mask & 2**bits['doNotUse']).astype(bool)
-    return np.logical_or.reduce((unreliable, matherror, fitfailed, donotuse))
+    return np.logical_or.reduce((unreliable, donotuse))
 
 
 def low_snr_mask(value, ivar, snr_min):
@@ -169,7 +174,7 @@ def make_image(value, nocov, bad_data, low_snr, log_cb_mask):
         nocov (array):
             Mask for spaxels without IFU coverage.
         bad_data (array):
-            Mask for data flagged as unreliable.
+            Mask for data flagged as bad (see datamodel for default bits).
         low_snr (array):
             Mask for data below the signal-to-noise ratio threshold.
         low_cb_mask (array):
@@ -406,7 +411,7 @@ def plot(*args, **kwargs):
         percentile_clip = None
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(value, mask, params['bitmasks']['nocov'])
+    nocov_mask = no_coverage_mask(value, ivar, mask, params['bitmasks'].get('nocov', None))
     badData = params['bitmasks']['badData']
     bad_data = bad_data_mask(value, mask, badData) if use_mask else np.zeros(value.shape)
     low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)

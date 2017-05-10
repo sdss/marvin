@@ -26,6 +26,10 @@ ivar = np.array([[4, 10, 1],
                  [0.01, 0.04, 0.0001],
                  [100000, 0, 1]])
 
+ivar_mpl4 = np.array([[0, 0, 0],
+                      [0, 3, 0],
+                      [0, 0, 0.5]])
+
 mask_simple = np.array([[0, 1, 0],
                         [1, 0, 1],
                         [0, 1, 0]], dtype=bool)
@@ -37,8 +41,8 @@ mask_binary = np.array([[0b000, 0b001, 0b010],
 mask_daplike = np.array([[0b0000000000000000000000000000000,
                           0b0000000000000000000000000000001,
                           0b0000000000000000000000000100000],
-                         [0b0000000000000000000000001000001,
-                          0b0000000000000000000000010000000,
+                         [0b1000000000000000000000001000001,
+                          0b1000000000000000000000010000000,
                           0b1000000000000000000000000000001],
                          [0b0000000000000000000000000000000,
                           0b1000000000000000000000011100001,
@@ -48,9 +52,17 @@ nocov = np.array([[0, 1, 0],
                   [1, 0, 1],
                   [0, 1, 0]], dtype=bool)
 
+nocov_mpl4 = np.array([[1, 1, 1],
+                       [1, 0, 1],
+                       [1, 1, 0]], dtype=bool)
+
 bad_data = np.array([[0, 0, 1],
                      [1, 1, 1],
                      [0, 1, 0]])
+
+bad_data_mpl4 = np.array([[0, 1, 0],
+                          [1, 0, 1],
+                          [0, 1, 0]], dtype=bool)
 
 # SNR = value * np.sqrt(ivar)
 # [[  2.00e+00,  -6.32e+00,   3.00e+00],
@@ -100,7 +112,6 @@ image_3_false = np.array([[1, 1, 1],
 def maps(galaxy):
     yield Maps(plateifu=galaxy.plateifu)
 
-
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request):
@@ -111,12 +122,24 @@ def bits(request):
 
 class TestMasks(object):
 
-    @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, nocov),
-                                                       (value, mask_binary, nocov),
-                                                       (value, mask_daplike, nocov)])
-    def test_no_coverage_mask(self, value, mask, bits, expected):
-        nocov = mapplot.no_coverage_mask(value, mask, bits['nocov'])
+    @pytest.mark.parametrize('value, ivar, mask, expected',
+                             [(value, ivar_mpl4, mask_simple, nocov_mpl4)])
+    def test_no_coverage_mask_mpl4(self, value, ivar, mask, expected):
+        nocov = mapplot.no_coverage_mask(value, ivar, mask, None)
         assert np.all(nocov == expected)
+
+    @pytest.mark.parametrize('value, ivar, mask, expected',
+                             [(value, ivar, mask_simple, nocov),
+                              (value, ivar, mask_binary, nocov),
+                              (value, ivar, mask_daplike, nocov)])
+    def test_no_coverage_mask(self, value, ivar, mask, bits, expected):
+        nocov = mapplot.no_coverage_mask(value, ivar, mask, bits['nocov'])
+        assert np.all(nocov == expected)
+
+    @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, bad_data_mpl4)])
+    def test_bad_data_mask_mpl4(self, value, mask, expected):
+        bad_data = mapplot.bad_data_mask(value, mask, {'doNotUse': 0})
+        assert np.all(bad_data == expected)
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_daplike, bad_data)])
     def test_bad_data_mask(self, value, mask, bits, expected):
