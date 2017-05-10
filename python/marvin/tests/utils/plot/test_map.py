@@ -114,7 +114,7 @@ def maps(galaxy):
 
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
-def bits(request):
+def bits(request, set_release):
     params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
     return params['bitmasks']
 
@@ -125,6 +125,8 @@ class TestMasks(object):
     @pytest.mark.parametrize('value, ivar, mask, expected',
                              [(value, ivar_mpl4, mask_simple, nocov_mpl4)])
     def test_no_coverage_mask_mpl4(self, value, ivar, mask, expected):
+        if config.release != 'MPL-4':
+            pytest.skip('Use generic test for NOCOV bitmask in MPL-5+.')
         nocov = mapplot.no_coverage_mask(value, ivar, mask, None)
         assert np.all(nocov == expected)
 
@@ -133,16 +135,22 @@ class TestMasks(object):
                               (value, ivar, mask_binary, nocov),
                               (value, ivar, mask_daplike, nocov)])
     def test_no_coverage_mask(self, value, ivar, mask, bits, expected):
+        if config.release == 'MPL-4':
+            pytest.skip('NOCOV bitmask only exists in MPL-5+')
         nocov = mapplot.no_coverage_mask(value, ivar, mask, bits['nocov'])
         assert np.all(nocov == expected)
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, bad_data_mpl4)])
     def test_bad_data_mask_mpl4(self, value, mask, expected):
+        if config.release != 'MPL-4':
+            pytest.skip('Use generic test for bad data bitmasks in MPL-5+.')
         bad_data = mapplot.bad_data_mask(value, mask, {'doNotUse': 0})
         assert np.all(bad_data == expected)
 
     @pytest.mark.parametrize('value, mask, expected', [(value, mask_daplike, bad_data)])
     def test_bad_data_mask(self, value, mask, bits, expected):
+        if config.release == 'MPL-4':
+            pytest.skip('UNRELIABLE bitmask only exists in MPL-5+')
         bad_data = mapplot.bad_data_mask(value, mask, bits['badData'])
         assert np.all(bad_data == expected)
 

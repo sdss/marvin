@@ -20,7 +20,7 @@ from marvin.tools.maps import _get_bintemps
 # TODO replace _reset_the_config with monkeypatch
 # TODO reimplement set_sasurl (use function-level fixture?)
 
-releases = ['MPL-5']
+releases = ['MPL-4', 'MPL-5']
 plateifus = ['8485-1901']
 
 bintypes = {}
