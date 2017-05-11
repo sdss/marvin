@@ -463,6 +463,13 @@ config = MarvinConfig()
 from marvin.db.marvindb import MarvinDB
 marvindb = MarvinDB(dbtype=config.db)
 
+# Init MARVIN_DIR
+marvindir = os.environ.get('MARVIN_DIR', None)
+if not marvindir:
+    moduledir = os.path.dirname(os.path.abspath(__file__))
+    marvindir = moduledir.rsplit('/', 2)[0]
+    os.environ['MARVIN_DIR'] = marvindir
+
 # Inits the URL Route Map
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
