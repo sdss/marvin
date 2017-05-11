@@ -470,8 +470,9 @@ def plot(*args, **kwargs):
         if title is not '':
             ax.set_title(label=title)
 
-    # restore previous matplotlib rc parameters
-    mpl.rc_context(mpl_rc)
+    # restore previous matplotlib rc parameters (as of matplotlib 2.0.2 this
+    # redraws the hatches with the original rcParam settings)
+    # mpl.rc_context(mpl_rc)
 
     # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
     mpl.rcParams['image.composite_image'] = False
