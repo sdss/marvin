@@ -61,6 +61,8 @@ Quick Model Fit Plot
 
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
+    # must use Maps.getSpaxel() to get modelcube
+    # (the bracket slicing of Maps does not return the modelcube)
     spax = maps.getSpaxel(x=17, y=17, xyorig='lower', modelcube=True)
     ax = spax.spectrum.plot()
     ax.plot(spax.model.wavelength, spax.model.flux)
@@ -82,8 +84,8 @@ BPT Plot
 .. image:: ../_static/bpt.png
 
 
-Multi-panel Map Plot
---------------------
+Multi-panel Map Plot (Single Galaxy)
+------------------------------------
 
 .. code-block:: python
 
@@ -104,6 +106,33 @@ Multi-panel Map Plot
     fig.tight_layout()
 
 .. image:: ../_static/multipanel.png
+
+
+
+Multi-panel Map Plot (Multiple Galaxies)
+----------------------------------------
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
+
+    plateifus = ['8485-1901', '8485-1902', '8485-12701']
+    mapnames = ['stellar_vel', 'stellar_sigma']
+
+    rows = len(plateifus)
+    cols = len(mapnames)
+    fig, axes = plt.subplots(rows, cols, figsize=(8, 12))
+    for row, plateifu in zip(axes, plateifus):
+        maps = Maps(plateifu=plateifu)
+        for ax, mapname in zip(row, mapnames):
+            mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
+
+    fig.tight_layout()
+
+.. image:: ../_static/multipanel_kinematics.png
 
 
 Custom Axis and Colorbar Locations for Map Plot
@@ -148,16 +177,24 @@ Custom Spectrum and Model Fit
 .. image:: ../_static/spec_7992-6101.png
 
 
-Map Using BPT Mask
------------------
+Plot Halpha Map of Star-forming Spaxels
+---------------------------------------
 
 .. code-block:: python
 
+    import numpy as np
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
     masks, __ = maps.get_bpt(show_plot=False)
-    ha.plot(mask=~masks['sf']['global'])
+
+    # Return the complement of the BPT global star-forming mask (True == star-forming) using `~`
+    # and set bit 30 (DONOTUSE) for non-star-forming spaxels.
+    mask_non_sf = ~masks['sf']['global'] * 2**30
+
+    # Bitwise OR between DAP mask and non-star-forming mask
+    mask = ha.mask | mask_non_sf
+    ha.plot(mask=mask)
 
 .. image:: ../_static/map_bpt_mask.png
 
