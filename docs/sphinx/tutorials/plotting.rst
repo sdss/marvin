@@ -4,6 +4,8 @@
 Plotting Tutorial
 =================
 
+.. _marvin-plotting-general:
+
 General Tips
 ------------
 
@@ -28,6 +30,8 @@ Restore Default Style
     matplotlib.rcdefaults()
 
 
+.. _marvin-plotting-quick-map:
+
 Quick Map Plot
 --------------
 
@@ -41,6 +45,8 @@ Quick Map Plot
 .. image:: ../_static/quick_map_plot.png
 
 
+.. _marvin-plotting-quick-spectrum:
+
 Quick Spectrum Plot
 -------------------
 
@@ -53,6 +59,8 @@ Quick Spectrum Plot
 
 .. image:: ../_static/quick_spectrum_plot.png
 
+
+.. _marvin-plotting-quick-model-fit:
 
 Quick Model Fit Plot
 --------------------
@@ -71,6 +79,7 @@ Quick Model Fit Plot
 .. image:: ../_static/quick_model_plot.png
 
 
+.. _marvin-plotting-bpt:
 
 BPT Plot
 --------
@@ -83,6 +92,8 @@ BPT Plot
 
 .. image:: ../_static/bpt.png
 
+
+.. _marvin-plotting-multipanel-single:
 
 Multi-panel Map Plot (Single Galaxy)
 ------------------------------------
@@ -108,6 +119,7 @@ Multi-panel Map Plot (Single Galaxy)
 .. image:: ../_static/multipanel.png
 
 
+.. _marvin-plotting-multipanel-multiple:
 
 Multi-panel Map Plot (Multiple Galaxies)
 ----------------------------------------
@@ -135,6 +147,8 @@ Multi-panel Map Plot (Multiple Galaxies)
 .. image:: ../_static/multipanel_kinematics.png
 
 
+.. _marvin-plotting-custom-map-axes:
+
 Custom Axis and Colorbar Locations for Map Plot
 -----------------------------------------------
 
@@ -153,6 +167,8 @@ Custom Axis and Colorbar Locations for Map Plot
 
 .. image:: ../_static/custom_axes.png
 
+
+.. _marvin-plotting-custom-spectrum:
 
 Custom Spectrum and Model Fit
 -----------------------------
@@ -176,6 +192,8 @@ Custom Spectrum and Model Fit
 
 .. image:: ../_static/spec_7992-6101.png
 
+
+.. _marvin-plotting-map-starforming:
 
 Plot Halpha Map of Star-forming Spaxels
 ---------------------------------------

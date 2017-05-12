@@ -1,12 +1,17 @@
 .. _marvin-bitmasks:
 
+========
+Bitmasks
+========
+
 
 
 .. TODO Still under heavy development
 
 
-Bitmasks
-========
+
+
+
 
 Get a map:
 

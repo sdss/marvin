@@ -1,17 +1,20 @@
 .. _marvin-map:
 
-====================================
-Map (:py:mod:`marvin.tools.map.Map`)
-====================================
+=================================
+Map (:mod:`marvin.tools.map.Map`)
+=================================
+
+.. _marvin-map-intro:
 
 Introduction
 ------------
-:py:mod:`marvin.tools.map.Map` is a single map for a single galaxy. The main data that it contains are the :py:attr:`~marvin.tools.map.Map.value`, :py:attr:`~marvin.tools.map.Map.ivar`, and :py:attr:`~marvin.tools.map.Map.mask` arrays of the map. It also has some meta data and convenience functions, such as :meth:`~marvin.tools.map.Map.plot`, which wraps the :py:meth:`marvin.utils.plot.map.plot` method.
+:mod:`~marvin.tools.map.Map` is a single map for a single galaxy. The main data that it contains are the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` arrays of the map. It also has some meta data and convenience functions, such as :meth:`~marvin.tools.map.Map.plot`, which wraps the :meth:`marvin.utils.plot.map.plot` method.
 
+.. _marvin-map-getting-started:
 
 Getting Started
 ---------------
-To get a map, we first need to create a :py:mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.
+To get a map, we first need to create a :mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.
 
 .. code-block:: python
 
@@ -19,21 +22,28 @@ To get a map, we first need to create a :py:mod:`marvin.tools.maps.Maps` object,
     maps = Maps(plateifu='8485-1901')
 
 
+By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `MPL-5 Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
+
+* ``SPX`` - spaxels are unbinned,
+* ``VOR10`` - spaxels are Voronoi binned to a minimum continuum SNR of 10,
+* ``NRE`` - spaxels are binned into two radial bins, binning all spectra from 0-1 and 1-2 (elliptical Petrosian) effective radii, and
+* ``ALL`` - all spectra binned together.
+
+.. code-block:: python
+
+    maps_ = Maps(mangaid='1-209232', bintype='VOR10')
 
 
-.. TODO other bintypes
-
-
-
-
-Then we can "slice" the :py:mod:`~marvin.tools.maps.Maps` object to get the H\ :math:`\alpha` (Gaussian-fitted) flux map.
+Once we have a :mod:`~marvin.tools.maps.Maps` object, we can "slice" it to get the H\ :math:`\alpha` (Gaussian-fitted) flux map.
 
 .. code-block:: python
 
     ha = maps['emline_gflux_ha_6564']
     ha.plot()
 
+
 .. image:: ../_static/quick_map_plot.png
+
 
 Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gflux', channel='ha_6564')``, where the property and channel are joined by an underscore ("_"). For properties without channels, such as stellar velocity, just use the property name like ``maps['stellar_vel']``.
 
@@ -43,7 +53,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
     stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
 
 
-The values, inverse variance, and bitmasks of the map can be accessed via the :py:attr:`~marvin.tools.map.Map.value`, :py:attr:`~marvin.tools.map.Map.ivar`, and :py:attr:`~marvin.tools.map.Map.mask` attributes, respectively.
+The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
 
 **Important**: These arrays are ordered as ``[row, column]`` with the origin in the lower left, which corresponds to ``[y, x]``.
 
@@ -65,7 +75,7 @@ The values, inverse variance, and bitmasks of the map can be accessed via the :p
     #          0.        ,   0.        ])
 
 
-The :py:attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :py:attr:`~marvin.tools.map.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
+The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :attr:`~marvin.tools.map.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
 
 .. code-block:: python
 
@@ -86,7 +96,7 @@ The :py:attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <
     (ha.masked.mask == (ha.mask).astype(bool)).all()  # True
 
 
-For more fine-grained data quality control, you can select spaxels based on the :py:attr:`~marvin.tools.map.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
+For more fine-grained data quality control, you can select spaxels based on the :attr:`~marvin.tools.map.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
 
 ===  ============  =============================================================
 Bit	 Name	       Description
@@ -126,39 +136,69 @@ Bit	 Name	       Description
     (bad_data == donotuse).all()  # True
 
 
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.map.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
 
-Using :py:mod:`~marvin.tools.map.Map`
--------------------------------------
+.. code-block:: python
 
-For more in-depth discussion of using :py:mod:`~marvin.tools.map.Map`, please see the following sections:
+    ha.maps == maps  # True
+    
+    ha.maps_property
+    # <MapsProperty name=emline_gflux, ivar=True, mask=True, n_channels=21>
+    
+    ha.maps_property.channels
+    # ['oiid_3728', 'hb_4862', 'oiii_4960', 'oiii_5008', ..., 'siii_9533']
 
-Plot a Map
-``````````
 
-.. toctree::
-   :maxdepth: 2
+Finally, we can :meth:`~marvin.tools.map.Map.save` our :mod:`~marvin.tools.map.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.map.Map.restore` it.
 
-   ../tutorials/plotting
+.. code-block:: python
+
+    from marvin.tools.map import Map
+    ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
+    zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
+
+
+.. _marvin-map-using:
+
+Using :mod:`~marvin.tools.map.Map`
+----------------------------------
+
+For more in-depth discussion of using :mod:`~marvin.tools.map.Map`, please see the following sections:
+
+Map Plotting
+````````````
+
+* :doc:`../tutorials/plotting`
+  
+  * :ref:`marvin-plotting-quick-map`
+  * :ref:`marvin-plotting-multipanel-single`
+  * :ref:`marvin-plotting-multipanel-multiple`
+  * :ref:`marvin-plotting-custom-map-axes`
+  * :ref:`marvin-plotting-map-starforming`
 
 Bitmasks
 ````````
 
-.. toctree::
-   :maxdepth: 2
-
-   ../tutorials/bitmasks
+* :doc:`../tutorials/bitmasks`
 
 
+.. _marvin-map-reference:
 
 Reference/API
 -------------
 
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.map.Map
+
+.. rubric:: Methods
+
 .. autosummary::
-    
-    marvin.tools.map.Map
+
     marvin.tools.map.Map.plot
     marvin.tools.map.Map.restore
     marvin.tools.map.Map.save
     marvin.tools.map.Map.snr
+
 
 |

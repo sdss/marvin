@@ -264,8 +264,8 @@ class Map(object):
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
     def plot(self, *args, **kwargs):
-        """Convenience method for map plotting that wraps marvin.utils.plot.map.plot.
+        """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
         
-        See marvin.utils.plot.map.plot for full documentation.
+        See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)

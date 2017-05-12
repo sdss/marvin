@@ -404,10 +404,10 @@ def cmap_discretize(cmap_in, N):
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
 
     Example:
-        fig, ax = plt.subplots()
-        im = np.resize(np.arange(100), (5, 100))
-        dRdBu = cmap_discretize(cm.RdBu, 5)
-        ax.imshow(im, cmap=dRdBu)
+        >>> fig, ax = plt.subplots()
+        >>> im = np.resize(np.arange(100), (5, 100))
+        >>> dRdBu = cmap_discretize(cm.RdBu, 5)
+        >>> ax.imshow(im, cmap=dRdBu)
     """
     try:
         return cmap_in._resample(N)
