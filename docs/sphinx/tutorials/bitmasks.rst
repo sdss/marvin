@@ -1,26 +1,32 @@
 .. _marvin-bitmasks:
 
+
+
+.. TODO Still under heavy development
+
+
 Bitmasks
 ========
 
 Get a map:
 
-::
+.. code-block:: python
+
 
     from marvin.tools.maps import Maps
     galaxy = Maps(plateifu='8485-1901')
-    haflux = galaxy['emline_gflux_ha_6564']
+    ha = galaxy['emline_gflux_ha_6564']
 
 Use the DAP bitmasks to flag spaxels that we don't want to include:
 
 .. code-block:: python
 
     import numpy as np
-    novalue = (haflux.mask & 2**4) > 0
-    badvalue = (haflux.mask & 2**5) > 0
-    matherror = (haflux.mask & 2**6) > 0
-    badfit = (haflux.mask & 2**7) > 0
-    donotuse = (haflux.mask & 2**30) > 0
+    novalue = (ha.mask & 2**4) > 0
+    badvalue = (ha.mask & 2**5) > 0
+    matherror = (ha.mask & 2**6) > 0
+    badfit = (ha.mask & 2**7) > 0
+    donotuse = (ha.mask & 2**30) > 0
     no_data = np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
 
 

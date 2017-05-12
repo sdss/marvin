@@ -41,8 +41,8 @@ sys.path.insert(0, os.path.abspath('../../../marvin_brain/python/brain/'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.todo',
-    'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
+    'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary',
+    'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',

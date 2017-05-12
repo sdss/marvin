@@ -66,7 +66,9 @@ Components
   * :ref:`marvin-bpt`
   * :ref:`marvin-modelcube`
   * :ref:`marvin-maps`
+  * :ref:`marvin-map`
   * :ref:`marvin-images`
+  * :ref:`marvin-utils`
 
 * :doc:`api`
 

@@ -13,5 +13,7 @@ Tutorials
    tutorials/boolean-search-tutorial
    tutorials/jupyter-notebooks
    tutorials/lean-tutorial
+   tutorials/plotting
+   tutorials/bitmasks
 
-This is the end.
+|

@@ -1,30 +1,164 @@
 .. _marvin-map:
 
-========================
-Map (:meth:`marvin.tools.map`)
-========================
+====================================
+Map (:py:mod:`marvin.tools.map.Map`)
+====================================
 
 Introduction
 ------------
+:py:mod:`marvin.tools.map.Map` is a single map for a single galaxy. The main data that it contains are the :py:attr:`~marvin.tools.map.Map.value`, :py:attr:`~marvin.tools.map.Map.ivar`, and :py:attr:`~marvin.tools.map.Map.mask` arrays of the map. It also has some meta data and convenience functions, such as :meth:`~marvin.tools.map.Map.plot`, which wraps the :py:meth:`marvin.utils.plot.map.plot` method.
+
 
 Getting Started
 ---------------
+To get a map, we first need to create a :py:mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.
 
-Using `map`
------------
+.. code-block:: python
 
-For more in-depth discussion of using `marvin.tools.map`, please see the following sections:
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
 
-Plot Map
+
+
+
+.. TODO other bintypes
+
+
+
+
+Then we can "slice" the :py:mod:`~marvin.tools.maps.Maps` object to get the H\ :math:`\alpha` (Gaussian-fitted) flux map.
+
+.. code-block:: python
+
+    ha = maps['emline_gflux_ha_6564']
+    ha.plot()
+
+.. image:: ../_static/quick_map_plot.png
+
+Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gflux', channel='ha_6564')``, where the property and channel are joined by an underscore ("_"). For properties without channels, such as stellar velocity, just use the property name like ``maps['stellar_vel']``.
+
+.. code-block:: python
+
+    ha_ = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
+    stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
+
+
+The values, inverse variance, and bitmasks of the map can be accessed via the :py:attr:`~marvin.tools.map.Map.value`, :py:attr:`~marvin.tools.map.Map.ivar`, and :py:attr:`~marvin.tools.map.Map.mask` attributes, respectively.
+
+**Important**: These arrays are ordered as ``[row, column]`` with the origin in the lower left, which corresponds to ``[y, x]``.
+
+.. code-block:: python
+
+    ha.value  # (34, 34) array
+    ha.ivar   # (34, 34) array
+    ha.mask   # (34, 34) array
+    
+    ha.value[17]  # get the middle row (i.e., "y")
+    # array([  0.        ,   0.        ,   0.        ,   0.        ,
+    #          0.        ,   0.        ,   0.03650022,   0.03789879,
+    #          0.0838113 ,   0.16109767,   0.57484451,   1.42108019,
+    #          2.98873795,   7.47787753,  14.08300415,  21.61707138,
+    #         28.37593542,  31.47541953,  28.29092958,  20.82737156,
+    #         13.33138178,   6.90730005,   3.70062335,   1.54131387,
+    #          0.55510055,   0.34234428,   0.21906664,   0.18621548,
+    #          0.1745672 ,   0.        ,   0.        ,   0.        ,
+    #          0.        ,   0.        ])
+
+
+The :py:attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :py:attr:`~marvin.tools.map.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
+
+.. code-block:: python
+
+    ha.masked[17]
+    # masked_array(data = [-- -- -- -- -- -- -- 0.03789878599602308 0.08381129696903318
+    #                      0.1610976667261473 0.5748445110902572 1.421080190438372 2.988737954927168
+    #                      7.477877525388817 14.083004151791611 21.61707138246288 28.37593542372677
+    #                      31.475419531155 28.290929579722462 20.827371557790272 13.331381776434451
+    #                      6.907300050577721 3.7006233506234203 1.5413138678320422 0.5551005467482618
+    #                      0.3423442819444342 0.2190666373241594 0.18621548081774594
+    #                      0.17456719770757587 -- -- -- -- --],
+    #              mask = [ True  True  True  True  True  True  True False False False False False
+    #                       False False False False False False False False False False False False
+    #                       False False False False False  True  True  True  True  True],
+    #              fill_value = 1e+20)
+    
+    (ha.masked.data == ha.value).all()                # True
+    (ha.masked.mask == (ha.mask).astype(bool)).all()  # True
+
+
+For more fine-grained data quality control, you can select spaxels based on the :py:attr:`~marvin.tools.map.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
+
+===  ============  =============================================================
+Bit	 Name	       Description
+===  ============  =============================================================
+0    NOCOV	       No coverage in this spaxel
+1    LOWCOV	       Low coverage in this spaxel
+2    DEADFIBER     Major contributing fiber is dead
+3    FORESTAR      Foreground star
+4    NOVALUE       Spaxel was not fit because it did not meet selection criteria
+5    UNRELIABLE    Value is deemed unreliable; see TRM for definition
+6    MATHERROR     Mathematical error in computing value
+7    FITFAILED     Attempted fit for property failed
+8    NEARBOUND     Fitted value is too near an imposed boundary; see TRM
+9    NOCORRECTION  Appropriate correction not available
+10   MULTICOMP     Multi-component velocity features present
+30   DONOTUSE      Do not use this spaxel for science
+===  ============  =============================================================
+
+**Note**: For MPL-5, DONOTUSE is a consolidation of the flags NOCOV, LOWCOV, DEADFIBER, FORESTAR, NOVALUE, MATHERROR, FITFAILED, and NEARBOUND.
+
+.. code-block:: python
+
+    import numpy as np
+    nocov     = (ha.mask & 2**0) > 0
+    lowcov    = (ha.mask & 2**1) > 0
+    deadfiber = (ha.mask & 2**2) > 0
+    forestar  = (ha.mask & 2**3) > 0
+    novalue   = (ha.mask & 2**4) > 0
+    matherror = (ha.mask & 2**6) > 0
+    fitfailed = (ha.mask & 2**7) > 0
+    nearbound = (ha.mask & 2**8) > 0
+
+    bad_data = np.logical_or.reduce((nocov, lowcov, deadfiber, forestar, novalue, matherror, fitfailed, nearbound))
+    
+    donotuse  = (ha.mask & 2**30) > 0
+    
+    (bad_data == donotuse).all()  # True
+
+
+
+Using :py:mod:`~marvin.tools.map.Map`
+-------------------------------------
+
+For more in-depth discussion of using :py:mod:`~marvin.tools.map.Map`, please see the following sections:
+
+Plot a Map
+``````````
+
+.. toctree::
+   :maxdepth: 2
+
+   ../tutorials/plotting
+
+Bitmasks
 ````````
 
 .. toctree::
    :maxdepth: 2
 
-   tutorials/plotting.rst
+   ../tutorials/bitmasks
+
 
 
 Reference/API
 -------------
 
-.. automodapi:: marvin.tools.map
+.. autosummary::
+    
+    marvin.tools.map.Map
+    marvin.tools.map.Map.plot
+    marvin.tools.map.Map.restore
+    marvin.tools.map.Map.save
+    marvin.tools.map.Map.snr
+
+|
