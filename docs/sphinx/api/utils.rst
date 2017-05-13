@@ -40,8 +40,7 @@ DAP DataModel Utilities
    :undoc-members:
    :show-inheritance:
 
-.. _marvin-utils-plot:
-
+.. _marvin-utils-map-plotting:
 
 Map Plotting Utilities
 ----------------------
@@ -51,8 +50,10 @@ Map Plotting Utilities
    :undoc-members:
    :show-inheritance:
 
-Plot Colorbar Utilities
------------------------
+.. _marvin-utils-colorbar-plotting:
+
+Colorbar Plotting Utilities
+---------------------------
 
 .. automodule:: marvin.utils.plot.colorbar
    :members:

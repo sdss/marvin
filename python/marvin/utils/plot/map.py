@@ -347,9 +347,10 @@ def plot(*args, **kwargs):
             `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
 
     Example:
+        >>> import marvin.utils.plot.map as mapplot
         >>> maps = Maps(plateifu='8485-1901')
-        >>> haflux = maps.getMap('emline_gflux', channel='ha_6564')
-        >>> haflux.plot()
+        >>> ha = maps['emline_gflux_ha_6564']
+        >>> fig, ax = mapplot.plot(dapmap=ha)
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
