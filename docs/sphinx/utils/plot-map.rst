@@ -8,7 +8,7 @@ Plot (:mod:`marvin.utils.plot.map`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.map` are Marvin plotting utility functions.
+:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.
 
 
 .. _marvin-utils-plot-map-getting-started:
@@ -16,7 +16,7 @@ Introduction
 Getting Started
 ---------------
 
-Plot map using default parameters
+:mod:`~marvin.utils.plot.map` makes plotting a publication-quality MaNGA map easy with its carefully chosen default parameters.
 
 .. code-block:: python
 
@@ -28,21 +28,22 @@ Plot map using default parameters
 .. image:: ../_static/quick_map_plot.png
 
 
-Use your own :attr:`~marvin.utils.plot.map.plot.value`, :attr:`~marvin.utils.plot.map.plot.ivar`, and/or :attr:`~marvin.utils.plot.map.plot.mask`.
+However, you may want to do further processing of the map, so you can override the default DAP :attr:`~marvin.utils.plot.map.plot.value`, :attr:`~marvin.utils.plot.map.plot.ivar`, and/or :attr:`~marvin.utils.plot.map.plot.mask` with your own arrays.
+
+.. code-block:: python
+
+    fig, ax = mapplot.plot(dapmap=ha, value=ha.value * 10.)
+
+
+A :attr:`~marvin.utils.plot.map.plot.dapmap` object is not even necessary for :mod:`~marvin.utils.plot.map`, though if you do not provide a :attr:`~marvin.utils.plot.map.plot.dapmap` object, then you will need to set a :attr:`~marvin.utils.plot.map.plot.value`. You will also need to provide other attributes, such as :attr:`~marvin.utils.plot.map.plot.title` and :attr:`~marvin.utils.plot.map.plot.cblabel`, that are by default set from attributes of the :attr:`~marvin.utils.plot.map.plot.dapmap` object.
 
 .. code-block:: python
 
     import numpy as np
     fig, ax = mapplot.plot(value=np.random.random((34, 34)), mask=ha.mask)
 
-If you do not provide a ``dapmap``, then the you need to manually set the ``title`` and ``cblabel``. However, you can provide a ``dapmap`` and a :attr:`~marvin.utils.plot.map.plot.value`, :attr:`~marvin.utils.plot.map.plot.ivar`, and/or :attr:`~marvin.utils.plot.map.plot.mask`, which will override the corresponding ``dapmap`` attribute.
 
-
-.. code-block:: python
-
-    fig, ax = mapplot.plot(dapmap=ha, value=ha.value * 10.)
-
-This is especially useful for passing in a custom mask, such as one created with the :meth:`~marvin.tools.maps.Maps.get_bpt` method. For more explanation of the mask manipulation in this specific example, see :ref:`marvin-plotting-map-starforming`.
+This flexibilty is especially useful for passing in a custom mask, such as one created with the :meth:`~marvin.tools.maps.Maps.get_bpt` method. For more explanation of the mask manipulation in this specific example, see :ref:`marvin-plotting-map-starforming`.
 
 .. code-block:: python
 
@@ -50,13 +51,34 @@ This is especially useful for passing in a custom mask, such as one created with
     masks, __ = maps.get_bpt(show_plot=False)
     mask_non_sf = ~masks['sf']['global'] * 2**30  # non-star-forming spaxels
     mask = ha.mask | mask_non_sf
-    ha.plot(mask=mask)  # == mapplot.plot(dapmap=ha, mask=mask)
+    fig, ax = mapplot.plot(dapmap=ha, mask=mask)  # == ha.plot(mask=mask)
+
+.. image:: ../_static/map_bpt_mask.png
 
 
-.. TODO explain datamodel defaults
-.. TODO stellar velocity has no SNR min
+:mod:`~marvin.utils.plot.map` lets you build multi-panel plots because it accepts pre-defined `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ and `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ objects.
 
-.. TODO multi-panel plots
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
+
+    plateifus = ['8485-1901', '8485-1902', '8485-12701']
+    mapnames = ['stellar_vel', 'stellar_sigma']
+
+    rows = len(plateifus)
+    cols = len(mapnames)
+    fig, axes = plt.subplots(rows, cols, figsize=(8, 12))
+    for row, plateifu in zip(axes, plateifus):
+        maps = Maps(plateifu=plateifu)
+        for ax, mapname in zip(row, mapnames):
+            mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
+
+    fig.tight_layout()
+
+.. image:: ../_static/multipanel_kinematics.png
+
+
 
 .. _marvin-utils-plot-map-using:
 
@@ -77,6 +99,21 @@ Plotting Tutorial
   * :ref:`marvin-plotting-map-starforming`
 
 
+Default Plotting Parameters
+```````````````````````````
+
+====================  ====================  =========  ===============  ==================  ===========
+MPL-5
+-------------------------------------------------------------------------------------------------------
+Property Type         Bad Data Bitmasks     Colormap   Percentile Clip  Symmetric Colorbar  Minimum SNR
+====================  ====================  =========  ===============  ==================  ===========
+default               UNRELIABLE, DONOTUSE  linearlab  5, 95            False               1
+velocities            UNRELIABLE, DONOTUSE  RdBu_r     10, 90           True                0
+velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False               1
+====================  ====================  =========  ===============  ==================  ===========
+
+.. TODO explain datamodel defaults
+.. TODO stellar velocity has no SNR min
 
 
 Reference/API
