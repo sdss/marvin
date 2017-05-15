@@ -33,5 +33,6 @@ Flask-SQLAlchemy>=2.1
 Flask-Testing>=0.6.1
 raven>=5.32.0
 pgpasslib>=1.1.0
-# psycopg2>=2.6.2
+psycopg2>=2.6.2
 PyYAML>=3.11
+blinker>=1.4
