@@ -55,7 +55,7 @@ from marvin.utils.general import get_plot_params
 
 
 def no_coverage_mask(value, ivar, mask, bit):
-    """Make mask of spaxels that are not covered by the IFU.
+    """Mask spaxels that are not covered by the IFU.
 
     Parameters:
         value (array):
@@ -75,7 +75,7 @@ def no_coverage_mask(value, ivar, mask, bit):
 
 
 def bad_data_mask(value, mask, bits):
-    """Make mask of spaxels that are masked as bad data by the DAP.
+    """Mask spaxels that are flagged as bad data by the DAP.
 
     The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
     Note: MPL-4 used only a good = 0 and bad = 1 mask. The "bad" flag

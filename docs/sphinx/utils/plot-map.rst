@@ -8,7 +8,7 @@ Plot (:mod:`marvin.utils.plot.map`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.
+:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.plot` method in the :mod:`~marvin.tools.map` class for convenience.
 
 
 .. _marvin-utils-plot-map-getting-started:
@@ -108,12 +108,13 @@ MPL-5
 Property Type         Bad Data Bitmasks     Colormap   Percentile Clip  Symmetric Colorbar  Minimum SNR
 ====================  ====================  =========  ===============  ==================  ===========
 default               UNRELIABLE, DONOTUSE  linearlab  5, 95            False               1
-velocities            UNRELIABLE, DONOTUSE  RdBu_r     10, 90           True                0
+velocities            UNRELIABLE, DONOTUSE  RdBu_r     10, 90           True                0\ :sup:`a`
 velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False               1
 ====================  ====================  =========  ===============  ==================  ===========
 
-.. TODO explain datamodel defaults
-.. TODO stellar velocity has no SNR min
+:sup:`a` Velocities do not have a minimum SNR. This allows spaxels near the zero-velocity contour to be displayed, but users are cautioned that some spaxels could have arbitrarily low SNRs.
+
+**Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which are bit 1 (rough DONOTUSE) for all properties.
 
 
 Reference/API
@@ -127,15 +128,13 @@ Reference/API
 
 .. autosummary::
 
+    marvin.utils.plot.map.ax_setup
+    marvin.utils.plot.map.bad_data_mask
+    marvin.utils.plot.map.log_colorbar_mask
+    marvin.utils.plot.map.low_snr_mask
+    marvin.utils.plot.map.no_coverage_mask
     marvin.utils.plot.map.plot
-
-
-.. rubric:: Module
-
-.. autosummary:: marvin.utils.plot.colorbar
-
-.. rubric:: Functions
-
-.. autosummary::
-
-    marvin.utils.plot.colorbar.draw_colorbar
+    marvin.utils.plot.map.select_good_spaxels
+    marvin.utils.plot.map.set_extent
+    marvin.utils.plot.map.set_patch_style
+    marvin.utils.plot.map.set_title
