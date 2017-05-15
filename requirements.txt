@@ -23,6 +23,7 @@ sphinxcontrib-httpdomain>=1.5.0
 webargs>=1.5.2
 
 # Web
+blinker>=1.4
 Flask>=0.11.1
 Flask-Classy>=0.6.10
 Flask-JSGlue>=0.3
@@ -35,3 +36,4 @@ raven>=5.32.0
 pgpasslib>=1.1.0
 # psycopg2>=2.6.2
 PyYAML>=3.11
+# uwsgi>=2.0.15
