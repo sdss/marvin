@@ -54,7 +54,7 @@ Components
 
 * :doc:`core`
 
-  * :ref:`marvin-config-info`
+  * :doc:`core/config`
   * :ref:`marvin-dma`
   * :ref:`marvin-download-objects`
 
