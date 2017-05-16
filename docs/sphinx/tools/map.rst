@@ -136,7 +136,7 @@ Bit	 Name	       Description
     (bad_data == donotuse).all()  # True
 
 
-One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.map.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
 
 .. code-block:: python
 
@@ -175,7 +175,7 @@ Map Plotting
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
   * :ref:`marvin-plotting-map-starforming`
-  * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels<marvin-plotting-niiha-map-starforming>`
+  * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
 Bitmasks

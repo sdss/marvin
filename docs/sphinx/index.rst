@@ -60,17 +60,17 @@ Components
 
 * :doc:`tools`
 
-.. TODO change to :doc:
+  * :doc:`query`
+  * :doc:`results`
+  * :doc:`tools/cube`
+  * :doc:`tools/modelcube`
+  * :doc:`tools/maps`
 
-  * :ref:`marvin-query`
-  * :ref:`marvin-results`
-  * :ref:`marvin-cube`
-  * :ref:`marvin-bpt`
-  * :ref:`marvin-modelcube`
-  * :ref:`marvin-maps`
+    * :doc:`tools/bpt`
+
   * :doc:`tools/map`
-  * :ref:`marvin-images`
-  * :doc:`utils`
+  * :doc:`images`
+  * :doc:`General Utilities <utils>`
 
 * :doc:`api`
 

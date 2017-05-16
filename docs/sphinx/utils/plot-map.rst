@@ -8,7 +8,7 @@ Plot (:mod:`marvin.utils.plot.map`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.plot` method in the :class:`~marvin.tools.map.Map` class for convenience.
+:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.Map.plot` method in the :class:`~marvin.tools.map.Map` class for convenience.
 
 
 .. _marvin-utils-plot-map-getting-started:
@@ -96,7 +96,7 @@ Plotting Tutorial
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
-  * :ref:`marvin-plotting-map-starforming`
+  * :ref:`Plot Halpha Map of Star-forming Spaxels <marvin-plotting-map-starforming>`
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
@@ -115,7 +115,7 @@ velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False   
 
 :sup:`a` Velocities do not have a minimum SNR. This allows spaxels near the zero-velocity contour to be displayed, but users are cautioned that some spaxels could have arbitrarily low SNRs.
 
-**Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which are bit 1 (rough DONOTUSE) for all properties.
+**Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which use bit 1 (rough DONOTUSE) for all properties.
 
 
 Reference/API
