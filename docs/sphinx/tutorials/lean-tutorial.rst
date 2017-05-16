@@ -19,7 +19,7 @@ Marvin uses a simplified query syntax (in both `Web <https://sas.sdss.org/marvin
 
 **Goal**: Find galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 
-Create the query and run it (limit to only 3 results for demo purposes):
+Create the query with :meth:`~marvin.tools.query.query.doQuery` and run it (limit to only 3 results for demo purposes):
 
 .. code-block:: python
 

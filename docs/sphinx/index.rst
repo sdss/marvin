@@ -55,10 +55,12 @@ Components
 * :doc:`core`
 
   * :doc:`core/config`
-  * :ref:`marvin-dma`
-  * :ref:`marvin-download-objects`
+  * :doc:`core/data-access-modes`
+  * :doc:`core/downloads`
 
 * :doc:`tools`
+
+.. TODO change to :doc:
 
   * :ref:`marvin-query`
   * :ref:`marvin-results`
