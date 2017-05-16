@@ -8,7 +8,7 @@ Plot (:mod:`marvin.utils.plot.map`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.plot` method in the :mod:`~marvin.tools.map` class for convenience.
+:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.plot` method in the :class:`~marvin.tools.map.Map` class for convenience.
 
 
 .. _marvin-utils-plot-map-getting-started:
@@ -43,7 +43,7 @@ A :attr:`~marvin.utils.plot.map.plot.dapmap` object is not even necessary for :m
     fig, ax = mapplot.plot(value=np.random.random((34, 34)), mask=ha.mask)
 
 
-This flexibilty is especially useful for passing in a custom mask, such as one created with the :meth:`~marvin.tools.maps.Maps.get_bpt` method. For more explanation of the mask manipulation in this specific example, see :ref:`marvin-plotting-map-starforming`.
+This flexibilty is especially useful for passing in a custom mask, such as one created with the :meth:`~marvin.tools.maps.Maps.get_bpt` method. For more explanation of the mask manipulation in this specific example, see the :ref:`plotting tutorial <marvin-plotting-map-starforming>`.
 
 .. code-block:: python
 
@@ -97,6 +97,7 @@ Plotting Tutorial
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
   * :ref:`marvin-plotting-map-starforming`
+  * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
 Default Plotting Parameters

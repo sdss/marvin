@@ -8,12 +8,12 @@ Tutorials
    :titlesonly:
    :maxdepth: 1
 
+   tutorials/lean-tutorial
+   tutorials/plotting
    Example Queries <tutorials/query-examples>
    tutorials/query-practice
    tutorials/boolean-search-tutorial
    tutorials/jupyter-notebooks
-   tutorials/lean-tutorial
-   tutorials/plotting
-   tutorials/bitmasks
+   .. tutorials/bitmasks
 
 |

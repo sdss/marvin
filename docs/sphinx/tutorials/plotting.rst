@@ -195,8 +195,8 @@ Custom Spectrum and Model Fit
 
 .. _marvin-plotting-map-starforming:
 
-Plot Halpha Map of Star-forming Spaxels
----------------------------------------
+Plot H\ :math:`\alpha` Map of Star-forming Spaxels
+--------------------------------------------------
 
 .. code-block:: python
 
@@ -215,5 +215,27 @@ Plot Halpha Map of Star-forming Spaxels
     ha.plot(mask=mask)
 
 .. image:: ../_static/map_bpt_mask.png
+
+
+.. _marvin-plotting-niiha-map-starforming:
+
+Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
+-------------------------------------------------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    nii_ha = maps.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
+
+    # Mask out non-star-forming spaxels
+    masks, __ = maps.get_bpt(show_plot=False)
+    mask_non_sf = ~masks['sf']['global'] * 2**30
+    mask = nii_ha.mask | mask_non_sf
+    
+    nii_ha.plot(mask=mask, cblabel='[NII]6585 / Halpha flux ratio')
+
+.. image:: ../_static/niiha_bpt_mask.png
+
 
 |

@@ -175,6 +175,8 @@ Map Plotting
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
   * :ref:`marvin-plotting-map-starforming`
+  * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels<marvin-plotting-niiha-map-starforming>`
+
 
 Bitmasks
 ````````
