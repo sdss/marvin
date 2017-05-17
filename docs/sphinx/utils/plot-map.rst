@@ -1,8 +1,8 @@
 .. _marvin-utils-plot-map:
 
-===================================
-Plot (:mod:`marvin.utils.plot.map`)
-===================================
+==================================
+Map (:mod:`marvin.utils.plot.map`)
+==================================
 
 .. _marvin-utils-plot-map-intro:
 
