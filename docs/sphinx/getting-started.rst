@@ -184,7 +184,7 @@ Downloading Your Object
 
 In the previous steps you have been accessing the MaNGA data for **8485-1901** remotely with Marvin.  But now you want to get your hands dirty with the real data file.  You can easily download MaNGA data products with Marvin.  There are many ways to download data with Marvin.  To download individual data file for the objects you are working with, use the **download** method attached to your object.  You can only download objects that have associated MaNGA data product files.
 
-::
+.. code-block:: python
 
     # download the DRP datacube file for 8485-1901
     cube.download()
@@ -192,12 +192,19 @@ In the previous steps you have been accessing the MaNGA data for **8485-1901** r
     # download the DAP unbinned MAPS file for 8485-1901
     maps.download()
 
-    # you cannot download individual maps because there is no associated DAP data product.  This will fail.
+    # You cannot download individual maps because there is no associated DAP data product, so this will fail:
     hamap.download()
+    # AttributeError: 'Map' object has no attribute 'download'
 
 This describes a method for manual download of individual files.  There are other ways to download MaNGA files.  See :ref:`marvin-download-objects` for a full description of how to download data.
 
-The files are stored in your local **SAS (Science Archive Server)** as set up by Marvin.  This local **SAS** is a direct mimic of the real **SAS**, used at Utah by MaNGA in SDSS-IV.  Marvin creates and uses an environment variable called **SAS_BASE_DIR**.  Unless you have this already set up, Marvin creates this in your local home directory.  To see where your **SAS_BASE_DIR** is located, us the Python **os** package.
+
+.. _marvin-getting-started-sas-base-dir:
+
+MaNGA File Directory Organization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The files are stored in your local **SAS (Science Archive Server)** as set up by Marvin.  This local **SAS** is a direct mimic of the real **SAS**, used at Utah by MaNGA in SDSS-IV.  Marvin creates and uses an environment variable called **SAS_BASE_DIR**.  Unless you have this already set up, Marvin creates this in your local home directory.  To see where your **SAS_BASE_DIR** is located, use the Python **os** package.
 
 ::
 
