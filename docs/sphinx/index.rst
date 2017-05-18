@@ -69,8 +69,11 @@ Components
     * :doc:`tools/bpt`
 
   * :doc:`tools/map`
-  * :doc:`images`
-  * :doc:`General Utilities <utils>`
+  * :doc:`Utilities <utils>`
+
+    * :doc:`Image <utils/images>`
+    * :doc:`Plotting <utils/plot-map>`
+
 
 * :doc:`api`
 
