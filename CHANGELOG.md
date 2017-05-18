@@ -1,7 +1,7 @@
 # Marvin's Change Log
 
 
-## [2.1.3] - Under Development
+## [2.1.3] - 2017/05/18
 ### Added:
 - Issue #204: added elpetro_absmag colours to mangaSampleDB models.
 - Issue #253: Plotting tutorial.
