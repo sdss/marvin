@@ -205,6 +205,7 @@ class TestMapPlot(object):
         __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
+    @matplotlib_2
     def test_ax_facecolor(self):
         fig, ax = mapplot.ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_facecolor() == (0.6588235294117647, 0.6588235294117647, 0.6588235294117647,
