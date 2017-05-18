@@ -17,7 +17,10 @@ import os
 import warnings
 from get_version import generate_version_py
 
+from astropy.utils.data import download_file
+
 import argparse
+import shutil
 import sys
 
 
@@ -46,7 +49,7 @@ def get_data_files(with_web=True):
 
     data_files = []
 
-    add_data_file('python/marvin/extern/', data_files)
+    # add_data_file('python/marvin/extern/', data_files)
 
     if with_web:
         add_data_file('python/marvin/web/configuration/', data_files)
@@ -55,10 +58,10 @@ def get_data_files(with_web=True):
         add_data_file('python/marvin/web/templates/', data_files)
         add_data_file('python/marvin/web/uwsgi_conf_files/', data_files)
 
-    data_files.append('../marvin/db/dbconfig.ini')
-    data_files.append('../../requirements.txt')
-    data_files.append('../../README.md')
-    data_files.append('utils/plot/Linear_L_0-1.csv')
+    # data_files.append('../marvin/db/dbconfig.ini')
+    # data_files.append('../../requirements.txt')
+    # data_files.append('../../README.md')
+    # data_files.append('utils/plot/Linear_L_0-1.csv')
 
     return data_files
 
@@ -88,6 +91,7 @@ def run(data_files, packages):
           packages=packages,
           package_dir={'': 'python'},
           package_data={'': data_files},
+          include_package_data=True,
           install_requires=install_requires,
           scripts=['bin/run_marvin', 'bin/check_marvin'],
           classifiers=[
@@ -131,6 +135,12 @@ if __name__ == '__main__':
         packages = find_packages(where='python')
 
     data_files = get_data_files(with_web=not args.noweb)
+
+    maskbits_path = download_file('https://svn.sdss.org/public/repo/sdss/idlutils/'
+                                  'trunk/data/sdss/sdssMaskbits.par')
+    shutil.copy(maskbits_path, os.path.join(os.path.dirname(__file__),
+                                            'python/marvin/data/',
+                                            'sdssMaskbits.par'))
 
     # Now we remove all our custom arguments to make sure they don't interfere with distutils
     arguments = []

@@ -1518,7 +1518,7 @@ var Header = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 13:07:31
+* @Last Modified time: 2017-05-18 11:29:53
 */
 
 //jshint esversion: 6
@@ -1633,12 +1633,11 @@ var HeatMap = function () {
                         signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] && Math.pow(2, 0);
-                        var badValue = mask[ii][jj] && Math.pow(2, 5);
-                        var mathError = mask[ii][jj] && Math.pow(2, 6);
-                        var badFit = mask[ii][jj] && Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] && Math.pow(2, 30);
-                        //let noData = (noValue || badValue || mathError || badFit || doNotUse);
+                        var noValue = mask[ii][jj] & Math.pow(2, 0);
+                        var badValue = mask[ii][jj] & Math.pow(2, 5);
+                        var mathError = mask[ii][jj] & Math.pow(2, 6);
+                        var badFit = mask[ii][jj] & Math.pow(2, 7);
+                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
                         noData = noValue;
                         badData = badValue || mathError || badFit || doNotUse;
                     } else {
@@ -1648,7 +1647,11 @@ var HeatMap = function () {
 
                     if (ivar !== null) {
                         signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        signalToNoiseThreshold = 1.0;
+                        if (this.title.toLowerCase().indexOf("vel") >= 0) {
+                            signalToNoiseThreshold = 0.0;
+                        } else {
+                            signalToNoiseThreshold = 1.0;
+                        }
                     }
 
                     // value types

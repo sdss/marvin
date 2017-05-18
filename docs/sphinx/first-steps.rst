@@ -12,9 +12,9 @@ If you want to learn more about how Marvin works, then go see :ref:`marvin-gener
 
 .. _marvin-firststep:
 
-From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython instead of python.::
+From your terminal, type ``ipython --matplotlib``.  Ipython is an Interactive Python shell terminal, and the ``--matplotlib`` option enables matplotlib support, such as interactive plotting.  It is recommended to always use ipython instead of python.::
 
-    > ipython
+    > ipython --matplotlib
 
 .. jupyter notebook
 .. Ctrl-C to exit

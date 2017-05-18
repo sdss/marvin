@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 13:07:31
+* @Last Modified time: 2017-05-18 11:29:53
 */
 
 //jshint esversion: 6
@@ -79,12 +79,11 @@ class HeatMap {
                 let signalToNoise, signalToNoiseThreshold;
 
                 if (mask !== null) {
-                    let noValue = (mask[ii][jj] && Math.pow(2, 0));
-                    let badValue = (mask[ii][jj] && Math.pow(2, 5));
-                    let mathError = (mask[ii][jj] && Math.pow(2, 6));
-                    let badFit = (mask[ii][jj] && Math.pow(2, 7));
-                    let doNotUse = (mask[ii][jj] && Math.pow(2, 30));
-                    //let noData = (noValue || badValue || mathError || badFit || doNotUse);
+                    let noValue = (mask[ii][jj] & Math.pow(2, 0));
+                    let badValue = (mask[ii][jj] & Math.pow(2, 5));
+                    let mathError = (mask[ii][jj] & Math.pow(2, 6));
+                    let badFit = (mask[ii][jj] & Math.pow(2, 7));
+                    let doNotUse = (mask[ii][jj] & Math.pow(2, 30));
                     noData = noValue;
                     badData = (badValue || mathError || badFit || doNotUse);
                 } else {
@@ -94,7 +93,11 @@ class HeatMap {
 
                 if (ivar !== null) {
                     signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                    signalToNoiseThreshold = 1.0;
+                    if (this.title.toLowerCase().indexOf("vel") >= 0) {
+                        signalToNoiseThreshold = 0.0;
+                    } else {
+                        signalToNoiseThreshold = 1.0;
+                    }
                 }
 
                 // value types

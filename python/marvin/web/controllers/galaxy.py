@@ -177,6 +177,23 @@ def get_nsa_dict(name, drpver):
     return nsadict
 
 
+def remove_nans(datadict):
+    ''' Removes objects with nan values from the NSA sample dictionary '''
+
+    # collect total unique indices of nan objects
+    allnans = np.array([])
+    for key, vals in datadict.items():
+        if key != 'plateifu':
+            naninds = np.where(np.isnan(vals))[0]
+            allnans = np.append(allnans, naninds)
+    allnans = list(set(allnans))
+    # delete those targets from all items in the dictionary
+    for key, vals in datadict.items():
+        datadict[key] = np.delete(np.asarray(vals), allnans).tolist()
+
+    return datadict
+
+
 class Galaxy(BaseWebView):
     route_base = '/galaxy/'
 
@@ -292,7 +309,7 @@ class Galaxy(BaseWebView):
 
         return render_template("galaxy.html", **self.galaxy)
 
-    @route('/initdyamic/', methods=['POST'], endpoint='initdynamic')
+    @route('/initdynamic/', methods=['POST'], endpoint='initdynamic')
     def initDynamic(self):
         ''' Route to run when the dynamic toggle is initialized
             This creates the web spectrum and dap heatmaps
@@ -471,6 +488,7 @@ class Galaxy(BaseWebView):
                     #nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
                     nsasamp = {c: [n[0][c.split('_i')[0]][5] if 'absmag_i' in c or 'mtol_i' in c else n[0][c] for n in nsadict] for c in cols}
                     nsasamp['plateifu'] = [n[1] for n in nsadict]
+                    nsasamp = remove_nans(nsasamp)
                     nsa['sample'] = nsasamp
                     output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}
         return jsonify(result=output)
