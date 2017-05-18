@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:54:18
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 17:36:36
+# @Last Modified time: 2017-05-12 16:54:56
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -55,4 +55,29 @@ class TestGetCube(object):
         else:
             page.route_no_valid_params(page.url.format(name=name), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 
+
+@pytest.mark.parametrize('page', [('api', 'getCubeExtension')], ids=['getcubeext'], indirect=True)
+class TestCubeExtension(object):
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('cubeext', [('flux', 'ivar', 'mask')])
+    def test_cubeext_success(self, galaxy, page, params, reqtype, cubeext):
+        params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
+        data = {'cube_extension': []}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('name, missing, errmsg, cubeext',
+                             [(None, 'release', 'Missing data for required field.', 'flux'),
+                              ('badname', 'name', 'String does not match expected pattern.', 'flux'),
+                              ('84', 'name', 'Shorter than minimum length 4.', 'flux'),
+                              ('8485-1901', 'cube_extension', 'Not a valid choice.', 'stuff')],
+                             ids=['norelease', 'badname', 'shortname', 'badext'])
+    def test_cubeext_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, cubeext):
+        params.update({'name': name, 'cube_extension': cubeext})
+        if name is None:
+            page.route_no_valid_params(page.url.format(name=galaxy.plateifu), missing, reqtype=reqtype, errmsg=errmsg)
+        else:
+            page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 

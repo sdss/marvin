@@ -116,6 +116,11 @@ def set_sasurl(loc='local', port=None):
     config.urlmap = response.getRouteMap()
 
 
+@pytest.fixture(scope='session')
+def urlmap(set_sasurl):
+    return config.urlmap
+
+
 @pytest.fixture(scope='session', params=releases)
 def set_release(request):
     config.setMPL(request.param)

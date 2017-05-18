@@ -6,12 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 17:47:10
+# @Last Modified time: 2017-05-12 16:52:06
 
 from __future__ import print_function, division, absolute_import
-from marvin.tests.web.conftest import Page, set_sasurl
+from marvin.tests.web.conftest import Page
 from marvin import config
 from marvin.web import create_app
+from marvin.api.base import arg_validate as av
 import pytest
 import os
 
@@ -46,12 +47,15 @@ def app():
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    print('init api api')
     return app
 
 
 @pytest.fixture(scope='function')
-def init_api():
-    set_sasurl('local')
+def init_api(urlmap):
+    #set_sasurl('local')
+    config.urlmap = urlmap
+    #av.urlmap = urlmap
     config.forceDbOn()
 
 

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 14:45:02
+# @Last Modified time: 2017-05-18 11:21:03
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -60,6 +60,11 @@ def set_sasurl(loc='local', port=None):
     config.urlmap = response.getRouteMap()
 
 
+@pytest.fixture()
+def saslocal():
+    set_sasurl(loc='local')
+
+
 def test_db_stuff():
     assert marvindb is not None
     assert marvindb.datadb is not None
@@ -69,8 +74,8 @@ def test_db_stuff():
 
 
 @pytest.fixture(scope='function')
-def init_web(monkeypatch):
-    set_sasurl('local')
+def init_web(monkeypatch, saslocal):
+    #set_sasurl('local')
     config.forceDbOn()
 
     # monkeypath the render templating to nothing
