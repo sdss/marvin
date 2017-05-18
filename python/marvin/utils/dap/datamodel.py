@@ -14,7 +14,8 @@ from marvin import config
 
 
 __all__ = ('MapsProperty', 'MapsPropertyList', 'dap_datamodel',
-           'get_dap_datamodel', 'get_dap_maplist', 'get_default_mapset')
+           'get_dap_datamodel', 'get_dap_maplist', 'get_default_mapset',
+           'get_default_plot_params')
 
 
 class MapsPropertyList(list):
@@ -306,3 +307,44 @@ def get_default_mapset(dapver=None):
     return dapdefaults[dapver] if dapver in dapdefaults else []
 
 
+def get_default_plot_params(dapver=None):
+    """Returns default map plotting parameters."""
+    bitmasks = {'1.1.1': {'badData': {'doNotUse': 0}},
+                '2.0.2': {'nocov': 0,
+                          'badData': {'unreliable': 5,
+                                      'doNotUse': 30}
+                          }
+                }
+    plot_defaults = {
+        '1.1.1': {'default': {'bitmasks': bitmasks['1.1.1'],
+                              'cmap': 'linearlab',
+                              'percentile_clip': [5, 95],
+                              'symmetric': False,
+                              'snr_min': 1},
+                  'vel': {'bitmasks': bitmasks['1.1.1'],
+                          'cmap': 'RdBu_r',
+                          'percentile_clip': [10, 90],
+                          'symmetric': True,
+                          'snr_min': None},
+                  'sigma': {'bitmasks': bitmasks['1.1.1'],
+                            'cmap': 'inferno',
+                            'percentile_clip': [10, 90],
+                            'symmetric': False,
+                            'snr_min': 1}},
+        '2.0.2': {'default': {'bitmasks': bitmasks['2.0.2'],
+                              'cmap': 'linearlab',
+                              'percentile_clip': [5, 95],
+                              'symmetric': False,
+                              'snr_min': 1},
+                  'vel': {'bitmasks': bitmasks['2.0.2'],
+                          'cmap': 'RdBu_r',
+                          'percentile_clip': [10, 90],
+                          'symmetric': True,
+                          'snr_min': None},
+                  'sigma': {'bitmasks': bitmasks['2.0.2'],
+                            'cmap': 'inferno',
+                            'percentile_clip': [10, 90],
+                            'symmetric': False,
+                            'snr_min': 1}}
+    }
+    return plot_defaults[dapver] if dapver in plot_defaults else {}

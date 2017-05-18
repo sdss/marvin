@@ -509,11 +509,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-<<<<<<< HEAD
 * @Last Modified time: 2017-02-21 16:26:48
-=======
-* @Last Modified time: 2016-09-26 17:40:15
->>>>>>> upstream/marvin_refactor
 */
 
 //
@@ -689,7 +685,7 @@ var Galaxy = function () {
                 var mapdiv = $(child).find('div').first();
                 mapdiv.empty();
                 if (maps[index] !== undefined && maps[index].data !== null) {
-                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, maps[index].plotparams, _this);
                     this.heatmap.mapdiv.highcharts().reflow();
                 }
             });
@@ -1518,7 +1514,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var HeatMap = function () {
 
     // Constructor
-    function HeatMap(mapdiv, data, title, galthis) {
+    function HeatMap(mapdiv, data, title, plotparams, galthis) {
         _classCallCheck(this, HeatMap);
 
         if (data === undefined) {
@@ -1529,6 +1525,7 @@ var HeatMap = function () {
             this.mapdiv = mapdiv; // div element for map
             this.data = data; // map data
             this.title = title; // map title
+            this.plotparams = plotparams; // default plotting parameters
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
@@ -1542,7 +1539,7 @@ var HeatMap = function () {
 
         // test print
         value: function print() {
-            console.log('We are now printing heatmap for ', this.title);
+            console.log('We are now printing heatmap for ', this.title, 'test');
         }
     }, {
         key: 'parseTitle',
@@ -1614,41 +1611,34 @@ var HeatMap = function () {
                     var val = values[ii][jj];
 
                     if (mask !== null) {
-                        var noValue = mask[ii][jj] & Math.pow(2, 0);
-                        var badValue = mask[ii][jj] & Math.pow(2, 5);
-                        var mathError = mask[ii][jj] & Math.pow(2, 6);
-                        var badFit = mask[ii][jj] & Math.pow(2, 7);
-                        var doNotUse = mask[ii][jj] & Math.pow(2, 30);
-                        var noData = noValue;
-                        var badData = badValue || mathError || badFit || doNotUse;
+                        var bitmasks = this.plotparams["bitmasks"];
+                        var noData = mask[ii][jj] & Math.pow(2, bitmasks["nocov"]);
+                        var badData = false;
+                        for (var key in bitmasks["badData"]) {
+                            badData = badData || mask[ii][jj] & Math.pow(2, bitmasks["badData"][key]);
+                        };
                     } else {
                         noData == null;
                         badData == null;
                     }
-
+                    var signalToNoiseThreshold = this.plotparams["snr_min"];
                     if (ivar !== null) {
                         var signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                        if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                            var signalToNoiseThreshold = 0.;
-                        } else {
-                            var signalToNoiseThreshold = 1.;
-                        };
                     }
 
                     // value types
                     // val=no-data => gray color
                     // val=null => hatch area
-                    // val=low-sn => nothing at the moment
 
                     if (noData) {
-                        // for data that is outside the range "nocov" mask
+                        // for data that is outside the range "NOCOV" mask
                         val = 'no-data';
                     } else if (badData) {
                         // for data that is bad - masked in some way
                         val = null;
                     } else if (ivar !== null && signalToNoise < signalToNoiseThreshold) {
                         // for data that is low S/N
-                        val = null; //val = 'low-sn';
+                        val = null;
                     } else if (ivar === null) {
                         // for data with no mask or no inverse variance extensions
                         if (this.title.search('binid') !== -1) {
@@ -1688,11 +1678,11 @@ var HeatMap = function () {
 
             var RdBuHex = ['#053061', '#063264', '#073467', '#08366a', '#09386d', '#0a3b70', '#0c3d73', '#0d3f76', '#0e4179', '#0f437b', '#10457e', '#114781', '#124984', '#134c87', '#144e8a', '#15508d', '#175290', '#185493', '#195696', '#1a5899', '#1b5a9c', '#1c5c9f', '#1d5fa2', '#1e61a5', '#1f63a8', '#2065ab', '#2267ac', '#2369ad', '#246aae', '#266caf', '#276eb0', '#2870b1', '#2a71b2', '#2b73b3', '#2c75b4', '#2e77b5', '#2f79b5', '#307ab6', '#327cb7', '#337eb8', '#3480b9', '#3681ba', '#3783bb', '#3885bc', '#3a87bd', '#3b88be', '#3c8abe', '#3e8cbf', '#3f8ec0', '#408fc1', '#4291c2', '#4393c3', '#4695c4', '#4997c5', '#4c99c6', '#4f9bc7', '#529dc8', '#569fc9', '#59a1ca', '#5ca3cb', '#5fa5cd', '#62a7ce', '#65a9cf', '#68abd0', '#6bacd1', '#6eaed2', '#71b0d3', '#75b2d4', '#78b4d5', '#7bb6d6', '#7eb8d7', '#81bad8', '#84bcd9', '#87beda', '#8ac0db', '#8dc2dc', '#90c4dd', '#93c6de', '#96c7df', '#98c8e0', '#9bc9e0', '#9dcbe1', '#a0cce2', '#a2cde3', '#a5cee3', '#a7d0e4', '#a9d1e5', '#acd2e5', '#aed3e6', '#b1d5e7', '#b3d6e8', '#b6d7e8', '#b8d8e9', '#bbdaea', '#bddbea', '#c0dceb', '#c2ddec', '#c5dfec', '#c7e0ed', '#cae1ee', '#cce2ef', '#cfe4ef', '#d1e5f0', '#d2e6f0', '#d4e6f1', '#d5e7f1', '#d7e8f1', '#d8e9f1', '#dae9f2', '#dbeaf2', '#ddebf2', '#deebf2', '#e0ecf3', '#e1edf3', '#e3edf3', '#e4eef4', '#e6eff4', '#e7f0f4', '#e9f0f4', '#eaf1f5', '#ecf2f5', '#edf2f5', '#eff3f5', '#f0f4f6', '#f2f5f6', '#f3f5f6', '#f5f6f7', '#f6f7f7', '#f7f6f6', '#f7f5f4', '#f8f4f2', '#f8f3f0', '#f8f2ef', '#f8f1ed', '#f9f0eb', '#f9efe9', '#f9eee7', '#f9ede5', '#f9ebe3', '#faeae1', '#fae9df', '#fae8de', '#fae7dc', '#fbe6da', '#fbe5d8', '#fbe4d6', '#fbe3d4', '#fce2d2', '#fce0d0', '#fcdfcf', '#fcdecd', '#fdddcb', '#fddcc9', '#fddbc7', '#fdd9c4', '#fcd7c2', '#fcd5bf', '#fcd3bc', '#fbd0b9', '#fbceb7', '#fbccb4', '#facab1', '#fac8af', '#f9c6ac', '#f9c4a9', '#f9c2a7', '#f8bfa4', '#f8bda1', '#f8bb9e', '#f7b99c', '#f7b799', '#f7b596', '#f6b394', '#f6b191', '#f6af8e', '#f5ac8b', '#f5aa89', '#f5a886', '#f4a683', '#f3a481', '#f2a17f', '#f19e7d', '#f09c7b', '#ef9979', '#ee9677', '#ec9374', '#eb9172', '#ea8e70', '#e98b6e', '#e8896c', '#e6866a', '#e58368', '#e48066', '#e37e64', '#e27b62', '#e17860', '#df765e', '#de735c', '#dd7059', '#dc6e57', '#db6b55', '#da6853', '#d86551', '#d7634f', '#d6604d', '#d55d4c', '#d35a4a', '#d25849', '#d05548', '#cf5246', '#ce4f45', '#cc4c44', '#cb4942', '#c94741', '#c84440', '#c6413e', '#c53e3d', '#c43b3c', '#c2383a', '#c13639', '#bf3338', '#be3036', '#bd2d35', '#bb2a34', '#ba2832', '#b82531', '#b72230', '#b61f2e', '#b41c2d', '#b3192c', '#b1182b', '#ae172a', '#ab162a', '#a81529', '#a51429', '#a21328', '#9f1228', '#9c1127', '#991027', '#960f27', '#930e26', '#900d26', '#8d0c25', '#8a0b25', '#870a24', '#840924', '#810823', '#7f0823', '#7c0722', '#790622', '#760521', '#730421', '#700320', '#6d0220', '#6a011f', '#67001f'];
 
-            if (cmap === "linearLab") {
+            if (cmap === "linearlab") {
                 return linearLabHex;
             } else if (cmap === "inferno") {
                 return infernoHex;
-            } else if (cmap === "RdBu") {
+            } else if (cmap === "RdBu_r") {
                 return RdBuHex;
             } else {
                 return ["#000000", "#FFFFFF"];
@@ -1714,20 +1704,17 @@ var HeatMap = function () {
         value: function quantileClip(range) {
             var quantLow, quantHigh, zQuantLow, zQuantHigh;
 
+            var _plotparams$percentil = _slicedToArray(this.plotparams["percentile_clip"], 2);
+
+            quantLow = _plotparams$percentil[0];
+            quantHigh = _plotparams$percentil[1];
+
             var _getMinMax = this.getMinMax(range);
 
             var _getMinMax2 = _slicedToArray(_getMinMax, 2);
 
             zQuantLow = _getMinMax2[0];
             zQuantHigh = _getMinMax2[1];
-
-            if (this.title.toLowerCase().indexOf("vel") >= 0 || this.title.toLowerCase().indexOf("sigma") >= 0) {
-                quantLow = 10;
-                quantHigh = 90;
-            } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
-                quantLow = 5;
-                quantHigh = 95;
-            };
 
             if (range.length > 0) {
                 if (quantLow > 0) {
@@ -1790,16 +1777,13 @@ var HeatMap = function () {
             zmax = _quantileClip2[1];
 
 
-            if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                var cmap = "RdBu";
-                // make velocity maps symmetric
+            var cmap = this.plotparams["cmap"];
+
+            // make color bar symmetric
+            if (this.plotparams["symmetric"]) {
                 var zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
                 zmin = -zabsmax;
                 zmax = zabsmax;
-            } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-                var cmap = "inferno";
-            } else {
-                var cmap = "linearLab";
             };
 
             var cstops = this.setColorStops(cmap);
@@ -1815,7 +1799,10 @@ var HeatMap = function () {
                     plotBackgroundColor: '#A8A8A8'
                 },
                 credits: { enabled: false },
-                title: { text: this.title },
+                title: {
+                    text: this.title.replace(/[_]/g, " "),
+                    style: { fontSize: "14px" }
+                },
                 navigation: {
                     buttonOptions: {
                         theme: { fill: null }

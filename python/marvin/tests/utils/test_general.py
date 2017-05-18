@@ -29,9 +29,9 @@ import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import TemplateTestCase, Call, template
-from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng
+from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
 from marvin.tests import MarvinTest
-
+from marvin.utils.dap.datamodel import get_default_plot_params
 
 class TestConvertCoords(MarvinTest):
 
@@ -227,6 +227,70 @@ class TestPillowImage(MarvinTest):
             with self.assertRaises(ImportError):
                 err = 'No module named PIL'
                 self.assertEqual(err, e.args[0])
+
+class TestDataModelPlotParams(MarvinTest):
+    
+    def bitmasks(self):
+        return {'1.1.1': {'badData': {'doNotUse': 0}},
+                '2.0.2': {'nocov': 0,
+                          'badData': {'unreliable': 5,
+                                      'doNotUse': 30}
+                          }
+                }
+
+    def test_get_plot_params_default_mpl4(self):
+        desired = {'bitmasks': self.bitmasks()['1.1.1'],
+                   'cmap': 'linearlab',
+                   'percentile_clip': [5, 95],
+                   'symmetric': False,
+                   'snr_min': 1}
+        actual = get_plot_params(dapver='1.1.1', prop='emline_gflux')
+        self.assertDictEqual(actual, desired)
+
+    def test_get_plot_params_default_mpl5(self):
+        desired = {'bitmasks': self.bitmasks()['2.0.2'],
+                   'cmap': 'linearlab',
+                   'percentile_clip': [5, 95],
+                   'symmetric': False,
+                   'snr_min': 1}
+        actual = get_plot_params(dapver='2.0.2', prop='emline_gflux')
+        self.assertDictEqual(actual, desired)
+
+    def test_get_plot_params_vel_mpl4(self):
+        desired = {'bitmasks': self.bitmasks()['1.1.1'],
+                   'cmap': 'RdBu_r',
+                   'percentile_clip': [10, 90],
+                   'symmetric': True,
+                   'snr_min': None}
+        actual = get_plot_params(dapver='1.1.1', prop='stellar_vel')
+        self.assertDictEqual(actual, desired)
+    
+    def test_get_plot_params_vel_mpl5(self):
+        desired = {'bitmasks': self.bitmasks()['2.0.2'],
+                   'cmap': 'RdBu_r',
+                   'percentile_clip': [10, 90],
+                   'symmetric': True,
+                   'snr_min': None}
+        actual = get_plot_params(dapver='2.0.2', prop='stellar_vel')
+        self.assertDictEqual(actual, desired)
+    
+    def test_get_plot_params_sigma_mpl4(self):
+        desired = {'bitmasks': self.bitmasks()['1.1.1'],
+                   'cmap': 'inferno',
+                   'percentile_clip': [10, 90],
+                   'symmetric': False,
+                   'snr_min': 1}
+        actual = get_plot_params(dapver='1.1.1', prop='stellar_sigma')
+        self.assertDictEqual(actual, desired)
+
+    def test_get_plot_params_sigma_mpl5(self):
+        desired = {'bitmasks': self.bitmasks()['2.0.2'],
+                   'cmap': 'inferno',
+                   'percentile_clip': [10, 90],
+                   'symmetric': False,
+                   'snr_min': 1}
+        actual = get_plot_params(dapver='2.0.2', prop='stellar_sigma')
+        self.assertDictEqual(actual, desired)
 
 
 if __name__ == '__main__':

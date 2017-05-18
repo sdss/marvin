@@ -3,39 +3,43 @@
 #
 # Licensed under a 3-clause BSD license.
 #
-# Original code from mangadap.plot.colorbar.py licensed under the following 3-clause BSD license.
+# Original code from mangadap.plot.colorbar.py licensed under the following
+# 3-clause BSD license.
 #
 # Copyright (c) 2015, SDSS-IV/MaNGA Pipeline Group
 #
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without modification, are permitted
-# provided that the following conditions are met:
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
 #
-# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
-# and the following disclaimer.
+# 1. Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
 #
-# 2. Redistributions in binary form must reproduce the above copyright notice, this list of
-# conditions and the following disclaimer in the documentation and/or other materials provided with
-# the distribution.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
 #
-# 3. Neither the name of the copyright holder nor the names of its contributors may be used to
-# endorse or promote products derived from this software without specific prior written permission.
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-# OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 3. Neither the name of the copyright holder nor the names of its contributors
+# may be used to endorse or promote products derived from this software without
+# specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+# HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #
 # colorbar.py
 #
 # Created by Brett Andrews on 07 Jun 2016.
 #
-# Modified by Brett Andrews on 24 Jan 2017.
+# Modified by Brett Andrews on 4 May 2017.
 
 """Functions for colorbars."""
 
@@ -162,7 +166,8 @@ def _cbrange_user_defined(cbrange, cbrange_user):
         cbrange (list):
             Input colorbar range.
         cbrange_user (list):
-            User-specified colorbar range. If a value is None, then use the previous value.
+            User-specified colorbar range. If a value is None, then use the
+            previous value.
 
     Returns:
         list: Colorbar range.
@@ -221,8 +226,8 @@ def set_cbrange(image, cb_kws):
 def _set_cbticks(cbrange, cb_kws):
     """Set colorbar ticks.
 
-    Adjust colorbar range if using a discrete colorbar so that the ticks fall in the middle of each
-        level.
+    Adjust colorbar range if using a discrete colorbar so that the ticks fall
+        in the middle of each level.
 
     Parameters:
         cbrange (list):
@@ -241,7 +246,7 @@ def _set_cbticks(cbrange, cb_kws):
         except AttributeError:
             print('AttributeError: MaxNLocator instance has no attribute ``tick_values``.')
 
-    # if discrete colorbar, offset upper and lower cbrange so that ticks are in center of each level
+    # if discrete colorbar, offset upper and lower cbrange so ticks are in center of each level
     if cb_kws.get('n_levels', None) is not None:
         offset = (ticks[1] - ticks[0]) / 2.
         cbrange = [ticks[0] - offset, ticks[-1] + offset]
@@ -251,18 +256,22 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws=None,
-                  tick_params_kws=None, log_cb=False, **extras):
+def draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None, log_cb=False,
+                  label_kws=None, tick_params_kws=None, **extras):
     """Make colorbar.
 
     Parameters:
         fig:
-            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ object from which the
-            axes must be created.
+            `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_
+            object from which the axes must be created.
         mappable (matplotlib image object):
             Matplotlib plotting element to map to colorbar.
+        ax:
+            `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ object
+            from which to steal space.
         axloc (list):
-            Specify (left, bottom, width, height) of colorbar axis. Default is ``None``.
+            Specify (left, bottom, width, height) of colorbar axis. Default is
+            ``None``.
         cbrange (list):
             Colorbar min and max.
         ticks (list):
@@ -284,7 +293,7 @@ def draw_colorbar(fig, mappable, axloc=None, cbrange=None, ticks=None, label_kws
 
     cax = (fig.add_axes(axloc) if axloc is not None else None)
     try:
-        cb = fig.colorbar(mappable, cax, ticks=ticks)
+        cb = fig.colorbar(mappable=mappable, cax=cax, ax=ax, ticks=ticks)
     except ValueError:
         cb = None
     else:
@@ -304,8 +313,8 @@ def _set_cmap(cm_name, n_levels=None):
         cm_name (str):
             Name of colormap.
         n_levels (int):
-            Number of discrete levels of colormap. If ``None``, then produce continuous colormap.
-            Default is ``None``.
+            Number of discrete levels of colormap. If ``None``, then produce
+            continuous colormap. Default is ``None``.
 
     Returns:
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
@@ -326,13 +335,13 @@ def _string_to_cmap(cm_name):
             Name of colormap.
 
     Returns:
-        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+        object
     """
-
     if isinstance(cm_name, str):
-        if 'linear_Lab' in cm_name:
+        if 'linearlab' in cm_name:
             try:
-                cmap, cmap_r = linear_Lab()
+                cmap, cmap_r = linearlab()
             except IOError:
                 cmap = cm.viridis
             else:
@@ -364,8 +373,8 @@ def set_cb_kws(cb_kws):
     Returns:
         dict
     """
-    cb_kws_default = dict(axloc=[0.8, 0.1, 0.03, 5/6.], cbrange=None, n_levels=None,
-                          label_kws=dict(size=16), tick_params_kws=dict(labelsize=16))
+    cb_kws_default = {'axloc': None, 'cbrange': None, 'n_levels': None, 'label_kws': {'size': 16},
+                      'tick_params_kws': {'labelsize': 16}}
 
     # Load default kwargs
     for k, v in cb_kws_default.items():
@@ -386,7 +395,8 @@ def cmap_discretize(cmap_in, N):
 
     Parameters:
         cmap_in:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object.
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object.
         N (int):
             Number of colors.
 
@@ -394,10 +404,10 @@ def cmap_discretize(cmap_in, N):
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
 
     Example:
-        fig, ax = plt.subplots()
-        im = np.resize(np.arange(100), (5, 100))
-        dRdBu = cmap_discretize(cm.RdBu, 5)
-        ax.imshow(im, cmap=dRdBu)
+        >>> fig, ax = plt.subplots()
+        >>> im = np.resize(np.arange(100), (5, 100))
+        >>> dRdBu = cmap_discretize(cm.RdBu, 5)
+        >>> ax.imshow(im, cmap=dRdBu)
     """
     try:
         return cmap_in._resample(N)
@@ -406,7 +416,7 @@ def cmap_discretize(cmap_in, N):
         # N colors
         colors_i = np.linspace(0, 1., N)
         # N+1 indices
-        indices = np.linspace(0, 1., N+1)
+        indices = np.linspace(0, 1., N + 1)
         for key in ('red', 'green', 'blue'):
             # Find the N colors
             D = np.array(cdict[key])
@@ -427,6 +437,7 @@ def cmap_discretize(cmap_in, N):
 
 
 def reverse_cmap(cdict):
+    """Reverse colormap dictionary."""
     cdict_r = {}
     for k, v in cdict.items():
         out = []
@@ -436,14 +447,15 @@ def reverse_cmap(cdict):
     return cdict_r
 
 
-def linear_Lab_filename():
-    return join(os.path.dirname(marvin.__file__), 'data', 'Linear_L_0-1.csv')
+def linearlab_filename():
+    """Get filename and path for linearlab colormap."""
+    return join(os.path.dirname(marvin.__file__), 'data', 'linearlab.csv')
 
 
-def linear_Lab():
-    """Make linear Lab color map.
+def linearlab():
+    """Make linearlab color map.
 
-    `Description of linear Lab palatte
+    `Description of linearlab palatte
     <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
     Returns:
@@ -451,8 +463,8 @@ def linear_Lab():
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object and reversed
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
     """
-    LinL_file = linear_Lab_filename()
-    LinL = np.loadtxt(LinL_file, delimiter=',')
+    linearlab_file = linearlab_filename()
+    LinL = np.loadtxt(linearlab_file, delimiter=',')
 
     b3 = LinL[:, 2]  # value of blue at sample n
     b2 = LinL[:, 2]  # value of blue at sample n
@@ -482,8 +494,8 @@ def linear_Lab():
 
     LinearL_r = reverse_cmap(LinearL)
 
-    cmap = LinearSegmentedColormap('linearL', LinearL)
-    cmap_r = LinearSegmentedColormap('linearL_r', LinearL_r)
+    cmap = LinearSegmentedColormap('linearlab', LinearL)
+    cmap_r = LinearSegmentedColormap('linearlab_r', LinearL_r)
 
     return (cmap, cmap_r)
 
@@ -493,7 +505,8 @@ def get_cmap_rgb(cmap, n_colors=256):
 
     Parameters:
         cmap:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object
         n_colors (int):
             Number of color tuples in colormap. Default is ``256``.
 
@@ -511,7 +524,8 @@ def output_cmap_rgb(cmap, path=None, n_colors=256):
 
     Parameters:
         cmap:
-            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+            `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+            object
         path (str):
             Path to generate output file. Default is ``None``.
         n_colors (int):
@@ -537,7 +551,8 @@ def one_color_cmap(color):
             Color.
 
     Returns:
-        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap) object
+        `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ (colormap)
+        object
     """
     cmap, ig = from_levels_and_colors(levels=(0, 1), colors=(color,))
     return cmap

@@ -12,6 +12,7 @@ from astropy import table
 
 import marvin
 from marvin import log
+from marvin.utils.dap.datamodel import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain.core.exceptions import BrainError
 
@@ -30,7 +31,7 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params')
 
 drpTable = {}
 
@@ -981,4 +982,18 @@ def _check_file_parameters(obj1, obj2):
                       .format(param, obj1.__repr__, obj2.__repr__, getattr(obj1, param),
                               getattr(obj2, param)))
         assert getattr(obj1, param) == getattr(obj2, param), assert_msg
+
+
+def get_plot_params(dapver, prop):
+    """Returns default plotting parameters for a property."""
+    params = get_default_plot_params(dapver)
+
+    if 'vel' in prop:
+        key = 'vel'
+    elif 'sigma' in prop:
+        key = 'sigma'
+    else:
+        key = 'default'
+
+    return params[key]        
 

@@ -151,7 +151,8 @@ class Galaxy {
             var mapdiv = $(child).find('div').first();
             mapdiv.empty();
             if (maps[index] !== undefined && maps[index].data !== null) {
-                this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, _this);
+                this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg,
+                    maps[index].plotparams, _this);
                 this.heatmap.mapdiv.highcharts().reflow();
             }
         });

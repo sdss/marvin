@@ -1,21 +1,44 @@
 # Marvin's Change Log
 
+
 ## [2.1.3] - Under Development
 ### Added:
 - Issue #204: added elpetro_absmag colours to mangaSampleDB models.
+- Issue #253: Plotting tutorial.
+- Issue #223: Easy multi-panel map plotting (with correctly placed colorbars).
+- Issue #232 and Issue #251: Uses matplotlib style sheets context managers for plotting (map, spectrum, and BPT) and restores previous defaults before methods finish.
+- Issue #189: Map plotting accepts user-defined value, ivar, and/or mask (including BPT masks).
+- Issue #252: Quantile clipping for properties other than velocity, sigma, or flux in web.
+- Added `utils.plot.map` doc page.
+- Added `tools.map` doc page.
 
 ### Changed:
 - Issue #243: inverted `__getitem__` behaviour for Cube/Maps/ModelCube and fixed tests.
 - Modified Flask Profiler File to always point to $MARVIN_DIR/flask_profiler.sql
+- Issue #241: Moved map plotting methods from tools/map to utils/plot/map
+- Issue #229 and Issue #231: Switch to new gray/hatching scheme (in tools and web):
+  - gray: spaxels with NOCOV.
+  - hatched: spaxels with bad data (UNRELIABLE and DONOTUSE) or S/N below some minimum value.
+  - colored: good data.
+- Issue #238: Move plot defaults to datamodel (i.e., bitmasks, colormaps, percentile clips, symmetric, minimum SNR).
+- Issue #206: SNR minimum to None (effectively 0) for velocity maps so that they aren't hatched near the zero velocity contour.
+- Simplified default colormap name to "linearlab."
+- Decreased map plot title font size in web so that it does not run onto second line and overlap plot.
 
 ### Fixed:
 - Interactive prompt for username in sdss_access now works for Python 3.
-- The data file for the default colormap for Map.plot() ("linear_Lab") is now included in pip version of Marvin and does not throw invalid FileNotFoundError if the data file is missing.
+- Fixed #195: The data file for the default colormap for `Map.plot()` ("linear_Lab") is now included in pip version of Marvin and does not throw invalid `FileNotFoundError` if the data file is missing.
 - Fixed #143: prevents access mode to go in to remote if filename is present.
 - Fixed #213: shortcuts are now only applied on full words, to avoid blind replacements.
 - Fixed #206: no longer masks spaxels close to zero velocity contour in web and tools map plots
 - Fixed #229: corrects web bitmask parsing for map plots
 - Fixed #231: hatch regions within IFU but without data in map plots
+- Fixed #255: Lean tutorial code cells did not work with the ipython directive, so they now use the python directive.
+- Highcharts draggable legend cdn.
+
+### Removed:
+- Issue #232 and Issue #251: Automatic setting of matplotlib style sheets via seaborn import or `plt.style.use()`.
+
 
 ## [2.1.2] - 2017/03/17
 ### Added:
@@ -30,6 +53,7 @@
 ### Fixed:
 - A bug in the calculation of the composite mask for BPT.
 - Issue #179: Fixed a python 2/3 exception error compatibility with the 2.1 release.
+
 
 ## [2.1.1] - 2017/02/18
 ### Added:

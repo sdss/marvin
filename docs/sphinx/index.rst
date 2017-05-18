@@ -54,19 +54,26 @@ Components
 
 * :doc:`core`
 
-  * :ref:`marvin-config-info`
-  * :ref:`marvin-dma`
-  * :ref:`marvin-download-objects`
+  * :doc:`core/config`
+  * :doc:`core/data-access-modes`
+  * :doc:`core/downloads`
 
 * :doc:`tools`
 
-  * :ref:`marvin-query`
-  * :ref:`marvin-results`
-  * :ref:`marvin-cube`
-  * :ref:`marvin-bpt`
-  * :ref:`marvin-modelcube`
-  * :ref:`marvin-maps`
-  * :ref:`marvin-images`
+  * :doc:`query`
+  * :doc:`results`
+  * :doc:`tools/cube`
+  * :doc:`tools/modelcube`
+  * :doc:`tools/maps`
+
+    * :doc:`tools/bpt`
+
+  * :doc:`tools/map`
+  * :doc:`Utilities <utils>`
+
+    * :doc:`Image <utils/images>`
+    * :doc:`Plotting <utils/plot-map>`
+
 
 * :doc:`api`
 

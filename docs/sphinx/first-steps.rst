@@ -8,7 +8,7 @@ Now that you have installed Marvin, it's time to take your first steps.
 
 *Side Note*: If you are **new to Python**, we recommend that you check out the `AstroBetter Python <http://www.astrobetter.com/wiki/python>`_ page and `Practical Python for Astronomers <http://python4astronomers.github.io/>`_.  You can also find many general Python tutorials on Google or try typing any specific question you have into Google. If Google returns a link to a similar question asked on `Stack Overflow <http://stackoverflow.com/>`_, then definitely start there.
 
-If you want to learn more about how Marvin works, then go see :ref:`marvin-general` to learn about Marvin Modes, Versions, or Downloading.  If you just want to play, then read on.
+At any time, you can learn more about :doc:`Marvin configuration settings <core/config>`, :doc:`Marvin data access modes <core/data-access-modes>`, and :doc:`downloading Marvin data <core/downloads>`, but if you just want to play, then read on.
 
 .. _marvin-firststep:
 
@@ -96,7 +96,7 @@ Now let's play with a Marvin Cube
 
 See the Marvin :ref:`marvin-tools` section for more details and examples.  And the :ref:`marvin-tools-ref` for the detailed Reference Guide.
 
-Did you read :ref:`marvin-general` yet?  Do that now!
+Did you read about :doc:`configuring Marvin <core/config>`, :doc:`Marvin data access modes <core/data-access-modes>`, and :doc:`downloading objects <core/downloads>` yet?  Do that now!
 
 
 |
@@ -244,4 +244,4 @@ Now let's play with a Marvin Query
 See the Marvin :ref:`marvin-query` section for more details and examples.  And the :ref:`marvin-query-ref` for the detailed Reference Guide.
 
 
-No really, go read the :ref:`marvin-general`.
+No really, go read about :doc:`configuring Marvin <core/config>`, :doc:`Marvin data access modes <core/data-access-modes>`, and :doc:`downloading objects <core/downloads>`.

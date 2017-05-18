@@ -44,26 +44,24 @@ opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
 breadcrumb = MarvinBreadCrumb()
 
 
-# Boom. Tree dictionary.
 def tree():
     return defaultdict(tree)
 
 
-# Do A Query
 def doQuery(*args, **kwargs):
-    ''' Convenience function for Query+Results
+    """Convenience function for building a Query and retrieving the Results.
 
-        A wrapper for performing a Query, running it, and retrieving
-        the Results.
+    Parameters:
+        N/A:
+            See the :class:`~marvin.tools.query.query.Query` class for a list
+            of inputs.
 
-        Parameters:
-            NA: see the Query class for a list of inputs
-
-        Returns:
-            query, results:
-                A tuple containing the built Query instance, and the results
-                instance
-    '''
+    Returns:
+        query, results:
+            A tuple containing the built
+            :class:`~marvin.tools.query.query.Query` instance, and the
+            :class:`~marvin.tools.query.results.Results` instance.
+    """
     q = Query(*args, **kwargs)
     try:
         res = q.run()
@@ -74,9 +72,8 @@ def doQuery(*args, **kwargs):
     return q, res
 
 
-# decorator
 def updateConfig(f):
-    ''' Decorator that updates the query object with new config drpver version info '''
+    """Decorator that updates query object with new config drpver version."""
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -86,9 +83,8 @@ def updateConfig(f):
     return wrapper
 
 
-# decorator
 def makeBaseQuery(f):
-    ''' Decorator that makes the base query if it does not already exist '''
+    """Decorator that makes the base query if it does not already exist."""
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -98,9 +94,8 @@ def makeBaseQuery(f):
     return wrapper
 
 
-# decorator
 def checkCondition(f):
-    ''' Decorator that checks to ensure the filter is set in the property, if it does not already exist '''
+    """Decorator that checks if filter is set, if it does not already exist."""
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -145,8 +140,8 @@ class Query(object):
 
     Returns:
         results:
-            An instance of the Results class containing the results
-            of your Query.
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
 
     Example:
         >>> # filter of "NSA redshift less than 0.1 and IFU names starting with 19"
@@ -928,6 +923,7 @@ class Query(object):
                 The type of info to print.
 
         Example:
+            TODO add example
 
         '''
 
