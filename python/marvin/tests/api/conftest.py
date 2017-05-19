@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-19 15:08:28
+# @Last Modified time: 2017-05-19 16:28:32
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -88,6 +88,7 @@ class ApiPage(Page):
         self.assert422(message='response status should be 422 for invalid params')
         assert 'validation_errors' in self.json.keys()
         noparam = [noparam] if not isinstance(noparam, list) else noparam
-        invalid = {p: [errmsg] for p in noparam}
+        errmsg = [errmsg] if not isinstance(errmsg, list) else errmsg
+        invalid = {p: errmsg for p in noparam}
         self.assert_dict_contains_subset(invalid, self.json['validation_errors'])
 
