@@ -93,7 +93,6 @@ class TestCube(object):
         cubeFlux = fits.getdata(self.filename)
         assert np.allclose(flux, cubeFlux)
 
-    @unittest.expectedFailure
     def test_cube_flux_from_api(self):
 
         cube = Cube(plateifu=self.plateifu, mode='remote')

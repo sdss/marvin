@@ -1,20 +1,15 @@
 .. _marvin-lean-tutorial:
 
-.. ipython:: python
-   :suppress:
-
-   import matplotlib
-   matplotlib.style.use('seaborn-darkgrid')
-   from marvin import config
-   config.mode = 'remote'
-
 
 Lean Tutorial
 =============
 
 This tutorial runs through all of the steps for doing a project with Marvin from start-to-finish with no extra fat.
 
-**Project**: Calculate the [NII]/Halpha ratio for star-forming spaxels in galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
+Project Description
+-------------------
+
+**Calculate the [NII]/H**\ :math:`\alpha` **ratio for star-forming spaxels in galaxies with stellar mass between** :math:`10^{10}` **and** :math:`10^{11}` **.**
 
 
 Sample Selection
@@ -24,16 +19,17 @@ Marvin uses a simplified query syntax (in both `Web <https://sas.sdss.org/marvin
 
 **Goal**: Find galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 
-Create the query and run it (limit to only 3 results for demo purposes):
+Create the query with :meth:`~marvin.tools.query.query.doQuery` and run it (limit to only 3 results for demo purposes):
 
 .. code-block:: python
 
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
 
-**Tip** see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
+**Tip**: see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
 
-View the :ref:`marvin-results`:
+View the :class:`~marvin.tools.query.results.Results`:
+
 
 .. code-block:: python
 
@@ -44,7 +40,7 @@ View the :ref:`marvin-results`:
     # 1  1-24482   8626  8626-12703  12703       10.706346
     # 2  1-24476   7990  7990-12705  12705       10.503103
 
-Convert to :ref:`marvin-tools-maps` objects:
+Convert into :ref:`marvin-tools-maps` objects:
 
 .. code-block:: python
 
@@ -53,10 +49,10 @@ Convert to :ref:`marvin-tools-maps` objects:
     galaxies = r.objects
 
 
-Get Maps
---------
+Get the Maps
+------------
 
-Alternatively, maybe we already knew our galaxy IDs, which we can use to create :ref:`marvin-tools-maps` objects:
+Alternatively, maybe we already knew our galaxy IDs, which we can use to create :class:`~marvin.tools.maps.Maps` objects:
 
 .. code-block:: python
 
@@ -65,18 +61,17 @@ Alternatively, maybe we already knew our galaxy IDs, which we can use to create 
     galaxies = [Maps(mangaid=mangaid) for mangaid in mangaids]
 
 
-Get the Halpha maps:
+Get the H\ :math:`\alpha` maps:
 
 .. code-block:: python
 
     haflux_maps = [galaxy['emline_gflux_ha_6564'] for galaxy in galaxies]
 
 
-Plot Halpha map of the second galaxy:
+Plot H\ :math:`\alpha` map of the second galaxy:
 
 .. code-block:: python
 
-    import matplotlib.pyplot as plt
     haflux_map = haflux_maps[1]
     fig, ax = haflux_map.plot()
 
@@ -93,7 +88,7 @@ However, we can also plot the spectrum and model fits in Python. First, we can f
 Get Spectrum and Model Fit
 --------------------------
 
-Then we can create a :ref:`marvin-tools-spaxel` object from the :ref:`marvin-tools-map` object and retrieve the model fit.
+Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing the parent :class:`~marvin.tools.maps.Maps` object from the :class:`~marvin.tools.map.Map` object (``haflux_map.maps``) and retrieve the model fit.
 
 .. code-block:: python
 
@@ -102,9 +97,11 @@ Then we can create a :ref:`marvin-tools-spaxel` object from the :ref:`marvin-too
 
 Now let's plot the spectrum and model fit:
 
+
 .. code-block:: python
 
     # Set matplotlib style sheet. Undo with matplotib.rcdefaults().
+    import matplotlib.pyplot as plt
     plt.style.use('seaborn-darkgrid')
 
     ax = spax.spectrum.plot()
@@ -114,7 +111,7 @@ Now let's plot the spectrum and model fit:
 
 .. image:: ../_static/spec_7992-6101.png
 
-Clearly something went horribly horribly wrong in the fit. In fact, the DAP did not even try to fit a emission line component to the Halpha and [NII] lines. This is unfortunate, but let's press on.
+Clearly something went horribly horribly wrong in the fit. In fact, the DAP did not even try to fit a emission line component to the H\ :math:`\alpha` and [NII] lines. This is unfortunate, but let's press on.
 
 
 
@@ -129,7 +126,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. image:: ../_static/bpt_7992-6101.png
 
-For a detailed description see :ref:`marvin-bpt`.
+For a detailed description see :doc:`../tools/bpt`.
 
 
 Select Star-forming Spaxels
@@ -141,49 +138,34 @@ Select the star-forming spaxels that are in the star-forming region of each diag
 
     sf = masks['sf']['global']
 
-
-Create the image to display and the background using the star-forming mask:
-
-.. code-block:: python
-
-    import numpy as np
-    image = np.ma.array(haflux_map.value, mask=~sf)
-    mask_nodata = np.ma.array(np.ones(haflux_map.value.shape), mask=sf)
-
-If we wanted to do additional calculations instead of creating a plot, this masked array would also be the object on which we would perform operations.
-
-
-Plot Star-forming Spaxels
--------------------------
-
-Let's set the background to gray:
+Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and set bit 30 (DONOTUSE) for non-star-forming spaxels.
 
 .. code-block:: python
 
-    from marvin.utils.plot import colorbar
-    A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
+    mask_non_sf = ~sf * 2**30
 
 
-Plot the star-forming spaxels:
+Do a bitwise OR between the DAP mask and the non-star-forming mask:
 
 .. code-block:: python
 
-    fig, ax = plt.subplots()
-    ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
-    p = ax.imshow(image, cmap='viridis', origin='lower', zorder=10)
-    ax.set_xlabel('spaxel');
-    ax.set_ylabel('spaxel');
-    cb = fig.colorbar(p)
-    cb.set_label('flux [{}]'.format(haflux_map.unit))
+    mask = haflux_map.mask | mask_non_sf
+
+
+Plot with our new mask:
+
+.. code-block:: python
+
+    haflux_map.plot(mask=mask)
 
 .. image:: ../_static/haflux_sf_7992-6101.png
 
 
 
-Plot [NII]/Halpha Flux Ratio for Star-forming Spaxels
+Plot [NII]/H\ :math:`\alpha` Flux Ratio for Star-forming Spaxels
 -----------------------------------------------------
 
-Calculate [NII]6585/Halpha flux ratio:
+Calculate [NII]6585/H\ :math:`\alpha` flux ratio:
 
 .. code-block:: python
 
@@ -191,26 +173,20 @@ Calculate [NII]6585/Halpha flux ratio:
     nii_ha = maps_7992_6101.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
 
 
-Plot the [NII]/Halpha flux ratio for the star-forming spaxels:
+Plot the [NII]/H\ :math:`\alpha` flux ratio for the star-forming spaxels:
 
 .. code-block:: python
 
-    fig, ax = plt.subplots()
-    ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
-    ax.set_xlabel('spaxel');
-    ax.set_ylabel('spaxel');
-    p = ax.imshow(np.ma.array(nii_ha.value, mask=~sf), origin='lower', cmap='viridis', zorder=10)
-    cb = fig.colorbar(p)
-    cb.set_label('[NII]6585 / Halpha flux ratio')
+    nii_ha.plot(mask=mask, cblabel='[NII]6585 / Halpha flux ratio')
 
 .. image:: ../_static/niiha_sf_7992-6101.png
 
 
 Next Steps
 ----------
-- :ref:`Download Data <marvin-download-objects>` (avoid repeating the same remote API calls every time you run your script)
-- :ref:`Jupyter Notebook Tutorials <marvin-jupyter>`
-- :ref:`marvin-first-steps` (more general introduction to Marvin)
 
+- :doc:`../first-steps` (more general introduction to Marvin)
+- :doc:`plotting`
+- :doc:`Download Data <../core/downloads>` (avoid repeating the same remote API calls every time you run your script)
 
 |

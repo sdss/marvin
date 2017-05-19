@@ -12,6 +12,7 @@ from __future__ import absolute_import
 
 import warnings
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -353,7 +354,8 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
         return bpt_return_classification
 
     # Does all the plotting
-    fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
+    with plt.style.context('seaborn-darkgrid'):
+        fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
 
     sf_kwargs = {'marker': 's', 's': 12, 'color': 'c', 'zorder': 50, 'alpha': 0.7, 'lw': 0.0}
     sf_handler = grid_bpt[0].scatter(log_nii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)

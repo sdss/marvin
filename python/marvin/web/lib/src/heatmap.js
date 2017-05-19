@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-18 11:29:53
+* @Last Modified time: 2017-05-19 10:00:56
 */
 
 //jshint esversion: 6
@@ -11,7 +11,7 @@
 class HeatMap {
 
     // Constructor
-    constructor(mapdiv, data, title, galthis) {
+    constructor(mapdiv, data, title, plotparams, galthis) {
         if (data === undefined) {
             console.error('Must specify input map data to initialize a HeatMap!');
         } else if (mapdiv === undefined) {
@@ -20,6 +20,7 @@ class HeatMap {
             this.mapdiv = mapdiv; // div element for map
             this.data = data; // map data
             this.title = title; // map title
+            this.plotparams = plotparams; // default plotting parameters
             this.galthis = galthis; //the self of the Galaxy class
             this.parseTitle();
             this.initMap();
@@ -79,41 +80,34 @@ class HeatMap {
                 let signalToNoise, signalToNoiseThreshold;
 
                 if (mask !== null) {
-                    let noValue = (mask[ii][jj] & Math.pow(2, 0));
-                    let badValue = (mask[ii][jj] & Math.pow(2, 5));
-                    let mathError = (mask[ii][jj] & Math.pow(2, 6));
-                    let badFit = (mask[ii][jj] & Math.pow(2, 7));
-                    let doNotUse = (mask[ii][jj] & Math.pow(2, 30));
-                    noData = noValue;
-                    badData = (badValue || mathError || badFit || doNotUse);
+                    let bitmasks = this.plotparams["bitmasks"];
+                    noData = (mask[ii][jj] & Math.pow(2, bitmasks["nocov"]));
+                    badData = false;
+                    for (let key in bitmasks["badData"]) {
+                        badData = badData || (mask[ii][jj] & Math.pow(2, bitmasks["badData"][key]))
+                    }
                 } else {
                     noData = null;
                     badData = null;
                 }
-
+                signalToNoiseThreshold = this.plotparams["snr_min"];
                 if (ivar !== null) {
                     signalToNoise = Math.abs(val) * Math.sqrt(ivar[ii][jj]);
-                    if (this.title.toLowerCase().indexOf("vel") >= 0) {
-                        signalToNoiseThreshold = 0.0;
-                    } else {
-                        signalToNoiseThreshold = 1.0;
-                    }
                 }
 
                 // value types
                 // val=no-data => gray color
                 // val=null => hatch area
-                // val=low-sn => nothing at the moment
 
                 if (noData) {
-                    // for data that is outside the range "nocov" mask
+                    // for data that is outside the range "NOCOV" mask
                     val = 'no-data';
                 } else if (badData) {
                     // for data that is bad - masked in some way
                     val = null;
                 } else if (ivar !== null && (signalToNoise < signalToNoiseThreshold)) {
                     // for data that is low S/N
-                   val = null ; //val = 'low-sn';
+                    val = null ;
                 } else if (ivar === null) {
                     // for data with no mask or no inverse variance extensions
                     if (this.title.search('binid') !== -1) {
@@ -254,11 +248,11 @@ class HeatMap {
         '#810823', '#7f0823', '#7c0722', '#790622', '#760521', '#730421', '#700320', '#6d0220',
         '#6a011f', '#67001f'];
 
-        if (cmap === "linearLab") {
+        if (cmap === "linearlab") {
             return linearLabHex;
         } else if (cmap === "inferno") {
             return infernoHex;
-        } else if (cmap === "RdBu") {
+        } else if (cmap === "RdBu_r") {
             return RdBuHex;
         } else {
             return ["#000000", "#FFFFFF"];
@@ -277,14 +271,8 @@ class HeatMap {
 
     quantileClip(range){
         let quantLow, quantHigh, zQuantLow, zQuantHigh;
+        [quantLow, quantHigh] = this.plotparams["percentile_clip"];
         [zQuantLow, zQuantHigh] = this.getMinMax(range);
-        if (this.title.toLowerCase().indexOf("vel") >= 0 ||
-            this.title.toLowerCase().indexOf("sigma") >= 0) {
-            [quantLow, quantHigh] = [10, 90];
-        } else if (this.title.toLowerCase().indexOf("flux") >= 0) {
-            [quantLow, quantHigh] = [5, 95];
-        }
-
         if (range.length > 0) {
             if (quantLow > 0) {
                 zQuantLow = math.quantileSeq(range, quantLow / 100);
@@ -318,16 +306,12 @@ class HeatMap {
         // [zmin, zmax] = this.getMinMax(zrange);
         [zmin, zmax] = this.quantileClip(zrange);
 
-        let cmap;
-        if (this.title.toLowerCase().indexOf("vel") >= 0) {
-            cmap = "RdBu";
-            // make velocity maps symmetric
+        let cmap = this.plotparams["cmap"];
+
+        // make color bar symmetric
+        if (this.plotparams["symmetric"]){
             let zabsmax = Math.max.apply(null, [Math.abs(zmin), Math.abs(zmax)]);
             [zmin, zmax] = [-zabsmax, zabsmax];
-        } else if (this.title.toLowerCase().indexOf("sigma") >= 0) {
-            cmap = "inferno";
-        } else {
-            cmap = "linearLab";
         }
 
         let cstops = this.setColorStops(cmap);
@@ -343,7 +327,10 @@ class HeatMap {
                 plotBackgroundColor: '#A8A8A8'
             },
             credits: {enabled: false},
-            title: {text: this.title},
+            title: {
+                text: this.title.replace(/[_]/g, " "),
+                style: {fontSize: "14px"}
+            },
             navigation: {
                 buttonOptions: {
                     theme: {fill: null}

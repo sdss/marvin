@@ -1,6 +1,7 @@
 /__pycache__
 bin/__pycache__
 .cache
+flask_profiler.sql
 bin/flask_profiler.sql
 docs/sphinx/_build
 docs/sphinx/flask_profiler.sql
