@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-09 15:50:55
+# @Last Modified time: 2017-05-19 16:06:29
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -38,7 +38,7 @@ class TestMapsView(object):
 class TestGetMaps(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    def test_map_success(self, galaxy, page, params, reqtype):
+    def test_maps_success(self, galaxy, page, params, reqtype):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
         data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
                 'template_kin': galaxy.template, 'shape': [34, 34]}
@@ -57,7 +57,7 @@ class TestGetMaps(object):
                               ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
                                   'wrongmplbintype', 'wrongmpltemplate', 'nobintype', 'notemplate'])
-    def test_map_failures(self, galaxy, page, params, name, missing, errmsg, bintype, template):
+    def test_maps_failures(self, galaxy, page, params, name, missing, errmsg, bintype, template):
         params.update({'name': name, 'bintype': bintype, 'template_kin': template})
         if name is None:
             page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
@@ -102,4 +102,42 @@ class TestGetSingleMap(object):
             url = url.replace('None/', '') if missing == 'channel' else url
             page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 
+
+@pytest.mark.parametrize('page', [('api', 'getbinspaxels')], ids=['getbinspaxels'], indirect=True)
+class TestGetBinSpaxels(object):
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('binid', [(100)])
+    def test_binspax_success(self, galaxy, page, params, reqtype, binid):
+
+        def get_bin_data(bintype, binid):
+            bindata = {100: {'ALL': [], 'NRE': [], 'SPX': [[13, 7]], 'VOR10': [[18, 22], [18, 23]]}}
+            return bindata[binid][bintype]
+
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
+                       'template_kin': galaxy.template, 'binid': binid})
+        data = {'spaxels': get_bin_data(galaxy.bintype, binid)}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
+
+    @pytest.mark.parametrize('name, missing, errmsg, bintype, template, binid',
+                             [(None, 'release', 'Missing data for required field.', None, None, None),
+                              ('badname', 'name', 'String does not match expected pattern.', None, None, None),
+                              ('84', 'name', 'Shorter than minimum length 4.', None, None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC', None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC', None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN', None),
+                              ('8485-1901', 'binid', 'Must be between -1 and 5800.', 'SPX', 'GAU-MILESHC', 7000),
+                              ('8485-1901', 'binid', 'Not a valid integer.', 'SPX', 'GAU-MILESHC', None)],
+                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
+                                  'wrongmplbintype', 'wrongmpltemplate', 'badbinid', 'nobinid'])
+    def test_binspax_failures(self, galaxy, page, params, name, missing, errmsg,
+                              bintype, template, binid):
+        params.update({'name': name, 'bintype': bintype, 'template_kin': template, 'binid': binid})
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
+        else:
+            url = page.url.format(**params)
+            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 
