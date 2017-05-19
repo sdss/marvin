@@ -129,6 +129,7 @@ Masking
 
 Spaxels Not Covered by the IFU
 ::::::::::::::::::::::::::::::
+
 :meth:`~marvin.utils.plot.map.no_coverage_mask` creates a mask of a map where there is no coverage by the IFU.
 
 .. code-block:: python
@@ -139,11 +140,29 @@ Spaxels Not Covered by the IFU
     ha = maps['emline_gflux_ha_6564']
     nocov = mapplot.no_coverage_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask, bit=0)
 
+
 **Important** In 2.1.3, the call signature is ``no_coverage_mask(value, ivar, mask, bit)``. In version 2.1.4, this changes to ``no_coverage_mask(mask, bit, ivar=None)``.
 
 
+Bad Data
+::::::::
 
-    
+:meth:`~marvin.utils.plot.map.bad_data_mask` creates a mask of a map where the data has been flagged by the DAP as UNRELIABLE or DONOTUSE.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    bad_data = mapplot.bad_data_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask,
+                                     bits={'doNotUse': 30, 'unreliable': 5})
+
+
+**Important** In 2.1.3, the call signature is ``bad_data_mask(mask, bits)``. In version 2.1.4, this changes to ``bad_data_mask(mask, bits)``.
+
+
+
 
 Reference/API
 -------------
