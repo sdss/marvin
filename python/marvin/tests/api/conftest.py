@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-12 16:52:06
+# @Last Modified time: 2017-05-18 13:28:30
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -51,7 +51,7 @@ def app():
     return app
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def init_api(urlmap):
     #set_sasurl('local')
     config.urlmap = urlmap
