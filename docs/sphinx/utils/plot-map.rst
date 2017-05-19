@@ -106,6 +106,8 @@ Plotting Tutorial
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
+.. _marvin-utils-plot-map-default-params:
+
 Default Plotting Parameters
 ```````````````````````````
 
