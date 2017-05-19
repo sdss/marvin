@@ -408,7 +408,7 @@ def plot(*args, **kwargs):
         percentile_clip = None
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(value, ivar, mask, params['bitmasks'].get('nocov', None))
+    nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
     badData = params['bitmasks']['badData']
     bad_data = bad_data_mask(value, mask, badData) if use_mask else np.zeros(value.shape)
     low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
