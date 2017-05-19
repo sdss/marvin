@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-18 15:09:26
+# @Last Modified time: 2017-05-19 09:43:28
 #
 # This is the Marvin setup
 #
@@ -72,7 +72,7 @@ install_requires = [line.strip().replace('==', '>=') for line in open(requiremen
 
 NAME = 'sdss-marvin'
 # do not use x.x.x-devx.  things complain.  instead use x.x.xdevx
-VERSION = '2.1.3'
+VERSION = '2.1.4dev0'
 RELEASE = 'dev' not in VERSION
 generate_version_py(NAME, VERSION, RELEASE)
 
