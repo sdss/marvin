@@ -90,7 +90,7 @@ environment, and introduces an extensive redesign of the `Marvin web app
 
 The major improvements and additions in this release:
 
-* :doc:`../data-access-modes`: a new mode based navigation system that allows you to seamlessly interact with MaNGA data no matter where it is.
+* :doc:`core/data-access-modes`: a new mode based navigation system that allows you to seamlessly interact with MaNGA data no matter where it is.
 
 * :doc:`../tools`: a python package for accessing and interacting with MaNGA
   data, whether the files are in your computer or they need to be retrieved remotely via the
