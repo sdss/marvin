@@ -136,28 +136,6 @@ Bit	 Name	       Description
     (bad_data == donotuse).all()  # True
 
 
-One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
-
-.. code-block:: python
-
-    ha.maps == maps  # True
-    
-    ha.maps_property
-    # <MapsProperty name=emline_gflux, ivar=True, mask=True, n_channels=21>
-    
-    ha.maps_property.channels
-    # ['oiid_3728', 'hb_4862', 'oiii_4960', 'oiii_5008', ..., 'siii_9533']
-
-
-Finally, we can :meth:`~marvin.tools.map.Map.save` our :mod:`~marvin.tools.map.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.map.Map.restore` it.
-
-.. code-block:: python
-
-    from marvin.tools.map import Map
-    ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
-    zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
-
-
 .. _marvin-map-using:
 
 Using :mod:`~marvin.tools.map.Map`
@@ -178,10 +156,38 @@ Map Plotting
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
-Bitmasks
-````````
+Applying Bitmasks to a Map
+``````````````````````````
 
 * :doc:`../tutorials/bitmasks`
+
+
+Accessing the Parent Maps Object
+````````````````````````````````
+
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
+
+.. code-block:: python
+
+    ha.maps == maps  # True
+    
+    ha.maps_property
+    # <MapsProperty name=emline_gflux, ivar=True, mask=True, n_channels=21>
+    
+    ha.maps_property.channels
+    # ['oiid_3728', 'hb_4862', 'oiii_4960', 'oiii_5008', ..., 'siii_9533']
+
+
+Saving and Restoring a Map
+``````````````````````````
+
+Finally, we can :meth:`~marvin.tools.map.Map.save` our :mod:`~marvin.tools.map.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.map.Map.restore` it.
+
+.. code-block:: python
+
+    from marvin.tools.map import Map
+    ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
+    zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
 
 
 .. _marvin-map-reference:

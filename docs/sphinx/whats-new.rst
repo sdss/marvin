@@ -9,9 +9,24 @@ What's New in Marvin 2.1.3 (May 2017)
 
 * Query shortcuts are now only applied on full words, to avoid blind replacements. This fixes a bug that made parameters such as `elpetro_absmag_r` being replaced by `elpetro_absmaelpetro_mag_g_r`.
 
+* Refactored :doc:`Map <tools/map>` plotting methods into :doc:`Utilities <utils/plot-map>`.
+  
+  * Map plotting now accepts user-defined ``value``, ``ivar``, and ``mask`` arrays (e.g., BPT masks).
+  * It is possible to create multi-panel map plots.
+  * All plotting code no longer overwrites matplotlib rcParams.
+  * Map plotting has new default gray/hatching scheme for data quality (in tools and web):
+  
+    * gray: spaxels with NOCOV.
+    * hatched: spaxels with bad data (UNRELIABLE and DONOTUSE) or S/N below some minimum value.
+    * colored: good data.
+  
+  * Map plotting no longer masks spaxels near zero velocity contour because by default (in tools and web), there is no minimum signal-to-noise ratio for velocity plots.
+
+* New tutorials: :doc:`tutorials/plotting` and :doc:`tutorials/lean-tutorial`.
+
 
 What's New in Marvin 2.1 (February 2017)
-=======================================
+========================================
 
 * Marvin is now minimally compliant with Python 3.5+
 
@@ -43,6 +58,7 @@ What's New in Marvin 2.1 (February 2017)
 
 * See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for more.
 
+
 What's New in Marvin 2.0 Beta (November 2016)
 =============================================
 
@@ -62,6 +78,7 @@ What's New in Marvin 2.0 Beta (November 2016)
 
 * API :ref:`marvin-authentication`
 
+
 What's New in Marvin 2.0 Alpha (June 2016)
 ==========================================
 
@@ -73,7 +90,7 @@ environment, and introduces an extensive redesign of the `Marvin web app
 
 The major improvements and additions in this release:
 
-* :doc:`../data-access-modes`: a new mode based navigation system that allows you to seamlessly interact with MaNGA data no matter where it is.
+* :doc:`core/data-access-modes`: a new mode based navigation system that allows you to seamlessly interact with MaNGA data no matter where it is.
 
 * :doc:`../tools`: a python package for accessing and interacting with MaNGA
   data, whether the files are in your computer or they need to be retrieved remotely via the

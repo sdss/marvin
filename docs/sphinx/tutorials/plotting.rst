@@ -206,11 +206,12 @@ Plot H\ :math:`\alpha` Map of Star-forming Spaxels
     ha = maps['emline_gflux_ha_6564']
     masks, __ = maps.get_bpt(show_plot=False)
 
-    # Return the complement of the BPT global star-forming mask (True == star-forming) using `~`
-    # and set bit 30 (DONOTUSE) for non-star-forming spaxels.
+    # Create a bitmask for non-star-forming spaxels by taking the
+    # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
+    # and set bit 30 (DONOTUSE) for those spaxels.
     mask_non_sf = ~masks['sf']['global'] * 2**30
 
-    # Bitwise OR between DAP mask and non-star-forming mask
+    # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
     ha.plot(mask=mask)
 
@@ -230,7 +231,13 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
 
     # Mask out non-star-forming spaxels
     masks, __ = maps.get_bpt(show_plot=False)
+
+    # Create a bitmask for non-star-forming spaxels by taking the
+    # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
+    # and set bit 30 (DONOTUSE) for those spaxels.
     mask_non_sf = ~masks['sf']['global'] * 2**30
+
+    # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = nii_ha.mask | mask_non_sf
     
     nii_ha.plot(mask=mask, cblabel='[NII]6585 / Halpha flux ratio')

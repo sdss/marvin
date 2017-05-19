@@ -49,7 +49,13 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
 
     from marvin.tools.maps import Maps
     masks, __ = maps.get_bpt(show_plot=False)
-    mask_non_sf = ~masks['sf']['global'] * 2**30  # non-star-forming spaxels
+    
+    # Create a bitmask for non-star-forming spaxels by taking the
+    # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
+    # and set bit 30 (DONOTUSE) for those spaxels.
+    mask_non_sf = ~masks['sf']['global'] * 2**30
+    
+    # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
     fig, ax = mapplot.plot(dapmap=ha, mask=mask)  # == ha.plot(mask=mask)
 
