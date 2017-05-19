@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:54:18
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-18 14:04:05
+# @Last Modified time: 2017-05-19 15:09:11
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -60,7 +60,7 @@ class TestGetCube(object):
 class TestCubeExtension(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    @pytest.mark.parametrize('cubeext', [('flux', 'ivar', 'mask')])
+    @pytest.mark.parametrize('cubeext', [('flux'), ('ivar'), ('mask')])
     def test_cubeext_success(self, galaxy, page, params, reqtype, cubeext):
         params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
         data = {'cube_extension': []}
@@ -77,7 +77,8 @@ class TestCubeExtension(object):
     def test_cubeext_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, cubeext):
         params.update({'name': name, 'cube_extension': cubeext})
         if name is None:
-            page.route_no_valid_params(page.url.format(name=galaxy.plateifu), missing, reqtype=reqtype, errmsg=errmsg)
+            params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
+            page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, errmsg=errmsg)
         else:
             page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 
