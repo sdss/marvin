@@ -140,18 +140,18 @@ class TestMasks(object):
         nocov = mapplot.no_coverage_mask(mask=mask, bit=bits['nocov'], ivar=ivar)
         assert np.all(nocov == expected)
 
-    @pytest.mark.parametrize('value, mask, expected', [(value, mask_simple, bad_data_mpl4)])
-    def test_bad_data_mask_mpl4(self, value, mask, expected):
+    @pytest.mark.parametrize('mask, expected', [(mask_simple, bad_data_mpl4)])
+    def test_bad_data_mask_mpl4(self, mask, expected):
         if config.release != 'MPL-4':
             pytest.skip('Use generic test for bad data bitmasks in MPL-5+.')
-        bad_data = mapplot.bad_data_mask(value, mask, {'doNotUse': 0})
+        bad_data = mapplot.bad_data_mask(mask=mask, bits={'doNotUse': 0})
         assert np.all(bad_data == expected)
 
-    @pytest.mark.parametrize('value, mask, expected', [(value, mask_daplike, bad_data)])
-    def test_bad_data_mask(self, value, mask, bits, expected):
+    @pytest.mark.parametrize('mask, expected', [(mask_daplike, bad_data)])
+    def test_bad_data_mask(self, mask, bits, expected):
         if config.release == 'MPL-4':
             pytest.skip('UNRELIABLE bitmask only exists in MPL-5+')
-        bad_data = mapplot.bad_data_mask(value, mask, bits['badData'])
+        bad_data = mapplot.bad_data_mask(mask=mask, bits=bits['badData'])
         assert np.all(bad_data == expected)
 
     @pytest.mark.parametrize('value, ivar, snr_min, expected',

@@ -74,7 +74,7 @@ def no_coverage_mask(mask, bit, ivar=None):
     return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
 
 
-def bad_data_mask(value, mask, bits):
+def bad_data_mask(mask, bits):
     """Mask spaxels that are flagged as bad data by the DAP.
 
     The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
@@ -82,8 +82,6 @@ def bad_data_mask(value, mask, bits):
     corresponds most closely to "DONOTUSE."
 
     Parameters:
-        value (array):
-            Value for image.
         mask (array):
             Mask for value.
         bits (dict):
@@ -96,7 +94,7 @@ def bad_data_mask(value, mask, bits):
     if 'unreliable' in bits.keys():     
         unreliable = (mask & 2**bits['unreliable']).astype(bool)
     else:
-        unreliable = np.zeros(value.shape, dtype=bool)
+        unreliable = np.zeros(mask.shape, dtype=bool)
 
     donotuse = (mask & 2**bits['doNotUse']).astype(bool)
     return np.logical_or.reduce((unreliable, donotuse))
@@ -410,7 +408,7 @@ def plot(*args, **kwargs):
     # create no coverage, bad data, low SNR, and log colorbar masks
     nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
     badData = params['bitmasks']['badData']
-    bad_data = bad_data_mask(value, mask, badData) if use_mask else np.zeros(value.shape)
+    bad_data = bad_data_mask(mask, badData) if use_mask else np.zeros(value.shape)
     low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
