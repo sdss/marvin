@@ -144,8 +144,8 @@ Spaxels Not Covered by the IFU
 **Important** In 2.1.3, the call signature is ``no_coverage_mask(value, ivar, mask, bit)``. In version 2.1.4, this changes to ``no_coverage_mask(mask, bit, ivar=None)``.
 
 
-Bad Data
-::::::::
+Spaxels Flagged as Bad Data
+:::::::::::::::::::::::::::
 
 :meth:`~marvin.utils.plot.map.bad_data_mask` creates a mask of a map where the data has been flagged by the DAP as UNRELIABLE or DONOTUSE.
 
@@ -161,6 +161,33 @@ Bad Data
 
 **Important** In 2.1.3, the call signature is ``bad_data_mask(mask, bits)``. In version 2.1.4, this changes to ``bad_data_mask(mask, bits)``.
 
+
+Spaxels with Low Signal-to-Noise
+::::::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.low_snr_mask` creates a mask of a map where the data is below a minimum signal-to-noise ratio.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    low_snr = mapplot.low_snr_mask(value=ha.value, ivar=ha.ivar, snr_min=1)
+
+
+Spaxels with Negative Values
+::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.log_colorbar_mask` creates a mask of a map where the values are negative.  This is necessary to avoid erros when using a logarithmic colorbar.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    low_snr = mapplot.log_colorbar_mask(value=ha.value, log_cb=True)
 
 
 
