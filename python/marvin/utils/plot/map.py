@@ -54,23 +54,23 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-def no_coverage_mask(value, ivar, mask, bit):
+def no_coverage_mask(mask, bit, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
-        value (array):
-            Value for image.
-        ivar (array):
-            Inverse variance for image.
         mask (array):
             Mask for value.
         bit (int):
             Bit for "NOCOV."
+        ivar (array):
+            Inverse variance for image. Default is None.
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
+    assert (bit is not None) or (ivar is not None), 'Must provide a bit or ivar array.'
+
     return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
 
 
