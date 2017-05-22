@@ -190,9 +190,9 @@ def _set_cbrange(image, cb_kws):
     Returns:
         dict: Colorbar kwargs.
     """
-    if cb_kws.get('sigma_clip') is not None:
+    if not cb_kws.get('sigma_clip'):
         cbr = _cbrange_sigma_clip(image, cb_kws['sigma_clip'])
-    elif cb_kws.get('percentile_clip', None) is not None:
+    elif not cb_kws.get('percentile_clip'):
         try:
             cbr = _cbrange_percentile_clip(image, *cb_kws['percentile_clip'])
         except IndexError:
