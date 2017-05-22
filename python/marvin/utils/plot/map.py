@@ -362,8 +362,8 @@ def plot(*args, **kwargs):
     for kw in kwargs:
         assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-    assert ((not kwargs.get('percentile_clip', False)) +
-            (not kwargs.get('sigma_clip', False)) +
+    assert ((kwargs.get('percentile_clip', False)) +
+            (kwargs.get('sigma_clip', False)) +
             (kwargs.get('cbrange', None) is not None) <= 1), \
         'Only set one of percentile_clip, sigma_clip, or cbrange!'
 
