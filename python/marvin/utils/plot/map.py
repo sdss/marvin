@@ -422,8 +422,8 @@ def plot(*args, **kwargs):
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
     cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
-    cb_kws = colorbar.set_cb_kws(cb_kws)
-    cb_kws = colorbar.set_cbrange(image, cb_kws)
+    cb_kws = colorbar._set_cb_kws(cb_kws)
+    cb_kws = colorbar._set_cbrange(image, cb_kws)
 
     # setup unmasked spaxels
     extent = set_extent(value.shape, sky_coords)
@@ -441,7 +441,7 @@ def plot(*args, **kwargs):
     patch_kws = set_patch_style(extent=extent)
 
     # finish setup of unmasked spaxels and colorbar range
-    imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+    imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
     # set hatch color and linewidths (in matplotlib 2.0+)
     try:
