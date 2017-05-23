@@ -78,6 +78,8 @@ class Search(BaseWebView):
         searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
 
         # Add the forms
+        from marvin.tools.query.query_utils import bestparams
+        self.search['paramdata'] = bestparams
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
 
@@ -90,10 +92,13 @@ class Search(BaseWebView):
 
             args = av.manual_parse(self, request, use_params='search')
             print('search args', args)
+            returnparams = form.getlist('testform', type=str)
+            print('form', form)
+            print('test params', returnparams)
 
             # get form parameters
             searchvalue = form['searchbox']  # search filter input
-            returnparams = form.getlist('returnparams', type=str)  # dropdown select
+            #returnparams = form.getlist('returnparams', type=str)  # dropdown select
             parambox = form.get('parambox', None, type=str)  # from autocomplete
             if parambox:
                 parms = parambox.split(',')

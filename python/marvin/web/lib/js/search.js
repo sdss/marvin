@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-01 01:42:36
+* @Last Modified time: 2017-05-22 15:58:36
 */
 
 //jshint esversion: 6
@@ -107,6 +107,7 @@ var Search = function () {
                 matcher: function matcher(item) {
                     // used to determined if a query matches an item
                     var tquery = _this.extractor(this.query);
+                    console.log(tquery);
                     if (!tquery) return false;
                     return ~item.toLowerCase().indexOf(tquery.toLowerCase());
                 },

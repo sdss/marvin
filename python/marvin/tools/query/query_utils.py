@@ -1,4 +1,13 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+# Licensed under a 3-clause BSD license.
+
+from __future__ import print_function, division
 import re
+import os
+import yaml
+import yamlordereddictloader
 
 specindex_types = ['D4000', 'CaII0p39', 'HDeltaA', 'CN1', 'CN2', 'Ca4227', 'HGammaA', 'Fe4668',
                    'Hb', 'Mgb', 'Fe5270', 'Fe5335', 'Fe5406', 'NaD', 'TiO1', 'TiO2', 'NaI0p82',
@@ -153,3 +162,14 @@ def expand(name, operator, value):
                 conditions.append(cn)
     searchfilter = ' and '.join(conditions)
     return searchfilter
+
+# Query Parameter Datamodel
+bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best_1.cfg')
+with open(bestpath, 'r') as stream:
+    bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
+param_groups = ['Metadata', 'NSA_Catalog', 'Emission_Lines', 'Kinematics', 'Spectral_Indices']
+
+
+
+
+
