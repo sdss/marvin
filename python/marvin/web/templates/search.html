@@ -15,10 +15,10 @@
                     <div class='form-group'>
                         <label for='test'>Test Thing:</label>
                         <select class="selectpicker" id='testform' name='testform' multiple data-live-search='True' title='Choose some Parameters' data-max-options='5'>
-                            {% for group in paramdata.keys() %}
-                                <optgroup label='{{group}}'>
-                                    {% for param in paramdata[group] %}
-                                        <option id='{{param.full}}' name='{{param.name}}' value='{{param.full}}'>{{param.display}}</option>
+                            {% for group in paramdata %}
+                                <optgroup label='{{group.name}}'>
+                                    {% for param in paramdata[group.name] %}
+                                        <option data-tokens='{{param|make_token(group.name)}}' id='{{param.full}}' name='{{param.name}}' value='{{param.full}}'>{{param.display}}</option>
                                     {% endfor %}
                                 </optgroup>
                             {% endfor %}

@@ -78,8 +78,8 @@ class Search(BaseWebView):
         searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
 
         # Add the forms
-        from marvin.tools.query.query_utils import bestparams
-        self.search['paramdata'] = bestparams
+        from marvin.tools.query.query_utils import query_params
+        self.search['paramdata'] = query_params
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
 

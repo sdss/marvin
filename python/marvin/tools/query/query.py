@@ -32,6 +32,7 @@ import re
 from marvin.core import marvin_pickle
 from functools import wraps
 from marvin.tools.query.results import remote_mode_only
+#from marvin.tools.query_utils import query_params
 
 try:
     import cPickle as pickle
@@ -426,7 +427,15 @@ class Query(object):
         return bestkeys
 
     def get_best_params(self):
-        ''' Retrieves a list of best parameters to query on '''
+        ''' Retrieves a list of best parameters to query on
+
+        This returns the list of vetted parameters that can be
+        queried on in the where filter, or can be returned.
+
+        Returns:
+            parameters (list):
+                A list of vetted query parameters
+        '''
         if self.mode == 'local':
             keys = self.get_available_params()
             bestkeys = self._read_best_params()

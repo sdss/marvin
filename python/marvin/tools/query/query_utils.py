@@ -8,6 +8,8 @@ import re
 import os
 import yaml
 import yamlordereddictloader
+from fuzzywuzzy import fuzz, process
+from marvin import config
 
 specindex_types = ['D4000', 'CaII0p39', 'HDeltaA', 'CN1', 'CN2', 'Ca4227', 'HGammaA', 'Fe4668',
                    'Hb', 'Mgb', 'Fe5270', 'Fe5335', 'Fe5406', 'NaD', 'TiO1', 'TiO2', 'NaI0p82',
@@ -163,13 +165,125 @@ def expand(name, operator, value):
     searchfilter = ' and '.join(conditions)
     return searchfilter
 
+
 # Query Parameter Datamodel
-bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best_1.cfg')
-with open(bestpath, 'r') as stream:
-    bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
-param_groups = ['Metadata', 'NSA_Catalog', 'Emission_Lines', 'Kinematics', 'Spectral_Indices']
 
 
+def get_params():
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best_1.cfg')
+    if os.path.isfile(bestpath):
+        with open(bestpath, 'r') as stream:
+            bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
+        return bestparams
+    else:
+        return None
+
+
+class ParameterGroupList(list):
+
+    def __init__(self, items):
+        self.score = None
+        if isinstance(items, list):
+            list.__init__(self, items)
+        elif isinstance(items, dict):
+            paramgroups = [ParameterGroup(key, vals) for key, vals in items.items()]
+            list.__init__(self, paramgroups)
+
+    def list_groups(self):
+        """Returns a list of query groups."""
+        return [group.name for group in self]
+
+    def __eq__(self, name):
+        item = process.extractOne(name, self, score_cutoff=50)
+        if item:
+            self.score = item[1]
+            return item[0]
+
+    def __contains__(self, name):
+        item = process.extractOne(name, self, score_cutoff=50)
+        if item:
+            self.score = item[1]
+            return item[0]
+        else:
+            return False
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            return self == name
+        else:
+            return list.__getitem__(self, name)
+
+
+class ParameterGroup(list):
+
+    def __init__(self, name, items):
+        self.name = name
+        self.score = None
+        queryparams = [QueryParameter(**item) for item in items]
+        list.__init__(self, queryparams)
+
+    def __repr__(self):
+        return ('<ParameterGroup name={0.name}>'.format(self))
+
+    def list_params(self, display=None, short=None):
+        ''' List the parameter names
+
+        Lists the full names of the parameters of the given group
+
+        Parameters:
+            display (bool):
+                Set to show the display names
+            short (bool)
+                Set to show the short names
+
+        Returns:
+            full (list):
+                The list of full (table.name) parameter names
+        '''
+        if short:
+            return [param.short for param in self]
+        elif display:
+            return [param.display for param in self]
+        else:
+            return [param.full for param in self]
+
+    def __eq__(self, name):
+        item = process.extractOne(name, self, score_cutoff=25)
+        if item:
+            self.score = item[1]
+            return item[0]
+
+    def __contains__(self, name):
+        item = process.extractOne(name, self, score_cutoff=25)
+        if item:
+            self.score = item[1]
+            return True
+        else:
+            return False
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            return self == name
+        else:
+            return list.__getitem__(self, name)
+
+
+class QueryParameter(object):
+
+    def __init__(self, full, table=None, name=None, short=None, display=None):
+        self.full = full
+        self.table = table
+        self.name = name
+        self.short = short
+        self.display = display
+        self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
+
+    def __repr__(self):
+        return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, display={0.display}>'.format(self))
+
+
+bestparams = get_params()
+query_params = ParameterGroupList(bestparams)
 
 
 
