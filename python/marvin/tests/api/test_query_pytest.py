@@ -6,11 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 16:40:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 17:37:04
+# @Last Modified time: 2017-05-24 18:09:06
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 from marvin.tools.query import Query
+from marvin.tools.query.query_utils import bestparams
 import pytest
 
 
@@ -29,9 +30,10 @@ def params(release):
 def get_query_params(paramdisplay):
     q = Query(mode='local')
     if paramdisplay == 'best':
-        qparams = q.get_best_params()
+        #qparams = q.get_best_params()
+        qparams = bestparams
     else:
-        qparams = q.get_available_params()
+        qparams = q.get_available_params('all')
     return qparams
 
 
@@ -80,7 +82,7 @@ class TestQueryGetParams(object):
         params.update({'paramdisplay': paramdisplay})
         data = get_query_params(paramdisplay)
         page.load_page(reqtype, page.url, params=params)
-        page.assert_success(data)
+        page.assert_success(data, keys=True)
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),

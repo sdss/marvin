@@ -116,7 +116,7 @@
         m.table.print();
         // Set up query typeahead
         m.search = new Search();
-        m.search.initTypeahead('#searchform .typeahead', '#searchform');
+        // m.search.initTypeahead('#searchform .typeahead', '#searchform');
         // Load Search Results if any
         var res = {{results|tojson}};
         var url = Flask.url_for('search_page.webtable')

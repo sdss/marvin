@@ -19,6 +19,7 @@ from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
+from marvin.tools.query.query_utils import query_params, bestparams
 from wtforms import validators, ValidationError
 import random
 
@@ -71,14 +72,13 @@ class Search(BaseWebView):
 
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
-        q = Query(release=self._release)
-        # allparams = q.get_available_params()
-        bestparams = q.get_best_params()
-        searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
-        searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
+        # q = Query(release=self._release)
+        # # allparams = q.get_available_params()
+        # bestparams = q.get_best_params()
+        # searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
+        # searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
 
-        # Add the forms
-        from marvin.tools.query.query_utils import query_params
+        # Add the forms and parameters
         self.search['paramdata'] = query_params
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
@@ -148,14 +148,14 @@ class Search(BaseWebView):
 
         # set the paramdisplay if it is not
         if not paramdisplay:
-            paramdisplay = 'all'
+            paramdisplay = 'best'
 
         # run query and retrieve parameters
         q = Query(release=self._release)
         if paramdisplay == 'all':
-            params = q.get_available_params()
+            params = q.get_available_params('all')
         elif paramdisplay == 'best':
-            params = q.get_best_params()
+            params = bestparams
         output = jsonify(params)
         return output
 
