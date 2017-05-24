@@ -6,8 +6,8 @@ Query Parameters
 
 This is a list of available parameters returnable in your Query that have been vetted and verified.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  Please let us know which ones you wish to be made available, and we will add them.
 
-General Cube/Map Properties
----------------------------
+Metadata
+--------
 * **cube.plateifu**: The plate+ifudesign name for this object
 * **cube.mangaid**: The mangaid for this object
 * **cube.ra**: OBJRA - Right ascension of the science object in J2000
@@ -16,10 +16,14 @@ General Cube/Map Properties
 * **bintype.name**: The type of binning used in DAP maps
 * **template.name**: The stellar libary template used in DAP maps
 
-Spaxel Properties
------------------
+Spaxel Metadata
+---------------
 * **spaxelprop.x**: The spaxel x position
 * **spaxelprop.y**: The spaxel y position
+* **spaxelprop.spx_snr**: The spaxel r-band signal-to-noise ratio
+
+Emission Lines
+--------------
 * **spaxelprop.emline_gflux_ha_6564**: Gaussian profile integrated flux for Ha emission line
 * **spaxelprop.emline_gflux_hb_4862**: Gaussian profile integrated flux for Hb emission line
 * **spaxelprop.emline_gflux_nii_6549**: Gaussian profile integrated flux for NII emission line
@@ -33,16 +37,22 @@ Spaxel Properties
 * **spaxelprop.oiii_to_hb**: The OIII/Hb ratio computed from emline_gflux
 * **spaxelprop.sii_to_ha**: The SII/Ha ratio computed from emline_gflux
 * **spaxelprop.ha_to_hb**: The Ha/Hb ratio computed from emline_gflux
+
+Kinematics
+----------
 * **spaxelprop.emline_gvel_ha_6564**: Gaussian profile velocity for Ha emission line
 * **spaxelprop.emline_gvel_oiii_5008**: Gaussian profile velocity for OIII emission line
 * **spaxelprop.emline_gsigma_ha_6564**: Gaussian profile velocity dispersion for Ha emission line; must be corrected using EMLINE_INSTSIGMA
 * **spaxelprop.emline_gsigma_oiii_5008**: Gaussian profile velocity dispersion for OIII emission line; must be corrected using EMLINE_INSTSIGMA
 * **spaxelprop.stellar_vel**: Stellar velocity relative to NSA redshift
 * **spaxelprop.stellar_sigma**: Stellar velocity dispersion (must be corrected using STELLAR_SIGMACORR)
+
+Spectral Indices
+----------------
 * **spaxelprop.specindex_d4000**: Measurements of spectral indices
 
-NSA Properties
---------------
+NSA Catalog
+-----------
 * **nsa.iauname**: The accepted IAU name
 * **nsa.ra**: Right ascension of the galaxy
 * **nsa.dec**: Declination of the galaxy

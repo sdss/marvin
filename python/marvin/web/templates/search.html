@@ -10,11 +10,11 @@
 
             <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
               <div class='row'>
-                {# test thing #}
+                {# Return Paramter dropdown select #}
                 <div class='col-md-2'>
                     <div class='form-group'>
-                        <label for='test'><a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query-params.html'>Return Parameters:</a></label>
-                        <select class="selectpicker form-control" id='testform' name='testform' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5'>
+                        <label for='returnparams'><a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query-params.html'>Return Parameters:</a></label>
+                        <select class="selectpicker form-control" id='returnparams' name='returnparams' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5'>
                             {% for group in paramdata %}
                                 <optgroup label='{{group.name}}'>
                                     {% for param in paramdata[group.name] %}
@@ -25,18 +25,14 @@
                         </select>
                     </div>
                 </div>
-<!--                 <div class='col-md-2'>
-                    <div class='form-group'>
-                        <div>{{searchform.returnparams.label}}: {{searchform.returnparams(class_='form-control selectpicker multiple')}}</div>
-                    </div>
-                </div> -->
 
+<!--                 {# Query Parameter Autocomplete Input Box #}
                 <div class='col-md-2'>
                     <div class='form-group'>
                         <div id='searchtype'>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead', autocomplete='off', placeholder='Type return parameters')}}</div>
                     </div>
-                </div>
-
+                </div> -->
+                {# Input Search Filter Box #}
                 <div class='col-md-6'>
                   <div class='form-group'>
                     <div>{{searchform.searchbox.label}}: {{searchform.searchbox(class_='form-control', placeholder=placeholder)}}</div>
