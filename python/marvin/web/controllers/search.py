@@ -44,15 +44,6 @@ def all_in(fullist):
     return _all_in
 
 
-# def add_urls(rows):
-#     ''' Add urls to the plateifu and mangaid entries '''
-#     for row in rows:
-#         plink = url_for('galaxy_page.Galaxy:get', galid=row['cube.plateifu'])
-#         mlink = url_for('galaxy_page.Galaxy:get', galid=row['cube.mangid'])
-
-#     return rows
-
-
 class Search(BaseWebView):
     route_base = '/search/'
 
@@ -97,10 +88,7 @@ class Search(BaseWebView):
             self.search.update({'results': None, 'errmsg': None})
 
             args = av.manual_parse(self, request, use_params='search')
-            print('search args', args)
             returnparams = form.getlist('testform', type=str)
-            print('form', form)
-            print('test params', returnparams)
 
             # get form parameters
             searchvalue = form['searchbox']  # search filter input
@@ -114,7 +102,6 @@ class Search(BaseWebView):
             returnparams = returnparams if returnparams and not parambox else \
                 parambox if parambox and not returnparams else \
                 list(set(returnparams) | set(parambox)) if returnparams and parambox else None
-            print('return params', returnparams)
             self.search.update({'returnparams': returnparams})
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
 
@@ -132,7 +119,6 @@ class Search(BaseWebView):
                     if res.count > 0:
                         cols = res.mapColumnsToParams()
                         rows = res.getDictOf(format_type='listdict')
-                        #rows = add_urls(rows)
                         output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
                     else:
                         output = None

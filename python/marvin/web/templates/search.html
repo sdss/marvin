@@ -18,16 +18,11 @@
                             {% for group in paramdata %}
                                 <optgroup label='{{group.name}}'>
                                     {% for param in paramdata[group.name] %}
-                                        <option {{'selected' if returnparams and param.full in returnparams}} data-tokens='{{param|make_token(group.name)}}' id='{{param.full}}' name='{{param.name}}' value='{{param.full}}'>{{param.display}}</option>
+                                        <option data-subtext='{{param.full}}' {{'selected' if returnparams and param.full in returnparams}} data-tokens='{{param|make_token(group.name)}}' id='{{param.full}}' name='{{param.name}}' value='{{param.full}}'>{{param.display}}</option>
                                     {% endfor %}
                                 </optgroup>
                             {% endfor %}
                         </select>
-                    </div>
-                </div>
-                <div class='col-md-2'>
-                    <div class='form-group'>
-                        <div>{{searchform.returnparams.label}}: {{searchform.returnparams(class_='form-control selectpicker multiple')}}</div>
                     </div>
                 </div>
 <!--                 <div class='col-md-2'>
@@ -121,7 +116,6 @@
 {% block code %}
 <script type='application/javascript'>
     $(function() {
-        console.log('rp', {{returnparams|safe|tojson}});
         m.table = new Table($('#searchtable'));
         m.table.print();
         // Set up query typeahead

@@ -6,10 +6,12 @@
 from __future__ import print_function, division
 import re
 import os
+import numpy as np
 import yaml
 import yamlordereddictloader
 from fuzzywuzzy import fuzz, process
 from marvin import config
+from marvin.core.exceptions import MarvinError
 
 specindex_types = ['D4000', 'CaII0p39', 'HDeltaA', 'CN1', 'CN2', 'Ca4227', 'HGammaA', 'Fe4668',
                    'Hb', 'Mgb', 'Fe5270', 'Fe5335', 'Fe5406', 'NaD', 'TiO1', 'TiO2', 'NaI0p82',
@@ -168,6 +170,23 @@ def expand(name, operator, value):
 
 # Query Parameter Datamodel
 
+def get_best_fuzzy(name, choices, cutoff=0):
+    items = process.extractBests(name, choices, score_cutoff=cutoff)
+    if items:
+        scores = [s[1] for s in items]
+        morethanone = sum(np.max(scores) == scores) > 1
+        if morethanone:
+            exact = [s for s in items if s[0].name.lower() == name.lower()]
+            if exact:
+                return exact[0]
+            else:
+                options = [s[0].name for s in items if s[1] == np.max(scores)]
+                raise KeyError('{0} is too ambiguous.  Did you mean one of {1}?'.format(name, options))
+        else:
+            return items[0]
+    else:
+        return None
+
 
 def get_params():
     bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best_1.cfg')
@@ -180,6 +199,18 @@ def get_params():
 
 
 class ParameterGroupList(list):
+    ''' ParameterGroup Object
+
+    This object inherits from the Python list object. This
+    represents a list of query ParameterGroups.
+
+    Methods:
+        list_groups:
+            lists all the groups in this list
+        list_params:
+            lists the (full) parameter names from all groups
+            or a subset of groups
+    '''
 
     def __init__(self, items):
         self.score = None
@@ -190,21 +221,44 @@ class ParameterGroupList(list):
             list.__init__(self, paramgroups)
 
     def list_groups(self):
-        """Returns a list of query groups."""
+        '''Returns a list of query groups.
+
+        Returns:
+            names (list):
+                A string list of all the Query Group names
+        '''
         return [group.name for group in self]
 
-    def list_allparams(self):
-        """Returns a list of all parameters from all groups."""
-        return [param.full for group in self for param in group]
+    def list_params(self, groups=None):
+        '''Returns a list of parameters from all groups.
+
+        Return a string list of the full parameter names.
+        Default is all parameters across all groups.
+
+        Parameters:
+            groups (str|list):
+                A string or list of strings representing the groups
+                of parameters you wish to return
+
+        Returns:
+            params (list):
+                A list of full parameter names
+        '''
+        if groups:
+            groups = groups if isinstance(groups, list) else [groups]
+            grouplist = [self[g] for g in groups]
+            return [param.full for group in grouplist for param in group]
+        else:
+            return [param.full for group in self for param in group]
 
     def __eq__(self, name):
-        item = process.extractOne(name, self, score_cutoff=50)
+        item = get_best_fuzzy(name, self, cutoff=50)
         if item:
             self.score = item[1]
             return item[0]
 
     def __contains__(self, name):
-        item = process.extractOne(name, self, score_cutoff=50)
+        item = get_best_fuzzy(name, self, cutoff=50)
         if item:
             self.score = item[1]
             return item[0]
@@ -219,7 +273,21 @@ class ParameterGroupList(list):
 
 
 class ParameterGroup(list):
+    ''' A Query Parameter Group Object
 
+    Query parameters are grouped into specific categories
+    for ease of use and navigation.  This object subclasses
+    from the Python list object.
+
+    Parameters:
+        name (str):
+            The name of the group
+
+    Methods:
+        list_params:
+            List all the parameters for a given group
+
+    '''
     def __init__(self, name, items):
         self.name = name
         self.score = None
@@ -227,38 +295,42 @@ class ParameterGroup(list):
         list.__init__(self, queryparams)
 
     def __repr__(self):
-        return ('<ParameterGroup name={0.name}>'.format(self))
+        return ('<ParameterGroup name={0.name}, paramcount={1}>'.format(self, len(self)))
 
-    def list_params(self, display=None, short=None):
+    def list_params(self, display=None, short=None, full=None):
         ''' List the parameter names
 
-        Lists the full names of the parameters of the given group
+        Lists the Query Parameters of the given group
 
         Parameters:
             display (bool):
-                Set to show the display names
+                Set to return the display names
             short (bool)
-                Set to show the short names
+                Set to return the short names
+            full (bool):
+                Set to return the full names
 
         Returns:
-            full (list):
-                The list of full (table.name) parameter names
+            param (list):
+                The list of parameter
         '''
         if short:
             return [param.short for param in self]
         elif display:
             return [param.display for param in self]
-        else:
+        elif full:
             return [param.full for param in self]
+        else:
+            return [param for param in self]
 
     def __eq__(self, name):
-        item = process.extractOne(name, self, score_cutoff=25)
+        item = get_best_fuzzy(name, self, cutoff=25)
         if item:
             self.score = item[1]
             return item[0]
 
     def __contains__(self, name):
-        item = process.extractOne(name, self, score_cutoff=25)
+        item = get_best_fuzzy(name, self, cutoff=25)
         if item:
             self.score = item[1]
             return True
@@ -273,6 +345,23 @@ class ParameterGroup(list):
 
 
 class QueryParameter(object):
+    ''' A Query Parameter class
+
+    An object representing a query parameter.  Provides access to
+    different names for a given parameter.
+
+    Parameters:
+        full (str):
+            The full naming syntax (table.name) used for all queries.  This name is recommended for full uniqueness.
+        table (str):
+            The name of the database table the parameter belongs to
+        name (str):
+            The name of the parameter in the database
+        short (str):
+            A shorthand name of the parameter
+        display (str):
+            A display name used for web and plotting purposes.
+    '''
 
     def __init__(self, full, table=None, name=None, short=None, display=None):
         self.full = full
