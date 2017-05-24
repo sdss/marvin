@@ -193,6 +193,10 @@ class ParameterGroupList(list):
         """Returns a list of query groups."""
         return [group.name for group in self]
 
+    def list_allparams(self):
+        """Returns a list of all parameters from all groups."""
+        return [param.full for group in self for param in group]
+
     def __eq__(self, name):
         item = process.extractOne(name, self, score_cutoff=50)
         if item:

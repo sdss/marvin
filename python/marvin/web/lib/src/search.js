@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-22 15:58:36
+* @Last Modified time: 2017-05-24 09:45:32
 */
 
 //jshint esversion: 6
@@ -90,7 +90,6 @@ class Search {
         matcher: function (item) {
             // used to determined if a query matches an item
             let tquery = _this.extractor(this.query);
-            console.log(tquery);
             if(!tquery) return false;
             return ~item.toLowerCase().indexOf(tquery.toLowerCase());
         },

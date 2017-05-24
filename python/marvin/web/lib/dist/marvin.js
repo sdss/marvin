@@ -2409,7 +2409,7 @@ var Scatter = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-22 15:58:36
+* @Last Modified time: 2017-05-24 09:45:32
 */
 
 //jshint esversion: 6
@@ -2514,7 +2514,6 @@ var Search = function () {
                 matcher: function matcher(item) {
                     // used to determined if a query matches an item
                     var tquery = _this.extractor(this.query);
-                    console.log(tquery);
                     if (!tquery) return false;
                     return ~item.toLowerCase().indexOf(tquery.toLowerCase());
                 },
@@ -2536,7 +2535,7 @@ var Search = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-02 19:54:07
+* @Last Modified time: 2017-05-24 10:48:06
 */
 
 //jshint esversion: 6
@@ -2602,7 +2601,6 @@ var Table = function () {
                 totalRows: data.total,
                 columns: cols,
                 url: url,
-                search: true,
                 showColumns: true,
                 showToggle: true,
                 sortName: 'cube.mangaid',
@@ -2618,15 +2616,30 @@ var Table = function () {
     }, {
         key: 'makeColumns',
         value: function makeColumns(columns) {
+            var _this = this;
+
             var cols = [];
             columns.forEach(function (name, index) {
                 var colmap = {};
                 colmap.field = name;
                 colmap.title = name;
                 colmap.sortable = true;
+                if (name.match('cube.plateifu|cube.mangaid')) {
+                    colmap.formatter = _this.linkformatter;
+                }
                 cols.push(colmap);
             });
             return cols;
+        }
+
+        // Link Formatter
+
+    }, {
+        key: 'linkformatter',
+        value: function linkformatter(value, row, index) {
+            var url = Flask.url_for('galaxy_page.Galaxy:get', { 'galid': value });
+            var link = '<a href=' + url + ' target=\'_blank\'>' + value + '</a>';
+            return link;
         }
 
         // Handle the Bootstrap table JSON response
@@ -2663,7 +2676,7 @@ var Table = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-09 09:00:18
+* @Last Modified time: 2017-05-23 17:36:14
 */
 
 // Javascript code for general things
@@ -2754,6 +2767,27 @@ var Utils = function () {
         key: 'initToolTips',
         value: function initToolTips() {
             $('[data-toggle="tooltip"]').tooltip();
+        }
+
+        // Select Choices from a Bootstrap-Select element
+
+    }, {
+        key: 'selectChoices',
+        value: function selectChoices(id, choices) {
+            $(id).selectpicker('val', choices);
+            $(id).selectpicker('refresh');
+        }
+
+        // Reset Choices from a Bootstrap-Select element
+
+    }, {
+        key: 'resetChoices',
+        value: function resetChoices(id) {
+            console.log('reseting in utils', id);
+            var select = typeof id === 'string' ? $(id) : id;
+            select.selectpicker('deselectAll');
+            select.selectpicker('refresh');
+            select.selectpicker('render');
         }
 
         // Login function

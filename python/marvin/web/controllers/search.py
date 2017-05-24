@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
+from flask import Blueprint, render_template, session as current_session, request, jsonify, url_for
 from flask_classy import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -27,7 +27,7 @@ search = Blueprint("search_page", __name__)
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000', 'haflux > 25',
+    samples = ['nsa.z < 0.02', 'cube.plate < 8000', 'haflux > 25',
                'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
     q = random.choice(samples)
     return q
@@ -44,6 +44,15 @@ def all_in(fullist):
     return _all_in
 
 
+# def add_urls(rows):
+#     ''' Add urls to the plateifu and mangaid entries '''
+#     for row in rows:
+#         plink = url_for('galaxy_page.Galaxy:get', galid=row['cube.plateifu'])
+#         mlink = url_for('galaxy_page.Galaxy:get', galid=row['cube.mangid'])
+
+#     return rows
+
+
 class Search(BaseWebView):
     route_base = '/search/'
 
@@ -54,6 +63,7 @@ class Search(BaseWebView):
         self.search['filter'] = None
         self.search['results'] = None
         self.search['errmsg'] = None
+        self.search['returnparams'] = None
         self.mf = MarvinForm()
 
     def before_request(self, *args, **kwargs):
@@ -68,7 +78,6 @@ class Search(BaseWebView):
         form = processRequest(request=request)
         self.search['formparams'] = form
 
-        print('search form', form, type(form))
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
         q = Query(release=self._release)
@@ -82,9 +91,6 @@ class Search(BaseWebView):
         self.search['paramdata'] = query_params
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
-
-        #from flask import abort
-        #abort(500)
 
         # If form parameters then try to do a search
         if form:
@@ -109,6 +115,7 @@ class Search(BaseWebView):
                 parambox if parambox and not returnparams else \
                 list(set(returnparams) | set(parambox)) if returnparams and parambox else None
             print('return params', returnparams)
+            self.search.update({'returnparams': returnparams})
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
 
             # if main form passes validation then do search
@@ -125,7 +132,8 @@ class Search(BaseWebView):
                     if res.count > 0:
                         cols = res.mapColumnsToParams()
                         rows = res.getDictOf(format_type='listdict')
-                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+                        #rows = add_urls(rows)
+                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
                     else:
                         output = None
                     self.search['results'] = output
@@ -207,7 +215,7 @@ class Search(BaseWebView):
         cols = res.mapColumnsToParams()
         # create output
         rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
         output = jsonify(output)
         return output
 
