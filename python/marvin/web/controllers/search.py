@@ -128,8 +128,7 @@ class Search(BaseWebView):
                         returnparams = [str(r) for r in returnparams]
                     rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
                     qstr = ', returnparams=returnparams' if returnparams else ''
-                    self.search['querystring'] = ("<html><samp>from marvin import \
-                        config<br>from marvin.tools.query import Query<br>config.mode='remote'<br>\
+                    self.search['querystring'] = ("<html><samp>from marvin.tools.query import Query<br>\
                         filter='{0}'<br> {1}\
                         q = Query(searchfilter=filter{2})<br>\
                         r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))

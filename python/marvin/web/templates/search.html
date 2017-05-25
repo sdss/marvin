@@ -11,7 +11,7 @@
             <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
               <div class='row'>
                 {# Return Paramter dropdown select #}
-                <div class='col-md-2'>
+                <div class='col-md-2 col-md-offset-2'>
                     <div class='form-group'>
                         <label for='returnparams'><a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query-params.html'>Return Parameters:</a></label>
                         <select class="selectpicker form-control" id='returnparams' name='returnparams' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5'>
