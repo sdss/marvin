@@ -328,7 +328,7 @@ class QueryView(BaseView):
 
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
-        q = Query(mode='local')
+        q = Query(mode='local', release=args['release'])
         if paramdisplay == 'all':
             params = q.get_available_params('all')
         elif paramdisplay == 'best':

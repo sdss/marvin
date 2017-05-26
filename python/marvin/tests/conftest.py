@@ -20,7 +20,7 @@ from marvin.tools.maps import _get_bintemps
 # TODO replace _reset_the_config with monkeypatch
 # TODO reimplement set_sasurl (use function-level fixture?)
 
-releases = ['MPL-5']
+releases = ['MPL-5', 'MPL-4']
 plateifus = ['8485-1901']
 
 bintypes = {}
@@ -122,8 +122,13 @@ def urlmap(set_sasurl):
 
 
 @pytest.fixture(scope='session', params=releases)
-def set_release(request):
-    config.setMPL(request.param)
+def release(request):
+    return request.param
+
+
+@pytest.fixture(scope='session')
+def set_release(release):
+    config.setMPL(release)
 
 
 @pytest.fixture(scope='session')
