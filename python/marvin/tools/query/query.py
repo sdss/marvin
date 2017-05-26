@@ -448,6 +448,7 @@ class Query(object):
         '''
         self.session = None
         self.marvinform = None
+        self.myforms = None
         self._modelgraph = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
@@ -457,7 +458,7 @@ class Query(object):
 
         # check for file extension
         if not os.path.splitext(path)[1]:
-            path = os.path.join(path+'.mpf')
+            path = os.path.join(path + '.mpf')
 
         path = os.path.realpath(path)
 

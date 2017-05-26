@@ -106,6 +106,12 @@ def set_config():
     config.add_github_message = False
 
 
+@pytest.fixture()
+def check_config():
+    ''' check the config to see if a db is on or not '''
+    return config.db is None
+
+
 @pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
     if not port:
@@ -121,6 +127,13 @@ def urlmap(set_sasurl):
     return config.urlmap
 
 
+# use if you need a temporary directory and or file space (see TestQueryPickling for usage)
+@pytest.fixture(scope='session')
+def temp_scratch(tmpdir_factory):
+    fn = tmpdir_factory.mktemp('scratch')
+    return fn
+
+
 @pytest.fixture(scope='session', params=releases)
 def release(request):
     return request.param
@@ -129,6 +142,12 @@ def release(request):
 @pytest.fixture(scope='session')
 def set_release(release):
     config.setMPL(release)
+
+
+@pytest.fixture(scope='session')
+def get_versions(set_release):
+    drpver, dapver = config.lookUpVersions(config.release)
+    return config.release, drpver, dapver
 
 
 @pytest.fixture(scope='session')
