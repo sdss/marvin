@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-27 19:21:49
+# @Last Modified time: 2017-05-28 13:51:07
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -167,11 +167,19 @@ class TestQuerySearches(object):
         if expmode != 'local':
             assert config._traceback is not None
 
-    def test_function_queries(self, query):
-        pass
-
-    def test_spaxel_tables(self, query):
-        pass
+    @pytest.mark.parametrize('query, allspax, table',
+                             [('haflux > 25', False, 'cleanspaxelprop'),
+                              ('haflux > 25', True, 'spaxelprop')],
+                             ids=['allspax', 'cleanspax'],
+                             indirect=['query'])
+    def test_spaxel_tables(self, query, expmode, allspax, table):
+        table = table + config.release.split('-')[1] if '4' not in config.release else table
+        query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode)
+        if expmode == 'local':
+            assert table in set(query.joins)
+        else:
+            res = query.run()
+            assert table in res.query
 
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
