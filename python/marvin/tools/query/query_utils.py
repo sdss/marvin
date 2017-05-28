@@ -47,12 +47,6 @@ class ParameterGroupList(list):
     This object inherits from the Python list object. This
     represents a list of query ParameterGroups.
 
-    Methods:
-        list_groups:
-            lists all the groups in this list
-        list_params:
-            lists the (full) parameter names from all groups
-            or a subset of groups
     '''
 
     def __init__(self, items):
@@ -126,10 +120,6 @@ class ParameterGroup(list):
         name (str):
             The name of the group
 
-    Methods:
-        list_params:
-            List all the parameters for a given group
-
     '''
     def __init__(self, name, items):
         self.name = name
@@ -140,12 +130,14 @@ class ParameterGroup(list):
     def __repr__(self):
         return ('<ParameterGroup name={0.name}, paramcount={1}>'.format(self, len(self)))
 
-    def list_params(self, display=None, short=None, full=None):
-        ''' List the parameter names
+    def list_params(self, subset=None, display=None, short=None, full=None):
+        ''' List the parameter names for a given group
 
         Lists the Query Parameters of the given group
 
         Parameters:
+            subset (str|list):
+                String list of a subset of parameters to return
             display (bool):
                 Set to return the display names
             short (bool)
@@ -157,14 +149,21 @@ class ParameterGroup(list):
             param (list):
                 The list of parameter
         '''
-        if short:
-            return [param.short for param in self]
-        elif display:
-            return [param.display for param in self]
-        elif full:
-            return [param.full for param in self]
+
+        if subset:
+            params = subset if isinstance(subset, list) else [subset]
+            paramlist = [self[g] for g in params]
         else:
-            return [param for param in self]
+            paramlist = self
+
+        if short:
+            return [param.short for param in paramlist]
+        elif display:
+            return [param.display for param in paramlist]
+        elif full:
+            return [param.full for param in paramlist]
+        else:
+            return [param for param in paramlist]
 
     def __eq__(self, name):
         item = get_best_fuzzy(name, self, cutoff=25)

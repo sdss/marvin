@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-25 10:08:24
+# @Last Modified time: 2017-05-28 15:17:28
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query.query_utils import query_params, QueryParameter
@@ -109,6 +109,22 @@ class TestParamList(object):
             assert isinstance(params[0], QueryParameter)
         else:
             assert params[0] == expname
+
+    @pytest.mark.parametrize('group, params, expset',
+                             [('metadata', ['ra', 'dec'], ['cube.ra', 'cube.dec'])])
+    def test_list_subset(self, group, params, expset):
+        subset = query_params[group].list_params(params, full=True)
+        assert set(expset) == set(subset)
+
+    @pytest.mark.parametrize('groups, params1, params2, expset',
+                             [(('metadata', 'nsa'), ['ra', 'dec'], ['z', 'absmag_g_r'],
+                               ['cube.ra', 'cube.dec', 'nsa.z', 'nsa.elpetro_absmag_g_r'])])
+    def test_join_two_list(self, groups, params1, params2, expset):
+        group1, group2 = groups
+        g1 = query_params[group1]
+        g2 = query_params[group2]
+        mylist = g1.list_params(params1, full=True) + g2.list_params(params2, full=True)
+        assert set(expset) == set(mylist)
 
     def test_raises_keyerror(self):
         errmsg = "emline_gflux is too ambiguous."

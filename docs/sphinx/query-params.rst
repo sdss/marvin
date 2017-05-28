@@ -4,15 +4,199 @@
 Query Parameters
 ================
 
-This is a list of available parameters returnable in your Query that have been vetted and verified.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  Please let us know which ones you wish to be made available, and we will add them.
+Marvin provides the ability to query on or return a number of different parameters.  Currently we have vetted and provided a small set.  See the :ref:`marvin_parameter_list` for the currently available list.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  If you wish to query on a parameter that you do not see here, please let us know, and we will make it available.
+
+Getting Started
+^^^^^^^^^^^^^^^
+
+All Manga query parameters are grouped by parameter type.  We offer six groups of parameters, and have provided a toolset designed to help you search for and locate what parameters are available, and to easily input them into Queries.
+
+* Metadata
+* Spaxel Metadata
+* Emission Lines
+* Kinematics
+* Spectral Indices
+* NSA Catalog
+
+From within Marvin, to list which groups are available import the **query_params** object.  The **query_params** object is a Python list object.
+
+::
+
+    # import the query_params
+    from marvin.tools.query.query_utils import query_params
+
+    # display the list of parameter groups
+    query_params
+    [<ParameterGroup name=Metadata, paramcount=7>,
+     <ParameterGroup name=Spaxel Metadata, paramcount=3>,
+     <ParameterGroup name=Emission Lines, paramcount=13>,
+     <ParameterGroup name=Kinematics, paramcount=6>,
+     <ParameterGroup name=Spectral Indices, paramcount=1>,
+     <ParameterGroup name=NSA Catalog, paramcount=11>]
+
+Shown is a list of all available query groups, the the number of parameters within each group. You can assess individual groups, and list its parameters.
+
+::
+
+    # access a group
+    query_params['metadata']
+    <ParameterGroup name=Metadata, paramcount=7>
+
+    # list parameters
+     query_params['metadata'].list_params()
+    [<QueryParameter full=cube.plateifu, name=plateifu, short=plateifu, display=Plate-IFU>,
+     <QueryParameter full=cube.mangaid, name=mangaid, short=mangaid, display=Manga-ID>,
+     <QueryParameter full=cube.ra, name=ra, short=ra, display=RA>,
+     <QueryParameter full=cube.dec, name=dec, short=dec, display=Dec>,
+     <QueryParameter full=cube.plate, name=plate, short=plate, display=Plate>,
+     <QueryParameter full=bintype.name, name=name, short=bin, display=Bintype>,
+     <QueryParameter full=template.name, name=name, short=template, display=Template>]
+
+Access individual parameters with the same list indexing technique for groups.
+
+::
+
+    # grab ra and dec
+    query_params['metadata']['ra']
+     <QueryParameter full=cube.ra, name=ra, short=ra, display=RA>
+
+    query_params['metadata']['dec']
+    <QueryParameter full=cube.dec, name=dec, short=dec, display=Dec>
+
+    # slice it like a list
+    query_params['metadata'][0:3]
+    [<QueryParameter full=cube.plateifu, name=plateifu, short=plateifu, display=Plate-IFU>,
+     <QueryParameter full=cube.mangaid, name=mangaid, short=mangaid, display=Manga-ID>,
+     <QueryParameter full=cube.ra, name=ra, short=ra, display=RA>]
+
+To generate a list of names that are formatted as ready-input into Marvin Queries, use the **full** keyword.
+
+::
+
+    # format the RA query parameter
+    query_params['metadata']['ra'].full
+    'cube.ra'
+
+    # format the entire list of metadata parameters
+    query_params['metadata'].list_params(full=True)
+    ['cube.plateifu',
+     'cube.mangaid',
+     'cube.ra',
+     'cube.dec',
+     'cube.plate',
+     'bintype.name',
+     'template.name']
+
+Make a list of the galaxy RA, Dec, NSA redshift, and g-r color.
+
+::
+
+    # make a custom list of parameters
+    meta = query_params['metadata']
+    nsa = query_params['nsa']
+    myparams = meta.list_params(['ra','dec'], full=True) + nsa.list_params(['z', 'absmag_g_r'], full=True)
+
+    myparams
+    ['cube.ra', 'cube.dec', 'nsa.z', 'nsa.elpetro_absmag_g_r']
+
+    # input into a Marvin Query
+    from marvin.tools.query import Query
+    query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+
+If you want to list all parameters from all groups, use `query_params.list_params`.
+
+::
+
+    # display all parameter from all groups
+    query_params.list_params()
+    ['cube.plateifu',
+     'cube.mangaid',
+     'cube.ra',
+     'cube.dec',
+     'cube.plate',
+     'bintype.name',
+      ...
+      ...
+     'nsa.z',
+     'nsa.elpetro_ba',
+     'nsa.elpetro_mag_g_r',
+     'nsa.elpetro_absmag_g_r',
+     'nsa.elpetro_logmass',
+     'nsa.elpetro_th50_r',
+     'nsa.sersic_logmass',
+     'nsa.sersic_ba']
+
+You can also select the parameters from individual groups. Let's return all the NSA and Kinematic parameters.
+
+::
+
+    myparams = query_params.list_params(['nsa', 'kin'])
+    myparams
+    ['nsa.iauname',
+     'nsa.ra',
+     'nsa.dec',
+     'nsa.z',
+     'nsa.elpetro_ba',
+     'nsa.elpetro_mag_g_r',
+     'nsa.elpetro_absmag_g_r',
+     'nsa.elpetro_logmass',
+     'nsa.elpetro_th50_r',
+     'nsa.sersic_logmass',
+     'nsa.sersic_ba',
+     'spaxelprop.emline_gvel_ha_6564',
+     'spaxelprop.emline_gvel_oiii_5008',
+     'spaxelprop.emline_gsigma_ha_6564',
+     'spaxelprop.emline_gsigma_oiii_5008',
+     'spaxelprop.stellar_vel',
+     'spaxelprop.stellar_sigma']
+
+We can input these directly into a Marvin Query.  Note that returning lots of parameters or a mix of spaxel and galaxy parameters may result in long query times or a large result set.
+
+::
+
+    from marvin.tools.query import Query
+    query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+
+Using Query Params
+^^^^^^^^^^^^^^^^^^
+
+* Accessing Groups
+
+* Accessing Parameters
+
+* Inputting into the Query
+
+.. _marvin_queryparam_api
+
+Reference/API
+^^^^^^^^^^^^^
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.query.query_utils.ParameterGroupList
+.. autosummary:: marvin.tools.query.query_utils.ParameterGroup
+.. autosummary:: marvin.tools.query.query_utils.QueryParameter
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.query.query_utils.ParameterGroupList.list_groups
+    marvin.tools.query.query_utils.ParameterGroupList.list_params
+    marvin.tools.query.query_utils.ParameterGroup.list_params
+
+.. _marvin_parameter_list:
+
+Parameter List
+^^^^^^^^^^^^^^
 
 Metadata
 --------
-* **cube.plateifu**: The plate+ifudesign name for this object
-* **cube.mangaid**: The mangaid for this object
+* **cube.plateifu**: **(default)** The plate+ifudesign name for this object
+* **cube.mangaid**: **(default)** The mangaid for this object
 * **cube.ra**: OBJRA - Right ascension of the science object in J2000
 * **cube.dec**: OBJDEC - Declination of the science object in J2000
-* **cube.plate**: The plateid
+* **cube.plate**: **(default)** The plateid
 * **bintype.name**: The type of binning used in DAP maps
 * **template.name**: The stellar libary template used in DAP maps
 
@@ -63,4 +247,6 @@ NSA Catalog
 * **nsa.elpetro_th50_r**: Elliptical petrosian 50% light radius (derived from r band), in arcsec.
 * **nsa.sersic_logmass**: Log of the stellar mass from 2D Sersic fit
 * **nsa.sersic_ba**: Axis ratio b/a from 2D Sersic fit.
+
+|
 

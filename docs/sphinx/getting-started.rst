@@ -6,12 +6,24 @@ Getting Started
 
 If you have not yet installed Marvin, please follow the :ref:`marvin-installation` instructions before proceeding.  In particular, make sure you have a **netrc** file in your local home directory.  This will enable Marvin to access data remotely, and download files.
 
-Accessing Objects Remotely
---------------------------
-
 From your terminal, type ipython.  Ipython is an Interactive Python shell terminal.  It is recommended to always use ipython instead of python.::
 
     > ipython
+
+This page explains how to do the following:
+
+* :ref:`marvin-getstart_accessremote`
+* :ref:`marvin-getstart_displayplots`
+* :ref:`marvin-getstart_accesslocally`
+* :ref:`marvin-getstart_querysample`
+* :ref:`marvin-getstart_downloadbulk`
+* :ref:`marvin-getstart_converttools`
+* :ref:`marvin-getstart_lookimages`
+
+.. _marvin-getstart_accessremote:
+
+Accessing Objects Remotely
+--------------------------
 
 Marvin has a variety of Tools designed to help you access the various MaNGA data products.  Let's start with the basic MaNGA data product, the 3d datacube output by the Data Reduction Pipeline (DRP).  The Marvin Cube class is designed to aid your interaction with MaNGA's datacubes.
 
@@ -43,6 +55,8 @@ You have just created a Marvin Cube for plate-ifu **8485-1901**.  You will also 
     cube.dec
 
 Marvin has many Tools available that all behave in a similar way to the Marvin Cube.  See :ref:`marvin-tools` for a description of all the Tools currently available.
+
+.. _marvin-getstart_displayplots:
 
 Displaying Plots
 ----------------
@@ -178,6 +192,7 @@ You should see a pop-up window containing the H-alpha emission line flux map for
     # change some default plot options. Let's change the S/N cutoff using in the plot, and change the default color map used.
     hamap.plot(snr_min=5, cmap='inferno')
 
+.. _marvin-getstart_download:
 
 Downloading Your Object
 -----------------------
@@ -213,6 +228,8 @@ The files are stored in your local **SAS (Science Archive Server)** as set up by
     '/Users/Brian/Work/sdss/sas'
 
 You should see a directory path printed. If you get an error of the sort **KeyError: 'SAS_BASE_DIR'**, then you are missing this environment variable.  Something has gone wrong with your Marvin set up and configuration.  Please contact the developers.
+
+.. _marvin-getstart_accesslocally:
 
 Accessing Objects Locally
 -------------------------
@@ -303,6 +320,8 @@ We just loaded this Cube locally using the identifier **plateifu**.  You can als
     print(cube)
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
+.. _marvin-getstart_querysample:
+
 Querying the Sample
 -------------------
 
@@ -331,6 +350,7 @@ Previously, you have been dealing with individual objects, on a case by case bas
 
 You can do much more with Queries and Results.  See what else at the :ref:`marvin-query` and :ref:`marvin-results` pages.
 
+.. _marvin-getstart_downloadbulk:
 
 Download Objects in Bulk
 ------------------------
@@ -344,6 +364,7 @@ Marvin Queries return a subset of results based on your query and filter paramet
 
 This downloads your results subset.  You can also download in bulk using a list of plate-ifus or manga-ids using **downloadList**.  See :ref:`marvin-download-objects` for more.
 
+.. _marvin-getstart_converttools:
 
 Converting to Marvin Objects
 ----------------------------
@@ -365,6 +386,7 @@ Marvin Queries return a paginated list of results as tuples of data values.  Thi
 
 Now you have the full power of the Marvin Tools at your disposal with your list of Query results.
 
+.. _marvin-getstart_lookimages:
 
 Looking at Images
 -----------------
@@ -409,5 +431,5 @@ This creates and returns a Python Image Library object (add link), which you can
     CDELT : 1.0  1.0
     NAXIS : 0  0
 
-
+|
 
