@@ -4,7 +4,7 @@
 Query Parameters
 ================
 
-Marvin provides the ability to query on or return a number of different parameters.  Currently we have vetted and provided a small set.  See the :ref:`marvin_parameter_list` for the currently available list.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  If you wish to query on a parameter that you do not see here, please let us know, and we will make it available.
+Marvin provides the ability to query on or return a number of different parameters.  Currently we have vetted and provided a small set.  See the :ref:`marvin_parameter_list` for the currently available list.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  If you wish to query on a parameter that you do not see here, please let us know, and we will make it available.  Or if you are adventurous, you can peruse the full unvetted list using ``query.get_available_params('all')``.
 
 Getting Started
 ^^^^^^^^^^^^^^^
@@ -34,7 +34,7 @@ From within Marvin, to list which groups are available import the **query_params
      <ParameterGroup name=Spectral Indices, paramcount=1>,
      <ParameterGroup name=NSA Catalog, paramcount=11>]
 
-Shown is a list of all available query groups, the the number of parameters within each group. You can assess individual groups, and list its parameters.
+Shown is a list of all available query groups, with the number of parameters within each group. You can access individual groups, and list their parameters.
 
 ::
 
@@ -87,7 +87,7 @@ To generate a list of names that are formatted as ready-input into Marvin Querie
      'bintype.name',
      'template.name']
 
-Make a list of the galaxy RA, Dec, NSA redshift, and g-r color.
+You can combine lists.  Make a list of the galaxy RA, Dec, NSA redshift, and g-r color parameters.
 
 ::
 
@@ -103,11 +103,11 @@ Make a list of the galaxy RA, Dec, NSA redshift, and g-r color.
     from marvin.tools.query import Query
     query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
 
-If you want to list all parameters from all groups, use `query_params.list_params`.
+If you want all parameters from all groups, use the **query_params.list_params** method.
 
 ::
 
-    # display all parameter from all groups
+    # return all parameters from all groups
     query_params.list_params()
     ['cube.plateifu',
      'cube.mangaid',
@@ -156,15 +156,29 @@ We can input these directly into a Marvin Query.  Note that returning lots of pa
 
     from marvin.tools.query import Query
     query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+    results = query.run()
+
+    print(results.columns)
+    print(results.results[0])
+
+    [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', 'nsa.iauname', 'nsa.ra', 'nsa.dec', 'nsa.z', 'nsa.elpetro_ba', 'nsa.elpetro_mag_g_r', 'nsa.elpetro_absmag_g_r', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r', 'nsa.sersic_logmass', 'nsa.sersic_ba', 'spaxelprop.emline_gvel_ha_6564', 'spaxelprop.emline_gvel_oiii_5008', 'spaxelprop.emline_gsigma_ha_6564', 'spaxelprop.emline_gsigma_oiii_5008', 'spaxelprop.stellar_vel', 'spaxelprop.stellar_sigma', u'spaxelprop.x', u'spaxelprop.y']
+
+    (u'1-209232', 8485, u'8485-1901', u'1901', u'J153010.73+484124.8', 232.544703894, 48.6902009334, 0.0407447, 0.87454, 0.646084027458681, 1.16559028625488, 9.56547591284382, 1.33067, 9.62935046578146, 0.773047, 4.95878, 0.674934, 110.361, 128.882, 32.2628, 95.9309, 6, 15)
+
 
 Using Query Params
 ^^^^^^^^^^^^^^^^^^
 
-* Accessing Groups
+.. toctree::
+   :maxdepth: 2
 
-* Accessing Parameters
+   Accessing Groups <tools/query/queryparams_groups>
 
-* Inputting into the Query
+.. toctree::
+   :maxdepth: 2
+
+   Accessing Parameters <tools/query/queryparams_params>
+
 
 .. _marvin_queryparam_api
 
