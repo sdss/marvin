@@ -6,6 +6,8 @@ Query Parameters
 
 Marvin provides the ability to query on or return a number of different parameters.  Currently we have vetted and provided a small set.  See the :ref:`marvin_parameter_list` for the currently available list.  The naming conventions here are the same for the filter parameter names.  There are more parameters.  If you wish to query on a parameter that you do not see here, please let us know, and we will make it available.  Or if you are adventurous, you can peruse the full unvetted list using ``query.get_available_params('all')``.
 
+.. _marvin-queryparam-getstart:
+
 Getting Started
 ^^^^^^^^^^^^^^^
 
