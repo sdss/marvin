@@ -2,11 +2,14 @@
 
 ## [2.1.4] - unreleased
 ### Added:
+- Added new query_params object, for easier navigation of available query parameters.  Added new tests.
 
 ### Changed:
 - Changed call signature for :meth:`marvin.utils.plot.map.no_coverage_mask` (removed ``value`` arg because unused, added ``None`` as default value ``ivar`` (``None``), and re-ordered args and kwargs).
 - Changed call signature for :meth:`marvin.utils.plot.map.bad_data_mask` (removed ``value`` arg because unused).
 *TODO* add above changes to docs (marvin/docs/sphinx/utils/plot-map.rst)
+- Changed the Marvin web search page to use the new query_params and parameter grouping.  Removed the autocomplete input box.
+- Updated the documentation on query and query_params.
 
 ### Fixed:
 
