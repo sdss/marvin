@@ -106,6 +106,8 @@ Plotting Tutorial
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
+.. _marvin-utils-plot-map-default-params:
+
 Default Plotting Parameters
 ```````````````````````````
 
@@ -123,6 +125,127 @@ velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False   
 
 **Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which use bit 1 (rough DONOTUSE) for all properties.
 
+
+Masking
+```````
+
+Spaxels Not Covered by the IFU
+::::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.no_coverage_mask` creates a mask of a map where there is no coverage by the IFU.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    nocov = mapplot.no_coverage_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask, bit=0)
+
+
+**Important**: In 2.1.3, the call signature is ``no_coverage_mask(value, ivar, mask, bit)``. In version 2.1.4, this changes to ``no_coverage_mask(mask, bit, ivar=None)``.
+
+
+Spaxels Flagged as Bad Data
+:::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.bad_data_mask` creates a mask of a map where the data has been flagged by the DAP as UNRELIABLE or DONOTUSE.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    bad_data = mapplot.bad_data_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask,
+                                     bits={'doNotUse': 30, 'unreliable': 5})
+
+
+**Important**: In 2.1.3, the call signature is ``bad_data_mask(mask, bits)``. In version 2.1.4, this changes to ``bad_data_mask(mask, bits)``.
+
+
+Spaxels with Low Signal-to-Noise
+::::::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.low_snr_mask` creates a mask of a map where the data is below a minimum signal-to-noise ratio.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    low_snr = mapplot.low_snr_mask(value=ha.value, ivar=ha.ivar, snr_min=1)
+
+
+Spaxels with Negative Values
+::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.log_colorbar_mask` creates a mask of a map where the values are negative.  This is necessary to avoid erros when using a logarithmic colorbar.
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    log_cb_mask = mapplot.log_colorbar_mask(value=ha.value, log_cb=True)
+
+
+Combine Various Undesirable Masks
+:::::::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.select_good_spaxels` creates a `NumPy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.html>`_ that combines masks of undesirable spaxels (no IFU coverage, bad data, low signal-to-noise ratio, and negative values [if using a logarithmic colorbar]).
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    good_spax = mapplot.select_good_spaxels(value=ha.value, nocov=nocov, bad_data=bad_data, low_snr=low_snr, log_cb_mask=log_cb_mask)
+
+
+Set the Plotting Extent for `imshow <https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.imshow.html>`_
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:meth:`~marvin.utils.plot.map.set_extent` returns the coordinates of the lower-left and upper-right corners of the map in cube coordinates (lower-left = (0, 0) and in units of spaxels) or sky coordinates (center = (0, 0) and in units of arcsec).
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+    extent = mapplot.set_extent(cube_size=ha.value.shape, sky_coords=False)
+
+
+Set Hatch Style
+:::::::::::::::
+
+:meth:`~marvin.utils.plot.map.set_patch_style` sets the style for the hatched region(s) that correspond to spaxels that are covered by the IFU but do not have usable data. :meth:`~marvin.utils.plot.map.plot` creates a single large hatched rectangle patch as the lowest layer and then places the gray background (no IFU coverage) and colored spaxels (good data) as higher layers.
+
+.. code-block:: python
+
+    import marvin.utils.plot.map as mapplot
+    patch_kws = mapplot.set_patch_style(extent=extent, facecolor='#A8A8A8')
+
+
+Axis Setup
+::::::::::
+
+:meth:`~marvin.utils.plot.map.ax_setup` sets the x- and y-labels and facecolor.
+
+
+Set Title
+:::::::::
+
+:meth:`~marvin.utils.plot.map.set_title` sets the title of the axis object. You can directly specify the title or construct it from the property name (and channel name).
+
+.. code-block:: python
+
+    import marvin.utils.plot.map as mapplot
+    title = mapplot.set_title(title=None, property_name=ha.property_name, channel=ha.channel)
 
 Reference/API
 -------------
