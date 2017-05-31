@@ -54,27 +54,27 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-def no_coverage_mask(value, ivar, mask, bit):
+def no_coverage_mask(mask, bit, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
-        value (array):
-            Value for image.
-        ivar (array):
-            Inverse variance for image.
         mask (array):
             Mask for value.
         bit (int):
             Bit for "NOCOV."
+        ivar (array):
+            Inverse variance for image. Default is None.
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
+    assert (bit is not None) or (ivar is not None), 'Must provide a bit or ivar array.'
+
     return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
 
 
-def bad_data_mask(value, mask, bits):
+def bad_data_mask(mask, bits):
     """Mask spaxels that are flagged as bad data by the DAP.
 
     The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
@@ -82,8 +82,6 @@ def bad_data_mask(value, mask, bits):
     corresponds most closely to "DONOTUSE."
 
     Parameters:
-        value (array):
-            Value for image.
         mask (array):
             Mask for value.
         bits (dict):
@@ -96,7 +94,7 @@ def bad_data_mask(value, mask, bits):
     if 'unreliable' in bits.keys():     
         unreliable = (mask & 2**bits['unreliable']).astype(bool)
     else:
-        unreliable = np.zeros(value.shape, dtype=bool)
+        unreliable = np.zeros(mask.shape, dtype=bool)
 
     donotuse = (mask & 2**bits['doNotUse']).astype(bool)
     return np.logical_or.reduce((unreliable, donotuse))
@@ -174,7 +172,8 @@ def select_good_spaxels(value, nocov, bad_data, low_snr, log_cb_mask):
         nocov (array):
             Mask for spaxels without IFU coverage.
         bad_data (array):
-            Mask for data flagged as bad (see datamodel for default bits).
+            Mask for data flagged as bad (see
+            :ref:`marvin-utils-plot-map-default-params` for default bits).
         low_snr (array):
             Mask for data below the signal-to-noise ratio threshold.
         low_cb_mask (array):
@@ -302,19 +301,21 @@ def plot(*args, **kwargs):
         mask (array):
             Mask array. Default is ``None``.
         cmap (str):
-            Colormap (see datamodel for defaults).
+            Colormap (see :ref:`marvin-utils-plot-map-default-params` for
+            defaults).
         percentile_clip (tuple-like):
-            Percentile clip (see datamodel for defaults.
+            Percentile clip (see :ref:`marvin-utils-plot-map-default-params`
+            for defaults).
         sigma_clip (float):
-            Sigma clip. Default is ``None``.
+            Sigma clip. Default is ``False``.
         cbrange (tuple-like):
             If ``None``, set automatically. Default is ``None``.
         symmetric (bool):
-            Draw a colorbar that is symmetric around zero (see datamodel for
-            default).
+            Draw a colorbar that is symmetric around zero (see
+            :ref:`marvin-utils-plot-map-default-params` for default).
         snr_min (float):
             Minimum signal-to-noise for keeping a valid measurement (see
-            datamodel for default).
+            :ref:`marvin-utils-plot-map-default-params` for default).
         log_cb (bool):
             Draw a log normalized colorbar. Default is ``False``.
         title (str):
@@ -361,8 +362,8 @@ def plot(*args, **kwargs):
     for kw in kwargs:
         assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-    assert ((kwargs.get('percentile_clip', None) is not None) +
-            (kwargs.get('sigma_clip', None) is not None) +
+    assert ((kwargs.get('percentile_clip', False)) +
+            (kwargs.get('sigma_clip', False)) +
             (kwargs.get('cbrange', None) is not None) <= 1), \
         'Only set one of percentile_clip, sigma_clip, or cbrange!'
 
@@ -370,7 +371,7 @@ def plot(*args, **kwargs):
     value = kwargs.get('value', None)
     ivar = kwargs.get('ivar', None)
     mask = kwargs.get('mask', None)
-    sigma_clip = kwargs.get('sigma_clip', None)
+    sigma_clip = kwargs.get('sigma_clip', False)
     cbrange = kwargs.get('cbrange', None)
     log_cb = kwargs.get('log_cb', False)
     title = kwargs.get('title', None)
@@ -404,18 +405,18 @@ def plot(*args, **kwargs):
     symmetric = kwargs.get('symmetric', params['symmetric'])
     snr_min = kwargs.get('snr_min', params['snr_min'])
 
-    if sigma_clip is not None:
-        percentile_clip = None
+    if sigma_clip:
+        percentile_clip = False
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(value, ivar, mask, params['bitmasks'].get('nocov', None))
+    nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
     badData = params['bitmasks']['badData']
-    bad_data = bad_data_mask(value, mask, badData) if use_mask else np.zeros(value.shape)
+    bad_data = bad_data_mask(mask, badData) if use_mask else np.zeros(value.shape)
     low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
-    image = select_good_spaxels(value, nocov_mask, bad_data, low_snr, log_cb_mask)
+    good_spax = select_good_spaxels(value, nocov_mask, bad_data, low_snr, log_cb_mask)
 
     # setup colorbar
     cb_kws['cmap'] = cmap
@@ -424,8 +425,8 @@ def plot(*args, **kwargs):
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
     cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
-    cb_kws = colorbar.set_cb_kws(cb_kws)
-    cb_kws = colorbar.set_cbrange(image, cb_kws)
+    cb_kws = colorbar._set_cb_kws(cb_kws)
+    cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
 
     # setup unmasked spaxels
     extent = set_extent(value.shape, sky_coords)
@@ -443,7 +444,7 @@ def plot(*args, **kwargs):
     patch_kws = set_patch_style(extent=extent)
 
     # finish setup of unmasked spaxels and colorbar range
-    imshow_kws = colorbar.set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
+    imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
 
     # set hatch color and linewidths (in matplotlib 2.0+)
     try:
@@ -464,7 +465,7 @@ def plot(*args, **kwargs):
         ax.imshow(nocov, cmap=A8A8A8, zorder=1, **nocov_kws)
 
         # plot unmasked spaxels
-        p = ax.imshow(image, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
+        p = ax.imshow(good_spax, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
         fig, cb = colorbar.draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
 

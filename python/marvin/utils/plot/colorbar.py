@@ -106,7 +106,7 @@ def _log_tick_format(value):
         return '{0:d}e{1:d}'.format(int(base), int(exp))
 
 
-def set_vmin_vmax(d, cbrange):
+def _set_vmin_vmax(d, cbrange):
     """Set minimum and maximum values of the color map."""
     if 'vmin' not in d.keys():
         d['vmin'] = cbrange[0]
@@ -178,7 +178,7 @@ def _cbrange_user_defined(cbrange, cbrange_user):
     return cbrange
 
 
-def set_cbrange(image, cb_kws):
+def _set_cbrange(image, cb_kws):
     """Set colorbar range.
 
     Parameters:
@@ -190,9 +190,9 @@ def set_cbrange(image, cb_kws):
     Returns:
         dict: Colorbar kwargs.
     """
-    if cb_kws.get('sigma_clip') is not None:
+    if cb_kws.get('sigma_clip'):
         cbr = _cbrange_sigma_clip(image, cb_kws['sigma_clip'])
-    elif cb_kws.get('percentile_clip', None) is not None:
+    elif cb_kws.get('percentile_clip'):
         try:
             cbr = _cbrange_percentile_clip(image, *cb_kws['percentile_clip'])
         except IndexError:
@@ -357,18 +357,12 @@ def _string_to_cmap(cm_name):
     return cmap
 
 
-def set_cb_kws(cb_kws):
+def _set_cb_kws(cb_kws):
     """Set colorbar keyword args.
 
     Parameters:
         cb_kws (dict):
             Colorbar keyword args.
-        cmap (str):
-            Colormap.
-        percentile_clip (list):
-            Percentile clip.
-        symmetric (bool):
-            Draw a colorbar that is symmetric around zero.
 
     Returns:
         dict
@@ -447,7 +441,7 @@ def reverse_cmap(cdict):
     return cdict_r
 
 
-def linearlab_filename():
+def _linearlab_filename():
     """Get filename and path for linearlab colormap."""
     return join(os.path.dirname(marvin.__file__), 'data', 'linearlab.csv')
 
@@ -463,7 +457,7 @@ def linearlab():
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object and reversed
         `matplotlib.cm <http://matplotlib.org/api/cm_api.html>`_ object
     """
-    linearlab_file = linearlab_filename()
+    linearlab_file = _linearlab_filename()
     LinL = np.loadtxt(linearlab_file, delimiter=',')
 
     b3 = LinL[:, 2]  # value of blue at sample n
