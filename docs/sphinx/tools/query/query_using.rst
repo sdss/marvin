@@ -51,6 +51,62 @@ Alternatively you can set them after you create the query but before you run it.
     print(results.columns)
     [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', 'cube.ra', 'cube.dec', 'nsa.z']
 
+To see which parameters are available for returning or filtering, use the **get_available_params** method.  This returns the **query_params** structure by default (see :ref:`marvin-query-parameters`).
+
+::
+
+    # get the vetted query_params structure
+    query = Query()
+    params = query.get_available_params()
+
+    # number of vetted parameters
+    len(query_params.list_params())
+    41
+
+    params
+    [<ParameterGroup name=Metadata, paramcount=7>,
+     <ParameterGroup name=Spaxel Metadata, paramcount=3>,
+     <ParameterGroup name=Emission Lines, paramcount=13>,
+     <ParameterGroup name=Kinematics, paramcount=6>,
+     <ParameterGroup name=Spectral Indices, paramcount=1>,
+     <ParameterGroup name=NSA Catalog, paramcount=11>]
+
+You can also retreive a list of all available parameters in Marvin.  A lot of these parameters have not yet been vetted and may not work, so use at your own risk.  Inform us if you want any of these parameters included in the vetted list.
+
+::
+
+    # get all the query parameters
+    query = Query()
+    params = query.get_available_params('all')
+
+    # number of parameters (for MPL-5)
+    len(params)
+    753
+
+    print(params)
+    [u'maskbit.bit',
+     u'maskbit.description',
+     u'maskbit.flag',
+     u'maskbit.label',
+     u'maskbit_labels.flag',
+     u'maskbit_labels.labels',
+     u'maskbit_labels.maskbit',
+     u'binid.id',
+     u'spaxelprop.spaxelprops',
+     u'spaxelprop.spaxelprops5',
+     u'binmode.name',
+     u'binmode.structures',
+     u'bintype.name',
+     ...
+     ...
+      u'nsa.xcen',
+     u'nsa.xpos',
+     u'nsa.ycen',
+     u'nsa.ypos',
+     u'nsa.z',
+     u'nsa.zdist',
+     u'nsa.zsdssline',
+     u'nsa.zsrc']
 
 Sorting the Query Results
 -------------------------
