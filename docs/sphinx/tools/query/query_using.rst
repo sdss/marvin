@@ -12,6 +12,8 @@ The **searchfilter** is a pseudo-natural language string dictating the filter co
 
 Filters can be simple, using a single parameter: :code:`nsa.z < 0.1`.  Or complex, using a combination of many parameters: :code:`(nsa.sersic_logmass < 10 or nsa.sersic_n < 2) and (haflux > 25 or emline_sew_ha_6564 > 6)`.
 
+See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.  See the :ref:`marvin-query-examples` for examples of how to write MaNGA specific filter strings.  When you want to perform a new query or update an old query, currently, you must create a new query, or run `q.reset()`.
+
 Functional Filters
 ^^^^^^^^^^^^^^^^^^
 
@@ -20,9 +22,6 @@ Marvin can also accept filters in functional form.  We currently only have one a
 ::
 
     myfilter = 'npergood(haflux > 25) > 20'
-
-See the :ref:`marvin-sqlboolean` tutorial on how to design search filters.  See the :ref:`marvin-query-examples` for examples of how to write MaNGA specific filter strings.  When you want to perform a new query or update an old query, currently, you must create a new query, or run `q.reset()`.
-
 
 Handling Return Parameters
 --------------------------
