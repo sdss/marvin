@@ -61,7 +61,7 @@ Marvin has many Tools available that all behave in a similar way to the Marvin C
 Displaying Plots
 ----------------
 
-Marvin makes it really easy to very quickly plot a spectrum from a spaxel, or a 2-d Map output by MaNGA's Derived Analysis Pipeline (DAP).
+Marvin makes it really easy to very quickly plot a spectrum from a spaxel, or a 2-d Map output by MaNGA's Data Analysis Pipeline (DAP).
 
 Accessing and Displaying Spectra
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
