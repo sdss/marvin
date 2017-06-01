@@ -18,7 +18,7 @@ All Manga query parameters are grouped by parameter type.  We offer six groups o
 * Emission Lines
 * Kinematics
 * Spectral Indices
-* NSA Catalog
+* NSA Catalog `(NASA Sloan-Atlas Catalog) <http://www.sdss.org/dr13/manga/manga-target-selection/nsa/>`_
 
 From within Marvin, to list which groups are available import the **query_params** object.  The **query_params** object is a Python list object.
 
