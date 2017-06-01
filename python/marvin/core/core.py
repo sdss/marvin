@@ -355,9 +355,11 @@ class DotableCaseInsensitive(Dotable):
         return dict.__getitem__(self, key)
 
 
-class OrderedDefaultDict(OrderedDict, defaultdict):
+class OrderedDefaultDict(OrderedDict):
     def __init__(self, default_factory=None, *args, **kwargs):
-        # in python3 you can omit the args to super
-        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+        OrderedDict.__init__(self, *args, **kwargs)
         self.default_factory = default_factory
 
+    def __missing__(self, key):
+        result = self[key] = self.default_factory()
+        return result
