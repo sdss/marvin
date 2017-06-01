@@ -72,11 +72,7 @@ class Search(BaseWebView):
 
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
-        # q = Query(release=self._release)
-        # # allparams = q.get_available_params()
-        # bestparams = q.get_best_params()
-        # searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
-        # searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
+        searchform.returnparams.choices = [(k.lower(), k) for k in query_params.list_params()]
 
         # Add the forms and parameters
         self.search['paramdata'] = query_params
@@ -88,20 +84,9 @@ class Search(BaseWebView):
             self.search.update({'results': None, 'errmsg': None})
 
             args = av.manual_parse(self, request, use_params='search')
-            returnparams = form.getlist('testform', type=str)
-
             # get form parameters
             searchvalue = form['searchbox']  # search filter input
-            #returnparams = form.getlist('returnparams', type=str)  # dropdown select
-            parambox = form.get('parambox', None, type=str)  # from autocomplete
-            if parambox:
-                parms = parambox.split(',')
-                parms = parms if parms[-1].strip() else parms[:-1]
-                parambox = parms if parambox else None
-            # Select the one that is not none
-            returnparams = returnparams if returnparams and not parambox else \
-                parambox if parambox and not returnparams else \
-                list(set(returnparams) | set(parambox)) if returnparams and parambox else None
+            returnparams = form.getlist('returnparams', type=str)  # dropdown select
             self.search.update({'returnparams': returnparams})
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
 
