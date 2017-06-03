@@ -6,62 +6,67 @@ Bitmasks
 
 
 
-.. warning::
-    
-    Page under heavy development
+Bitmask Descriptions
+--------------------
+
+- `DRP Bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_
+
+  - Galaxy targeting bits: `MANGA_TARGET1 <http://www.sdss.org/dr13/algorithms/bitmasks/#MANGA_TARGET1>`_ 
+
+- `DAP bitmasks <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#Maskbits>`_
+
+  - DAP spaxel quality bits: `MANGA_DAPPIXMASK <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_
 
 
-`Introduction to bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_
-
-
-
+Using Bitmasks
+--------------
 
 Get a map:
 
 .. code-block:: python
 
-
     from marvin.tools.maps import Maps
     galaxy = Maps(plateifu='8485-1901')
     ha = galaxy['emline_gflux_ha_6564']
 
-Use the DAP bitmasks to flag spaxels that we don't want to include:
+
+Use the ``MANGA_DAPPIXMASK`` bitmasks to flag spaxels that we don't want to include:
+
+.. code-block:: python
+
+    unreliable = (ha.mask & 2**5) > 0
+    donotuse = (ha.mask & 2**30) > 0
+
+
+Combine masks:
 
 .. code-block:: python
 
     import numpy as np
-    novalue = (ha.mask & 2**4) > 0
-    badvalue = (ha.mask & 2**5) > 0
-    matherror = (ha.mask & 2**6) > 0
-    badfit = (ha.mask & 2**7) > 0
-    donotuse = (ha.mask & 2**30) > 0
-    no_data = np.logical_or.reduce((novalue, badvalue, matherror, badfit, donotuse))
+    bad_data = np.logical_or.reduce((unreliable, donotuse))
 
 
-Create masked arrays for the image and regions that are masked by the DAP:
+Create masked arrays for the good spaxels and regions that are masked by the DAP:
 
 .. code-block:: python
 
-    image = np.ma.array(haflux_map.value, mask=~sf)
-    mask_nodata = np.ma.array(np.ones(haflux_map.value.shape), mask=sf)
+    good_spax = np.ma.array(ha.value, mask=bad_data)
 
 
-Let's set the background to gray:
-
-.. code-block:: python
-
-    from marvin.utils.plot import colorbar
-    A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
-
-
-Use the masked image to make the plot:
+We can see the unmasked data (``ha.value``) on the left and the masked data (``good_spax``) on the right:
 
 .. code-block:: python
 
-    fig, ax = plt.subplots()
-    ax.imshow(mask_nodata, cmap=A8A8A8, origin='lower', zorder=1);
-    p = ax.imshow(image, cmap='viridis', origin='lower', zorder=10)
-    ax.set_xlabel('spaxel');
-    ax.set_ylabel('spaxel');
-    cb = fig.colorbar(p)
-    cb.set_label('flux [{}]'.format(haflux_map.unit))
+    import matplotlib.pyplot as plt
+    import marvin.utils.plot.colorbar as colorbar
+    fig, axes = plt.subplots(ncols=2, figsize=(8, 4))
+    values = (ha.value, good_spax)
+    titles = ('All Spaxels', 'Good Spaxels')
+    for ax, value, title in zip(axes, values, titles):
+        ax.imshow(value, cmap=colorbar.linearlab()[0], origin='lower')
+        ax.set_title(title)
+    
+.. image:: ../_static/manga_dappixmask.png
+
+
+|
