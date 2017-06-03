@@ -6,9 +6,12 @@ Bitmasks
 
 
 
-.. TODO Still under heavy development
+.. warning::
+    
+    Page under heavy development
 
 
+`Introduction to bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_
 
 
 

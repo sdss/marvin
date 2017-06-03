@@ -9,7 +9,7 @@ Map (:mod:`marvin.utils.plot.colorbar`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.colorbar` contains utility functions for making colorbars for Marvin maps. These functions are mostly for internal use, however, the :func:`~marvin.utils.plot.colorbar.linearlab` function returns the ``linearlab`` colormap, whose properties are described `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
+:mod:`marvin.utils.plot.colorbar` cooontains utility functions for making colorbars for Marvin maps. These functions are mostly for internal use, however, the :func:`~marvin.utils.plot.colorbar.linearlab` function returns the ``linearlab`` colormap, whose properties are described `here <https://mycarta.wordpress.com/2012/12/06/the-rainbow-is-deadlong-live-the-rainbow-part-5-cie-lab-linear-l-rainbow/>`_.
 
 
 
