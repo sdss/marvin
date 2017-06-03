@@ -17,7 +17,9 @@ Introduction
 Getting Started
 ---------------
 
-Create gray background where there is no IFU coverage by using :func:`~marvin.utils.plot.colorbar.colorbar.one_color_cmap` to create a colormap with a single color.
+.. TODO add text here
+
+Boilerplate
 
 .. code-block:: python
 
@@ -34,6 +36,11 @@ Create gray background where there is no IFU coverage by using :func:`~marvin.ut
 
     extent = mapplot.set_extent(cube_size=ha.value.shape, sky_coords=False)
     imshow_kws = {'extent': extent, 'interpolation': 'nearest', 'origin': 'lower'}
+
+
+Create gray background where there is no IFU coverage by using :func:`~marvin.utils.plot.colorbar.colorbar.one_color_cmap` to create a colormap with a single color.
+
+.. code-block:: python
 
     # create a colormap with a single color
     A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
@@ -57,7 +64,17 @@ Example of how :meth:`marvin.tools.map.Map.plot` draws a colorbar.
               'label': getattr(ha, 'unit'),
               'label_kws': {'size': 16},
               'tick_params_kws': {'labelsize': 16}}
-    im = np.ma.array(ha.value, mask=nocov)
+    
+    params = mapplot.get_plot_params(dapver, prop)
+    badData = params['bitmasks']['badData']
+    bad_data = mapplot.bad_data_mask(ha.mask, badData)
+    low_snr = mapplot.low_snr_mask(value, ivar, snr_min)
+    log_cb_mask = np.zeros(value.shape, dtype=bool)
+
+    # final masked array to show
+    good_spax = select_good_spaxels(value, nocov_mask, bad_data, low_snr, log_cb_mask)
+
+    im = np.ma.array(ha.value, mask=nocov_mask)
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(im, cb_kws)
 
@@ -91,12 +108,6 @@ Reference/API
 
 .. autosummary::
 
-    marvin.utils.plot.colorbar.cmap_discretize
-    marvin.utils.plot.colorbar.draw_colorbar
-    marvin.utils.plot.colorbar.get_cmap_rgb
     marvin.utils.plot.colorbar.linearlab
-    marvin.utils.plot.colorbar.one_color_cmap
-    marvin.utils.plot.colorbar.output_cmap_rgb
-    marvin.utils.plot.colorbar.reverse_cmap
 
 |

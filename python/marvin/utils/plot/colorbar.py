@@ -206,7 +206,8 @@ def _set_cbrange(image, cb_kws):
     if cb_kws.get('symmetric', False):
         cb_max = np.max(np.abs(cbr))
         cbr = [-cb_max, cb_max]
-
+    
+    print('cbrange', cbr)
     cbr, cb_kws['ticks'] = _set_cbticks(cbr, cb_kws)
 
     if cb_kws.get('log_cb', False):
@@ -256,7 +257,7 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None, log_cb=False,
+def _draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None, log_cb=False,
                   label_kws=None, tick_params_kws=None, **extras):
     """Make colorbar.
 
@@ -322,7 +323,7 @@ def _set_cmap(cm_name, n_levels=None):
     cmap = _string_to_cmap(cm_name)
 
     if n_levels is not None:
-        cmap = cmap_discretize(cmap, n_levels)
+        cmap = _cmap_discretize(cmap, n_levels)
 
     return cmap
 
@@ -384,7 +385,7 @@ def _set_cb_kws(cb_kws):
     return cb_kws
 
 
-def cmap_discretize(cmap_in, N):
+def _cmap_discretize(cmap_in, N):
     """Return a discrete colormap from a continuous colormap.
 
     Parameters:
@@ -400,7 +401,7 @@ def cmap_discretize(cmap_in, N):
     Example:
         >>> fig, ax = plt.subplots()
         >>> im = np.resize(np.arange(100), (5, 100))
-        >>> dRdBu = cmap_discretize(cm.RdBu, 5)
+        >>> dRdBu = _cmap_discretize(cm.RdBu, 5)
         >>> ax.imshow(im, cmap=dRdBu)
     """
     try:
@@ -430,7 +431,7 @@ def cmap_discretize(cmap_in, N):
         return LinearSegmentedColormap('colormap', cdict, 1024)
 
 
-def reverse_cmap(cdict):
+def _reverse_cmap(cdict):
     """Reverse colormap dictionary."""
     cdict_r = {}
     for k, v in cdict.items():
@@ -486,7 +487,7 @@ def linearlab():
     k = ['red', 'green', 'blue']
     LinearL = dict(zip(k, rgb))
 
-    LinearL_r = reverse_cmap(LinearL)
+    LinearL_r = _reverse_cmap(LinearL)
 
     cmap = LinearSegmentedColormap('linearlab', LinearL)
     cmap_r = LinearSegmentedColormap('linearlab_r', LinearL_r)
@@ -494,7 +495,7 @@ def linearlab():
     return (cmap, cmap_r)
 
 
-def get_cmap_rgb(cmap, n_colors=256):
+def _get_cmap_rgb(cmap, n_colors=256):
     """Return RGB values of a colormap.
 
     Parameters:
@@ -513,7 +514,7 @@ def get_cmap_rgb(cmap, n_colors=256):
     return rgb
 
 
-def output_cmap_rgb(cmap, path=None, n_colors=256):
+def _output_cmap_rgb(cmap, path=None, n_colors=256):
     """Print RGB values of a colormap to a file.
 
     Parameters:
@@ -525,7 +526,7 @@ def output_cmap_rgb(cmap, path=None, n_colors=256):
         n_colors (int):
             Number of color tuples in colormap. Default is ``256``.
     """
-    rgb = get_cmap_rgb(cmap, n_colors)
+    rgb = _get_cmap_rgb(cmap, n_colors)
     if path is None:
         home = os.path.expanduser('~')
         path = join(home, 'Downloads')
@@ -535,7 +536,7 @@ def output_cmap_rgb(cmap, path=None, n_colors=256):
     print('Wrote: {}'.format(filename))
 
 
-def one_color_cmap(color):
+def _one_color_cmap(color):
     """Generate a colormap with only one color.
 
     Useful for imshow.

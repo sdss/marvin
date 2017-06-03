@@ -467,7 +467,7 @@ def plot(*args, **kwargs):
         # plot unmasked spaxels
         p = ax.imshow(good_spax, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
-        fig, cb = colorbar.draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
+        fig, cb = colorbar._draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
 
         if title is not '':
             ax.set_title(label=title)
