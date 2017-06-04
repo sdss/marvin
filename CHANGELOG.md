@@ -3,6 +3,7 @@
 ## [2.1.4] - unreleased
 ### Added:
 - Added new query_params object, for easier navigation of available query parameters.  Added new tests.
+- Added a new guided query builder using Jquery Query Builder to the Search page
 
 ### Changed:
 - Changed call signature for :meth:`marvin.utils.plot.map.no_coverage_mask` (removed ``value`` arg because unused, added ``None`` as default value ``ivar`` (``None``), and re-ordered args and kwargs).

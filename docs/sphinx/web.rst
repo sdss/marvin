@@ -58,14 +58,8 @@ language syntax.
 **Return Parameters**:
 
 A dropdown multiple select box indicating which parameters are available to query
-on and/or return.  You may select multiple parameters.
+on and/or return.  You may select multiple parameters (up to 5). See :ref:`marvin-query-parameters`.
 
-**Query Parameters**:
-
-An input box to type the parameters you wish to return.  Autocompletion is enabled.
-Type a parameter, hit enter, and type again.
-
-.. note:: Decide which format of the above two is most useful.
 
 **Search Filter**:
 
@@ -76,6 +70,10 @@ The search filter accepts boolean search strings that are parsed with a
 `SQLAlchemy-boolean-search
 <https://github.com/lingthio/SQLAlchemy-boolean-search>`_. Please see here for a
 :doc:`tutorials/boolean-search-tutorial`.
+
+**Guided Query Builder**:
+
+If you need help building a query, you can use this to help design your SQL filter.  This feature uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
 
 
 .. _web-plate:

@@ -203,6 +203,8 @@ class QueryParameter(object):
             A shorthand name of the parameter
         display (str):
             A display name used for web and plotting purposes.
+        dtype (str):
+            The type of the parameter (e.g. string, integer, float)
     '''
 
     def __init__(self, full, table=None, name=None, short=None, display=None, dtype=None):
