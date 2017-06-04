@@ -300,7 +300,7 @@ class SearchForm(Form):
                             validators.DataRequired(message='Input filter string required'),
                             ValidOperand('[<>=]', message='Input must contain a valid operand.')])
     returnparams = SelectMultipleField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Return Parameters</a>")
-    submit = SubmitField('Submit')
+    submitsearch = SubmitField('Search')
 
 
 class MarvinForm(object):

@@ -2409,7 +2409,7 @@ var Scatter = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-24 13:44:20
+* @Last Modified time: 2017-06-04 01:08:41
 */
 
 //jshint esversion: 6
@@ -2430,6 +2430,17 @@ var Search = function () {
         this.returnparams = $('#returnparams');
         this.parambox = $('#parambox');
         this.searchbox = $("#searchbox");
+
+        this.builder = $('#builder');
+        this.sqlalert = $('#sqlalert');
+        this.getsql = $('#get-sql');
+        this.resetsql = $('#reset-sql');
+        this.runsql = $('#run-sql');
+
+        // Event Handlers
+        this.getsql.on('click', this, this.getSQL);
+        this.resetsql.on('click', this, this.resetSQL);
+        this.runsql.on('click', this, this.runSQL);
     }
 
     // Print
@@ -2528,6 +2539,54 @@ var Search = function () {
                     });
                 }
             });
+        }
+
+        // Setup Query Builder
+
+    }, {
+        key: 'setupQB',
+        value: function setupQB(params) {
+            $('.modal-dialog').draggable(); // makes the modal dialog draggable
+            this.builder.queryBuilder({ plugins: ['bt-selectpicker', 'not-group', 'invert'], filters: params });
+        }
+
+        // Get the SQL from the QB
+
+    }, {
+        key: 'getSQL',
+        value: function getSQL(event) {
+            var _this = event.data;
+            try {
+                var result = _this.builder.queryBuilder('getSQL', false);
+                if (result.sql.length) {
+                    _this.sqlalert.html("");
+                    _this.searchbox.val(result.sql.replace(/[']+/g, ""));
+                }
+            } catch (error) {
+                _this.sqlalert.html("<p class='text-center text-danger'>Must provide valid input.</p>");
+            }
+        }
+
+        // Reset the SQL in SearchBox
+
+    }, {
+        key: 'resetSQL',
+        value: function resetSQL(event) {
+            var _this = event.data;
+            _this.searchbox.val("");
+        }
+
+        // Run the Query from the QB
+
+    }, {
+        key: 'runSQL',
+        value: function runSQL(event) {
+            var _this = event.data;
+            if (_this.searchbox.val() === "") {
+                _this.sqlalert.html("<p class='text-center text-danger'>You must generate SQL first!</p>");
+            } else {
+                _this.searchform.submit();
+            }
         }
     }]);
 

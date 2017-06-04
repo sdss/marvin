@@ -205,12 +205,13 @@ class QueryParameter(object):
             A display name used for web and plotting purposes.
     '''
 
-    def __init__(self, full, table=None, name=None, short=None, display=None):
+    def __init__(self, full, table=None, name=None, short=None, display=None, dtype=None):
         self.full = full
         self.table = table
         self.name = name
         self.short = short
         self.display = display
+        self.dtype = dtype
         self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
     def __repr__(self):

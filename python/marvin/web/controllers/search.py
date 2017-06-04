@@ -76,6 +76,7 @@ class Search(BaseWebView):
 
         # Add the forms and parameters
         self.search['paramdata'] = query_params
+        self.search['guideparams'] = [{'id': p.full, 'optgroup': group.name, 'type': 'double' if p.dtype == 'float' else p.dtype, 'validation': {'step': 'any'}} for group in query_params for p in group]
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
 
