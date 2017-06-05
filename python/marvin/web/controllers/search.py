@@ -21,6 +21,8 @@ from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
 from marvin.tools.query.query_utils import query_params, bestparams
 from wtforms import validators, ValidationError
+from marvin.utils.general import getImagesByList
+from marvin.web.web_utils import buildImageDict
 import random
 
 search = Blueprint("search_page", __name__)
@@ -160,7 +162,8 @@ class Search(BaseWebView):
         __tmp__ = args.pop('searchfilter', None)
         limit = args.get('limit')
         offset = args.get('offset')
-
+        if 'sort' in args:
+            current_session['query_sort'] = args['sort']
 
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
@@ -189,6 +192,57 @@ class Search(BaseWebView):
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
         output = jsonify(output)
         return output
+
+    @route('/postage/', methods=['GET', 'POST'], defaults={'page': 1}, endpoint='postage')
+    @route('/postage/<page>/', methods=['GET', 'POST'], endpoint='postage')
+    def postagestamp(self, page):
+        ''' Get the postage stamps for a set of query results in the web '''
+
+        postage = {}
+        postage['error'] = None
+        postage['images'] = None
+
+        pagesize = 16  # number of rows (images) in a page
+        pagenum = int(page)  # current page number
+        searchvalue = current_session.get('searchvalue', None)
+        if not searchvalue:
+            postage['error'] = 'No query found! Cannot generate images without a query.  Go to the Query Page!'
+            return render_template('postage.html', **postage)
+
+        sort = current_session.get('query_sort', 'cube.mangaid')
+        offset = (pagesize * pagenum) - pagesize
+        q, res = doQuery(searchfilter=searchvalue, release=self._release, sort=sort, limit=10000)
+        plateifus = res.getListOf('plateifu')
+        # if a dap query, grab the unique galaxies
+        if q._isdapquery:
+            plateifus = list(set(plateifus))
+
+        # only grab subset if more than 16 galaxies
+        if len(plateifus) > pagesize:
+            __results__ = res.getSubset(offset, limit=pagesize)
+            plateifus = res.getListOf('plateifu')
+
+        # get images
+        imfiles = None
+        try:
+            imfiles = getImagesByList(plateifus, as_url=True, mode='local', release=self._release)
+        except MarvinError as e:
+            postage['error'] = 'Error: could not get images: {0}'.format(e)
+        else:
+            images = buildImageDict(imfiles)
+
+        # if image grab failed, make placeholders
+        if not imfiles:
+            images = buildImageDict(imfiles, test=True, num=pagesize)
+
+        # Compute page stats
+        totalpages = int(res.totalcount // pagesize) + int(res.totalcount % pagesize != 0)
+        page = {'size': pagesize, 'active': int(page), 'total': totalpages, 'count': res.totalcount}
+
+        postage['page'] = page
+        postage['images'] = images
+        return render_template('postage.html', **postage)
+
 
 Search.register(search)
 

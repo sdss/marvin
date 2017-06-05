@@ -75,6 +75,8 @@ The search filter accepts boolean search strings that are parsed with a
 
 If you need help building a query, you can use this to help design your SQL filter.  This feature uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
 
+After a query is run a table of results is generated to navigate around.  A **View Galaxies** button will display the postage stamp images of all the galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel image linking to the individual galaxy page.  There are pagination buttons to help you cycle through your pages.
+
 
 .. _web-plate:
 

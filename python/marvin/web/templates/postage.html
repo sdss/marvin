@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% from 'macros.html' import imgcarousel %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+{% endblock jshead %}
+
+<!-- Single Galaxy Page -->
+{% block body %}
+
+    <div class='imgcars' id="postage_images">
+        {% if error %}
+        <div class='row' id='postage_error'>
+            <div class='col-md-6 col-md-offset-2'>
+                <div class='alert alert-danger' role='alert'>
+                    <p>{{error}}</p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+
+        {# Image Pager #}
+        <div class='row'>
+            <div class='col-md-12'>
+                <nav aria-label="Page navigation">
+                  <ul class="pager">
+                    <li>
+                      <a href="{{url_for('search_page.postage', page=1)}}" aria-label="Beginning">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+                    <li class='{{"disabled" if page.active == 1 else ""}}'><a href="{{url_for('search_page.postage', page=(page.active|int-1))}}" aria-label='Previos'>Previous</a></li>
+                    <li class='{{"disabled" if (page.count < page.size) or (page.active==page.total) else ""}}'><a href="{{url_for('search_page.postage', page=(page.active|int+1))}}" aria-label='Next'>Next</a></li>
+                    <li>
+                      <a href="{{url_for('search_page.postage', page=page.total)}}" aria-label="End">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+            </div>
+        </div>
+
+        {# Image Carousel #}
+        {{imgcarousel(images, 'postageCar')}}
+
+        {% endif %}
+
+    </div>
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script type='application/javascript'>
+    $(function() {
+        let postagecar = new Carousel('#postageCar', '[id^=carousel-selector-]');
+    });
+</script>
+{% endblock code %}
