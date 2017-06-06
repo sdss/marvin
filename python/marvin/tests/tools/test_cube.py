@@ -157,17 +157,9 @@ class TestCube(object):
         assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
         assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
 
-
-    # Fold into test_nsa_redshift by adding 7443-12701 to mock data
-    def test_nsa_7443_12701_nsa(self):
-        cube = Cube(plateifu='7443-12701', nsa_source='nsa', mode='remote')
-        assert cube.nsa_source == 'nsa'
-        assert cube.nsa['nsaid'] == 341153
-        assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], 0.046455454081)
-
-    def test_release(self):
-        cube = Cube(plateifu=self.plateifu)
-        assert cube.release == 'MPL-4'
+    def test_release(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        assert cube.release == galaxy.release
 
     def test_set_release_fails(self):
         cube = Cube(plateifu=self.plateifu)

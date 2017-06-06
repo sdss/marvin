@@ -33,8 +33,7 @@ def pytest_runtest_setup(item):
 # TODO reimplement set_sasurl (use function-level fixture?)
 
 releases = ['MPL-5']
-# plateifus = ['8485-1901', '7443-12701']
-plateifus = ['7443-12701']
+plateifus = ['8485-1901'] # TODO add '7443-12701'
 
 bintypes = {}
 for release in releases:
