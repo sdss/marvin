@@ -16,8 +16,14 @@ from marvin.tools.maps import _get_bintemps
 
 
 def pytest_addoption(parser):
-    parser.addoption('--runslow', action='store_true', help='run slow tests')
+    parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
 
+def pytest_runtest_setup(item):
+    if 'slow' in item.keywords and not item.config.getoption('--runslow'):
+        pytest.skip('Requires --runslow option to run.')
+
+# slow = pytest.mark.skipif(not pytest.config.getoption('--runslow'),
+#                           reason='need --runslow option to run')
 
 # class MarvinTest
 # TODO Replace skipTest and skipBrian with skipif

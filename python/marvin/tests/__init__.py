@@ -114,9 +114,6 @@ def skipIfNoBrian(test):
     return wrapper
 
 
-slow = pytest.mark.skipif(not pytest.config.getoption('--runslow'),
-                          reason='need --runslow option to run')
-
 class MarvinTest(TestCase):
     """Custom class for Marvin-tools tests."""
 

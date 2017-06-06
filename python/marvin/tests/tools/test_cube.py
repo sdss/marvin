@@ -14,7 +14,7 @@ from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB, slow
+from marvin.tests import skipIfNoDB
 
 
 @pytest.fixture(scope='module')
@@ -96,7 +96,7 @@ class TestCube(object):
         cubeFlux = fits.getdata(galaxy.cubepath)
         assert np.allclose(flux, cubeFlux)
 
-    @slow
+    @pytest.mark.slow
     def test_cube_flux_from_api(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         flux = cube.flux
