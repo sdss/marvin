@@ -48,10 +48,6 @@ class TestCube(object):
     @skipIfNoDB
     def test_cube_load_from_local_database_success(self, db, galaxy):
         """Tests for Cube Load by Database."""
-        
-        # if not db.session:
-        #     pytest.skip("Skipped because no DB.")
-
         cube = Cube(mangaid=galaxy.mangaid)
         assert cube is not None
         assert galaxy.mangaid == cube.mangaid
@@ -105,88 +101,69 @@ class TestCube(object):
         cubeFlux = fits.getdata(galaxy.cubepath)
         assert pytest.approx(flux, cubeFlux)
 
-    def test_cube_remote_drpver_differ_from_global(self):
+    def test_cube_remote_drpver_differ_from_global(self, galaxy):
 
         # This tests requires having the cube for 8485-1901 loaded for both
         # MPL-4 and MPL-5.
 
-        self._update_release('MPL-5')
+        config.setMPL('MPL-5')
         assert config.release == 'MPL-5'
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-    def test_cube_file_redshift(self):
-        cube = Cube(filename=self.filename)
-        assert round(abs(cube.nsa.redshift-0.0407447), 7) == 0
+    @pytest.mark.parametrize('plateifu, filename, mode',
+                             [(None, 'galaxy.cubepath', None),
+                              ('galaxy.plateifu', None, 'local'),
+                              ('galaxy.plateifu', None, 'remote')],
+                             ids=('file', 'db', 'remote'))
+    def test_cube_redshift(self, galaxy, plateifu, filename, mode):
+            
+        # TODO add 7443-12701 to local DB and remove this skip
+        if (galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and (config.db == 'local'):
+            pytest.skip('Not the one true galaxy.')
 
-    def test_cube_db_redshift(self):
-        cube = Cube(plateifu=self.plateifu, mode='local')
-        assert round(abs(cube.nsa.z-0.0407447), 7) == 0
+        plateifu = eval(plateifu) if plateifu is not None else None
+        filename = eval(filename) if filename is not None else None
+        cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
+        assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
-    def test_cube_remote_redshift(self):
-        cube = Cube(plateifu=self.plateifu, mode='remote')
-        assert round(abs(cube.nsa.z-0.0407447), 7) == 0
+    @pytest.mark.parametrize('plateifu, filename',
+                              [(None, 'galaxy.cubepath'),
+                               ('galaxy.plateifu', None)],
+                              ids=('filename', 'plateifu'))   
+    @pytest.mark.parametrize('nsa_source',
+                             ['auto', 'nsa', 'drpall'])
+    @pytest.mark.parametrize('mode',
+                             [None, 'remote'])
+    def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
+        if (plateifu is None) and (filename is not None) and (mode == 'remote'):
+            pytest.skip('filename not allowed in remote mode.')
 
-    def _test_nsa(self, nsa_data, mode='nsa'):
-        assert isinstance(nsa_data, DotableCaseInsensitive)
+        # TODO add 7443-12701 to local DB and remove this skip
+        if (galaxy.plateifu != '8485-1901') and (mode == None) and (config.db == 'local'):
+            pytest.skip('Not the one true galaxy.')
+
+        plateifu = eval(plateifu) if plateifu is not None else None
+        filename = eval(filename) if filename is not None else None
+        cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
+        assert cube.nsa_source == nsa_source
+        assert cube.nsa['nsaid'] == galaxy.nsaid
+        assert isinstance(cube.nsa, DotableCaseInsensitive)
         if mode == 'drpall':
-            assert 'profmean_ivar' not in nsa_data.keys()
-        assert 'zdist' in nsa_data.keys()
-        assert round(abs(nsa_data['zdist']-0.041201399999999999), 7) == 0
+            assert 'profmean_ivar' not in cube.nsa.keys()
+        assert 'zdist' in cube.nsa.keys()
+        assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
+        assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
 
-    def test_nsa_file_auto(self):
-        cube = Cube(filename=self.filename)
-        assert cube.nsa_source == 'auto'
-        self._test_nsa(cube.nsa)
 
-    def test_nsa_file_nsa(self):
-        cube = Cube(filename=self.filename, nsa_source='nsa')
+    # Fold into test_nsa_redshift by adding 7443-12701 to mock data
+    def test_nsa_7443_12701_nsa(self):
+        cube = Cube(plateifu='7443-12701', nsa_source='nsa', mode='remote')
         assert cube.nsa_source == 'nsa'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_file_drpall(self):
-        cube = Cube(plateifu=self.plateifu, nsa_source='drpall')
-        assert cube.nsa_source == 'drpall'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_db_auto(self):
-        # import pdb; pdb.set_trace()
-        cube = Cube(plateifu=self.plateifu)
-        assert cube.nsa_source == 'auto'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_db_nsa(self):
-        cube = Cube(plateifu=self.plateifu, nsa_source='nsa')
-        assert cube.nsa_source == 'nsa'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_db_drpall(self):
-        cube = Cube(plateifu=self.plateifu, nsa_source='drpall')
-        assert cube.nsa_source == 'drpall'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_remote_auto(self):
-        cube = Cube(plateifu=self.plateifu, mode='remote')
-        assert cube.nsa_source == 'auto'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_remote_nsa(self):
-        cube = Cube(plateifu=self.plateifu, mode='remote', nsa_source='nsa')
-        assert cube.nsa_source == 'nsa'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_remote_drpall(self):
-        cube = Cube(plateifu=self.plateifu, mode='remote', nsa_source='drpall')
-        assert cube.nsa_source == 'drpall'
-        self._test_nsa(cube.nsa)
-
-    def test_nsa_12_nsa(self):
-        cube = Cube(mangaid='12-98126', nsa_source='nsa')
-        self.assertEqual(cube.nsa_source, 'nsa')
-        self.assertEqual(cube.nsa['nsaid'], 341153)
-        self.assertAlmostEqual(cube.nsa['sersic_flux_ivar'][0], 0.046455454081)
+        assert cube.nsa['nsaid'] == 341153
+        assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], 0.046455454081)
 
     def test_release(self):
         cube = Cube(plateifu=self.plateifu)

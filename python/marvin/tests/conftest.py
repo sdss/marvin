@@ -9,6 +9,7 @@
 import os
 
 import pytest
+import pandas as pd
 
 from marvin import config, marvindb
 from marvin.api.api import Interaction
@@ -32,7 +33,8 @@ def pytest_runtest_setup(item):
 # TODO reimplement set_sasurl (use function-level fixture?)
 
 releases = ['MPL-5']
-plateifus = ['8485-1901']
+# plateifus = ['8485-1901', '7443-12701']
+plateifus = ['7443-12701']
 
 bintypes = {}
 for release in releases:
@@ -57,22 +59,18 @@ class Galaxy:
 
     # TODO move to a mock data file/directory
     def get_data(self):
-        self.galaxies = {'8485-1901': {'mangaid': '1-209232',
-                                       'cubepk': 10179,
-                                       'ra': 232.544703894,
-                                       'dec': 48.6902009334,
-                                       'redshift': 0.0407447}
-                         }
+        self.galaxies = pd.DataFrame(
+                 [['1-209232', 10179, 221394, 232.544703894, 48.6902009334, 0.0407447, 0.234907269477844],
+                  ['12-98126', 1001, 341153, 230.50746239, 43.53234133, 0.020478, 0.046455454081]],
+                 columns=['mangaid', 'cubepk', 'nsaid', 'ra', 'dec', 'redshift', 'nsa_sersic_flux_ivar0'],
+                 index=['8485-1901', '7443-12701'])
 
     def set_galaxy_data(self):
         # Grab data from mock file
-        data = self.galaxies[self.plateifu]
+        data = self.galaxies.loc[self.plateifu]
 
-        self.mangaid = data['mangaid']
-        self.cubepk = data['cubepk']
-        self.ra = data['ra']
-        self.dec = data['dec']
-        self.redshift = data['redshift']
+        for key in data.keys():
+            setattr(self, key, data[key])
 
     def set_filenames(self, bintype=None, template=None):
         default_bintemp = _get_bintemps(self.dapver, default=True)
