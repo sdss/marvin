@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import re
 
 import pytest
-
 import numpy as np
 from numpy.testing import assert_allclose
-
 from astropy.io import fits
 from astropy import wcs
 
@@ -61,8 +60,8 @@ class TestCube(object):
         assert errMsg in str(cm.value)
 
     @skipIfNoDB
-    @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and there'
-                      ' is currently no way of doing so.')
+    @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and
+                      'there is currently no way of doing so.')
     def test_cube_load_from_local_database_nodbconnected(self):
         # need to undo setting the config.db to None so that subsequent tests will pass
         # config.db = None
@@ -119,9 +118,10 @@ class TestCube(object):
                               ('galaxy.plateifu', None, 'remote')],
                              ids=('file', 'db', 'remote'))
     def test_cube_redshift(self, galaxy, plateifu, filename, mode):
-            
+
         # TODO add 7443-12701 to local DB and remove this skip
-        if (galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and (config.db == 'local'):
+        if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
+                (config.db == 'local')):
             pytest.skip('Not the one true galaxy.')
 
         plateifu = eval(plateifu) if plateifu is not None else None
@@ -130,9 +130,9 @@ class TestCube(object):
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
     @pytest.mark.parametrize('plateifu, filename',
-                              [(None, 'galaxy.cubepath'),
-                               ('galaxy.plateifu', None)],
-                              ids=('filename', 'plateifu'))   
+                             [(None, 'galaxy.cubepath'),
+                              ('galaxy.plateifu', None)],
+                             ids=('filename', 'plateifu'))
     @pytest.mark.parametrize('nsa_source',
                              ['auto', 'nsa', 'drpall'])
     @pytest.mark.parametrize('mode',
@@ -142,7 +142,7 @@ class TestCube(object):
             pytest.skip('filename not allowed in remote mode.')
 
         # TODO add 7443-12701 to local DB and remove this skip
-        if (galaxy.plateifu != '8485-1901') and (mode == None) and (config.db == 'local'):
+        if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
             pytest.skip('Not the one true galaxy.')
 
         plateifu = eval(plateifu) if plateifu is not None else None
@@ -161,23 +161,25 @@ class TestCube(object):
         cube = Cube(plateifu=galaxy.plateifu)
         assert cube.release == galaxy.release
 
-    def test_set_release_fails(self):
-        cube = Cube(plateifu=self.plateifu)
+    def test_set_release_fails(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
         with pytest.raises(MarvinError) as ee:
             cube.release = 'a'
             assert 'the release cannot be changed' in str(ee.exception)
 
-    def test_load_7443_12701_file(self):
+    # TODO remove because added 7443-12701 to NSA
+    def test_load_7443_12701_file(self, galaxy):
         """Loads a cube that is not in the NSA catalogue."""
 
-        self._update_release('MPL-5')
-        self.set_filepaths()
+        config.setMPL('MPL-5')
+        galaxy.set_filepaths()
         filename = os.path.realpath(os.path.join(
-            self.drppath, '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
+            galaxy.drppath, '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
         cube = Cube(filename=filename)
         assert cube.data_origin == 'file'
         assert 'elpetro_amivar' in cube.nsa
 
+    # TODO remove because added 7443-12701 to NSA
     def test_load_7443_12701_db(self):
         """Loads a cube that is not in the NSA catalogue."""
 
@@ -186,6 +188,7 @@ class TestCube(object):
         assert cube.data_origin == 'db'
         assert cube.nsa is None
 
+    # TODO remove because added 7443-12701 to NSA
     def test_load_7443_12701_api(self):
         """Loads a cube that is not in the NSA catalogue."""
 
@@ -195,24 +198,20 @@ class TestCube(object):
         assert cube.nsa is None
 
     def test_load_filename_does_not_exist(self):
-        """Tries to load a file that does not exists, in auto mode."""
-
+        """Tries to load a file that does not exist, in auto mode."""
         config.mode = 'auto'
-
-        with self.assertRaises(MarvinError) as ee:
+        with pytest.raises(MarvinError) as ee:
             Cube(filename='hola.fits')
 
-        self.assertIsNotNone(re.match(r'input file .+hola.fits not found', str(ee.exception)))
+        assert re.match(r'input file .+hola.fits not found', str(ee.value)) is not None
 
     def test_load_filename_remote(self):
         """Tries to load a filename in remote mode and fails."""
-
         config.mode = 'remote'
-
-        with self.assertRaises(MarvinError) as ee:
+        with pytest.raises(MarvinError) as ee:
             Cube(filename='hola.fits')
 
-        self.assertIn('filename not allowed in remote mode', str(ee.exception))
+        assert 'filename not allowed in remote mode' in str(ee.value)
 
 
 class TestGetSpaxel(object):
