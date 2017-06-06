@@ -14,6 +14,11 @@ from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.maps import _get_bintemps
 
+
+def pytest_addoption(parser):
+    parser.addoption('--runslow', action='store_true', help='run slow tests')
+
+
 # class MarvinTest
 # TODO Replace skipTest and skipBrian with skipif
 # TODO use monkeypatch to set initial config variables
@@ -126,7 +131,7 @@ def set_release(request):
     config.setMPL(request.param)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', name='db')
 def start_marvin_session(set_config):
     yield DB()
 
@@ -142,12 +147,10 @@ def get_bintype(request):
 
 
 @pytest.fixture(scope='session')
-def galaxy(start_marvin_session, set_release, get_plateifu, get_bintype):
+def galaxy(db, set_release, get_plateifu, get_bintype):
     gal = Galaxy(plateifu=get_plateifu)
     gal.get_data()
     gal.set_galaxy_data()
     gal.set_filenames(bintype=get_bintype)
     gal.set_filepaths()
-    gal.maps_filename = gal.mapspath
-    gal.modelcube_filename = gal.modelpath
     yield gal

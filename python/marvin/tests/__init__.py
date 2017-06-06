@@ -95,11 +95,11 @@ def Call(*args, **kwargs):
 # Decorator to skip a test if the session is None (i.e., if there is no DB)
 def skipIfNoDB(test):
     @wraps(test)
-    def wrapper(self, *args, **kwargs):
-        if not self.session:
-            return self.skipTest(test)
+    def wrapper(self, db, *args, **kwargs):
+        if db.session is None:
+            pytest.skip('Skip because no DB.')
         else:
-            return test(self, *args, **kwargs)
+            return test(self, db, *args, **kwargs)
     return wrapper
 
 
@@ -108,11 +108,14 @@ def skipIfNoBrian(test):
     @wraps(test)
     def wrapper(self, *args, **kwargs):
         if 'Brian' not in os.path.expanduser('~'):
-            return self.skipTest(test)
+            return pytest.skip('Skip because not Brian!')
         else:
             return test(self, *args, **kwargs)
     return wrapper
 
+
+slow = pytest.mark.skipif(not pytest.config.getoption('--runslow'),
+                          reason='need --runslow option to run')
 
 class MarvinTest(TestCase):
     """Custom class for Marvin-tools tests."""

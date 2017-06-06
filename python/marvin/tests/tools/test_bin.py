@@ -41,8 +41,8 @@ class TestBinInit:
 
     def test_init_from_files(self, galaxy):
 
-        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename,
-                                  modelcube_filename=galaxy.modelcube_filename)
+        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.mapspath,
+                                  modelcube_filename=galaxy.modelpath)
 
         assert isinstance(bb._maps, marvin.tools.maps.Maps)
         assert isinstance(bb._modelcube, marvin.tools.modelcube.ModelCube)
@@ -51,7 +51,7 @@ class TestBinInit:
 
     def test_init_from_file_only_maps(self, galaxy):
 
-        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.maps_filename)
+        bb = marvin.tools.bin.Bin(binid=100, maps_filename=galaxy.mapspath)
 
         assert isinstance(bb._maps, marvin.tools.maps.Maps)
         assert bb._modelcube is not None

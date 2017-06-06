@@ -14,7 +14,7 @@ from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB
+from marvin.tests import skipIfNoDB, slow
 
 
 @pytest.fixture(scope='module')
@@ -46,20 +46,23 @@ class TestCube(object):
             Cube(filename=self.filename)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_success(self, start_marvin_session):
+    def test_cube_load_from_local_database_success(self, db, galaxy):
         """Tests for Cube Load by Database."""
+        
+        # if not db.session:
+        #     pytest.skip("Skipped because no DB.")
 
-        cube = Cube(mangaid=self.mangaid)
+        cube = Cube(mangaid=galaxy.mangaid)
         assert cube is not None
-        assert self.mangaid == cube.mangaid
-        assert self.plate == cube.plate
-        assert self.dec == cube.dec
-        assert self.ra == cube.ra
+        assert galaxy.mangaid == cube.mangaid
+        assert galaxy.plate == cube.plate
+        assert galaxy.dec == cube.dec
+        assert galaxy.ra == cube.ra
 
     def _load_from_db_fail(self, params, errMsg, errType=MarvinError):
         with pytest.raises(errType) as cm:
             Cube(**params)
-        assert errMsg in str(cm.exception)
+        assert errMsg in str(cm.value)
 
     @skipIfNoDB
     @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and there'
@@ -72,36 +75,35 @@ class TestCube(object):
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_noresultsfound(self):
+    def test_cube_load_from_local_database_noresultsfound(self, db):
         params = {'plateifu': '8485-0923', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
             params['plateifu'])
         self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_otherexception(self):
+    def test_cube_load_from_local_database_otherexception(self, db):
         params = {'plateifu': '84.85-1901', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
             params['plateifu'])
         self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
-    def test_cube_flux_from_local_database(self):
-        cube = Cube(plateifu=self.plateifu, mode='local')
+    def test_cube_flux_from_local_database(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='local')
         flux = cube.flux
         assert cube.data_origin == 'db'
 
-        cubeFlux = fits.getdata(self.filename)
+        cubeFlux = fits.getdata(galaxy.cubepath)
         assert np.allclose(flux, cubeFlux)
 
-    def test_cube_flux_from_api(self):
-
-        cube = Cube(plateifu=self.plateifu, mode='remote')
+    @slow
+    def test_cube_flux_from_api(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         flux = cube.flux
-        self.assertEqual(cube.data_origin, 'api')
+        assert cube.data_origin == 'api'
 
-        cubeFlux = fits.getdata(self.filename)
-
-        self.assertTrue(np.allclose(flux, cubeFlux, rtol=1e-5))
+        cubeFlux = fits.getdata(galaxy.cubepath)
+        assert pytest.approx(flux, cubeFlux)
 
     def test_cube_remote_drpver_differ_from_global(self):
 
