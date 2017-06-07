@@ -103,17 +103,6 @@ def skipIfNoDB(test):
     return wrapper
 
 
-# Decorator to skip if not Brian
-def skipIfNoBrian(test):
-    @wraps(test)
-    def wrapper(self, *args, **kwargs):
-        if 'Brian' not in os.path.expanduser('~'):
-            return pytest.skip('Skip because not Brian!')
-        else:
-            return test(self, *args, **kwargs)
-    return wrapper
-
-
 class MarvinTest(TestCase):
     """Custom class for Marvin-tools tests."""
 

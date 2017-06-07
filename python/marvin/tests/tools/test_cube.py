@@ -271,7 +271,16 @@ class TestGetSpaxel(object):
                               ],
                              ids=['xy', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial',
                                   'radec-full', 'radec-fail-twosigfig', 'radec-fail-int'])
-    def test_getSpaxel_file_flux(self, cubeFromFile, x, y, ra, dec, xyorig, idx, mpl4, mpl5):
+    @pytest.mark.parametrize('db_', [True, False], ids=['db', 'file'])
+    def test_getSpaxel_file_flux(self, request, galaxy, db_, x, y, ra, dec, xyorig, idx, mpl4, mpl5):
+        if db_:
+            db = request.getfixturevalue('db')
+            if db.session is None:
+                pytest.skip('Skip because no DB.')
+            cube = Cube(mangaid=galaxy.mangaid)
+        else:
+            cube = request.getfixturevalue('cubeFromFile')
+
         kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec, xyorig=xyorig)
         ext = kwargs.pop('ext', 'flux')
         mpls = {'MPL-4': mpl4, 'MPL-5': mpl5}
@@ -279,70 +288,13 @@ class TestGetSpaxel(object):
 
         if expected is MarvinError:
             with pytest.raises(MarvinError) as cm:
-                spectrum = cubeFromFile.getSpaxel(**kwargs).spectrum
+                spectrum = cube.getSpaxel(**kwargs).spectrum
                 actual = getattr(spectrum, ext)[idx]
             assert 'some indices are out of limits.' in str(cm.value)
         else:
-            spectrum = cubeFromFile.getSpaxel(**kwargs).spectrum
+            spectrum = cube.getSpaxel(**kwargs).spectrum
             assert pytest.approx(getattr(spectrum, ext)[idx], expected)
 
-
-
-
-    # Tests for getSpaxel from DB
-    def _getSpaxel_db_flux_ra_dec(self, ra, dec):
-        expect = 0.62007582
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 3000, expect, ra=ra, dec=dec)
-
-    def _getSpaxel_db_fail(self, ra, dec, errMsg):
-        expect = 0.62007582
-        cube = Cube(mangaid=self.mangaid)
-        with pytest.raises(MarvinError) as cm:
-            self._test_getSpaxel(cube, 3000, expect, ra=ra, dec=dec)
-        assert errMsg in str(cm.exception)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_ra_dec_full(self):
-        self._getSpaxel_db_flux_ra_dec(ra=232.544279, dec=48.6899232)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_ra_dec_partial(self):
-        self._getSpaxel_db_flux_ra_dec(ra=232.5443, dec=48.6899)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_ra_dec_twosigfig(self):
-        errMsg = 'some indices are out of limits.'
-        self._getSpaxel_db_fail(ra=232.55, dec=48.69, errMsg=errMsg)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_ra_dec_int(self):
-        errMsg = 'some indices are out of limits.'
-        self._getSpaxel_db_fail(ra=232, dec=48, errMsg=errMsg)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_x_y(self):
-        expect = -0.062497499999999997
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 10, expect, x=10, y=5)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_x_y_lower(self):
-        expect = 0.017929086
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 3000, expect, x=10, y=5, xyorig='lower')
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_x_0_y_0(self):
-        expect = 1.0493046
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 3000, expect, x=0, y=0)
-
-    @skipIfNoDB
-    def test_getSpaxel_db_flux_x_0_y_0_lower(self):
-        expect = 0.0
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 3000, expect, x=0, y=0, xyorig='lower')
 
     def _test_getSpaxel_remote(self, specIndex, expect, **kwargs):
         """Tests for getSpaxel remotely."""
