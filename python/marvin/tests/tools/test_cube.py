@@ -60,7 +60,7 @@ class TestCube(object):
         assert errMsg in str(cm.value)
 
     @skipIfNoDB
-    @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and
+    @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and '
                       'there is currently no way of doing so.')
     def test_cube_load_from_local_database_nodbconnected(self):
         # need to undo setting the config.db to None so that subsequent tests will pass
@@ -228,9 +228,10 @@ class TestGetSpaxel(object):
         """Convenience method to test exceptions raised by getSpaxel."""
 
         with pytest.raises(excType) as ee:
+            
             self.cubeFromFile.getSpaxel(**kwargs)
 
-        assert message in str(ee.exception)
+        assert message in str(ee.value)
 
     def test_getSpaxel_inputs(self):
         """Tests exceptions when getSpaxel gets inappropriate inputs."""
