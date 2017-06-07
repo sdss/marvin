@@ -261,25 +261,28 @@ class TestGetSpaxel(object):
 
     @pytest.mark.parametrize('x, y, ra, dec, xyorig, idx, mpl4, mpl5',
                              [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
-                              (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
-                              (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
-                              (0, 0, None, None, 'lower', 3000, 0., 0.),
-                              (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
-                              (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
-                              (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
-                              (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
+                              # (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
+                              # (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
+                              # (0, 0, None, None, 'lower', 3000, 0., 0.),
+                              # (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
+                              # (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
+                              # (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
+                              # (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
                               ],
-                             ids=['xy', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial',
-                                  'radec-full', 'radec-fail-twosigfig', 'radec-fail-int'])
-    @pytest.mark.parametrize('db_', [True, False], ids=['db', 'file'])
-    def test_getSpaxel_file_flux(self, request, galaxy, db_, x, y, ra, dec, xyorig, idx, mpl4, mpl5):
-        if db_:
+                             ids=['xy'])  #, 'xylower', 'x0y0', 'x0y0lower', 'radec-partial',
+                                  #'radec-full', 'radec-fail-twosigfig', 'radec-fail-int'])
+    @pytest.mark.parametrize('data_origin', ['db', 'file', 'api']])
+    def test_getSpaxel_file_flux(self, request, galaxy, data_origin, x, y, ra, dec, xyorig, idx,
+                                 mpl4, mpl5):
+        if data_origin == 'db':
             db = request.getfixturevalue('db')
             if db.session is None:
                 pytest.skip('Skip because no DB.')
             cube = Cube(mangaid=galaxy.mangaid)
-        else:
+        elif data_origin == 'file':
             cube = request.getfixturevalue('cubeFromFile')
+        else:
+            cube = Cube(mangaid=galaxy.mangaid, mode='remote')
 
         kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec, xyorig=xyorig)
         ext = kwargs.pop('ext', 'flux')
