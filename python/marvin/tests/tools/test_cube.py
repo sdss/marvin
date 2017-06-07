@@ -259,9 +259,6 @@ class TestGetSpaxel(object):
 
         assert message in str(ee.value)
 
-
-    # TODO the expected values are for MPL-4.
-    # TODO need a version dependent way of specifying
     @pytest.mark.parametrize('x, y, ra, dec, xyorig, idx, mpl4, mpl5',
                              [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
                               (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),

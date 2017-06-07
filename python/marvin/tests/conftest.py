@@ -32,8 +32,8 @@ def pytest_runtest_setup(item):
 # TODO replace _reset_the_config with monkeypatch
 # TODO reimplement set_sasurl (use function-level fixture?)
 
-releases = ['MPL-5']
-plateifus = ['8485-1901'] # TODO add '7443-12701'
+releases = ['MPL-5']  # TODO add 'MPL-4'
+plateifus = ['8485-1901']  # TODO add '7443-12701'
 
 bintypes = {}
 for release in releases:
@@ -57,6 +57,7 @@ class Galaxy:
         self.drpver, self.dapver = config.lookUpVersions(self.release)
 
     # TODO move to a mock data file/directory
+    # TODO make release specific mock data sets
     def get_data(self):
         self.galaxies = pd.DataFrame(
                  [['1-209232', 10179, 221394, 232.544703894, 48.6902009334, 0.0407447, 0.234907269477844],
