@@ -228,14 +228,22 @@ class TestGetSpaxel(object):
         spectrum = cube.getSpaxel(**kwargs).spectrum
         assert round(abs(getattr(spectrum, ext)[idx]-expect), 5) == 0
 
-#    def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, cubeFromFile,
-#                                        **kwargs):
-#        """Convenience method to test exceptions raised by getSpaxel."""
-#
-#        with pytest.raises(excType) as ee:
-#            cubeFromFile.getSpaxel(**kwargs)
-#
-#        assert message in str(ee.value)
+    @pytest.mark.parametrize('x, y, idx, expected',
+                             [(10, 5, 10, -0.062497504)],
+                             ids=['x-y'])
+    def test_getSpaxel_file_flux(self, cubeFromFile):
+        self.test_getSpaxel(cubeFromFile, 10, expect, x=10, y=5)
+
+
+    def _parse_getSpaxel_inputs(self, x, y, ra, dec):
+        kwargs = {'x': x,
+                  'y': y,
+                  'ra': ra,
+                  'dec': dec}
+        for k, v in list(kwargs.items()):
+            if v is None:
+                del kwargs[k]
+        return kwargs
 
     @pytest.mark.parametrize('x, y, ra, dec, excType, message',
         [(1, None, 1, None, AssertionError, 'Either use (x, y) or (ra, dec)'),
@@ -244,50 +252,28 @@ class TestGetSpaxel(object):
          (None, 1, None, None, AssertionError, 'Specify both x and y'),
          (None, None, 1, None, AssertionError, 'Specify both ra and dec'),
          (None, None, None, 1, AssertionError, 'Specify both ra and dec'),
-         (None, None, None, None, ValueError, 'You need to specify either (x, y) or (ra, dec)')],
-        ids=['x-ra', 'x-ra-dec', 'x', 'y', 'ra', 'dec', 'none'])
+         (None, None, None, None, ValueError, 'You need to specify either (x, y) or (ra, dec)'),
+         (-50, 1, None, None, MarvinError, 'some indices are out of limits'),
+         (50, 1, None, None, MarvinError, 'some indices are out of limits'),
+         (1, -50, None, None, MarvinError, 'some indices are out of limits'),
+         (1, 50, None, None, MarvinError, 'some indices are out of limits'),
+         (None, None, 1., 1., MarvinError, 'some indices are out of limits'),
+         (None, None, 100, 60, MarvinError, 'some indices are out of limits'),
+         (None, None, 232.546383, 1., MarvinError, 'some indices are out of limits'),
+         (None, None, 1., 48.6883954, MarvinError, 'some indices are out of limits')],
+        ids=['x-ra', 'x-ra-dec', 'x', 'y', 'ra', 'dec', 'no-inputs', '-50-1', '50-1', '1--50',
+             '1-50', '1-1', '100-60', '232.5-1', '1-48.6'])
     def test_getSpaxel_inputs(self, cubeFromFile, x, y, ra, dec, excType, message):
         """Tests exceptions when getSpaxel gets inappropriate inputs."""
-        kwargs = {'x': x,
-                  'y': y,
-                  'ra': ra,
-                  'dec': dec}
-        for k, v in list(kwargs.items()):
-            if v is None:
-                del kwargs[k]
+        kwargs = self._parse_getSpaxel_inputs(x, y, ra, dec)
 
         with pytest.raises(excType) as ee:
             cubeFromFile.getSpaxel(**kwargs)
 
         assert message in str(ee.value)
 
-#         self._test_getSpaxel_raise_exception(
-#             'Either use (x, y) or (ra, dec)', cubeFromFile, x=1, ra=1)
-# 
-#         self._test_getSpaxel_raise_exception(
-#             'Either use (x, y) or (ra, dec)', cubeFromFile, x=1, dec=1, ra=1)
-# 
-#         self._test_getSpaxel_raise_exception('Specify both x and y', cubeFromFile, x=1)
-# 
-#         self._test_getSpaxel_raise_exception('Specify both ra and dec', ra=1)
-# 
-#         self._test_getSpaxel_raise_exception(
-#             'You need to specify either (x, y) or (ra, dec)',
-#             excType=ValueError)
 
-    def test_getSpaxel_outside_cube(self):
-        """Tests getSpaxel when the input coords are outside the cube."""
 
-        for xTest, yTest in [(-50, 1), (50, 1), (1, -50), (1, 50)]:
-            self._test_getSpaxel_raise_exception(
-                'some indices are out of limits.', x=xTest, y=yTest,
-                excType=MarvinError)
-
-        for raTest, decTest in [(1., 1.), (100, 60),
-                                (232.546383, 1.), (1., 48.6883954)]:
-            self._test_getSpaxel_raise_exception(
-                'some indices are out of limits.', ra=raTest, dec=decTest,
-                excType=MarvinError)
 
     def test_getSpaxel_file_flux_x_y(self):
         """Tests getSpaxel from a file cube with x, y inputs."""
