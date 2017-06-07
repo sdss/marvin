@@ -66,58 +66,41 @@ class TestSpaxelInit(object):
             else:
                 assert getattr(spaxel, key) is None
 
-        assert len(spaxel.properties) > 0
+        if maps:
+            assert len(spaxel.properties) > 0
+        else:
+            assert len(spaxel.properties) == 0
+            
 
     def test_no_cube_no_maps_db(self, galaxy):
         spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu)
         self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
-        # assert isinstance(spaxel.cube, Cube)
-        # assert isinstance(spaxel.maps, Maps)
-        # assert isinstance(spaxel.spectrum, Spectrum)
-        # assert len(spaxel.properties) > 0
 
     def test_cube_false_no_maps_db(self, galaxy):
         spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu, cube=False)
         self._spaxel_init(spaxel, cube=False, maps=True, spectrum=False)
-        # assert spaxel.cube is None
-        # assert isinstance(spaxel.maps, Maps)
-        # assert spaxel.spectrum is None
-        # assert len(spaxel.properties) > 0
 
     def test_no_cube_maps_false_db(self, galaxy):
         spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu, maps=False)
-        assert spaxel.maps is None
-        assert isinstance(spaxel.cube, Cube)
-        assert isinstance(spaxel.spectrum, Spectrum)
-        assert len(spaxel.properties) == 0
+        self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
 
     def test_cube_object_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         spaxel = Spaxel(x=15, y=16, cube=cube)
-        assert isinstance(spaxel.cube, Cube)
-        assert isinstance(spaxel.maps, Maps)
-        assert isinstance(spaxel.spectrum, Spectrum)
-        assert len(spaxel.properties) > 0
+        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
     def test_cube_object_maps_false_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         spaxel = Spaxel(x=15, y=16, cube=cube, maps=False)
-        assert isinstance(spaxel.cube, Cube)
-        assert spaxel.maps is None
-        assert isinstance(spaxel.spectrum, Spectrum)
-        assert len(spaxel.properties) == 0
+        self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
 
-    def test_cube_maps_object_filename(self):
-
-        cube = Cube(filename=self.filename_cube)
-        maps = Maps(filename=self.filename_maps_default)
+    def test_cube_maps_object_filename(self, galaxy):
+        if galaxy.bintype != 'SPX':
+            pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
+        cube = Cube(filename=galaxy.cubepath)
+        maps = Maps(filename=galaxy.mapspath)
         spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
-
-        assert isinstance(spaxel.cube, Cube)
-        assert isinstance(spaxel.maps, Maps)
-
-        assert isinstance(spaxel.spectrum, Spectrum)
-        assert len(spaxel.properties) > 0
+        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
     def test_cube_maps_object_filename_mpl5(self):
 
