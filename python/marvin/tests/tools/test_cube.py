@@ -21,6 +21,10 @@ def galaxy_cube(galaxy):
     galaxy.filename = os.path.realpath(galaxy.cubepath)
     return galaxy
 
+@pytest.fixture(scope='module')
+def cubeFromFile(galaxy):
+    return Cube(filename=galaxy.cubepath)
+
 
 class TestCube(object):
 
@@ -224,31 +228,52 @@ class TestGetSpaxel(object):
         spectrum = cube.getSpaxel(**kwargs).spectrum
         assert round(abs(getattr(spectrum, ext)[idx]-expect), 5) == 0
 
-    def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, **kwargs):
-        """Convenience method to test exceptions raised by getSpaxel."""
+#    def _test_getSpaxel_raise_exception(self, message, excType=AssertionError, cubeFromFile,
+#                                        **kwargs):
+#        """Convenience method to test exceptions raised by getSpaxel."""
+#
+#        with pytest.raises(excType) as ee:
+#            cubeFromFile.getSpaxel(**kwargs)
+#
+#        assert message in str(ee.value)
+
+    @pytest.mark.parametrize('x, y, ra, dec, excType, message',
+        [(1, None, 1, None, AssertionError, 'Either use (x, y) or (ra, dec)'),
+         (1, None, 1, 1, AssertionError, 'Either use (x, y) or (ra, dec)'),
+         (1, None, None, None, AssertionError, 'Specify both x and y'),
+         (None, 1, None, None, AssertionError, 'Specify both x and y'),
+         (None, None, 1, None, AssertionError, 'Specify both ra and dec'),
+         (None, None, None, 1, AssertionError, 'Specify both ra and dec'),
+         (None, None, None, None, ValueError, 'You need to specify either (x, y) or (ra, dec)')],
+        ids=['x-ra', 'x-ra-dec', 'x', 'y', 'ra', 'dec', 'none'])
+    def test_getSpaxel_inputs(self, cubeFromFile, x, y, ra, dec, excType, message):
+        """Tests exceptions when getSpaxel gets inappropriate inputs."""
+        kwargs = {'x': x,
+                  'y': y,
+                  'ra': ra,
+                  'dec': dec}
+        for k, v in list(kwargs.items()):
+            if v is None:
+                del kwargs[k]
 
         with pytest.raises(excType) as ee:
-            
-            self.cubeFromFile.getSpaxel(**kwargs)
+            cubeFromFile.getSpaxel(**kwargs)
 
         assert message in str(ee.value)
 
-    def test_getSpaxel_inputs(self):
-        """Tests exceptions when getSpaxel gets inappropriate inputs."""
-
-        self._test_getSpaxel_raise_exception(
-            'Either use (x, y) or (ra, dec)', x=1, ra=1)
-
-        self._test_getSpaxel_raise_exception(
-            'Either use (x, y) or (ra, dec)', x=1, dec=1, ra=1)
-
-        self._test_getSpaxel_raise_exception('Specify both x and y', x=1)
-
-        self._test_getSpaxel_raise_exception('Specify both ra and dec', ra=1)
-
-        self._test_getSpaxel_raise_exception(
-            'You need to specify either (x, y) or (ra, dec)',
-            excType=ValueError)
+#         self._test_getSpaxel_raise_exception(
+#             'Either use (x, y) or (ra, dec)', cubeFromFile, x=1, ra=1)
+# 
+#         self._test_getSpaxel_raise_exception(
+#             'Either use (x, y) or (ra, dec)', cubeFromFile, x=1, dec=1, ra=1)
+# 
+#         self._test_getSpaxel_raise_exception('Specify both x and y', cubeFromFile, x=1)
+# 
+#         self._test_getSpaxel_raise_exception('Specify both ra and dec', ra=1)
+# 
+#         self._test_getSpaxel_raise_exception(
+#             'You need to specify either (x, y) or (ra, dec)',
+#             excType=ValueError)
 
     def test_getSpaxel_outside_cube(self):
         """Tests getSpaxel when the input coords are outside the cube."""
