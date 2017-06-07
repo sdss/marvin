@@ -28,8 +28,6 @@ def cubeFromFile(galaxy):
 
 class TestCube(object):
 
-    # def test_mpl_version(self):
-    #     assert config.release == self.outrelease
 
     # Tests for Cube Load by File
     def test_cube_loadfail(self):
@@ -221,25 +219,14 @@ class TestCube(object):
 class TestGetSpaxel(object):
 
     #  Tests for getSpaxel
-    def _test_getSpaxel(self, cube, idx, expect, **kwargs):
+    def _test_getSpaxel(self, cube, expected, **kwargs):
         """Convenience method to test getSpaxel."""
-
         ext = kwargs.pop('ext', 'flux')
+        idx = kwargs.pop('idx')
         spectrum = cube.getSpaxel(**kwargs).spectrum
-        assert round(abs(getattr(spectrum, ext)[idx]-expect), 5) == 0
-
-    @pytest.mark.parametrize('x, y, idx, expected',
-                             [(10, 5, 10, -0.062497504)],
-                             ids=['x-y'])
-    def test_getSpaxel_file_flux(self, cubeFromFile):
-        self.test_getSpaxel(cubeFromFile, 10, expect, x=10, y=5)
-
-
-    def _parse_getSpaxel_inputs(self, x, y, ra, dec):
-        kwargs = {'x': x,
-                  'y': y,
-                  'ra': ra,
-                  'dec': dec}
+        assert pytest.approx(getattr(spectrum, ext)[idx], expected)
+    
+    def _dropNones(self, **kwargs):
         for k, v in list(kwargs.items()):
             if v is None:
                 del kwargs[k]
@@ -265,7 +252,7 @@ class TestGetSpaxel(object):
              '1-50', '1-1', '100-60', '232.5-1', '1-48.6'])
     def test_getSpaxel_inputs(self, cubeFromFile, x, y, ra, dec, excType, message):
         """Tests exceptions when getSpaxel gets inappropriate inputs."""
-        kwargs = self._parse_getSpaxel_inputs(x, y, ra, dec)
+        kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec)
 
         with pytest.raises(excType) as ee:
             cubeFromFile.getSpaxel(**kwargs)
@@ -273,53 +260,37 @@ class TestGetSpaxel(object):
         assert message in str(ee.value)
 
 
+    # TODO the expected values are for MPL-4.
+    # TODO need a version dependent way of specifying
+    @pytest.mark.parametrize('x, y, ra, dec, xyorig, idx, mpl4, mpl5',
+                             [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
+                              (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
+                              (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
+                              (0, 0, None, None, 'lower', 3000, 0., 0.),
+                              (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
+                              (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
+                              (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
+                              (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
+                              ],
+                             ids=['xy', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial',
+                                  'radec-full', 'radec-fail-twosigfig', 'radec-fail-int'])
+    def test_getSpaxel_file_flux(self, cubeFromFile, x, y, ra, dec, xyorig, idx, mpl4, mpl5):
+        kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec, xyorig=xyorig)
+        ext = kwargs.pop('ext', 'flux')
+        mpls = {'MPL-4': mpl4, 'MPL-5': mpl5}
+        expected = mpls[config.release]
+
+        if expected is MarvinError:
+            with pytest.raises(MarvinError) as cm:
+                spectrum = cubeFromFile.getSpaxel(**kwargs).spectrum
+                actual = getattr(spectrum, ext)[idx]
+            assert 'some indices are out of limits.' in str(cm.value)
+        else:
+            spectrum = cubeFromFile.getSpaxel(**kwargs).spectrum
+            assert pytest.approx(getattr(spectrum, ext)[idx], expected)
 
 
-    def test_getSpaxel_file_flux_x_y(self):
-        """Tests getSpaxel from a file cube with x, y inputs."""
 
-        expect = -0.062497504
-        self._test_getSpaxel(self.cubeFromFile, 10, expect, x=10, y=5)
-
-    def test_getSpaxel_file_flux_x_y_lower(self):
-        """Tests getSpaxel from a file with x, y inputs, xyorig=lower."""
-
-        expect = 0.017929086
-        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=10, y=5, xyorig='lower')
-
-    def test_getSpaxel_file_flux_x_0_y_0(self):
-        expect = 1.0493046
-        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=0, y=0)
-
-    def test_getSpaxel_file_flux_x_0_y_0_lower(self):
-        expect = 0.0
-        self._test_getSpaxel(self.cubeFromFile, 3000, expect, x=0, y=0, xyorig='lower')
-
-    def _getSpaxel_file_flux_ra_dec(self, ra, dec):
-        """Tests getSpaxel from a file cube with ra, dec inputs."""
-
-        expect = 0.62007582
-        self._test_getSpaxel(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
-
-    def _getSpaxel_file_fail(self, ra, dec, errMsg):
-        expect = 0.62007582
-        with pytest.raises(MarvinError) as cm:
-            self._test_getSpaxel(self.cubeFromFile, 3000, expect, ra=ra, dec=dec)
-        assert errMsg in str(cm.exception)
-
-    def test_getSpaxel_file_flux_ra_dec_full(self):
-        self._getSpaxel_file_flux_ra_dec(ra=232.544279, dec=48.6899232)
-
-    def test_getSpaxel_file_flux_ra_dec_parital(self):
-        self._getSpaxel_file_flux_ra_dec(ra=232.5443, dec=48.6899)
-
-    def test_getSpaxel_file_flux_ra_dec_twosigfig(self):
-        errMsg = 'some indices are out of limits.'
-        self._getSpaxel_file_fail(ra=232.55, dec=48.69, errMsg=errMsg)
-
-    def test_getSpaxel_file_flux_ra_dec_int(self):
-        errMsg = 'some indices are out of limits'
-        self._getSpaxel_file_fail(ra=232, dec=48, errMsg=errMsg)
 
     # Tests for getSpaxel from DB
     def _getSpaxel_db_flux_ra_dec(self, ra, dec):
