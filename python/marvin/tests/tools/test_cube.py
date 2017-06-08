@@ -26,6 +26,14 @@ def galaxy_cube(galaxy):
 def cubeFromFile(galaxy):
     return Cube(filename=galaxy.cubepath)
 
+@pytest.fixture(scope='function')
+def tmpfiles():
+    files_created = []
+    yield files_created
+    for fp in files_created:
+        if os.path.exists(fp):
+            os.remove(fp)
+
 
 class TestCube(object):
 
@@ -402,32 +410,9 @@ class TestWCS(object):
         assert pytest.approx(cube.wcs.wcs.pc[1, 1], 0.000138889)
 
 
-
-@pytest.fixture(scope='function')
-def tmpfiles():
-    files_created = []
-    yield files_created
-    for fp in files_created:
-        if os.path.exists(fp):
-            os.remove(fp)
-
-
 class TestPickling(object):
 
-    # def setUp(self):
-    #     super(TestPickling, self).setUp()
-    #     self._files_created = []
-
-#     def tearDown(self):
-# 
-#         super(TestPickling, self).tearDown()
-# 
-#         for fp in self._files_created:
-#             if os.path.exists(fp):
-#                 os.remove(fp)
-
     def test_pickling_file(self, tmpfiles, galaxy):
-
         cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
         assert isinstance(cube, Cube)
@@ -450,14 +435,16 @@ class TestPickling(object):
         assert cube_restored.data is not None
 
     def test_pickling_file_custom_path(self, tmpfiles, galaxy):
-
         cube = Cube(filename=galaxy.cubepath)
+        assert cube.data_origin == 'file'
+        assert isinstance(cube, Cube)
+        assert cube.data is not None
 
-        # test_path = tmpdir.mkdir('pickles').join(galaxy.plateifu + '.mpf')
         test_path = '~/test.mpf'
+        assert not os.path.isfile(test_path)
+
         path = cube.save(path=test_path)
         tmpfiles.append(path)
-        # self._files_created.append(path)
 
         assert os.path.exists(path)
         assert path == os.path.realpath(os.path.expanduser(test_path))
@@ -469,28 +456,26 @@ class TestPickling(object):
 
         assert not os.path.exists(path)
 
-    def test_pickling_db(self):
-
-        cube = Cube(plateifu=self.plateifu)
+    def test_pickling_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
         assert cube.data_origin == 'db'
 
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(MarvinError) as cm:
             cube.save()
 
-        assert 'objects with data_origin=\'db\' cannot be saved.' in str(ee.exception)
+        assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
-    def test_pickling_api(self):
-
-        cube = Cube(plateifu=self.plateifu, mode='remote')
+    def test_pickling_api(self, tmpfiles, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert cube.data_origin == 'api'
         assert isinstance(cube, Cube)
         assert cube.data is None
 
         path = cube.save()
-        self._files_created.append(path)
+        tmpfiles.append(path)
 
         assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(self.filename[0:-7] + 'mpf')
+        assert os.path.realpath(path) == os.path.realpath(galaxy.cubepath[0:-7] + 'mpf')
 
         cube = None
         assert cube is None
@@ -499,4 +484,3 @@ class TestPickling(object):
         assert cube_restored.data_origin == 'api'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is None
-        assert cube_restored.header['VERSDRP3'] == 'v1_5_0'
