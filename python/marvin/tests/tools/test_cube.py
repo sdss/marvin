@@ -386,20 +386,20 @@ class TestGetSpaxel(object):
 
 class TestWCS(object):
 
-    def test_wcs_file(self):
-        cube = Cube(filename=self.filename)
+    def test_wcs_file(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
         assert isinstance(cube.wcs, wcs.WCS)
-        assert round(abs(cube.wcs.wcs.cd[1, 1]-0.000138889), 7) == 0
+        assert pytest.approx(cube.wcs.wcs.cd[1, 1], 0.000138889)
 
-    def test_wcs_db(self):
-        cube = Cube(plateifu=self.plateifu)
+    def test_wcs_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
         assert isinstance(cube.wcs, wcs.WCS)
-        assert round(abs(cube.wcs.wcs.cd[1, 1]-0.000138889), 7) == 0
+        assert pytest.approx(cube.wcs.wcs.cd[1, 1], 0.000138889)
 
-    def test_wcs_api(self):
-        cube = Cube(plateifu=self.plateifu, mode='remote')
+    def test_wcs_api(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(cube.wcs, wcs.WCS)
-        assert round(abs(cube.wcs.wcs.pc[1, 1]-0.000138889), 7) == 0
+        assert pytest.approx(cube.wcs.wcs.pc[1, 1], 0.000138889)
 
 
 class TestPickling(object):
