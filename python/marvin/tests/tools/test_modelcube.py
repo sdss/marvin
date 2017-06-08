@@ -15,67 +15,66 @@ import pytest
 from astropy.io import fits
 from astropy.wcs import WCS
 
-import marvin
-import marvin.tests
+from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 
 
-class TestModelCubeBase(marvin.tests.MarvinTest):
-    """Defines the files and plateifus we will use in the tests."""
+# class TestModelCubeBase(object):
+#     """Defines the files and plateifus we will use in the tests."""
+# 
+#     @classmethod
+#     def setUpClass(cls):
+# 
+#         super(TestModelCubeBase, cls).setUpClass()
+#         #config.switchSasUrl('local')
+#         cls.set_sasurl('local')
+#         cls.release = 'MPL-5'
+#         cls._update_release(cls.release)
+#         cls.set_filepaths()
+#         cls.filename = os.path.realpath(cls.modelpath)
+# 
+#     @classmethod
+#     def tearDownClass(cls):
+#         pass
+# 
+#     def setUp(self):
+#         self._reset_the_config()
+#         self._update_release(self.release)
+#         self.set_filepaths()
+#         assert os.path.exists(self.filename)
+# 
+#     def tearDown(self):
+#         pass
 
-    @classmethod
-    def setUpClass(cls):
 
-        super(TestModelCubeBase, cls).setUpClass()
-        #marvin.config.switchSasUrl('local')
-        cls.set_sasurl('local')
-        cls.release = 'MPL-5'
-        cls._update_release(cls.release)
-        cls.set_filepaths()
-        cls.filename = os.path.realpath(cls.modelpath)
+class TestModelCubeInit(object):
 
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        self._reset_the_config()
-        self._update_release(self.release)
-        self.set_filepaths()
-        assert os.path.exists(self.filename)
-
-    def tearDown(self):
-        pass
-
-
-class TestModelCubeInit(TestModelCubeBase):
-
-    def _test_init(self, model_cube, bintype='SPX', template_kin='GAU-MILESHC'):
-
-        assert model_cube._release == self.release
-        assert model_cube._drpver == self.drpver
-        assert model_cube._dapver == self.dapver
+    def _test_init(self, model_cube, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+        assert model_cube._release == galaxy.release
+        assert model_cube._drpver == galaxy.drpver
+        assert model_cube._dapver == galaxy.dapver
         assert model_cube.bintype == bintype
         assert model_cube.template_kin == template_kin
-        assert model_cube.plateifu == self.plateifu
-        assert model_cube.mangaid == self.mangaid
+        assert model_cube.plateifu == galaxy.plateifu
+        assert model_cube.mangaid == galaxy.mangaid
         assert isinstance(model_cube.header, fits.Header)
         assert isinstance(model_cube.wcs, WCS)
         assert model_cube.wavelength is not None
         assert model_cube.redcorr is not None
 
-    def test_init_from_file(self):
-
-        model_cube = ModelCube(filename=self.filename)
+    # TODO remove this parametrization when galaxy is looped over both MPL-4 and MPL-5
+    @pytest.mark.parametrize('mpl', ['MPL-4', 'MPL-5'])
+    def test_init_from_file(self, galaxy, mpl):
+        config.setMPL(mpl)
+        model_cube = ModelCube(filename=galaxy.modelpath)
         assert model_cube.data_origin == 'file'
-        self._test_init(model_cube)
+        self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self):
-
-        marvin.config.setMPL('MPL-4')
+        config.setMPL('MPL-4')
         model_cube = ModelCube(filename=self.filename)
         assert model_cube.data_origin == 'file'
         self._test_init(model_cube)
@@ -94,7 +93,7 @@ class TestModelCubeInit(TestModelCubeBase):
 
     def test_raises_exception_mpl4(self):
 
-        marvin.config.setMPL('MPL-4')
+        config.setMPL('MPL-4')
         with pytest.raises(MarvinError) as err:
             ModelCube(plateifu=self.plateifu)
         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(err.exception)
@@ -134,7 +133,7 @@ class TestModelCubeInit(TestModelCubeBase):
         assert isinstance(model_cube.maps, Maps)
 
 
-class TestGetSpaxel(TestModelCubeBase):
+class TestGetSpaxel(object):
 
     def _test_getspaxel(self, spaxel, bintype='SPX', template_kin='GAU-MILESHC'):
 
@@ -185,7 +184,7 @@ class TestGetSpaxel(TestModelCubeBase):
     def test_getspaxel_matches_file_db_remote(self):
 
         self._update_release('MPL-5')
-        assert marvin.config.release == 'MPL-5'
+        assert config.release == 'MPL-5'
 
         modelcube_file = ModelCube(filename=self.filename)
         modelcube_db = ModelCube(plateifu=self.plateifu)
@@ -239,7 +238,7 @@ class TestGetSpaxel(TestModelCubeBase):
         assert round(abs(spaxel_getspaxel_api.model_flux.mask[spec_idx]-mask_result), 7) == 0
 
 
-class TestPickling(TestModelCubeBase):
+class TestPickling(object):
 
     def setUp(self):
         super(TestPickling, self).setUp()
