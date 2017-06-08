@@ -14,6 +14,7 @@ from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import skipIfNoDB
+from brain.core.exceptions import BrainError
 
 
 @pytest.fixture(scope='module')
@@ -260,20 +261,24 @@ class TestGetSpaxel(object):
         assert message in str(ee.value)
 
     @pytest.mark.parametrize('x, y, ra, dec, xyorig, idx, mpl4, mpl5',
-                             [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
-                              (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
-                              (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
-                              (0, 0, None, None, 'lower', 3000, 0., 0.),
-                              (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
-                              (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
-                              (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
-                              (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
-                              ],
-                             ids=['xy', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial',
-                                  'radec-full', 'radec-fail-twosigfig', 'radec-fail-int'])
+        [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
+         (10, 5, None, None, 'center', 10, -0.062497504, -0.063987106),
+         (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
+         (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
+         (0, 0, None, None, 'lower', 3000, 0., 0.),
+         (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
+         (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
+         ([10, 0], [5, 0], None, None, 'lower', 3000, [0.017929086, 0.], [0.017640527, 0.]),
+         (None, None, [232.546173, 232.548277], [48.6885343, 48.6878398], 'lower', 3000,
+          [0.017929086, 0.0], [0.017640527, 0.]),
+         (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
+         (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
+         ],
+        ids=['xy', 'xycenter', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial', 'radec-full',
+             'xyarray', 'radecarray', 'radec-fail-twosigfig', 'radec-fail-int'])
     @pytest.mark.parametrize('data_origin', ['db', 'file', 'api'])
-    def test_getSpaxel_file_flux(self, request, galaxy, data_origin, x, y, ra, dec, xyorig, idx,
-                                 mpl4, mpl5):
+    def test_getSpaxel_flux(self, request, galaxy, data_origin, x, y, ra, dec, xyorig, idx, mpl4,
+                            mpl5):
         if data_origin == 'db':
             db = request.getfixturevalue('db')
             if db.session is None:
@@ -295,152 +300,45 @@ class TestGetSpaxel(object):
                 actual = getattr(spectrum, ext)[idx]
             assert 'some indices are out of limits.' in str(cm.value)
         else:
-            spectrum = cube.getSpaxel(**kwargs).spectrum
-            assert pytest.approx(getattr(spectrum, ext)[idx], expected)
+            spaxels = cube.getSpaxel(**kwargs)
+            spaxels = spaxels if isinstance(spaxels, list) else [spaxels]
+            actual = [getattr(spax.spectrum, ext)[idx] for spax in spaxels]
+            expected = expected if isinstance(expected, list) else [expected]
+            assert pytest.approx(actual, expected)
 
-
-    def _test_getSpaxel_remote(self, specIndex, expect, **kwargs):
-        """Tests for getSpaxel remotely."""
-
-        cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpaxel(cube, specIndex, expect, **kwargs)
-
-    def test_getSpaxel_remote_x_y_success(self):
-
-        expect = -0.062497499999999997
-        self._test_getSpaxel_remote(10, expect, x=10, y=5)
-
-    def test_getSpaxel_remote_ra_dec_success(self):
-
-        expect = 0.62007582
-        self._test_getSpaxel_remote(3000, expect, ra=232.544279, dec=48.6899232)
-
-    def _getSpaxel_remote_fail(self, ra, dec, errMsg1, errMsg2=None, excType=MarvinError):
-
-        cube = Cube(mangaid=self.mangaid, mode='remote')
-
-        with pytest.raises(excType) as cm:
-            cube.getSpaxel(ra=ra, dec=dec)
-
-        assert errMsg1 in str(cm.exception)
-        if errMsg2:
-            assert errMsg2 in str(cm.exception)
-
-    def test_getSpaxel_remote_fail_badresponse(self):
+    def test_getSpaxel_remote_fail_badresponse(self, galaxy):
 
         config.sasurl = 'http://www.averywrongurl.com'
         assert config.urlmap is not None
 
-        with pytest.raises(MarvinError) as cm:
-            Cube(mangaid=self.mangaid, mode='remote')
+        with pytest.raises(BrainError) as cm:
+            Cube(mangaid=galaxy.mangaid, mode='remote')
 
-        assert 'Failed to establish a new connection' in str(cm.exception)
+        assert 'No URL Map found. Cannot make remote call' in str(cm.value)
 
-    def test_getSpaxel_remote_fail_badpixcoords(self):
-
-        assert config.urlmap is not None
-        self._getSpaxel_remote_fail(232, 48, 'some indices are out of limits.')
-
-    def _test_getSpaxel_array(self, cube, nCoords, specIndex, expected, **kwargs):
-        """Tests getSpaxel with array coordinates."""
-
-        spaxels = cube.getSpaxel(**kwargs)
-
-        assert len(spaxels) == nCoords
-        fluxes = np.array([spaxel.spectrum.flux for spaxel in spaxels])
-
-        assert_allclose(fluxes[:, specIndex], expected, rtol=1e-6)
-
-    def test_getSpaxel_file_flux_x_y_lower_array(self):
-
-        x = [10, 0]
-        y = [5, 0]
-        expected = [0.017929086, 0.0]
-
-        cube = self.cubeFromFile
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   x=x, y=y, xyorig='lower')
-
-    def test_getSpaxel_db_flux_x_y_lower_array(self):
-
-        x = [10, 0]
-        y = [5, 0]
-        expected = [0.017929086, 0.0]
-
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   x=x, y=y, xyorig='lower')
-
-    def test_getSpaxel_remote_flux_x_y_lower_array(self):
-
-        x = [10, 0]
-        y = [5, 0]
-        expected = [0.017929086, 0.0]
-
-        cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   x=x, y=y, xyorig='lower')
-
-    def test_getSpaxel_file_flux_ra_dec_lower_array(self):
-
-        ra = [232.546173, 232.548277]
-        dec = [48.6885343, 48.6878398]
-        expected = [0.017929086, 0.0]
-
-        cube = self.cubeFromFile
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   ra=ra, dec=dec, xyorig='lower')
-
-    def test_getSpaxel_db_flux_ra_dec_lower_array(self):
-
-        ra = [232.546173, 232.548277]
-        dec = [48.6885343, 48.6878398]
-        expected = [0.017929086, 0.0]
-
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   ra=ra, dec=dec, xyorig='lower')
-
-    def test_getSpaxel_remote_flux_ra_dec_lower_array(self):
-
-        ra = [232.546173, 232.548277]
-        dec = [48.6885343, 48.6878398]
-        expected = [0.017929086, 0.0]
-
-        cube = Cube(mangaid=self.mangaid, mode='remote')
-        self._test_getSpaxel_array(cube, 2, 3000, expected,
-                                   ra=ra, dec=dec, xyorig='lower')
-
-    def test_getSpaxel_global_xyorig_center(self):
-        config.xyorig = 'center'
-        expect = -0.062497499999999997
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 10, expect, x=10, y=5)
-
-    def test_getSpaxel_global_xyorig_lower(self):
-        config.xyorig = 'lower'
-        expect = 0.017929086
-        cube = Cube(mangaid=self.mangaid)
-        self._test_getSpaxel(cube, 3000, expect, x=10, y=5)
-
-    def test_getSpaxel_remote_drpver_differ_from_global(self):
-
-        self._update_release('MPL-5')
+    def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
+        config.setMPL('MPL-5')
         assert config.release == 'MPL-5'
 
-        cube = Cube(plateifu=self.plateifu, mode='remote', release='MPL-4')
-        expect = 0.62007582
-        self._test_getSpaxel(cube, 3000, expect, ra=232.544279, dec=48.6899232)
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
+        expected = 0.62007582
 
+        spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
+        assert pytest.approx(spectrum.flux[3000], expected)
+    
+
+    @pytest.mark.parametrize('mpl, flux, ivar, mask',
+                             [('MPL-4', 0.017639931, 352.12421, 1026),
+                              ('MPL-5', 0.016027471, 361.13596, 1026)],)
     @skipIfNoDB
-    def test_getspaxel_matches_file_db_remote(self):
+    def test_getspaxel_matches_file_db_remote(self, db, galaxy, mpl, flux, ivar, mask):
 
-        self._update_release('MPL-4')
-        assert config.release == 'MPL-4'
+        config.setMPL(mpl)
+        assert config.release == mpl
 
-        cube_file = Cube(filename=self.filename)
-        cube_db = Cube(plateifu=self.plateifu)
-        cube_api = Cube(plateifu=self.plateifu, mode='remote')
+        cube_file = Cube(filename=galaxy.cubepath)
+        cube_db = Cube(plateifu=galaxy.plateifu)
+        cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
 
         assert cube_file.data_origin == 'file'
         assert cube_db.data_origin == 'db'
@@ -454,21 +352,17 @@ class TestGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        flux_result = 0.017639931
-        ivar_result = 352.12421
-        mask_result = 1026
+        assert pytest.approx(spaxel_slice_file.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_db.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_api.spectrum.flux[spec_idx], flux)
 
-        assert round(abs(spaxel_slice_file.spectrum.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_slice_db.spectrum.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_slice_api.spectrum.flux[spec_idx]-flux_result), 7) == 0
+        assert pytest.approx(spaxel_slice_file.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_slice_db.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_slice_api.spectrum.ivar[spec_idx], ivar)
 
-        assert round(abs(spaxel_slice_file.spectrum.ivar[spec_idx]-ivar_result), 5) == 0
-        assert round(abs(spaxel_slice_db.spectrum.ivar[spec_idx]-ivar_result), 3) == 0
-        assert round(abs(spaxel_slice_api.spectrum.ivar[spec_idx]-ivar_result), 3) == 0
-
-        assert round(abs(spaxel_slice_file.spectrum.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_slice_db.spectrum.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_slice_api.spectrum.mask[spec_idx]-mask_result), 7) == 0
+        assert pytest.approx(spaxel_slice_file.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_slice_db.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_slice_api.spectrum.mask[spec_idx], mask)
 
         xx_cen = -5
         yy_cen = -12
@@ -477,17 +371,17 @@ class TestGetSpaxel(object):
         spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        assert round(abs(spaxel_getspaxel_file.spectrum.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_db.spectrum.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_api.spectrum.flux[spec_idx]-flux_result), 7) == 0
+        assert pytest.approx(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux)
 
-        assert round(abs(spaxel_getspaxel_file.spectrum.ivar[spec_idx]-ivar_result), 5) == 0
-        assert round(abs(spaxel_getspaxel_db.spectrum.ivar[spec_idx]-ivar_result), 3) == 0
-        assert round(abs(spaxel_getspaxel_api.spectrum.ivar[spec_idx]-ivar_result), 3) == 0
+        assert pytest.approx(spaxel_getspaxel_file.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_db.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_api.spectrum.ivar[spec_idx], ivar)
 
-        assert round(abs(spaxel_getspaxel_file.spectrum.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_db.spectrum.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_api.spectrum.mask[spec_idx]-mask_result), 7) == 0
+        assert pytest.approx(spaxel_getspaxel_file.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_getspaxel_db.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_getspaxel_api.spectrum.mask[spec_idx], mask)
 
 
 class TestWCS(object):
