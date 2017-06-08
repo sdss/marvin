@@ -243,16 +243,29 @@ class MarvinToolsClass(object):
         self.__dict__.update(idict)
         self.data = data
 
-    def save(self, path=None, overwrite=False):
+    def save(self, path=None, overwrite=False, dryrun=False):
         """Pickles the object.
 
         If ``path=None``, uses the default location of the file in the tree
         but changes the extension of the file to ``.mpf``. Returns the path
         of the saved pickle file.
 
+        Parameters:
+            obj:
+                Marvin object to pickle.
+            path (str):
+                Path of saved file. Default is ``None``.
+            overwrite (bool):
+                If ``True``, overwrite existing file. Default is ``False``.
+            dryrun (bool):
+                If ``True``, do not create directories or files. Default is ``False``.
+        
+        Returns:
+            str:
+                Path of saved file.
         """
 
-        return marvin_pickle.save(self, path=path, overwrite=overwrite)
+        return marvin_pickle.save(self, path=path, overwrite=overwrite, dryrun=dryrun)
 
     @classmethod
     def restore(cls, path, delete=False):

@@ -416,18 +416,21 @@ class TestPickling(object):
             if os.path.exists(fp):
                 os.remove(fp)
 
-    def test_pickling_file(self):
+    def test_pickling_file(self, tmpdir, galaxy):
 
-        cube = Cube(filename=self.filename)
+        cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
         assert isinstance(cube, Cube)
         assert cube.data is not None
 
-        path = cube.save()
-        self._files_created.append(path)
+        pckdir = tmpdir.mkdir('pickles').join(galaxy.plateifu + '.mpf')
+        path = cube.save(path=pckdir)
+        print(path)
+        # self._files_created.append(path)
+
 
         assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(self.filename[0:-7] + 'mpf')
+        assert os.path.realpath(path) == os.path.realpath(galaxy.cubepath[0:-7] + 'mpf')
         assert cube.data is not None
 
         cube = None
