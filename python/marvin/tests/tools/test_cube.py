@@ -402,35 +402,43 @@ class TestWCS(object):
         assert pytest.approx(cube.wcs.wcs.pc[1, 1], 0.000138889)
 
 
+
+@pytest.fixture(scope='function')
+def tmpfiles():
+    files_created = []
+    yield files_created
+    for fp in files_created:
+        if os.path.exists(fp):
+            os.remove(fp)
+
+
 class TestPickling(object):
 
-    def setUp(self):
-        super(TestPickling, self).setUp()
-        self._files_created = []
+    # def setUp(self):
+    #     super(TestPickling, self).setUp()
+    #     self._files_created = []
 
-    def tearDown(self):
+#     def tearDown(self):
+# 
+#         super(TestPickling, self).tearDown()
+# 
+#         for fp in self._files_created:
+#             if os.path.exists(fp):
+#                 os.remove(fp)
 
-        super(TestPickling, self).tearDown()
-
-        for fp in self._files_created:
-            if os.path.exists(fp):
-                os.remove(fp)
-
-    def test_pickling_file(self, tmpdir, galaxy):
+    def test_pickling_file(self, tmpfiles, galaxy):
 
         cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
         assert isinstance(cube, Cube)
         assert cube.data is not None
 
-        pckdir = tmpdir.mkdir('pickles').join(galaxy.plateifu + '.mpf')
-        path = cube.save(path=pckdir)
-        print(path)
-        # self._files_created.append(path)
+        assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
 
+        path = cube.save()
+        tmpfiles.append(path)
 
         assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(galaxy.cubepath[0:-7] + 'mpf')
         assert cube.data is not None
 
         cube = None
@@ -441,13 +449,15 @@ class TestPickling(object):
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is not None
 
-    def test_pickling_file_custom_path(self):
+    def test_pickling_file_custom_path(self, tmpfiles, galaxy):
 
-        cube = Cube(filename=self.filename)
+        cube = Cube(filename=galaxy.cubepath)
 
+        # test_path = tmpdir.mkdir('pickles').join(galaxy.plateifu + '.mpf')
         test_path = '~/test.mpf'
         path = cube.save(path=test_path)
-        self._files_created.append(path)
+        tmpfiles.append(path)
+        # self._files_created.append(path)
 
         assert os.path.exists(path)
         assert path == os.path.realpath(os.path.expanduser(test_path))
