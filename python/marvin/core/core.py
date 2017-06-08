@@ -243,7 +243,7 @@ class MarvinToolsClass(object):
         self.__dict__.update(idict)
         self.data = data
 
-    def save(self, path=None, overwrite=False, dryrun=False):
+    def save(self, path=None, overwrite=False):
         """Pickles the object.
 
         If ``path=None``, uses the default location of the file in the tree
@@ -257,15 +257,13 @@ class MarvinToolsClass(object):
                 Path of saved file. Default is ``None``.
             overwrite (bool):
                 If ``True``, overwrite existing file. Default is ``False``.
-            dryrun (bool):
-                If ``True``, do not create directories or files. Default is ``False``.
         
         Returns:
             str:
                 Path of saved file.
         """
 
-        return marvin_pickle.save(self, path=path, overwrite=overwrite, dryrun=dryrun)
+        return marvin_pickle.save(self, path=path, overwrite=overwrite)
 
     @classmethod
     def restore(cls, path, delete=False):

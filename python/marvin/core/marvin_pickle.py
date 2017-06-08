@@ -23,7 +23,7 @@ from marvin.utils.six import string_types
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 
-def save(obj, path=None, overwrite=False, dryrun=False):
+def save(obj, path=None, overwrite=False):
     """Pickles the object.
 
     If ``path=None``, uses the default location of the file in the tree
@@ -37,8 +37,6 @@ def save(obj, path=None, overwrite=False, dryrun=False):
             Path of saved file. Default is ``None``.
         overwrite (bool):
             If ``True``, overwrite existing file. Default is ``False``.
-        dryrun (bool):
-            If ``True``, do not create directories or files. Default is ``False``.
     
     Returns:
         str:
