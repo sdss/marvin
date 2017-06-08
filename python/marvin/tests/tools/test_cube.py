@@ -2,10 +2,10 @@
 
 import os
 import re
+from contextlib import contextmanager
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
 from astropy.io import fits
 from astropy import wcs
 
@@ -18,42 +18,52 @@ from brain.core.exceptions import BrainError
 
 
 @pytest.fixture(scope='module')
-def galaxy_cube(galaxy):
-    galaxy.filename = os.path.realpath(galaxy.cubepath)
-    return galaxy
+def cube_file(galaxy):
+    return Cube(filename=galaxy.cubepath)
 
 @pytest.fixture(scope='module')
-def cubeFromFile(galaxy):
-    return Cube(filename=galaxy.cubepath)
+def cube_db(db, galaxy):
+    if db.session is None:
+        pytest.skip('Skip because no DB.')
+    return Cube(mangaid=galaxy.mangaid)
+
+@pytest.fixture(scope='module')
+def cube_api(galaxy):
+    return Cube(mangaid=galaxy.mangaid, mode='remote')
 
 @pytest.fixture(scope='function')
 def tmpfiles():
     files_created = []
+
     yield files_created
+
     for fp in files_created:
         if os.path.exists(fp):
             os.remove(fp)
+    
+@contextmanager
+def set_tmp_sasurl(tmp_sasurl):
+    sasurl = config.sasurl
+    yield
+    config.sasurl = sasurl
 
 
 class TestCube(object):
 
-
-    # Tests for Cube Load by File
     def test_cube_loadfail(self):
         with pytest.raises(AssertionError) as cm:
             Cube()
         assert 'Enter filename, plateifu, or mangaid!' in str(cm.value)
 
-    def test_cube_load_from_local_file_by_filename_success(self, galaxy_cube):
-        cube = Cube(filename=galaxy_cube.filename)
+    def test_cube_load_from_local_file_by_filename_success(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
         assert cube is not None
-        assert galaxy_cube.filename == cube.filename
+        assert os.path.realpath(galaxy.cubepath) == cube.filename
 
     def test_cube_load_from_local_file_by_filename_fail(self):
-        config.use_sentry = False
-        self.filename = 'not_a_filename.fits'
-        with pytest.raises(MarvinError):
-            Cube(filename=self.filename)
+        # config.use_sentry = False
+        with pytest.raises(MarvinError) as cm:
+            Cube(filename='not_a_filename.fits')
 
     @skipIfNoDB
     def test_cube_load_from_local_database_success(self, db, galaxy):
@@ -194,7 +204,7 @@ class TestCube(object):
     def test_load_7443_12701_db(self):
         """Loads a cube that is not in the NSA catalogue."""
 
-        self._update_release('MPL-5')
+        config.setMPL('MPL-5')
         cube = Cube(plateifu='7443-12701')
         assert cube.data_origin == 'db'
         assert cube.nsa is None
@@ -203,7 +213,7 @@ class TestCube(object):
     def test_load_7443_12701_api(self):
         """Loads a cube that is not in the NSA catalogue."""
 
-        self._update_release('MPL-5')
+        config.setMPL('MPL-5')
         cube = Cube(plateifu='7443-12701', mode='remote')
         assert cube.data_origin == 'api'
         assert cube.nsa is None
@@ -226,14 +236,6 @@ class TestCube(object):
 
 
 class TestGetSpaxel(object):
-
-    #  Tests for getSpaxel
-    def _test_getSpaxel(self, cube, expected, **kwargs):
-        """Convenience method to test getSpaxel."""
-        ext = kwargs.pop('ext', 'flux')
-        idx = kwargs.pop('idx')
-        spectrum = cube.getSpaxel(**kwargs).spectrum
-        assert pytest.approx(getattr(spectrum, ext)[idx], expected)
     
     def _dropNones(self, **kwargs):
         for k, v in list(kwargs.items()):
@@ -259,12 +261,13 @@ class TestGetSpaxel(object):
          (None, None, 1., 48.6883954, MarvinError, 'some indices are out of limits')],
         ids=['x-ra', 'x-ra-dec', 'x', 'y', 'ra', 'dec', 'no-inputs', '-50-1', '50-1', '1--50',
              '1-50', '1-1', '100-60', '232.5-1', '1-48.6'])
-    def test_getSpaxel_inputs(self, cubeFromFile, x, y, ra, dec, excType, message):
+    def test_getSpaxel_inputs(self, galaxy, x, y, ra, dec, excType, message):
         """Tests exceptions when getSpaxel gets inappropriate inputs."""
         kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec)
 
         with pytest.raises(excType) as ee:
-            cubeFromFile.getSpaxel(**kwargs)
+            cube = Cube(filename=galaxy.cubepath)
+            cube.getSpaxel(**kwargs)
 
         assert message in str(ee.value)
 
@@ -287,42 +290,38 @@ class TestGetSpaxel(object):
     @pytest.mark.parametrize('data_origin', ['db', 'file', 'api'])
     def test_getSpaxel_flux(self, request, galaxy, data_origin, x, y, ra, dec, xyorig, idx, mpl4,
                             mpl5):
-        if data_origin == 'db':
-            db = request.getfixturevalue('db')
-            if db.session is None:
-                pytest.skip('Skip because no DB.')
-            cube = Cube(mangaid=galaxy.mangaid)
-        elif data_origin == 'file':
-            cube = request.getfixturevalue('cubeFromFile')
-        else:
-            cube = Cube(mangaid=galaxy.mangaid, mode='remote')
+        cube = request.getfixturevalue('cube_' + data_origin)
 
         kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec, xyorig=xyorig)
-        ext = kwargs.pop('ext', 'flux')
         mpls = {'MPL-4': mpl4, 'MPL-5': mpl5}
         expected = mpls[config.release]
 
         if expected is MarvinError:
             with pytest.raises(MarvinError) as cm:
-                spectrum = cube.getSpaxel(**kwargs).spectrum
-                actual = getattr(spectrum, ext)[idx]
+                actual = cube.getSpaxel(**kwargs).spectrum.flux[idx]
             assert 'some indices are out of limits.' in str(cm.value)
         else:
             spaxels = cube.getSpaxel(**kwargs)
             spaxels = spaxels if isinstance(spaxels, list) else [spaxels]
-            actual = [getattr(spax.spectrum, ext)[idx] for spax in spaxels]
+            actual = [getattr(spax.spectrum, 'flux')[idx] for spax in spaxels]
             expected = expected if isinstance(expected, list) else [expected]
             assert pytest.approx(actual, expected)
 
-    def test_getSpaxel_remote_fail_badresponse(self, galaxy):
+    def test_getSpaxel_remote_fail_badresponse(self):
+        cc = Cube(mangaid='1-209232', mode='remote')
+        
+        tmp_sasurl = 'http://www.averywrongurl.com'
+        
+        with set_tmp_sasurl(tmp_sasurl):
+            config.sasurl = tmp_sasurl
+            assert config.urlmap is not None
 
-        config.sasurl = 'http://www.averywrongurl.com'
-        assert config.urlmap is not None
+            # with pytest.raises(BrainError) as cm:
+            with pytest.raises(MarvinError) as cm:
+                Cube(mangaid='1-209232', mode='remote')
 
-        with pytest.raises(BrainError) as cm:
-            Cube(mangaid=galaxy.mangaid, mode='remote')
-
-        assert 'No URL Map found. Cannot make remote call' in str(cm.value)
+            # assert 'No URL Map found. Cannot make remote call' in str(cm.value)
+            assert 'Failed to establish a new connection' in str(cm.value)
 
     def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
         config.setMPL('MPL-5')
@@ -333,14 +332,12 @@ class TestGetSpaxel(object):
 
         spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
         assert pytest.approx(spectrum.flux[3000], expected)
-    
 
     @pytest.mark.parametrize('mpl, flux, ivar, mask',
                              [('MPL-4', 0.017639931, 352.12421, 1026),
-                              ('MPL-5', 0.016027471, 361.13596, 1026)],)
+                              ('MPL-5', 0.016027471, 361.13596, 1026)])
     @skipIfNoDB
     def test_getspaxel_matches_file_db_remote(self, db, galaxy, mpl, flux, ivar, mask):
-
         config.setMPL(mpl)
         assert config.release == mpl
 
