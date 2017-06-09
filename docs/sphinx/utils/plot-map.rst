@@ -20,6 +20,7 @@ Getting Started
 
 .. code-block:: python
 
+    from marvin.tools.maps import Maps
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']

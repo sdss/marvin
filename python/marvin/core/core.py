@@ -250,6 +250,17 @@ class MarvinToolsClass(object):
         but changes the extension of the file to ``.mpf``. Returns the path
         of the saved pickle file.
 
+        Parameters:
+            obj:
+                Marvin object to pickle.
+            path (str):
+                Path of saved file. Default is ``None``.
+            overwrite (bool):
+                If ``True``, overwrite existing file. Default is ``False``.
+        
+        Returns:
+            str:
+                Path of saved file.
         """
 
         return marvin_pickle.save(self, path=path, overwrite=overwrite)

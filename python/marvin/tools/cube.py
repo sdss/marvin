@@ -277,21 +277,21 @@ class Cube(MarvinToolsClass):
     @property
     def flux(self):
         """Gets the ``FLUX`` data extension."""
-        if not self._flux:
+        if self._flux is None:
             self._flux = self._getExtensionData('FLUX')
         return self._flux
 
     @property
     def ivar(self):
         """Gets the ``IVAR`` data extension."""
-        if not self._ivar:
+        if self._ivar is None:
             self._ivar = self._getExtensionData('IVAR')
         return self._ivar
 
     @property
     def mask(self):
         """Gets the ``MASK`` data extension."""
-        if not self._mask:
+        if self._mask is None:
             self._mask = self._getExtensionData('MASK')
         return self._mask
 

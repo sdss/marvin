@@ -6,220 +6,189 @@
 # Created by José Sánchez-Gallego on 25 Sep 2016.
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import division, print_function, absolute_import
 
 import os
 import unittest
 
+import pytest
 from astropy.io import fits
 from astropy.wcs import WCS
 
-import marvin
-import marvin.tests
-
+from marvin import config
+from marvin.tests import set_tmp_mpl
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 
 
-class TestModelCubeBase(marvin.tests.MarvinTest):
-    """Defines the files and plateifus we will use in the tests."""
-
-    @classmethod
-    def setUpClass(cls):
-
-        super(TestModelCubeBase, cls).setUpClass()
-        #marvin.config.switchSasUrl('local')
-        cls.set_sasurl('local')
-        cls.release = 'MPL-5'
-        cls._update_release(cls.release)
-        cls.set_filepaths()
-        cls.filename = os.path.realpath(cls.modelpath)
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        self._reset_the_config()
-        self._update_release(self.release)
-        self.set_filepaths()
-        self.assertTrue(os.path.exists(self.filename))
-
-    def tearDown(self):
-        pass
+@pytest.fixture(scope='module')
+def modelcube_file(galaxy):
+    return ModelCube(filename=galaxy.modelpath)
 
 
-class TestModelCubeInit(TestModelCubeBase):
+@pytest.fixture(scope='module')
+def modelcube_db(db, galaxy):
+    if db.session is None:
+        pytest.skip('Skip because no DB.')
+    return ModelCube(mangaid=galaxy.mangaid)
 
-    def _test_init(self, model_cube, bintype='SPX', template_kin='GAU-MILESHC'):
 
-        self.assertEqual(model_cube._release, self.release)
-        self.assertEqual(model_cube._drpver, self.drpver)
-        self.assertEqual(model_cube._dapver, self.dapver)
-        self.assertEqual(model_cube.bintype, bintype)
-        self.assertEqual(model_cube.template_kin, template_kin)
-        self.assertEqual(model_cube.plateifu, self.plateifu)
-        self.assertEqual(model_cube.mangaid, self.mangaid)
-        self.assertIsInstance(model_cube.header, fits.Header)
-        self.assertIsInstance(model_cube.wcs, WCS)
-        self.assertIsNotNone(model_cube.wavelength)
-        self.assertIsNotNone(model_cube.redcorr)
+@pytest.fixture(scope='module')
+def modelcube_api(galaxy):
+    return ModelCube(mangaid=galaxy.mangaid, mode='remote')
 
-    def test_init_from_file(self):
 
-        model_cube = ModelCube(filename=self.filename)
-        self.assertEqual(model_cube.data_origin, 'file')
-        self._test_init(model_cube)
+class TestModelCubeInit(object):
 
-    def test_init_from_file_global_mpl4(self):
+    def _test_init(self, model_cube, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+        assert model_cube._release == galaxy.release
+        assert model_cube._drpver == galaxy.drpver
+        assert model_cube._dapver == galaxy.dapver
+        assert model_cube.bintype == bintype
+        assert model_cube.template_kin == template_kin
+        assert model_cube.plateifu == galaxy.plateifu
+        assert model_cube.mangaid == galaxy.mangaid
+        assert isinstance(model_cube.header, fits.Header)
+        assert isinstance(model_cube.wcs, WCS)
+        assert model_cube.wavelength is not None
+        assert model_cube.redcorr is not None
 
-        marvin.config.setMPL('MPL-4')
-        model_cube = ModelCube(filename=self.filename)
-        self.assertEqual(model_cube.data_origin, 'file')
-        self._test_init(model_cube)
+    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
+    def test_init_modelcube(self, galaxy, data_origin):
+        if data_origin == 'file':
+            kwargs = {'filename': galaxy.modelpath}
+        elif data_origin == 'db':
+            kwargs = {'plateifu': galaxy.plateifu}
+        elif data_origin == 'api':
+            kwargs = {'plateifu': galaxy.plateifu, 'mode': 'remote'}
 
-    def test_init_from_db(self):
+        model_cube = ModelCube(**kwargs)
+        assert model_cube.data_origin == data_origin
+        self._test_init(model_cube, galaxy)
 
-        model_cube = ModelCube(plateifu=self.plateifu)
-        self.assertEqual(model_cube.data_origin, 'db')
-        self._test_init(model_cube)
+    def test_init_from_file_global_mpl4(self, galaxy):
+        with set_tmp_mpl('MPL-4'):
+            config.setMPL('MPL-4')
+            model_cube = ModelCube(filename=galaxy.modelpath)
+            assert model_cube.data_origin == 'file'
+            self._test_init(model_cube, galaxy)
 
-    def test_init_from_api(self):
+    def test_raises_exception_mpl4(self, galaxy):
+        with set_tmp_mpl('MPL-4'):
+            config.setMPL('MPL-4')
+            with pytest.raises(MarvinError) as cm:
+                ModelCube(plateifu=galaxy.plateifu)
+            assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        self.assertEqual(model_cube.data_origin, 'api')
-        self._test_init(model_cube)
+    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
+    def test_init_modelcube_bintype(self, galaxy, data_origin):
+        kwargs = {'bintype': galaxy.bintype}
+        if data_origin == 'file':
+            kwargs['filename'] = galaxy.modelpath
+        elif data_origin == 'db':
+            kwargs['plateifu'] = galaxy.plateifu
+        elif data_origin == 'api':
+            kwargs['plateifu'] = galaxy.plateifu
+            kwargs['mode'] = 'remote'
 
-    def test_raises_exception_mpl4(self):
+        model_cube = ModelCube(**kwargs)
+        assert model_cube.data_origin == data_origin
+        self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
 
-        marvin.config.setMPL('MPL-4')
-        with self.assertRaises(MarvinError) as err:
-            ModelCube(plateifu=self.plateifu)
-        self.assertIn('ModelCube requires at least dapver=\'2.0.2\'', str(err.exception))
+    def test_get_flux_db(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu)
+        assert model_cube.flux.shape == (4563, 34, 34)
 
-    def test_init_from_db_not_default(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, bintype='NRE')
-        self.assertEqual(model_cube.data_origin, 'db')
-        self._test_init(model_cube, bintype='NRE')
-
-    def test_init_from_api_not_default(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, bintype='NRE', mode='remote')
-        self.assertEqual(model_cube.data_origin, 'api')
-        self._test_init(model_cube, bintype='NRE')
-
-    def test_get_flux_db(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu)
-        self.assertTupleEqual(model_cube.flux.shape, (4563, 34, 34))
-
-    def test_get_flux_api_raises_exception(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        with self.assertRaises(MarvinError) as err:
+    def test_get_flux_api_raises_exception(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        with pytest.raises(MarvinError) as cm:
             model_cube.flux
-        self.assertIn('cannot return a full cube in remote mode.', str(err.exception))
+        assert 'cannot return a full cube in remote mode.' in str(cm.value)
 
-    def test_get_cube_file(self):
+    def test_get_cube_file(self, galaxy):
+        model_cube = ModelCube(filename=galaxy.modelpath)
+        assert isinstance(model_cube.cube, Cube)
 
-        model_cube = ModelCube(filename=self.filename)
-        self.assertIsInstance(model_cube.cube, Cube)
-
-    def test_get_maps_api(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        self.assertIsInstance(model_cube.maps, Maps)
+    def test_get_maps_api(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        assert isinstance(model_cube.maps, Maps)
 
 
-class TestGetSpaxel(TestModelCubeBase):
+class TestGetSpaxel(object):
 
-    def _test_getspaxel(self, spaxel, bintype='SPX', template_kin='GAU-MILESHC'):
+    def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+        assert spaxel._drpver == galaxy.drpver
+        assert spaxel._dapver == galaxy.dapver
+        assert spaxel.plateifu == galaxy.plateifu
+        assert spaxel.mangaid == galaxy.mangaid
+        assert spaxel.modelcube is not None
+        assert spaxel.modelcube.bintype == bintype
+        assert spaxel.modelcube.template_kin == template_kin
+        assert spaxel._parent_shape == (34, 34)
 
-        self.assertEqual(spaxel._drpver, self.drpver)
-        self.assertEqual(spaxel._dapver, self.dapver)
-        self.assertEqual(spaxel.plateifu, self.plateifu)
-        self.assertEqual(spaxel.mangaid, self.mangaid)
-        self.assertIsNotNone(spaxel.modelcube)
-        self.assertEqual(spaxel.modelcube.bintype, bintype)
-        self.assertEqual(spaxel.modelcube.template_kin, template_kin)
-        self.assertTupleEqual(spaxel._parent_shape, (34, 34))
+        assert spaxel.model_flux is not None
+        assert spaxel.model is not None
+        assert spaxel.emline is not None
+        assert spaxel.emline_base is not None
+        assert spaxel.stellar_continuum is not None
+        assert spaxel.redcorr is not None
 
-        self.assertIsNotNone(spaxel.model_flux)
-        self.assertIsNotNone(spaxel.model)
-        self.assertIsNotNone(spaxel.emline)
-        self.assertIsNotNone(spaxel.emline_base)
-        self.assertIsNotNone(spaxel.stellar_continuum)
-        self.assertIsNotNone(spaxel.redcorr)
+    @pytest.mark.parametrize('data_origin', ['file', 'db','api'])
+    def test_getspaxel(self, galaxy, data_origin):
+        if data_origin == 'file':
+            kwargs = {'filename': galaxy.modelpath}
+        elif data_origin == 'db':
+            kwargs = {'plateifu': galaxy.plateifu}
+        elif data_origin == 'api':
+            kwargs = {'plateifu': galaxy.plateifu, 'mode': 'remote'}
 
-    def test_getspaxel_file(self):
-
-        model_cube = ModelCube(filename=self.filename)
+        model_cube = ModelCube(**kwargs)
         spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
+        self._test_getspaxel(spaxel, galaxy)
 
-    def test_getspaxel_db(self):
+    def test_getspaxel_db_only_model(self, galaxy):
 
-        model_cube = ModelCube(plateifu=self.plateifu)
-        spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
-
-    def test_getspaxel_api(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
-
-    def test_getspaxel_db_only_model(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu)
+        model_cube = ModelCube(plateifu=galaxy.plateifu)
         spaxel = model_cube.getSpaxel(x=1, y=2, properties=False, spectrum=False)
-        self._test_getspaxel(spaxel)
-        self.assertIsNone(spaxel.cube)
-        self.assertIsNone(spaxel.spectrum)
-        self.assertIsNone(spaxel.maps)
-        self.assertEqual(len(spaxel.properties), 0)
+        self._test_getspaxel(spaxel, galaxy)
+        assert spaxel.cube is None
+        assert spaxel.spectrum is None
+        assert spaxel.maps is None
+        assert len(spaxel.properties) == 0
 
-    def test_getspaxel_matches_file_db_remote(self):
+    @pytest.mark.parametrize('mpl, flux, ivar, mask',
+                             [('MPL-5', 0.016027471050620079, 361.13595581054693, 33)])
+    def test_getspaxel_matches_file_db_remote(self, galaxy, modelcube_file, modelcube_db,
+                                              modelcube_api, modelcube_slice_file, mpl, flux, mask, ivar):
 
-        self._update_release('MPL-5')
-        self.assertEqual(marvin.config.release, 'MPL-5')
+        config.setMPL(mpl)
+        assert config.release == mpl
 
-        modelcube_file = ModelCube(filename=self.filename)
-        modelcube_db = ModelCube(plateifu=self.plateifu)
-        modelcube_api = ModelCube(plateifu=self.plateifu, mode='remote')
-
-        self.assertEqual(modelcube_file.data_origin, 'file')
-        self.assertEqual(modelcube_db.data_origin, 'db')
-        self.assertEqual(modelcube_api.data_origin, 'api')
+        assert modelcube_file.data_origin == 'file'
+        assert modelcube_db.data_origin == 'db'
+        assert modelcube_api.data_origin == 'api'
 
         xx = 12
         yy = 5
-        spec_idx = 200
+        idx = 200
 
         spaxel_slice_file = modelcube_file[yy, xx]
         spaxel_slice_db = modelcube_db[yy, xx]
         spaxel_slice_api = modelcube_api[yy, xx]
 
-        flux_result = 0.016027471050620079
-        ivar_result = 361.13595581054693
-        mask_result = 33
+        assert pytest.approx(spaxel_slice_file.model_flux.flux[idx], flux)
+        assert pytest.approx(spaxel_slice_db.model_flux.flux[idx], flux)
+        assert pytest.approx(spaxel_slice_api.model_flux.flux[idx], flux)
 
-        self.assertAlmostEqual(spaxel_slice_file.model_flux.flux[spec_idx], flux_result)
-        self.assertAlmostEqual(spaxel_slice_db.model_flux.flux[spec_idx], flux_result)
-        self.assertAlmostEqual(spaxel_slice_api.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_slice_file.model_flux.ivar[idx], ivar)
+        assert pytest.approx(spaxel_slice_db.model_flux.ivar[idx], ivar)
+        assert pytest.approx(spaxel_slice_api.model_flux.ivar[idx], ivar)
 
-        self.assertAlmostEqual(spaxel_slice_file.model_flux.ivar[spec_idx], ivar_result, places=5)
-        self.assertAlmostEqual(spaxel_slice_db.model_flux.ivar[spec_idx], ivar_result, places=3)
-        self.assertAlmostEqual(spaxel_slice_api.model_flux.ivar[spec_idx], ivar_result, places=3)
-
-        self.assertAlmostEqual(spaxel_slice_file.model_flux.mask[spec_idx], mask_result)
-        self.assertAlmostEqual(spaxel_slice_db.model_flux.mask[spec_idx], mask_result)
-        self.assertAlmostEqual(spaxel_slice_api.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_slice_file.model_flux.mask[idx], mask)
+        assert pytest.approx(spaxel_slice_db.model_flux.mask[idx], mask)
+        assert pytest.approx(spaxel_slice_api.model_flux.mask[idx], mask)
 
         xx_cen = -5
         yy_cen = -12
@@ -228,112 +197,90 @@ class TestGetSpaxel(TestModelCubeBase):
         spaxel_getspaxel_db = modelcube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = modelcube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.flux[spec_idx], flux_result)
-        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.flux[spec_idx], flux_result)
-        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.flux[idx], flux)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.flux[idx], flux)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.flux[idx], flux)
 
-        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.ivar[spec_idx],
-                               ivar_result, places=5)
-        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.ivar[spec_idx],
-                               ivar_result, places=3)
-        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.ivar[spec_idx],
-                               ivar_result, places=3)
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.ivar[idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.ivar[idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.ivar[idx], ivar)
 
-        self.assertAlmostEqual(spaxel_getspaxel_file.model_flux.mask[spec_idx], mask_result)
-        self.assertAlmostEqual(spaxel_getspaxel_db.model_flux.mask[spec_idx], mask_result)
-        self.assertAlmostEqual(spaxel_getspaxel_api.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.mask[idx], mask)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.mask[idx], mask)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.mask[idx], mask)
 
 
-class TestPickling(TestModelCubeBase):
+class TestPickling(object):
 
-    def setUp(self):
-        super(TestPickling, self).setUp()
-        self._files_created = []
-
-    def tearDown(self):
-
-        super(TestPickling, self).tearDown()
-
-        for fp in self._files_created:
-            if os.path.exists(fp):
-                os.remove(fp)
-
-    def test_pickling_file(self):
-
-        modelcube = ModelCube(filename=self.filename)
-        self.assertEqual(modelcube.data_origin, 'file')
-        self.assertIsInstance(modelcube, ModelCube)
-        self.assertIsNotNone(modelcube.data)
+    def test_pickling_file(self, tmpfiles, galaxy):
+        modelcube = ModelCube(filename=galaxy.modelpath)
+        assert modelcube.data_origin == 'file'
+        assert isinstance(modelcube, ModelCube)
+        assert modelcube.data is not None
 
         path = modelcube.save()
-        self._files_created.append(path)
+        tmpfiles.append(path)
 
-        self.assertTrue(os.path.exists(path))
-        self.assertEqual(os.path.realpath(path),
-                         os.path.realpath(self.filename[0:-7] + 'mpf'))
-        self.assertIsNotNone(modelcube.data)
+        assert os.path.exists(path)
+        assert os.path.realpath(path) == os.path.realpath(galaxy.modelpath[0:-7] + 'mpf')
+        assert modelcube.data is not None
 
         modelcube = None
-        self.assertIsNone(modelcube)
+        assert modelcube is None
 
         modelcube_restored = ModelCube.restore(path)
-        self.assertEqual(modelcube_restored.data_origin, 'file')
-        self.assertIsInstance(modelcube_restored, ModelCube)
-        self.assertIsNotNone(modelcube_restored.data)
+        assert modelcube_restored.data_origin == 'file'
+        assert isinstance(modelcube_restored, ModelCube)
+        assert modelcube_restored.data is not None
 
-    def test_pickling_file_custom_path(self):
 
-        modelcube = ModelCube(filename=self.filename)
+    def test_pickling_file_custom_path(self, tmpfiles, galaxy):
+        modelcube = ModelCube(filename=galaxy.modelpath)
+        assert modelcube.data_origin == 'file'
+        assert isinstance(modelcube, ModelCube)
+        assert modelcube.data is not None
 
         test_path = '~/test.mpf'
-        path = modelcube.save(path=test_path)
-        self._files_created.append(path)
+        assert not os.path.isfile(test_path)
 
-        self.assertTrue(os.path.exists(path))
-        self.assertEqual(path, os.path.realpath(os.path.expanduser(test_path)))
+        path = modelcube.save(path=test_path)
+        tmpfiles.append(path)
+
+        assert os.path.exists(path)
+        assert path == os.path.realpath(os.path.expanduser(test_path))
 
         modelcube_restored = ModelCube.restore(path, delete=True)
-        self.assertEqual(modelcube_restored.data_origin, 'file')
-        self.assertIsInstance(modelcube_restored, ModelCube)
-        self.assertIsNotNone(modelcube_restored.data)
+        assert modelcube_restored.data_origin == 'file'
+        assert isinstance(modelcube_restored, ModelCube)
+        assert modelcube_restored.data is not None
 
-        self.assertFalse(os.path.exists(path))
+        assert not os.path.exists(path)
 
-    def test_pickling_db(self):
+    def test_pickling_db(self, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu)
 
-        modelcube = ModelCube(plateifu=self.plateifu)
-
-        with self.assertRaises(MarvinError) as ee:
+        with pytest.raises(MarvinError) as cm:
             modelcube.save()
 
-        self.assertIn('objects with data_origin=\'db\' cannot be saved.',
-                      str(ee.exception))
+        assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
-    def test_pickling_api(self):
-
-        modelcube = ModelCube(plateifu=self.plateifu, mode='remote')
-        self.assertEqual(modelcube.data_origin, 'api')
-        self.assertIsInstance(modelcube, ModelCube)
-        self.assertIsNone(modelcube.data)
+    def test_pickling_api(self, tmpfiles, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        assert modelcube.data_origin == 'api'
+        assert isinstance(modelcube, ModelCube)
+        assert modelcube.data is None
 
         path = modelcube.save()
-        self._files_created.append(path)
+        tmpfiles.append(path)
 
-        self.assertTrue(os.path.exists(path))
-        self.assertEqual(os.path.realpath(path),
-                         os.path.realpath(self.filename[0:-7] + 'mpf'))
+        assert os.path.exists(path)
+        # print(f'\n\nbintype {galaxy.bintype}\nmodelpath {galaxy.modelpath}\npath {path}\n')
+        assert os.path.realpath(path) == os.path.realpath(galaxy.modelpath[0:-7] + 'mpf')
 
         modelcube = None
-        self.assertIsNone(modelcube)
+        assert modelcube is None
 
         modelcube_restored = ModelCube.restore(path)
-        self.assertEqual(modelcube_restored.data_origin, 'api')
-        self.assertIsInstance(modelcube_restored, ModelCube)
-        self.assertIsNone(modelcube_restored.data)
-        self.assertEqual(modelcube_restored.header['VERSDRP3'], 'v2_0_1')
-
-
-if __name__ == '__main__':
-    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
+        assert modelcube_restored.data_origin == 'api'
+        assert isinstance(modelcube_restored, ModelCube)
+        assert modelcube_restored.data is None

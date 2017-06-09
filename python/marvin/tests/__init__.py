@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from unittest import TestCase
-
 import warnings
 import os
 import inspect
 from functools import wraps
+from contextlib import contextmanager
 
 import pytest
+from unittest import TestCase
 
 from marvin import config, marvindb
 from marvin.core.exceptions import MarvinSkippedTestWarning
@@ -40,6 +40,31 @@ class UseBintypes:
                 setattr(decorated_class, attr[0],
                         use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
         return decorated_class
+
+
+# Decorator to skip a test if the session is None (i.e., if there is no DB)
+def skipIfNoDB(test):
+    @wraps(test)
+    def wrapper(self, db, *args, **kwargs):
+        if db.session is None:
+            pytest.skip('Skip because no DB.')
+        else:
+            return test(self, db, *args, **kwargs)
+    return wrapper
+
+
+@contextmanager
+def set_tmp_sasurl(tmp_sasurl):
+    sasurl = config.sasurl
+    yield
+    config.sasurl = sasurl
+
+
+@contextmanager
+def set_tmp_mpl(tmp_mpl):
+    mpl = config.release
+    yield
+    config.setMPL(mpl)
 
 
 # Moved from init in utils/test
@@ -90,28 +115,6 @@ def Call(*args, **kwargs):
     return (args, kwargs)
 
 # Copied from init in tools/test
-
-
-# Decorator to skip a test if the session is None (i.e., if there is no DB)
-def skipIfNoDB(test):
-    @wraps(test)
-    def wrapper(self, *args, **kwargs):
-        if not self.session:
-            return self.skipTest(test)
-        else:
-            return test(self, *args, **kwargs)
-    return wrapper
-
-
-# Decorator to skip if not Brian
-def skipIfNoBrian(test):
-    @wraps(test)
-    def wrapper(self, *args, **kwargs):
-        if 'Brian' not in os.path.expanduser('~'):
-            return self.skipTest(test)
-        else:
-            return test(self, *args, **kwargs)
-    return wrapper
 
 
 class MarvinTest(TestCase):

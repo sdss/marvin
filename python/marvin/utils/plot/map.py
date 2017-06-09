@@ -438,7 +438,7 @@ def plot(*args, **kwargs):
     # setup background
     nocov_kws = copy.deepcopy(imshow_kws)
     nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
-    A8A8A8 = colorbar.one_color_cmap(color='#A8A8A8')
+    A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
     patch_kws = set_patch_style(extent=extent)
@@ -467,7 +467,7 @@ def plot(*args, **kwargs):
         # plot unmasked spaxels
         p = ax.imshow(good_spax, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)
 
-        fig, cb = colorbar.draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
+        fig, cb = colorbar._draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
 
         if title is not '':
             ax.set_title(label=title)
