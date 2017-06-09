@@ -65,71 +65,64 @@ class TestModelCubeInit(object):
         assert model_cube.wavelength is not None
         assert model_cube.redcorr is not None
 
-    # TODO remove this parametrization when galaxy is looped over both MPL-4 and MPL-5
-    @pytest.mark.parametrize('mpl', ['MPL-4', 'MPL-5'])
-    def test_init_from_file(self, galaxy, mpl):
-        config.setMPL(mpl)
+    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
+    def test_init_modelcube(self, galaxy, data_origin):
+        if data_origin == 'file':
+            kwargs = {'filename': galaxy.modelpath}
+        elif data_origin == 'db':
+            kwargs = {'plateifu': galaxy.plateifu}
+        elif data_origin == 'api':
+            kwargs = {'plateifu': galaxy.plateifu, 'mode': 'remote'}
+
+        model_cube = ModelCube(**kwargs)
+        assert model_cube.data_origin == data_origin
+        self._test_init(model_cube, galaxy)
+
+    def test_init_from_file_global_mpl4(self, galaxy):
+        mpl_ = config.release
+        config.setMPL('MPL-4')
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert model_cube.data_origin == 'file'
         self._test_init(model_cube, galaxy)
+        config.setMPL(mpl_)
 
-    def test_init_from_file_global_mpl4(self):
+    def test_raises_exception_mpl4(self, galaxy):
         config.setMPL('MPL-4')
-        model_cube = ModelCube(filename=self.filename)
-        assert model_cube.data_origin == 'file'
-        self._test_init(model_cube)
+        with pytest.raises(MarvinError) as cm:
+            ModelCube(plateifu=galaxy.plateifu)
+        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
-    def test_init_from_db(self):
+    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
+    def test_init_modelcube_bintype(self, galaxy, data_origin):
+        kwargs = {'bintype': galaxy.bintype}
+        if data_origin == 'file':
+            kwargs['filename'] = galaxy.modelpath
+        elif data_origin == 'db':
+            kwargs['plateifu'] = galaxy.plateifu
+        elif data_origin == 'api':
+            kwargs['plateifu'] = galaxy.plateifu
+            kwargs['mode'] = 'remote'
 
-        model_cube = ModelCube(plateifu=self.plateifu)
-        assert model_cube.data_origin == 'db'
-        self._test_init(model_cube)
+        model_cube = ModelCube(**kwargs)
+        assert model_cube.data_origin == data_origin
+        self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
 
-    def test_init_from_api(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        assert model_cube.data_origin == 'api'
-        self._test_init(model_cube)
-
-    def test_raises_exception_mpl4(self):
-
-        config.setMPL('MPL-4')
-        with pytest.raises(MarvinError) as err:
-            ModelCube(plateifu=self.plateifu)
-        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(err.exception)
-
-    def test_init_from_db_not_default(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, bintype='NRE')
-        assert model_cube.data_origin == 'db'
-        self._test_init(model_cube, bintype='NRE')
-
-    def test_init_from_api_not_default(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, bintype='NRE', mode='remote')
-        assert model_cube.data_origin == 'api'
-        self._test_init(model_cube, bintype='NRE')
-
-    def test_get_flux_db(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu)
+    def test_get_flux_db(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu)
         assert model_cube.flux.shape == (4563, 34, 34)
 
-    def test_get_flux_api_raises_exception(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        with pytest.raises(MarvinError) as err:
+    def test_get_flux_api_raises_exception(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        with pytest.raises(MarvinError) as cm:
             model_cube.flux
-        assert 'cannot return a full cube in remote mode.' in str(err.exception)
+        assert 'cannot return a full cube in remote mode.' in str(cm.value)
 
-    def test_get_cube_file(self):
-
-        model_cube = ModelCube(filename=self.filename)
+    def test_get_cube_file(self, galaxy):
+        model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.cube, Cube)
 
-    def test_get_maps_api(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
+    def test_get_maps_api(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.maps, Maps)
 
 
