@@ -161,7 +161,7 @@ class TestGetSpaxel(object):
     @pytest.mark.parametrize('mpl, flux, ivar, mask',
                              [('MPL-5', 0.016027471050620079, 361.13595581054693, 33)])
     def test_getspaxel_matches_file_db_remote(self, galaxy, modelcube_file, modelcube_db,
-                                              modelcube_api, modelcube_slice_file, mpl, flux, mask, ivar):
+                                              modelcube_api, mpl, flux, mask, ivar):
 
         config.setMPL(mpl)
         assert config.release == mpl
@@ -213,7 +213,7 @@ class TestGetSpaxel(object):
 class TestPickling(object):
 
     def test_pickling_file(self, tmpfiles, galaxy):
-        modelcube = ModelCube(filename=galaxy.modelpath)
+        modelcube = ModelCube(filename=galaxy.modelpath, bintype=galaxy.bintype)
         assert modelcube.data_origin == 'file'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
@@ -235,7 +235,7 @@ class TestPickling(object):
 
 
     def test_pickling_file_custom_path(self, tmpfiles, galaxy):
-        modelcube = ModelCube(filename=galaxy.modelpath)
+        modelcube = ModelCube(filename=galaxy.modelpath, bintype=galaxy.bintype)
         assert modelcube.data_origin == 'file'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
@@ -257,7 +257,7 @@ class TestPickling(object):
         assert not os.path.exists(path)
 
     def test_pickling_db(self, galaxy):
-        modelcube = ModelCube(plateifu=galaxy.plateifu)
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
 
         with pytest.raises(MarvinError) as cm:
             modelcube.save()
@@ -265,7 +265,7 @@ class TestPickling(object):
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
     def test_pickling_api(self, tmpfiles, galaxy):
-        modelcube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype, mode='remote')
         assert modelcube.data_origin == 'api'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is None
@@ -274,7 +274,6 @@ class TestPickling(object):
         tmpfiles.append(path)
 
         assert os.path.exists(path)
-        # print(f'\n\nbintype {galaxy.bintype}\nmodelpath {galaxy.modelpath}\npath {path}\n')
         assert os.path.realpath(path) == os.path.realpath(galaxy.modelpath[0:-7] + 'mpf')
 
         modelcube = None
