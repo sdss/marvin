@@ -128,12 +128,11 @@ class TestModelCubeInit(object):
 
 class TestGetSpaxel(object):
 
-    def _test_getspaxel(self, spaxel, bintype='SPX', template_kin='GAU-MILESHC'):
-
-        assert spaxel._drpver == self.drpver
-        assert spaxel._dapver == self.dapver
-        assert spaxel.plateifu == self.plateifu
-        assert spaxel.mangaid == self.mangaid
+    def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+        assert spaxel._drpver == galaxy.drpver
+        assert spaxel._dapver == galaxy.dapver
+        assert spaxel.plateifu == galaxy.plateifu
+        assert spaxel.mangaid == galaxy.mangaid
         assert spaxel.modelcube is not None
         assert spaxel.modelcube.bintype == bintype
         assert spaxel.modelcube.template_kin == template_kin
@@ -146,42 +145,38 @@ class TestGetSpaxel(object):
         assert spaxel.stellar_continuum is not None
         assert spaxel.redcorr is not None
 
-    def test_getspaxel_file(self):
+    @pytest.mark.parametrize('data_origin', ['file', 'db','api'])
+    def test_getspaxel(self, galaxy, data_origin):
+        if data_origin == 'file':
+            kwargs = {'filename': galaxy.modelpath}
+        elif data_origin == 'db':
+            kwargs = {'plateifu': galaxy.plateifu}
+        elif data_origin == 'api':
+            kwargs = {'plateifu': galaxy.plateifu, 'mode': 'remote'}
 
-        model_cube = ModelCube(filename=self.filename)
+        model_cube = ModelCube(**kwargs)
         spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
+        self._test_getspaxel(spaxel, galaxy)
 
-    def test_getspaxel_db(self):
+    def test_getspaxel_db_only_model(self, galaxy):
 
-        model_cube = ModelCube(plateifu=self.plateifu)
-        spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
-
-    def test_getspaxel_api(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu, mode='remote')
-        spaxel = model_cube.getSpaxel(x=1, y=2)
-        self._test_getspaxel(spaxel)
-
-    def test_getspaxel_db_only_model(self):
-
-        model_cube = ModelCube(plateifu=self.plateifu)
+        model_cube = ModelCube(plateifu=galaxy.plateifu)
         spaxel = model_cube.getSpaxel(x=1, y=2, properties=False, spectrum=False)
-        self._test_getspaxel(spaxel)
+        self._test_getspaxel(spaxel, galaxy)
         assert spaxel.cube is None
         assert spaxel.spectrum is None
         assert spaxel.maps is None
         assert len(spaxel.properties) == 0
 
-    def test_getspaxel_matches_file_db_remote(self):
+    def test_getspaxel_matches_file_db_remote(self, galaxy):
 
-        self._update_release('MPL-5')
+        config.setMPL('MPL-5')
         assert config.release == 'MPL-5'
 
-        modelcube_file = ModelCube(filename=self.filename)
-        modelcube_db = ModelCube(plateifu=self.plateifu)
-        modelcube_api = ModelCube(plateifu=self.plateifu, mode='remote')
+        # TODO abstact this out into fixtures........................................................
+        modelcube_file = ModelCube(filename=galaxy.modelpath)
+        modelcube_db = ModelCube(plateifu=galaxy.plateifu)
+        modelcube_api = ModelCube(plateifu=galaxy.plateifu, mode='remote')
 
         assert modelcube_file.data_origin == 'file'
         assert modelcube_db.data_origin == 'db'
@@ -199,17 +194,17 @@ class TestGetSpaxel(object):
         ivar_result = 361.13595581054693
         mask_result = 33
 
-        assert round(abs(spaxel_slice_file.model_flux.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_slice_db.model_flux.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_slice_api.model_flux.flux[spec_idx]-flux_result), 7) == 0
+        assert pytest.approx(spaxel_slice_file.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_slice_db.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_slice_api.model_flux.flux[spec_idx], flux_result)
 
-        assert round(abs(spaxel_slice_file.model_flux.ivar[spec_idx]-ivar_result), 5) == 0
-        assert round(abs(spaxel_slice_db.model_flux.ivar[spec_idx]-ivar_result), 3) == 0
-        assert round(abs(spaxel_slice_api.model_flux.ivar[spec_idx]-ivar_result), 3) == 0
+        assert pytest.approx(spaxel_slice_file.model_flux.ivar[spec_idx], ivar_result)
+        assert pytest.approx(spaxel_slice_db.model_flux.ivar[spec_idx], ivar_result)
+        assert pytest.approx(spaxel_slice_api.model_flux.ivar[spec_idx], ivar_result)
 
-        assert round(abs(spaxel_slice_file.model_flux.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_slice_db.model_flux.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_slice_api.model_flux.mask[spec_idx]-mask_result), 7) == 0
+        assert pytest.approx(spaxel_slice_file.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_slice_db.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_slice_api.model_flux.mask[spec_idx], mask_result)
 
         xx_cen = -5
         yy_cen = -12
@@ -218,17 +213,17 @@ class TestGetSpaxel(object):
         spaxel_getspaxel_db = modelcube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = modelcube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        assert round(abs(spaxel_getspaxel_file.model_flux.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_db.model_flux.flux[spec_idx]-flux_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_api.model_flux.flux[spec_idx]-flux_result), 7) == 0
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.flux[spec_idx], flux_result)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.flux[spec_idx], flux_result)
 
-        assert round(abs(spaxel_getspaxel_file.model_flux.ivar[spec_idx]-ivar_result), 5) == 0
-        assert round(abs(spaxel_getspaxel_db.model_flux.ivar[spec_idx]-ivar_result), 3) == 0
-        assert round(abs(spaxel_getspaxel_api.model_flux.ivar[spec_idx]-ivar_result), 3) == 0
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.ivar[spec_idx], ivar_result)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.ivar[spec_idx], ivar_result)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.ivar[spec_idx], ivar_result)
 
-        assert round(abs(spaxel_getspaxel_file.model_flux.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_db.model_flux.mask[spec_idx]-mask_result), 7) == 0
-        assert round(abs(spaxel_getspaxel_api.model_flux.mask[spec_idx]-mask_result), 7) == 0
+        assert pytest.approx(spaxel_getspaxel_file.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_getspaxel_db.model_flux.mask[spec_idx], mask_result)
+        assert pytest.approx(spaxel_getspaxel_api.model_flux.mask[spec_idx], mask_result)
 
 
 class TestPickling(object):
