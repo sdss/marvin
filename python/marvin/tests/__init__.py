@@ -60,6 +60,12 @@ def set_tmp_sasurl(tmp_sasurl):
     config.sasurl = sasurl
 
 
+@contextmanager
+def set_tmp_mpl(tmp_mpl):
+    mpl = config.release
+    yield
+    config.setMPL(mpl)
+
 
 # Moved from init in utils/test
 

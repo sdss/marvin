@@ -16,6 +16,7 @@ from astropy.io import fits
 from astropy.wcs import WCS
 
 from marvin import config
+from marvin.tests import set_tmp_mpl
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
@@ -68,18 +69,18 @@ class TestModelCubeInit(object):
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
-        mpl_ = config.release
-        config.setMPL('MPL-4')
-        model_cube = ModelCube(filename=galaxy.modelpath)
-        assert model_cube.data_origin == 'file'
-        self._test_init(model_cube, galaxy)
-        config.setMPL(mpl_)
+        with set_tmp_mpl('MPL-4'):
+            config.setMPL('MPL-4')
+            model_cube = ModelCube(filename=galaxy.modelpath)
+            assert model_cube.data_origin == 'file'
+            self._test_init(model_cube, galaxy)
 
     def test_raises_exception_mpl4(self, galaxy):
-        config.setMPL('MPL-4')
-        with pytest.raises(MarvinError) as cm:
-            ModelCube(plateifu=galaxy.plateifu)
-        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
+        with set_tmp_mpl('MPL-4'):
+            config.setMPL('MPL-4')
+            with pytest.raises(MarvinError) as cm:
+                ModelCube(plateifu=galaxy.plateifu)
+            assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
     @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_init_modelcube_bintype(self, galaxy, data_origin):
