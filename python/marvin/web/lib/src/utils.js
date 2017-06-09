@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-09 09:00:18
+* @Last Modified time: 2017-05-23 17:36:14
 */
 
 // Javascript code for general things
@@ -66,6 +66,21 @@ class Utils {
     // Initialize tooltips
     initToolTips() {
         $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    // Select Choices from a Bootstrap-Select element
+    selectChoices(id, choices) {
+      $(id).selectpicker('val', choices);
+      $(id).selectpicker('refresh');
+    }
+
+    // Reset Choices from a Bootstrap-Select element
+    resetChoices(id) {
+      console.log('reseting in utils', id);
+      let select = (typeof id === 'string') ? $(id) : id;
+      select.selectpicker('deselectAll');
+      select.selectpicker('refresh');
+      select.selectpicker('render');
     }
 
     // Login function

@@ -4,12 +4,12 @@
 Boolean Search Tutorial
 =======================
 
-Boolean search strings consist of a **name**-**operator**-**value** combination
+Boolean search strings consist of a **parameter**-**operand**-**value** combination
 (e.g., :code:`a > 5`), where
 
-* **name** is the variable name,
+* **parameter** is the variable name,
 
-* **operator** must be  :code:`==`, :code:`=`, :code:`!=`, :code:`<`,
+* **operand** must be  :code:`==`, :code:`=`, :code:`!=`, :code:`<`,
   :code:`<=`, :code:`>=`, or :code:`>`, and
 
   * :code:`==` finds exact matches whereas :code:`=` finds elements that contain
@@ -21,7 +21,7 @@ Boolean search strings consist of a **name**-**operator**-**value** combination
 
   * :code:`*` acts a wildcard.
 
-These **name**-**operator**-**value** combinations can be joined with the
+These **paramter**-**operand**-**value** combinations can be joined with the
 boolean operands (in order of descending precedence):
 
 1. :code:`not`
@@ -36,8 +36,28 @@ is equivalent to::
 
     a = 5 or (b = 7 and (not c = 7))
 
-Variable names can have hierarchical dotted field names, such as
-:code:`cube.plateifu`.
+In MaNGA, parameter names have hierarchical dotted field names, and are structured as **schema.table.parameter**, e.g. :code:`mangadatadb.cube.plateifu`.  If a parameter name only exists in one column in one database table, it is considered unique.  Most parameters are unique can be specified using only their parameter name.
+
+::
+
+    # Redshift (z) is a unique parameter name
+    filter  = 'z < 0.1'
+
+    # Plateifu (plateifu) is unique
+    filter = 'plateifu == 8485-1901'
+
+Some parameters are not unique.  In this case, you must go one level up and specify the table name as well.
+
+::
+
+    # RA, Dec are not unique parameter names
+    filter = 'ra > 180'
+
+    query = Query(searchfilter=filter)
+    MarvinError: Could not set parameters. Multiple entries found for key.  Be more specific: 'ra matches multiple parameters in the lookup table: mangasampledb.nsa.ra, mangadatadb.cube.ra'.
+
+    # Correct filter
+    filter = 'cube.ra > 180'
 
 .. _marvin-filter-examples:
 
