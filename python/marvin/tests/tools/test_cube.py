@@ -2,7 +2,6 @@
 
 import os
 import re
-from contextlib import contextmanager
 
 import pytest
 import numpy as np
@@ -13,7 +12,7 @@ from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB
+from marvin.tests import skipIfNoDB, set_tmp_sasurl
 from brain.core.exceptions import BrainError
 
 
@@ -21,31 +20,17 @@ from brain.core.exceptions import BrainError
 def cube_file(galaxy):
     return Cube(filename=galaxy.cubepath)
 
+
 @pytest.fixture(scope='module')
 def cube_db(db, galaxy):
     if db.session is None:
         pytest.skip('Skip because no DB.')
     return Cube(mangaid=galaxy.mangaid)
 
+
 @pytest.fixture(scope='module')
 def cube_api(galaxy):
     return Cube(mangaid=galaxy.mangaid, mode='remote')
-
-@pytest.fixture(scope='function')
-def tmpfiles():
-    files_created = []
-
-    yield files_created
-
-    for fp in files_created:
-        if os.path.exists(fp):
-            os.remove(fp)
-    
-@contextmanager
-def set_tmp_sasurl(tmp_sasurl):
-    sasurl = config.sasurl
-    yield
-    config.sasurl = sasurl
 
 
 class TestCube(object):

@@ -19,18 +19,26 @@ from marvin.tools.maps import _get_bintemps
 def pytest_addoption(parser):
     parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
 
+
 def pytest_runtest_setup(item):
     if 'slow' in item.keywords and not item.config.getoption('--runslow'):
         pytest.skip('Requires --runslow option to run.')
 
-# slow = pytest.mark.skipif(not pytest.config.getoption('--runslow'),
-#                           reason='need --runslow option to run')
 
-# class MarvinTest
+@pytest.fixture(scope='function')
+def tmpfiles():
+    files_created = []
+
+    yield files_created
+
+    for fp in files_created:
+        if os.path.exists(fp):
+            os.remove(fp)
+
+
 # TODO Replace skipTest and skipBrian with skipif
 # TODO use monkeypatch to set initial config variables
 # TODO replace _reset_the_config with monkeypatch
-# TODO reimplement set_sasurl (use function-level fixture?)
 
 releases = ['MPL-5']  # TODO add 'MPL-4'
 plateifus = ['8485-1901']  # TODO add '7443-12701'
