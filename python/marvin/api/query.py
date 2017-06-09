@@ -4,6 +4,7 @@ from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
+from marvin.tools.query.query_utils import bestparams
 import json
 
 
@@ -327,11 +328,11 @@ class QueryView(BaseView):
 
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
-        q = Query(mode='local')
+        q = Query(mode='local', release=args['release'])
         if paramdisplay == 'all':
-            params = q.get_available_params()
+            params = q.get_available_params('all')
         elif paramdisplay == 'best':
-            params = q.get_best_params()
+            params = bestparams
         self.results['data'] = params
         self.results['status'] = 1
         output = jsonify(self.results)

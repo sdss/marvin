@@ -6194,16 +6194,16 @@ section h3.section-subheading {
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 10:40:57
-* @Last Modified by:   Brian
-* @Last Modified time: 2016-04-29 10:43:31
+* @Last Modified by:   Brian Cherinka
+* @Last Modified time: 2017-06-04 21:48:44
 */
-#random_images .hide-bullets {
+.imgcars .hide-bullets {
   list-style: none;
   margin-left: -40px;
   margin-top: 20px; }
-#random_images .thumbnail {
+.imgcars .thumbnail {
   padding: 0; }
-#random_images .carousel-inner > .item > img, #random_images .carousel-inner > .item > a > img {
+.imgcars .carousel-inner > .item > img, .imgcars .carousel-inner > .item > a > img {
   width: 100%; }
 
 /*

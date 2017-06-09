@@ -21,7 +21,7 @@ import warnings
 import astropy.io.fits
 
 from brain.core.exceptions import BrainError
-
+from collections import OrderedDict, defaultdict
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
@@ -364,3 +364,13 @@ class DotableCaseInsensitive(Dotable):
         if key is False:
             raise KeyError('{0} key or attribute not found'.format(value))
         return dict.__getitem__(self, key)
+
+
+class OrderedDefaultDict(OrderedDict):
+    def __init__(self, default_factory=None, *args, **kwargs):
+        OrderedDict.__init__(self, *args, **kwargs)
+        self.default_factory = default_factory
+
+    def __missing__(self, key):
+        result = self[key] = self.default_factory()
+        return result

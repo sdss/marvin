@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-13 11:43:39
+# @Last Modified time: 2017-05-24 09:26:08
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
@@ -54,9 +54,8 @@ class BaseWebView(FlaskView):
 
     def reset_dict(self, mydict, exclude=None):
         ''' resets the page dictionary '''
-        if exclude:
-            exclude = exclude if isinstance(exclude, list) else [exclude]
+        exclude = exclude if isinstance(exclude, list) else [exclude]
         diffkeys = set(mydict) - set(self.base)
         for key, val in mydict.items():
-            if key in diffkeys and (exclude and key not in exclude):
+            if key in diffkeys and (key not in exclude):
                 mydict[key] = '' if isinstance(val, str) else None
