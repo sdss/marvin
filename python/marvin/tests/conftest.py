@@ -167,6 +167,7 @@ def get_versions(set_release):
     return config.release, drpver, dapver
 
 
+# TODO there is a fixture in test_query_pytest.py called ``db``
 @pytest.fixture(scope='session', name='db')
 def start_marvin_session(set_config):
     yield DB()
