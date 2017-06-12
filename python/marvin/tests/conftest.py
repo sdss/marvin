@@ -25,6 +25,7 @@ def pytest_runtest_setup(item):
         pytest.skip('Requires --runslow option to run.')
 
 
+# You don't need this function, tmpdir_factory handles all this for you.  see temp_scratch fixture and its use
 @pytest.fixture(scope='function')
 def tmpfiles():
     files_created = []
@@ -63,6 +64,7 @@ class Galaxy:
         self.plate = int(self.plate)
         self.release = config.release
         self.drpver, self.dapver = config.lookUpVersions(self.release)
+        self.drpall = 'drpall-{0}.fits'.format(self.drpver)
 
     # TODO move to a mock data file/directory
     # TODO make release specific mock data sets
@@ -115,6 +117,9 @@ class DB:
     def __init__(self):
         self._marvindb = marvindb
         self.session = marvindb.session
+        self.datadb = marvindb.datadb
+        self.sampledb = marvindb.sampledb
+        self.dapdb = marvindb.dapdb
 
 
 @pytest.fixture(scope='session')
@@ -168,8 +173,8 @@ def get_versions(set_release):
 
 
 # TODO there is a fixture in test_query_pytest.py called ``db``
-@pytest.fixture(scope='session', name='db')
-def start_marvin_session(set_config):
+@pytest.fixture(scope='session')
+def maindb(set_config):
     yield DB()
 
 
@@ -184,7 +189,7 @@ def get_bintype(request):
 
 
 @pytest.fixture(scope='session')
-def galaxy(db, set_release, get_plateifu, get_bintype):
+def galaxy(maindb, set_release, get_plateifu, get_bintype):
     gal = Galaxy(plateifu=get_plateifu)
     gal.get_data()
     gal.set_galaxy_data()
