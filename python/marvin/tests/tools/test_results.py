@@ -11,7 +11,7 @@ from collections import OrderedDict, namedtuple
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
-from marvin.tests import MarvinTest, skipIfNoBrian
+from marvin.tests import MarvinTest#, skipIfNoBrian
 
 
 class TestResultsBase(MarvinTest):
@@ -306,7 +306,7 @@ class TestResultsPage(TestResultsBase):
         self.assertEqual(limit, r.chunk)
         return r
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_sort_res(self):
         r = self._setrun_query(limit=10)
         self.assertEqual(r.results[0], self.resdict['1'])
@@ -326,21 +326,21 @@ class TestResultsPage(TestResultsBase):
 
         return r
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getNext_10(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'next')
         self.assertEqual(r.results[0], self.resdict['11'])
         self.assertEqual(10, len(r.results))
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getNext_20(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'next', chunk=20)
         self.assertEqual(r.results[0], self.resdict['11'])
         self.assertEqual(r.results[11], self.resdict['21'])
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getPrevious_10(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'set', index=30)
@@ -348,7 +348,7 @@ class TestResultsPage(TestResultsBase):
         self.assertEqual(r.results[1], self.resdict['21'])
         self.assertEqual(10, len(r.results))
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getPrevious_20(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'set', index=45)
@@ -358,14 +358,14 @@ class TestResultsPage(TestResultsBase):
         self.assertEqual(r.results[15], self.resdict['41'])
         self.assertEqual(20, len(r.results))
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getSubset_10(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'set', index=35)
         self.assertEqual(10, len(r.results))
         self.assertEqual(r.results[0], self.resdict['36'])
 
-    @skipIfNoBrian
+    #@skipIfNoBrian
     def test_getSubset_20(self):
         r = self._setrun_query(limit=10)
         r = self._get_set(r, 'set', chunk=20, index=30)

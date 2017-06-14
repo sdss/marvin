@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-19 16:28:32
+# @Last Modified time: 2017-06-14 10:44:59
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -48,7 +48,6 @@ def app():
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-    print('init api api')
     return app
 
 

@@ -14,6 +14,7 @@ import pandas as pd
 from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.maps import _get_bintemps
+from marvin.tools.query import Query
 
 
 def pytest_addoption(parser):
@@ -41,7 +42,7 @@ def tmpfiles():
 # TODO use monkeypatch to set initial config variables
 # TODO replace _reset_the_config with monkeypatch
 
-releases = ['MPL-5']  # TODO add 'MPL-4'
+releases = ['MPL-5', 'MPL-4']
 plateifus = ['8485-1901']  # TODO add '7443-12701'
 
 bintypes = {}
@@ -196,3 +197,35 @@ def galaxy(maindb, set_release, get_plateifu, get_bintype):
     gal.set_filenames(bintype=get_bintype)
     gal.set_filepaths()
     yield gal
+
+
+# Query and Results Fixtures (loops over all modes and db possibilities)
+
+modes = ['local', 'remote', 'auto']
+dbs = ['db', 'nodb']
+
+
+@pytest.fixture(params=modes)
+def mode(request):
+    return request.param
+
+
+@pytest.fixture(params=dbs)
+def db(request):
+    ''' db fixture to turn on and off a local db'''
+    if request.param == 'db':
+        config.forceDbOn()
+    else:
+        config.forceDbOff()
+    return config.db is not None
+
+
+@pytest.fixture()
+def query(request, set_release, set_sasurl, mode, db):
+    if mode == 'local' and not db:
+        pytest.skip('cannot use queries in local mode without a db')
+    searchfilter = request.param if hasattr(request, 'param') else None
+    q = Query(searchfilter=searchfilter, mode=mode)
+    yield q
+    config.forceDbOn()
+    q = None

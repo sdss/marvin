@@ -6,11 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-28 13:51:07
+# @Last Modified time: 2017-06-13 00:00:58
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
-from marvin.tools.query.query_utils import query_params
 from marvin.core.exceptions import MarvinError
 from marvin import config
 from marvin.tools.cube import Cube
@@ -47,30 +46,10 @@ def data(release):
     return qdata[release]
 
 
-
-modes = ['local', 'remote', 'auto']
-dbs = ['db', 'nodb']
-
-
-@pytest.fixture(params=modes)
-def mode(request):
-    return request.param
-
-
 @pytest.fixture()
 def usedb(request):
     ''' fixture for optional turning off the db '''
     if request.param:
-        config.forceDbOn()
-    else:
-        config.forceDbOff()
-    return config.db is not None
-
-
-@pytest.fixture(params=dbs)
-def db(request):
-    ''' db fixture to turn on and off a local db'''
-    if request.param == 'db':
         config.forceDbOn()
     else:
         config.forceDbOff()
@@ -92,30 +71,6 @@ def expmode(mode, db):
         return 'local'
     elif mode == 'auto' and not db:
         return 'remote'
-
-
-# @pytest.fixture()
-# def skipif(expmode):
-#     if not expmode:
-#         return pytest.skip('cannot use queries in local mode without a db')
-#     elif expmode == 'local'
-
-@pytest.fixture()
-def query(request, set_release, set_sasurl, mode, db):
-    if mode == 'local' and not db:
-        pytest.skip('cannot use queries in local mode without a db')
-    searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(searchfilter=searchfilter, mode=mode)
-    yield q
-    config.forceDbOn()
-    q = None
-
-
-# def test_query(skipif, mode, db):
-#     q = Query(mode=mode)
-#     config.forceDbOn()
-#     q = None
-#     print(mode, db)
 
 
 class TestQueryVersions(object):

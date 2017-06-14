@@ -39,7 +39,7 @@ def _getCubes(searchfilter, **kwargs):
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=runtime,
-                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.count)
+                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
     return output
 
 
