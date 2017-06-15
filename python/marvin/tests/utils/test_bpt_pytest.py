@@ -1,31 +1,23 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# test_bpt.py
+# test_bpt_pytest.py
 #
 # Created by José Sánchez-Gallego on 10 Feb 2017.
+# Converted to pytest by Brett Andrews on 15 Jun 2017.
 
 
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import os
 import warnings
 
 from matplotlib import pyplot as plt
 import numpy as np
-import pytest
 
-from marvin import config
 from marvin.tools.maps import Maps
-from marvin.core.exceptions import MarvinDeprecationWarning
 from marvin.tests import UseReleases, UseBintypes
-
-
-# decorate class
-# if galaxy.release == 'MPL-4':
-#     pytest.skip('BPT does not support MPL-4.')
 
 
 @UseBintypes('SPX')
@@ -60,7 +52,6 @@ class TestBPT(object):
         assert np.sum(masks['invalid']['global']) == 1085
 
         assert np.sum(masks['sf']['sii']) == 176
-
 
     def test_8485_1901_bpt_file(self, galaxy):
 
