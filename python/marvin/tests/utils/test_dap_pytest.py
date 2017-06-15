@@ -11,19 +11,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from marvin import config
-from marvin.tests import MarvinTest
 from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 from marvin.tests import UseReleases
 
 
 @UseReleases('MPL-5')
 class TestMapsProperties(object):
-
-#     @classmethod
-#     def setUpClass(cls):
-#         super(TestMapsProperties, cls).setUpClass()
-#         config.setMPL('MPL-5')
 
     def test_dap_datamodel_mpl4(self, release):
         datamodel = get_dap_datamodel('1.1.1')
