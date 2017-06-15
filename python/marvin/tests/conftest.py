@@ -14,6 +14,7 @@ import pandas as pd
 from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.maps import _get_bintemps
+from marvin.tools.query import Query
 
 
 def pytest_addoption(parser):
@@ -25,6 +26,7 @@ def pytest_runtest_setup(item):
         pytest.skip('Requires --runslow option to run.')
 
 
+# You don't need this function, tmpdir_factory handles all this for you.  see temp_scratch fixture and its use
 @pytest.fixture(scope='function')
 def tmpfiles():
     files_created = []
@@ -40,7 +42,7 @@ def tmpfiles():
 # TODO use monkeypatch to set initial config variables
 # TODO replace _reset_the_config with monkeypatch
 
-releases = ['MPL-5']  # TODO add 'MPL-4'
+releases = ['MPL-5', 'MPL-4']
 plateifus = ['8485-1901']  # TODO add '7443-12701'
 
 bintypes = {}
@@ -63,6 +65,7 @@ class Galaxy:
         self.plate = int(self.plate)
         self.release = config.release
         self.drpver, self.dapver = config.lookUpVersions(self.release)
+        self.drpall = 'drpall-{0}.fits'.format(self.drpver)
 
     # TODO move to a mock data file/directory
     # TODO make release specific mock data sets
@@ -115,6 +118,9 @@ class DB:
     def __init__(self):
         self._marvindb = marvindb
         self.session = marvindb.session
+        self.datadb = marvindb.datadb
+        self.sampledb = marvindb.sampledb
+        self.dapdb = marvindb.dapdb
 
 
 @pytest.fixture(scope='session')
@@ -168,8 +174,8 @@ def get_versions(set_release):
 
 
 # TODO there is a fixture in test_query_pytest.py called ``db``
-@pytest.fixture(scope='session', name='db')
-def start_marvin_session(set_config):
+@pytest.fixture(scope='session')
+def maindb(set_config):
     yield DB()
 
 
@@ -184,10 +190,42 @@ def get_bintype(request):
 
 
 @pytest.fixture(scope='session')
-def galaxy(db, set_release, get_plateifu, get_bintype):
+def galaxy(maindb, set_release, get_plateifu, get_bintype):
     gal = Galaxy(plateifu=get_plateifu)
     gal.get_data()
     gal.set_galaxy_data()
     gal.set_filenames(bintype=get_bintype)
     gal.set_filepaths()
     yield gal
+
+
+# Query and Results Fixtures (loops over all modes and db possibilities)
+
+modes = ['local', 'remote', 'auto']
+dbs = ['db', 'nodb']
+
+
+@pytest.fixture(params=modes)
+def mode(request):
+    return request.param
+
+
+@pytest.fixture(params=dbs)
+def db(request):
+    ''' db fixture to turn on and off a local db'''
+    if request.param == 'db':
+        config.forceDbOn()
+    else:
+        config.forceDbOff()
+    return config.db is not None
+
+
+@pytest.fixture()
+def query(request, set_release, set_sasurl, mode, db):
+    if mode == 'local' and not db:
+        pytest.skip('cannot use queries in local mode without a db')
+    searchfilter = request.param if hasattr(request, 'param') else None
+    q = Query(searchfilter=searchfilter, mode=mode)
+    yield q
+    config.forceDbOn()
+    q = None

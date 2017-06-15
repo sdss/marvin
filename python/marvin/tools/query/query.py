@@ -734,6 +734,7 @@ class Query(object):
             self.totalcount = count
             if count > 1000:
                 query = self.query.slice(0, self.limit)
+                count = query.count()
                 warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 query = self.query

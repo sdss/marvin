@@ -22,8 +22,8 @@ def cube_file(galaxy):
 
 
 @pytest.fixture(scope='module')
-def cube_db(db, galaxy):
-    if db.session is None:
+def cube_db(maindb, galaxy):
+    if maindb.session is None:
         pytest.skip('Skip because no DB.')
     return Cube(mangaid=galaxy.mangaid)
 
@@ -51,7 +51,7 @@ class TestCube(object):
             Cube(filename='not_a_filename.fits')
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_success(self, db, galaxy):
+    def test_cube_load_from_local_database_success(self, maindb, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)
         assert cube is not None
@@ -76,14 +76,14 @@ class TestCube(object):
         self._load_from_db_fail(params, errMsg)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_noresultsfound(self, db):
+    def test_cube_load_from_local_database_noresultsfound(self, maindb):
         params = {'plateifu': '8485-0923', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
             params['plateifu'])
         self._load_from_db_fail(params, errMsg, errType=MarvinError)
 
     @skipIfNoDB
-    def test_cube_load_from_local_database_otherexception(self, db):
+    def test_cube_load_from_local_database_otherexception(self, maindb):
         params = {'plateifu': '84.85-1901', 'mode': 'local'}
         errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
             params['plateifu'])
@@ -221,7 +221,7 @@ class TestCube(object):
 
 
 class TestGetSpaxel(object):
-    
+
     def _dropNones(self, **kwargs):
         for k, v in list(kwargs.items()):
             if v is None:
@@ -294,9 +294,9 @@ class TestGetSpaxel(object):
 
     def test_getSpaxel_remote_fail_badresponse(self):
         cc = Cube(mangaid='1-209232', mode='remote')
-        
+
         tmp_sasurl = 'http://www.averywrongurl.com'
-        
+
         with set_tmp_sasurl(tmp_sasurl):
             config.sasurl = tmp_sasurl
             assert config.urlmap is not None
@@ -322,7 +322,7 @@ class TestGetSpaxel(object):
                              [('MPL-4', 0.017639931, 352.12421, 1026),
                               ('MPL-5', 0.016027471, 361.13596, 1026)])
     @skipIfNoDB
-    def test_getspaxel_matches_file_db_remote(self, db, galaxy, mpl, flux, ivar, mask):
+    def test_getspaxel_matches_file_db_remote(self, maindb, galaxy, mpl, flux, ivar, mask):
         config.setMPL(mpl)
         assert config.release == mpl
 

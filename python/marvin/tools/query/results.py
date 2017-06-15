@@ -202,7 +202,7 @@ class Results(object):
         if images:
             tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
         else:
-            tmp = downloadList(plateifu, dltype=self.returntype, limit=limit)
+            downloadList(plateifu, dltype=self.returntype, limit=limit)
 
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
@@ -728,14 +728,26 @@ class Results(object):
 
         '''
 
+        if chunk and chunk < 0:
+            warnings.warn('Chunk cannot be negative. Setting to {0}'.format(self.chunk), MarvinUserWarning)
+            chunk = self.chunk
+
         newstart = self.end
         self.chunk = chunk if chunk else self.chunk
         newend = newstart + self.chunk
+
+        # This handles cases when the number of results is < total
+        if self.totalcount == self.count:
+            warnings.warn('You have all the results.  Cannot go forward', MarvinUserWarning)
+            return self.results
+
+        # This handles the end edge case
         if newend > self.totalcount:
             warnings.warn('You have reached the end.', MarvinUserWarning)
             newend = self.totalcount
-            newstart = newend - self.chunk
+            newstart = self.end
 
+        # This grabs the next chunk
         log.info('Retrieving next {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
@@ -760,6 +772,7 @@ class Results(object):
 
         self.start = newstart
         self.end = newend
+        self.count = len(self.results)
 
         if self.returntype:
             self.convertToTool()
@@ -793,14 +806,26 @@ class Results(object):
 
          '''
 
+        if chunk and chunk < 0:
+            warnings.warn('Chunk cannot be negative. Setting to {0}'.format(self.chunk), MarvinUserWarning)
+            chunk = self.chunk
+
         newend = self.start
         self.chunk = chunk if chunk else self.chunk
         newstart = newend - self.chunk
+
+        # This handles cases when the number of results is < total
+        if self.totalcount == self.count:
+            warnings.warn('You have all the results.  Cannot go back', MarvinUserWarning)
+            return self.results
+
+        # This handles the start edge case
         if newstart < 0:
             warnings.warn('You have reached the beginning.', MarvinUserWarning)
             newstart = 0
-            newend = newstart + self.chunk
+            newend = self.start
 
+        # This grabs the previous chunk
         log.info('Retrieving previous {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
@@ -825,6 +850,7 @@ class Results(object):
 
         self.start = newstart
         self.end = newend
+        self.count = len(self.results)
 
         if self.returntype:
             self.convertToTool()
@@ -858,6 +884,11 @@ class Results(object):
                 >>> (u'27-1170', u'1901', -9999.0),
                 >>> (u'27-1167', u'1902', -9999.0)]
         '''
+
+        if limit < 0:
+            warnings.warn('Limit cannot be negative. Setting to {0}'.format(self.chunk), MarvinUserWarning)
+            limit = self.chunk
+
         start = 0 if int(start) < 0 else int(start)
         end = start + int(limit)
         # if end > self.count:
@@ -887,6 +918,7 @@ class Results(object):
                 self.results = ii.getData()
                 self._makeNamedTuple()
 
+        self.count = len(self.results)
         if self.returntype:
             self.convertToTool()
 

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-18 11:21:03
+# @Last Modified time: 2017-06-14 10:18:07
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -21,13 +21,6 @@ try:
 except ImportError:
     from urlparse import urlparse, urljoin
 
-
-releases = ['MPL-5']
-
-
-@pytest.fixture(scope='session', params=releases)
-def release(request):
-    return request.param
 
 
 @pytest.fixture(scope='session')

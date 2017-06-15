@@ -29,8 +29,8 @@ def modelcube_file(galaxy):
 
 
 @pytest.fixture(scope='module')
-def modelcube_db(db, galaxy):
-    if db.session is None:
+def modelcube_db(maindb, galaxy):
+    if maindb.session is None:
         pytest.skip('Skip because no DB.')
     return ModelCube(mangaid=galaxy.mangaid)
 
@@ -232,7 +232,6 @@ class TestPickling(object):
         assert modelcube_restored.data_origin == 'file'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is not None
-
 
     def test_pickling_file_custom_path(self, tmpfiles, galaxy):
         modelcube = ModelCube(filename=galaxy.modelpath, bintype=galaxy.bintype)
