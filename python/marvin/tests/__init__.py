@@ -47,7 +47,11 @@ def use_releases(*releases):
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
-            if kwargs['galaxy'].release not in releases:
+            if 'release' in kwargs.keys():
+                release = kwargs['release']
+            elif 'galaxy' in kwargs.keys():
+                release = kwargs['galaxy'].release
+            if release not in releases:
                 pytest.skip('Only use {}'.format(', '.join(releases)))
             return f(self, *args, **kwargs)
         return decorated_function
