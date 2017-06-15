@@ -23,37 +23,6 @@ from marvin.tools.spaxel import Spaxel
 from marvin.tools.spectrum import Spectrum
 
 
-# class TestSpaxelBase(marvin.tests.MarvinTest):
-#     """Defines the files and plateifus we will use in the tests."""
-# 
-#     @classmethod
-#     def setUpClass(cls):
-# 
-#         super(TestSpaxelBase, cls).setUpClass()
-#         cls.set_sasurl('local')
-#         cls._update_release('MPL-4')
-#         cls.set_filepaths()
-# 
-#         cls.filename_cube = os.path.realpath(cls.cubepath)
-#         cls.filename_maps_default = os.path.join(
-#             cls.mangaanalysis, cls.drpver, cls.dapver,
-#             'default', str(cls.plate), 'mangadap-{0}-default.fits.gz'.format(cls.plateifu))
-# 
-#     @classmethod
-#     def tearDownClass(cls):
-#         pass
-# 
-#     def setUp(self):
-#         self._update_release('MPL-4')
-#         config.forceDbOn()
-# 
-#         assert os.path.exists(self.filename_cube)
-#         assert os.path.exists(self.filename_maps_default)
-# 
-#     def tearDown(self):
-#         pass
-# 
-
 class TestSpaxelInit(object):
     
     def _spaxel_init(self, spaxel, cube, maps, spectrum):
@@ -190,19 +159,6 @@ class TestSpaxelInit(object):
 
 
 class TestPickling(object):
-
-#     def setUp(self):
-#         super(TestPickling, self).setUp()
-#         self._files_created = []
-# 
-#     def tearDown(self):
-# 
-#         super(TestPickling, self).tearDown()
-# 
-#         for fp in self._files_created:
-#             full_fp = os.path.realpath(os.path.expanduser(fp))
-#             if os.path.exists(full_fp):
-#                 os.remove(full_fp)
 
     def test_pickling_db_fails(self, tmpfiles, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
