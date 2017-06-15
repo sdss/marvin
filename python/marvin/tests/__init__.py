@@ -42,6 +42,32 @@ class UseBintypes:
         return decorated_class
 
 
+def use_releases(*releases):
+    """Decorates test to run only for the given releases."""
+    def check_bintype(f):
+        @wraps(f)
+        def decorated_function(self, *args, **kwargs):
+            if kwargs['galaxy'].release not in releases:
+                pytest.skip('Only use {}'.format(', '.join(releases)))
+            return f(self, *args, **kwargs)
+        return decorated_function
+    return check_bintype
+
+
+class UseReleases:
+    """Decorate all tests in a class to run only for the given MPLs."""
+    def __init__(self, *args):
+        self.args = args
+
+    def __call__(self, decorated_class):
+        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
+            # only decorate public functions
+            if attr[0][0] != '_':
+                setattr(decorated_class, attr[0],
+                        use_releases(*self.args)(getattr(decorated_class, attr[0])))
+        return decorated_class
+
+
 # Decorator to skip a test if the session is None (i.e., if there is no DB)
 def skipIfNoDB(test):
     @wraps(test)
