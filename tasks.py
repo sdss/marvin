@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:30:55
+# @Last Modified time: 2017-06-16 14:31:27
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -156,5 +156,6 @@ updates.add_task(update_git, 'git')
 updates.add_task(update_current, 'current')
 updates.add_task(update_module, 'module')
 updates.add_task(update_default, 'default')
+updates.add_task(switch_module, 'switch')
 ns.add_collection(updates)
 
