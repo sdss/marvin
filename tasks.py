@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-10 18:54:56
+# @Last Modified time: 2017-06-16 14:09:06
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -113,12 +113,12 @@ def update_current(ctx, version=None):
     # reset the current symlink
     os.chdir(DIRPATH)
     ctx.run('rm current')
-    ctx.run('ln -s current {0}'.format(version))
+    ctx.run('ln -s {0} current'.format(version))
 
 
 @task
 def setup_utah(ctx, version=None):
-    ''' Setup the package at Utah '''
+    ''' Setup the package at Utah and update the release '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
 
     # update git
@@ -144,3 +144,10 @@ docs = Collection('docs')
 docs.add_task(build_docs, 'build')
 docs.add_task(clean_docs, 'clean')
 ns.add_collection(docs)
+updates = Collection('update')
+updates.add_task(update_git, 'git')
+updates.add_task(update_current, 'current')
+updates.add_task(update_module, 'module')
+updates.add_task(update_default, 'default')
+ns.add_collection(updates)
+
