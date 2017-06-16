@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:26:21
+# @Last Modified time: 2017-06-16 14:30:55
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -117,6 +117,15 @@ def update_current(ctx, version=None):
 
 
 @task
+def switch_module(ctx, version=None):
+    ''' Switch to the marvin module of the specified version and start it '''
+    assert version is not None, 'A version is required to setup Marvin at Utah!'
+    ctx.run('uwsgi --stop /home/www/sas.sdss.org/mangawork/marvin/pid/uwsgi_marvin2.pid')
+    ctx.run('module switch wrapmarvin wrapmarvin/mangawork.marvin_{0}'.format(version))
+    ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))
+
+
+@task
 def setup_utah(ctx, version=None):
     ''' Setup the package at Utah and update the release '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
@@ -134,9 +143,7 @@ def setup_utah(ctx, version=None):
     update_module(ctx, path=wrap, wrap=True, version=version)
 
     # restart the new marvin
-    ctx.run('uwsgi --stop $marvin_release_dir/pid/uwsgi_marvin2.pid')
-    ctx.run('module switch wrapmarvin wrapmarvin/mangawork.marvin_{0}'.format(version))
-    ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))
+    switch_module(ctx, version=version)
 
 
 ns = Collection(clean, deploy, setup_utah)
