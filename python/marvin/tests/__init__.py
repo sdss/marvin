@@ -75,7 +75,7 @@ class UseReleases:
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
 # that have certain bintypes, templates, or releases
-def marvin_skip_if(mode='skip', **kfilter):
+def marvin_test_if(mode='skip', **kfilter):
     """Decorates test to skip/include certain parameters.
 
     Parameters:
@@ -153,10 +153,10 @@ def marvin_skip_if(mode='skip', **kfilter):
     return check_params
 
 
-class marvin_skip_if_class(object):
+class marvin_test_if_class(object):
     """Decorate all tests in a class to run only for, or skip, certain parameters.
 
-    See ``marvin_skip_if``. This decorator is the equivalent for decorating
+    See ``marvin_test_if``. This decorator is the equivalent for decorating
     classes isntead of functions.
 
     """
