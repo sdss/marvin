@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:16:00
+# @Last Modified time: 2017-06-16 14:26:21
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -134,9 +134,9 @@ def setup_utah(ctx, version=None):
     update_module(ctx, path=wrap, wrap=True, version=version)
 
     # restart the new marvin
-    ctx.run('stopmarvin')
+    ctx.run('uwsgi --stop $marvin_release_dir/pid/uwsgi_marvin2.pid')
     ctx.run('module switch wrapmarvin wrapmarvin/mangawork.marvin_{0}'.format(version))
-    ctx.run('startmarvin')
+    ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))
 
 
 ns = Collection(clean, deploy, setup_utah)
