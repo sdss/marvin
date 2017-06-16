@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:09:06
+# @Last Modified time: 2017-06-16 14:16:00
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -85,7 +85,7 @@ def update_module(ctx, path=None, wrap=None, version=None):
     index, line = [(i, line) for i, line in enumerate(data) if 'set {0}'.format(searchline) in line][0]
     data[index] = 'set {0} {1}\n'.format(searchline, version)
     f.seek(0, 0)
-    f.write(data)
+    f.writelines(data)
     f.close()
 
     # update the default version
