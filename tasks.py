@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:31:27
+# @Last Modified time: 2017-06-16 14:55:12
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -121,7 +121,8 @@ def switch_module(ctx, version=None):
     ''' Switch to the marvin module of the specified version and start it '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
     ctx.run('uwsgi --stop /home/www/sas.sdss.org/mangawork/marvin/pid/uwsgi_marvin2.pid')
-    ctx.run('module switch wrapmarvin wrapmarvin/mangawork.marvin_{0}'.format(version))
+    ctx.run('module unload wrapmarvin')
+    ctx.run('module load wrapmarvin/mangawork.marvin_{0}'.format(version))
     ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))
 
 
@@ -143,7 +144,9 @@ def setup_utah(ctx, version=None):
     update_module(ctx, path=wrap, wrap=True, version=version)
 
     # restart the new marvin
-    switch_module(ctx, version=version)
+    # switch_module(ctx, version=version)
+    print('Marvin version {0} is set up!\n'.format(version))
+    print('Please run ...\n stopmarvin \n module switch wrapmarvin wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
 
 
 ns = Collection(clean, deploy, setup_utah)
@@ -156,6 +159,5 @@ updates.add_task(update_git, 'git')
 updates.add_task(update_current, 'current')
 updates.add_task(update_module, 'module')
 updates.add_task(update_default, 'default')
-updates.add_task(switch_module, 'switch')
 ns.add_collection(updates)
 
