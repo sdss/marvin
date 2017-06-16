@@ -75,61 +75,91 @@ class UseReleases:
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
 # that have certain bintypes, templates, or releases
-def marvin_skip_if(**kfilter):
+def marvin_skip_if(mode='skip', **kfilter):
     """Decorates test to skip/include certain parameters.
 
-    kfilter is expected to be a dictionary of test fixtures, indicating the
-    tests to skip or inclde. For instance,
-    ``@marvin_skip_if(galaxy={'bintype': ['STON']})`` will skip any test in
-    which the ``galaxy`` fixture has the attribute ``galaxy.bintype='STON'``.
-    Individual fixtures can override the global ``mode``. In this example
-    ``@marvin_skip_if(galaxy={'release': ['MPL-5'], mode='include'},
-    data_mode=['file'], mode='skip')`` only tests with
-    ``galaxy.release='MPL-5'`` will run, but any test in which
-    ``data_mode='file'`` will be skipped.
+    Parameters:
+        mode ({'skip', 'include', 'xfail'}):
+            Whether the decorator should skip the test if it matches the filter
+            conditions, include it only if it matches the conditions, or mark
+            it as an expected failure.
+        kfilter (kwargs):
+            A keyword argument whose name should match one of the fixtures in
+            the test. If the fixture returns a single value, the keyword must
+            define a list of the fixture values to skip, include, or xfail.
+            If the fixture returns an object, the value of the kwarg must be a
+            dictionary of the object attributes to filter on. The ``mode`` is
+            applied to all the attributes in the dictionary equally.
+
+    Examples:
+        If you want to only test for galaxies with bintype ``'STON'`` and
+        template ``'MILES-THIN'`` you can do::
+
+            @marvin_skip_if(galaxy=dict(bintype=['STON'], template=['MILES-THIN']), mode='include')
+
+        You can also mark all tests with ``data_origin='file'`` as expected
+        failure::
+
+            @marvin_skip_if(data_origin=['file'], mode='xfails')
+
+        ``marvin_skip_if`` decorators can be concatenated::
+
+            @marvin_skip_if(data_origin=['file'], mode='xfails')
+            @marvin_skip_if(galaxy=dict(bintype=['SPX']), mode='skip')
+
+        will skip ``'SPX'`` bintypes and expect a failure on ``'file'``
+        data_origins.
 
     """
+
     def check_params(ff):
 
-        def _should_skip(tmp_mode, filter_values, fixture_value, prop_name):
+        def _should_skip(filter_values, fixture_value, prop_name):
             ll = ', '.join(filter_values)
-            if tmp_mode == 'skip' and fixture_value in filter_values:
+            if mode == 'skip' and fixture_value in filter_values:
                 return pytest.skip('Skipping {0}={1!r}'.format(prop_name, ll))
-            elif tmp_mode != 'skip' and fixture_value not in filter_values:
+            elif mode == 'include' and fixture_value not in filter_values:
                 return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
+            elif mode == 'xfail' and fixture_value in filter_values:
+                return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
 
         @wraps(ff)
         def decorated_function(self, *args, **kwargs):
-            global_mode = kfilter.get('mode', 'skip')
-            for fixture_name, fixture_attributes in kfilter.items():
-                if fixture_name == 'mode':
-                    continue
-                if fixture_name not in kwargs:
-                    continue
-                if not isinstance(fixture_attributes, dict):
-                    tmp_mode = global_mode
-                    fixture_value = kwargs[fixture_name]
-                    filter_values = fixture_attributes
-                    prop_name = fixture_name
-                    _should_skip(tmp_mode, filter_values, fixture_value, prop_name)
-                else:
-                    tmp_mode = fixture_attributes.get('mode', global_mode)
-                    for fixture_attribute, filter_values in fixture_attributes.items():
-                        if fixture_attribute == 'mode':
-                            continue
-                        fixture = kwargs[fixture_name]
-                        if not hasattr(fixture, fixture_attribute):
-                            continue
-                        fixture_value = getattr(fixture, fixture_attribute)
-                        prop_name = fixture_attribute
-                        _should_skip(tmp_mode, filter_values, fixture_value, prop_name)
+
+            assert mode in ['skip', 'include', 'xfail'], \
+                'valid modes are \'skip\', \'include\', and \'xfail\''
+
+            if len(kfilter) > 1:
+                raise ValueError('marvin_skip_if only accepts one filter condition.')
+
+            fixture_to_filter, filter_attributes = list(kfilter.items())[0]
+
+            if fixture_to_filter not in kwargs:
+                return ff(self, *args, **kwargs)
+
+            if not isinstance(filter_attributes, dict):
+                _should_skip(filter_attributes, kwargs[fixture_to_filter], fixture_to_filter)
+            else:
+                for filter_attribute, filter_values in filter_attributes.items():
+                    fixture = kwargs[fixture_to_filter]
+                    if not hasattr(fixture, filter_attribute):
+                        continue
+                    fixture_value = getattr(fixture, filter_attribute)
+                    _should_skip(filter_values, fixture_value, filter_attribute)
+                    break
+
             return ff(self, *args, **kwargs)
         return decorated_function
     return check_params
 
 
 class marvin_skip_if_class(object):
-    """Decorate all tests in a class to run only for, or skip, certain parameters."""
+    """Decorate all tests in a class to run only for, or skip, certain parameters.
+
+    See ``marvin_skip_if``. This decorator is the equivalent for decorating
+    classes isntead of functions.
+
+    """
 
     def __init__(self, *args, **kwargs):
         self.args = args
