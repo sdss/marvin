@@ -69,6 +69,79 @@ class UseReleases:
             if attr[0][0] != '_':
                 setattr(decorated_class, attr[0],
                         use_releases(*self.args)(getattr(decorated_class, attr[0])))
+
+        return decorated_class
+
+
+# These decorators for functions and classes allow to skip or run tests only for galaxies
+# that have certain bintypes, templates, or releases
+def marvin_skip_if(**kfilter):
+    """Decorates test to skip/include certain parameters.
+
+    kfilter is expected to be a dictionary of test fixtures, indicating the
+    tests to skip or inclde. For instance,
+    ``@marvin_skip_if(galaxy={'bintype': ['STON']})`` will skip any test in
+    which the ``galaxy`` fixture has the attribute ``galaxy.bintype='STON'``.
+    Individual fixtures can override the global ``mode``. In this example
+    ``@marvin_skip_if(galaxy={'release': ['MPL-5'], mode='include'},
+    data_mode=['file'], mode='skip')`` only tests with
+    ``galaxy.release='MPL-5'`` will run, but any test in which
+    ``data_mode='file'`` will be skipped.
+
+    """
+    def check_params(ff):
+
+        def _should_skip(tmp_mode, filter_values, fixture_value, prop_name):
+            ll = ', '.join(filter_values)
+            if tmp_mode == 'skip' and fixture_value in filter_values:
+                return pytest.skip('Skipping {0}={1!r}'.format(prop_name, ll))
+            elif tmp_mode != 'skip' and fixture_value not in filter_values:
+                return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
+
+        @wraps(ff)
+        def decorated_function(self, *args, **kwargs):
+            global_mode = kfilter.get('mode', 'skip')
+            for fixture_name, fixture_attributes in kfilter.items():
+                if fixture_name == 'mode':
+                    continue
+                if fixture_name not in kwargs:
+                    continue
+                if not isinstance(fixture_attributes, dict):
+                    tmp_mode = global_mode
+                    fixture_value = kwargs[fixture_name]
+                    filter_values = fixture_attributes
+                    prop_name = fixture_name
+                    _should_skip(tmp_mode, filter_values, fixture_value, prop_name)
+                else:
+                    tmp_mode = fixture_attributes.get('mode', global_mode)
+                    for fixture_attribute, filter_values in fixture_attributes.items():
+                        if fixture_attribute == 'mode':
+                            continue
+                        fixture = kwargs[fixture_name]
+                        if not hasattr(fixture, fixture_attribute):
+                            continue
+                        fixture_value = getattr(fixture, fixture_attribute)
+                        prop_name = fixture_attribute
+                        _should_skip(tmp_mode, filter_values, fixture_value, prop_name)
+            return ff(self, *args, **kwargs)
+        return decorated_function
+    return check_params
+
+
+class marvin_skip_if_class(object):
+    """Decorate all tests in a class to run only for, or skip, certain parameters."""
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self, decorated_class):
+        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
+            # only decorate public functions
+            if attr[0][0] != '_':
+                setattr(decorated_class, attr[0],
+                        marvin_skip_if(*self.args,
+                                       **self.kwargs)(getattr(decorated_class, attr[0])))
         return decorated_class
 
 
@@ -258,5 +331,3 @@ class MarvinTest(TestCase):
         cls.plateifu = plateifu
         cls.plate, cls.ifu = cls.plateifu.split('-')
         cls.plate = int(cls.plate)
-
-
