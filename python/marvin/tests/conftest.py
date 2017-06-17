@@ -237,6 +237,15 @@ def data_origin(request):
     return request.param
 
 
+@pytest.fixture(scope='function')
+def db_off():
+    """Turns the DB off and tears down."""
+
+    config.forceDbOff()
+    yield
+    config.forceDbOn()
+
+
 @pytest.fixture(scope='session')
 def galaxy(maindb, get_params, get_plateifu, set_sasurl):
 
