@@ -6,15 +6,19 @@
 # Created by Brett Andrews on 20 Mar 2017.
 
 
+import itertools
 import os
 
 import pytest
-import pandas as pd
 
 from marvin import config, marvindb
 from marvin.api.api import Interaction
-from marvin.tools.maps import _get_bintemps
 from marvin.tools.query import Query
+from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
+
+from sdss_access.path import Path
+
+from astropy.io.misc import yaml
 
 
 def pytest_addoption(parser):
@@ -26,7 +30,8 @@ def pytest_runtest_setup(item):
         pytest.skip('Requires --runslow option to run.')
 
 
-# You don't need this function, tmpdir_factory handles all this for you.  see temp_scratch fixture and its use
+# You don't need this function, tmpdir_factory handles all this for you.
+# See temp_scratch fixture and its use
 @pytest.fixture(scope='function')
 def tmpfiles():
     files_created = []
@@ -43,78 +48,91 @@ def tmpfiles():
 # TODO replace _reset_the_config with monkeypatch
 
 releases = ['MPL-5', 'MPL-4']
-plateifus = ['8485-1901']  # TODO add '7443-12701'
 
-bintypes = {}
+bintypes = {release: [] for release in releases}
+templates = {release: [] for release in releases}
 for release in releases:
     __, dapver = config.lookUpVersions(release)
-    bintypes[release] = [bintemp.split('-')[0] for bintemp in _get_bintemps(dapver)]
+    bintemps = _get_bintemps(dapver)
+    for bintemp in bintemps:
+        bintype = bintemp.split('-')[0]
+        template = '-'.join(bintemp.split('-')[1:])
+        if bintype not in bintypes[release]:
+            bintypes[release].append(bintype)
+        if template not in templates[release]:
+            templates[release].append(template)
 
 
-class Galaxy:
+# Galaxy data is stored in a YAML file
+galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
+
+
+class Galaxy(object):
     """An example galaxy for Marvin-tools testing."""
 
-    sasbasedir = os.getenv("$SAS_BASE_DIR")
-    mangaredux = os.getenv("MANGA_SPECTRO_REDUX")
-    mangaanalysis = os.getenv("MANGA_SPECTRO_ANALYSIS")
+    sasbasedir = os.getenv('SAS_BASE_DIR')
+    mangaredux = os.getenv('MANGA_SPECTRO_REDUX')
+    mangaanalysis = os.getenv('MANGA_SPECTRO_ANALYSIS')
     dir3d = 'stack'
 
     def __init__(self, plateifu):
         self.plateifu = plateifu
         self.plate, self.ifu = self.plateifu.split('-')
         self.plate = int(self.plate)
-        self.release = config.release
-        self.drpver, self.dapver = config.lookUpVersions(self.release)
-        self.drpall = 'drpall-{0}.fits'.format(self.drpver)
 
-    # TODO move to a mock data file/directory
-    # TODO make release specific mock data sets
-    def get_data(self):
-        self.galaxies = pd.DataFrame(
-                 [['1-209232', 10179, 221394, 232.544703894, 48.6902009334, 0.0407447, 0.234907269477844],
-                  ['12-98126', 1001, 341153, 230.50746239, 43.53234133, 0.020478, 0.046455454081]],
-                 columns=['mangaid', 'cubepk', 'nsaid', 'ra', 'dec', 'redshift', 'nsa_sersic_flux_ivar0'],
-                 index=['8485-1901', '7443-12701'])
+    def set_galaxy_data(self, data_origin=None):
+        """Sets galaxy properties from the configuration file."""
 
-    def set_galaxy_data(self):
-        # Grab data from mock file
-        data = self.galaxies.loc[self.plateifu]
+        data = galaxy_data[self.plateifu]
 
         for key in data.keys():
             setattr(self, key, data[key])
 
-    def set_filenames(self, bintype=None, template=None):
+    def set_params(self, bintype=None, template=None, release=None):
+        """Sets bintype, template, etc."""
+
+        self.release = release
+        self.drpver, self.dapver = config.lookUpVersions(self.release)
+        self.drpall = 'drpall-{0}.fits'.format(self.drpver)
+
         default_bintemp = _get_bintemps(self.dapver, default=True)
         default_bin, default_temp = default_bintemp.split('-', 1)
 
         self.bintype = bintype if bintype is not None else default_bin
         self.template = template if template is not None else default_temp
+
         self.bintemp = '{0}-{1}'.format(self.bintype, self.template)
 
-        self.cubename = 'manga-{0}-LOGCUBE.fits.gz'.format(self.plateifu)
-        self.rssname = 'manga-{0}-LOGRSS.fits.gz'.format(self.plateifu)
-        self.imgname = '{0}.png'.format(self.ifu)
-        self.mapsname = 'manga-{0}-MAPS-{1}.fits.gz'.format(self.plateifu, self.bintemp)
-        self.modelname = 'manga-{0}-LOGCUBE-{1}.fits.gz'.format(self.plateifu, self.bintemp)
-
     def set_filepaths(self):
+        """Sets the paths for cube, maps, etc."""
+
+        path = Path()
+
         # Paths
-        self.drppath = os.path.join(self.mangaredux, self.drpver)
-        self.dappath = os.path.join(self.mangaanalysis, self.drpver, self.dapver)
         self.imgpath = os.path.join(self.mangaredux, self.drpver, str(self.plate), self.dir3d,
                                     'images')
 
-        # DRP filename paths
-        self.cubepath = os.path.join(self.drppath, str(self.plate), self.dir3d, self.cubename)
-        self.rsspath = os.path.join(self.drppath, str(self.plate), self.dir3d, self.rssname)
+        self.cubepath = path.full('mangacube', plateifu=self.plateifu,
+                                  drpver=self.drpver, plate=self.plate, ifu=self.ifu)
 
-        # DAP filename paths
-        self.analysispath = os.path.join(self.dappath, self.bintemp, str(self.plate), self.ifu)
-        self.mapspath = os.path.join(self.analysispath, self.mapsname)
-        self.modelpath = os.path.join(self.analysispath, self.modelname)
+        self.rsspath = path.full('mangarss', drpver=self.drpver, plate=self.plate, ifu=self.ifu)
+
+        dap_params = dict(drpver=self.drpver, dapver=self.dapver,
+                          plate=self.plate, ifu=self.ifu, bintype=self.bintype)
+
+        if self.release == 'MPL-4':
+            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template),
+                                        __BINTYPES_MPL4__[self.bintype]))
+            self.mapspath = path.full('mangamap', n=niter, **dap_params)
+            self.modelpath = None
+        else:
+            daptype = '{0}-{1}'.format(self.bintype, self.template)
+            self.mapspath = path.full('mangadap5', mode='MAPS', daptype=daptype, **dap_params)
+            self.modelpath = path.full('mangadap5', mode='LOGCUBE', daptype=daptype, **dap_params)
 
 
-class DB:
+class DB(object):
+
     def __init__(self):
         self._marvindb = marvindb
         self.session = marvindb.session
@@ -179,23 +197,65 @@ def maindb(set_config):
     yield DB()
 
 
-@pytest.fixture(scope='session', params=plateifus)
+@pytest.fixture(scope='session', params=galaxy_data.keys())
 def get_plateifu(request):
     return request.param
 
 
-@pytest.fixture(scope='session', params=bintypes[config.release])
-def get_bintype(request):
+# @pytest.fixture(scope='session', params=bintypes[config.release])
+# def get_bintype(request):
+#     return request.param
+#
+#
+# @pytest.fixture(scope='session', params=templates[config.release])
+# def get_template(request):
+#     return request.param
+
+
+def _get_release_generator_chain():
+    """Returns a generator for all valid combinations of (release, bintype, template)."""
+
+    return itertools.chain(*[itertools.product([release], bintypes[release],
+                                               templates[release]) for release in releases])
+
+
+def _params_ids(fixture_value):
+    return '-'.join(fixture_value)
+
+
+@pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
+def get_params(request):
+    """Yields a tuple of (release, bintype, template)."""
+
     return request.param
 
 
+@pytest.fixture(scope='session', params=['file', 'db', 'api'])
+def data_origin(request):
+    """Yields a data access mode."""
+
+    return request.param
+
+
+@pytest.fixture(scope='function')
+def db_off():
+    """Turns the DB off and tears down."""
+
+    config.forceDbOff()
+    yield
+    config.forceDbOn()
+
+
 @pytest.fixture(scope='session')
-def galaxy(maindb, set_release, get_plateifu, get_bintype):
+def galaxy(maindb, get_params, get_plateifu, set_sasurl):
+
+    release, bintype, template = get_params
+
     gal = Galaxy(plateifu=get_plateifu)
-    gal.get_data()
     gal.set_galaxy_data()
-    gal.set_filenames(bintype=get_bintype)
+    gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
+
     yield gal
 
 

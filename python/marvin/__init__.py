@@ -33,6 +33,8 @@ from brain.core.core import URLMapDict
 # Inits the log
 from brain.core.logger import initLog
 
+from astropy.wcs import FITSFixedWarning
+
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
@@ -44,6 +46,7 @@ log = initLog(logFilePath)
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
+warnings.filterwarnings('ignore', category=FITSFixedWarning)
 
 # Filters for PY3
 # TODO: undestand why these warnings are issued and fix the root of the problem (JSG)
@@ -473,4 +476,3 @@ if not marvindir:
 # Inits the URL Route Map
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
-

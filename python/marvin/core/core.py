@@ -21,7 +21,7 @@ import warnings
 import astropy.io.fits
 
 from brain.core.exceptions import BrainError
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
@@ -58,6 +58,8 @@ def kwargsGet(kwargs, key, replacement):
 
 breadcrumb = MarvinBreadCrumb()
 
+
+# TODO: probably MarvinToolsClass should be derived from an AbstractClass
 
 class MarvinToolsClass(object):
 
@@ -257,7 +259,7 @@ class MarvinToolsClass(object):
                 Path of saved file. Default is ``None``.
             overwrite (bool):
                 If ``True``, overwrite existing file. Default is ``False``.
-        
+
         Returns:
             str:
                 Path of saved file.
