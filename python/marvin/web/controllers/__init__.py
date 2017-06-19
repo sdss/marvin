@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-15 10:40:55
+# @Last Modified time: 2017-06-19 14:10:33
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView

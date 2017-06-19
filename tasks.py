@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-10 18:54:56
+# @Last Modified time: 2017-06-16 14:55:12
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -85,7 +85,7 @@ def update_module(ctx, path=None, wrap=None, version=None):
     index, line = [(i, line) for i, line in enumerate(data) if 'set {0}'.format(searchline) in line][0]
     data[index] = 'set {0} {1}\n'.format(searchline, version)
     f.seek(0, 0)
-    f.write(data)
+    f.writelines(data)
     f.close()
 
     # update the default version
@@ -113,12 +113,22 @@ def update_current(ctx, version=None):
     # reset the current symlink
     os.chdir(DIRPATH)
     ctx.run('rm current')
-    ctx.run('ln -s current {0}'.format(version))
+    ctx.run('ln -s {0} current'.format(version))
+
+
+@task
+def switch_module(ctx, version=None):
+    ''' Switch to the marvin module of the specified version and start it '''
+    assert version is not None, 'A version is required to setup Marvin at Utah!'
+    ctx.run('uwsgi --stop /home/www/sas.sdss.org/mangawork/marvin/pid/uwsgi_marvin2.pid')
+    ctx.run('module unload wrapmarvin')
+    ctx.run('module load wrapmarvin/mangawork.marvin_{0}'.format(version))
+    ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))
 
 
 @task
 def setup_utah(ctx, version=None):
-    ''' Setup the package at Utah '''
+    ''' Setup the package at Utah and update the release '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
 
     # update git
@@ -134,9 +144,9 @@ def setup_utah(ctx, version=None):
     update_module(ctx, path=wrap, wrap=True, version=version)
 
     # restart the new marvin
-    ctx.run('stopmarvin')
-    ctx.run('module switch wrapmarvin wrapmarvin/mangawork.marvin_{0}'.format(version))
-    ctx.run('startmarvin')
+    # switch_module(ctx, version=version)
+    print('Marvin version {0} is set up!\n'.format(version))
+    print('Please run ...\n stopmarvin \n module switch wrapmarvin wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
 
 
 ns = Collection(clean, deploy, setup_utah)
@@ -144,3 +154,10 @@ docs = Collection('docs')
 docs.add_task(build_docs, 'build')
 docs.add_task(clean_docs, 'clean')
 ns.add_collection(docs)
+updates = Collection('update')
+updates.add_task(update_git, 'git')
+updates.add_task(update_current, 'current')
+updates.add_task(update_module, 'module')
+updates.add_task(update_default, 'default')
+ns.add_collection(updates)
+
