@@ -103,32 +103,46 @@ class Galaxy(object):
 
         self.bintemp = '{0}-{1}'.format(self.bintype, self.template)
 
-    def set_filepaths(self):
+        if release == 'MPL-4':
+            self.niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template),
+                                             __BINTYPES_MPL4__[self.bintype]))
+        else:
+            self.niter = '*'
+
+        self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver, 'dapver':
+                              self.dapver, 'dir3d': self.dir3d, 'mpl': self.release, 'bintype': self.bintype,
+                              'n': self.niter, 'mode': '*', 'daptype': self.bintemp}
+
+    def set_filepaths(self, pathtype='full'):
         """Sets the paths for cube, maps, etc."""
 
-        path = Path()
+        self.path = Path()
 
         # Paths
-        self.imgpath = os.path.join(self.mangaredux, self.drpver, str(self.plate), self.dir3d,
-                                    'images')
+        self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
 
-        self.cubepath = path.full('mangacube', plateifu=self.plateifu,
-                                  drpver=self.drpver, plate=self.plate, ifu=self.ifu)
+        self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
 
-        self.rsspath = path.full('mangarss', drpver=self.drpver, plate=self.plate, ifu=self.ifu)
-
-        dap_params = dict(drpver=self.drpver, dapver=self.dapver,
-                          plate=self.plate, ifu=self.ifu, bintype=self.bintype)
+        self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
 
         if self.release == 'MPL-4':
-            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template),
-                                        __BINTYPES_MPL4__[self.bintype]))
-            self.mapspath = path.full('mangamap', n=niter, **dap_params)
+            self.mapspath = self.path.__getattribute__(pathtype)('mangamap', **self.access_kwargs)
             self.modelpath = None
         else:
-            daptype = '{0}-{1}'.format(self.bintype, self.template)
-            self.mapspath = path.full('mangadap5', mode='MAPS', daptype=daptype, **dap_params)
-            self.modelpath = path.full('mangadap5', mode='LOGCUBE', daptype=daptype, **dap_params)
+            mode = self.access_kwargs.pop('mode')
+            self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS', **self.access_kwargs)
+            self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE', **self.access_kwargs)
+
+    def get_location(self, path):
+        ''' Extract the location from the input path '''
+        return self.path.location("", full=path)
+
+    def partition_path(self, path):
+        ''' Partition the path into non-redux/analysis parts '''
+        endredux = path.partition(self.mangaredux)[-1]
+        endanal = path.partition(self.mangaanalysis)[-1]
+        end = (endredux or endanal)
+        return end
 
 
 class DB(object):
@@ -141,7 +155,7 @@ class DB(object):
         self.dapdb = marvindb.dapdb
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def set_config():
     config.use_sentry = False
     config.add_github_message = False
@@ -247,7 +261,13 @@ def db_off():
 
 
 @pytest.fixture(scope='session')
-def galaxy(maindb, get_params, get_plateifu, set_sasurl):
+def db_on():
+    """Turns the DB off and tears down."""
+    config.forceDbOn()
+
+
+@pytest.fixture(scope='function')
+def galaxy(maindb, get_params, get_plateifu, set_sasurl, db_on):
 
     release, bintype, template = get_params
 
@@ -258,6 +278,28 @@ def galaxy(maindb, get_params, get_plateifu, set_sasurl):
 
     yield gal
 
+
+@pytest.fixture()
+def monkeyconfig(request, monkeypatch):
+    name, value = request.param
+    monkeypatch.setattr(config, name, value=value)
+
+
+@pytest.fixture()
+def monkeymanga(monkeypatch, temp_scratch):
+    monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX', str(temp_scratch.join('mangawork/manga/spectro/redux')))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS', str(temp_scratch.join('mangawork/manga/spectro/analysis')))
+
+
+def tempafile(path, temp_scratch):
+    redux = os.getenv('MANGA_SPECTRO_REDUX')
+    anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
+    endredux = path.partition(redux)[-1]
+    endanal = path.partition(anal)[-1]
+    end = (endredux or endanal)
+
+    return temp_scratch.join(end)
 
 # Query and Results Fixtures (loops over all modes and db possibilities)
 
@@ -277,7 +319,8 @@ def db(request):
         config.forceDbOn()
     else:
         config.forceDbOff()
-    return config.db is not None
+    yield config.db is not None
+    config.forceDbOff()
 
 
 @pytest.fixture()

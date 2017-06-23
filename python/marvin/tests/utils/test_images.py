@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-01 17:41:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-19 16:51:20
+# @Last Modified time: 2017-06-20 16:37:30
 
 from __future__ import print_function, division, absolute_import
 
@@ -17,7 +17,7 @@ import warnings
 from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.plate import Plate
-from marvin.tests import MarvinTest, skipIfNoBrian
+from marvin.tests import MarvinTest
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
 
 try:
