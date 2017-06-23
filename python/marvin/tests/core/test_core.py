@@ -1,56 +1,42 @@
-#!/usr/bin/env python
-# encoding: utf-8
+# !usr/bin/env python2
+# -*- coding: utf-8 -*-
 #
-# test_core.py
+# Licensed under a 3-clause BSD license.
 #
-# Created by Brett Andrews on 30 Nov 2016.
+# @Author: Brian Cherinka
+# @Date:   2017-06-12 19:00:10
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2017-06-12 19:13:15
+
+from __future__ import print_function, division, absolute_import
+from marvin.core.core import Dotable, DotableCaseInsensitive
+import pytest
+
+normal_dicts = [dict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])]
 
 
-from __future__ import division, print_function, absolute_import
-
-import unittest
-
-import marvin
-import marvin.tests
-import marvin.core.core
+@pytest.fixture(params=normal_dicts)
+def dotdict(request):
+    return Dotable(request.param)
 
 
-class TestCoreDotable(marvin.tests.MarvinTest):
-    """Test Dotable dictionary class."""
+@pytest.fixture(params=normal_dicts)
+def dotdictci(request):
+    return DotableCaseInsensitive(request.param)
 
-    @classmethod
-    def setUpClass(cls):
-        cls.normalDict = dict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
 
-    def testDotable(self):
-        self.dotableDict = marvin.core.core.Dotable(self.normalDict)
-        self.assertEqual(self.dotableDict['A'], self.dotableDict.A)
-        self.assertListEqual(self.dotableDict['b'], self.dotableDict.b)
-        self.assertEqual(self.dotableDict['C'], self.dotableDict.C)
-        self.assertListEqual(self.dotableDict['d'], self.dotableDict.d)
+class TestCoreDotable(object):
 
-    def testDotableCaseInsensitive(self):
-        self.dotableCI = marvin.core.core.DotableCaseInsensitive(self.normalDict)
-        self.assertEqual(self.dotableCI['A'], self.dotableCI.A)
-        self.assertEqual(self.dotableCI['a'], self.dotableCI.a)
-        self.assertEqual(self.dotableCI['A'], self.dotableCI.a)
-        self.assertEqual(self.dotableCI['a'], self.dotableCI.A)
-        self.assertListEqual(self.dotableCI['b'], self.dotableCI.b)
-        self.assertListEqual(self.dotableCI['B'], self.dotableCI.B)
-        self.assertListEqual(self.dotableCI['b'], self.dotableCI.B)
-        self.assertListEqual(self.dotableCI['B'], self.dotableCI.b)
-        self.assertEqual(self.dotableCI['C'], self.dotableCI.C)
-        self.assertEqual(self.dotableCI['c'], self.dotableCI.c)
-        self.assertEqual(self.dotableCI['C'], self.dotableCI.c)
-        self.assertEqual(self.dotableCI['c'], self.dotableCI.C)
-        self.assertListEqual(self.dotableCI['d'], self.dotableCI.d)
-        self.assertListEqual(self.dotableCI['D'], self.dotableCI.D)
-        self.assertListEqual(self.dotableCI['d'], self.dotableCI.D)
-        self.assertListEqual(self.dotableCI['D'], self.dotableCI.d)
+    @pytest.mark.parametrize('key', [('A'), ('b'), ('C'), ('d')])
+    def test_dotable(self, dotdict, key):
+        assert dotdict[key] == dotdict.__getattr__(key)
 
-if __name__ == '__main__':
-    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
+    @pytest.mark.parametrize('key', [('A'), ('b'), ('C'), ('d')])
+    def test_dotablecaseins(self, dotdictci, key):
+        assert dotdictci[key] == dotdictci.__getattr__(key)
+        assert dotdictci[key.upper()] == dotdictci.__getattr__(key.lower())
+        assert dotdictci[key.lower()] == dotdictci.__getattr__(key.upper())
+        assert dotdictci[key.lower()] == dotdictci.__getattr__(key.lower())
+
+
+
