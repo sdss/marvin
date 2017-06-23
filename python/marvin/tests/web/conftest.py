@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-14 10:18:07
+# @Last Modified time: 2017-06-23 16:41:01
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -80,6 +80,7 @@ def init_web(monkeypatch, saslocal):
 
 @pytest.mark.usefixtures('app, get_templates')
 class Page(object):
+    ''' Object representing a Web Page '''
     def __init__(self, client, blue, endpoint):
         self.app = app()
         self.url = self.get_url(blue, endpoint)
@@ -176,6 +177,7 @@ class Page(object):
 
 @contextmanager
 def captured_templates(app):
+    ''' Records which templates are used '''
     recorded = []
 
     def record(app, template, context, **extra):
@@ -188,6 +190,7 @@ def captured_templates(app):
 
 @pytest.fixture()
 def get_templates(app):
+    ''' Fixture that returns which jinja template used '''
     with captured_templates(app) as templates:
         yield templates
 

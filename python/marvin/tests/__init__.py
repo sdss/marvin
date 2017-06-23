@@ -5,7 +5,6 @@ import warnings
 import os
 import inspect
 from functools import wraps
-from contextlib import contextmanager
 
 import pytest
 from unittest import TestCase
@@ -184,20 +183,6 @@ def skipIfNoDB(test):
         else:
             return test(self, db, *args, **kwargs)
     return wrapper
-
-
-@contextmanager
-def set_tmp_sasurl(tmp_sasurl):
-    sasurl = config.sasurl
-    yield
-    config.sasurl = sasurl
-
-
-@contextmanager
-def set_tmp_mpl(tmp_mpl):
-    mpl = config.release
-    yield
-    config.setMPL(mpl)
 
 
 
