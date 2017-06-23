@@ -27,20 +27,6 @@ def use_bintypes(*bintypes):
     return check_bintype
 
 
-class UseBintypes:
-    """Decorate all tests in a class to run only for the given bintypes."""
-    def __init__(self, *args):
-        self.args = args
-
-    def __call__(self, decorated_class):
-        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
-            # only decorate public functions
-            if attr[0][0] != '_':
-                setattr(decorated_class, attr[0],
-                        use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
-        return decorated_class
-
-
 def use_releases(*releases):
     """Decorates test to run only for the given releases."""
     def check_bintype(f):
@@ -57,8 +43,8 @@ def use_releases(*releases):
     return check_bintype
 
 
-class UseReleases:
-    """Decorate all tests in a class to run only for the given MPLs."""
+class MetaUse(object):
+    ''' Meta class to define a testing class that decorates all tests to use the specified fxn '''
     def __init__(self, *args):
         self.args = args
 
@@ -67,9 +53,12 @@ class UseReleases:
             # only decorate public functions
             if attr[0][0] != '_':
                 setattr(decorated_class, attr[0],
-                        use_releases(*self.args)(getattr(decorated_class, attr[0])))
-
+                        self.fxn(*self.args)(getattr(decorated_class, attr[0])))
         return decorated_class
+
+
+UseBintypes = type('UseBintypes', (MetaUse,), {'fxn': use_bintypes})
+UseReleases = type('UseReleases', (MetaUse,), {'fxn': use_releases})
 
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
