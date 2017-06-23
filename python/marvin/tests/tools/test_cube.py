@@ -318,13 +318,7 @@ class TestGetSpaxel(object):
         spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
         assert pytest.approx(spectrum.flux[3000], expected)
 
-    @pytest.mark.parametrize('mpl, flux, ivar, mask',
-                             [('MPL-4', 0.017639931, 352.12421, 1026),
-                              ('MPL-5', 0.016027471, 361.13596, 1026)])
-    @skipIfNoDB
-    def test_getspaxel_matches_file_db_remote(self, maindb, galaxy, mpl, flux, ivar, mask):
-        config.setMPL(mpl)
-        assert config.release == mpl
+    def test_getspaxel_matches_file_db_remote(self, galaxy):
 
         cube_file = Cube(filename=galaxy.cubepath)
         cube_db = Cube(plateifu=galaxy.plateifu)
@@ -334,9 +328,12 @@ class TestGetSpaxel(object):
         assert cube_db.data_origin == 'db'
         assert cube_api.data_origin == 'api'
 
-        xx = 12
-        yy = 5
-        spec_idx = 200
+        xx = galaxy.spaxel['x']
+        yy = galaxy.spaxel['y']
+        spec_idx = galaxy.spaxel['specidx']
+        flux = galaxy.spaxel['flux']
+        ivar = galaxy.spaxel['ivar']
+        mask = galaxy.spaxel['mask']
 
         spaxel_slice_file = cube_file[yy, xx]
         spaxel_slice_db = cube_db[yy, xx]
@@ -354,8 +351,8 @@ class TestGetSpaxel(object):
         assert pytest.approx(spaxel_slice_db.spectrum.mask[spec_idx], mask)
         assert pytest.approx(spaxel_slice_api.spectrum.mask[spec_idx], mask)
 
-        xx_cen = -5
-        yy_cen = -12
+        xx_cen = galaxy.spaxel['x_cen']
+        yy_cen = galaxy.spaxel['y_cen']
 
         spaxel_getspaxel_file = cube_file.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)

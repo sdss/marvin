@@ -88,6 +88,11 @@ class Galaxy(object):
         for key in data.keys():
             setattr(self, key, data[key])
 
+        # sets specfic data per release
+        releasedata = self.releasedata[self.release]
+        for key in releasedata.keys():
+            setattr(self, key, releasedata[key])
+
     def set_params(self, bintype=None, template=None, release=None):
         """Sets bintype, template, etc."""
 
@@ -272,9 +277,9 @@ def galaxy(maindb, get_params, get_plateifu, set_sasurl, db_on):
     release, bintype, template = get_params
 
     gal = Galaxy(plateifu=get_plateifu)
-    gal.set_galaxy_data()
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
+    gal.set_galaxy_data()
 
     yield gal
 
