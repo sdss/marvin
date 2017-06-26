@@ -28,6 +28,13 @@
                 flux: 0.016027471
                 ivar: 361.13596
                 mask: 1026
+    stellar_vel_ivar_x15_y8_lower:
+        MPL-4:
+            M11-STELIB-ZSOL: 1.20021642356e-05
+            MIUSCAT-THIN: 1.013657267e-05
+            MILES-THIN: 2.25913102153e-05
+        MPL-5:
+            GAU-MILESHC: 0.00031520479546875247
 
 7443-12701:
     mangaid: 12-98126
@@ -58,3 +65,10 @@
                 flux: 0.021661391
                 ivar: 2145.38110
                 mask: 0
+    stellar_vel_ivar_x15_y8_lower:
+        MPL-4:
+            M11-STELIB-ZSOL: 0.0
+            MIUSCAT-THIN: 0.0
+            MILES-THIN: 0.0
+        MPL-5:
+            GAU-MILESHC: 0.0
