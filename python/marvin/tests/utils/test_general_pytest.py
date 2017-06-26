@@ -186,27 +186,20 @@ class TestGetNSAData(object):
         pytest.approx(data['sersic_flux_ivar'][0], 0.127634227275848)
 
 
-class TestPillowImage(MarvinTest):
+class TestPillowImage(object):
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestPillowImage, cls).setUpClass()
-        outver = 'v1_5_1'
-        cls.filename = os.path.join(cls.mangaredux, outver, str(cls.plate), 'stack/images', cls.imgname)
-
-    def test_image_has_wcs(self):
-        w = getWCSFromPng(self.filename)
-        self.assertEqual(type(w), WCS)
+    def test_image_has_wcs(self, galaxy):
+        w = getWCSFromPng(os.path.join(galaxy.imgpath, galaxy.imgname))
+        assert type(w) == WCS
 
     def test_use_pil(self):
         try:
             import PIL
         except ImportError as e:
-            with self.assertRaises(ImportError):
-                err = 'No module named PIL'
-                self.assertEqual(err, e.args[0])
+                assert "No module named 'PIL'" == e.args[0]
 
-class TestDataModelPlotParams(MarvinTest):
+
+class TestDataModelPlotParams(object):
     
     def bitmasks(self):
         return {'1.1.1': {'badData': {'doNotUse': 0}},
@@ -223,7 +216,7 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': False,
                    'snr_min': 1}
         actual = get_plot_params(dapver='1.1.1', prop='emline_gflux')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
 
     def test_get_plot_params_default_mpl5(self):
         desired = {'bitmasks': self.bitmasks()['2.0.2'],
@@ -232,7 +225,7 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': False,
                    'snr_min': 1}
         actual = get_plot_params(dapver='2.0.2', prop='emline_gflux')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
 
     def test_get_plot_params_vel_mpl4(self):
         desired = {'bitmasks': self.bitmasks()['1.1.1'],
@@ -241,7 +234,7 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': True,
                    'snr_min': None}
         actual = get_plot_params(dapver='1.1.1', prop='stellar_vel')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
     
     def test_get_plot_params_vel_mpl5(self):
         desired = {'bitmasks': self.bitmasks()['2.0.2'],
@@ -250,7 +243,7 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': True,
                    'snr_min': None}
         actual = get_plot_params(dapver='2.0.2', prop='stellar_vel')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
     
     def test_get_plot_params_sigma_mpl4(self):
         desired = {'bitmasks': self.bitmasks()['1.1.1'],
@@ -259,7 +252,7 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': False,
                    'snr_min': 1}
         actual = get_plot_params(dapver='1.1.1', prop='stellar_sigma')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
 
     def test_get_plot_params_sigma_mpl5(self):
         desired = {'bitmasks': self.bitmasks()['2.0.2'],
@@ -268,4 +261,4 @@ class TestDataModelPlotParams(MarvinTest):
                    'symmetric': False,
                    'snr_min': 1}
         actual = get_plot_params(dapver='2.0.2', prop='stellar_sigma')
-        self.assertDictEqual(actual, desired)
+        assert actual == desired
