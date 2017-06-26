@@ -115,7 +115,7 @@ def check_config():
     return config.db is None
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
     ''' Sets the sasurl to local or test-utah and regenrates the urlmap '''
     if not port:
@@ -124,6 +124,11 @@ def set_sasurl(loc='local', port=None):
     config.switchSasUrl(loc, test=istest, port=port)
     response = Interaction('api/general/getroutemap', request_type='get')
     config.urlmap = response.getRouteMap()
+
+
+@pytest.fixture(autouse=True)
+def saslocal():
+    set_sasurl(loc='local')
 
 
 @pytest.fixture(scope='session')
@@ -144,6 +149,17 @@ def versions(release):
     drpver, dapver = config.lookUpVersions(release)
     return drpver, dapver
 
+
+@pytest.fixture(scope='session')
+def drpver(versions):
+    drpver, dapver = versions
+    return drpver
+
+
+@pytest.fixture(scope='session')
+def dapver(versions):
+    drpver, dapver = versions
+    return dapver
 
 # DB-based FIXTURES
 # -----------------

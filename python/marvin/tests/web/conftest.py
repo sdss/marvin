@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-23 16:41:01
+# @Last Modified time: 2017-06-26 13:37:33
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -22,17 +22,16 @@ except ImportError:
     from urlparse import urlparse, urljoin
 
 
+# @pytest.fixture(scope='session')
+# def drpver(release):
+#     drpver, dapver = config.lookUpVersions(release)
+#     return drpver
 
-@pytest.fixture(scope='session')
-def drpver(release):
-    drpver, dapver = config.lookUpVersions(release)
-    return drpver
 
-
-@pytest.fixture(scope='session')
-def dapver(release):
-    drpver, dapver = config.lookUpVersions(release)
-    return dapver
+# @pytest.fixture(scope='session')
+# def dapver(release):
+#     drpver, dapver = config.lookUpVersions(release)
+#     return dapver
 
 
 @pytest.fixture(scope='session')
@@ -44,18 +43,18 @@ def app():
     return app
 
 
-def set_sasurl(loc='local', port=None):
-    if not port:
-        port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
-    istest = True if loc == 'utah' else False
-    config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get')
-    config.urlmap = response.getRouteMap()
+# def set_sasurl(loc='local', port=None):
+#     if not port:
+#         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
+#     istest = True if loc == 'utah' else False
+#     config.switchSasUrl(loc, test=istest, port=port)
+#     response = Interaction('api/general/getroutemap', request_type='get')
+#     config.urlmap = response.getRouteMap()
 
 
-@pytest.fixture()
-def saslocal():
-    set_sasurl(loc='local')
+# @pytest.fixture()
+# def saslocal():
+#     set_sasurl(loc='local')
 
 
 def test_db_stuff():
@@ -67,8 +66,7 @@ def test_db_stuff():
 
 
 @pytest.fixture(scope='function')
-def init_web(monkeypatch, saslocal):
-    #set_sasurl('local')
+def init_web(monkeypatch, set_config):
     config.forceDbOn()
 
     # monkeypath the render templating to nothing
@@ -76,6 +74,12 @@ def init_web(monkeypatch, saslocal):
         template_rendered.send(app, template=template, context=context)
         return ""
     monkeypatch.setattr(templating, '_render', _empty_render)
+
+
+@pytest.fixture(scope='function', autouse=True)
+def inspection(monkeypatch):
+    from brain.core.inspection import Inspection
+    monkeypatch.setattr('inspection.marvin.Inspection', Inspection)
 
 
 @pytest.mark.usefixtures('app, get_templates')
@@ -173,6 +177,13 @@ class Page(object):
         not_redirect = "HTTP Status {0} expected but got {1}".format(valid_status_code_str, self.response.status_code)
         assert self.response.status_code in valid_status_codes, message or not_redirect
         assert self.response.location == expected_location, message
+
+
+@pytest.fixture()
+def page(client, request, init_web):
+    blue, endpoint = request.param
+    page = Page(client, blue, endpoint)
+    yield page
 
 
 @contextmanager
