@@ -6,23 +6,23 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-19 16:06:29
+# @Last Modified time: 2017-06-26 16:05:35
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
 
 
-@pytest.fixture()
-def page(client, request, init_api):
-    blue, endpoint = request.param
-    page = ApiPage(client, 'api', endpoint)
-    yield page
+# @pytest.fixture()
+# def page(client, request, init_api):
+#     blue, endpoint = request.param
+#     page = ApiPage(client, 'api', endpoint)
+#     yield page
 
 
-@pytest.fixture()
-def params(release):
-    return {'release': release}
+# @pytest.fixture()
+# def params(release):
+#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'MapsView:index')], ids=['maps'], indirect=True)
@@ -51,8 +51,8 @@ class TestGetMaps(object):
                               ('84', 'name', 'Shorter than minimum length 4.', None, None),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
                               ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC'),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC'),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN'),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES'),
                               ('8485-1901', 'bintype', 'Field may not be null.', None, None),
                               ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
@@ -85,8 +85,8 @@ class TestGetSingleMap(object):
                               ('84', 'name', 'Shorter than minimum length 4.', None, None, None, None),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None, None),
                               ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC', None, None),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC', None, None),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN', None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC', None, None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES', None, None),
                               ('8485-1901', 'property_name', 'Not a valid choice.', 'SPX', 'GAU-MILESHC', 'emline', None),
                               ('8485-1901', 'channel', 'Field may not be null.', 'SPX', 'GAU-MILESHC', 'emline_gflux', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
@@ -126,8 +126,8 @@ class TestGetBinSpaxels(object):
                               ('84', 'name', 'Shorter than minimum length 4.', None, None, None),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None),
                               ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC', None),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC', None),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN', None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC', None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES', None),
                               ('8485-1901', 'binid', 'Must be between -1 and 5800.', 'SPX', 'GAU-MILESHC', 7000),
                               ('8485-1901', 'binid', 'Not a valid integer.', 'SPX', 'GAU-MILESHC', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',

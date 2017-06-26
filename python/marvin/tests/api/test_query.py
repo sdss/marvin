@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 16:40:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-24 18:09:06
+# @Last Modified time: 2017-06-26 14:07:07
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -15,16 +15,16 @@ from marvin.tools.query.query_utils import bestparams
 import pytest
 
 
-@pytest.fixture()
-def page(client, request, init_api):
-    blue, endpoint = request.param
-    page = ApiPage(client, 'api', endpoint)
-    yield page
+# @pytest.fixture()
+# def page(client, request, init_api):
+#     blue, endpoint = request.param
+#     page = ApiPage(client, 'api', endpoint)
+#     yield page
 
 
-@pytest.fixture()
-def params(release):
-    return {'release': release}
+# @pytest.fixture()
+# def params(release):
+#     return {'release': release}
 
 
 def get_query_params(paramdisplay):

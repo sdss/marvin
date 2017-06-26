@@ -66,7 +66,7 @@
         elpetro_ba: 0.743017
         elpetro_mag_i_z: 0.16561126709
         elpetro_phi: 149.48
-        elpetro_mtol_i: None
+        elpetro_mtol_i: 1.3208532333374
         elpetro_th90_r: 11.7051
         elpetro_mag_u_r: 1.95657157898
         sersic_n: 4.43097
