@@ -122,6 +122,7 @@ def marvin_test_if(mode='skip', **kfilter):
                 return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
             elif mode == 'xfail' and fixture_value in filter_values:
                 return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
+            return False
 
         @wraps(ff)
         def decorated_function(self, *args, **kwargs):
@@ -145,8 +146,8 @@ def marvin_test_if(mode='skip', **kfilter):
                     if not hasattr(fixture, filter_attribute):
                         continue
                     fixture_value = getattr(fixture, filter_attribute)
-                    _should_skip(filter_values, fixture_value, filter_attribute)
-                    break
+                    if _should_skip(filter_values, fixture_value, filter_attribute):
+                        break
 
             return ff(self, *args, **kwargs)
         return decorated_function
