@@ -77,8 +77,6 @@ class TestMaps(object):
         assert maps._drpver == 'v1_5_1'
         assert maps._dapver == '1.1.1'
 
-    # TODO: generalise this test to some (if not all) releases and bintypes
-    @marvin_test_if(mode='include', galaxy=dict(release=['MPL-4'], bintype=['NONE']))
     def test_get_spaxel(self, galaxy, data_origin):
 
         maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
@@ -87,7 +85,9 @@ class TestMaps(object):
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
-        pytest.approx(spaxel.properties['stellar_vel'].ivar, 1.013657e-05)
+
+        expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template]
+        assert spaxel.properties['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
 
     def test_get_spaxel_test2(self, galaxy, data_origin):
 
@@ -103,6 +103,8 @@ class TestMaps(object):
 
         maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
+
+        assert spaxel.maps.data_origin == 'file' if data_origin
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
