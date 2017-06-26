@@ -146,7 +146,7 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
-def get_nsa_dict(name, drpver):
+def get_nsa_dict(name, drpver, makenew=None):
     ''' Gets a NSA dictionary from a pickle or a query '''
     nsapath = os.environ.get('MANGA_SCRATCH_DIR', None)
     if nsapath and os.path.isdir(nsapath):
@@ -164,7 +164,6 @@ def get_nsa_dict(name, drpver):
         nsadict = marvin_pickle.restore(nsapickle_file)
     else:
         # make from scratch from db
-        #nsacache = 'nsa_mpl5' if drpver == 'v2_0_1' else 'nsa_mpl4' if drpver == 'v1_5_1' else None
         session = marvindb.session
         sampledb = marvindb.sampledb
         allnsa = session.query(sampledb.NSA, marvindb.datadb.Cube.plateifu).\
@@ -173,6 +172,11 @@ def get_nsa_dict(name, drpver):
                  marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
             filter(marvindb.datadb.PipelineVersion.version == drpver).options(FromCache(name)).all()
         nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
+
+        # write a new NSA pickle object
+        if makenew:
+            marvin_pickle.save(nsadict, path=nsapickle_file, overwrite=True)
+
     return nsadict
 
 

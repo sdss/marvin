@@ -1,0 +1,60 @@
+---
+8485-1901:
+    mangaid: 1-209232
+    cubepk: 10179
+    ra: 232.544703894
+    dec: 48.6902009334
+    redshift: 0.0407447
+    shape: [34, 34]
+    iauname: 'J153010.73+484124.8'
+    releasedata:
+        MPL-4:
+            spaxel:
+                x: 12
+                y: 5
+                specidx: 200
+                x_cen: -5
+                y_cen: -12
+                flux: 0.017639931
+                ivar: 352.12421
+                mask: 1026
+        MPL-5:
+            spaxel:
+                x: 12
+                y: 5
+                specidx: 200
+                x_cen: -5
+                y_cen: -12
+                flux: 0.016027471
+                ivar: 361.13596
+                mask: 1026
+
+7443-12701:
+    mangaid: 12-98126
+    cubepk: 13321
+    ra: 230.50746239
+    dec: 43.53234133
+    redshift: 0.020478
+    shape: [72, 72]
+    iauname: 'J152201.78+433156.3'
+    releasedata:
+        MPL-4:
+            spaxel:
+                x: 15
+                y: 32
+                specidx: 200
+                x_cen: -5
+                y_cen: -12
+                flux: 0.0187161993
+                ivar: 2151.76000
+                mask: 0
+        MPL-5:
+            spaxel:
+                x: 15
+                y: 32
+                specidx: 200
+                x_cen: -5
+                y_cen: -12
+                flux: 0.021661391
+                ivar: 2145.38110
+                mask: 0

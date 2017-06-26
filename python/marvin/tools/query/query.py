@@ -23,7 +23,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
 from operator import le, ge, gt, lt, eq, ne
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import datetime
 import numpy as np
 import warnings
@@ -308,19 +308,14 @@ class Query(object):
         '''
         dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
         if any(dapschema):
-            dapcols = ['spaxelprop.x', 'spaxelprop.y']
+            dapcols = ['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
-            qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
-            self.queryparams.extend(qpdap)
-            self.queryparams_order.extend([q.key for q in qpdap])
-            # oldcols = ['spaxel.x', 'spaxel.y']
-            # if 'spaxel.x' in self.defaultparams:
-            #     for n in oldcols:
-            #         self.defaultparams.remove(n)
-            #         self.params.remove(n)
-            #         self.queryparams.remove(n)
-            #         self.queryparams_order.remove(n.split('.')[1])
+            self.params = list(OrderedDict.fromkeys(self.params))
+            self._create_query_modelclasses()
+            # qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
+            # self.queryparams.extend(qpdap)
+            # self.queryparams_order.extend([q.key for q in qpdap])
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -334,7 +329,7 @@ class Query(object):
 
         '''
         if returnparams:
-            returnparams = [returnparams] if type(returnparams) != list else returnparams
+            returnparams = [returnparams] if not isinstance(returnparams, list) else returnparams
             self._returnparams = returnparams
         self.params.extend(returnparams)
 

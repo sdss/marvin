@@ -1,50 +1,29 @@
-#!/usr/bin/env python
-# encoding: utf-8
+# !usr/bin/env python2
+# -*- coding: utf-8 -*-
 #
-# test_core.py
+# Licensed under a 3-clause BSD license.
 #
-# Created by José Sánchez-Gallego on 1 Dec 2016.
+# @Author: Brian Cherinka
+# @Date:   2017-06-12 18:20:03
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2017-06-12 18:40:50
 
-
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
+from __future__ import print_function, division, absolute_import
+from marvin import config
+from marvin.tools.cube import Cube
+import pytest
 import os
 
-import marvin
-import marvin.tests
-import marvin.tools.cube
 
+class TestMisc(object):
 
-class TestMisc(marvin.tests.MarvinTest):
-    """A series of tests for MarvinToolsClass."""
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestMisc, cls).setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        self._reset_the_config()
-        self.set_sasurl('local')
-        self._update_release('MPL-5')
-
-    def tearDown(self):
-        pass
-
-    def test_custom_drpall(self):
-        """Tests that drpall is reset when we instantiate a Cube with custom release."""
-
-        self.assertIn('drpall-v2_0_1.fits', marvin.config.drpall)
-
-        cube = marvin.tools.cube.Cube(plateifu=self.plateifu, release='MPL-4')
-
-        self.assertEqual(cube._release, 'MPL-4')
-        self.assertEqual(cube._drpver, 'v1_5_1')
-        self.assertTrue(os.path.exists(cube._drpall))
-        self.assertIn('drpall-v1_5_1.fits', cube._drpall)
-        self.assertIn('drpall-v2_0_1.fits', marvin.config.drpall)
+    @pytest.mark.parametrize('mpl, drpver', [('MPL-4', 'v1_5_1')])
+    def test_custom_drpall(self, galaxy, mpl, drpver):
+        assert galaxy.drpall in config.drpall
+        cube = Cube(plateifu=galaxy.plateifu, release=mpl)
+        drpall = 'drpall-{0}.fits'.format(drpver)
+        assert cube._release == mpl
+        assert cube._drpver == drpver
+        assert os.path.exists(cube._drpall) is True
+        assert drpall in cube._drpall
+        assert galaxy.drpall in config.drpall
