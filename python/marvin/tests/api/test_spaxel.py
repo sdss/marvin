@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:56:30
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 14:07:16
+# @Last Modified time: 2017-06-27 14:10:49
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'getSpectrum')], ids=['getspectrum'], indirect=True)
@@ -57,20 +45,12 @@ class TestGetSpectrum(object):
 class TestGetProperties(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    @pytest.mark.parametrize('x, y, expprop, expval',
-                             [(17, 17, "emline_gflux_ha_6564", {
-                                       "channel": "ha_6564",
-                                       "description": "Gaussian profile integrated flux for emission lines.",
-                                       "ivar": 47.0896851561,
-                                       "mask": 0,
-                                       "name": "emline_gflux",
-                                       "unit": "1E-17 erg/s/cm^2/spaxel",
-                                       "value": 31.4754
-                             })])
-    def test_props_success(self, galaxy, page, params, reqtype, x, y, expprop, expval):
-        params.update({'name': galaxy.plateifu, 'x': x, 'y': y, 'template_kin': galaxy.template})
+    @pytest.mark.parametrize('expprop', [('emline_gflux_ha_6564')], ids=['haflux'])
+    def test_props_success(self, galaxy, page, params, reqtype, expprop):
+        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'], 'template_kin': galaxy.template})
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success()
+        expval = galaxy.dap[galaxy.template][expprop]
         props = page.json['data']['properties']
         assert expprop in props
         assert expval == props[expprop]
@@ -97,19 +77,18 @@ class TestGetProperties(object):
 class TestGetModels(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    @pytest.mark.parametrize('x, y, expdata',
-                             [(17, 17, (0.471273, 128.573, 32, 0, 0, 0, 128))])
-    def test_models_success(self, galaxy, page, params, reqtype, x, y, expdata):
-        params.update({'name': galaxy.plateifu, 'x': x, 'y': y, 'template_kin': galaxy.template})
+    def test_models_success(self, galaxy, page, params, reqtype):
+        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'], 'template_kin': galaxy.template})
         page.load_page(reqtype, page.url.format(**params), params=params)
         data = {'bintype': galaxy.bintype, 'template_kin': galaxy.template, 'flux_array': [],
                 'flux_mask': [], 'flux_ivar': [], 'model_array': [], 'model_emline': [],
                 'model_emline_base': [], 'model_emline_mask': []}
         page.assert_success(data, keys=True)
         jdata = page.json['data']
-        mcdata = (jdata['flux_array'][0], jdata['flux_ivar'][0], jdata['flux_mask'][0],
+        expdata = galaxy.dap[galaxy.template]['model']
+        mcdata = [jdata['flux_array'][0], jdata['flux_ivar'][0], jdata['flux_mask'][0],
                   jdata['model_array'][0], jdata['model_emline'][0], jdata['model_emline_base'][0],
-                  jdata['model_emline_mask'][0])
+                  jdata['model_emline_mask'][0]]
         assert expdata == mcdata
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])

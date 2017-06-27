@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:34:31
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 14:11:26
+# @Last Modified time: 2017-06-27 11:19:23
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'mangaid2plateifu')], ids=['mangaid2plateifu'], indirect=True)

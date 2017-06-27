@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 16:05:35
+# @Last Modified time: 2017-06-27 11:19:14
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'MapsView:index')], ids=['maps'], indirect=True)
@@ -41,7 +29,7 @@ class TestGetMaps(object):
     def test_maps_success(self, galaxy, page, params, reqtype):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
         data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
-                'template_kin': galaxy.template, 'shape': [34, 34]}
+                'template_kin': galaxy.template, 'shape': galaxy.shape}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 
@@ -110,13 +98,9 @@ class TestGetBinSpaxels(object):
     @pytest.mark.parametrize('binid', [(100)])
     def test_binspax_success(self, galaxy, page, params, reqtype, binid):
 
-        def get_bin_data(bintype, binid):
-            bindata = {100: {'ALL': [], 'NRE': [], 'SPX': [[13, 7]], 'VOR10': [[18, 22], [18, 23]]}}
-            return bindata[binid][bintype]
-
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
                        'template_kin': galaxy.template, 'binid': binid})
-        data = {'spaxels': get_bin_data(galaxy.bintype, binid)}
+        data = {'spaxels': galaxy.bins[binid][galaxy.bintemp]}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 
