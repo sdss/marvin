@@ -127,7 +127,7 @@ def set_sasurl(loc='local', port=None):
 
 
 @pytest.fixture(autouse=True)
-def saslocal():
+def saslocal(set_release):
     set_sasurl(loc='local')
 
 

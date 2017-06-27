@@ -29,12 +29,11 @@ from astropy.wcs import WCS
 import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
 from marvin.utils.dap.datamodel import get_default_plot_params
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture()
 def wcs(galaxy):
     return WCS(fits.getheader(galaxy.cubepath, 1))
 
