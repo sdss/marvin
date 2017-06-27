@@ -6,20 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 14:09:44
+# @Last Modified time: 2017-06-26 13:32:58
 
 from __future__ import print_function, division, absolute_import
 import pytest
 from marvin.tests.web.conftest import Page
 from marvin import marvindb
 from flask import url_for
-
-
-@pytest.fixture()
-def page(client, request, init_web):
-    blue, endpoint = request.param
-    page = Page(client, blue, endpoint)
-    yield page
 
 
 @pytest.mark.parametrize('page', [('index_page', 'Marvin:index')], ids=['index'], indirect=True)
@@ -82,7 +75,7 @@ class TestGetGalIdList(object):
 @pytest.mark.parametrize('name, id, galid', [('plate', 'plate', 8485),
                                              ('galaxy', 'plateifu', '8485-1901'),
                                              ('galaxy', 'mangaid', '1-209232'),
-                                             ('main', None, 'galname')])
+                                             ('main', None, None)])
 class TestGalIdSelect(object):
 
     @pytest.fixture(autouse=True)
@@ -100,7 +93,10 @@ class TestGalIdSelect(object):
         data = {'galid': galid, 'release': release}
         page.load_page('get', page.url, params=data)
         redirect_url = self.get_url(id, galid)
-        page.assert_redirects(redirect_url, 'page should be redirected to {0} page'.format(name))
+        if id:
+            page.assert_redirects(redirect_url, 'page should be redirected to {0} page'.format(name))
+        else:
+            page.assert422(message='response should be 422 for no name input')
 
 
 @pytest.mark.parametrize('page', [('index_page', 'login')], ids=['login'], indirect=True)
@@ -112,7 +108,7 @@ class TestGalIdSelect(object):
                          ids=['no_input', 'wrong_pass', 'wrong_user', 'success'])
 class TestLogin(object):
 
-    def test_login(self, page, release, data, exp):
+    def test_login(self, inspection, page, release, data, exp):
         data['release'] = release
         page.load_page('post', page.url, params=data)
         page.assert200('response status should be 200 for ok')

@@ -15,12 +15,17 @@ from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.query import Query
 from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
-
 from sdss_access.path import Path
-
 from astropy.io.misc import yaml
 
 
+# TODO Replace skipTest and skipBrian with skipif
+# TODO use monkeypatch to set initial config variables
+# TODO replace _reset_the_config with monkeypatch
+
+
+# PYTEST MODIFIERS
+# -----------------
 def pytest_addoption(parser):
     parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
 
@@ -29,25 +34,9 @@ def pytest_runtest_setup(item):
     if 'slow' in item.keywords and not item.config.getoption('--runslow'):
         pytest.skip('Requires --runslow option to run.')
 
-
-# You don't need this function, tmpdir_factory handles all this for you.
-# See temp_scratch fixture and its use
-@pytest.fixture(scope='function')
-def tmpfiles():
-    files_created = []
-
-    yield files_created
-
-    for fp in files_created:
-        if os.path.exists(fp):
-            os.remove(fp)
-
-
-# TODO Replace skipTest and skipBrian with skipif
-# TODO use monkeypatch to set initial config variables
-# TODO replace _reset_the_config with monkeypatch
-
-releases = ['MPL-5', 'MPL-4']
+# Global Parameters for FIXTURES
+# ------------------------------
+releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
 
 bintypes = {release: [] for release in releases}
 templates = {release: [] for release in releases}
@@ -62,9 +51,199 @@ for release in releases:
         if template not in templates[release]:
             templates[release].append(template)
 
+modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
+dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
+origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
+
 
 # Galaxy data is stored in a YAML file
 galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
+
+
+@pytest.fixture(scope='session', params=releases)
+def release(request):
+    ''' Yields a release '''
+    return request.param
+
+
+def _get_release_generator_chain():
+    """Returns a generator for all valid combinations of (release, bintype, template)."""
+    return itertools.chain(*[itertools.product([release], bintypes[release],
+                                               templates[release]) for release in releases])
+
+
+def _params_ids(fixture_value):
+    ''' Returns an id for the release chain '''
+    return '-'.join(fixture_value)
+
+
+@pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
+def get_params(request):
+    """Yields a tuple of (release, bintype, template)."""
+    return request.param
+
+
+@pytest.fixture(scope='session', params=galaxy_data.keys())
+def plateifu(request):
+    ''' Yields a plate-ifu '''
+    return request.param
+
+
+@pytest.fixture(scope='session', params=origins)
+def data_origin(request):
+    """Yields a data access mode."""
+    return request.param
+
+
+@pytest.fixture(params=modes)
+def mode(request):
+    ''' Yields a data mode '''
+    return request.param
+
+
+# Config-based FIXTURES
+# ----------------------
+@pytest.fixture(scope='session', autouse=True)
+def set_config():
+    config.use_sentry = False
+    config.add_github_message = False
+
+
+@pytest.fixture()
+def check_config():
+    ''' check the config to see if a db is on or not '''
+    return config.db is None
+
+
+@pytest.fixture(scope='session')
+def set_sasurl(loc='local', port=None):
+    ''' Sets the sasurl to local or test-utah and regenrates the urlmap '''
+    if not port:
+        port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
+    istest = True if loc == 'utah' else False
+    config.switchSasUrl(loc, test=istest, port=port)
+    response = Interaction('api/general/getroutemap', request_type='get')
+    config.urlmap = response.getRouteMap()
+
+
+@pytest.fixture(autouse=True)
+def saslocal():
+    set_sasurl(loc='local')
+
+
+@pytest.fixture(scope='session')
+def urlmap(set_sasurl):
+    ''' Yields the config urlmap '''
+    return config.urlmap
+
+
+@pytest.fixture(scope='session')
+def set_release(release):
+    ''' sets the release in the config '''
+    config.setMPL(release)
+
+
+@pytest.fixture(scope='session')
+def versions(release):
+    ''' Yields the drp and dap versions for a release '''
+    drpver, dapver = config.lookUpVersions(release)
+    return drpver, dapver
+
+
+@pytest.fixture(scope='session')
+def drpver(versions):
+    drpver, dapver = versions
+    return drpver
+
+
+@pytest.fixture(scope='session')
+def dapver(versions):
+    drpver, dapver = versions
+    return dapver
+
+# DB-based FIXTURES
+# -----------------
+
+
+class DB(object):
+    ''' Object representing aspects of the marvin db.  Useful for tests needing direct DB access '''
+    def __init__(self):
+        self._marvindb = marvindb
+        self.session = marvindb.session
+        self.datadb = marvindb.datadb
+        self.sampledb = marvindb.sampledb
+        self.dapdb = marvindb.dapdb
+
+
+@pytest.fixture(scope='session')
+def maindb():
+    ''' Yields an instance of the DB object '''
+    yield DB()
+
+
+@pytest.fixture(scope='function')
+def db_off():
+    """ Turns the DB off for a test and resets it after """
+    config.forceDbOff()
+    yield
+    config.forceDbOn()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def db_on():
+    """ Session fixture to turn on the DB at start; automically gets used """
+    config.forceDbOn()
+
+
+@pytest.fixture(params=dbs)
+def db(request):
+    ''' db fixture to turn on and off a local db.  Use this to parametrize over all db options '''
+    if request.param == 'db':
+        config.forceDbOn()
+    else:
+        config.forceDbOff()
+    yield config.db is not None
+    config.forceDbOff()
+
+
+# Monkeypatch-based FIXTURES
+# --------------------------
+@pytest.fixture()
+def monkeyconfig(request, monkeypatch):
+    ''' Fixture to monkeypatch a variable on the Marvin config '''
+    name, value = request.param
+    monkeypatch.setattr(config, name, value=value)
+
+
+@pytest.fixture()
+def monkeymanga(monkeypatch, temp_scratch):
+    ''' Fixture to monkeypatch the environ to create a temp SAS dir for reading/writing/downloading '''
+    monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX', str(temp_scratch.join('mangawork/manga/spectro/redux')))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS', str(temp_scratch.join('mangawork/manga/spectro/analysis')))
+
+
+# Temp Dir/File-based FIXTURES
+# ----------------------------
+@pytest.fixture(scope='session')
+def temp_scratch(tmpdir_factory):
+    ''' Creates a temporary scratch space for reading/writing.  Used for creating temp dirs and files '''
+    fn = tmpdir_factory.mktemp('scratch')
+    return fn
+
+
+def tempafile(path, temp_scratch):
+    ''' Returns a pytest temporary file given the original file path '''
+    redux = os.getenv('MANGA_SPECTRO_REDUX')
+    anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
+    endredux = path.partition(redux)[-1]
+    endanal = path.partition(anal)[-1]
+    end = (endredux or endanal)
+
+    return temp_scratch.join(end)
+
+# Object-based FIXTURES
+# ---------------------
 
 
 class Galaxy(object):
@@ -150,133 +329,12 @@ class Galaxy(object):
         return end
 
 
-class DB(object):
-
-    def __init__(self):
-        self._marvindb = marvindb
-        self.session = marvindb.session
-        self.datadb = marvindb.datadb
-        self.sampledb = marvindb.sampledb
-        self.dapdb = marvindb.dapdb
-
-
-@pytest.fixture(scope='session', autouse=True)
-def set_config():
-    config.use_sentry = False
-    config.add_github_message = False
-
-
-@pytest.fixture()
-def check_config():
-    ''' check the config to see if a db is on or not '''
-    return config.db is None
-
-
-@pytest.fixture(scope='session')
-def set_sasurl(loc='local', port=None):
-    if not port:
-        port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
-    istest = True if loc == 'utah' else False
-    config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get')
-    config.urlmap = response.getRouteMap()
-
-
-@pytest.fixture(scope='session')
-def urlmap(set_sasurl):
-    return config.urlmap
-
-
-# use if you need a temporary directory and or file space (see TestQueryPickling for usage)
-@pytest.fixture(scope='session')
-def temp_scratch(tmpdir_factory):
-    fn = tmpdir_factory.mktemp('scratch')
-    return fn
-
-
-@pytest.fixture(scope='session', params=releases)
-def release(request):
-    return request.param
-
-
-@pytest.fixture(scope='session')
-def set_release(release):
-    config.setMPL(release)
-
-
-@pytest.fixture(scope='session')
-def get_versions(set_release):
-    drpver, dapver = config.lookUpVersions(config.release)
-    return config.release, drpver, dapver
-
-
-# TODO there is a fixture in test_query_pytest.py called ``db``
-@pytest.fixture(scope='session')
-def maindb(set_config):
-    yield DB()
-
-
-@pytest.fixture(scope='session', params=galaxy_data.keys())
-def get_plateifu(request):
-    return request.param
-
-
-# @pytest.fixture(scope='session', params=bintypes[config.release])
-# def get_bintype(request):
-#     return request.param
-#
-#
-# @pytest.fixture(scope='session', params=templates[config.release])
-# def get_template(request):
-#     return request.param
-
-
-def _get_release_generator_chain():
-    """Returns a generator for all valid combinations of (release, bintype, template)."""
-
-    return itertools.chain(*[itertools.product([release], bintypes[release],
-                                               templates[release]) for release in releases])
-
-
-def _params_ids(fixture_value):
-    return '-'.join(fixture_value)
-
-
-@pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
-def get_params(request):
-    """Yields a tuple of (release, bintype, template)."""
-
-    return request.param
-
-
-@pytest.fixture(scope='session', params=['file', 'db', 'api'])
-def data_origin(request):
-    """Yields a data access mode."""
-
-    return request.param
-
-
 @pytest.fixture(scope='function')
-def db_off():
-    """Turns the DB off and tears down."""
-
-    config.forceDbOff()
-    yield
-    config.forceDbOn()
-
-
-@pytest.fixture(scope='session')
-def db_on():
-    """Turns the DB off and tears down."""
-    config.forceDbOn()
-
-
-@pytest.fixture(scope='function')
-def galaxy(maindb, get_params, get_plateifu, set_sasurl, db_on):
-
+def galaxy(get_params, plateifu):
+    ''' Yields an instance of a Galaxy object for use in tests '''
     release, bintype, template = get_params
 
-    gal = Galaxy(plateifu=get_plateifu)
+    gal = Galaxy(plateifu=plateifu)
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
     gal.set_galaxy_data()
@@ -285,51 +343,8 @@ def galaxy(maindb, get_params, get_plateifu, set_sasurl, db_on):
 
 
 @pytest.fixture()
-def monkeyconfig(request, monkeypatch):
-    name, value = request.param
-    monkeypatch.setattr(config, name, value=value)
-
-
-@pytest.fixture()
-def monkeymanga(monkeypatch, temp_scratch):
-    monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX', str(temp_scratch.join('mangawork/manga/spectro/redux')))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS', str(temp_scratch.join('mangawork/manga/spectro/analysis')))
-
-
-def tempafile(path, temp_scratch):
-    redux = os.getenv('MANGA_SPECTRO_REDUX')
-    anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
-    endredux = path.partition(redux)[-1]
-    endanal = path.partition(anal)[-1]
-    end = (endredux or endanal)
-
-    return temp_scratch.join(end)
-
-# Query and Results Fixtures (loops over all modes and db possibilities)
-
-modes = ['local', 'remote', 'auto']
-dbs = ['db', 'nodb']
-
-
-@pytest.fixture(params=modes)
-def mode(request):
-    return request.param
-
-
-@pytest.fixture(params=dbs)
-def db(request):
-    ''' db fixture to turn on and off a local db'''
-    if request.param == 'db':
-        config.forceDbOn()
-    else:
-        config.forceDbOff()
-    yield config.db is not None
-    config.forceDbOff()
-
-
-@pytest.fixture()
-def query(request, set_release, set_sasurl, mode, db):
+def query(request, release, mode, db):
+    ''' Yields a Query that loops over all modes and db options '''
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
@@ -337,3 +352,4 @@ def query(request, set_release, set_sasurl, mode, db):
     yield q
     config.forceDbOn()
     q = None
+

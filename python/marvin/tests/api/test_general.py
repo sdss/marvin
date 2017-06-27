@@ -6,23 +6,23 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:34:31
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-19 16:56:58
+# @Last Modified time: 2017-06-26 14:11:26
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
 
 
-@pytest.fixture()
-def page(client, request, init_api):
-    blue, endpoint = request.param
-    page = ApiPage(client, 'api', endpoint)
-    yield page
+# @pytest.fixture()
+# def page(client, request, init_api):
+#     blue, endpoint = request.param
+#     page = ApiPage(client, 'api', endpoint)
+#     yield page
 
 
-@pytest.fixture()
-def params(release):
-    return {'release': release}
+# @pytest.fixture()
+# def params(release):
+#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'mangaid2plateifu')], ids=['mangaid2plateifu'], indirect=True)
@@ -66,7 +66,7 @@ class TestGeneralNSAFull(object):
                 'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
                 'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
-        page.assert_success(data)
+        page.assert_success(galaxy.nsa_data)
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('mangaid', [('1209232')], ids=['badid'])
@@ -90,7 +90,7 @@ class TestGeneralNSADrpall(object):
                 'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
                 'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
-        page.assert_success(data)
+        page.assert_success(galaxy.nsa_data)
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('mangaid', [('1209232')], ids=['badid'])

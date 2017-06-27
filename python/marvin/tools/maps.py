@@ -18,6 +18,7 @@ import astropy.io.fits
 import astropy.wcs
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import marvin
 import marvin.api.api
@@ -745,3 +746,32 @@ class Maps(marvin.core.core.MarvinToolsClass):
             return bpt_return[0]
         else:
             return bpt_return
+
+    def to_dataframe(self, columns=None, mask=None):
+        ''' Converts the maps object into a Pandas dataframe
+
+        Parameters:
+            columns (list):
+                The properties+channels you want to include.  Defaults to all of them.
+            mask (array):
+                A 2d mask array for filtering your data output
+
+        Returns:
+            df (DataFrame):
+                a Pandas Dataframe
+        '''
+
+        allprops = list(itertools.chain(*[[p.fullname(c) for c in p.channels] if p.channels else [p.name] for p in self.properties]))
+        if columns:
+            allprops = [p for p in allprops if p in columns]
+        data = np.array([self[p].value[mask].flatten() for p in allprops])
+
+        # add a column for spaxel index
+        spaxarr = np.array([np.where(mask.flatten())[0]]) if mask is not None else np.array([np.arange(data.shape[1])])
+        data = np.concatenate((spaxarr, data), axis=0)
+        allprops = ['spaxelid'] + allprops
+
+        # create the dataframe
+        df = pd.DataFrame(data.transpose(), columns=allprops)
+        return df
+

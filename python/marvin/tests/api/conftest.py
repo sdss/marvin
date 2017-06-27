@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-14 10:44:59
+# @Last Modified time: 2017-06-26 15:59:14
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -17,29 +17,29 @@ import pytest
 import os
 import six
 
-releases = ['MPL-5']
+# releases = ['MPL-5']
 
 
-@pytest.fixture(scope='session', params=releases)
-def release(request):
-    return request.param
+# @pytest.fixture(scope='session', params=releases)
+# def release(request):
+#     return request.param
 
 
-@pytest.fixture(scope='session')
-def drpver(release):
-    drpver, dapver = config.lookUpVersions(release)
-    return drpver
+# @pytest.fixture(scope='session')
+# def drpver(release):
+#     drpver, dapver = config.lookUpVersions(release)
+#     return drpver
 
 
-@pytest.fixture(scope='session')
-def dapver(release):
-    drpver, dapver = config.lookUpVersions(release)
-    return dapver
+# @pytest.fixture(scope='session')
+# def dapver(release):
+#     drpver, dapver = config.lookUpVersions(release)
+#     return dapver
 
 
-@pytest.fixture(scope='session')
-def mode():
-    return config.mode
+# @pytest.fixture(scope='session')
+# def mode():
+#     return config.mode
 
 
 @pytest.fixture(scope='session')
@@ -91,3 +91,14 @@ class ApiPage(Page):
         invalid = {p: errmsg for p in noparam}
         self.assert_dict_contains_subset(invalid, self.json['validation_errors'])
 
+
+@pytest.fixture()
+def page(client, request, init_api):
+    blue, endpoint = request.param
+    page = ApiPage(client, 'api', endpoint)
+    yield page
+
+
+@pytest.fixture()
+def params(galaxy):
+    return {'release': galaxy.release}

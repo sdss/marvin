@@ -5,7 +5,6 @@ import warnings
 import os
 import inspect
 from functools import wraps
-from contextlib import contextmanager
 
 import pytest
 from unittest import TestCase
@@ -28,20 +27,6 @@ def use_bintypes(*bintypes):
     return check_bintype
 
 
-class UseBintypes:
-    """Decorate all tests in a class to run only for the given bintypes."""
-    def __init__(self, *args):
-        self.args = args
-
-    def __call__(self, decorated_class):
-        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
-            # only decorate public functions
-            if attr[0][0] != '_':
-                setattr(decorated_class, attr[0],
-                        use_bintypes(*self.args)(getattr(decorated_class, attr[0])))
-        return decorated_class
-
-
 def use_releases(*releases):
     """Decorates test to run only for the given releases."""
     def check_bintype(f):
@@ -58,8 +43,8 @@ def use_releases(*releases):
     return check_bintype
 
 
-class UseReleases:
-    """Decorate all tests in a class to run only for the given MPLs."""
+class MetaUse(object):
+    ''' Meta class to define a testing class that decorates all tests to use the specified fxn '''
     def __init__(self, *args):
         self.args = args
 
@@ -68,9 +53,12 @@ class UseReleases:
             # only decorate public functions
             if attr[0][0] != '_':
                 setattr(decorated_class, attr[0],
-                        use_releases(*self.args)(getattr(decorated_class, attr[0])))
-
+                        self.fxn(*self.args)(getattr(decorated_class, attr[0])))
         return decorated_class
+
+
+UseBintypes = type('UseBintypes', (MetaUse,), {'fxn': use_bintypes})
+UseReleases = type('UseReleases', (MetaUse,), {'fxn': use_releases})
 
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
@@ -122,6 +110,7 @@ def marvin_test_if(mode='skip', **kfilter):
                 return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
             elif mode == 'xfail' and fixture_value in filter_values:
                 return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
+            return False
 
         @wraps(ff)
         def decorated_function(self, *args, **kwargs):
@@ -145,8 +134,8 @@ def marvin_test_if(mode='skip', **kfilter):
                     if not hasattr(fixture, filter_attribute):
                         continue
                     fixture_value = getattr(fixture, filter_attribute)
-                    _should_skip(filter_values, fixture_value, filter_attribute)
-                    break
+                    if _should_skip(filter_values, fixture_value, filter_attribute):
+                        break
 
             return ff(self, *args, **kwargs)
         return decorated_function
@@ -184,20 +173,6 @@ def skipIfNoDB(test):
         else:
             return test(self, db, *args, **kwargs)
     return wrapper
-
-
-@contextmanager
-def set_tmp_sasurl(tmp_sasurl):
-    sasurl = config.sasurl
-    yield
-    config.sasurl = sasurl
-
-
-@contextmanager
-def set_tmp_mpl(tmp_mpl):
-    mpl = config.release
-    yield
-    config.setMPL(mpl)
 
 
 

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 15:58:27
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-07 16:17:37
+# @Last Modified time: 2017-06-26 14:20:20
 
 from __future__ import print_function, division, absolute_import
 from marvin.api.base import BaseView
@@ -41,7 +41,7 @@ class TestBase(object):
     def test_add_config(self, baseview, release, mode):
         baseview.add_config()
         desired = {'data': None, 'status': -1, 'error': None, 'traceback': None,
-                   'utahconfig': {'release': release, 'mode': mode}}
+                   'utahconfig': {'release': 'MPL-5', 'mode': 'local'}}
         assert baseview.results == desired
 
     def test_after_request_return_response(self, baseview):

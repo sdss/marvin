@@ -6,23 +6,23 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:00:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-19 17:03:24
+# @Last Modified time: 2017-06-26 16:05:53
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
 
 
-@pytest.fixture()
-def page(client, request, init_api):
-    blue, endpoint = request.param
-    page = ApiPage(client, 'api', endpoint)
-    yield page
+# @pytest.fixture()
+# def page(client, request, init_api):
+#     blue, endpoint = request.param
+#     page = ApiPage(client, 'api', endpoint)
+#     yield page
 
 
-@pytest.fixture()
-def params(release):
-    return {'release': release}
+# @pytest.fixture()
+# def params(release):
+#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'getModelCube')], ids=['getModelCube'], indirect=True)
@@ -42,8 +42,8 @@ class TestGetModelCubes(object):
                               ('84', 'name', 'Shorter than minimum length 4.', None, None),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
                               ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC'),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STON', 'GAU-MILESHC'),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES-THIN'),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES'),
                               ('8485-1901', 'bintype', 'Field may not be null.', None, None),
                               ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
