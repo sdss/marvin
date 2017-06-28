@@ -13,6 +13,7 @@
 - Changed the Marvin web search page to use the new query_params and parameter grouping.  Removed the autocomplete input box.
 - Updated the documentation on query and query_params.
 - Modified Guided Search operator options to remove options that could not be parsed by SQLA boolean_search
+- Refactored the web settings, route registration, extensions to enable extensibility
 
 ### Fixed:
 

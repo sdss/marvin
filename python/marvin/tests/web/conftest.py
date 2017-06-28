@@ -6,11 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 13:37:33
+# @Last Modified time: 2017-06-28 17:13:32
 
 from __future__ import print_function, division, absolute_import
 import pytest
 from marvin.web import create_app
+from marvin.web.settings import TestConfig, CustomConfig
 from marvin.api.api import Interaction
 from marvin import marvindb, config
 from flask import template_rendered, templating
@@ -36,10 +37,8 @@ except ImportError:
 
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(debug=True, local=True, use_profiler=False)
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    object_config = type('Config', (TestConfig, CustomConfig), dict())
+    app = create_app(debug=True, local=True, use_profiler=False, object_config=object_config)
     return app
 
 
