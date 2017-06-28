@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-06-04 01:08:41
+* @Last Modified time: 2017-06-28 11:59:04
 */
 
 //jshint esversion: 6
@@ -140,7 +140,8 @@ var Search = function () {
         key: 'setupQB',
         value: function setupQB(params) {
             $('.modal-dialog').draggable(); // makes the modal dialog draggable
-            this.builder.queryBuilder({ plugins: ['bt-selectpicker', 'not-group', 'invert'], filters: params });
+            this.builder.queryBuilder({ plugins: ['bt-selectpicker', 'not-group', 'invert'], filters: params,
+                operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'contains', 'begins_with', 'ends_with'] });
         }
 
         // Get the SQL from the QB
@@ -153,7 +154,16 @@ var Search = function () {
                 var result = _this.builder.queryBuilder('getSQL', false);
                 if (result.sql.length) {
                     _this.sqlalert.html("");
-                    _this.searchbox.val(result.sql.replace(/[']+/g, ""));
+                    // remove the quotations
+                    var newsql = result.sql.replace(/[']+/g, "");
+                    // replace any like and percents with = and *
+                    var likeidx = newsql.indexOf('LIKE');
+                    if (likeidx !== -1) {
+                        newsql = newsql.replace('LIKE(', '= ').replace(/[%]/g, '*');
+                        var idx = newsql.indexOf(')', likeidx);
+                        newsql = newsql.replace(newsql.charAt(idx), " ");
+                    }
+                    _this.searchbox.val(newsql);
                 }
             } catch (error) {
                 _this.sqlalert.html("<p class='text-center text-danger'>Must provide valid input.</p>");
