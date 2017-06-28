@@ -6,13 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-19 14:10:33
+# @Last Modified time: 2017-06-28 17:53:20
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
 from flask import request
 from marvin.web.web_utils import parseSession
-from marvin import config
+import marvin
 from brain.api.general import BrainGeneralRequestsView
 from marvin.api.base import arg_validate as av
 import json
@@ -24,6 +24,7 @@ class BaseWebView(FlaskView):
     def __init__(self, page):
         self.base = {}
         self.base['intro'] = 'Welcome to Marvin!'
+        self.base['version'] = marvin.__version__
         self.update_title(page)
         self._endpoint = self._release = None
         self._drpver = self._dapver = None
@@ -38,8 +39,8 @@ class BaseWebView(FlaskView):
         if not av.urlmap:
             bv = BrainGeneralRequestsView()
             resp = bv.buildRouteMap()
-            config.urlmap = json.loads(resp.get_data())['urlmap']
-            av.urlmap = config.urlmap
+            marvin.config.urlmap = json.loads(resp.get_data())['urlmap']
+            av.urlmap = marvin.config.urlmap
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
