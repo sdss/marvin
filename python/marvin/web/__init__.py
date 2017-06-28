@@ -12,6 +12,7 @@ import sys
 import os
 import logging
 import flask_profiler
+import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
@@ -118,7 +119,7 @@ def register_api(app, api):
 def register_extensions(app, app_base=None):
     ''' Register the Flask extensions used '''
 
-    jsglue.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
+    jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
     if app.config['USE_SENTRY']:
