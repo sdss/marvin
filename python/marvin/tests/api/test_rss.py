@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:47:12
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 14:07:12
+# @Last Modified time: 2017-06-27 11:38:32
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'getRSS')], ids=['getrss'], indirect=True)
@@ -46,6 +34,7 @@ class TestGetRss(object):
             page.route_no_valid_params(page.url.format(name=name), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize('page', [('api', 'getRSSAllFibers')], ids=['getrssfibers'], indirect=True)
 class TestGetRssFibers(object):
 

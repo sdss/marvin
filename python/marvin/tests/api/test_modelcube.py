@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:00:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 16:05:53
+# @Last Modified time: 2017-06-27 11:19:08
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'getModelCube')], ids=['getModelCube'], indirect=True)
@@ -32,7 +20,7 @@ class TestGetModelCubes(object):
     def test_modelcube_success(self, galaxy, page, params, reqtype):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
         data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
-                'template_kin': galaxy.template, 'shape': [34, 34], 'redcorr': []}
+                'template_kin': galaxy.template, 'shape': galaxy.shape, 'redcorr': []}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 

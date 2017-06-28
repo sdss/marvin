@@ -31,6 +31,30 @@
                 flux: 0.017639931
                 ivar: 352.12421
                 mask: 1026
+            dap:
+                x: 17
+                y: 17
+                M11-STELIB-ZSOL:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Gaussian profile integrated flux for emission lines.'
+                        ivar: 1.35257565269
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 28.6823677604
+            bins:
+                100:
+                    NONE-M11-STELIB-ZSOL: [[16, 23]]
+                    STON-M11-STELIB-ZSOL: []
+                    RADIAL-M11-STELIB-ZSOL: []
+                    NONE-MIUSCAT-THIN: [[16, 23]]
+                    STON-MIUSCAT-THIN: []
+                    RADIAL-MIUSCAT-THIN: []
+                    NONE-MILES-THIN: [[16, 23]]
+                    STON-MILES-THIN: []
+                    RADIAL-MILES-THIN: []
         MPL-5:
             spaxel:
                 x: 12
@@ -41,6 +65,25 @@
                 flux: 0.016027471
                 ivar: 361.13596
                 mask: 1026
+            dap:
+                x: 17
+                y: 17
+                GAU-MILESHC:
+                    model: [0.471273, 128.573, 32, 0, 0, 0, 128]
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Gaussian profile integrated flux for emission lines.'
+                        ivar: 47.0896851561
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 31.4754
+            bins:
+                100:
+                    ALL-GAU-MILESHC: []
+                    NRE-GAU-MILESHC: []
+                    SPX-GAU-MILESHC: [[13, 7]]
+                    VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
     stellar_vel_ivar_x15_y8_lower:
         MPL-4:
             M11-STELIB-ZSOL: 1.20021642356e-05
@@ -81,6 +124,30 @@
                 flux: 0.0187161993
                 ivar: 2151.76000
                 mask: 0
+            dap:
+                x: 17
+                y: 17
+                M11-STELIB-ZSOL:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Gaussian profile integrated flux for emission lines.'
+                        ivar: 0.0
+                        mask: 1
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 0.0
+            bins:
+                100:
+                    NONE-M11-STELIB-ZSOL: [[31, 31]]
+                    STON-M11-STELIB-ZSOL: []
+                    RADIAL-M11-STELIB-ZSOL: []
+                    NONE-MIUSCAT-THIN: [[31, 31]]
+                    STON-MIUSCAT-THIN: []
+                    RADIAL-MIUSCAT-THIN: []
+                    NONE-MILES-THIN: [[31, 31]]
+                    STON-MILES-THIN: []
+                    RADIAL-MILES-THIN: []
         MPL-5:
             spaxel:
                 x: 15
@@ -91,6 +158,25 @@
                 flux: 0.021661391
                 ivar: 2145.38110
                 mask: 0
+            dap:
+                x: 17
+                y: 17
+                GAU-MILESHC:
+                    model: [-0.0497285, 424.938, 32, 0, 0, 0, 128]
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Gaussian profile integrated flux for emission lines.'
+                        ivar: 680.29498291
+                        mask: 32
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 0.0578471
+            bins:
+                100:
+                    ALL-GAU-MILESHC: []
+                    NRE-GAU-MILESHC: []
+                    SPX-GAU-MILESHC: [[11, 22]]
+                    VOR10-GAU-MILESHC: [[36, 10]]
     stellar_vel_ivar_x15_y8_lower:
         MPL-4:
             M11-STELIB-ZSOL: 0.0

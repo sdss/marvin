@@ -6,23 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:08:47
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 14:07:03
+# @Last Modified time: 2017-06-27 11:32:13
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 import pytest
-
-
-# @pytest.fixture()
-# def page(client, request, init_api):
-#     blue, endpoint = request.param
-#     page = ApiPage(client, 'api', endpoint)
-#     yield page
-
-
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
 
 
 @pytest.mark.parametrize('page', [('api', 'PlateView:index')], ids=['plate'], indirect=True)
@@ -65,7 +53,8 @@ class TestGetPlateCubes(object):
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_plate_success(self, galaxy, page, params, reqtype):
         params.update({'plateid': galaxy.plate})
-        data = {"plateifus": ["8485-1902", "8485-12702", "8485-12701", "8485-1901"]}
+        #data = {"plateifus": ["8485-1902", "8485-12702", "8485-12701", "8485-1901"]}
+        data = {'plateifus': [galaxy.plateifu]}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 

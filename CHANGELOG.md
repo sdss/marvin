@@ -12,6 +12,7 @@
 *TODO* add above changes to docs (marvin/docs/sphinx/utils/plot-map.rst)
 - Changed the Marvin web search page to use the new query_params and parameter grouping.  Removed the autocomplete input box.
 - Updated the documentation on query and query_params.
+- Modified Guided Search operator options to remove options that could not be parsed by SQLA boolean_search
 
 ### Fixed:
 
