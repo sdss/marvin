@@ -29,12 +29,11 @@ from astropy.wcs import WCS
 import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
 from marvin.utils.dap.datamodel import get_default_plot_params
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='function')
 def wcs(galaxy):
     return WCS(fits.getheader(galaxy.cubepath, 1))
 
@@ -102,10 +101,10 @@ class TestConvertCoords(object):
         pytest.approx(cubeCoords, np.array(expected))
 
     @pytest.mark.parametrize('coords, mode, xyorig',
-                             [([-50, 0], 'pix', 'center'),
-                              ([50, 50], 'pix', 'center'),
-                              ([-50, 0], 'pix', 'lower'),
-                              ([50, 50], 'pix', 'lower'),
+                             [([-100, 0], 'pix', 'center'),
+                              ([100, 100], 'pix', 'center'),
+                              ([-100, 0], 'pix', 'lower'),
+                              ([100, 100], 'pix', 'lower'),
                               ([230, 48], 'sky', None),
                               ([233, 48], 'sky', None)],
                              ids=['-50_0_cen', '50_50_cen', '-50_0_low', '50_50_low',
@@ -180,8 +179,7 @@ class TestPillowImage(object):
 
 
 @pytest.fixture(scope='session')
-def bitmask(get_versions):
-    release, drpver, dapver = get_versions
+def bitmask(dapver):
     data = {'1.1.1': {'badData': {'doNotUse': 0}},
             '2.0.2': {'nocov': 0, 'badData': {'unreliable': 5, 'doNotUse': 30}}
             }
@@ -195,9 +193,8 @@ class TestDataModelPlotParams(object):
                               ('stellar_vel', {'cmap': 'RdBu_r', 'percentile_clip': [10, 90], 'symmetric': True, 'snr_min': None}),
                               ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
                              ids=['emline', 'stvel', 'stsig'])
-    def test_get_plot_params(self, bitmask, get_versions, name, desired):
+    def test_get_plot_params(self, bitmask, dapver, name, desired):
         desired['bitmasks'] = bitmask
-        release, drpver, dapver = get_versions
         actual = get_plot_params(dapver=dapver, prop=name)
         assert desired == actual
 
