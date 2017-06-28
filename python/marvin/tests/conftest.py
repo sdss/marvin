@@ -206,18 +206,39 @@ def db(request):
     config.forceDbOff()
 
 
+@pytest.fixture()
+def exporigin(mode, db):
+    ''' fixture that returns the expected modes for a given db/mode combo '''
+    if mode == 'local' and not db:
+        return 'file'
+    elif mode == 'local' and db:
+        return 'db'
+    elif mode == 'remote' and not db:
+        return 'api'
+    elif mode == 'remote' and db:
+        return 'api'
+    elif mode == 'auto' and db:
+        return 'db'
+    elif mode == 'auto' and not db:
+        return 'api'
+
+
 # Monkeypatch-based FIXTURES
 # --------------------------
 @pytest.fixture()
 def monkeyconfig(request, monkeypatch):
-    ''' Fixture to monkeypatch a variable on the Marvin config '''
+    ''' Fixture to monkeypatch a variable on the Marvin config
+        Example at lini 160 in utils/test_general
+    '''
     name, value = request.param
     monkeypatch.setattr(config, name, value=value)
 
 
 @pytest.fixture()
 def monkeymanga(monkeypatch, temp_scratch):
-    ''' Fixture to monkeypatch the environ to create a temp SAS dir for reading/writing/downloading '''
+    ''' Fixture to monkeypatch the environ to create a temp SAS dir for reading/writing/downloading
+        Example at line 141 in utils/test_images
+    '''
     monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
     monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX', str(temp_scratch.join('mangawork/manga/spectro/redux')))
     monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS', str(temp_scratch.join('mangawork/manga/spectro/analysis')))
@@ -227,13 +248,17 @@ def monkeymanga(monkeypatch, temp_scratch):
 # ----------------------------
 @pytest.fixture(scope='session')
 def temp_scratch(tmpdir_factory):
-    ''' Creates a temporary scratch space for reading/writing.  Used for creating temp dirs and files '''
+    ''' Creates a temporary scratch space for reading/writing.  Used for creating temp dirs and files
+        Example at line 208 in tools/test_query, line 254 in tools/test_results, and misc/test_marvin_pickle
+    '''
     fn = tmpdir_factory.mktemp('scratch')
     return fn
 
 
 def tempafile(path, temp_scratch):
-    ''' Returns a pytest temporary file given the original file path '''
+    ''' Returns a pytest temporary file given the original file path
+        Example at line 141 in utils/test_images
+    '''
     redux = os.getenv('MANGA_SPECTRO_REDUX')
     anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
     endredux = path.partition(redux)[-1]

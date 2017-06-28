@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-12 18:18:54
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-14 10:11:27
+# @Last Modified time: 2017-06-28 14:43:09
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, Results
@@ -65,23 +65,6 @@ def data(release):
 def limits(data):
     count = 10 if data['count'] >= 10 else data['count']
     return (10, count)
-
-
-@pytest.fixture()
-def exporigin(mode, db):
-    ''' expected modes for a given db/mode combo '''
-    if mode == 'local' and not db:
-        return 'file'
-    elif mode == 'local' and db:
-        return 'db'
-    elif mode == 'remote' and not db:
-        return 'api'
-    elif mode == 'remote' and db:
-        return 'api'
-    elif mode == 'auto' and db:
-        return 'db'
-    elif mode == 'auto' and not db:
-        return 'api'
 
 
 @pytest.fixture()
