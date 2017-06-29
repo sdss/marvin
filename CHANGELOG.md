@@ -5,6 +5,7 @@
 - Added new query_params object, for easier navigation of available query parameters.  Added new tests.
 - Added a new guided query builder using Jquery Query Builder to the Search page
 - Added a View Galaxies link on the web results to view postage stamps of the galaxies in the results
+- Added Route Rate Limiting.  Adopts a limit of 200/min for all api routes and 60/minute for query api calls and web searches
 
 ### Changed:
 - Changed call signature for :meth:`marvin.utils.plot.map.no_coverage_mask` (removed ``value`` arg because unused, added ``None`` as default value ``ivar`` (``None``), and re-ordered args and kwargs).
