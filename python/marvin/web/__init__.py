@@ -19,7 +19,7 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry
+from marvin.web.extensions import jsglue, flags, sentry, limiter
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -41,7 +41,7 @@ from marvin.api.general import GeneralRequestsView
 # ================================================================================
 
 
-def create_app(debug=False, local=False, use_profiler=True, object_config=None):
+def create_app(debug=False, local=False, object_config=None):
 
     # ----------------------------------
     # Create App
@@ -113,6 +113,7 @@ def register_api(app, api):
     SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
+    limiter.limit("200/minute")(api)
     app.register_blueprint(api)
 
 
@@ -122,6 +123,10 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
+    limiter.init_app(app)
+    for handler in app.logger.handlers:
+        limiter.logger.addHandler(handler)
+
     if app.config['USE_SENTRY']:
         sentry.init_app(app)
 

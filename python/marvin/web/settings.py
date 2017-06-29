@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-28 15:58:28
+# @Last Modified time: 2017-06-29 13:14:51
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -50,6 +50,8 @@ class Config(object):
             "enabled": False
         }
     }
+    # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
+    RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'
 
 
 class ProdConfig(Config):
@@ -84,6 +86,7 @@ class TestConfig(Config):
     WTF_CSRF_ENABLED = False  # Allows form testing
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     USE_PROFILER = False  # Turn off the Flask Profiler extension
+    RATELIMIT_ENABLED = False  # Turn off the Flask Rate Limiter
 
 
 class CustomConfig(object):

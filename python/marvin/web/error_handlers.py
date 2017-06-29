@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-27 14:26:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-28 16:41:01
+# @Last Modified time: 2017-06-29 11:41:23
 
 from __future__ import print_function, division, absolute_import
 from flask import request, current_app as app
@@ -28,7 +28,7 @@ def make_error_json(error, name, code):
     return jsonify({'api_error': messages}), code
 
 
-def make_error_page(app, name, code, sentry=None, data=None):
+def make_error_page(app, name, code, sentry=None, data=None, exception=None):
     ''' creates the error page dictionary for web errors '''
     shortname = name.lower().replace(' ', '_')
     error = {}
@@ -36,6 +36,9 @@ def make_error_page(app, name, code, sentry=None, data=None):
     error['page'] = request.url
     error['event_id'] = g.get('sentry_event_id', None)
     error['data'] = data
+    error['name'] = name
+    error['code'] = code
+    error['message'] = exception.description if exception and hasattr(exception, 'description') else None
     if app.config['USE_SENTRY'] and sentry:
         error['public_dsn'] = sentry.client.get_public_dsn('https')
     app.logger.error('{0} Exception {1}'.format(name, error))
@@ -102,5 +105,13 @@ def handle_unprocessable_entity(error):
     else:
         return make_error_page(app, name, 422, sentry=sentry, data=messages)
 
+
+@errors.app_errorhandler(429)
+def rate_limit_exceeded(error):
+    name = 'Rate Limit Exceeded'
+    if _is_api(request):
+        return make_error_json(error, name, 429)
+    else:
+        return make_error_page(app, name, 429, sentry=sentry, exception=error)
 
 

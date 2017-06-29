@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-28 17:13:32
+# @Last Modified time: 2017-06-29 11:46:18
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -38,7 +38,7 @@ except ImportError:
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
-    app = create_app(debug=True, local=True, use_profiler=False, object_config=object_config)
+    app = create_app(debug=True, local=True, object_config=object_config)
     return app
 
 

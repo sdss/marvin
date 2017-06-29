@@ -23,6 +23,7 @@ from marvin.tools.query.query_utils import query_params, bestparams
 from wtforms import validators, ValidationError
 from marvin.utils.general import getImagesByList
 from marvin.web.web_utils import buildImageDict
+from marvin.web.extensions import limiter
 import random
 
 search = Blueprint("search_page", __name__)
@@ -66,6 +67,7 @@ class Search(BaseWebView):
         self.reset_dict(self.search)
 
     @route('/', methods=['GET', 'POST'])
+    @limiter.limit("60/minute")
     def index(self):
 
         # Attempt to retrieve search parameters
