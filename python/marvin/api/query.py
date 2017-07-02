@@ -1,10 +1,11 @@
 from flask_classy import route
-from flask import request, jsonify, Response
+from flask import request, jsonify, Response, current_app
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
 from marvin.tools.query.query_utils import bestparams
+from marvin.web.extensions import limiter
 import json
 
 
@@ -45,6 +46,7 @@ def _getCubes(searchfilter, **kwargs):
 
 class QueryView(BaseView):
     """Class describing API calls related to queries."""
+    decorators = [limiter.limit("60/minute")]
 
     def index(self):
         '''Returns general query info

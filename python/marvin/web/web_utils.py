@@ -31,7 +31,6 @@ def configFeatures(app, mode):
 def updateGlobalSession():
     ''' updates the Marvin config with the global Flask session '''
 
-    print('I am updating the Global Session')
     # check if mpl versions in session
     if 'versions' not in current_session:
         setGlobalSession()
@@ -51,47 +50,43 @@ def setGlobalSession():
     versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(release=mpl))} for mpl in mpls]
     current_session['versions'] = versions
 
-    print('I am setting the Global Session')
     if 'release' not in current_session:
         current_session['release'] = config.release
         drpver, dapver = config.lookUpVersions(release=config.release)
         current_session['drpver'] = drpver
         current_session['dapver'] = dapver
-        print('inside global session vers', drpver, dapver)
 
 
 def parseSession():
     ''' parse the current session for MPL versions '''
-    print('parsing the session')
     drpver = current_session['drpver']
     dapver = current_session['dapver']
     release = current_session['release']
-    print('gotten vers', drpver, dapver, release)
     return drpver, dapver, release
 
 
-def make_error_json(error, name, code):
-    ''' creates the error json dictionary for API errors '''
-    shortname = name.lower().replace(' ', '_')
-    messages = {'error': shortname,
-                'message': error.description if hasattr(error, 'description') else None,
-                'status_code': code,
-                'traceback': get_traceback(asstring=True)}
-    return jsonify({'api_error': messages}), code
+# def make_error_json(error, name, code):
+#     ''' creates the error json dictionary for API errors '''
+#     shortname = name.lower().replace(' ', '_')
+#     messages = {'error': shortname,
+#                 'message': error.description if hasattr(error, 'description') else None,
+#                 'status_code': code,
+#                 'traceback': get_traceback(asstring=True)}
+#     return jsonify({'api_error': messages}), code
 
 
-def make_error_page(app, name, code, sentry=None, data=None):
-    ''' creates the error page dictionary for web errors '''
-    shortname = name.lower().replace(' ', '_')
-    error = {}
-    error['title'] = 'Marvin | {0}'.format(name)
-    error['page'] = request.url
-    error['event_id'] = g.get('sentry_event_id', None)
-    error['data'] = data
-    if sentry:
-        error['public_dsn'] = sentry.client.get_public_dsn('https')
-    app.logger.error('{0} Exception {1}'.format(name, error))
-    return render_template('errors/{0}.html'.format(shortname), **error), code
+# def make_error_page(app, name, code, sentry=None, data=None):
+#     ''' creates the error page dictionary for web errors '''
+#     shortname = name.lower().replace(' ', '_')
+#     error = {}
+#     error['title'] = 'Marvin | {0}'.format(name)
+#     error['page'] = request.url
+#     error['event_id'] = g.get('sentry_event_id', None)
+#     error['data'] = data
+#     if sentry:
+#         error['public_dsn'] = sentry.client.get_public_dsn('https')
+#     app.logger.error('{0} Exception {1}'.format(name, error))
+#     return render_template('errors/{0}.html'.format(shortname), **error), code
 
 
 def send_request():
