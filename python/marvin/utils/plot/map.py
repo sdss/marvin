@@ -425,6 +425,7 @@ def plot(*args, **kwargs):
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
     cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+    cb_kws['log_cb'] = log_cb
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
 

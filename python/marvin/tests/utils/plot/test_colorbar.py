@@ -19,3 +19,5 @@ def test_linearlab_filename_exists():
                           ])
 def test_log_cbticks(cbrange, expected):
     assert (colorbar._log_cbticks(cbrange) == expected).all()
+    assert (colorbar._set_cbticks(cbrange, {'log_cb': True})[1] == expected).all()
+
