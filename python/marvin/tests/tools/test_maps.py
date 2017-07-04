@@ -16,7 +16,6 @@ import astropy.io.fits
 
 import marvin
 import marvin.tests
-import marvin.tools.map
 import marvin.tools.maps
 import marvin.tools.spaxel
 
