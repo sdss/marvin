@@ -11,109 +11,63 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import warnings
-
 from matplotlib import pyplot as plt
 import numpy as np
+import pytest
 
 from marvin.tools.maps import Maps
-from marvin.tests import UseReleases, UseBintypes
+from marvin.tests import marvin_test_if_class
+from marvin.core.exceptions import MarvinDeprecationWarning
 
 
-@UseBintypes('SPX')
-@UseReleases('MPL-5')
+@pytest.fixture()
+def maps(galaxy, mode):
+    maps = Maps(plateifu=galaxy.plateifu, mode=mode)
+    maps.bptsums = galaxy.bptsums if hasattr(galaxy, 'bptsums') else None
+    yield maps
+    maps = None
+
+
+@marvin_test_if_class(mode='skip', maps=dict(release=['MPL-4']))
 class TestBPT(object):
 
-    emission_mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
+    mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
 
-#     def setUp(self):
-#         self._reset_the_config()
-#         self._update_release('MPL-5')
-#         self.set_sasurl('local')
-#         self.filename_8485_1901_mpl5_spx = os.path.join(
-#             self.mangaanalysis, self.drpver, self.dapver,
-#             'SPX-GAU-MILESHC', str(self.plate), self.ifu, self.mapsname)
+    @pytest.mark.parametrize('useoi', [(True), (False)], ids=['withoi', 'nooi'])
+    def test_bpt(self, maps, useoi):
+        if maps.bptsums is None:
+            pytest.skip('no bpt data found in galaxy test data')
 
-    def _run_tests_8485_1901(self, maps):
+        bptflag = 'nooi' if useoi is False else 'global'
 
-        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=True)
+        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=useoi)
         assert isinstance(figure, plt.Figure)
 
-        for em_mech in self.emission_mechanisms:
-            assert em_mech in masks.keys()
+        for mech in self.mechanisms:
+            assert mech in masks.keys()
+            assert np.sum(masks[mech]['global']) == maps.bptsums[bptflag][mech]
 
-        assert np.sum(masks['sf']['global']) == 62
-        assert np.sum(masks['comp']['global']) == 1
+    def test_bpt_diffsn(self, maps):
+        if maps.bptsums is None:
+            pytest.skip('no bpt data found in galaxy test data')
 
-        for em_mech in ['agn', 'seyfert', 'liner']:
-            assert np.sum(masks[em_mech]['global']) == 0
-
-        assert np.sum(masks['ambiguous']['global']) == 8
-        assert np.sum(masks['invalid']['global']) == 1085
-
-        assert np.sum(masks['sf']['sii']) == 176
-
-    def test_8485_1901_bpt_file(self, galaxy):
-
-        maps = Maps(filename=galaxy.mapspath)
-        self._run_tests_8485_1901(maps)
-
-    def test_8485_1901_bpt_db(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu)
-        self._run_tests_8485_1901(maps)
-
-    def test_8485_1901_bpt_api(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu, mode='remote')
-        self._run_tests_8485_1901(maps)
-
-    def test_8485_1901_bpt_no_oi(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu)
-        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=False)
+        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=True, snr_min=5)
         assert isinstance(figure, plt.Figure)
 
-        for em_mech in self.emission_mechanisms:
-            assert em_mech in masks.keys()
+        for mech in self.mechanisms:
+            assert mech in masks.keys()
+            assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
 
-        assert 'oi' not in masks['sf'].keys()
+    def test_bpt_oldsn(self, maps):
+        if maps.bptsums is None:
+            pytest.skip('no bpt data found in galaxy test data')
 
-        assert np.sum(masks['sf']['global']) == 149
-        assert np.sum(masks['sf']['sii']) == 176
-
-    def test_8485_1901_bpt_no_figure(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu)
-        bpt_return = maps.get_bpt(show_plot=False, return_figure=False, use_oi=False)
-
-        assert isinstance(bpt_return, dict)
-
-    def test_8485_1901_bpt_snr_min(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu)
-        masks = maps.get_bpt(snr_min=5, return_figure=False, show_plot=False)
-
-        for em_mech in self.emission_mechanisms:
-            assert em_mech in masks.keys()
-
-        assert np.sum(masks['sf']['global']) == 28
-        assert np.sum(masks['sf']['sii']) == 112
-
-    def test_8485_1901_bpt_snr_deprecated(self, galaxy):
-
-        maps = Maps(plateifu=galaxy.plateifu)
-
-        with warnings.catch_warnings(record=True) as warning_list:
+        with pytest.warns(MarvinDeprecationWarning) as record:
             masks = maps.get_bpt(snr=5, return_figure=False, show_plot=False)
+        assert len(record) == 1
+        assert record[0].message.args[0] == "snr is deprecated. Use snr_min instead. snr will be removed in a future version of marvin"
 
-        assert len(warning_list) == 1
-        assert str(warning_list[0].message) == \
-                         'snr is deprecated. Use snr_min instead. ' \
-                         'snr will be removed in a future version of marvin'
+        for mech in self.mechanisms:
+            assert mech in masks.keys()
+            assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
 
-        for em_mech in self.emission_mechanisms:
-            assert em_mech in masks.keys()
-
-        assert np.sum(masks['sf']['global']) == 28
-        assert np.sum(masks['sf']['sii']) == 112

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-29 13:14:51
+# @Last Modified time: 2017-07-05 16:42:57
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -52,6 +52,7 @@ class Config(object):
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
     RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'
+    RATELIMIT_ENABLED = True
 
 
 class ProdConfig(Config):

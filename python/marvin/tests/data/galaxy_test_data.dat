@@ -84,6 +84,31 @@
                     NRE-GAU-MILESHC: []
                     SPX-GAU-MILESHC: [[13, 7]]
                     VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
+            bptsums:
+                global:
+                    agn: 0
+                    ambiguous: 8
+                    comp: 1
+                    liner: 0
+                    invalid: 1085
+                    seyfert: 0
+                    sf: 62
+                nooi:
+                    agn: 0
+                    ambiguous: 0
+                    comp: 27
+                    liner: 0
+                    invalid: 980
+                    seyfert: 0
+                    sf: 149
+                snrmin5:
+                    agn: 0
+                    ambiguous: 0
+                    comp: 0
+                    liner: 0
+                    invalid: 1128
+                    seyfert: 0
+                    sf: 28
     stellar_vel_ivar_x15_y8_lower:
         MPL-4:
             M11-STELIB-ZSOL: 1.20021642356e-05
