@@ -126,7 +126,7 @@ def set_sasurl(loc='local', port=None):
     config.urlmap = response.getRouteMap()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def saslocal(set_release):
     set_sasurl(loc='local')
 

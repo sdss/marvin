@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-04-24 21:51:26
+# @Last Modified time: 2017-07-05 12:22:37
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -16,6 +16,7 @@ from flask import url_for
 from selenium import webdriver
 from marvin.web import create_app
 from marvin.tests.web.frontend.live_server import live_server
+from marvin.web.settings import TestConfig, CustomConfig
 
 browserstack = os.environ.get('USE_BROWSERSTACK', None)
 
@@ -42,10 +43,12 @@ def browserinfo(request):
 
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(debug=True, local=True, use_profiler=False)
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    object_config = type('Config', (TestConfig, CustomConfig), dict())
+    app = create_app(debug=True, local=True, object_config=object_config)
+    # app = create_app(debug=True, local=True, use_profiler=False)
+    # app.config['TESTING'] = True
+    # app.config['WTF_CSRF_ENABLED'] = False
+    # app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
     app.config['LIVESERVER_PORT'] = 8943
     return app
 

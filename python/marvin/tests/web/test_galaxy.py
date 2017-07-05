@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-22 10:38:28
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 13:52:48
+# @Last Modified time: 2017-07-05 13:54:59
 
 from __future__ import print_function, division, absolute_import
 from marvin.web.controllers.galaxy import make_nsa_dict
@@ -24,8 +24,8 @@ def cube(galaxy, mode):
 
 
 @pytest.fixture()
-def params(release):
-    return {'release': release}
+def params(galaxy):
+    return {'release': galaxy.release}
 
 
 @pytest.mark.parametrize('page', [('galaxy_page', 'Galaxy:index')], ids=['galaxy'], indirect=True)
@@ -41,10 +41,10 @@ class TestGalaxyPage(object):
 @pytest.mark.parametrize('page', [('galaxy_page', 'initnsaplot')], ids=['initnsa'], indirect=True)
 class TestNSA(object):
 
-    @marvin_test_if(mode='skip', cube=dict(nsa=[None]))
+    #@marvin_test_if(mode='skip', cube=dict(nsa=[None]))
     def test_nsadict_correct(self, page, cube):
         nsa, cols = make_nsa_dict(cube.nsa)
-        assert cube.exp_nsa_plotcols.items() <= nsa.items()
+        assert set(cube.exp_nsa_plotcols.keys()).issubset(set(cols))
         page.assert_dict_contains_subset(cube.exp_nsa_plotcols, nsa)
         page.assertListIn(cube.exp_nsa_plotcols.keys(), cols)
 

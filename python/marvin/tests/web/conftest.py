@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-29 11:46:18
+# @Last Modified time: 2017-07-05 13:54:21
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -17,6 +17,7 @@ from marvin import marvindb, config
 from flask import template_rendered, templating
 from contextlib import contextmanager
 import os
+import numpy as np
 try:
     from urllib.parse import urlparse, urljoin
 except ImportError:
@@ -132,7 +133,7 @@ class Page(object):
             assert item in b
 
     def assert_dict_contains_subset(self, first, second):
-        subset = all(k in second and second[k] == v for k, v in first.items())
+        subset = all(k in second and np.isclose(second[k], v) for k, v in first.items())
         assert subset is True, '{0} dictionary should be subset of {1}'.format(first, second)
 
     def assert_status(self, status_code, message=None):
@@ -179,8 +180,9 @@ class Page(object):
 
 
 @pytest.fixture()
-def page(client, request, init_web):
+def page(client, config, request, init_web):
     blue, endpoint = request.param
+    print('config', config["TESTING"], config["RATELIMIT_ENABLED"])
     page = Page(client, blue, endpoint)
     yield page
 
