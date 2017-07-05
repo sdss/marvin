@@ -127,7 +127,7 @@ def set_sasurl(loc='local', port=None):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def saslocal(set_release):
+def saslocal():
     set_sasurl(loc='local')
 
 
@@ -160,6 +160,11 @@ def drpver(versions):
 def dapver(versions):
     drpver, dapver = versions
     return dapver
+
+
+def set_the_config(release):
+    ''' Regular function to set the release in the config.  Using set_release combined with galaxy double parametrizes! '''
+    config.setRelease(release)
 
 # DB-based FIXTURES
 # -----------------
@@ -359,6 +364,7 @@ def galaxy(get_params, plateifu):
     ''' Yields an instance of a Galaxy object for use in tests '''
     release, bintype, template = get_params
 
+    set_the_config(release)
     gal = Galaxy(plateifu=plateifu)
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
