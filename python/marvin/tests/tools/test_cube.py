@@ -10,26 +10,8 @@ from astropy import wcs
 
 from marvin import config
 from marvin.tools.cube import Cube
-from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import skipIfNoDB
-
-
-@pytest.fixture(scope='function')
-def cube_file(galaxy):
-    return Cube(filename=galaxy.cubepath)
-
-
-@pytest.fixture(scope='module')
-def cube_db(maindb, galaxy):
-    if maindb.session is None:
-        pytest.skip('Skip because no DB.')
-    return Cube(mangaid=galaxy.mangaid)
-
-
-@pytest.fixture(scope='module')
-def cube_api(galaxy):
-    return Cube(mangaid=galaxy.mangaid, mode='remote')
 
 
 class TestCube(object):
@@ -105,9 +87,10 @@ class TestCube(object):
         cubeFlux = fits.getdata(galaxy.cubepath)
         assert pytest.approx(flux, cubeFlux)
 
-    def test_cube_flux_from_file(self, cube_file):
+    def test_cube_flux_from_file(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
-        assert isinstance(cube_file.flux, np.ndarray)
+        assert isinstance(cube.flux, np.ndarray)
 
     def test_cube_remote_drpver_differ_from_global(self, galaxy):
 
@@ -330,11 +313,11 @@ class TestGetSpaxel(object):
         spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
         assert pytest.approx(spectrum.flux[3000], expected)
 
-    def test_getspaxel_matches_file_db_remote(self, galaxy, cube_file, cube_db, cube_api):
+    def test_getspaxel_matches_file_db_remote(self, galaxy):
 
-        # cube_file = Cube(filename=galaxy.cubepath)
-        # cube_db = Cube(plateifu=galaxy.plateifu)
-        # cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
+        cube_file = Cube(filename=galaxy.cubepath)
+        cube_db = Cube(plateifu=galaxy.plateifu)
+        cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
 
         assert cube_file.data_origin == 'file'
         assert cube_db.data_origin == 'db'
