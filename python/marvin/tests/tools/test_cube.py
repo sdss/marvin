@@ -12,11 +12,10 @@ from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB, set_tmp_sasurl
-from brain.core.exceptions import BrainError
+from marvin.tests import skipIfNoDB
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def cube_file(galaxy):
     return Cube(filename=galaxy.cubepath)
 
@@ -47,7 +46,7 @@ class TestCube(object):
 
     def test_cube_load_from_local_file_by_filename_fail(self):
         # config.use_sentry = False
-        with pytest.raises(MarvinError) as cm:
+        with pytest.raises(MarvinError):
             Cube(filename='not_a_filename.fits')
 
     @skipIfNoDB
@@ -106,6 +105,10 @@ class TestCube(object):
         cubeFlux = fits.getdata(galaxy.cubepath)
         assert pytest.approx(flux, cubeFlux)
 
+    def test_cube_flux_from_file(self, cube_file):
+        assert cube.data_origin == 'file'
+        assert isinstance(cube_file.flux, np.ndarray)
+
     def test_cube_remote_drpver_differ_from_global(self, galaxy):
 
         # This tests requires having the cube for 8485-1901 loaded for both
@@ -118,50 +121,50 @@ class TestCube(object):
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-    @pytest.mark.parametrize('plateifu, filename, mode',
-                             [(None, 'galaxy.cubepath', None),
-                              ('galaxy.plateifu', None, 'local'),
-                              ('galaxy.plateifu', None, 'remote')],
-                             ids=('file', 'db', 'remote'))
-    def test_cube_redshift(self, galaxy, plateifu, filename, mode):
+    # @pytest.mark.parametrize('plateifu, filename, mode',
+    #                          [(None, 'galaxy.cubepath', None),
+    #                           ('galaxy.plateifu', None, 'local'),
+    #                           ('galaxy.plateifu', None, 'remote')],
+    #                          ids=('file', 'db', 'remote'))
+    # def test_cube_redshift(self, galaxy, plateifu, filename, mode):
+    # 
+    #     # TODO add 7443-12701 to local DB and remove this skip
+    #     if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
+    #             (config.db == 'local')):
+    #         pytest.skip('Not the one true galaxy.')
+    # 
+    #     plateifu = eval(plateifu) if plateifu is not None else None
+    #     filename = eval(filename) if filename is not None else None
+    #     cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
+    #     assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
-        # TODO add 7443-12701 to local DB and remove this skip
-        if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
-                (config.db == 'local')):
-            pytest.skip('Not the one true galaxy.')
-
-        plateifu = eval(plateifu) if plateifu is not None else None
-        filename = eval(filename) if filename is not None else None
-        cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
-    @pytest.mark.parametrize('plateifu, filename',
-                             [(None, 'galaxy.cubepath'),
-                              ('galaxy.plateifu', None)],
-                             ids=('filename', 'plateifu'))
-    @pytest.mark.parametrize('nsa_source',
-                             ['auto', 'nsa', 'drpall'])
-    @pytest.mark.parametrize('mode',
-                             [None, 'remote'])
-    def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
-        if (plateifu is None) and (filename is not None) and (mode == 'remote'):
-            pytest.skip('filename not allowed in remote mode.')
-
-        # TODO add 7443-12701 to local DB and remove this skip
-        if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
-            pytest.skip('Not the one true galaxy.')
-
-        plateifu = eval(plateifu) if plateifu is not None else None
-        filename = eval(filename) if filename is not None else None
-        cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
-        assert cube.nsa_source == nsa_source
-        assert cube.nsa['nsaid'] == galaxy.nsaid
-        assert isinstance(cube.nsa, DotableCaseInsensitive)
-        if mode == 'drpall':
-            assert 'profmean_ivar' not in cube.nsa.keys()
-        assert 'zdist' in cube.nsa.keys()
-        assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
-        assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
+    # @pytest.mark.parametrize('plateifu, filename',
+    #                          [(None, 'galaxy.cubepath'),
+    #                           ('galaxy.plateifu', None)],
+    #                          ids=('filename', 'plateifu'))
+    # @pytest.mark.parametrize('nsa_source',
+    #                          ['auto', 'nsa', 'drpall'])
+    # @pytest.mark.parametrize('mode',
+    #                          [None, 'remote'])
+    # def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
+    #     if (plateifu is None) and (filename is not None) and (mode == 'remote'):
+    #         pytest.skip('filename not allowed in remote mode.')
+    # 
+    #     # TODO add 7443-12701 to local DB and remove this skip
+    #     if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
+    #         pytest.skip('Not the one true galaxy.')
+    # 
+    #     plateifu = eval(plateifu) if plateifu is not None else None
+    #     filename = eval(filename) if filename is not None else None
+    #     cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
+    #     assert cube.nsa_source == nsa_source
+    #     assert cube.nsa['nsaid'] == galaxy.nsaid
+    #     assert isinstance(cube.nsa, DotableCaseInsensitive)
+    #     if mode == 'drpall':
+    #         assert 'profmean_ivar' not in cube.nsa.keys()
+    #     assert 'zdist' in cube.nsa.keys()
+    #     assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
+    #     assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -292,21 +295,30 @@ class TestGetSpaxel(object):
             expected = expected if isinstance(expected, list) else [expected]
             assert pytest.approx(actual, expected)
 
-    def test_getSpaxel_remote_fail_badresponse(self):
-        cc = Cube(mangaid='1-209232', mode='remote')
+    def test_getSpaxel_remote_fail_badresponse(self, monkeyconfig):
+        __ = Cube(mangaid='1-209232', mode='remote')
 
         tmp_sasurl = 'http://www.averywrongurl.com'
 
-        with set_tmp_sasurl(tmp_sasurl):
-            config.sasurl = tmp_sasurl
-            assert config.urlmap is not None
+        monkeyconfig.setattr(config, 'sasurl', tmp_sasurl)
+        
+        assert config.urlmap is not None
 
-            # with pytest.raises(BrainError) as cm:
-            with pytest.raises(MarvinError) as cm:
+        with pytest.raises(MarvinError) as cm:
                 Cube(mangaid='1-209232', mode='remote')
 
-            # assert 'No URL Map found. Cannot make remote call' in str(cm.value)
-            assert 'Failed to establish a new connection' in str(cm.value)
+        assert 'Failed to establish a new connection' in str(cm.value)
+
+        # with set_tmp_sasurl(tmp_sasurl):
+        #     config.sasurl = tmp_sasurl
+        #     assert config.urlmap is not None
+        # 
+        #     # with pytest.raises(BrainError) as cm:
+        #     with pytest.raises(MarvinError) as cm:
+        #         Cube(mangaid='1-209232', mode='remote')
+        # 
+        #     # assert 'No URL Map found. Cannot make remote call' in str(cm.value)
+        #     assert 'Failed to establish a new connection' in str(cm.value)
 
     def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
         config.setMPL('MPL-5')
@@ -318,11 +330,11 @@ class TestGetSpaxel(object):
         spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
         assert pytest.approx(spectrum.flux[3000], expected)
 
-    def test_getspaxel_matches_file_db_remote(self, galaxy):
+    def test_getspaxel_matches_file_db_remote(self, galaxy, cube_file, cube_db, cube_api):
 
-        cube_file = Cube(filename=galaxy.cubepath)
-        cube_db = Cube(plateifu=galaxy.plateifu)
-        cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
+        # cube_file = Cube(filename=galaxy.cubepath)
+        # cube_db = Cube(plateifu=galaxy.plateifu)
+        # cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
 
         assert cube_file.data_origin == 'file'
         assert cube_db.data_origin == 'db'

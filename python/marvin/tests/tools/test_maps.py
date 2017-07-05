@@ -103,7 +103,7 @@ class TestMaps(object):
         maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
-        assert spaxel.maps.data_origin == 'file' if data_origin
+        assert spaxel.maps.data_origin == 'file' if data_origin else False
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
