@@ -27,7 +27,6 @@ class TestCube(object):
         assert os.path.realpath(galaxy.cubepath) == cube.filename
 
     def test_cube_load_from_local_file_by_filename_fail(self):
-        # config.use_sentry = False
         with pytest.raises(MarvinError):
             Cube(filename='not_a_filename.fits')
 
@@ -49,7 +48,8 @@ class TestCube(object):
     @skipIfNoDB
     @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and '
                       'there is currently no way of doing so.')
-    def test_cube_load_from_local_database_nodbconnected(self):
+    # @pytest.mark.parametrize('monkeyconfig', [('db', None)], ids=['nodb'])
+    def test_cube_load_from_local_database_nodbconnected(self, db, monkeyconfig):
         # need to undo setting the config.db to None so that subsequent tests will pass
         # config.db = None
         params = {'mangaid': self.mangaid, 'mode': 'local'}
@@ -278,30 +278,16 @@ class TestGetSpaxel(object):
             expected = expected if isinstance(expected, list) else [expected]
             assert pytest.approx(actual, expected)
 
+    @pytest.mark.parametrize('monkeyconfig',
+                             [('sasurl', 'http://www.averywrongurl.com')],
+                             ids=['wrongurl'], indirect=True)
     def test_getSpaxel_remote_fail_badresponse(self, monkeyconfig):
-        __ = Cube(mangaid='1-209232', mode='remote')
-
-        tmp_sasurl = 'http://www.averywrongurl.com'
-
-        monkeyconfig.setattr(config, 'sasurl', tmp_sasurl)
-        
         assert config.urlmap is not None
 
         with pytest.raises(MarvinError) as cm:
-                Cube(mangaid='1-209232', mode='remote')
+            Cube(mangaid='1-209232', mode='remote')
 
         assert 'Failed to establish a new connection' in str(cm.value)
-
-        # with set_tmp_sasurl(tmp_sasurl):
-        #     config.sasurl = tmp_sasurl
-        #     assert config.urlmap is not None
-        # 
-        #     # with pytest.raises(BrainError) as cm:
-        #     with pytest.raises(MarvinError) as cm:
-        #         Cube(mangaid='1-209232', mode='remote')
-        # 
-        #     # assert 'No URL Map found. Cannot make remote call' in str(cm.value)
-        #     assert 'Failed to establish a new connection' in str(cm.value)
 
     def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
         config.setMPL('MPL-5')

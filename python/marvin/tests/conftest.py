@@ -228,7 +228,7 @@ def exporigin(mode, db):
 @pytest.fixture()
 def monkeyconfig(request, monkeypatch):
     ''' Fixture to monkeypatch a variable on the Marvin config
-        Example at lini 160 in utils/test_general
+        Example at line 160 in utils/test_general
     '''
     name, value = request.param
     monkeypatch.setattr(config, name, value=value)
