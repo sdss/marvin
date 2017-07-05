@@ -995,5 +995,5 @@ def get_plot_params(dapver, prop):
     else:
         key = 'default'
 
-    return params[key]        
+    return params[key]
 

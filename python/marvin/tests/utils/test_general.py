@@ -133,14 +133,18 @@ class TestGetNSAData(object):
         assert data['iauname'] == data.iauname
         assert 'profmean_ivar' in data.keys()
         assert 'elpetro_mag_g' in data
+        assert 'version' not in data.keys()
         assert data['elpetro_mag_g'] == data.elpetro_mag_g
 
     def _test_drpall(self, galaxy, data):
         assert isinstance(data, DotableCaseInsensitive)
-        assert 'iauname' in data.keys()
-        assert data['iauname'] == galaxy.iauname
-        assert data['iauname'] == data.iauname
+        assert 'version' in data.keys()
         assert 'profmean_ivar' not in data.keys()
+        if galaxy.release != 'MPL-4':
+            assert 'iauname' in data.keys()
+            assert data['iauname'] == galaxy.iauname
+            assert data['iauname'] == data.iauname
+            assert 'elpetro_absmag' in data.keys()
 
     @pytest.mark.parametrize('source', [('nsa'), ('drpall')])
     def test_nsa(self, galaxy, mode, db, source):
