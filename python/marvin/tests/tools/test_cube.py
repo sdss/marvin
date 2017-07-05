@@ -46,15 +46,26 @@ class TestCube(object):
         assert errMsg in str(cm.value)
 
     @skipIfNoDB
-    @pytest.mark.skip('Test fails beacuse config.db = None does not disable the local DB, and '
-                      'there is currently no way of doing so.')
-    # @pytest.mark.parametrize('monkeyconfig', [('db', None)], ids=['nodb'])
-    def test_cube_load_from_local_database_nodbconnected(self, db, monkeyconfig):
+    @pytest.mark.skip('Test fails beacuse local data access switches to ``file`` if db is off.')
+    def test_cube_load_from_local_database_nodbconnected(self, galaxy, monkeypatch):
         # need to undo setting the config.db to None so that subsequent tests will pass
-        # config.db = None
-        params = {'mangaid': self.mangaid, 'mode': 'local'}
+        if config.db is not None:
+            config.forceDbOff()
+            db_on = True
+        else:
+            db_on = False
+
+        assert config.db is None
+
+        # from marvin.core.core import MarvinToolsClass
+        monkeypatch.setattr(Cube, '_getFullPath', lambda x: None)
+
+        params = {'mangaid': galaxy.mangaid, 'mode': 'local'}
         errMsg = 'No db connected'
         self._load_from_db_fail(params, errMsg)
+
+        if db_on:
+            config.forceDbOn()
 
     @skipIfNoDB
     def test_cube_load_from_local_database_noresultsfound(self, maindb):
