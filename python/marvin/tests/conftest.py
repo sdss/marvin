@@ -230,7 +230,7 @@ def db(request):
 
 @pytest.fixture()
 def exporigin(mode, db):
-    """Return the expected modes for a given db/mode combo."""
+    """Return the expected origins for a given db/mode combo."""
     if mode == 'local' and not db:
         return 'file'
     elif mode == 'local' and db:
@@ -243,6 +243,23 @@ def exporigin(mode, db):
         return 'db'
     elif mode == 'auto' and not db:
         return 'api'
+
+
+@pytest.fixture()
+def expmode(mode, db):
+    ''' expected modes for a given db/mode combo '''
+    if mode == 'local' and not db:
+        return None
+    elif mode == 'local' and db:
+        return 'local'
+    elif mode == 'remote' and not db:
+        return 'remote'
+    elif mode == 'remote' and db:
+        return 'remote'
+    elif mode == 'auto' and db:
+        return 'local'
+    elif mode == 'auto' and not db:
+        return 'remote'
 
 
 # Monkeypatch-based FIXTURES
@@ -400,10 +417,11 @@ def galaxy(get_params, plateifu):
 def query(request, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]
+    set_the_config(release)
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(searchfilter=searchfilter, mode=mode)
+    q = Query(searchfilter=searchfilter, mode=mode, release=release)
     q.expdata = data
     yield q
     config.forceDbOn()

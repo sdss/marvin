@@ -123,10 +123,10 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
-    #if app.config['RATELIMIT_ENABLED'] is True:
-    limiter.init_app(app)
-    for handler in app.logger.handlers:
-        limiter.logger.addHandler(handler)
+    if app.config['RATELIMIT_ENABLED'] is True:
+        limiter.init_app(app)
+        for handler in app.logger.handlers:
+            limiter.logger.addHandler(handler)
 
     if app.config['USE_SENTRY']:
         sentry.init_app(app)
