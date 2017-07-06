@@ -83,17 +83,17 @@ def marvin_test_if(mode='skip', **kfilter):
         If you want to only test for galaxies with bintype ``'STON'`` and
         template ``'MILES-THIN'`` you can do::
 
-            @marvin_skip_if(galaxy=dict(bintype=['STON'], template=['MILES-THIN']), mode='include')
+            @marvin_test_if(galaxy=dict(bintype=['STON'], template=['MILES-THIN']), mode='include')
 
         You can also mark all tests with ``data_origin='file'`` as expected
         failure::
 
-            @marvin_skip_if(data_origin=['file'], mode='xfails')
+            @marvin_test_if(data_origin=['file'], mode='xfails')
 
-        ``marvin_skip_if`` decorators can be concatenated::
+        ``marvin_test_if`` decorators can be concatenated::
 
-            @marvin_skip_if(data_origin=['file'], mode='xfails')
-            @marvin_skip_if(galaxy=dict(bintype=['SPX']), mode='skip')
+            @marvin_test_if(data_origin=['file'], mode='xfails')
+            @marvin_test_if(galaxy=dict(bintype=['SPX']), mode='skip')
 
         will skip ``'SPX'`` bintypes and expect a failure on ``'file'``
         data_origins.
