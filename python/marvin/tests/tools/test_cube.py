@@ -11,7 +11,7 @@ from astropy import wcs
 from marvin import config
 from marvin.tools.cube import Cube
 from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB
+from marvin.tests import skipIfNoDB, marvin_test_if
 
 
 class TestCube(object):
@@ -115,22 +115,51 @@ class TestCube(object):
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-    # @pytest.mark.parametrize('plateifu, filename, mode',
-    #                          [(None, 'galaxy.cubepath', None),
-    #                           ('galaxy.plateifu', None, 'local'),
-    #                           ('galaxy.plateifu', None, 'remote')],
-    #                          ids=('file', 'db', 'remote'))
-    # def test_cube_redshift(self, galaxy, plateifu, filename, mode):
-    # 
-    #     # TODO add 7443-12701 to local DB and remove this skip
-    #     if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
-    #             (config.db == 'local')):
-    #         pytest.skip('Not the one true galaxy.')
-    # 
-    #     plateifu = eval(plateifu) if plateifu is not None else None
-    #     filename = eval(filename) if filename is not None else None
-    #     cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
-    #     assert pytest.approx(cube.nsa.z, galaxy.redshift)
+
+    # TODO refactor into several tests (see below)
+    @pytest.mark.parametrize('plateifu, filename, mode',
+                             [(None, 'galaxy.cubepath', None),
+                              ('galaxy.plateifu', None, 'local'),
+                              ('galaxy.plateifu', None, 'remote')],
+                             ids=('file', 'db', 'remote'))
+    def test_cube_redshift(self, galaxy, plateifu, filename, mode):
+    
+        # TODO add 7443-12701 to local DB and remove this skip
+        # if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
+        #         (config.db == 'local')):
+        #     pytest.skip('Not the one true galaxy.')
+    
+        plateifu = eval(plateifu) if plateifu is not None else None
+        filename = eval(filename) if filename is not None else None
+        cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
+        assert pytest.approx(cube.nsa.z, galaxy.redshift)
+
+    @marvin_test_if(data_origin=['db'], mode='include')
+    def test_cube_redshift_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='local')
+        assert pytest.approx(cube.nsa.z, galaxy.redshift)
+
+    @marvin_test_if(data_origin=['file'], mode='include')
+    @marvin_test_if(release=['MPL-4'], mode='include')
+    @marvin_test_if(galaxy=dict(release=['MPL-4']), mode='include')
+    def test_cube_redshift_file_MPL4(self, galaxy):
+        print('config release', config.release)
+        print('galaxy release', galaxy.release)
+        cube = Cube(filename=galaxy.cubepath)
+        print('cube release', cube._release)
+        print('filename', galaxy.cubepath)
+        assert pytest.approx(cube.nsa.redshift, galaxy.redshift)
+    
+    @marvin_test_if(data_origin=['file'], mode='include')
+    @marvin_test_if(release=['MPL-5'], mode='include')
+    def test_cube_redshift_file_MPL5(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        assert pytest.approx(cube.nsa.z, galaxy.redshift)
+
+    @marvin_test_if(data_origin=['api'], mode='include')
+    def test_cube_redshift_api(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
+        assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
     # @pytest.mark.parametrize('plateifu, filename',
     #                          [(None, 'galaxy.cubepath'),
@@ -169,36 +198,6 @@ class TestCube(object):
         with pytest.raises(MarvinError) as ee:
             cube.release = 'a'
             assert 'the release cannot be changed' in str(ee.exception)
-
-    # TODO remove because added 7443-12701 to NSA
-    def test_load_7443_12701_file(self, galaxy):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        config.setMPL('MPL-5')
-        galaxy.set_filepaths()
-        filename = os.path.realpath(os.path.join(
-            galaxy.drppath, '7443/stack/manga-7443-12701-LOGCUBE.fits.gz'))
-        cube = Cube(filename=filename)
-        assert cube.data_origin == 'file'
-        assert 'elpetro_amivar' in cube.nsa
-
-    # TODO remove because added 7443-12701 to NSA
-    def test_load_7443_12701_db(self):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        config.setMPL('MPL-5')
-        cube = Cube(plateifu='7443-12701')
-        assert cube.data_origin == 'db'
-        assert cube.nsa is None
-
-    # TODO remove because added 7443-12701 to NSA
-    def test_load_7443_12701_api(self):
-        """Loads a cube that is not in the NSA catalogue."""
-
-        config.setMPL('MPL-5')
-        cube = Cube(plateifu='7443-12701', mode='remote')
-        assert cube.data_origin == 'api'
-        assert cube.nsa is None
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
