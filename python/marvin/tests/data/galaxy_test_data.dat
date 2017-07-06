@@ -38,12 +38,32 @@
                     model: []
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 1.35257565269
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
+                        ivar: 0.925622344017
                         mask: 0
                         name: 'emline_gflux'
                         unit: '1E-17 erg/s/cm^2/spaxel'
-                        value: 28.6823677604
+                        value: 29.345
+                MILES-THIN:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
+                        ivar: 0.921766579151
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 29.2763
+                MIUSCAT-THIN:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
+                        ivar: 0.920904278755
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 29.4449
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[16, 23]]
@@ -73,7 +93,7 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 47.0896851561
+                        ivar: 47.0896835327
                         mask: 0
                         name: 'emline_gflux'
                         unit: '1E-17 erg/s/cm^2/spaxel'
@@ -150,18 +170,38 @@
                 ivar: 2151.76000
                 mask: 0
             dap:
-                x: 17
-                y: 17
+                x: 32
+                y: 32
                 M11-STELIB-ZSOL:
                     model: []
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
+                        ivar: 16.4909667969
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 0.0573237
+                MILES-THIN:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
                         ivar: 0.0
                         mask: 1
                         name: 'emline_gflux'
                         unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 0.0
+                MIUSCAT-THIN:
+                    model: []
+                    emline_gflux_ha_6564:
+                        channel: 'ha_6564'
+                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
+                        ivar: 5.71516084671
+                        mask: 0
+                        name: 'emline_gflux'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 0.141774
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[31, 31]]
