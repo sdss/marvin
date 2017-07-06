@@ -26,14 +26,6 @@ class TestBPT(object):
 
     emission_mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
 
-#     def setUp(self):
-#         self._reset_the_config()
-#         self._update_release('MPL-5')
-#         self.set_sasurl('local')
-#         self.filename_8485_1901_mpl5_spx = os.path.join(
-#             self.mangaanalysis, self.drpver, self.dapver,
-#             'SPX-GAU-MILESHC', str(self.plate), self.ifu, self.mapsname)
-
     def _run_tests_8485_1901(self, maps):
 
         masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=True)

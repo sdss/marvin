@@ -21,7 +21,6 @@ from astropy.io.misc import yaml
 
 # TODO Replace skipTest and skipBrian with skipif
 # TODO use monkeypatch to set initial config variables
-# TODO replace _reset_the_config with monkeypatch
 
 
 # PYTEST MODIFIERS
