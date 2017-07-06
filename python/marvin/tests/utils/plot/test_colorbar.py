@@ -8,6 +8,7 @@ from marvin.utils.plot import colorbar
 def test_linearlab_filename_exists():
     assert os.path.isfile(colorbar._linearlab_filename())
 
+
 @pytest.mark.parametrize('cbrange, expected',
                          [([1.5, 1.75], []),
                           ([1.5, 4], [2, 3]),

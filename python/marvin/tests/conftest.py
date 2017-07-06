@@ -129,8 +129,8 @@ def set_sasurl(loc='local', port=None):
     config.urlmap = response.getRouteMap()
 
 
-@pytest.fixture(autouse=True)
-def saslocal(set_release):
+@pytest.fixture(scope='session', autouse=True)
+def saslocal():
     """Set sasurl to local."""
     set_sasurl(loc='local')
 
@@ -166,6 +166,13 @@ def dapver(versions):
     """Return DAP version."""
     __, dapver = versions
     return dapver
+
+
+def set_the_config(release):
+    """Set config release without parametrizing.
+
+    Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
+    config.setRelease(release)
 
 
 # DB-based FIXTURES
@@ -379,6 +386,7 @@ def galaxy(get_params, plateifu):
     """Yield an instance of a Galaxy object for use in tests."""
     release, bintype, template = get_params
 
+    set_the_config(release)
     gal = Galaxy(plateifu=plateifu)
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()

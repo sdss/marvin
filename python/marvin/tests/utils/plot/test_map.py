@@ -108,16 +108,16 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def maps(galaxy):
     yield Maps(plateifu=galaxy.plateifu)
+
 
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
     params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
     return params['bitmasks']
-
 
 
 class TestMasks(object):
@@ -243,9 +243,9 @@ class TestMapPlot(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
-    @pytest.mark.parametrize('mask', [None, mask_simple, mask_binary, mask_daplike])
-    @pytest.mark.parametrize('ivar', [None, ivar])
-    @pytest.mark.parametrize('value', [value])
+    @pytest.mark.parametrize('mask', [(None), (mask_simple), (mask_binary), (mask_daplike)])
+    @pytest.mark.parametrize('ivar', [(None), (ivar)])
+    @pytest.mark.parametrize('value', [(value)])
     def test_plot_user_defined_map(self, value, ivar, mask):
         fig, ax = mapplot.plot(value=value, ivar=ivar, mask=mask)
         assert isinstance(fig, matplotlib.figure.Figure)
@@ -271,4 +271,4 @@ class TestMapPlot(object):
                               ('stellar_sigma', 'sigma')])
     def test_get_prop(self, title, expected):
         assert mapplot._get_prop(title) == expected
-        
+
