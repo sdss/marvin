@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-05 13:54:21
+# @Last Modified time: 2017-07-06 11:26:42
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -133,7 +133,11 @@ class Page(object):
             assert item in b
 
     def assert_dict_contains_subset(self, first, second):
-        subset = all(k in second and np.isclose(second[k], v) for k, v in first.items())
+        subset = first.items() <= second.items()
+        if not subset:
+            subset = all(k in second and second[k] == v for k, v in first.items())
+            if not subset:
+                subset = all(k in second and np.isclose(second[k], v) for k, v in first.items())
         assert subset is True, '{0} dictionary should be subset of {1}'.format(first, second)
 
     def assert_status(self, status_code, message=None):

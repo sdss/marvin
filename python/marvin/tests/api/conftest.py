@@ -6,13 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 14:11:39
+# @Last Modified time: 2017-07-05 23:18:51
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
 from marvin import config
 from marvin.web import create_app
 from marvin.api.base import arg_validate as av
+from marvin.web.settings import TestConfig, CustomConfig
 import pytest
 import os
 import six
@@ -42,12 +43,18 @@ import six
 #     return config.mode
 
 
+# @pytest.fixture(scope='session')
+# def app():
+#     app = create_app(debug=True, local=True, use_profiler=False)
+#     app.config['TESTING'] = True
+#     app.config['WTF_CSRF_ENABLED'] = False
+#     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+#     return app
+
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(debug=True, local=True, use_profiler=False)
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    object_config = type('Config', (TestConfig, CustomConfig), dict())
+    app = create_app(debug=True, local=True, object_config=object_config)
     return app
 
 
