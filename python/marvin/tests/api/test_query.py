@@ -6,14 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 16:40:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 16:01:17
+# @Last Modified time: 2017-07-06 16:45:23
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 from marvin.tools.query import Query
 from marvin.tools.query.query_utils import bestparams
 import pytest
-
+import yaml
+import os
 
 # @pytest.fixture()
 # def page(client, request, init_api):
@@ -21,14 +22,21 @@ import pytest
 #     page = ApiPage(client, 'api', endpoint)
 #     yield page
 
+query_data = yaml.load(open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/query_test_data.dat'))))
+
 
 @pytest.fixture()
 def params(release):
     return {'release': release}
 
 
-def get_query_params(paramdisplay):
-    q = Query(mode='local')
+@pytest.fixture()
+def data(release):
+    return query_data[release]
+
+
+def get_query_params(release, paramdisplay):
+    q = Query(mode='local', release=release)
     if paramdisplay == 'best':
         qparams = bestparams
     else:
@@ -50,14 +58,11 @@ class TestQueryCubes(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('searchfilter', [('nsa.z < 0.1')])
-    def test_query_success(self, page, params, reqtype, searchfilter):
+    def test_query_success(self, page, params, reqtype, searchfilter, data):
         params.update({'searchfilter': searchfilter})
-        data = [["1-209232", 8485, "8485-1901", "1901", 0.0407447],
-                ["1-209113", 8485, "8485-1902", "1902", 0.0378877],
-                ["1-209191", 8485, "8485-12701", "12701", 0.0234253],
-                ["1-209151", 8485, "8485-12702", "12702", 0.0185246]]
+        expdata = data['queries'][searchfilter]['top5']
         page.load_page(reqtype, page.url, params=params)
-        page.assert_success(data)
+        page.assert_success(expdata, issubset=True)
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),
@@ -72,11 +77,11 @@ class TestQueryGetParams(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('paramdisplay', [('all'), ('best')])
-    def test_getparams_success(self, page, params, reqtype, paramdisplay):
+    def test_getparams_success(self, release, page, params, reqtype, paramdisplay):
         params.update({'paramdisplay': paramdisplay})
-        data = get_query_params(paramdisplay)
+        expdata = get_query_params(release, paramdisplay)
         page.load_page(reqtype, page.url, params=params)
-        page.assert_success(data, keys=True)
+        page.assert_success(expdata, keys=True)
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),

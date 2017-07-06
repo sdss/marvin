@@ -70,6 +70,7 @@ install:
 - pip install pytest-cov --quiet
 - pip install pytest-flask --quiet
 - pip install pytest-sugar --quiet
+- pip install pytest-xdist --quiet
 - pip install selenium --quiet
 - pip install page_objects --quiet
 - python setup.py install
