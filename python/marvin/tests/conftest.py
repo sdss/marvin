@@ -21,18 +21,20 @@ from astropy.io.misc import yaml
 
 # TODO Replace skipTest and skipBrian with skipif
 # TODO use monkeypatch to set initial config variables
-# TODO replace _reset_the_config with monkeypatch
 
 
 # PYTEST MODIFIERS
 # -----------------
 def pytest_addoption(parser):
+    """Run slow tests."""
     parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
 
 
 def pytest_runtest_setup(item):
+    """Skip slow tests."""
     if 'slow' in item.keywords and not item.config.getoption('--runslow'):
         pytest.skip('Requires --runslow option to run.')
+
 
 # Global Parameters for FIXTURES
 # ------------------------------
@@ -63,42 +65,42 @@ query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_
 
 @pytest.fixture(scope='session', params=releases)
 def release(request):
-    ''' Yields a release '''
+    """Yield a release."""
     return request.param
 
 
 def _get_release_generator_chain():
-    """Returns a generator for all valid combinations of (release, bintype, template)."""
+    """Return all valid combinations of (release, bintype, template)."""
     return itertools.chain(*[itertools.product([release], bintypes[release],
                                                templates[release]) for release in releases])
 
 
 def _params_ids(fixture_value):
-    ''' Returns an id for the release chain '''
+    """Return a test id for the release chain."""
     return '-'.join(fixture_value)
 
 
 @pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
 def get_params(request):
-    """Yields a tuple of (release, bintype, template)."""
+    """Yield a tuple of (release, bintype, template)."""
     return request.param
 
 
 @pytest.fixture(scope='session', params=galaxy_data.keys())
 def plateifu(request):
-    ''' Yields a plate-ifu '''
+    """Yield a plate-ifu."""
     return request.param
 
 
 @pytest.fixture(scope='session', params=origins)
 def data_origin(request):
-    """Yields a data access mode."""
+    """Yield a data access mode."""
     return request.param
 
 
 @pytest.fixture(params=modes)
 def mode(request):
-    ''' Yields a data mode '''
+    """Yield a data mode."""
     return request.param
 
 
@@ -106,19 +108,20 @@ def mode(request):
 # ----------------------
 @pytest.fixture(scope='session', autouse=True)
 def set_config():
+    """Set config."""
     config.use_sentry = False
     config.add_github_message = False
 
 
 @pytest.fixture()
 def check_config():
-    ''' check the config to see if a db is on or not '''
+    """Check the config to see if a db is on."""
     return config.db is None
 
 
 @pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
-    ''' Sets the sasurl to local or test-utah and regenrates the urlmap '''
+    """Set the sasurl to local or test-utah, and regenerate the urlmap."""
     if not port:
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
     istest = True if loc == 'utah' else False
@@ -129,51 +132,61 @@ def set_sasurl(loc='local', port=None):
 
 @pytest.fixture(scope='session', autouse=True)
 def saslocal():
+    """Set sasurl to local."""
     set_sasurl(loc='local')
 
 
 @pytest.fixture(scope='session')
 def urlmap(set_sasurl):
-    ''' Yields the config urlmap '''
+    """Yield the config urlmap."""
     return config.urlmap
 
 
 @pytest.fixture(scope='session')
 def set_release(release):
-    ''' sets the release in the config '''
+    """Set the release in the config."""
     config.setMPL(release)
 
 
 @pytest.fixture(scope='session')
 def versions(release):
-    ''' Yields the drp and dap versions for a release '''
+    """Yield the DRP and DAP versions for a release."""
     drpver, dapver = config.lookUpVersions(release)
     return drpver, dapver
 
 
 @pytest.fixture(scope='session')
 def drpver(versions):
-    drpver, dapver = versions
+    """Return DRP version."""
+    drpver, __ = versions
     return drpver
 
 
 @pytest.fixture(scope='session')
 def dapver(versions):
-    drpver, dapver = versions
+    """Return DAP version."""
+    __, dapver = versions
     return dapver
 
 
 def set_the_config(release):
-    ''' Regular function to set the release in the config.  Using set_release combined with galaxy double parametrizes! '''
+    """Set config release without parametrizing.
+
+    Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
     config.setRelease(release)
+
 
 # DB-based FIXTURES
 # -----------------
 
-
 class DB(object):
-    ''' Object representing aspects of the marvin db.  Useful for tests needing direct DB access '''
+    """Object representing aspects of the marvin db.
+
+    Useful for tests needing direct DB access.
+    """
+
     def __init__(self):
+        """Initialize with DBs."""
         self._marvindb = marvindb
         self.session = marvindb.session
         self.datadb = marvindb.datadb
@@ -183,13 +196,13 @@ class DB(object):
 
 @pytest.fixture(scope='session')
 def maindb():
-    ''' Yields an instance of the DB object '''
+    """Yield an instance of the DB object."""
     yield DB()
 
 
 @pytest.fixture(scope='function')
 def db_off():
-    """ Turns the DB off for a test and resets it after """
+    """Turn the DB off for a test, and reset it after."""
     config.forceDbOff()
     yield
     config.forceDbOn()
@@ -197,13 +210,16 @@ def db_off():
 
 @pytest.fixture(scope='session', autouse=True)
 def db_on():
-    """ Session fixture to turn on the DB at start; automically gets used """
+    """Automatically turn on the DB at collection time."""
     config.forceDbOn()
 
 
 @pytest.fixture(params=dbs)
 def db(request):
-    ''' db fixture to turn on and off a local db.  Use this to parametrize over all db options '''
+    """Turn local db on or off.
+
+    Use this to parametrize over all db options.
+    """
     if request.param == 'db':
         config.forceDbOn()
     else:
@@ -214,7 +230,7 @@ def db(request):
 
 @pytest.fixture()
 def exporigin(mode, db):
-    ''' fixture that returns the expected modes for a given db/mode combo '''
+    """Return the expected modes for a given db/mode combo."""
     if mode == 'local' and not db:
         return 'file'
     elif mode == 'local' and db:
@@ -233,38 +249,47 @@ def exporigin(mode, db):
 # --------------------------
 @pytest.fixture()
 def monkeyconfig(request, monkeypatch):
-    ''' Fixture to monkeypatch a variable on the Marvin config
-        Example at lini 160 in utils/test_general
-    '''
+    """Monkeypatch a variable on the Marvin config.
+
+    Example at line 160 in utils/test_general.
+    """
     name, value = request.param
     monkeypatch.setattr(config, name, value=value)
 
 
 @pytest.fixture()
 def monkeymanga(monkeypatch, temp_scratch):
-    ''' Fixture to monkeypatch the environ to create a temp SAS dir for reading/writing/downloading
-        Example at line 141 in utils/test_images
-    '''
+    """Monkeypatch the environ to create a temp SAS dir for reading/writing/downloading.
+
+    Example at line 141 in utils/test_images.
+    """
     monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX', str(temp_scratch.join('mangawork/manga/spectro/redux')))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS', str(temp_scratch.join('mangawork/manga/spectro/analysis')))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX',
+                        str(temp_scratch.join('mangawork/manga/spectro/redux')))
+    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS',
+                        str(temp_scratch.join('mangawork/manga/spectro/analysis')))
 
 
 # Temp Dir/File-based FIXTURES
 # ----------------------------
 @pytest.fixture(scope='session')
 def temp_scratch(tmpdir_factory):
-    ''' Creates a temporary scratch space for reading/writing.  Used for creating temp dirs and files
-        Example at line 208 in tools/test_query, line 254 in tools/test_results, and misc/test_marvin_pickle
-    '''
+    """Create a temporary scratch space for reading/writing.
+
+    Use for creating temp dirs and files.
+
+    Example at line 208 in tools/test_query, line 254 in tools/test_results, and
+    misc/test_marvin_pickle.
+    """
     fn = tmpdir_factory.mktemp('scratch')
     return fn
 
 
 def tempafile(path, temp_scratch):
-    ''' Returns a pytest temporary file given the original file path
-        Example at line 141 in utils/test_images
-    '''
+    """Return a pytest temporary file given the original file path.
+
+    Example at line 141 in utils/test_images.
+    """
     redux = os.getenv('MANGA_SPECTRO_REDUX')
     anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
     endredux = path.partition(redux)[-1]
@@ -273,9 +298,9 @@ def tempafile(path, temp_scratch):
 
     return temp_scratch.join(end)
 
+
 # Object-based FIXTURES
 # ---------------------
-
 
 class Galaxy(object):
     """An example galaxy for Marvin-tools testing."""
@@ -286,13 +311,13 @@ class Galaxy(object):
     dir3d = 'stack'
 
     def __init__(self, plateifu):
+        """Initialize plate and ifu."""
         self.plateifu = plateifu
         self.plate, self.ifu = self.plateifu.split('-')
         self.plate = int(self.plate)
 
     def set_galaxy_data(self, data_origin=None):
-        """Sets galaxy properties from the configuration file."""
-
+        """Set galaxy properties from the configuration file."""
         data = galaxy_data[self.plateifu]
 
         for key in data.keys():
@@ -304,8 +329,7 @@ class Galaxy(object):
             setattr(self, key, releasedata[key])
 
     def set_params(self, bintype=None, template=None, release=None):
-        """Sets bintype, template, etc."""
-
+        """Set bintype, template, etc."""
         self.release = release
         self.drpver, self.dapver = config.lookUpVersions(self.release)
         self.drpall = 'drpall-{0}.fits'.format(self.drpver)
@@ -324,45 +348,43 @@ class Galaxy(object):
         else:
             self.niter = '*'
 
-        self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver, 'dapver':
-                              self.dapver, 'dir3d': self.dir3d, 'mpl': self.release, 'bintype': self.bintype,
-                              'n': self.niter, 'mode': '*', 'daptype': self.bintemp}
+        self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver,
+                              'dapver': self.dapver, 'dir3d': self.dir3d, 'mpl': self.release,
+                              'bintype': self.bintype, 'n': self.niter, 'mode': '*',
+                              'daptype': self.bintemp}
 
     def set_filepaths(self, pathtype='full'):
-        """Sets the paths for cube, maps, etc."""
-
+        """Set the paths for cube, maps, etc."""
         self.path = Path()
-
-        # Paths
         self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
-
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
-
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
 
         if self.release == 'MPL-4':
             self.mapspath = self.path.__getattribute__(pathtype)('mangamap', **self.access_kwargs)
             self.modelpath = None
         else:
-            mode = self.access_kwargs.pop('mode')
-            self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS', **self.access_kwargs)
-            self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE', **self.access_kwargs)
+            __ = self.access_kwargs.pop('mode')
+            self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS',
+                                                                 **self.access_kwargs)
+            self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE',
+                                                                  **self.access_kwargs)
 
     def get_location(self, path):
-        ''' Extract the location from the input path '''
+        """Extract the location from the input path."""
         return self.path.location("", full=path)
 
     def partition_path(self, path):
-        ''' Partition the path into non-redux/analysis parts '''
+        """Partition the path into non-redux/analysis parts."""
         endredux = path.partition(self.mangaredux)[-1]
-        endanal = path.partition(self.mangaanalysis)[-1]
-        end = (endredux or endanal)
+        endanalysis = path.partition(self.mangaanalysis)[-1]
+        end = (endredux or endanalysis)
         return end
 
 
 @pytest.fixture(scope='function')
 def galaxy(get_params, plateifu):
-    ''' Yields an instance of a Galaxy object for use in tests '''
+    """Yield an instance of a Galaxy object for use in tests."""
     release, bintype, template = get_params
 
     set_the_config(release)
@@ -386,4 +408,3 @@ def query(request, release, mode, db):
     yield q
     config.forceDbOn()
     q = None
-
