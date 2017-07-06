@@ -6,10 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:00:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 11:19:08
+# @Last Modified time: 2017-07-06 11:50:59
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
+from marvin import config
 import pytest
 
 
@@ -18,6 +19,8 @@ class TestGetModelCubes(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_modelcube_success(self, galaxy, page, params, reqtype):
+        if galaxy.release == 'MPL-4':
+            pytest.skip('MPL-4 does not have modelcubes')
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
         data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
                 'template_kin': galaxy.template, 'shape': galaxy.shape, 'redcorr': []}

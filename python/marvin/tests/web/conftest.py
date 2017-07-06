@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 11:26:42
+# @Last Modified time: 2017-07-06 11:51:41
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -186,7 +186,6 @@ class Page(object):
 @pytest.fixture()
 def page(client, config, request, init_web):
     blue, endpoint = request.param
-    print('config', config["TESTING"], config["RATELIMIT_ENABLED"])
     page = Page(client, blue, endpoint)
     yield page
 
