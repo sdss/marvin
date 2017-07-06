@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import warnings
-import os
 import inspect
 from functools import wraps
 
 import pytest
-from unittest import TestCase
-
-from marvin import config, marvindb
-from marvin.core.exceptions import MarvinSkippedTestWarning
-from marvin.api.api import Interaction
-from marvin.tools.maps import _get_bintemps
 
 
 def use_bintypes(*bintypes):
-    """Decorates test to run only for the given bintypes."""
+    """Decorate test to run only for the given bintypes."""
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
@@ -28,7 +20,7 @@ def use_bintypes(*bintypes):
 
 
 def use_releases(*releases):
-    """Decorates test to run only for the given releases."""
+    """Decorate test to run only for the given releases."""
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
@@ -44,7 +36,7 @@ def use_releases(*releases):
 
 
 class MetaUse(object):
-    ''' Meta class to define a testing class that decorates all tests to use the specified fxn '''
+    """Meta class to define a testing class that decorates all tests to use the specified fxn."""
     def __init__(self, *args):
         self.args = args
 
@@ -64,7 +56,7 @@ UseReleases = type('UseReleases', (MetaUse,), {'fxn': use_releases})
 # These decorators for functions and classes allow to skip or run tests only for galaxies
 # that have certain bintypes, templates, or releases
 def marvin_test_if(mode='skip', **kfilter):
-    """Decorates test to skip/include certain parameters.
+    """Decorate test to skip/include certain parameters.
 
     Parameters:
         mode ({'skip', 'include', 'xfail'}):
@@ -164,8 +156,8 @@ class marvin_test_if_class(object):
         return decorated_class
 
 
-# Decorator to skip a test if the session is None (i.e., if there is no DB)
 def skipIfNoDB(test):
+    """Decorate a test to skip if DB ``session`` is ``None``."""
     @wraps(test)
     def wrapper(self, db, *args, **kwargs):
         if db.session is None:
@@ -173,6 +165,3 @@ def skipIfNoDB(test):
         else:
             return test(self, db, *args, **kwargs)
     return wrapper
-
-
-
