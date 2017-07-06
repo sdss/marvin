@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 16:40:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-26 14:07:07
+# @Last Modified time: 2017-07-06 16:01:17
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -22,15 +22,14 @@ import pytest
 #     yield page
 
 
-# @pytest.fixture()
-# def params(release):
-#     return {'release': release}
+@pytest.fixture()
+def params(release):
+    return {'release': release}
 
 
 def get_query_params(paramdisplay):
     q = Query(mode='local')
     if paramdisplay == 'best':
-        #qparams = q.get_best_params()
         qparams = bestparams
     else:
         qparams = q.get_available_params('all')
@@ -47,12 +46,7 @@ class TestQueryView(object):
 
 
 @pytest.mark.parametrize('page', [('api', 'querycubes')], ids=['querycubes'], indirect=True)
-class TestQueryView(object):
-
-    def test_query_success(self, page, params):
-        page.load_page('get', page.url, params=params)
-        data = 'this is a query'
-        page.assert_success(data)
+class TestQueryCubes(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('searchfilter', [('nsa.z < 0.1')])
