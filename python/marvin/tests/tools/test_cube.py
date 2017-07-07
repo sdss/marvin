@@ -116,30 +116,31 @@ class TestCube(object):
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-    @marvin_test_if(data_origin=['db'], mode='include')
+    @marvin_test_if(mark='include', data_origin=['db'])
     def test_cube_redshift_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='local')
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
-    @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(galaxy=dict(release=['MPL-4']), mode='include')
+    @marvin_test_if(mark='include', data_origin=['file'])
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_cube_redshift_file_MPL4(self, galaxy):        
         cube = Cube(filename=galaxy.cubepath)
         assert pytest.approx(cube.nsa.redshift, galaxy.redshift)
     
-    @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(galaxy=dict(release=['MPL-5']), mode='include')
+    @marvin_test_if(mark='include', data_origin=['file'])
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-5']))
     def test_cube_redshift_file_MPL5(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
-    @marvin_test_if(data_origin=['api'], mode='include')
+    @marvin_test_if(mark='include', data_origin=['api'])
     def test_cube_redshift_api(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
     @pytest.mark.parametrize('nsa_source',
                              ['auto', 'nsa', 'drpall'])
+    @marvin_test_if(mark='include', data_origin=['db', 'api'])
     def test_nsa_redshift_db_api(self, galaxy, nsa_source, mode):    
         cube = Cube(plateifu=galaxy.plateifu, nsa_source=nsa_source, mode=mode)
         assert cube.nsa_source == nsa_source
@@ -150,6 +151,22 @@ class TestCube(object):
         assert 'zdist' in cube.nsa.keys()
         assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
         assert pytest.approx(cube.nsa['sersic_n'], galaxy.nsa_data['sersic_n'])
+
+    @pytest.mark.parametrize('nsa_source',
+                             ['auto', 'nsa', 'drpall'])
+    @marvin_test_if(mark='include', mode=['local', 'auto'])
+    @marvin_test_if(mark='include', data_origin=['file'])
+    def test_nsa_redshift_file(self, galaxy, nsa_source, mode):    
+        cube = Cube(filename=galaxy.cubepath, nsa_source=nsa_source, mode=mode)
+        assert cube.nsa_source == nsa_source
+        # assert cube.nsa['nsaid'] == galaxy.nsaid
+        assert isinstance(cube.nsa, DotableCaseInsensitive)
+        if mode == 'drpall':
+            assert 'profmean_ivar' not in cube.nsa.keys()
+        assert 'zdist' in cube.nsa.keys()
+        assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
+        assert pytest.approx(cube.nsa['sersic_n'], galaxy.nsa_data['sersic_n'])
+
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)

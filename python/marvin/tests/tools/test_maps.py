@@ -66,7 +66,7 @@ class TestMaps(object):
         assert maps.cube.plateifu == galaxy.plateifu
         assert maps.cube.mangaid == galaxy.mangaid
 
-    @marvin_test_if(mode='include', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_load_mpl4_global_mpl5(self, galaxy, data_origin):
 
         marvin.config.setMPL('MPL-5')

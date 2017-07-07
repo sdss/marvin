@@ -41,7 +41,7 @@ class TestGalaxyPage(object):
 @pytest.mark.parametrize('page', [('galaxy_page', 'initnsaplot')], ids=['initnsa'], indirect=True)
 class TestNSA(object):
 
-    #@marvin_test_if(mode='skip', cube=dict(nsa=[None]))
+    #@marvin_test_if(mark='skip', cube=dict(nsa=[None]))
     def test_nsadict_correct(self, page, cube):
         nsa, cols = make_nsa_dict(cube.nsa)
         assert set(cube.exp_nsa_plotcols.keys()).issubset(set(cols))
