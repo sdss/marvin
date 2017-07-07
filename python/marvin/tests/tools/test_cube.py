@@ -10,6 +10,7 @@ from astropy import wcs
 
 from marvin import config
 from marvin.tools.cube import Cube
+from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import skipIfNoDB, marvin_test_if
 
@@ -137,33 +138,18 @@ class TestCube(object):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
-    # @pytest.mark.parametrize('plateifu, filename',
-    #                          [(None, 'galaxy.cubepath'),
-    #                           ('galaxy.plateifu', None)],
-    #                          ids=('filename', 'plateifu'))
-    # @pytest.mark.parametrize('nsa_source',
-    #                          ['auto', 'nsa', 'drpall'])
-    # @pytest.mark.parametrize('mode',
-    #                          [None, 'remote'])
-    # def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
-    #     if (plateifu is None) and (filename is not None) and (mode == 'remote'):
-    #         pytest.skip('filename not allowed in remote mode.')
-    # 
-    #     # TODO add 7443-12701 to local DB and remove this skip
-    #     if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
-    #         pytest.skip('Not the one true galaxy.')
-    # 
-    #     plateifu = eval(plateifu) if plateifu is not None else None
-    #     filename = eval(filename) if filename is not None else None
-    #     cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
-    #     assert cube.nsa_source == nsa_source
-    #     assert cube.nsa['nsaid'] == galaxy.nsaid
-    #     assert isinstance(cube.nsa, DotableCaseInsensitive)
-    #     if mode == 'drpall':
-    #         assert 'profmean_ivar' not in cube.nsa.keys()
-    #     assert 'zdist' in cube.nsa.keys()
-    #     assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
-    #     assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
+    @pytest.mark.parametrize('nsa_source',
+                             ['auto', 'nsa', 'drpall'])
+    def test_nsa_redshift_db_api(self, galaxy, nsa_source, mode):    
+        cube = Cube(plateifu=galaxy.plateifu, nsa_source=nsa_source, mode=mode)
+        assert cube.nsa_source == nsa_source
+        # assert cube.nsa['nsaid'] == galaxy.nsaid
+        assert isinstance(cube.nsa, DotableCaseInsensitive)
+        if mode == 'drpall':
+            assert 'profmean_ivar' not in cube.nsa.keys()
+        assert 'zdist' in cube.nsa.keys()
+        assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
+        assert pytest.approx(cube.nsa['sersic_n'], galaxy.nsa_data['sersic_n'])
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
