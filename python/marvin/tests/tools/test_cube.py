@@ -159,14 +159,12 @@ class TestCube(object):
     def test_nsa_redshift_file(self, galaxy, nsa_source, mode):    
         cube = Cube(filename=galaxy.cubepath, nsa_source=nsa_source, mode=mode)
         assert cube.nsa_source == nsa_source
-        # assert cube.nsa['nsaid'] == galaxy.nsaid
         assert isinstance(cube.nsa, DotableCaseInsensitive)
         if mode == 'drpall':
             assert 'profmean_ivar' not in cube.nsa.keys()
         assert 'zdist' in cube.nsa.keys()
         assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
         assert pytest.approx(cube.nsa['sersic_n'], galaxy.nsa_data['sersic_n'])
-
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
