@@ -22,23 +22,6 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tests import marvin_test_if
 
 
-@pytest.fixture(scope='module')
-def modelcube_file(galaxy):
-    return ModelCube(filename=galaxy.modelpath)
-
-
-@pytest.fixture(scope='module')
-def modelcube_db(maindb, galaxy):
-    if maindb.session is None:
-        pytest.skip('Skip because no DB.')
-    return ModelCube(mangaid=galaxy.mangaid)
-
-
-@pytest.fixture(scope='module')
-def modelcube_api(galaxy):
-    return ModelCube(mangaid=galaxy.mangaid, mode='remote')
-
-
 class TestModelCubeInit(object):
 
     def _test_init(self, model_cube, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
