@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 18:01:40
+# @Last Modified time: 2017-07-06 18:12:17
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -17,33 +17,6 @@ from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
 import pytest
-
-
-@pytest.fixture(scope='session')
-def data(release):
-    qdata = {'MPL-4': {'params': {'all': {'count': 633,
-                                          'subset': ['nsa.tile', 'anime.anime', 'cube.ra', 'spaxelprop.emline_ew_ha_6564',
-                                                     'wcs.extname', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.specindex_nad']},
-                                  'best': {'count': 41, 'subset': ['nsa.z', 'cube.ra', 'cube.dec',
-                                                                   'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']}},
-                       'defaults': ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name'],
-                       'queries': {'nsa.z < 0.1': {'count': 1213}, 'npergood(emline_gflux_ha_6564 > 5) > 20': {'count': 8},
-                                   'abs_g_r > -1': {'count': 1313}, 'haflux > 25': {'count': 237},
-                                   'nsa.z < 0.1 and haflux > 25': {'count': 172}}
-                       },
-             'MPL-5': {'params': {'all': {'count': 753,
-                                          'subset': ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.spx_snr',
-                                                     'spaxelprop.x', 'maskbit.bit', 'spaxelprop.emline_sew_ha_6564']},
-                                  'best': {'count': 41,
-                                           'subset': ['nsa.z', 'cube.ra', 'cube.dec',
-                                                      'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']}},
-                       'defaults': ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name'],
-                       'queries': {'nsa.z < 0.1': {'count': 4}, 'npergood(emline_gflux_ha_6564 > 5) > 20': {'count': 1},
-                                   'abs_g_r > -1': {'count': 4}, 'haflux > 25': {'count': 18},
-                                   'nsa.z < 0.1 and haflux > 25': {'count': 18}}
-                       }
-             }
-    return qdata[release]
 
 
 @pytest.fixture()
@@ -221,7 +194,7 @@ class TestQueryParams(object):
         if paramdisplay == 'best':
             assert mydata['count'] == sum([len(v) for v in params])
             assert set(mydata['subset']).issubset(set(params.list_params()))
-            assert set(data['params']['all']).isdisjoint(set(params.list_params()))
+            assert set(mydata).isdisjoint(set(params.list_params()))
         elif paramdisplay == 'all':
             assert mydata['count'] == len(params)
             assert set(mydata['subset']).issubset(set(params))
