@@ -115,43 +115,19 @@ class TestCube(object):
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-
-    # TODO refactor into several tests (see below)
-    @pytest.mark.parametrize('plateifu, filename, mode',
-                             [(None, 'galaxy.cubepath', None),
-                              ('galaxy.plateifu', None, 'local'),
-                              ('galaxy.plateifu', None, 'remote')],
-                             ids=('file', 'db', 'remote'))
-    def test_cube_redshift(self, galaxy, plateifu, filename, mode):
-    
-        # TODO add 7443-12701 to local DB and remove this skip
-        # if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
-        #         (config.db == 'local')):
-        #     pytest.skip('Not the one true galaxy.')
-    
-        plateifu = eval(plateifu) if plateifu is not None else None
-        filename = eval(filename) if filename is not None else None
-        cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
     @marvin_test_if(data_origin=['db'], mode='include')
     def test_cube_redshift_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='local')
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
 
     @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(release=['MPL-4'], mode='include')
     @marvin_test_if(galaxy=dict(release=['MPL-4']), mode='include')
-    def test_cube_redshift_file_MPL4(self, galaxy):
-        print('config release', config.release)
-        print('galaxy release', galaxy.release)
+    def test_cube_redshift_file_MPL4(self, galaxy):        
         cube = Cube(filename=galaxy.cubepath)
-        print('cube release', cube._release)
-        print('filename', galaxy.cubepath)
         assert pytest.approx(cube.nsa.redshift, galaxy.redshift)
     
     @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(release=['MPL-5'], mode='include')
+    @marvin_test_if(galaxy=dict(release=['MPL-5']), mode='include')
     def test_cube_redshift_file_MPL5(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert pytest.approx(cube.nsa.z, galaxy.redshift)
