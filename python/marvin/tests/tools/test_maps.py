@@ -15,10 +15,9 @@ import pytest
 import astropy.io.fits
 
 import marvin
-import marvin.tests
-import marvin.tools.maps
+from marvin.tools.maps import Maps
 import marvin.tools.spaxel
-
+from marvin.core.exceptions import MarvinError
 from marvin.tests import marvin_test_if
 
 
@@ -51,7 +50,7 @@ class TestMaps(object):
 
     def test_load(self, galaxy, data_origin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
         _assert_maps(maps, galaxy)
 
@@ -70,7 +69,7 @@ class TestMaps(object):
     def test_load_mpl4_global_mpl5(self, galaxy, data_origin):
 
         marvin.config.setMPL('MPL-5')
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
         assert maps._release == 'MPL-4'
         assert maps._drpver == 'v1_5_1'
@@ -78,7 +77,7 @@ class TestMaps(object):
 
     def test_get_spaxel(self, galaxy, data_origin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
@@ -90,7 +89,7 @@ class TestMaps(object):
 
     def test_get_spaxel_test2(self, galaxy, data_origin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
@@ -100,7 +99,7 @@ class TestMaps(object):
     def test_get_spaxel_no_db(self, galaxy, data_origin, db_off):
         """Tests getting an spaxel if there is no DB."""
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
         assert spaxel.maps.data_origin == 'file' if data_origin else False
@@ -108,3 +107,74 @@ class TestMaps(object):
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
+
+    @marvin_test_if(mark='skip', data_origin=['file'])
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    def test_maps_redshift(self, galaxy, data_origin):
+        
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-MAPS-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-VOR10-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-003.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-013.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-023.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-NONE-023.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-007.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-007.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-017.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-017.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-027.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-027.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-001.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-001.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-011.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-011.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-021.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-021.fits.gz']
+        if galaxy.mapspath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        assert pytest.approx(maps.nsa.z, galaxy.redshift)
+
+    @marvin_test_if(mark='include', data_origin=['file'])
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_maps_redshift_file_MPL4(self, galaxy, data_origin):
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-MAPS-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-MAPS-VOR10-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-003.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-013.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-NONE-023.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-NONE-023.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-007.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-007.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-017.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-017.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-027.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-027.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-001.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-001.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-011.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-011.fits.gz',
+                             'manga-7443-12701-LOGCUBE_MAPS-STON-021.fits.gz',
+                             'manga-8485-1901-LOGCUBE_MAPS-STON-021.fits.gz']
+        if galaxy.mapspath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        assert pytest.approx(maps.nsa.redshift, galaxy.redshift)
+    
+    def test_release(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        assert maps.release == galaxy.release
+
+    def test_set_release_fails(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            maps.release = 'a'
+            assert 'the release cannot be changed' in str(ee.exception)
