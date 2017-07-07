@@ -95,7 +95,3 @@ class TestMap(object):
 
         map_restored = Map.restore(str(fout), delete=False)
         assert tuple(map_.shape) == tuple(map_restored.shape)
-
-
-# extend the number of property name + channel combinations
-
