@@ -104,34 +104,47 @@ class TestModelCubeInit(object):
         assert model_cube.data_origin == data_origin
         self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
 
+
+@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestModelCube(object):
 
+    @marvin_test_if(mark='include', data_origin=['db'])
     def test_get_flux_db(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu)
-        assert model_cube.flux.shape == (4563, 34, 34)
+        assert model_cube.flux.shape == (4563, galaxy.shape[0], galaxy.shape[1])
 
+    @marvin_test_if(mark='include', data_origin=['api'])
     def test_get_flux_api_raises_exception(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         with pytest.raises(MarvinError) as cm:
             model_cube.flux
         assert 'cannot return a full cube in remote mode.' in str(cm.value)
 
+    @marvin_test_if(mark='include', data_origin=['file'])
     def test_get_cube_file(self, galaxy):
+
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
+        if galaxy.modelpath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
+
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.cube, Cube)
 
+    @marvin_test_if(mark='include', data_origin=['api'])
     def test_get_maps_api(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.maps, Maps)
     
     @marvin_test_if(mark='include', data_origin=['db', 'api'])
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_modelcube_redshift(self, galaxy, mode):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode=mode)
         assert pytest.approx(model_cube.nsa.z, galaxy.redshift)
     
     @marvin_test_if(mark='include', data_origin=['file'])
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_modelcube_redshift_file(self, galaxy):
         
         # TODO Remove
@@ -147,7 +160,7 @@ class TestModelCube(object):
 
 
 
-
+@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestGetSpaxel(object):
 
     def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
@@ -158,7 +171,7 @@ class TestGetSpaxel(object):
         assert spaxel.modelcube is not None
         assert spaxel.modelcube.bintype == bintype
         assert spaxel.modelcube.template_kin == template_kin
-        assert spaxel._parent_shape == (34, 34)
+        assert spaxel._parent_shape == tuple(galaxy.shape)
 
         assert spaxel.model_flux is not None
         assert spaxel.model is not None
@@ -167,8 +180,16 @@ class TestGetSpaxel(object):
         assert spaxel.stellar_continuum is not None
         assert spaxel.redcorr is not None
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db','api'])
     def test_getspaxel(self, galaxy, data_origin):
+
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
+        if galaxy.modelpath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
+
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
         elif data_origin == 'db':
@@ -180,7 +201,8 @@ class TestGetSpaxel(object):
         spaxel = model_cube.getSpaxel(x=1, y=2)
         self._test_getspaxel(spaxel, galaxy)
 
-    def test_getspaxel_db_only_model(self, galaxy):
+    @marvin_test_if(mark='include', data_origin=['db', 'api'])
+    def test_getspaxel_db_api_model(self, galaxy):
 
         model_cube = ModelCube(plateifu=galaxy.plateifu)
         spaxel = model_cube.getSpaxel(x=1, y=2, properties=False, spectrum=False)
@@ -190,7 +212,6 @@ class TestGetSpaxel(object):
         assert spaxel.maps is None
         assert len(spaxel.properties) == 0
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     @marvin_test_if(mark='skip', db=['nodb'])
     @pytest.mark.parametrize('mpl, flux, ivar, mask',
                              [('MPL-5', 0.016027471050620079, 361.13595581054693, 33)])
@@ -257,6 +278,8 @@ class TestGetSpaxel(object):
         assert pytest.approx(spaxel_getspaxel_api.model_flux.mask[idx], mask)
 
 
+# TODO not working yet
+@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestPickling(object):
 
     def test_pickling_file(self, tmpfiles, galaxy):
