@@ -37,8 +37,17 @@ class TestModelCubeInit(object):
         assert model_cube.wavelength is not None
         assert model_cube.redcorr is not None
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
+    @marvin_test_if(mark='skip', galaxy=dict(release='MPL-4'))
     def test_init_modelcube(self, galaxy, data_origin):
+
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
+        if galaxy.modelpath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
+
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
         elif data_origin == 'db':
@@ -50,22 +59,29 @@ class TestModelCubeInit(object):
         assert model_cube.data_origin == data_origin
         self._test_init(model_cube, galaxy)
 
-    # TODO remove set_tmp_mpl
-    # def test_init_from_file_global_mpl4(self, galaxy):
-    #     with set_tmp_mpl('MPL-4'):
-    #         config.setMPL('MPL-4')
-    #         model_cube = ModelCube(filename=galaxy.modelpath)
-    #         assert model_cube.data_origin == 'file'
-    #         self._test_init(model_cube, galaxy)
+    @marvin_test_if(mark='include', release='MPL-4')
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-5']))
+    def test_init_from_file_global_mpl4(self, galaxy):
 
-    # TODO remove set_tmp_mpl
-    # def test_raises_exception_mpl4(self, galaxy):
-    #     with set_tmp_mpl('MPL-4'):
-    #         config.setMPL('MPL-4')
-    #         with pytest.raises(MarvinError) as cm:
-    #             ModelCube(plateifu=galaxy.plateifu)
-    #         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
+        # TODO Remove
+        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
+                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
+        if galaxy.modelpath.split('/')[-1] in files_to_download:
+            pytest.skip('Remove this skip once I download the files.')
 
+        model_cube = ModelCube(filename=galaxy.modelpath)
+        assert model_cube.data_origin == 'file'
+        self._test_init(model_cube, galaxy)
+
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_raises_exception_mpl4(self, galaxy):
+        with pytest.raises(MarvinError) as cm:
+            ModelCube(plateifu=galaxy.plateifu)
+        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
+
+    # TODO remove parametrization
     @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_init_modelcube_bintype(self, galaxy, data_origin):
         kwargs = {'bintype': galaxy.bintype}
