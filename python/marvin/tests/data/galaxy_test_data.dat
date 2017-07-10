@@ -85,6 +85,9 @@
                 flux: 0.016027471
                 ivar: 361.13596
                 mask: 1026
+                model_flux: 0.016027471
+                model_ivar: 361.13596
+                model_mask: 33
             dap:
                 x: 17
                 y: 17
@@ -223,6 +226,9 @@
                 flux: 0.021661391
                 ivar: 2145.38110
                 mask: 0
+                model_flux: 0.021661391
+                model_ivar: 2145.38110
+                model_mask: 64
             dap:
                 x: 17
                 y: 17

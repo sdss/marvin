@@ -9,35 +9,39 @@
 from __future__ import division, print_function, absolute_import
 
 import os
-import unittest
 
 import pytest
 from astropy.io import fits
 from astropy.wcs import WCS
 
 from marvin import config
-from marvin.tests import set_tmp_mpl
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def modelcube_file(galaxy):
     return ModelCube(filename=galaxy.modelpath)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def modelcube_db(maindb, galaxy):
     if maindb.session is None:
         pytest.skip('Skip because no DB.')
     return ModelCube(mangaid=galaxy.mangaid)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def modelcube_api(galaxy):
     return ModelCube(mangaid=galaxy.mangaid, mode='remote')
+
+
+@pytest.fixture(autouse=True)
+def skipmpl4(galaxy):
+    if galaxy.release == 'MPL-4':
+        pytest.skip('No modelcubes in MPL-4')
 
 
 class TestModelCubeInit(object):
@@ -69,18 +73,14 @@ class TestModelCubeInit(object):
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
-        with set_tmp_mpl('MPL-4'):
-            config.setMPL('MPL-4')
-            model_cube = ModelCube(filename=galaxy.modelpath)
-            assert model_cube.data_origin == 'file'
-            self._test_init(model_cube, galaxy)
+        model_cube = ModelCube(filename=galaxy.modelpath)
+        assert model_cube.data_origin == 'file'
+        self._test_init(model_cube, galaxy)
 
     def test_raises_exception_mpl4(self, galaxy):
-        with set_tmp_mpl('MPL-4'):
-            config.setMPL('MPL-4')
-            with pytest.raises(MarvinError) as cm:
-                ModelCube(plateifu=galaxy.plateifu)
-            assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
+        with pytest.raises(MarvinError) as cm:
+            ModelCube(plateifu=galaxy.plateifu, release='MPL-4')
+        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
     @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_init_modelcube_bintype(self, galaxy, data_origin):
@@ -99,7 +99,8 @@ class TestModelCubeInit(object):
 
     def test_get_flux_db(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu)
-        assert model_cube.flux.shape == (4563, 34, 34)
+        shape = tuple([4563] + galaxy.shape)
+        assert model_cube.flux.shape == shape
 
     def test_get_flux_api_raises_exception(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
@@ -126,7 +127,7 @@ class TestGetSpaxel(object):
         assert spaxel.modelcube is not None
         assert spaxel.modelcube.bintype == bintype
         assert spaxel.modelcube.template_kin == template_kin
-        assert spaxel._parent_shape == (34, 34)
+        assert spaxel._parent_shape == tuple(galaxy.shape)
 
         assert spaxel.model_flux is not None
         assert spaxel.model is not None
@@ -135,7 +136,7 @@ class TestGetSpaxel(object):
         assert spaxel.stellar_continuum is not None
         assert spaxel.redcorr is not None
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db','api'])
+    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_getspaxel(self, galaxy, data_origin):
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
@@ -158,21 +159,19 @@ class TestGetSpaxel(object):
         assert spaxel.maps is None
         assert len(spaxel.properties) == 0
 
-    @pytest.mark.parametrize('mpl, flux, ivar, mask',
-                             [('MPL-5', 0.016027471050620079, 361.13595581054693, 33)])
     def test_getspaxel_matches_file_db_remote(self, galaxy, modelcube_file, modelcube_db,
-                                              modelcube_api, mpl, flux, mask, ivar):
-
-        config.setMPL(mpl)
-        assert config.release == mpl
+                                              modelcube_api):
 
         assert modelcube_file.data_origin == 'file'
         assert modelcube_db.data_origin == 'db'
         assert modelcube_api.data_origin == 'api'
 
-        xx = 12
-        yy = 5
-        idx = 200
+        xx = galaxy.spaxel['x']
+        yy = galaxy.spaxel['y']
+        idx = galaxy.spaxel['specidx']
+        flux = galaxy.spaxel['model_flux']
+        ivar = galaxy.spaxel['model_ivar']
+        mask = galaxy.spaxel['model_mask']
 
         spaxel_slice_file = modelcube_file[yy, xx]
         spaxel_slice_db = modelcube_db[yy, xx]
@@ -190,8 +189,8 @@ class TestGetSpaxel(object):
         assert pytest.approx(spaxel_slice_db.model_flux.mask[idx], mask)
         assert pytest.approx(spaxel_slice_api.model_flux.mask[idx], mask)
 
-        xx_cen = -5
-        yy_cen = -12
+        xx_cen = galaxy.spaxel['x_cen']
+        yy_cen = galaxy.spaxel['y_cen']
 
         spaxel_getspaxel_file = modelcube_file.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_db = modelcube_db.getSpaxel(x=xx_cen, y=yy_cen)
@@ -212,73 +211,70 @@ class TestGetSpaxel(object):
 
 class TestPickling(object):
 
-    def test_pickling_file(self, tmpfiles, galaxy):
+    def test_pickling_file(self, temp_scratch, galaxy):
         modelcube = ModelCube(filename=galaxy.modelpath, bintype=galaxy.bintype)
         assert modelcube.data_origin == 'file'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
 
-        path = modelcube.save()
-        tmpfiles.append(path)
+        file = temp_scratch.join('test_modelcube.mpf')
+        path = modelcube.save(str(file))
 
-        assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(galaxy.modelpath[0:-7] + 'mpf')
+        assert file.check() is True
         assert modelcube.data is not None
 
         modelcube = None
         assert modelcube is None
 
-        modelcube_restored = ModelCube.restore(path)
+        modelcube_restored = ModelCube.restore(str(file))
         assert modelcube_restored.data_origin == 'file'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is not None
 
-    def test_pickling_file_custom_path(self, tmpfiles, galaxy):
+    def test_pickling_file_custom_path(self, temp_scratch, galaxy):
         modelcube = ModelCube(filename=galaxy.modelpath, bintype=galaxy.bintype)
         assert modelcube.data_origin == 'file'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
 
-        test_path = '~/test.mpf'
-        assert not os.path.isfile(test_path)
+        file = temp_scratch.join('test_modelcube.mpf')
+        assert file.check(file=1) is False
 
-        path = modelcube.save(path=test_path)
-        tmpfiles.append(path)
-
+        path = modelcube.save(path=str(file))
+        assert file.check() is True
         assert os.path.exists(path)
-        assert path == os.path.realpath(os.path.expanduser(test_path))
 
-        modelcube_restored = ModelCube.restore(path, delete=True)
+        modelcube_restored = ModelCube.restore(str(file), delete=True)
         assert modelcube_restored.data_origin == 'file'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is not None
 
         assert not os.path.exists(path)
 
-    def test_pickling_db(self, galaxy):
+    def test_pickling_db(self, galaxy, temp_scratch):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
 
+        file = temp_scratch.join('test_modelcube_db.mpf')
         with pytest.raises(MarvinError) as cm:
-            modelcube.save()
+            modelcube.save(str(file))
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
-    def test_pickling_api(self, tmpfiles, galaxy):
+    def test_pickling_api(self, temp_scratch, galaxy):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype, mode='remote')
         assert modelcube.data_origin == 'api'
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is None
 
-        path = modelcube.save()
-        tmpfiles.append(path)
+        file = temp_scratch.join('test_modelcube_api.mpf')
+        path = modelcube.save(str(file))
 
-        assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(galaxy.modelpath[0:-7] + 'mpf')
+        assert file.check() is True
 
         modelcube = None
         assert modelcube is None
 
-        modelcube_restored = ModelCube.restore(path)
+        modelcube_restored = ModelCube.restore(str(file))
         assert modelcube_restored.data_origin == 'api'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is None
