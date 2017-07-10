@@ -214,6 +214,16 @@ def db_on():
     config.forceDbOn()
 
 
+@pytest.fixture()
+def usedb(request):
+    ''' fixture for optional turning off the db '''
+    if request.param:
+        config.forceDbOn()
+    else:
+        config.forceDbOff()
+    return config.db is not None
+
+
 @pytest.fixture(params=dbs)
 def db(request):
     """Turn local db on or off.
