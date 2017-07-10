@@ -22,7 +22,6 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tests import marvin_test_if, marvin_test_if_class
 
 
-@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestModelCubeInit(object):
 
     def _test_init(self, model_cube, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
@@ -38,16 +37,8 @@ class TestModelCubeInit(object):
         assert model_cube.wavelength is not None
         assert model_cube.redcorr is not None
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_init_modelcube(self, galaxy, data_origin):
-
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
         elif data_origin == 'db':
@@ -60,37 +51,20 @@ class TestModelCubeInit(object):
         self._test_init(model_cube, galaxy)
 
     @marvin_test_if(mark='include', release='MPL-4')
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_init_from_file_global_mpl4(self, galaxy):
-
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert model_cube.data_origin == 'file'
         self._test_init(model_cube, galaxy)
 
-    # overrides marvin_test_if_class to skip MPL-4
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_raises_exception_mpl4(self, galaxy):
         with pytest.raises(MarvinError) as cm:
             ModelCube(plateifu=galaxy.plateifu)
         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_init_modelcube_bintype(self, galaxy, data_origin):
-        
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         kwargs = {'bintype': galaxy.bintype}
         if data_origin == 'file':
             kwargs['filename'] = galaxy.modelpath
@@ -122,15 +96,6 @@ class TestModelCube(object):
 
     @marvin_test_if(mark='include', data_origin=['file'])
     def test_get_cube_file(self, galaxy):
-
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.cube, Cube)
 
@@ -146,15 +111,6 @@ class TestModelCube(object):
     
     @marvin_test_if(mark='include', data_origin=['file'])
     def test_modelcube_redshift_file(self, galaxy):
-        
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert pytest.approx(model_cube.nsa.z, galaxy.redshift)
 
@@ -182,13 +138,13 @@ class TestGetSpaxel(object):
 
     def test_getspaxel(self, galaxy, data_origin):
 
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
+        # # TODO Remove
+        # files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
+        #                      'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
+        #                      'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
+        #                      'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
+        # if galaxy.modelpath.split('/')[-1] in files_to_download:
+        #     pytest.skip('Remove this skip once I download the files.')
 
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
@@ -218,14 +174,6 @@ class TestGetSpaxel(object):
     def test_getspaxel_matches_file_db_remote(self, galaxy, mpl, flux, mask, ivar):
 
         # TODO move parametrized flux, ivar, and mask values to galaxy_test_data.dat
-        
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        if galaxy.modelpath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
 
         modelcube_file = ModelCube(filename=galaxy.modelpath)
         modelcube_db = ModelCube(mangaid=galaxy.mangaid)
