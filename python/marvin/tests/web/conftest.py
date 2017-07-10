@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 11:51:41
+# @Last Modified time: 2017-07-08 12:27:34
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -14,6 +14,7 @@ from marvin.web import create_app
 from marvin.web.settings import TestConfig, CustomConfig
 from marvin.api.api import Interaction
 from marvin import marvindb, config
+from marvin.web.extensions import limiter
 from flask import template_rendered, templating
 from contextlib import contextmanager
 import os
@@ -40,6 +41,8 @@ except ImportError:
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
     app = create_app(debug=True, local=True, object_config=object_config)
+    limiter.enabled = False
+    print('app', app.config['RATELIMIT_ENABLED'], limiter.enabled)
     return app
 
 
