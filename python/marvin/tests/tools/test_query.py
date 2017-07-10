@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 18:12:17
+# @Last Modified time: 2017-07-10 14:36:03
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -17,16 +17,6 @@ from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
 import pytest
-
-
-@pytest.fixture()
-def usedb(request):
-    ''' fixture for optional turning off the db '''
-    if request.param:
-        config.forceDbOn()
-    else:
-        config.forceDbOff()
-    return config.db is not None
 
 
 class TestQueryVersions(object):

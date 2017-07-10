@@ -123,12 +123,12 @@ class TestCube(object):
                               ('galaxy.plateifu', None, 'remote')],
                              ids=('file', 'db', 'remote'))
     def test_cube_redshift(self, galaxy, plateifu, filename, mode):
-    
+
         # TODO add 7443-12701 to local DB and remove this skip
         # if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
         #         (config.db == 'local')):
         #     pytest.skip('Not the one true galaxy.')
-    
+
         plateifu = eval(plateifu) if plateifu is not None else None
         filename = eval(filename) if filename is not None else None
         cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
@@ -149,7 +149,7 @@ class TestCube(object):
         print('cube release', cube._release)
         print('filename', galaxy.cubepath)
         assert pytest.approx(cube.nsa.redshift, galaxy.redshift)
-    
+
     @marvin_test_if(data_origin=['file'], mode='include')
     @marvin_test_if(release=['MPL-5'], mode='include')
     def test_cube_redshift_file_MPL5(self, galaxy):
@@ -172,11 +172,11 @@ class TestCube(object):
     # def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
     #     if (plateifu is None) and (filename is not None) and (mode == 'remote'):
     #         pytest.skip('filename not allowed in remote mode.')
-    # 
+    #
     #     # TODO add 7443-12701 to local DB and remove this skip
     #     if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
     #         pytest.skip('Not the one true galaxy.')
-    # 
+    #
     #     plateifu = eval(plateifu) if plateifu is not None else None
     #     filename = eval(filename) if filename is not None else None
     #     cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
@@ -304,10 +304,10 @@ class TestGetSpaxel(object):
         assert config.release == 'MPL-5'
 
         cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
-        expected = 0.62007582
+        expected = galaxy.spaxel['flux']
 
-        spectrum = cube.getSpaxel(ra=232.544279, dec=48.6899232).spectrum
-        assert pytest.approx(spectrum.flux[3000], expected)
+        spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).spectrum
+        assert pytest.approx(spectrum.flux[galaxy.spaxel['specidx']], expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
@@ -382,44 +382,40 @@ class TestWCS(object):
 
 class TestPickling(object):
 
-    def test_pickling_file(self, tmpfiles, galaxy):
+    def test_pickling_file(self, temp_scratch, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
         assert isinstance(cube, Cube)
         assert cube.data is not None
 
         assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
-
-        path = cube.save()
-        tmpfiles.append(path)
-
-        assert os.path.exists(path)
+        cube_file = temp_scratch.join('test_cube.mpf')
+        path = cube.save(str(cube_file))
+        assert cube_file.check() is True
         assert cube.data is not None
 
         cube = None
         assert cube is None
 
-        cube_restored = Cube.restore(path)
+        cube_restored = Cube.restore(str(cube_file))
         assert cube_restored.data_origin == 'file'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is not None
 
-    def test_pickling_file_custom_path(self, tmpfiles, galaxy):
+    def test_pickling_file_custom_path(self, temp_scratch, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert cube.data_origin == 'file'
         assert isinstance(cube, Cube)
         assert cube.data is not None
 
-        test_path = '~/test.mpf'
-        assert not os.path.isfile(test_path)
+        test_path = temp_scratch.join('cubepickle').join('test_cube.mpf')
+        assert test_path.check(file=1) is False
 
-        path = cube.save(path=test_path)
-        tmpfiles.append(path)
+        path = cube.save(path=str(test_path))
+        assert test_path.check(file=1) is True
+        assert path == os.path.realpath(os.path.expanduser(str(test_path)))
 
-        assert os.path.exists(path)
-        assert path == os.path.realpath(os.path.expanduser(test_path))
-
-        cube_restored = Cube.restore(path, delete=True)
+        cube_restored = Cube.restore(str(test_path), delete=True)
         assert cube_restored.data_origin == 'file'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is not None
@@ -435,22 +431,21 @@ class TestPickling(object):
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
-    def test_pickling_api(self, tmpfiles, galaxy):
+    def test_pickling_api(self, temp_scratch, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert cube.data_origin == 'api'
         assert isinstance(cube, Cube)
         assert cube.data is None
 
-        path = cube.save()
-        tmpfiles.append(path)
+        test_path = temp_scratch.join('test_cube_api.mpf')
 
-        assert os.path.exists(path)
-        assert os.path.realpath(path) == os.path.realpath(galaxy.cubepath[0:-7] + 'mpf')
+        path = cube.save(str(test_path))
+        assert test_path.check() is True
 
         cube = None
         assert cube is None
 
-        cube_restored = Cube.restore(path)
+        cube_restored = Cube.restore(str(test_path))
         assert cube_restored.data_origin == 'api'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is None

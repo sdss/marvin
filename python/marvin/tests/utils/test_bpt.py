@@ -16,33 +16,8 @@ import numpy as np
 import pytest
 
 from marvin.tools.maps import Maps
-<<<<<<< HEAD
-from marvin.tests import UseReleases, UseBintypes
-
-
-@UseBintypes('SPX')
-@UseReleases('MPL-5')
-class TestBPT(object):
-
-    emission_mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
-
-    def _run_tests_8485_1901(self, maps):
-
-        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=True)
-        assert isinstance(figure, plt.Figure)
-
-        for em_mech in self.emission_mechanisms:
-            assert em_mech in masks.keys()
-
-        assert np.sum(masks['sf']['global']) == 62
-        assert np.sum(masks['comp']['global']) == 1
-
-        for em_mech in ['agn', 'seyfert', 'liner']:
-            assert np.sum(masks[em_mech]['global']) == 0
-=======
 from marvin.tests import marvin_test_if_class
 from marvin.core.exceptions import MarvinDeprecationWarning
->>>>>>> f063c3e4e0fa4339104dff46e56edb5ab6a9b65b
 
 
 @pytest.fixture()

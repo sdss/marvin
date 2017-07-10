@@ -25,6 +25,8 @@
             spaxel:
                 x: 12
                 y: 5
+                ra: 232.545752
+                dec: 48.688534
                 specidx: 200
                 x_cen: -5
                 y_cen: -12
@@ -79,6 +81,8 @@
             spaxel:
                 x: 12
                 y: 5
+                ra: 232.545752
+                dec: 48.688534
                 specidx: 200
                 x_cen: -5
                 y_cen: -12
@@ -166,6 +170,8 @@
             spaxel:
                 x: 15
                 y: 32
+                ra: 230.511423
+                dec: 43.534076
                 specidx: 200
                 x_cen: -5
                 y_cen: -12
@@ -220,6 +226,8 @@
             spaxel:
                 x: 15
                 y: 32
+                ra: 230.511423
+                dec: 43.534076
                 specidx: 200
                 x_cen: -5
                 y_cen: -12
