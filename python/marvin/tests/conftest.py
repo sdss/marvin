@@ -411,6 +411,22 @@ class Galaxy(object):
         end = (endredux or endanalysis)
         return end
 
+    def new_path(self, name, newvar):
+        ''' Sets a new path with the subsituted name '''
+        access_copy = self.access_kwargs.copy()
+        access_copy['mode'] = '*'
+        access_copy.update(**newvar)
+
+        if name == 'maps':
+            access_copy['mode'] = 'MAPS'
+            name = 'mangamap' if self.release == 'MPL-4' else 'mangadap5'
+        elif name == 'modelcube':
+            access_copy['mode'] = 'LOGCUBE'
+            name = None if self.release == 'MPL-4' else 'mangadap5'
+
+        path = self.path.full(name, **access_copy) if name else None
+        return path
+
 
 @pytest.fixture(scope='function')
 def galaxy(get_params, plateifu):
