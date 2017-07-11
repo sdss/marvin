@@ -50,7 +50,7 @@ class TestModelCubeInit(object):
         assert model_cube.data_origin == data_origin
         self._test_init(model_cube, galaxy)
 
-    @marvin_test_if(mark='include', release='MPL-4')
+    @marvin_test_if(mark='include', release=['MPL-4'])
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_init_from_file_global_mpl4(self, galaxy):
         model_cube = ModelCube(filename=galaxy.modelpath)
