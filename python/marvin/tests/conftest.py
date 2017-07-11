@@ -13,6 +13,7 @@ import pytest
 
 from marvin import config, marvindb
 from marvin.api.api import Interaction
+from marvin.tools.cube import Cube
 from marvin.tools.query import Query
 from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
 from sdss_access.path import Path
@@ -421,6 +422,19 @@ def galaxy(get_params, plateifu):
     gal.set_galaxy_data()
 
     yield gal
+
+
+@pytest.fixture()
+def cube(galaxy, exporigin, mode):
+    ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
+        Fixture tests 6 cube origins from (mode+db) combos
+    '''
+    if exporigin == 'file':
+        c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
+    else:
+        c = Cube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    yield c
+    c = None
 
 
 @pytest.fixture()

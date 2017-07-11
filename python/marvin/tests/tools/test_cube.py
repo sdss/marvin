@@ -30,8 +30,7 @@ class TestCube(object):
         with pytest.raises(MarvinError):
             Cube(filename='not_a_filename.fits')
 
-    @skipIfNoDB
-    def test_cube_load_from_local_database_success(self, maindb, galaxy):
+    def test_cube_load_from_local_database_success(self, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)
         assert cube is not None
@@ -40,67 +39,18 @@ class TestCube(object):
         assert galaxy.dec == cube.dec
         assert galaxy.ra == cube.ra
 
-    def _load_from_db_fail(self, params, errMsg, errType=MarvinError):
-        with pytest.raises(errType) as cm:
-            Cube(**params)
-        assert errMsg in str(cm.value)
-
-    @skipIfNoDB
-    @pytest.mark.skip('Test fails beacuse local data access switches to ``file`` if db is off.')
-    def test_cube_load_from_local_database_nodbconnected(self, galaxy, monkeypatch):
-        # need to undo setting the config.db to None so that subsequent tests will pass
-        if config.db is not None:
-            config.forceDbOff()
-            db_on = True
-        else:
-            db_on = False
-
-        assert config.db is None
-
-        # from marvin.core.core import MarvinToolsClass
-        monkeypatch.setattr(Cube, '_getFullPath', lambda x: None)
-
-        params = {'mangaid': galaxy.mangaid, 'mode': 'local'}
-        errMsg = 'No db connected'
-        self._load_from_db_fail(params, errMsg)
-
-        if db_on:
-            config.forceDbOn()
-
-    @skipIfNoDB
-    def test_cube_load_from_local_database_noresultsfound(self, maindb):
-        params = {'plateifu': '8485-0923', 'mode': 'local'}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: No Results Found'.format(
-            params['plateifu'])
-        self._load_from_db_fail(params, errMsg, errType=MarvinError)
-
-    @skipIfNoDB
-    def test_cube_load_from_local_database_otherexception(self, maindb):
-        params = {'plateifu': '84.85-1901', 'mode': 'local'}
-        errMsg = 'Could not retrieve cube for plate-ifu {0}: Unknown exception'.format(
-            params['plateifu'])
-        self._load_from_db_fail(params, errMsg, errType=MarvinError)
-
-    def test_cube_flux_from_local_database(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='local')
-        flux = cube.flux
-        assert cube.data_origin == 'db'
-
-        cubeFlux = fits.getdata(galaxy.cubepath)
-        assert np.allclose(flux, cubeFlux)
+    @pytest.mark.parametrize('plateifu, mode, errmsg',
+                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found'),
+                              ('84.85-1901', 'local', 'Could not retrieve cube for plate-ifu 84.85-1901: Unknown exception')],
+                             ids=['noresults', 'badname'])
+    def test_cube_from_db_fail(self, plateifu, mode, errmsg):
+        with pytest.raises(MarvinError) as cm:
+            c = Cube(plateifu=plateifu, mode=mode)
+        assert errmsg in str(cm.value)
 
     @pytest.mark.slow
-    def test_cube_flux_from_api(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
-        flux = cube.flux
-        assert cube.data_origin == 'api'
-
-        cubeFlux = fits.getdata(galaxy.cubepath)
-        assert pytest.approx(flux, cubeFlux)
-
-    def test_cube_flux_from_file(self, galaxy):
-        cube = Cube(filename=galaxy.cubepath)
-        assert cube.data_origin == 'file'
+    def test_cube_flux_new(self, cube):
+        assert cube.flux is not None
         assert isinstance(cube.flux, np.ndarray)
 
     def test_cube_remote_drpver_differ_from_global(self, galaxy):
@@ -115,79 +65,9 @@ class TestCube(object):
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
-
-    # TODO refactor into several tests (see below)
-    @pytest.mark.parametrize('plateifu, filename, mode',
-                             [(None, 'galaxy.cubepath', None),
-                              ('galaxy.plateifu', None, 'local'),
-                              ('galaxy.plateifu', None, 'remote')],
-                             ids=('file', 'db', 'remote'))
-    def test_cube_redshift(self, galaxy, plateifu, filename, mode):
-
-        # TODO add 7443-12701 to local DB and remove this skip
-        # if ((galaxy.plateifu != '8485-1901') and (mode in [None, 'local']) and
-        #         (config.db == 'local')):
-        #     pytest.skip('Not the one true galaxy.')
-
-        plateifu = eval(plateifu) if plateifu is not None else None
-        filename = eval(filename) if filename is not None else None
-        cube = Cube(plateifu=plateifu, filename=filename, mode=mode)
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
-    @marvin_test_if(data_origin=['db'], mode='include')
-    def test_cube_redshift_db(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='local')
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
-    @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(release=['MPL-4'], mode='include')
-    @marvin_test_if(galaxy=dict(release=['MPL-4']), mode='include')
-    def test_cube_redshift_file_MPL4(self, galaxy):
-        print('config release', config.release)
-        print('galaxy release', galaxy.release)
-        cube = Cube(filename=galaxy.cubepath)
-        print('cube release', cube._release)
-        print('filename', galaxy.cubepath)
-        assert pytest.approx(cube.nsa.redshift, galaxy.redshift)
-
-    @marvin_test_if(data_origin=['file'], mode='include')
-    @marvin_test_if(release=['MPL-5'], mode='include')
-    def test_cube_redshift_file_MPL5(self, galaxy):
-        cube = Cube(filename=galaxy.cubepath)
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
-    @marvin_test_if(data_origin=['api'], mode='include')
-    def test_cube_redshift_api(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
-        assert pytest.approx(cube.nsa.z, galaxy.redshift)
-
-    # @pytest.mark.parametrize('plateifu, filename',
-    #                          [(None, 'galaxy.cubepath'),
-    #                           ('galaxy.plateifu', None)],
-    #                          ids=('filename', 'plateifu'))
-    # @pytest.mark.parametrize('nsa_source',
-    #                          ['auto', 'nsa', 'drpall'])
-    # @pytest.mark.parametrize('mode',
-    #                          [None, 'remote'])
-    # def test_nsa_redshift(self, galaxy, plateifu, filename, nsa_source, mode):
-    #     if (plateifu is None) and (filename is not None) and (mode == 'remote'):
-    #         pytest.skip('filename not allowed in remote mode.')
-    #
-    #     # TODO add 7443-12701 to local DB and remove this skip
-    #     if (galaxy.plateifu != '8485-1901') and (mode is None) and (config.db == 'local'):
-    #         pytest.skip('Not the one true galaxy.')
-    #
-    #     plateifu = eval(plateifu) if plateifu is not None else None
-    #     filename = eval(filename) if filename is not None else None
-    #     cube = Cube(plateifu=plateifu, filename=filename, nsa_source=nsa_source, mode=mode)
-    #     assert cube.nsa_source == nsa_source
-    #     assert cube.nsa['nsaid'] == galaxy.nsaid
-    #     assert isinstance(cube.nsa, DotableCaseInsensitive)
-    #     if mode == 'drpall':
-    #         assert 'profmean_ivar' not in cube.nsa.keys()
-    #     assert 'zdist' in cube.nsa.keys()
-    #     assert pytest.approx(cube.nsa['zdist'], galaxy.redshift)
-    #     assert pytest.approx(cube.nsa['sersic_flux_ivar'][0], galaxy.nsa_sersic_flux_ivar0)
+    def test_cube_redshift(self, cube, galaxy):
+        redshift = cube.nsa.redshift if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
+        assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -197,7 +77,7 @@ class TestCube(object):
         cube = Cube(plateifu=galaxy.plateifu)
         with pytest.raises(MarvinError) as ee:
             cube.release = 'a'
-            assert 'the release cannot be changed' in str(ee.exception)
+        assert 'the release cannot be changed' in str(ee.value)
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
