@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:56:30
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 14:10:49
+# @Last Modified time: 2017-07-06 14:43:00
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -78,6 +78,8 @@ class TestGetModels(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_models_success(self, galaxy, page, params, reqtype):
+        if galaxy.release == 'MPL-4':
+            pytest.skip('MPL-4 does not have modelcubes')
         params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'], 'template_kin': galaxy.template})
         page.load_page(reqtype, page.url.format(**params), params=params)
         data = {'bintype': galaxy.bintype, 'template_kin': galaxy.template, 'flux_array': [],

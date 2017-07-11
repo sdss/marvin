@@ -6,13 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 14:11:39
+# @Last Modified time: 2017-07-06 16:32:17
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
 from marvin import config
 from marvin.web import create_app
 from marvin.api.base import arg_validate as av
+from marvin.web.settings import TestConfig, CustomConfig
 import pytest
 import os
 import six
@@ -42,12 +43,18 @@ import six
 #     return config.mode
 
 
+# @pytest.fixture(scope='session')
+# def app():
+#     app = create_app(debug=True, local=True, use_profiler=False)
+#     app.config['TESTING'] = True
+#     app.config['WTF_CSRF_ENABLED'] = False
+#     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+#     return app
+
 @pytest.fixture(scope='session')
 def app():
-    app = create_app(debug=True, local=True, use_profiler=False)
-    app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+    object_config = type('Config', (TestConfig, CustomConfig), dict())
+    app = create_app(debug=True, local=True, object_config=object_config)
     return app
 
 
@@ -63,7 +70,7 @@ class ApiPage(Page):
         super(ApiPage, self).__init__(client, blue, endpoint)
         self.api_base_success = dict(status=1, error=None, traceback=None)
 
-    def assert_success(self, expdata=None, keys=None):
+    def assert_success(self, expdata=None, keys=None, issubset=None):
         self.assert200(message='response status should be 200 for ok and not {0}'.format(self.response.status_code))
         assert self.json['status'] == 1
         self.assert_dict_contains_subset(self.api_base_success, self.json)
@@ -78,7 +85,11 @@ class ApiPage(Page):
                 assert expdata.items() <= self.json['data'].items()
         elif isinstance(expdata, list):
             assert isinstance(self.json['data'], list), 'response data should be a list'
-            assert expdata == self.json['data'], 'two lists should be the same'
+            if issubset:
+                subset = all(row in self.json['data'] for row in expdata)
+                assert subset is True, 'one should be subset of the other'
+            else:
+                assert expdata == self.json['data'], 'two lists should be the same'
 
     def route_no_valid_params(self, url, noparam, reqtype='get', params=None, errmsg=None):
         self.load_page(reqtype, url, params=params)

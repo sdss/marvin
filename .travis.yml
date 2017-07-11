@@ -70,6 +70,7 @@ install:
 - pip install pytest-cov --quiet
 - pip install pytest-flask --quiet
 - pip install pytest-sugar --quiet
+- pip install pytest-xdist --quiet
 - pip install selenium --quiet
 - pip install page_objects --quiet
 - python setup.py install
@@ -96,7 +97,7 @@ before_script:
 - python -c "from matplotlib import pyplot as plt;"
 
 script:
-- pytest python/marvin/tests -v --runslow --cov python/marvin --cov-report html
+- pytest python/marvin/tests --runslow --cov python/marvin --cov-report html
 
 after_success:
 - coveralls

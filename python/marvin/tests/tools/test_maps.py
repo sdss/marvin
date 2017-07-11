@@ -48,17 +48,17 @@ class TestMaps(object):
 
         return maps_kwargs
 
-    def test_load(self, galaxy, data_origin):
+    def test_load(self, galaxy, exporigin):
 
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
 
         _assert_maps(maps, galaxy)
 
-        assert maps.data_origin == data_origin
+        assert maps.data_origin == exporigin
 
-        if data_origin == 'file':
+        if exporigin == 'file':
             assert isinstance(maps.data, astropy.io.fits.HDUList)
-        elif data_origin == 'db':
+        elif exporigin == 'db':
             assert isinstance(maps.data, marvin.marvindb.dapdb.File)
 
         assert maps.cube is not None
@@ -66,14 +66,15 @@ class TestMaps(object):
         assert maps.cube.mangaid == galaxy.mangaid
 
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
-    def test_load_mpl4_global_mpl5(self, galaxy, data_origin):
+    @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
+    def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
 
-        marvin.config.setMPL('MPL-5')
+        assert marvin.config.release == 'MPL-5'
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
-        assert maps._release == 'MPL-4'
-        assert maps._drpver == 'v1_5_1'
-        assert maps._dapver == '1.1.1'
+        assert maps._release == galaxy.release
+        assert maps._drpver == galaxy.drpver
+        assert maps._dapver == galaxy.dapver
 
     def test_get_spaxel(self, galaxy, data_origin):
 
@@ -96,13 +97,13 @@ class TestMaps(object):
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
 
-    def test_get_spaxel_no_db(self, galaxy, data_origin, db_off):
+    def test_get_spaxel_no_db(self, galaxy, exporigin):
         """Tests getting an spaxel if there is no DB."""
 
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
-        # assert spaxel.maps.data_origin == 'file' if data_origin else False
+        assert spaxel.maps.data_origin == exporigin
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None

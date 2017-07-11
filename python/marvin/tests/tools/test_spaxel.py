@@ -24,9 +24,9 @@ from marvin.tools.spectrum import Spectrum
 
 
 class TestSpaxelInit(object):
-    
+
     def _spaxel_init(self, spaxel, cube, maps, spectrum):
-        
+
         args = {'cube': cube, 'maps': maps, 'spectrum': spectrum}
         objs = {'cube': Cube, 'maps': Maps, 'spectrum': Spectrum}
 
@@ -41,7 +41,6 @@ class TestSpaxelInit(object):
             assert isinstance(spaxel.properties, DictOfProperties)
         else:
             assert len(spaxel.properties) == 0
-            
 
     def test_no_cube_no_maps_db(self, galaxy):
         spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu)
@@ -67,30 +66,26 @@ class TestSpaxelInit(object):
 
         self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
 
-    @pytest.mark.parametrize('mpl', ['MPL-5'])
-    def test_cube_maps_object_filename(self, galaxy, mpl):
-        if galaxy.bintype != 'SPX':
+    def test_cube_maps_object_filename(self, galaxy):
+        if galaxy.bintype not in ['SPX', 'NONE']:
             pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
 
-        config.setMPL(mpl)
-        drpver, dapver = config.lookUpVersions()
-
         cube = Cube(filename=galaxy.cubepath)
-        maps = Maps(filename=galaxy.mapspath, bintype=galaxy.bintype, release=mpl)
+        maps = Maps(filename=galaxy.mapspath, bintype=galaxy.bintype, release=galaxy.release)
         spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
 
-        assert cube._drpver == drpver
-        assert spaxel._drpver == drpver
-        assert maps._drpver == drpver
-        assert maps._dapver == dapver
-        assert spaxel._dapver == dapver
+        assert cube._drpver == galaxy.drpver
+        assert spaxel._drpver == galaxy.drpver
+        assert maps._drpver == galaxy.drpver
+        assert maps._dapver == galaxy.dapver
+        assert spaxel._dapver == galaxy.dapver
 
         self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
     def test_cube_object_api(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         spaxel = Spaxel(x=15, y=16, cube=cube)
-        
+
         self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
     def test_cube_maps_object_api(self, galaxy):
@@ -125,12 +120,11 @@ class TestSpaxelInit(object):
 
         self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
-    @pytest.mark.parametrize('mpl', ['MPL-5'])
-    def test_fails_unbinned_maps(self, galaxy, mpl):
-        if galaxy.bintype == 'SPX':
+    def test_fails_unbinned_maps(self, galaxy):
+        if galaxy.bintype in ['SPX', 'NONE']:
             pytest.skip("Can instantiate a Spaxel from a binned Maps.")
-        
-        maps = Maps(plateifu=galaxy.plateifu, bintype=galaxy.bintype, release=mpl)
+
+        maps = Maps(plateifu=galaxy.plateifu, bintype=galaxy.bintype, release=galaxy.release)
 
         with pytest.raises(MarvinError) as cm:
             Spaxel(x=15, y=16, plateifu=galaxy.plateifu, maps=maps)
@@ -160,19 +154,18 @@ class TestSpaxelInit(object):
 
 class TestPickling(object):
 
-    def test_pickling_db_fails(self, tmpfiles, galaxy):
+    def test_pickling_db_fails(self, temp_scratch, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         spaxel = cube.getSpaxel(x=1, y=3)
 
-        spaxel_path = '~/test_spaxel.mpf'
-        tmpfiles.append(spaxel_path)
+        file = temp_scratch.join('test_spaxel.mpf')
 
         with pytest.raises(MarvinError) as cm:
-            spaxel.save(spaxel_path, overwrite=True)
+            spaxel.save(str(file), overwrite=True)
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
-    def test_pickling_only_cube_file(self, tmpfiles, galaxy):
+    def test_pickling_only_cube_file(self, temp_scratch, galaxy):
         if galaxy.bintype != 'SPX':
             pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
 
@@ -181,16 +174,15 @@ class TestPickling(object):
 
         spaxel = cube.getSpaxel(x=1, y=3, properties=maps, modelcube=False)
 
-        spaxel_path = '~/test_spaxel.mpf'
-        tmpfiles.append(spaxel_path)
+        file = temp_scratch.join('test_spaxel.mpf')
 
-        path_saved = spaxel.save(spaxel_path, overwrite=True)
+        path_saved = spaxel.save(str(file), overwrite=True)
+        assert file.check() is True
         assert os.path.exists(path_saved)
-        assert os.path.realpath(os.path.expanduser(spaxel_path)), path_saved
 
         del spaxel
 
-        spaxel_restored = Spaxel.restore(spaxel_path)
+        spaxel_restored = Spaxel.restore(str(file))
         assert spaxel_restored is not None
         assert isinstance(spaxel_restored, Spaxel)
 
@@ -203,7 +195,7 @@ class TestPickling(object):
         assert isinstance(spaxel_restored.maps.data, astropy.io.fits.HDUList)
 
     @pytest.mark.parametrize('mpl', ['MPL-5'])
-    def test_pickling_all_api(self, monkeypatch, tmpfiles, galaxy, mpl):
+    def test_pickling_all_api(self, monkeypatch, temp_scratch, galaxy, mpl):
         monkeypatch.setattr(config, 'release', mpl)
         drpver, __ = config.lookUpVersions()
 
@@ -216,16 +208,15 @@ class TestPickling(object):
         assert spaxel.maps.data_origin == 'api'
         assert spaxel.modelcube.data_origin == 'api'
 
-        spaxel_path = '~/test_spaxel_api.mpf'
-        tmpfiles.append(spaxel_path)
+        file = temp_scratch.join('test_spaxel_api.mpf')
 
-        path_saved = spaxel.save(spaxel_path, overwrite=True)
+        path_saved = spaxel.save(str(file), overwrite=True)
+        assert file.check() is True
         assert os.path.exists(path_saved)
-        assert os.path.realpath(os.path.expanduser(spaxel_path)), path_saved
 
         del spaxel
 
-        spaxel_restored = Spaxel.restore(spaxel_path)
+        spaxel_restored = Spaxel.restore(str(file))
         assert spaxel_restored is not None
         assert isinstance(spaxel_restored, Spaxel)
 

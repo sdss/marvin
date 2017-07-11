@@ -58,8 +58,9 @@ dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
 
 
-# Galaxy data is stored in a YAML file
+# Galaxy and Query data is stored in a YAML file
 galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
+query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')))
 
 
 @pytest.fixture(scope='session', params=releases)
@@ -213,6 +214,16 @@ def db_on():
     config.forceDbOn()
 
 
+@pytest.fixture()
+def usedb(request):
+    ''' fixture for optional turning off the db '''
+    if request.param:
+        config.forceDbOn()
+    else:
+        config.forceDbOff()
+    return config.db is not None
+
+
 @pytest.fixture(params=dbs)
 def db(request):
     """Turn local db on or off.
@@ -229,7 +240,7 @@ def db(request):
 
 @pytest.fixture()
 def exporigin(mode, db):
-    """Return the expected modes for a given db/mode combo."""
+    """Return the expected origins for a given db/mode combo."""
     if mode == 'local' and not db:
         return 'file'
     elif mode == 'local' and db:
@@ -242,6 +253,23 @@ def exporigin(mode, db):
         return 'db'
     elif mode == 'auto' and not db:
         return 'api'
+
+
+@pytest.fixture()
+def expmode(mode, db):
+    ''' expected modes for a given db/mode combo '''
+    if mode == 'local' and not db:
+        return None
+    elif mode == 'local' and db:
+        return 'local'
+    elif mode == 'remote' and not db:
+        return 'remote'
+    elif mode == 'remote' and db:
+        return 'remote'
+    elif mode == 'auto' and db:
+        return 'local'
+    elif mode == 'auto' and not db:
+        return 'remote'
 
 
 # Monkeypatch-based FIXTURES
@@ -397,11 +425,14 @@ def galaxy(get_params, plateifu):
 
 @pytest.fixture()
 def query(request, release, mode, db):
-    """Yield a Query that loops over all modes and db options."""
+    ''' Yields a Query that loops over all modes and db options '''
+    data = query_data[release]
+    set_the_config(release)
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(searchfilter=searchfilter, mode=mode)
+    q = Query(searchfilter=searchfilter, mode=mode, release=release)
+    q.expdata = data
     yield q
     config.forceDbOn()
     q = None

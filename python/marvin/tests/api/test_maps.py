@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 11:19:14
+# @Last Modified time: 2017-07-06 11:35:21
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -59,7 +59,7 @@ class TestGetMaps(object):
 class TestGetSingleMap(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    @pytest.mark.parametrize('prop, channel', [('emline_sew', 'ha_6564'), ('stellar_vel', None)])
+    @pytest.mark.parametrize('prop, channel', [('emline_gflux', 'ha_6564'), ('stellar_vel', None)])
     def test_map_success(self, galaxy, page, params, reqtype, prop, channel):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
                        'template_kin': galaxy.template, 'property_name': prop, 'channel': channel})

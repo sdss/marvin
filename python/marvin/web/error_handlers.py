@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-27 14:26:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-29 11:41:23
+# @Last Modified time: 2017-07-06 10:36:16
 
 from __future__ import print_function, division, absolute_import
 from flask import request, current_app as app
@@ -18,14 +18,17 @@ from marvin.web.extensions import sentry
 errors = Blueprint('error_handlers', __name__)
 
 
-def make_error_json(error, name, code):
+def make_error_json(error, name, code, data=None):
     ''' creates the error json dictionary for API errors '''
     shortname = name.lower().replace(' ', '_')
     messages = {'error': shortname,
                 'message': error.description if hasattr(error, 'description') else None,
                 'status_code': code,
                 'traceback': get_traceback(asstring=True)}
-    return jsonify({'api_error': messages}), code
+    if data:
+        return jsonify({'validation_errors': data}), code
+    else:
+        return jsonify({'api_error': messages}), code
 
 
 def make_error_page(app, name, code, sentry=None, data=None, exception=None):
@@ -101,7 +104,7 @@ def handle_unprocessable_entity(error):
         messages = ['Invalid request']
 
     if _is_api(request):
-        return make_error_json(error, name, 422)
+        return make_error_json(error, name, 422, data=messages)
     else:
         return make_error_page(app, name, 422, sentry=sentry, data=messages)
 
@@ -113,5 +116,4 @@ def rate_limit_exceeded(error):
         return make_error_json(error, name, 429)
     else:
         return make_error_page(app, name, 429, sentry=sentry, exception=error)
-
 
