@@ -102,7 +102,7 @@ class TestMaps(object):
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
-        assert spaxel.maps.data_origin == 'file' if data_origin else False
+        # assert spaxel.maps.data_origin == 'file' if data_origin else False
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
@@ -111,61 +111,12 @@ class TestMaps(object):
     @marvin_test_if(mark='skip', data_origin=['file'])
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_maps_redshift(self, galaxy, data_origin):
-        
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-MAPS-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-VOR10-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-003.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-013.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-023.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-NONE-023.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-001.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-001.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-011.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-011.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-021.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-021.fits.gz']
-        if galaxy.mapspath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         assert pytest.approx(maps.nsa.z, galaxy.redshift)
 
     @marvin_test_if(mark='include', data_origin=['file'])
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_maps_redshift_file_MPL4(self, galaxy, data_origin):
-        # TODO Remove
-        files_to_download = ['manga-7443-12701-MAPS-SPX-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-ALL-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-NRE-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-MAPS-VOR10-GAU-MILESHC.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-003.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-013.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-NONE-023.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-NONE-023.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-001.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-001.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-011.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-011.fits.gz',
-                             'manga-7443-12701-LOGCUBE_MAPS-STON-021.fits.gz',
-                             'manga-8485-1901-LOGCUBE_MAPS-STON-021.fits.gz']
-        if galaxy.mapspath.split('/')[-1] in files_to_download:
-            pytest.skip('Remove this skip once I download the files.')
-
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         assert pytest.approx(maps.nsa.redshift, galaxy.redshift)
     
