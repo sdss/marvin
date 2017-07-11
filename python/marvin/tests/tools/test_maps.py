@@ -65,7 +65,6 @@ class TestMaps(object):
         assert maps.cube.plateifu == galaxy.plateifu
         assert maps.cube.mangaid == galaxy.mangaid
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
 
@@ -109,18 +108,10 @@ class TestMaps(object):
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
 
-    @marvin_test_if(mark='skip', data_origin=['file'])
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
-    def test_maps_redshift(self, galaxy, data_origin):
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        assert pytest.approx(maps.nsa.z, galaxy.redshift)
+    def test_maps_redshift(self, maps, galaxy):
+        redshift = maps.nsa.redshift if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
+        assert pytest.approx(redshift, galaxy.redshift)
 
-    @marvin_test_if(mark='include', data_origin=['file'])
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
-    def test_maps_redshift_file_MPL4(self, galaxy, data_origin):
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        assert pytest.approx(maps.nsa.redshift, galaxy.redshift)
-    
     def test_release(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         assert maps.release == galaxy.release

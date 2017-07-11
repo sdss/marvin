@@ -15,6 +15,7 @@ from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
+from marvin.tools.maps import Maps
 from marvin.tools.query import Query
 from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
 from sdss_access.path import Path
@@ -447,6 +448,19 @@ def modelcube(galaxy, exporigin, mode):
         c = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
     else:
         c = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    yield c
+    c = None
+
+
+@pytest.fixture()
+def maps(galaxy, exporigin, mode):
+    ''' Yield a Marvin Maps based on the expected origin combo of (mode+db).
+        Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
+    '''
+    if exporigin == 'file':
+        c = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode)
+    else:
+        c = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
     yield c
     c = None
 
