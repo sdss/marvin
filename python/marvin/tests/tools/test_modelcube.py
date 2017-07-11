@@ -137,15 +137,6 @@ class TestGetSpaxel(object):
         assert spaxel.redcorr is not None
 
     def test_getspaxel(self, galaxy, data_origin):
-
-        # # TODO Remove
-        # files_to_download = ['manga-7443-12701-LOGCUBE-NRE-GAU-MILESHC.fits.gz',
-        #                      'manga-7443-12701-LOGCUBE-ALL-GAU-MILESHC.fits.gz',
-        #                      'manga-7443-12701-LOGCUBE-SPX-GAU-MILESHC.fits.gz',
-        #                      'manga-7443-12701-LOGCUBE-VOR10-GAU-MILESHC.fits.gz']
-        # if galaxy.modelpath.split('/')[-1] in files_to_download:
-        #     pytest.skip('Remove this skip once I download the files.')
-
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
         elif data_origin == 'db':
