@@ -111,7 +111,7 @@ def marvin_test_if(mark='skip', **kfilter):
                 'valid marks are \'skip\', \'include\', and \'xfail\''
 
             if len(kfilter) > 1:
-                raise ValueError('marvin_skip_if only accepts one filter condition.')
+                raise ValueError('marvin_test_if only accepts one filter condition.')
 
             fixture_to_filter, filter_attributes = list(kfilter.items())[0]
 
