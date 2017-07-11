@@ -12,6 +12,7 @@ import pytest
 
 from marvin.tools.maps import Maps
 from marvin.tools.map import Map
+from marvin.tests import marvin_test_if
 
 
 def _get_maps_kwargs(galaxy, data_origin):
@@ -32,30 +33,6 @@ def _get_maps_kwargs(galaxy, data_origin):
                                           ('stellar_sigma', None)])
 def map_(request, galaxy, data_origin):
 
-    # TODO Remove
-    files_to_download = ['manga-7443-12701-MAPS-SPX-GAU-MILESHC.fits.gz',
-                         'manga-7443-12701-MAPS-ALL-GAU-MILESHC.fits.gz',
-                         'manga-7443-12701-MAPS-NRE-GAU-MILESHC.fits.gz',
-                         'manga-7443-12701-MAPS-VOR10-GAU-MILESHC.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-NONE-003.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-NONE-013.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-NONE-023.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-NONE-023.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-RADIAL-007.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-RADIAL-017.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-RADIAL-027.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-STON-001.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-STON-001.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-STON-011.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-STON-011.fits.gz',
-                         'manga-7443-12701-LOGCUBE_MAPS-STON-021.fits.gz',
-                         'manga-8485-1901-LOGCUBE_MAPS-STON-021.fits.gz']
-    if galaxy.mapspath.split('/')[-1] in files_to_download:
-        pytest.skip('Remove this skip once I download the files.')
-
     maps = Maps(**_get_maps_kwargs(galaxy, data_origin))
     map_ = maps.getMap(property_name=request.param[0], channel=request.param[1])
     return map_
@@ -64,7 +41,6 @@ def map_(request, galaxy, data_origin):
 class TestMap(object):
 
     def test_map(self, map_, galaxy):
-
         assert map_.release == galaxy.release
 
         assert tuple(map_.shape) == tuple(galaxy.shape)
@@ -82,16 +58,18 @@ class TestMap(object):
         assert isinstance(map_.header, astropy.io.fits.header.Header)
 
     def test_plot(self, map_):
-
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
 
-    def test_save_and_restore(self, temp_scratch, map_):
+    @marvin_test_if(mark='skip', data_origin=['db'])
+    def test_save_and_restore(self, temp_scratch, map_, data_origin):
+        
+        print(f'\n\n{data_origin}\n\n')
 
         fout = temp_scratch.join('test_map.mpf')
         map_.save(str(fout))
         assert fout.check() is True
 
-        map_restored = Map.restore(str(fout), delete=False)
+        map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
