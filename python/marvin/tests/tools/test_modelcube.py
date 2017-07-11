@@ -237,7 +237,7 @@ class TestPickling(object):
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
 
-        file = temp_scratch.join('test_modelcube.mpf')
+        file = temp_scratch.join('mcpickle').join('test_modelcube.mpf')
         assert file.check(file=1) is False
 
         path = modelcube.save(path=str(file))
