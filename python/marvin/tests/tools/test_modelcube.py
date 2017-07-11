@@ -167,18 +167,13 @@ class TestGetSpaxel(object):
         assert len(spaxel.properties) == 0
 
     @marvin_test_if(mark='skip', db=['nodb'])
-    @pytest.mark.parametrize('mpl, flux, ivar, mask',
-                             [('MPL-5', 0.016027471050620079, 361.13595581054693, 33)])
-    def test_getspaxel_matches_file_db_remote(self, galaxy, mpl, flux, mask, ivar):
+    def test_getspaxel_matches_file_db_remote(self, galaxy):
 
         # TODO move parametrized flux, ivar, and mask values to galaxy_test_data.dat
 
         modelcube_file = ModelCube(filename=galaxy.modelpath)
         modelcube_db = ModelCube(mangaid=galaxy.mangaid)
         modelcube_api = ModelCube(mangaid=galaxy.mangaid, mode='remote')
-
-        config.setMPL(mpl)
-        assert config.release == mpl
 
         assert modelcube_file.data_origin == 'file'
         assert modelcube_db.data_origin == 'db'
