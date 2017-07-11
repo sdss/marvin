@@ -15,6 +15,12 @@ from marvin.core.exceptions import MarvinError
 from marvin.tests import skipIfNoDB, marvin_test_if
 
 
+@pytest.fixture(autouse=True)
+def skipbins(galaxy):
+    if galaxy.bintype not in ['SPX', 'NONE']:
+        pytest.skip('Skipping all bins for Cube tests')
+
+
 class TestCube(object):
 
     def test_cube_loadfail(self):
@@ -128,46 +134,25 @@ class TestGetSpaxel(object):
         kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec)
 
         with pytest.raises(excType) as ee:
-            cube = Cube(filename=galaxy.cubepath)
+            cube = Cube(plateifu=galaxy.plateifu, release=galaxy.release)
             cube.getSpaxel(**kwargs)
 
         assert message in str(ee.value)
 
-    @pytest.mark.parametrize('x, y, ra, dec, xyorig, idx, mpl4, mpl5',
-        [(10, 5, None, None, None, 10, -0.062497504, -0.063987106),
-         (10, 5, None, None, 'center', 10, -0.062497504, -0.063987106),
-         (10, 5, None, None, 'lower', 3000, 0.017929086, 0.017640527),
-         (0, 0, None, None, None, 3000, 1.0493046, 1.0505702),
-         (0, 0, None, None, 'lower', 3000, 0., 0.),
-         (None, None, 232.5443, 48.6899, None, 3000, 0.62007582, 0.6171338),
-         (None, None, 232.544279, 48.6899232, None, 3000, 0.62007582, 0.6171338),
-         ([10, 0], [5, 0], None, None, 'lower', 3000, [0.017929086, 0.], [0.017640527, 0.]),
-         (None, None, [232.546173, 232.548277], [48.6885343, 48.6878398], 'lower', 3000,
-          [0.017929086, 0.0], [0.017640527, 0.]),
-         (None, None, 232.54, 48.69, None, 3000, MarvinError, MarvinError),
-         (None, None, 233, 49, None, 3000, MarvinError, MarvinError)
-         ],
-        ids=['xy', 'xycenter', 'xylower', 'x0y0', 'x0y0lower', 'radec-partial', 'radec-full',
-             'xyarray', 'radecarray', 'radec-fail-twosigfig', 'radec-fail-int'])
-    @pytest.mark.parametrize('data_origin', ['db', 'file', 'api'])
-    def test_getSpaxel_flux(self, request, galaxy, data_origin, x, y, ra, dec, xyorig, idx, mpl4,
-                            mpl5):
-        cube = request.getfixturevalue('cube_' + data_origin)
+    @pytest.mark.parametrize('coord, xyorig', [('xy', 'lower'), ('xy', 'center'), ('radec', None)])
+    def test_getSpaxel_flux(self, cube, galaxy, coord, xyorig):
+        if coord == 'xy':
+            x = galaxy.spaxel['x'] if xyorig == 'lower' else galaxy.spaxel['x_cen']
+            y = galaxy.spaxel['y'] if xyorig == 'lower' else galaxy.spaxel['y_cen']
+            params = {'x': x, 'y': y, 'xyorig': xyorig}
+        elif coord == 'radec':
+            ra = galaxy.spaxel['ra']
+            dec = galaxy.spaxel['dec']
+            params = {'ra': ra, 'dec': dec}
 
-        kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec, xyorig=xyorig)
-        mpls = {'MPL-4': mpl4, 'MPL-5': mpl5}
-        expected = mpls[config.release]
-
-        if expected is MarvinError:
-            with pytest.raises(MarvinError) as cm:
-                actual = cube.getSpaxel(**kwargs).spectrum.flux[idx]
-            assert 'some indices are out of limits.' in str(cm.value)
-        else:
-            spaxels = cube.getSpaxel(**kwargs)
-            spaxels = spaxels if isinstance(spaxels, list) else [spaxels]
-            actual = [getattr(spax.spectrum, 'flux')[idx] for spax in spaxels]
-            expected = expected if isinstance(expected, list) else [expected]
-            assert pytest.approx(actual, expected)
+        spaxel = cube.getSpaxel(**params)
+        flux = spaxel.spectrum.flux
+        assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
                              [('sasurl', 'http://www.averywrongurl.com')],
