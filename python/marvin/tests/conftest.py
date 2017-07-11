@@ -14,10 +14,11 @@ import pytest
 from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.cube import Cube
+from marvin.tools.modelcube import ModelCube
 from marvin.tools.query import Query
 from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
 from sdss_access.path import Path
-from astropy.io.misc import yaml
+import yaml
 
 
 # TODO Replace skipTest and skipBrian with skipif
@@ -209,7 +210,7 @@ def db_off():
     config.forceDbOn()
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(autouse=True)
 def db_on():
     """Automatically turn on the DB at collection time."""
     config.forceDbOn()
@@ -427,12 +428,25 @@ def galaxy(get_params, plateifu):
 @pytest.fixture()
 def cube(galaxy, exporigin, mode):
     ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
-        Fixture tests 6 cube origins from (mode+db) combos
+        Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
         c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
     else:
         c = Cube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    yield c
+    c = None
+
+
+@pytest.fixture()
+def modelcube(galaxy, exporigin, mode):
+    ''' Yield a Marvin ModelCube based on the expected origin combo of (mode+db).
+        Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
+    '''
+    if exporigin == 'file':
+        c = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
+    else:
+        c = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
     yield c
     c = None
 

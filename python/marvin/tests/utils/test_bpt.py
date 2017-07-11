@@ -28,7 +28,7 @@ def maps(galaxy, mode):
     maps = None
 
 
-@marvin_test_if_class(mode='skip', maps=dict(release=['MPL-4']))
+@marvin_test_if_class(mark='skip', maps=dict(release=['MPL-4']))
 class TestBPT(object):
 
     mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']

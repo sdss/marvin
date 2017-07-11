@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import warnings
-import os
 import inspect
 from functools import wraps
 
 import pytest
-from unittest import TestCase
-
-from marvin import config, marvindb
-from marvin.core.exceptions import MarvinSkippedTestWarning
-from marvin.api.api import Interaction
-from marvin.tools.maps import _get_bintemps
 
 
 def use_bintypes(*bintypes):
-    """Decorates test to run only for the given bintypes."""
+    """Decorate test to run only for the given bintypes."""
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
@@ -28,7 +20,7 @@ def use_bintypes(*bintypes):
 
 
 def use_releases(*releases):
-    """Decorates test to run only for the given releases."""
+    """Decorate test to run only for the given releases."""
     def check_bintype(f):
         @wraps(f)
         def decorated_function(self, *args, **kwargs):
@@ -44,7 +36,7 @@ def use_releases(*releases):
 
 
 class MetaUse(object):
-    ''' Meta class to define a testing class that decorates all tests to use the specified fxn '''
+    """Meta class to define a testing class that decorates all tests to use the specified fxn."""
     def __init__(self, *args):
         self.args = args
 
@@ -63,11 +55,11 @@ UseReleases = type('UseReleases', (MetaUse,), {'fxn': use_releases})
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
 # that have certain bintypes, templates, or releases
-def marvin_test_if(mode='skip', **kfilter):
-    """Decorates test to skip/include certain parameters.
+def marvin_test_if(mark='skip', **kfilter):
+    """Decorate test to skip/include certain parameters.
 
     Parameters:
-        mode ({'skip', 'include', 'xfail'}):
+        mark ({'skip', 'include', 'xfail'}):
             Whether the decorator should skip the test if it matches the filter
             conditions, include it only if it matches the conditions, or mark
             it as an expected failure.
@@ -76,24 +68,24 @@ def marvin_test_if(mode='skip', **kfilter):
             the test. If the fixture returns a single value, the keyword must
             define a list of the fixture values to skip, include, or xfail.
             If the fixture returns an object, the value of the kwarg must be a
-            dictionary of the object attributes to filter on. The ``mode`` is
+            dictionary of the object attributes to filter on. The ``mark`` is
             applied to all the attributes in the dictionary equally.
 
     Examples:
         If you want to only test for galaxies with bintype ``'STON'`` and
         template ``'MILES-THIN'`` you can do::
 
-            @marvin_test_if(galaxy=dict(bintype=['STON'], template=['MILES-THIN']), mode='include')
+            @marvin_test_if(mark='include', galaxy=dict(bintype=['STON'], template=['MILES-THIN']))
 
         You can also mark all tests with ``data_origin='file'`` as expected
         failure::
 
-            @marvin_test_if(data_origin=['file'], mode='xfails')
+            @marvin_test_if(mark='xfails', data_origin=['file'])
 
         ``marvin_test_if`` decorators can be concatenated::
 
-            @marvin_test_if(data_origin=['file'], mode='xfails')
-            @marvin_test_if(galaxy=dict(bintype=['SPX']), mode='skip')
+            @marvin_test_if(mark='xfails', data_origin=['file'])
+            @marvin_test_if(mark='skip', galaxy=dict(bintype=['SPX']))
 
         will skip ``'SPX'`` bintypes and expect a failure on ``'file'``
         data_origins.
@@ -104,19 +96,19 @@ def marvin_test_if(mode='skip', **kfilter):
 
         def _should_skip(filter_values, fixture_value, prop_name):
             ll = ', '.join(filter_values)
-            if mode == 'skip' and fixture_value in filter_values:
+            if mark == 'skip' and fixture_value in filter_values:
                 return pytest.skip('Skipping {0}={1!r}'.format(prop_name, ll))
-            elif mode == 'include' and fixture_value not in filter_values:
+            elif mark == 'include' and fixture_value not in filter_values:
                 return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
-            elif mode == 'xfail' and fixture_value in filter_values:
+            elif mark == 'xfail' and fixture_value in filter_values:
                 return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
             return False
 
         @wraps(ff)
         def decorated_function(self, *args, **kwargs):
 
-            assert mode in ['skip', 'include', 'xfail'], \
-                'valid modes are \'skip\', \'include\', and \'xfail\''
+            assert mark in ['skip', 'include', 'xfail'], \
+                'valid marks are \'skip\', \'include\', and \'xfail\''
 
             if len(kfilter) > 1:
                 raise ValueError('marvin_skip_if only accepts one filter condition.')
@@ -164,8 +156,8 @@ class marvin_test_if_class(object):
         return decorated_class
 
 
-# Decorator to skip a test if the session is None (i.e., if there is no DB)
 def skipIfNoDB(test):
+    """Decorate a test to skip if DB ``session`` is ``None``."""
     @wraps(test)
     def wrapper(self, db, *args, **kwargs):
         if db.session is None:
@@ -173,6 +165,3 @@ def skipIfNoDB(test):
         else:
             return test(self, db, *args, **kwargs)
     return wrapper
-
-
-

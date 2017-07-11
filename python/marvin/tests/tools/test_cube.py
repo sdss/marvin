@@ -10,6 +10,7 @@ from astropy import wcs
 
 from marvin import config
 from marvin.tools.cube import Cube
+from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.tests import skipIfNoDB, marvin_test_if
 
@@ -49,7 +50,7 @@ class TestCube(object):
         assert errmsg in str(cm.value)
 
     @pytest.mark.slow
-    def test_cube_flux_new(self, cube):
+    def test_cube_flux(self, cube):
         assert cube.flux is not None
         assert isinstance(cube.flux, np.ndarray)
 
@@ -302,12 +303,13 @@ class TestPickling(object):
 
         assert not os.path.exists(path)
 
-    def test_pickling_db(self, galaxy):
+    def test_pickling_db(self, galaxy, temp_scratch):
         cube = Cube(plateifu=galaxy.plateifu)
         assert cube.data_origin == 'db'
 
+        file = temp_scratch.join('test_cube_db.mpf')
         with pytest.raises(MarvinError) as cm:
-            cube.save()
+            cube.save(str(file))
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 

@@ -15,10 +15,9 @@ import pytest
 import astropy.io.fits
 
 import marvin
-import marvin.tests
-import marvin.tools.maps
+from marvin.tools.maps import Maps
 import marvin.tools.spaxel
-
+from marvin.core.exceptions import MarvinError
 from marvin.tests import marvin_test_if
 
 
@@ -51,7 +50,7 @@ class TestMaps(object):
 
     def test_load(self, galaxy, exporigin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, exporigin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
 
         _assert_maps(maps, galaxy)
 
@@ -66,11 +65,12 @@ class TestMaps(object):
         assert maps.cube.plateifu == galaxy.plateifu
         assert maps.cube.mangaid == galaxy.mangaid
 
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
 
         assert marvin.config.release == 'MPL-5'
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
         assert maps._release == galaxy.release
         assert maps._drpver == galaxy.drpver
@@ -78,7 +78,7 @@ class TestMaps(object):
 
     def test_get_spaxel(self, galaxy, data_origin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
@@ -90,7 +90,7 @@ class TestMaps(object):
 
     def test_get_spaxel_test2(self, galaxy, data_origin):
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
@@ -100,12 +100,33 @@ class TestMaps(object):
     def test_get_spaxel_no_db(self, galaxy, exporigin):
         """Tests getting an spaxel if there is no DB."""
 
-        maps = marvin.tools.maps.Maps(**self._get_maps_kwargs(galaxy, exporigin))
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
         spaxel = maps.getSpaxel(x=5, y=5)
 
-        #assert spaxel.maps.data_origin == 'file' if data_origin else False
         assert spaxel.maps.data_origin == exporigin
 
         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
+
+    @marvin_test_if(mark='skip', data_origin=['file'])
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    def test_maps_redshift(self, galaxy, data_origin):
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        assert pytest.approx(maps.nsa.z, galaxy.redshift)
+
+    @marvin_test_if(mark='include', data_origin=['file'])
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_maps_redshift_file_MPL4(self, galaxy, data_origin):
+        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+        assert pytest.approx(maps.nsa.redshift, galaxy.redshift)
+    
+    def test_release(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        assert maps.release == galaxy.release
+
+    def test_set_release_fails(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            maps.release = 'a'
+            assert 'the release cannot be changed' in str(ee.exception)

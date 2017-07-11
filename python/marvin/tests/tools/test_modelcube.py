@@ -19,23 +19,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
-
-
-@pytest.fixture()
-def modelcube_file(galaxy):
-    return ModelCube(filename=galaxy.modelpath)
-
-
-@pytest.fixture()
-def modelcube_db(maindb, galaxy):
-    if maindb.session is None:
-        pytest.skip('Skip because no DB.')
-    return ModelCube(mangaid=galaxy.mangaid)
-
-
-@pytest.fixture()
-def modelcube_api(galaxy):
-    return ModelCube(mangaid=galaxy.mangaid, mode='remote')
+from marvin.tests import marvin_test_if, marvin_test_if_class
 
 
 @pytest.fixture(autouse=True)
@@ -59,7 +43,6 @@ class TestModelCubeInit(object):
         assert model_cube.wavelength is not None
         assert model_cube.redcorr is not None
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_init_modelcube(self, galaxy, data_origin):
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
@@ -73,7 +56,7 @@ class TestModelCubeInit(object):
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
-        model_cube = ModelCube(filename=galaxy.modelpath)
+        model_cube = ModelCube(filename=galaxy.modelpath, release='MPL-4')
         assert model_cube.data_origin == 'file'
         self._test_init(model_cube, galaxy)
 
@@ -82,7 +65,6 @@ class TestModelCubeInit(object):
             ModelCube(plateifu=galaxy.plateifu, release='MPL-4')
         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_init_modelcube_bintype(self, galaxy, data_origin):
         kwargs = {'bintype': galaxy.bintype}
         if data_origin == 'file':
@@ -96,6 +78,9 @@ class TestModelCubeInit(object):
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
         self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
+
+
+class TestModelCube(object):
 
     def test_get_flux_db(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu)
@@ -115,6 +100,9 @@ class TestModelCubeInit(object):
     def test_get_maps_api(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.maps, Maps)
+
+    def test_modelcube_redshift_new(self, modelcube, galaxy):
+        assert pytest.approx(modelcube.nsa.z, galaxy.redshift)
 
 
 class TestGetSpaxel(object):
@@ -136,7 +124,6 @@ class TestGetSpaxel(object):
         assert spaxel.stellar_continuum is not None
         assert spaxel.redcorr is not None
 
-    @pytest.mark.parametrize('data_origin', ['file', 'db', 'api'])
     def test_getspaxel(self, galaxy, data_origin):
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
@@ -149,7 +136,7 @@ class TestGetSpaxel(object):
         spaxel = model_cube.getSpaxel(x=1, y=2)
         self._test_getspaxel(spaxel, galaxy)
 
-    def test_getspaxel_db_only_model(self, galaxy):
+    def test_getspaxel_db_api_model(self, galaxy):
 
         model_cube = ModelCube(plateifu=galaxy.plateifu)
         spaxel = model_cube.getSpaxel(x=1, y=2, properties=False, spectrum=False)
@@ -159,8 +146,11 @@ class TestGetSpaxel(object):
         assert spaxel.maps is None
         assert len(spaxel.properties) == 0
 
-    def test_getspaxel_matches_file_db_remote(self, galaxy, modelcube_file, modelcube_db,
-                                              modelcube_api):
+    def test_getspaxel_matches_file_db_remote(self, galaxy):
+
+        modelcube_file = ModelCube(filename=galaxy.modelpath)
+        modelcube_db = ModelCube(mangaid=galaxy.mangaid)
+        modelcube_api = ModelCube(mangaid=galaxy.mangaid, mode='remote')
 
         assert modelcube_file.data_origin == 'file'
         assert modelcube_db.data_origin == 'db'
