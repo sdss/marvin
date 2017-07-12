@@ -22,15 +22,14 @@ from sdss_access.path import Path
 import yaml
 
 
-# TODO Replace skipTest and skipBrian with skipif
-# TODO use monkeypatch to set initial config variables
-
-
 # PYTEST MODIFIERS
 # -----------------
 def pytest_addoption(parser):
-    """Run slow tests."""
+    """Add new options"""
+    # run slow tests
     parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
+    # control releases run
+    parser.addoption('--release', type=str, default=None, help='Run a certain release only')
 
 
 def pytest_runtest_setup(item):
@@ -41,7 +40,8 @@ def pytest_runtest_setup(item):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+#releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-5']
 
 bintypes = {release: [] for release in releases}
 templates = {release: [] for release in releases}
@@ -60,6 +60,38 @@ modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
 dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
 
+# def pytest_ignore_collect(path, config):
+#     opt = config.getoption('--release')
+#     print('collecting', opt, path, config)
+#     global releases
+#     if opt is None:
+#         releases = releases
+#     elif opt == 'latest':
+#         releases = max([r for r in releases if 'MPL' in r])
+#     elif 'MPL' in opt or 'DR' in opt:
+#         newr = [r for r in releases if r == opt]
+#         releases = releases if not newr else newr
+#     print('new releases', releases)
+
+# @pytest.fixture(scope='session', autouse=True)
+# def releaseopt(request):
+#     ''' Global fixture to select only a certain release to run with the command-line '''
+#     opt = request.config.getoption("--release")
+#     # session = request.node
+#     # for item in session.items:
+#     #     print(item)
+#     global releases
+#     if opt is None:
+#         releases = releases
+#     elif opt == 'latest':
+#         releases = max([r for r in releases if 'MPL' in r])
+#     elif 'MPL' in opt or 'DR' in opt:
+#         newr = [r for r in releases if r == opt]
+#         releases = releases if not newr else newr
+#     print('new releases', releases)
+#     return releases
+
+print('global releaeses', releases)
 
 # Galaxy and Query data is stored in a YAML file
 galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
