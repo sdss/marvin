@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 16:32:17
+# @Last Modified time: 2017-07-12 15:22:03
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -14,6 +14,7 @@ from marvin import config
 from marvin.web import create_app
 from marvin.api.base import arg_validate as av
 from marvin.web.settings import TestConfig, CustomConfig
+from marvin.web.extensions import limiter
 import pytest
 import os
 import six
@@ -55,6 +56,7 @@ import six
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
     app = create_app(debug=True, local=True, object_config=object_config)
+    limiter.enabled = False
     return app
 
 
