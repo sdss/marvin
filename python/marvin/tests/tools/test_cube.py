@@ -47,9 +47,8 @@ class TestCube(object):
         assert galaxy.ra == cube.ra
 
     @pytest.mark.parametrize('plateifu, mode, errmsg',
-                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found'),
-                              ('84.85-1901', 'local', 'Could not retrieve cube for plate-ifu 84.85-1901: Unknown exception')],
-                             ids=['noresults', 'badname'])
+                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found')],
+                             ids=['noresults'])
     def test_cube_from_db_fail(self, plateifu, mode, errmsg):
         with pytest.raises(MarvinError) as cm:
             c = Cube(plateifu=plateifu, mode=mode)

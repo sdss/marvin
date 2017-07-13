@@ -40,8 +40,8 @@ def pytest_runtest_setup(item):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
-#releases = ['MPL-5']
+#releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-5']
 
 bintypes = {release: [] for release in releases}
 templates = {release: [] for release in releases}
@@ -270,7 +270,7 @@ def db(request):
     else:
         config.forceDbOff()
     yield config.db is not None
-    config.forceDbOff()
+    config.forceDbOn()
 
 
 @pytest.fixture()
@@ -380,6 +380,10 @@ class Galaxy(object):
 
     def set_galaxy_data(self, data_origin=None):
         """Set galaxy properties from the configuration file."""
+
+        if self.plateifu not in galaxy_data:
+            return
+
         data = galaxy_data[self.plateifu]
 
         for key in data.keys():
@@ -472,6 +476,7 @@ def galaxy(get_params, plateifu):
     gal.set_galaxy_data()
 
     yield gal
+    gal = None
 
 
 @pytest.fixture()

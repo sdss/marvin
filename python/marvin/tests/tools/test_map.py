@@ -62,7 +62,7 @@ class TestMap(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
 
-    @marvin_test_if(mark='skip', data_origin=['db'])
+    #@marvin_test_if(mark='skip', data_origin=['db'])
     def test_save_and_restore(self, temp_scratch, map_):
 
         fout = temp_scratch.join('test_map.mpf')
