@@ -2,6 +2,7 @@ language: python
 
 cache:
   pip: true
+  timeout: 1000
   directories:
     - $HOME/sas
 
