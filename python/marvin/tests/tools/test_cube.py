@@ -8,7 +8,7 @@ import numpy as np
 from astropy.io import fits
 from astropy import wcs
 
-from marvin import config
+from marvin import config, marvindb
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
@@ -59,19 +59,18 @@ class TestCube(object):
         assert cube.flux is not None
         assert isinstance(cube.flux, np.ndarray)
 
-    def test_cube_remote_drpver_differ_from_global(self, galaxy):
+    @pytest.mark.parametrize('monkeyconfig',
+                             [('release', 'MPL-5')],
+                             ids=['mpl5'], indirect=True)
+    def test_cube_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
 
-        # This tests requires having the cube for 8485-1901 loaded for both
-        # MPL-4 and MPL-5.
-
-        config.setMPL('MPL-5')
         assert config.release == 'MPL-5'
-
         cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
         assert cube._drpver == 'v1_5_1'
         assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
 
     def test_cube_redshift(self, cube, galaxy):
+        assert cube.data_origin == cube.exporigin
         redshift = cube.nsa.redshift if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
@@ -87,17 +86,15 @@ class TestCube(object):
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
-        config.mode = 'auto'
         with pytest.raises(MarvinError) as ee:
-            Cube(filename='hola.fits')
+            Cube(filename='hola.fits', mode='auto')
 
         assert re.match(r'input file .+hola.fits not found', str(ee.value)) is not None
 
     def test_load_filename_remote(self):
         """Tries to load a filename in remote mode and fails."""
-        config.mode = 'remote'
         with pytest.raises(MarvinError) as ee:
-            Cube(filename='hola.fits')
+            Cube(filename='hola.fits', mode='remote')
 
         assert 'filename not allowed in remote mode' in str(ee.value)
 
@@ -229,20 +226,11 @@ class TestGetSpaxel(object):
 
 class TestWCS(object):
 
-    def test_wcs_file(self, galaxy):
-        cube = Cube(filename=galaxy.cubepath)
+    def test_wcs(self, cube):
+        assert cube.data_origin == cube.exporigin
         assert isinstance(cube.wcs, wcs.WCS)
-        assert pytest.approx(cube.wcs.wcs.cd[1, 1], 0.000138889)
-
-    def test_wcs_db(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
-        assert isinstance(cube.wcs, wcs.WCS)
-        assert pytest.approx(cube.wcs.wcs.cd[1, 1], 0.000138889)
-
-    def test_wcs_api(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
-        assert isinstance(cube.wcs, wcs.WCS)
-        assert pytest.approx(cube.wcs.wcs.pc[1, 1], 0.000138889)
+        comp = cube.wcs.wcs.pc if cube.data_origin == 'api' else cube.wcs.wcs.cd
+        assert pytest.approx(comp[1, 1], 0.000138889)
 
 
 class TestPickling(object):

@@ -287,7 +287,7 @@ def exporigin(mode, db):
     elif mode == 'auto' and db:
         return 'db'
     elif mode == 'auto' and not db:
-        return 'api'
+        return 'file'
 
 
 @pytest.fixture()
@@ -488,6 +488,7 @@ def cube(galaxy, exporigin, mode):
         c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
     else:
         c = Cube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    c.exporigin = exporigin
     yield c
     c = None
 
@@ -498,11 +499,12 @@ def modelcube(galaxy, exporigin, mode):
         Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        c = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
+        mc = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
     else:
-        c = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
-    yield c
-    c = None
+        mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    mc.exporigin = exporigin
+    yield mc
+    mc = None
 
 
 @pytest.fixture()
@@ -511,11 +513,12 @@ def maps(galaxy, exporigin, mode):
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        c = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode)
+        m = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode)
     else:
-        c = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
-    yield c
-    c = None
+        m = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+    m.exporigin = exporigin
+    yield m
+    m = None
 
 
 @pytest.fixture()
