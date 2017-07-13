@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-05 16:42:57
+# @Last Modified time: 2017-07-13 16:21:28
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -77,6 +77,7 @@ class DevConfig(Config):
     DEBUG_TB_ENABLED = True
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    RATELIMIT_ENABLED = False
 
 
 class TestConfig(Config):

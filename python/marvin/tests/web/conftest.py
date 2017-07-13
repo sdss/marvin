@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-08 12:27:34
+# @Last Modified time: 2017-07-13 16:41:27
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -42,7 +42,6 @@ def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
-    print('app', app.config['RATELIMIT_ENABLED'], limiter.enabled)
     return app
 
 

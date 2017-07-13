@@ -40,8 +40,8 @@ def pytest_runtest_setup(item):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-#releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
-releases = ['MPL-5']
+releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+#releases = ['MPL-5']
 
 bintypes = {release: [] for release in releases}
 templates = {release: [] for release in releases}

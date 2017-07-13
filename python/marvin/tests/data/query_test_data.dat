@@ -2,7 +2,7 @@
 MPL-4:
     params:
         all:
-            count: 633
+            count: 634
             subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.specindex_nad']
         best:
             count: 41
@@ -38,7 +38,7 @@ MPL-4:
 MPL-5:
     params:
         all:
-            count: 753
+            count: 754
             subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.spx_snr', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
