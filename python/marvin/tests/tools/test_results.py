@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-12 18:18:54
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-07 16:34:30
+# @Last Modified time: 2017-07-14 16:10:14
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, Results
@@ -276,7 +276,6 @@ class TestResultsConvertTool(object):
         assert isinstance(results.objects[0], tool) is True
         if objtype != 'spaxel':
             assert results.mode == results.objects[0].mode
-            assert exporigin == results.objects[0].data_origin
 
     @pytest.mark.parametrize('objtype, error, errmsg',
                              [('modelcube', MarvinError, "ModelCube requires at least dapver='2.0.2'"),
