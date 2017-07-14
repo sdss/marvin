@@ -146,6 +146,7 @@ def set_config():
     """Set config."""
     config.use_sentry = False
     config.add_github_message = False
+    config._traceback = None
 
 
 @pytest.fixture()
@@ -209,6 +210,7 @@ def set_the_config(release):
 
     Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
     config.setRelease(release)
+    config._traceback = None
 
 
 # DB-based FIXTURES

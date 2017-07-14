@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-20 16:36:37
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-23 13:25:57
+# @Last Modified time: 2017-07-14 17:20:17
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
@@ -243,6 +243,9 @@ class TestShowImage(object):
                               ({'path': ['/tmp/image.png', '/tmp/image1.png']}, MarvinError, 'showImage currently only works on a single input at a time')],
                              ids=['badmode', 'noinput', 'badplateifu', 'badfile', 'toomany'])
     def test_failures(self, param, error, errmsg, release):
+        if 'mode' not in param:
+            param.update({'mode': 'auto'})
+
         with pytest.raises(error) as cm:
             image = showImage(release=release, **param)
         assert cm.type == error

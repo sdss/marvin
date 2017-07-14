@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-10 14:36:03
+# @Last Modified time: 2017-07-14 17:13:58
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -60,6 +60,9 @@ class TestQuerySearches(object):
                               ('< 0.1', 'Your boolean expression contained a syntax error')],
                              ids=['nomatch', 'multiple_entries', 'syntax_error'])
     def test_bad_queries(self, expmode, badquery, errmsg):
+        if expmode is None:
+            pytest.skip('cannot use queries in local mode without a db')
+
         with pytest.raises(MarvinError) as cm:
             query = Query(searchfilter=badquery, mode=expmode)
             res = query.run()
