@@ -41,7 +41,7 @@ The Main Sample consists of the Primary, Secondary, and Color-Enhanced Samples, 
     plateifus = data['plateifu'][main_sample]
 
 
-Now we can use the :func:`~marvin.utils.general.general.downloadList` function to download all of the files of type ``cube`` (other valid ``dltypes``: ``map``, ``image``, ``rss``, ``mastar``, ``default``, or ``plate``).
+Now we can use the :func:`~marvin.utils.general.general.downloadList` function to download all of the files of type ``map`` (other valid ``dltypes``: ``map``, ``image``, ``rss``, ``mastar``, ``default``, or ``plate``).
 
 .. code-block:: python
 
