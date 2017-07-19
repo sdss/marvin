@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-07-19 10:07:98
+# @Last modified time: 2017-07-19 10:07:33
 
 import numpy as np
 import matplotlib
@@ -111,12 +111,6 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
-# TODO Replace with top-level maps fixture in test/conftest.py
-# @pytest.fixture(scope='function')
-# def maps(galaxy):
-#     yield Maps(plateifu=galaxy.plateifu)
-
-
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
@@ -203,14 +197,12 @@ class TestMapPlot(object):
     def test_set_hatch_linewidth(self, maps):
         map_ = maps.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
-        # __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
         assert matplotlib.rcParams['hatch.linewidth'] == 0.5
 
     @matplotlib_2
     def test_set_hatch_color(self, maps):
         map_ = maps.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
-        # __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
     @matplotlib_2
