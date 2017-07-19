@@ -79,6 +79,22 @@ Quick Model Fit Plot
 .. image:: ../_static/quick_model_plot.png
 
 
+.. _marvin-plotting-quick-image:
+
+Quick Image Plot
+----------------
+
+.. code-block:: python
+
+    from marvin.utils.general.images import showImage
+    image = showImage(plateifu='8553-12702', show_image=False)
+    fig, ax = plt.subplots()
+    ax.imshow(image)
+    ax.axis('off')
+    
+.. image:: ../_static/image_8553-12702.png
+
+
 .. _marvin-plotting-bpt:
 
 BPT Plot
