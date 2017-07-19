@@ -1,3 +1,8 @@
+# @Author: Brett Andrews <andrews>
+# @Date:   2017-07-19 09:07:00
+# @Last modified by:   andrews
+# @Last modified time: 2017-07-19 09:07:35
+
 #!/usr/bin/env python
 # encoding: utf-8
 #
@@ -341,6 +346,8 @@ def plot(*args, **kwargs):
             Default is ``None``.
         cb_kws (dict):
             Keyword args to set and draw colorbar. Default is ``None``.
+        return_cb (bool):
+            Return colorbar axis. Default it ``False``.
 
     Returns:
         fig, ax (tuple):
@@ -355,7 +362,7 @@ def plot(*args, **kwargs):
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
-                    'use_mask', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws']
+                    'use_mask', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws', 'return_cb']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
@@ -383,6 +390,7 @@ def plot(*args, **kwargs):
     ax = kwargs.get('ax', None)
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
+    return_cb = kwargs.get('return_cb', False)
 
     assert (value is not None) or (dapmap is not None), \
         'Map.plot() requires specifying ``value`` or ``dapmap``.'
@@ -480,4 +488,5 @@ def plot(*args, **kwargs):
     # turn on to preserve zorder when saving to pdf (or other vector based graphics format)
     mpl.rcParams['image.composite_image'] = False
 
-    return fig, ax
+    output = (fig, ax) if not return_cb else (fig, ax, cb)
+    return output
