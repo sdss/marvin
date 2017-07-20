@@ -38,60 +38,67 @@ def pytest_runtest_setup(item):
         pytest.skip('Requires --runslow option to run.')
 
 
+def pytest_configure(config):
+    ''' Runs during configuration of conftest.  Checks and sets a global instance for a
+        SpecificRelease based on the pytest command line input of --release
+    '''
+    opt = config.getoption('--release')
+    global sprelease
+    sprelease = SpecificRelease(opt)
+
+
+# specific release instance
+sprelease = None
+
+
+class SpecificRelease(object):
+    def __init__(self, release):
+        self.chosen_release = release
+        self.set_new_releases()
+
+    def set_new_releases(self):
+        global releases
+        if self.chosen_release is None:
+            pass
+        elif self.chosen_release == 'latest':
+            new = max([r for r in releases if 'MPL' in r])
+        elif 'MPL' in self.chosen_release or 'DR' in self.chosen_release:
+            newr = [r for r in releases if r == self.chosen_release]
+            new = releases if not newr else newr
+        self.new_releases = new
+
+    @pytest.fixture()
+    def skiprelease(self):
+        if releases != self.new_releases:
+            pass
+
 # Global Parameters for FIXTURES
 # ------------------------------
-#releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
-releases = ['MPL-5']
+releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
 
-bintypes = {release: [] for release in releases}
-templates = {release: [] for release in releases}
-for release in releases:
-    __, dapver = config.lookUpVersions(release)
-    bintemps = _get_bintemps(dapver)
-    for bintemp in bintemps:
-        bintype = bintemp.split('-')[0]
-        template = '-'.join(bintemp.split('-')[1:])
-        if bintype not in bintypes[release]:
-            bintypes[release].append(bintype)
-        if template not in templates[release]:
-            templates[release].append(template)
+
+def populate_bintypes_templates(releases):
+    ''' Generates bintype and template dictionaries for each release '''
+    bintypes = {release: [] for release in releases}
+    templates = {release: [] for release in releases}
+    for release in releases:
+        __, dapver = config.lookUpVersions(release)
+        bintemps = _get_bintemps(dapver)
+        for bintemp in bintemps:
+            bintype = bintemp.split('-')[0]
+            template = '-'.join(bintemp.split('-')[1:])
+            if bintype not in bintypes[release]:
+                bintypes[release].append(bintype)
+            if template not in templates[release]:
+                templates[release].append(template)
+    return bintypes, templates
+
+bintypes, templates = populate_bintypes_templates(releases)
 
 modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
 dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
 
-# def pytest_ignore_collect(path, config):
-#     opt = config.getoption('--release')
-#     print('collecting', opt, path, config)
-#     global releases
-#     if opt is None:
-#         releases = releases
-#     elif opt == 'latest':
-#         releases = max([r for r in releases if 'MPL' in r])
-#     elif 'MPL' in opt or 'DR' in opt:
-#         newr = [r for r in releases if r == opt]
-#         releases = releases if not newr else newr
-#     print('new releases', releases)
-
-# @pytest.fixture(scope='session', autouse=True)
-# def releaseopt(request):
-#     ''' Global fixture to select only a certain release to run with the command-line '''
-#     opt = request.config.getoption("--release")
-#     # session = request.node
-#     # for item in session.items:
-#     #     print(item)
-#     global releases
-#     if opt is None:
-#         releases = releases
-#     elif opt == 'latest':
-#         releases = max([r for r in releases if 'MPL' in r])
-#     elif 'MPL' in opt or 'DR' in opt:
-#         newr = [r for r in releases if r == opt]
-#         releases = releases if not newr else newr
-#     print('new releases', releases)
-#     return releases
-
-print('global releaeses', releases)
 
 # Galaxy and Query data is stored in a YAML file
 galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
@@ -118,6 +125,11 @@ def _params_ids(fixture_value):
 @pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
 def get_params(request):
     """Yield a tuple of (release, bintype, template)."""
+
+    # placeholder until the marvin_test_if decorator works in 2.7
+    release, bintype, template = request.param
+    if sprelease and release not in sprelease.new_releases:
+        pytest.skip('Skipping non-requested release')
     return request.param
 
 
