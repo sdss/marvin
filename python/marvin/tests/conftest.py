@@ -59,7 +59,7 @@ class SpecificRelease(object):
     def set_new_releases(self):
         global releases
         if self.chosen_release is None:
-            pass
+            new = releases
         elif self.chosen_release == 'latest':
             new = max([r for r in releases if 'MPL' in r])
         elif 'MPL' in self.chosen_release or 'DR' in self.chosen_release:
