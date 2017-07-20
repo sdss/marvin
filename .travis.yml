@@ -103,7 +103,7 @@ before_script:
 - python -c "from matplotlib import pyplot as plt;"
 
 script:
-- pytest python/marvin/tests --cov python/marvin --cov-report html
+- pytest python/marvin/tests ---release 'latest' -cov python/marvin --cov-report html
 
 after_success:
 - coveralls
