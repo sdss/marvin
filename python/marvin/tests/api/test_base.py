@@ -1,76 +1,60 @@
-#!/usr/bin/env python
+# !usr/bin/env python2
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2017-05-07 15:58:27
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2017-06-26 14:20:20
 
 from __future__ import print_function, division, absolute_import
-import unittest
-from marvin import config
 from marvin.api.base import BaseView
+import pytest
 
 
-class TestBase(unittest.TestCase):
+@pytest.fixture(autouse=True)
+def baseview():
+    baseview = BaseView()
+    yield baseview
 
-    @classmethod
-    def setUpClass(cls):
-        #cls.initconfig = copy.deepcopy(config)
-        cls.init_sasurl = config.sasurl
-        cls.init_mode = config.mode
-        cls.init_urlmap = config.urlmap
-        cls.init_release = config.release
-        config.use_sentry = False
-        config.add_github_message = False
 
-    def setUp(self):
-        # cvars = ['mode', 'drpver', 'dapver', 'mplver']
-        # for var in cvars:
-        #     config.__setattr__(var, self.initconfig.__getattribute__(var))
-        config.sasurl = self.init_sasurl
-        config.mode = self.init_mode
-        config.urlmap = self.init_urlmap
-        config.setMPL('MPL-4')
+class TestBase(object):
 
-    def test_reset_results(self):
-        bv = BaseView()
-        bv.results = {'key1': 'value1'}
-        bv.reset_results()
+    def test_reset_results(self, baseview):
+        baseview.results = {'key1': 'value1'}
+        baseview.reset_results()
         desired = {'data': None, 'status': -1, 'error': None, 'traceback': None}
-        self.assertDictEqual(bv.results, desired)
+        assert baseview.results == desired, 'baseview results should be the same as desired'
 
-    def test_update_results(self):
-        bv = BaseView()
+    def test_update_results(self, baseview):
         new_results = {'key1': 'value1'}
-        bv.update_results(new_results)
+        baseview.update_results(new_results)
         desired = {'data': None, 'status': -1, 'error': None, 'key1': 'value1', 'traceback': None}
-        self.assertDictEqual(bv.results, desired)
+        assert baseview.results == desired, 'baseview results should be the same as desired'
 
-    def test_reset_status(self):
-        bv = BaseView()
-        bv.results['status'] = 42
-        bv.reset_status()
-        self.assertEqual(bv.results['status'], -1)
+    def test_reset_status(self, baseview):
+        baseview.results['status'] = 42
+        baseview.reset_status()
+        assert baseview.results['status'] == -1
 
-    def test_add_config(self):
-        bv = BaseView()
-        bv.add_config()
+    def test_add_config(self, baseview, release, mode):
+        baseview.add_config()
         desired = {'data': None, 'status': -1, 'error': None, 'traceback': None,
-                   'utahconfig': {'release': config.release, 'mode': config.mode}}
-        self.assertDictEqual(bv.results, desired)
+                   'utahconfig': {'release': 'MPL-5', 'mode': 'local'}}
+        assert baseview.results == desired
 
-    def test_after_request_return_response(self):
-        bv = BaseView()
+    def test_after_request_return_response(self, baseview):
         name = 'test_name'
         req = 'test_request'
-        actual = bv.after_request(name, req)
+        actual = baseview.after_request(name, req)
         desired = 'test_request'
-        self.assertEqual(actual, desired)
+        assert actual == desired
 
-    def test_after_request_reset_results(self):
-        bv = BaseView()
+    def test_after_request_reset_results(self, baseview):
         name = 'test_name'
         req = 'test_request'
-        bv.after_request(name, req)
+        baseview.after_request(name, req)
         desired = {'data': None, 'status': -1, 'error': None, 'traceback': None}
-        self.assertDictEqual(bv.results, desired)
+        assert baseview.results == desired
 
-
-if __name__ == '__main__':
-    verbosity = 2
-    unittest.main(verbosity=verbosity)

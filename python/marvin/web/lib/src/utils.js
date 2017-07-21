@@ -2,11 +2,11 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-14 15:54:41
+* @Last Modified time: 2017-05-23 17:36:14
 */
 
 // Javascript code for general things
-
+//jshint esversion: 6
 'use strict';
 
 class Utils {
@@ -30,17 +30,15 @@ class Utils {
 
     // Build a Form
     buildForm(keys) {
-        var args = Array.prototype.slice.call(arguments, 1);
-        var form = {};
-        keys.forEach(function (key, index) {
-            form[key] = args[index];
-        });
+        const args = Array.prototype.slice.call(arguments, 1);
+        const form = {};
+        keys.forEach((key, index)=>{ form[key] = args[index]; });
         return form;
     }
 
     // Serialize a Form
     serializeForm(id) {
-        var form = $(id).serializeArray();
+        const form = $(id).serializeArray();
         return form;
     }
 
@@ -52,7 +50,7 @@ class Utils {
     // Scroll to div
     scrollTo(location) {
         if (location !== undefined) {
-            var scrolldiv = $(location);
+            const scrolldiv = $(location);
             $('html,body').animate({scrollTop:scrolldiv.offset().top},1500, 'easeInOutExpo');
         } else {
             $('html,body').animate({scrollTop:0},1500, 'easeInOutExpo');
@@ -63,68 +61,80 @@ class Utils {
     // Initialize Info Pop-Overs
     initInfoPopOvers() {
         $('.infopop [data-toggle="popover"]').popover();
-    };
+    }
 
     // Initialize tooltips
     initToolTips() {
         $('[data-toggle="tooltip"]').tooltip();
-    };
+    }
+
+    // Select Choices from a Bootstrap-Select element
+    selectChoices(id, choices) {
+      $(id).selectpicker('val', choices);
+      $(id).selectpicker('refresh');
+    }
+
+    // Reset Choices from a Bootstrap-Select element
+    resetChoices(id) {
+      console.log('reseting in utils', id);
+      let select = (typeof id === 'string') ? $(id) : id;
+      select.selectpicker('deselectAll');
+      select.selectpicker('refresh');
+      select.selectpicker('render');
+    }
 
     // Login function
     login() {
-        var form = $('#loginform').serialize();
-        var _this = this;
-
-      $.post(Flask.url_for('index_page.login'), form, 'json')
-          .done(function(data){
+        const form = $('#loginform').serialize();
+        Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json'))
+          .then((data)=>{
               if (data.result.status < 0) {
-                  // bad submit
-                  _this.resetLogin();
-              } else {
-                  // good submit
-                  if (data.result.message !== ''){
-                      var stat = (data.result.status === 0) ? 'danger' : 'success';
-                      var htmlstr = "<div class='alert alert-"+stat+"' role='alert'><h4>" + data.result.message + "</h4></div>";
-                      $('#loginmessage').html(htmlstr);
-                  }
-                  if (data.result.status === 1){
-                      location.reload(true);
-                  }
-
+                throw new Error('Bad status login');
               }
-          })
-          .fail(function(data){
+              if (data.result.message !== ''){
+                  const stat = (data.result.status === 0) ? 'danger' : 'success';
+                  const htmlstr = `<div class='alert alert-${stat}' role='alert'><h4>${data.result.message}</h4></div>`;
+                  $('#loginmessage').html(htmlstr);
+              }
+              if (data.result.status === 1) {
+                location.reload(true);
+              }
+            })
+          .catch((error)=>{
+            this.resetLogin();
             alert('Bad login attempt');
           });
-    };
+
+      }
 
     // Reset Login
     resetLogin() {
+        console.log('reset');
         $('#loginform').trigger('reset');
         $('#loginmessage').empty();
-    };
+    }
 
     // Submit Login on Keyups
     submitLogin(event) {
-        var _this = event.data;
+        const _this = event.data;
         // login
         if(event.keyCode == 13){
             if ($('#login-user').val() && $('#login-pass').val()) {
                 _this.login();
             }
         }
-    };
+    }
 
     // Shows a banner
     marvinBanner(text, expiryDays, cookieName, url, urlText) {
 
-        var _this = this;
-        var expiryDays = (expiryDays === undefined) ? 0 : expiryDays;
-        var cookieName = (cookieName === undefined) ? "marvin_banner_cookie" : cookieName;
-        var url = (url === undefined) ? "" : url;
-        var urlText = (urlText === undefined) ? "Learn more" : urlText;
+        const _this = this;
+        expiryDays = (expiryDays === undefined) ? 0 : expiryDays;
+        cookieName = (cookieName === undefined) ? "marvin_banner_cookie" : cookieName;
+        url = (url === undefined) ? "" : url;
+        urlText = (urlText === undefined) ? "Learn more" : urlText;
 
-        if (urlText == "" || url == "") {
+        if (urlText === "" || url === "") {
             urlText = "";
             url = "";
         }
@@ -150,10 +160,10 @@ class Utils {
               "link": urlText}
         });
 
-        if (expiryDays == 0) {
+        if (expiryDays === 0) {
             document.cookie = cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;domain=localhost';
-        };
+        }
 
-    };
+    }
 
 }

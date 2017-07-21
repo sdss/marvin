@@ -62,6 +62,10 @@ class ModelCubeView(BaseView):
 
     route_base = '/modelcubes/'
 
+    @route('/<name>/', defaults={'bintype': None, 'template_kin': None},
+           methods=['GET', 'POST'], endpoint='getModelCube')
+    @route('/<name>/<bintype>/', defaults={'template_kin': None},
+           methods=['GET', 'POST'], endpoint='getModelCube')
     @route('/<name>/<bintype>/<template_kin>/', methods=['GET', 'POST'], endpoint='getModelCube')
     @av.check_args()
     def get(self, args, name, bintype, template_kin):

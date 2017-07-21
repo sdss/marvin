@@ -21,7 +21,7 @@ import warnings
 import astropy.io.fits
 
 from brain.core.exceptions import BrainError
-
+from collections import OrderedDict
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
@@ -58,6 +58,8 @@ def kwargsGet(kwargs, key, replacement):
 
 breadcrumb = MarvinBreadCrumb()
 
+
+# TODO: probably MarvinToolsClass should be derived from an AbstractClass
 
 class MarvinToolsClass(object):
 
@@ -250,6 +252,17 @@ class MarvinToolsClass(object):
         but changes the extension of the file to ``.mpf``. Returns the path
         of the saved pickle file.
 
+        Parameters:
+            obj:
+                Marvin object to pickle.
+            path (str):
+                Path of saved file. Default is ``None``.
+            overwrite (bool):
+                If ``True``, overwrite existing file. Default is ``False``.
+
+        Returns:
+            str:
+                Path of saved file.
         """
 
         return marvin_pickle.save(self, path=path, overwrite=overwrite)
@@ -353,3 +366,13 @@ class DotableCaseInsensitive(Dotable):
         if key is False:
             raise KeyError('{0} key or attribute not found'.format(value))
         return dict.__getitem__(self, key)
+
+
+class OrderedDefaultDict(OrderedDict):
+    def __init__(self, default_factory=None, *args, **kwargs):
+        OrderedDict.__init__(self, *args, **kwargs)
+        self.default_factory = default_factory
+
+    def __missing__(self, key):
+        result = self[key] = self.default_factory()
+        return result

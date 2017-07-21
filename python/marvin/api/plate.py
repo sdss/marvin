@@ -46,6 +46,50 @@ class PlateView(BaseView):
 
     route_base = '/plates/'
 
+    def index(self):
+        '''Returns general maps info
+
+        .. :quickref: Plate; Get general plate info
+
+        :form release: the release of MaNGA data
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson string data: data message
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/plates/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": "this is a plate!"
+           }
+
+        '''
+        self.results['status'] = 1
+        self.results['data'] = 'this is a plate!'
+        return jsonify(self.results)
+
     @route('/<plateid>/', methods=['GET', 'POST'], endpoint='getPlate')
     @av.check_args()
     def get(self, args, plateid):

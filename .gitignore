@@ -46,6 +46,7 @@ python/marvin/db/logs
 python/marvin/db/sql/logs
 python/marvin/extern/logs
 python/marvin/logs
+python/marvin/tests/.coverage
 python/marvin/tests/api/logs
 python/marvin/tests/db/logs
 python/marvin/tests/logs

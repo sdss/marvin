@@ -56,7 +56,7 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
                      },
-          'index': {'galid': fields.String(allow_none=True, validate=validate.Length(min=4)),
+          'index': {'galid': fields.String(allow_none=True, validate=[validate.Length(min=4), validate.Regexp('^[0-9-]*$')]),
                     'mplselect': fields.String(allow_none=True, validate=validate.Regexp('MPL-[1-9]'))
                     },
           'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Length(min=8, max=11)),

@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-09-09 16:52:45
+* @Last Modified time: 2017-06-04 02:03:56
 */
 
+//jshint esversion: 6
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -46,16 +47,18 @@ var Table = function () {
         key: 'initTable',
         value: function initTable(url, data) {
             this.url = url;
+            var cols = void 0;
 
             // if data
             if (data.columns !== null) {
-                var cols = this.makeColumns(data.columns);
+                cols = this.makeColumns(data.columns);
             }
 
             // init the Bootstrap table
             this.table.bootstrapTable({
                 classes: 'table table-bordered table-condensed table-hover',
                 toggle: 'table',
+                toolbar: '#toolbar',
                 pagination: true,
                 pageSize: 10,
                 pageList: '[10, 20, 50]',
@@ -66,7 +69,6 @@ var Table = function () {
                 totalRows: data.total,
                 columns: cols,
                 url: url,
-                search: true,
                 showColumns: true,
                 showToggle: true,
                 sortName: 'cube.mangaid',
@@ -82,15 +84,30 @@ var Table = function () {
     }, {
         key: 'makeColumns',
         value: function makeColumns(columns) {
+            var _this = this;
+
             var cols = [];
             columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
+                if (name.match('cube.plateifu|cube.mangaid')) {
+                    colmap.formatter = _this.linkformatter;
+                }
                 cols.push(colmap);
             });
             return cols;
+        }
+
+        // Link Formatter
+
+    }, {
+        key: 'linkformatter',
+        value: function linkformatter(value, row, index) {
+            var url = Flask.url_for('galaxy_page.Galaxy:get', { 'galid': value });
+            var link = '<a href=' + url + ' target=\'_blank\'>' + value + '</a>';
+            return link;
         }
 
         // Handle the Bootstrap table JSON response
@@ -99,20 +116,18 @@ var Table = function () {
         key: 'handleResponse',
         value: function handleResponse(results) {
             // load the bootstrap table div
-            //console.log(this.table, this.table===null, this);
             if (this.table === null) {
                 this.setTable();
             }
             this.table = $('#table');
-            //console.log('after', this.table, this.table===null, $('#table'));
             // Get new columns
             var cols = results.columns;
-            var cols = [];
+            cols = [];
             results.columns.forEach(function (name, index) {
                 var colmap = {};
-                colmap['field'] = name;
-                colmap['title'] = name;
-                colmap['sortable'] = true;
+                colmap.field = name;
+                colmap.title = name;
+                colmap.sortable = true;
                 cols.push(colmap);
             });
 

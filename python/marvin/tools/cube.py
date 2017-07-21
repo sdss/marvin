@@ -19,6 +19,7 @@ import marvin.core.exceptions
 import marvin.tools.spaxel
 import marvin.tools.maps
 import marvin.utils.general.general
+from marvin.utils.general import get_nsa_data
 
 from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
@@ -158,7 +159,6 @@ class Cube(MarvinToolsClass):
 
     def _load_cube_from_file(self, data=None):
         """Initialises a cube from a file."""
-
         if data is not None:
             assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
         else:
@@ -186,11 +186,21 @@ class Cube(MarvinToolsClass):
                           MarvinUserWarning)
             self._release = file_ver
 
+            # Reload NSA data from file version of drpall file
+            self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+            self._drpall = marvin.config._getDrpAllPath(file_drpver)
+            self.mangaid = self.header['MANGAID']
+
+            nsa_source = 'drpall' if self.nsa_source == 'auto' else self.nsa_source
+
+            self._nsa = None
+            self._nsa = get_nsa_data(self.mangaid, mode='auto', source=nsa_source,
+                                     drpver=self._drpver, drpall=self._drpall)
+
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
-
         mdb = marvin.marvindb
         plate, ifu = self.plateifu.split('-')
 
@@ -229,7 +239,6 @@ class Cube(MarvinToolsClass):
 
     def _load_cube_from_api(self):
         """Calls the API and retrieves the necessary information to instantiate the cube."""
-
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:

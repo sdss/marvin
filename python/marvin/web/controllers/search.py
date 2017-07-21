@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
+from flask import Blueprint, render_template, session as current_session, request, jsonify, url_for
 from flask_classy import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -19,7 +19,11 @@ from marvin.tools.query import doQuery, Query
 from marvin.tools.query.forms import MarvinForm
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
+from marvin.tools.query.query_utils import query_params, bestparams
 from wtforms import validators, ValidationError
+from marvin.utils.general import getImagesByList
+from marvin.web.web_utils import buildImageDict
+from marvin.web.extensions import limiter
 import random
 
 search = Blueprint("search_page", __name__)
@@ -27,7 +31,7 @@ search = Blueprint("search_page", __name__)
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02 and ifu.name = 19*', 'cube.plate < 8000', 'haflux > 25',
+    samples = ['nsa.z < 0.02', 'cube.plate < 8000', 'haflux > 25',
                'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
     q = random.choice(samples)
     return q
@@ -54,6 +58,7 @@ class Search(BaseWebView):
         self.search['filter'] = None
         self.search['results'] = None
         self.search['errmsg'] = None
+        self.search['returnparams'] = None
         self.mf = MarvinForm()
 
     def before_request(self, *args, **kwargs):
@@ -62,48 +67,32 @@ class Search(BaseWebView):
         self.reset_dict(self.search)
 
     @route('/', methods=['GET', 'POST'])
+    @limiter.limit("60/minute")
     def index(self):
 
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
         self.search['formparams'] = form
 
-        print('search form', form, type(form))
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
-        q = Query(release=self._release)
-        # allparams = q.get_available_params()
-        bestparams = q.get_best_params()
-        searchform.returnparams.choices = [(k.lower(), k) for k in bestparams]
-        searchform.parambox.validators = [all_in(bestparams), validators.Optional()]
+        searchform.returnparams.choices = [(k.lower(), k) for k in query_params.list_params()]
 
-        # Add the forms
+        # Add the forms and parameters
+        self.search['paramdata'] = query_params
+        self.search['guideparams'] = [{'id': p.full, 'optgroup': group.name, 'type': 'double' if p.dtype == 'float' else p.dtype, 'validation': {'step': 'any'}} for group in query_params for p in group]
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
-
-        #from flask import abort
-        #abort(500)
 
         # If form parameters then try to do a search
         if form:
             self.search.update({'results': None, 'errmsg': None})
 
             args = av.manual_parse(self, request, use_params='search')
-            print('search args', args)
-
             # get form parameters
             searchvalue = form['searchbox']  # search filter input
             returnparams = form.getlist('returnparams', type=str)  # dropdown select
-            parambox = form.get('parambox', None, type=str)  # from autocomplete
-            if parambox:
-                parms = parambox.split(',')
-                parms = parms if parms[-1].strip() else parms[:-1]
-                parambox = parms if parambox else None
-            # Select the one that is not none
-            returnparams = returnparams if returnparams and not parambox else \
-                parambox if parambox and not returnparams else \
-                list(set(returnparams) | set(parambox)) if returnparams and parambox else None
-            print('return params', returnparams)
+            self.search.update({'returnparams': returnparams})
             current_session.update({'searchvalue': searchvalue, 'returnparams': returnparams})
 
             # if main form passes validation then do search
@@ -120,7 +109,7 @@ class Search(BaseWebView):
                     if res.count > 0:
                         cols = res.mapColumnsToParams()
                         rows = res.getDictOf(format_type='listdict')
-                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
                     else:
                         output = None
                     self.search['results'] = output
@@ -129,8 +118,7 @@ class Search(BaseWebView):
                         returnparams = [str(r) for r in returnparams]
                     rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
                     qstr = ', returnparams=returnparams' if returnparams else ''
-                    self.search['querystring'] = ("<html><samp>from marvin import \
-                        config<br>from marvin.tools.query import Query<br>config.mode='remote'<br>\
+                    self.search['querystring'] = ("<html><samp>from marvin.tools.query import Query<br>\
                         filter='{0}'<br> {1}\
                         q = Query(searchfilter=filter{2})<br>\
                         r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
@@ -149,14 +137,14 @@ class Search(BaseWebView):
 
         # set the paramdisplay if it is not
         if not paramdisplay:
-            paramdisplay = 'all'
+            paramdisplay = 'best'
 
         # run query and retrieve parameters
         q = Query(release=self._release)
         if paramdisplay == 'all':
-            params = q.get_available_params()
+            params = q.get_available_params('all')
         elif paramdisplay == 'best':
-            params = q.get_best_params()
+            params = bestparams
         output = jsonify(params)
         return output
 
@@ -176,7 +164,8 @@ class Search(BaseWebView):
         __tmp__ = args.pop('searchfilter', None)
         limit = args.get('limit')
         offset = args.get('offset')
-
+        if 'sort' in args:
+            current_session['query_sort'] = args['sort']
 
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
@@ -202,9 +191,60 @@ class Search(BaseWebView):
         cols = res.mapColumnsToParams()
         # create output
         rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols}
+        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
         output = jsonify(output)
         return output
+
+    @route('/postage/', methods=['GET', 'POST'], defaults={'page': 1}, endpoint='postage')
+    @route('/postage/<page>/', methods=['GET', 'POST'], endpoint='postage')
+    def postagestamp(self, page):
+        ''' Get the postage stamps for a set of query results in the web '''
+
+        postage = {}
+        postage['error'] = None
+        postage['images'] = None
+
+        pagesize = 16  # number of rows (images) in a page
+        pagenum = int(page)  # current page number
+        searchvalue = current_session.get('searchvalue', None)
+        if not searchvalue:
+            postage['error'] = 'No query found! Cannot generate images without a query.  Go to the Query Page!'
+            return render_template('postage.html', **postage)
+
+        sort = current_session.get('query_sort', 'cube.mangaid')
+        offset = (pagesize * pagenum) - pagesize
+        q, res = doQuery(searchfilter=searchvalue, release=self._release, sort=sort, limit=10000)
+        plateifus = res.getListOf('plateifu')
+        # if a dap query, grab the unique galaxies
+        if q._isdapquery:
+            plateifus = list(set(plateifus))
+
+        # only grab subset if more than 16 galaxies
+        if len(plateifus) > pagesize:
+            __results__ = res.getSubset(offset, limit=pagesize)
+            plateifus = res.getListOf('plateifu')
+
+        # get images
+        imfiles = None
+        try:
+            imfiles = getImagesByList(plateifus, as_url=True, mode='local', release=self._release)
+        except MarvinError as e:
+            postage['error'] = 'Error: could not get images: {0}'.format(e)
+        else:
+            images = buildImageDict(imfiles)
+
+        # if image grab failed, make placeholders
+        if not imfiles:
+            images = buildImageDict(imfiles, test=True, num=pagesize)
+
+        # Compute page stats
+        totalpages = int(res.totalcount // pagesize) + int(res.totalcount % pagesize != 0)
+        page = {'size': pagesize, 'active': int(page), 'total': totalpages, 'count': res.totalcount}
+
+        postage['page'] = page
+        postage['images'] = images
+        return render_template('postage.html', **postage)
+
 
 Search.register(search)
 

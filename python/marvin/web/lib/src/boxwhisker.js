@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-12-13 09:49:30
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2016-12-13 14:05:15
+* @Last Modified time: 2017-04-01 01:18:52
 */
 
+//jshint esversion: 6
 'use strict';
 
 
@@ -48,7 +49,7 @@ class BoxWhisker {
 
         //Put all of the options into a variable called cfg
         if('undefined' !== typeof options){
-          for(var i in options){
+          for(let i in options){
             if('undefined' !== typeof options[i]){ this.cfg[i] = options[i]; }
           }
         }
@@ -56,8 +57,8 @@ class BoxWhisker {
 
     // Compute the IQR
     iqr(k) {
-      return function(d, i) {
-        var q1 = d.quartiles[0],
+      return function(d, index) {
+        let q1 = d.quartiles[0],
             q3 = d.quartiles[2],
             iqr = (q3 - q1) * k,
             i = -1,
@@ -73,18 +74,18 @@ class BoxWhisker {
     initBoxplot() {
 
         // // Define the div for the tooltip
-        // var tooltip = d3.select(this.tooltip).append("div")
+        // let tooltip = d3.select(this.tooltip).append("div")
         //     .attr("class", "tooltip")
         //     .style("opacity", 0);
 
         // Make the chart
-        var chart = d3.box()
+        let chart = d3.box()
             .whiskers(this.iqr(1.5))
             .width(this.cfg.width)
             .height(this.cfg.height);
 
         // load in the data and create the box plot
-        var svg = d3.select(this.plotid).selectAll("svg")
+        let svg = d3.select(this.plotid).selectAll("svg")
           .data(this.data)
         .enter().append("svg")
           .attr("class", "box")
