@@ -278,6 +278,7 @@ Qualitative Colorbar (New in version 2.1.4)
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
     
+    # divide data into classes
     ha_class = np.ones(ha.shape, dtype=int)
     ha_class[np.where(ha.value > 5)] = 2
     ha_class[np.where(ha.value > 20)] = 3
