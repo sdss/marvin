@@ -262,9 +262,9 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
 .. image:: ../_static/niiha_bpt_mask.png
 
 
-.. _marvin-plotting-categorical-colorbar:
+.. _marvin-plotting-qualitative-colorbar:
 
-Categorical Colorbar (New in version 2.1.4)
+Qualitative Colorbar (New in version 2.1.4)
 -------------------------------------------
 
 .. code-block:: python
@@ -275,35 +275,20 @@ Categorical Colorbar (New in version 2.1.4)
     from marvin.tools.maps import Maps
     import marvin.utils.plot.map as mapplot
 
-    #
-    #
-    # TODO RE-RUN WITH BETTER INTERNET CONNECTION AND SAVEFIG
-    #
-    #
-    maps = Maps(plateifu='8553-12702', mode='remote')
-    # maps = Maps(plateifu='8485-1901')
-    masks, __ = maps.get_bpt(show_plot=False)
+    maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
+    
+    ha_class = np.ones(ha.shape, dtype=int)
+    ha_class[np.where(ha.value > 5)] = 2
+    ha_class[np.where(ha.value > 20)] = 3
 
-    bpt_classes = [k for k in masks.keys() if k not in ['agn', 'invalid']]
-
-    bpt_class = np.zeros(maps.shape, dtype=int)
-    for ii, class_ in enumerate(bpt_classes):
-        # print(class_, np.where(masks[class_]['global'])[0].shape)
-        bpt_class[masks[class_]['global']] = ii + 1
-
-    nocov = ha.mask & 2**0
-    invalid = masks['invalid']['global'] * 2**30
-    mask = nocov | invalid
-
-    cmap = ListedColormap(['red', 'blue', 'goldenrod', 'green', 'magenta'])
-    fig, ax, cb = mapplot.plot(value=bpt_class, cmap=cmap, mask=mask, cbrange=(0.5, 5.5),
+    cmap = ListedColormap(['#104e8b', '#5783ad', '#9fb8d0'])
+    fig, ax, cb = mapplot.plot(value=ha_class, cmap=cmap, mask=ha.mask, cbrange=(0.5, 3.5),
                                return_cb=True)
-    cb.set_ticks([1, 2, 3, 4, 5])
-    cb.set_ticklabels(bpt_classes)
-    cb.ax.tick_params(labelsize=10)
+    cb.set_ticks([1, 2, 3])
+    cb.set_ticklabels(['I', 'II', 'III'])
 
-.. .. image:: ../_static/categorical_cb.png
+.. image:: ../_static/qualitative_cb.png
 
 
 .. _marvin-plotting-custom-mask:
