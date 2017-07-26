@@ -25,6 +25,14 @@ jinjablue = flask.Blueprint('jinja_filters', __name__)
 
 @jinja2.contextfilter
 @jinjablue.app_template_filter()
+def make_token(context, value, group):
+    ''' Make a keyword string for query parameter dropdown live search '''
+    tokstring = ', '.join([group, value._joinedname])
+    return tokstring
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
 def filtergaltype(context, value):
     ''' Parse plateifu or mangaid into better form '''
     if value == 'plateifu':

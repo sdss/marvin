@@ -2,6 +2,10 @@
 {% set active_page = active_page|default("search") %}
 {% from 'macros.html' import infopopup %}
 
+{% block csshead %}
+    <link rel='preconnect stylesheet' href='https://unpkg.com/jQuery-QueryBuilder@2.4.3/dist/css/query-builder.dark.min.css'>
+{% endblock csshead %}
+
 {% block body %}
     <!-- Natural Language Search Box -->
     {# Search Box #}
@@ -10,24 +14,43 @@
 
             <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
               <div class='row'>
-                <div class='col-md-2'>
+                {# Return Paramter dropdown select #}
+                <div class='col-md-2 col-md-offset-1'>
                     <div class='form-group'>
-                        <div>{{searchform.returnparams.label}}: {{searchform.returnparams(class_='form-control selectpicker multiple')}}</div>
+                        <label><a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query-params.html'>Return Parameters:</a></label>
+                        <select class="selectpicker form-control" id='returnparams' name='returnparams' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5'>
+                            {% for group in paramdata %}
+                                <optgroup label='{{group.name}}'>
+                                    {% for param in paramdata[group.name] %}
+                                        <option data-subtext='{{param.full}}' {{'selected' if returnparams and param.full in returnparams}} data-tokens='{{param|make_token(group.name)}}' id='{{param.full}}' name='{{param.name}}' value='{{param.full}}'>{{param.display}}</option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <div class='col-md-2'>
-                    <div class='form-group'>
-                        <div id='searchtype'>{{searchform.parambox.label}}: {{searchform.parambox(class_='form-control typeahead', autocomplete='off')}}</div>
-                    </div>
-                </div>
-
-                <div class='col-md-6'>
+                {# Input Search Filter Box #}
+                <div class='col-md-4'>
                   <div class='form-group'>
-                    <div>{{searchform.searchbox.label}}: {{searchform.searchbox(class_='form-control', placeholder=placeholder)}}</div>
+                    {{searchform.searchbox.label}}
+                    <div class="input-group">
+                      {{searchform.searchbox(class_='form-control', placeholder=placeholder)}}
+                      <span class="input-group-btn">
+                        {{searchform.submitsearch(class_='form-control btn btn-default')}}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div>{{searchform.submit(class_='form-control hide')}}</div>
+
+                {# Guided Query Builder button for Modal #}
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <label>Need help? Try this...</label>
+                        <button type="button" class="btn btn-primary form-control" data-toggle="modal" data-target="#guideqb">Guided Query Builder</button>
+                    </div>
+                </div>
+
               </div>
             </form>
         </div>
@@ -72,6 +95,7 @@
                 <!-- Table -->
                 {# Table #}
                 <div class='table-responsive' id='searchtablediv'>
+                    <div id='toolbar'><a class='btn btn-sm btn-default' type='button' target='_blank' href="{{url_for('search_page.postage', page=1)}}">View Galaxies</a></div>
                     <table id='searchtable'></table>
                 </div>
             {% else %}
@@ -95,23 +119,49 @@
         {% endif %}
     {% endif %}
 
+    {# Guided Search Modal Window #}
+    <div class="modal fade" id="guideqb" data-backdrop="false" tabindex="0" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header well">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Guided Query Builder <a target='_blank' href='http://querybuilder.js.org/demo.html'>(demo)</a> <small>drag me</small></h4>
+          </div>
+          <div class="modal-body well">
+            <div id='builder'></div>
+          </div>
+          <div class="modal-footer well">
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='get-sql'>Generate SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='reset-sql'>Reset SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='run-sql'>Run Query</button>
+            <div id='sqlalert'></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
 {% endblock body %}
 
 <!-- JS Code -->
 {% block code %}
-<script type='text/javascript'>
+<script rel='preconnect' src='https://unpkg.com/jQuery-QueryBuilder@2.4.3/dist/js/query-builder.standalone.min.js'></script>
+<script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script type='application/javascript'>
     $(function() {
         m.table = new Table($('#searchtable'));
         m.table.print();
         // Set up query typeahead
         m.search = new Search();
-        m.search.initTypeahead('#searchform .typeahead', '#searchform');
+        // m.search.initTypeahead('#searchform .typeahead', '#searchform');
         // Load Search Results if any
         var res = {{results|tojson}};
         var url = Flask.url_for('search_page.webtable')
         if (res) {
             m.table.initTable(url, res);
         };
+        // init the query builder
+        let gpars = {{guideparams|tojson}};
+        m.search.setupQB(gpars);
     });
 </script>
 {% endblock code %}

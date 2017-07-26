@@ -3,7 +3,10 @@
 #
 # test_maps.py
 #
-# Created by Brett Andrews on 1 May 2017.
+# @Author: Brett Andrews <andrews>
+# @Date:   2017-05-01 09:07:00
+# @Last modified by:   andrews
+# @Last modified time: 2017-07-19 10:07:33
 
 import numpy as np
 import matplotlib
@@ -108,16 +111,11 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
-@pytest.fixture(scope='module')
-def maps(galaxy):
-    yield Maps(plateifu=galaxy.plateifu)
-
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
     params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
     return params['bitmasks']
-
 
 
 class TestMasks(object):
@@ -196,13 +194,15 @@ class TestMapPlot(object):
         assert np.all(extent == expected)
 
     @matplotlib_2
-    def test_set_hatch_linewidth(self):
-        __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
+    def test_set_hatch_linewidth(self, maps):
+        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.linewidth'] == 0.5
 
     @matplotlib_2
-    def test_set_hatch_color(self):
-        __ = mapplot.set_patch_style([0, 1, 0, 1], facecolor='#A8A8A8')
+    def test_set_hatch_color(self, maps):
+        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
     @matplotlib_2
@@ -243,9 +243,9 @@ class TestMapPlot(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
-    @pytest.mark.parametrize('mask', [None, mask_simple, mask_binary, mask_daplike])
-    @pytest.mark.parametrize('ivar', [None, ivar])
-    @pytest.mark.parametrize('value', [value])
+    @pytest.mark.parametrize('mask', [(None), (mask_simple), (mask_binary), (mask_daplike)])
+    @pytest.mark.parametrize('ivar', [(None), (ivar)])
+    @pytest.mark.parametrize('value', [(value)])
     def test_plot_user_defined_map(self, value, ivar, mask):
         fig, ax = mapplot.plot(value=value, ivar=ivar, mask=mask)
         assert isinstance(fig, matplotlib.figure.Figure)
@@ -271,4 +271,9 @@ class TestMapPlot(object):
                               ('stellar_sigma', 'sigma')])
     def test_get_prop(self, title, expected):
         assert mapplot._get_prop(title) == expected
-        
+    
+    def test_return_cb(self, maps):
+        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)
+        assert isinstance(cb, matplotlib.colorbar.Colorbar)
+

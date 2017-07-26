@@ -4,163 +4,124 @@
 # Licensed under a 3-clause BSD license.
 #
 # @Author: Brian Cherinka
-# @Date:   2017-03-15 10:00:32
+# @Date:   2017-05-07 14:58:52
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-15 16:14:36
+# @Last Modified time: 2017-07-06 11:35:21
 
 from __future__ import print_function, division, absolute_import
-from marvin.tests.api import MarvinAPITester
-import unittest
+from marvin.tests.api.conftest import ApiPage
+import pytest
 
 
-class TestMapsView(MarvinAPITester):
+@pytest.mark.parametrize('page', [('api', 'MapsView:index')], ids=['maps'], indirect=True)
+class TestMapsView(object):
 
-    def test_get_map_success(self):
-        url = self.get_url('MapsView:index')
-        self._load_page('get', url, params={'release': 'MPL-5'})
+    def test_get_map_success(self, page, params):
+        page.load_page('get', page.url, params=params)
         data = 'this is a maps'
-        self._assert_success(data)
+        page.assert_success(data)
 
 
-class TestGetMaps(TestMapsView):
+@pytest.mark.parametrize('page', [('api', 'getMaps')], ids=['getMaps'], indirect=True)
+class TestGetMaps(object):
 
-    def test_get_map_no_release(self):
-        errmsg = 'Missing data for required field.'
-        url = self.get_url('getMaps')
-        self._route_no_valid_params(url, 'release', errmsg=errmsg)
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    def test_maps_success(self, galaxy, page, params, reqtype):
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
+        data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
+                'template_kin': galaxy.template, 'shape': galaxy.shape}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
 
-    def test_post_map_no_release(self):
-        errmsg = 'Missing data for required field.'
-        url = self.get_url('getMaps')
-        self._route_no_valid_params(url, 'release', 'post', errmsg=errmsg)
-
-    def test_post_map_bad_name(self):
-        errmsg = 'String does not match expected pattern.'
-        url = self.get_url('getMaps').format(name='badname', bintype=None, template_kin=None)
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_short_name(self):
-        errmsg = 'Shorter than minimum length 4.'
-        url = self.get_url('getMaps').format(name='84', bintype=None, template_kin=None)
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_invalid_bintype(self):
-        errmsg = 'Not a valid choice.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype='SPVOR', template_kin='GAU-MILESHC')
-        self._route_no_valid_params(url, 'bintype', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_invalid_template_kin(self):
-        errmsg = 'Not a valid choice.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype='SPX', template_kin='MILESHC')
-        self._route_no_valid_params(url, 'template_kin', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_wrong_mpl_bintype(self):
-        errmsg = 'Not a valid choice.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype='STON', template_kin='GAU-MILESHC')
-        self._route_no_valid_params(url, 'bintype', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_wrong_mpl_template_kin(self):
-        errmsg = 'Not a valid choice.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype='SPX', template_kin='MILES-THIN')
-        self._route_no_valid_params(url, 'template_kin', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_no_bintype(self):
-        errmsg = 'Field may not be null.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype=None, template_kin=None)
-        url = url.replace('None/', '')
-        self._route_no_valid_params(url, 'bintype', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_no_template_kin(self):
-        errmsg = 'Field may not be null.'
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype='SPX', template_kin=None)
-        url = url.replace('None/', '')
-        self._route_no_valid_params(url, 'template_kin', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def _map_success(self, reqtype):
-        url = self.get_url('getMaps').format(name=self.plateifu, bintype=self.defaultbin, template_kin=self.defaulttemp)
-        data = {'plateifu': self.plateifu, 'mangaid': self.mangaid, 'bintype': self.defaultbin, 'template_kin': self.defaulttemp,
-                'shape': [34, 34]}
-        print('the url', url)
-        self._load_page(reqtype, url, params={'release': 'MPL-5'})
-        self._assert_success(data)
-
-    def test_get_map_success(self):
-        self._map_success('get')
-
-    def test_post_map_success(self):
-        self._map_success('post')
+    @pytest.mark.parametrize('name, missing, errmsg, bintype, template',
+                             [(None, 'release', 'Missing data for required field.', None, None),
+                              ('badname', 'name', 'String does not match expected pattern.', None, None),
+                              ('84', 'name', 'Shorter than minimum length 4.', None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC'),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC'),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES'),
+                              ('8485-1901', 'bintype', 'Field may not be null.', None, None),
+                              ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
+                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
+                                  'wrongmplbintype', 'wrongmpltemplate', 'nobintype', 'notemplate'])
+    def test_maps_failures(self, galaxy, page, params, name, missing, errmsg, bintype, template):
+        params.update({'name': name, 'bintype': bintype, 'template_kin': template})
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
+        else:
+            url = page.url.format(**params)
+            url = url.replace('None/', '') if missing in ['bintype', 'template_kin'] else url
+            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 
 
-class TestGetSingleMap(TestMapsView):
+@pytest.mark.parametrize('page', [('api', 'getmap')], ids=['getmap'], indirect=True)
+class TestGetSingleMap(object):
 
-    def test_post_map_no_release(self):
-        errmsg = 'Missing data for required field.'
-        url = self.get_url('getmap')
-        self._route_no_valid_params(url, 'release', 'post', errmsg=errmsg)
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('prop, channel', [('emline_gflux', 'ha_6564'), ('stellar_vel', None)])
+    def test_map_success(self, galaxy, page, params, reqtype, prop, channel):
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
+                       'template_kin': galaxy.template, 'property_name': prop, 'channel': channel})
+        data = {'header': '', 'unit': '', 'value': '', 'mask': '', 'ivar': ''}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data, keys=True)
 
-    def test_post_map_bad_name(self):
-        errmsg = 'String does not match expected pattern.'
-        params = {'name': 'badname', 'bintype': None, 'template_kin': None, 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
+    @pytest.mark.parametrize('name, missing, errmsg, bintype, template, propname, channel',
+                             [(None, 'release', 'Missing data for required field.', None, None, None, None),
+                              ('badname', 'name', 'String does not match expected pattern.', None, None, None, None),
+                              ('84', 'name', 'Shorter than minimum length 4.', None, None, None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None, None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC', None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC', None, None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES', None, None),
+                              ('8485-1901', 'property_name', 'Not a valid choice.', 'SPX', 'GAU-MILESHC', 'emline', None),
+                              ('8485-1901', 'channel', 'Field may not be null.', 'SPX', 'GAU-MILESHC', 'emline_gflux', None)],
+                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
+                                  'wrongmplbintype', 'wrongmpltemplate', 'invalidproperty', 'nochannel'])
+    def test_map_failures(self, galaxy, page, params, name, missing, errmsg,
+                          bintype, template, propname, channel):
+        params.update({'name': name, 'bintype': bintype, 'template_kin': template,
+                       'property_name': propname, 'channel': channel})
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
+        else:
+            url = page.url.format(**params)
+            url = url.replace('None/', '') if missing == 'channel' else url
+            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 
-    def test_post_map_short_name(self):
-        errmsg = 'Shorter than minimum length 4.'
-        params = {'name': '84', 'bintype': None, 'template_kin': None, 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
 
-    def test_post_map_invalid_bintype(self):
-        errmsg = 'Not a valid choice.'
-        params = {'name': self.plateifu, 'bintype': 'SPVOR', 'template_kin': 'GAU-MILESHC', 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'bintype', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
+@pytest.mark.parametrize('page', [('api', 'getbinspaxels')], ids=['getbinspaxels'], indirect=True)
+class TestGetBinSpaxels(object):
 
-    def test_post_map_invalid_template_kin(self):
-        errmsg = 'Not a valid choice.'
-        params = {'name': self.plateifu, 'bintype': 'SPX', 'template_kin': 'MILESHC', 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'template_kin', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('binid', [(100)])
+    def test_binspax_success(self, galaxy, page, params, reqtype, binid):
 
-    def test_post_map_wrong_mpl_bintype(self):
-        errmsg = 'Not a valid choice.'
-        params = {'name': self.plateifu, 'bintype': 'STON', 'template_kin': 'GAU-MILESHC', 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'bintype', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype,
+                       'template_kin': galaxy.template, 'binid': binid})
+        data = {'spaxels': galaxy.bins[binid][galaxy.bintemp]}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
 
-    def test_post_map_wrong_mpl_template_kin(self):
-        errmsg = 'Not a valid choice.'
-        params = {'name': self.plateifu, 'bintype': 'SPX', 'template_kin': 'MILES-THIN', 'property_name': None, 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        self._route_no_valid_params(url, 'template_kin', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_invalid_property(self):
-        errmsg = 'Not a valid choice.'
-        params = {'name': self.plateifu, 'bintype': 'SPX', 'template_kin': 'GAU-MILESHC', 'property_name': 'emline', 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        url = url.replace('None/', '')
-        self._route_no_valid_params(url, 'property_name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_map_no_channel(self):
-        errmsg = 'Field may not be null.'
-        params = {'name': self.plateifu, 'bintype': 'SPX', 'template_kin': 'GAU-MILESHC', 'property_name': 'emline_gflux', 'channel': None}
-        url = self.get_url('getmap').format(**params)
-        url = url.replace('None/', '')
-        self._route_no_valid_params(url, 'channel', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def _map_success(self, reqtype, prop, channel):
-        params = {'name': self.plateifu, 'bintype': self.defaultbin, 'template_kin': self.defaulttemp, 'property_name': prop, 'channel': channel}
-        url = self.get_url('getmap').format(**params)
-        data = ['header', 'unit', 'value', 'mask', 'ivar']
-        self._load_page(reqtype, url, params={'release': 'MPL-5'})
-        self._assert_success(data, keys=True)
-
-    def test_get_map_success(self):
-        self._map_success('get', 'emline_sew', 'ha_6564')
-
-    def test_post_map_success_emlinesew(self):
-        self._map_success('post', 'emline_sew', 'ha_6564')
-
-    def test_post_map_success_stvel(self):
-        self._map_success('post', 'stellar_vel', None)
+    @pytest.mark.parametrize('name, missing, errmsg, bintype, template, binid',
+                             [(None, 'release', 'Missing data for required field.', None, None, None),
+                              ('badname', 'name', 'String does not match expected pattern.', None, None, None),
+                              ('84', 'name', 'Shorter than minimum length 4.', None, None, None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC', None),
+                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC', None),
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES', None),
+                              ('8485-1901', 'binid', 'Must be between -1 and 5800.', 'SPX', 'GAU-MILESHC', 7000),
+                              ('8485-1901', 'binid', 'Not a valid integer.', 'SPX', 'GAU-MILESHC', None)],
+                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
+                                  'wrongmplbintype', 'wrongmpltemplate', 'badbinid', 'nobinid'])
+    def test_binspax_failures(self, galaxy, page, params, name, missing, errmsg,
+                              bintype, template, binid):
+        params.update({'name': name, 'bintype': bintype, 'template_kin': template, 'binid': binid})
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
+        else:
+            url = page.url.format(**params)
+            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
 

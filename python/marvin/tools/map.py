@@ -255,7 +255,7 @@ class Map(object):
         """Restores a Map object from a pickled file.
 
         If ``delete=True``, the pickled file will be removed after it has been
-        unplickled. Note that, for map objes instantiated from a Maps object
+        unplickled. Note that, for map objects instantiated from a Maps object
         with ``data_origin='file'``, the original file must exists and be
         in the same path as when the object was first created.
 

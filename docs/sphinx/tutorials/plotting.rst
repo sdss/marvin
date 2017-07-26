@@ -229,6 +229,7 @@ Plot H\ :math:`\alpha` Map of Star-forming Spaxels
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
+    
     ha.plot(mask=mask)
 
 .. image:: ../_static/map_bpt_mask.png
@@ -260,5 +261,75 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
 
 .. image:: ../_static/niiha_bpt_mask.png
 
+
+.. _marvin-plotting-categorical-colorbar:
+
+Categorical Colorbar (New in version 2.1.4)
+-------------------------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from matplotlib import pyplot as plt
+    from matplotlib.colors import ListedColormap
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+
+    #
+    #
+    # TODO RE-RUN WITH BETTER INTERNET CONNECTION AND SAVEFIG
+    #
+    #
+    maps = Maps(plateifu='8553-12702', mode='remote')
+    # maps = Maps(plateifu='8485-1901')
+    masks, __ = maps.get_bpt(show_plot=False)
+    ha = maps['emline_gflux_ha_6564']
+
+    bpt_classes = [k for k in masks.keys() if k not in ['agn', 'invalid']]
+
+    bpt_class = np.zeros(maps.shape, dtype=int)
+    for ii, class_ in enumerate(bpt_classes):
+        # print(class_, np.where(masks[class_]['global'])[0].shape)
+        bpt_class[masks[class_]['global']] = ii + 1
+
+    nocov = ha.mask & 2**0
+    invalid = masks['invalid']['global'] * 2**30
+    mask = nocov | invalid
+
+    cmap = ListedColormap(['red', 'blue', 'goldenrod', 'green', 'magenta'])
+    fig, ax, cb = mapplot.plot(value=bpt_class, cmap=cmap, mask=mask, cbrange=(0.5, 5.5),
+                               return_cb=True)
+    cb.set_ticks([1, 2, 3, 4, 5])
+    cb.set_ticklabels(bpt_classes)
+    cb.ax.tick_params(labelsize=10)
+
+.. .. image:: ../_static/categorical_cb.png
+
+
+.. _marvin-plotting-custom-mask:
+
+Custom Values and Custom Mask
+-----------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    # Mask spaxels without IFU coverage
+    nocov = ha.mask & 2**0
+
+    # Mask spaxels with low Halpha flux (need to assign bit 30)
+    low_ha = (ha.value < 6) * 2**30
+    
+    # Combine masks using bitwise OR (`|`)
+    mask = nocov | low_ha
+
+    fig, ax = mapplot.plot(value=ha.value, mask=mask)
+
+.. image:: ../_static/custom_mask.png
 
 |

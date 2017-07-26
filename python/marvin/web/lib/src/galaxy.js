@@ -3,7 +3,7 @@
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
 <<<<<<< HEAD
-* @Last Modified time: 2017-02-21 16:26:48
+* @Last Modified time: 2017-04-09 08:58:10
 =======
 * @Last Modified time: 2016-09-26 17:40:15
 >>>>>>> upstream/marvin_refactor
@@ -12,8 +12,26 @@
 //
 // Javascript Galaxy object handling JS things for a single galaxy
 //
-
+//jshint esversion: 6
 'use strict';
+
+class SpaxelError extends Error {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'SpaxelError';
+    this.status = -1;
+  }
+}
+
+class MapError extends Error {
+  constructor(message) {
+    super(message);
+    this.message = message;
+    this.name = 'MapError';
+    this.status = -1;
+  }
+}
 
 class Galaxy {
 
@@ -105,7 +123,7 @@ class Galaxy {
 
     // Initialize and Load a DyGraph spectrum
     loadSpaxel(spaxel, title) {
-        var labels = (spaxel[0].length == 3) ? ['Wavelength','Flux', 'Model Fit'] : ['Wavelength','Flux'];
+        let labels = (spaxel[0].length == 3) ? ['Wavelength','Flux', 'Model Fit'] : ['Wavelength','Flux'];
         this.webspec = new Dygraph(this.graphdiv[0],
                   spaxel,
                   {
@@ -123,7 +141,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.specmsg.show();
         }
-        var newmsg = '<strong>'+specmsg+'</strong>';
+        let newmsg = `<strong>${specmsg}</strong>`;
         this.specmsg.empty();
         this.specmsg.html(newmsg);
     }
@@ -144,11 +162,11 @@ class Galaxy {
 
     initHeatmap(maps) {
         console.log('initHeatmap', this.mapsdiv);
-        var mapchildren = this.mapsdiv.children('div');
+        let mapchildren = this.mapsdiv.children('div');
         console.log('mapchildren', mapchildren);
-        var _this = this;
+        let _this = this;
         $.each(mapchildren, function(index, child) {
-            var mapdiv = $(child).find('div').first();
+            let mapdiv = $(child).find('div').first();
             mapdiv.empty();
             if (maps[index] !== undefined && maps[index].data !== null) {
                 this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg,
@@ -158,29 +176,33 @@ class Galaxy {
         });
     }
 
+    // Make Promise error message
+    makeError(name) {
+        return `Unknown Error: the ${name} javascript Ajax request failed!`;
+    }
+
     // Retrieves a new Spaxel from the server based on a given mouse position or xy spaxel coord.
     getSpaxel(event) {
-        var mousecoords = (event.coordinate === undefined) ? null : event.coordinate;
-        var divid = $(event.target).parents('div').first().attr('id');
-        var maptype = (divid !== undefined && divid.search('highcharts') !== -1) ? 'heatmap' : 'optical';
-        var x = (event.point === undefined) ? null : event.point.x;
-        var y = (event.point === undefined) ? null : event.point.y;
-        var keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
-        var form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth,
+        let mousecoords = (event.coordinate === undefined) ? null : event.coordinate;
+        let divid = $(event.target).parents('div').first().attr('id');
+        let maptype = (divid !== undefined && divid.search('highcharts') !== -1) ? 'heatmap' : 'optical';
+        let x = (event.point === undefined) ? null : event.point.x;
+        let y = (event.point === undefined) ? null : event.point.y;
+        let keys = ['plateifu', 'image', 'imwidth', 'imheight', 'mousecoords', 'type', 'x', 'y'];
+        let form = m.utils.buildForm(keys, this.plateifu, this.image, this.olmap.imwidth,
             this.olmap.imheight, mousecoords, maptype, x, y);
-        var _this = this;
 
         // send the form data
-        $.post(Flask.url_for('galaxy_page.getspaxel'), form,'json')
-            .done(function(data) {
-                if (data.result.status !== -1) {
-                    _this.updateSpaxel(data.result.spectra, data.result.specmsg);
-                } else {
-                    _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+        Promise.resolve($.post(Flask.url_for('galaxy_page.getspaxel'), form,'json'))
+            .then((data)=>{
+                if (data.result.status === -1) {
+                    throw new SpaxelError(`Error: ${data.result.specmsg}`);
                 }
+                this.updateSpaxel(data.result.spectra, data.result.specmsg);
             })
-            .fail(function(data) {
-                _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.status);
+            .catch((error)=>{
+                let errmsg = (error.message === undefined) ? this.makeError('getSpaxel') : error.message;
+                this.updateSpecMsg(errmsg, -1);
             });
     }
 
@@ -214,14 +236,14 @@ class Galaxy {
     }
 
     testTogg(event) {
-        var _this = event.data;
+        let _this = event.data;
         console.log('toggling', _this.togglediv.prop('checked'), _this.togglediv.hasClass('active'));
     }
 
     // Initialize the Dynamic Galaxy Interaction upon toggle - makes loading an AJAX request
     initDynamic(event) {
 
-        var _this = event.data;
+        let _this = event.data;
 
         if (!_this.togglediv.prop('checked')){
             // Turning Off
@@ -231,25 +253,24 @@ class Galaxy {
             _this.toggleOn();
 
             // check for empty divs
-            var specempty = _this.graphdiv.is(':empty');
-            var imageempty = _this.imagediv.is(':empty');
-            var mapempty = _this.mapdiv.is(':empty');
+            let specempty = _this.graphdiv.is(':empty');
+            let imageempty = _this.imagediv.is(':empty');
+            let mapempty = _this.mapdiv.is(':empty');
 
             // send the request if the dynamic divs are empty
             if (imageempty) {
                 // make the form
-                var keys = ['plateifu', 'toggleon'];
-                var form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
+                let keys = ['plateifu', 'toggleon'];
+                let form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
                 _this.toggleload.show();
 
                 $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')
                     .done(function(data) {
-
-                        var image = data.result.image;
-                        var spaxel = data.result.spectra;
-                        var spectitle = data.result.specmsg;
-                        var maps = data.result.maps;
-                        var mapmsg = data.result.mapmsg;
+                        let image = data.result.image;
+                        let spaxel = data.result.spectra;
+                        let spectitle = data.result.specmsg;
+                        let maps = data.result.maps;
+                        let mapmsg = data.result.mapmsg;
 
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
@@ -259,64 +280,22 @@ class Galaxy {
                         if (data.result.specstatus !== -1) {
                             _this.loadSpaxel(spaxel, spectitle);
                         } else {
-                            _this.updateSpecMsg('Error: '+spectitle, data.result.specstatus);
+                            _this.updateSpecMsg(`Error: ${spectitle}`, data.result.specstatus);
                         }
 
                         // Try to load the Maps
                         if (data.result.mapstatus !== -1) {
                             _this.initHeatmap(maps);
                         } else {
-                            _this.updateMapMsg('Error: '+mapmsg, data.result.mapstatus);
+                            _this.updateMapMsg(`Error: ${mapmsg}`, data.result.mapstatus);
                         }
 
                     })
                     .fail(function(data) {
-                        _this.updateSpecMsg('Error: '+data.result.specmsg, data.result.specstatus);
-                        _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.mapstatus);
+                        _this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.specstatus);
+                        _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.mapstatus);
                         _this.toggleload.hide();
                     });
-            }
-        }
-    }
-
-    // Toggle the interactive OpenLayers map and Dygraph spectra
-    // DEPRECATED - REMOVE
-    toggleInteract(image, maps, spaxel, spectitle, mapmsg) {
-        if (this.togglediv.hasClass('active')){
-            // Turning Off
-            this.toggleon = false;
-            this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-            this.togglediv.button('reset');
-            this.dynamicdiv.hide();
-            this.staticdiv.show();
-        } else {
-            // Turning On
-            this.toggleon = true;
-            this.togglediv.toggleClass('btn-danger').toggleClass('btn-success');
-            this.togglediv.button('complete');
-            this.staticdiv.hide();
-            this.dynamicdiv.show();
-
-            // check for empty divs
-            var specempty = this.graphdiv.is(':empty');
-            var imageempty = this.imagediv.is(':empty');
-            var mapempty = this.mapdiv.is(':empty');
-            // load the spaxel if the div is initially empty;
-            if (this.graphdiv !== undefined && specempty) {
-                this.loadSpaxel(spaxel, spectitle);
-            }
-            // load the image if div is empty
-            if (imageempty) {
-                this.initOpenLayers(image);
-            }
-            // load the map if div is empty
-            if (mapempty) {
-                this.initHeatmap(maps);
-            }
-
-            // possibly update an initial map message
-            if (mapmsg !== null) {
-                this.updateMapMsg(mapmsg, -1);
             }
         }
     }
@@ -328,11 +307,11 @@ class Galaxy {
         // MaNGA Target Popovers
         $.each(this.targpops, function(index, value) {
             // get id of flag link
-            var popid = value.id;
+            let popid = value.id;
             // split id and grab the mngtarg
-            var [base, targ] = popid.split('_');
+            let [base, targ] = popid.split('_');
             // build the label list id
-            var listid = '#list_'+targ;
+            let listid = `#list_${targ}`;
             // init the specific popover
             $('#'+popid).popover({html:true,content:$(listid).html()});
         });
@@ -340,27 +319,26 @@ class Galaxy {
 
     // Get some DAP Maps
     getDapMaps(event) {
-        var _this = event.data;
-        var params = _this.dapselect.selectpicker('val');
-        var bintemp = _this.dapbt.selectpicker('val');
-        var keys = ['plateifu', 'params', 'bintemp'];
-        var form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
+        let _this = event.data;
+        let params = _this.dapselect.selectpicker('val');
+        let bintemp = _this.dapbt.selectpicker('val');
+        let keys = ['plateifu', 'params', 'bintemp'];
+        let form = m.utils.buildForm(keys, _this.plateifu, params, bintemp);
         _this.mapmsg.hide();
         $(this).button('loading');
 
         // send the form data
-        $.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json')
-            .done(function(data) {
-                if (data.result.status !== -1) {
-                    _this.dapmapsbut.button('reset');
-                    _this.initHeatmap(data.result.maps);
-                } else {
-                    _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
-                    _this.dapmapsbut.button('reset');
+        Promise.resolve($.post(Flask.url_for('galaxy_page.updatemaps'), form, 'json'))
+            .then((data)=>{
+                if (data.result.status === -1) {
+                    throw new MapError(`Error: ${data.result.mapmsg}`);
                 }
+                _this.dapmapsbut.button('reset');
+                _this.initHeatmap(data.result.maps);
             })
-            .fail(function(data) {
-                _this.updateMapMsg('Error: '+data.result.mapmsg, data.result.status);
+            .catch((error)=>{
+                let errmsg = (error.message === undefined) ? _this.makeError('getDapMaps') : error.message;
+                _this.updateMapMsg(errmsg, -1);
                 _this.dapmapsbut.button('reset');
             });
     }
@@ -371,14 +349,14 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.mapmsg.show();
         }
-        var newmsg = '<strong>'+mapmsg+'</strong>';
+        let newmsg = `<strong>${mapmsg}</strong>`;
         this.mapmsg.empty();
         this.mapmsg.html(newmsg);
     }
 
     // Reset the Maps selection
     resetMaps(event) {
-        var _this = event.data;
+        let _this = event.data;
         _this.mapmsg.hide();
         _this.dapselect.selectpicker('deselectAll');
         _this.dapselect.selectpicker('refresh');
@@ -391,32 +369,32 @@ class Galaxy {
 
     // Display the NSA info
     displayNSA(event) {
-        var _this = event.data;
+        let _this = event.data;
 
         // make the form
-        var keys = ['plateifu'];
-        var form = m.utils.buildForm(keys, _this.plateifu);
+        let keys = ['plateifu'];
+        let form = m.utils.buildForm(keys, _this.plateifu);
 
         // send the request if the div is empty
-        var nsaempty = _this.nsaplots.is(':empty');
+        let nsaempty = _this.nsaplots.is(':empty');
         if (nsaempty & _this.hasnsa) {
             // send the form data
-            $.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json')
-                .done(function(data) {
-                    if (data.result.status !== -1) {
-                        _this.addNSAData(data.result.nsa);
-                        _this.refreshNSASelect(data.result.nsachoices);
-                        _this.initNSAScatter();
-                        _this.setTableEvents();
-                        _this.addNSAEvents();
-                        _this.initNSABoxPlot(data.result.nsaplotcols);
-                        _this.nsaload.hide();
-                    } else {
-                        _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+            Promise.resolve($.post(Flask.url_for('galaxy_page.initnsaplot'), form, 'json'))
+                .then((data)=>{
+                    if (data.result.status !== 1) {
+                        throw new Error(`Error: ${data.result.nsamsg}`);
                     }
+                    _this.addNSAData(data.result.nsa);
+                    _this.refreshNSASelect(data.result.nsachoices);
+                    _this.initNSAScatter();
+                    _this.setTableEvents();
+                    _this.addNSAEvents();
+                    _this.initNSABoxPlot(data.result.nsaplotcols);
+                    _this.nsaload.hide();
                 })
-                .fail(function(data) {
-                    _this.updateNSAMsg('Error: '+data.result.nsamsg, data.result.status);
+                .catch((error)=>{
+                    let errmsg = (error.message === undefined) ? _this.makeError('displayNSA') : error.message;
+                    _this.updateNSAMsg(errmsg, -1);
                 });
         }
 
@@ -428,7 +406,7 @@ class Galaxy {
         if (data[this.plateifu]) {
             this.mygalaxy = data[this.plateifu];
         } else {
-            this.updateNSAMsg('Error: No NSA data found for '+this.plateifu, -1);
+            this.updateNSAMsg(`Error: No NSA data found for ${this.plateifu}`, -1);
             return;
         }
         // the manga sample
@@ -443,24 +421,23 @@ class Galaxy {
 
     // get new NSA data based on drag-drop axis change
     updateNSAData(index, type) {
-        var data, options;
-        var _this = this;
+        let data, options;
         if (type === 'galaxy') {
-            var x = this.mygalaxy[this.nsachoices[index].x];
-            var y = this.mygalaxy[this.nsachoices[index].y];
-            var xrev = (this.nsachoices[index].x.search('absmag') > -1) ? true : false;
-            var yrev = (this.nsachoices[index].y.search('absmag') > -1) ? true : false;
+            let x = this.mygalaxy[this.nsachoices[index].x];
+            let y = this.mygalaxy[this.nsachoices[index].y];
+            let xrev = (this.nsachoices[index].x.search('absmag') > -1) ? true : false;
+            let yrev = (this.nsachoices[index].y.search('absmag') > -1) ? true : false;
             data = [{'name':this.plateifu,'x':x, 'y':y}];
             options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
                        title:this.nsachoices[index].title, galaxy:{name:this.plateifu}, xrev:xrev,
                        yrev:yrev};
         } else if (type === 'sample') {
-            var x = this.nsasample[this.nsachoices[index].x];
-            var y = this.nsasample[this.nsachoices[index].y];
+            let x = this.nsasample[this.nsachoices[index].x];
+            let y = this.nsasample[this.nsachoices[index].y];
             data = [];
-            $.each(x, function(index, value) {
+            $.each(x, (index, value)=>{
                 if (value > -9999 && y[index] > -9999) {
-                    var tmp = {'name':_this.nsasample.plateifu[index],'x':value, 'y':y[index]};
+                    let tmp = {'name':this.nsasample.plateifu[index],'x':value, 'y':y[index]};
                     data.push(tmp);
                 }
             });
@@ -472,43 +449,42 @@ class Galaxy {
 
     // Update the Table event handlers when the table state changes
     setTableEvents() {
-        var tabledata = this.nsatable.bootstrapTable('getData');
-        var _this = this;
+        let tabledata = this.nsatable.bootstrapTable('getData');
 
-        $.each(this.nsamovers, function(index, mover) {
-            var id = mover.id;
-            $('#'+id).on('dragstart', _this, _this.dragStart);
-            $('#'+id).on('dragover', _this, _this.dragOver);
-            $('#'+id).on('drop', _this, _this.moverDrop);
+        $.each(this.nsamovers, (index, mover)=>{
+            let id = mover.id;
+            $('#'+id).on('dragstart', this, this.dragStart);
+            $('#'+id).on('dragover', this, this.dragOver);
+            $('#'+id).on('drop', this, this.moverDrop);
         });
 
-        this.nsatable.on('page-change.bs.table', function() {
-            $.each(tabledata, function(index, row) {
-                var mover = row[0];
-                var id = $(mover).attr('id');
-                $('#'+id).on('dragstart', _this, _this.dragStart);
-                $('#'+id).on('dragover', _this, _this.dragOver);
-                $('#'+id).on('drop', _this, _this.moverDrop);
+        this.nsatable.on('page-change.bs.table', ()=>{
+            $.each(tabledata, (index, row)=>{
+                let mover = row[0];
+                let id = $(mover).attr('id');
+                $('#'+id).on('dragstart', this, this.dragStart);
+                $('#'+id).on('dragover', this, this.dragOver);
+                $('#'+id).on('drop', this, this.moverDrop);
             });
         });
     }
 
     // Add event handlers to the Highcharts scatter plots
     addNSAEvents() {
-        var _this = this;
+        //let _this = this;
         // NSA plot events
         this.nsaplots = $('.marvinplot');
-        $.each(this.nsaplots, function(index, plot) {
-            var id = plot.id;
-            var highx = $('#'+id).find('.highcharts-xaxis');
-            var highy = $('#'+id).find('.highcharts-yaxis');
+        $.each(this.nsaplots, (index, plot)=>{
+            let id = plot.id;
+            let highx = $('#'+id).find('.highcharts-xaxis');
+            let highy = $('#'+id).find('.highcharts-yaxis');
 
-            highx.on('dragover', _this, _this.dragOver);
-            highx.on('dragenter', _this, _this.dragEnter);
-            highx.on('drop', _this, _this.dropElement);
-            highy.on('dragover', _this, _this.dragOver);
-            highy.on('dragenter', _this, _this.dragEnter);
-            highy.on('drop', _this, _this.dropElement);
+            highx.on('dragover', this, this.dragOver);
+            highx.on('dragenter', this, this.dragEnter);
+            highx.on('drop', this, this.dropElement);
+            highy.on('dragover', this, this.dragOver);
+            highy.on('dragenter', this, this.dragEnter);
+            highy.on('drop', this, this.dropElement);
         });
     }
 
@@ -518,7 +494,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.nsamsg.show();
         }
-        var newmsg = '<strong>'+nsamsg+'</strong>';
+        let newmsg = `<strong>${nsamsg}</strong>`;
         this.nsamsg.empty();
         this.nsamsg.html(newmsg);
     }
@@ -530,11 +506,10 @@ class Galaxy {
 
     // create the d3 data format
     createD3data() {
-        var data = [];
-        var _this = this;
-        $.each(this.nsaplotcols, function(index, column) {
-            var goodsample = _this.nsasample[column].filter(_this.filterArray);
-            var tmp = {'value':_this.mygalaxy[column], 'title':column, 'sample':goodsample};
+        let data = [];
+        this.nsaplotcols.forEach((column, index)=>{
+            let goodsample = this.nsasample[column].filter(this.filterArray);
+            let tmp = {'value':this.mygalaxy[column], 'title':column, 'sample':goodsample};
             data.push(tmp);
         });
         return data;
@@ -550,7 +525,7 @@ class Galaxy {
         }
 
         // generate the data format
-        var data, options;
+        let data, options;
         data = this.createD3data();
         this.nsad3box = new BoxWhisker(this.nsaboxdiv, data, options);
 
@@ -564,25 +539,24 @@ class Galaxy {
 
     // Init the NSA Scatter plot
     initNSAScatter(parentid) {
-        var _this = this;
         // only update the single parent div element
         if (parentid !== undefined) {
-            var parentdiv = this.maindiv.find('#'+parentid);
-            var index = parseInt(parentid[parentid.length-1]);
-            var [data, options] = this.updateNSAData(index, 'galaxy');
-            var [sdata, soptions] = this.updateNSAData(index, 'sample');
-            options['altseries'] = {data:sdata, name:'Sample'};
+            let parentdiv = this.maindiv.find('#'+parentid);
+            let index = parseInt(parentid[parentid.length-1]);
+            let [data, options] = this.updateNSAData(index, 'galaxy');
+            let [sdata, soptions] = this.updateNSAData(index, 'sample');
+            options.altseries = {data:sdata, name:'Sample'};
             this.destroyChart(parentdiv, index);
             this.nsascatter[index] = new Scatter(parentdiv, data, options);
         } else {
             // try updating all of them
-            _this.nsascatter = {};
-            $.each(this.nsaplots, function(index, plot) {
-                var plotdiv = $(plot);
-                var [data, options] = _this.updateNSAData(index+1, 'galaxy');
-                var [sdata, soptions] = _this.updateNSAData(index+1, 'sample');
-                options['altseries'] = {data:sdata,name:'Sample'};
-                _this.nsascatter[index+1] = new Scatter(plotdiv, data, options);
+            this.nsascatter = {};
+            $.each(this.nsaplots, (index, plot)=>{
+                let plotdiv = $(plot);
+                let [data, options] = this.updateNSAData(index+1, 'galaxy');
+                let [sdata, soptions] = this.updateNSAData(index+1, 'sample');
+                options.altseries = {data:sdata,name:'Sample'};
+                this.nsascatter[index+1] = new Scatter(plotdiv, data, options);
             });
         }
 
@@ -600,8 +574,8 @@ class Galaxy {
 
     // Update the NSA selectpicker choices for the scatter plot
     updateNSAChoices(index, params) {
-        var xpar = params[0].slice(2,params[0].length);
-        var ypar = params[1].slice(2,params[1].length);
+        let xpar = params[0].slice(2,params[0].length);
+        let ypar = params[1].slice(2,params[1].length);
         this.nsachoices[index].title = ypar+' vs '+xpar;
         this.nsachoices[index].xtitle = xpar;
         this.nsachoices[index].x = xpar;
@@ -611,10 +585,10 @@ class Galaxy {
 
     // Reset the NSA selecpicker
     resetNSASelect(event) {
-        var resetid = $(this).attr('id');
-        var index = parseInt(resetid[resetid.length-1]);
-        var _this = event.data;
-        var myselect = _this.nsaselect[index-1];
+        let resetid = $(this).attr('id');
+        let index = parseInt(resetid[resetid.length-1]);
+        let _this = event.data;
+        let myselect = _this.nsaselect[index-1];
         _this.nsamsg.hide();
         $(myselect).selectpicker('deselectAll');
         $(myselect).selectpicker('refresh');
@@ -622,14 +596,14 @@ class Galaxy {
 
     // Update the NSA scatter plot on select change
     updateNSAPlot(event) {
-        var _this = event.data;
-        var plotid = $(this).attr('id');
-        var index = parseInt(plotid[plotid.length-1]);
-        var nsasp = _this.nsaselect[index-1];
-        var params = $(nsasp).selectpicker('val');
+        let _this = event.data;
+        let plotid = $(this).attr('id');
+        let index = parseInt(plotid[plotid.length-1]);
+        let nsasp = _this.nsaselect[index-1];
+        let params = $(nsasp).selectpicker('val');
 
         // Construct the new NSA data
-        var parentid = 'nsahighchart'+index;
+        let parentid = `nsahighchart${index}`;
         _this.updateNSAChoices(index, params);
         _this.initNSAScatter(parentid);
         _this.addNSAEvents();
@@ -640,14 +614,12 @@ class Galaxy {
 
     // Element drag start
     dragStart(event) {
-        var _this = event.data;
-        var param = this.id+'+'+this.textContent;
+        let _this = event.data;
+        let param = this.id+'+'+this.textContent;
         event.originalEvent.dataTransfer.setData('Text', param);
 
         // show the overlay elements
-        $.each(_this.nsascatter, function(index, scat) {
-            scat.overgroup.show();
-        });
+        $.each(_this.nsascatter, (index, scat)=>{ scat.overgroup.show(); });
     }
     // Element drag over
     dragOver(event) {
@@ -670,39 +642,37 @@ class Galaxy {
         event.preventDefault();
         event.stopPropagation();
         // get the id and name of the dropped parameter
-        var _this = event.data;
-        var param = event.originalEvent.dataTransfer.getData('Text');
-        var [id, name] = param.split('+');
+        let _this = event.data;
+        let param = event.originalEvent.dataTransfer.getData('Text');
+        let [id, name] = param.split('+');
 
         // Hide overlay elements
-        $.each(_this.nsascatter, function(index, scat) {
-            scat.overgroup.hide();
-        });
+        $.each(_this.nsascatter, (index, scat)=>{ scat.overgroup.hide(); });
 
         // Determine which axis and plot the name was dropped on
-        var classes = $(this).attr('class');
-        var isX = classes.includes('highcharts-xaxis');
-        var isY = classes.includes('highcharts-yaxis');
-        var parentdiv = $(this).closest('.marvinplot');
-        var parentid = parentdiv.attr('id');
+        let classes = $(this).attr('class');
+        let isX = classes.includes('highcharts-xaxis');
+        let isY = classes.includes('highcharts-yaxis');
+        let parentdiv = $(this).closest('.marvinplot');
+        let parentid = parentdiv.attr('id');
         if (parentid === undefined ){
             event.stopPropagation();
             return false;
         }
-        var parentindex = parseInt(parentid[parentid.length-1]);
+        let parentindex = parseInt(parentid[parentid.length-1]);
 
         // get the other axis and extract title
-        var otheraxis = null;
+        let otheraxis = null;
         if (isX) {
             otheraxis = $(this).next();
         } else if (isY) {
             otheraxis = $(this).prev();
         }
-        var axistitle = this.textContent;
-        var otheraxistitle = otheraxis[0].textContent;
+        let axistitle = this.textContent;
+        let otheraxistitle = otheraxis[0].textContent;
 
         // Update the Values
-        var newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
+        let newtitle = _this.nsachoices[parentindex].title.replace(axistitle, name);
         _this.nsachoices[parentindex].title = newtitle;
         if (isX) {
             _this.nsachoices[parentindex].xtitle = name;

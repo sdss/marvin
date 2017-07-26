@@ -4,60 +4,70 @@
 # Licensed under a 3-clause BSD license.
 #
 # @Author: Brian Cherinka
-# @Date:   2017-02-12 23:40:36
+# @Date:   2017-05-07 13:54:18
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-19 12:44:46
+# @Last Modified time: 2017-06-27 11:19:28
 
 from __future__ import print_function, division, absolute_import
-from marvin.tests.api import MarvinAPITester
-import unittest
+from marvin.tests.api.conftest import ApiPage
+import pytest
 
 
-class TestCubeView(MarvinAPITester):
+@pytest.mark.parametrize('page', [('api', 'CubeView:index')], ids=['cubes'], indirect=True)
+class TestCubeView(object):
 
-    def test_get_cube_success(self):
-        url = self.get_url('CubeView:index')
-        self._load_page('get', url, params={'release': 'MPL-5'})
+    def test_get_cube_success(self, page, params):
+        page.load_page('get', page.url, params=params)
         data = 'this is a cube'
-        self._assert_success(data)
+        page.assert_success(data)
 
 
-class TestGetCube(TestCubeView):
+@pytest.mark.parametrize('page', [('api', 'getCube')], ids=['getcubes'], indirect=True)
+class TestGetCube(object):
 
-    def test_get_plateifu_no_release(self):
-        errmsg = 'Missing data for required field.'
-        url = self.get_url('getCube')
-        self._route_no_valid_params(url, 'release', errmsg=errmsg)
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    def test_plateifu_success(self, galaxy, page, params, reqtype):
+        data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'ra': galaxy.ra, 'dec': galaxy.dec,
+                'redshift': galaxy.redshift}
+        page.load_page(reqtype, page.url.format(name=galaxy.plateifu), params=params)
+        page.assert_success(data)
 
-    def test_post_plateifu_no_release(self):
-        errmsg = 'Missing data for required field.'
-        url = self.get_url('getCube')
-        self._route_no_valid_params(url, 'release', 'post', errmsg=errmsg)
-
-    def test_post_plateifu_bad_name(self):
-        errmsg = 'String does not match expected pattern.'
-        url = self.get_url('getCube').format(name='badname')
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def test_post_plateifu_short_name(self):
-        errmsg = 'Shorter than minimum length 4.'
-        url = self.get_url('getCube').format(name='84')
-        self._route_no_valid_params(url, 'name', 'post', params={'release': 'MPL-5'}, errmsg=errmsg)
-
-    def _plateifu_success(self, reqtype):
-        url = self.get_url('getCube').format(name=self.plateifu)
-        data = {'plateifu': self.plateifu, 'mangaid': self.mangaid, 'ra': self.ra, 'dec': self.dec,
-                'redshift': self.redshift}
-        self._load_page(reqtype, url, params={'release': 'MPL-5'})
-        self._assert_success(data)
-
-    def test_get_plateifu_success(self):
-        self._plateifu_success('get')
-
-    def test_post_plateifu_success(self):
-        self._plateifu_success('post')
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),
+                                                       ('badname', 'name', 'String does not match expected pattern.'),
+                                                       ('84', 'name', 'Shorter than minimum length 4.')],
+                             ids=['norelease', 'badname', 'shortname'])
+    def test_plateifu_failure(self, galaxy, page, reqtype, params, name, missing, errmsg):
+        if name is None:
+            page.route_no_valid_params(page.url.format(name=galaxy.plateifu), missing, reqtype=reqtype, errmsg=errmsg)
+        else:
+            page.route_no_valid_params(page.url.format(name=name), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 
 
-if __name__ == '__main__':
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
+@pytest.mark.slow
+@pytest.mark.parametrize('page', [('api', 'getCubeExtension')], ids=['getcubeext'], indirect=True)
+class TestCubeExtension(object):
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('cubeext', [('flux'), ('ivar'), ('mask')])
+    def test_cubeext_success(self, galaxy, page, params, reqtype, cubeext):
+        params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
+        data = {'cube_extension': []}
+        page.load_page(reqtype, page.url.format(**params), params=params)
+        page.assert_success(data)
+
+    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
+    @pytest.mark.parametrize('name, missing, errmsg, cubeext',
+                             [(None, 'release', 'Missing data for required field.', 'flux'),
+                              ('badname', 'name', 'String does not match expected pattern.', 'flux'),
+                              ('84', 'name', 'Shorter than minimum length 4.', 'flux'),
+                              ('8485-1901', 'cube_extension', 'Not a valid choice.', 'stuff')],
+                             ids=['norelease', 'badname', 'shortname', 'badext'])
+    def test_cubeext_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, cubeext):
+        params.update({'name': name, 'cube_extension': cubeext})
+        if name is None:
+            params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
+            page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, errmsg=errmsg)
+        else:
+            page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, params=params, errmsg=errmsg)
+

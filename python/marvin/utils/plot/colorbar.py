@@ -207,7 +207,6 @@ def _set_cbrange(image, cb_kws):
         cb_max = np.max(np.abs(cbr))
         cbr = [-cb_max, cb_max]
     
-    print('cbrange', cbr)
     cbr, cb_kws['ticks'] = _set_cbticks(cbr, cb_kws)
 
     if cb_kws.get('log_cb', False):

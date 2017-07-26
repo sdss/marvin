@@ -8,12 +8,12 @@
 |
 
 .. image:: _static/marvin.png
-    :width: 200px
+    :width: 150px
     :align: left
     :alt: Marvin
 
 .. image:: _static/logo5_lores.jpg
-    :width: 800px
+    :width: 600px
     :align: center
     :alt: MaNGA logo
 

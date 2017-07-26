@@ -208,10 +208,10 @@ class Plate(MarvinToolsClass, list):
             else:
                 cubes = sdss_path.expand('mangamastar', drpver=self._drpver,
                                          plate=self.plateid, ifu='*')
-            _cubes = [Cube(filename=cube) for cube in cubes]
+            _cubes = [Cube(filename=cube, mode=self.mode, release=self.release) for cube in cubes]
 
         elif self.data_origin == 'db':
-            _cubes = [Cube(plateifu=cube.plateifu)
+            _cubes = [Cube(plateifu=cube.plateifu, mode=self.mode, release=self.release)
                       for cube in self._plate.cubes]
 
         elif self.data_origin == 'api':
@@ -222,7 +222,7 @@ class Plate(MarvinToolsClass, list):
             response = self._toolInteraction(url)
             data = response.getData()
             plateifus = data['plateifus']
-            _cubes = [Cube(plateifu=pifu, mode='remote') for pifu in plateifus]
+            _cubes = [Cube(plateifu=pifu, mode=self.mode, release=self.release) for pifu in plateifus]
 
         list.__init__(self, _cubes)
 

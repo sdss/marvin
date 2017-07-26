@@ -6,13 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-15 10:45:33
+# @Last Modified time: 2017-06-28 17:53:20
 
 from __future__ import print_function, division, absolute_import
 from flask_classy import FlaskView
 from flask import request
 from marvin.web.web_utils import parseSession
-from marvin import config
+import marvin
 from brain.api.general import BrainGeneralRequestsView
 from marvin.api.base import arg_validate as av
 import json
@@ -24,6 +24,7 @@ class BaseWebView(FlaskView):
     def __init__(self, page):
         self.base = {}
         self.base['intro'] = 'Welcome to Marvin!'
+        self.base['version'] = marvin.__version__
         self.update_title(page)
         self._endpoint = self._release = None
         self._drpver = self._dapver = None
@@ -38,8 +39,8 @@ class BaseWebView(FlaskView):
         if not av.urlmap:
             bv = BrainGeneralRequestsView()
             resp = bv.buildRouteMap()
-            config.urlmap = json.loads(resp.get_data())['urlmap']
-            av.urlmap = config.urlmap
+            marvin.config.urlmap = json.loads(resp.get_data())['urlmap']
+            av.urlmap = marvin.config.urlmap
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
@@ -55,9 +56,8 @@ class BaseWebView(FlaskView):
     def reset_dict(self, mydict, exclude=None):
         ''' resets the page dictionary '''
         mydict['error'] = self.base['error']
-        if exclude:
-            exclude = exclude if isinstance(exclude, list) else [exclude]
+        exclude = exclude if isinstance(exclude, list) else [exclude]
         diffkeys = set(mydict) - set(self.base)
         for key, val in mydict.items():
-            if key in diffkeys and (exclude and key not in exclude):
+            if key in diffkeys and (key not in exclude):
                 mydict[key] = '' if isinstance(val, str) else None

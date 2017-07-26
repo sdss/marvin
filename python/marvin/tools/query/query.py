@@ -23,7 +23,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql.expression import desc
 from operator import le, ge, gt, lt, eq, ne
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import datetime
 import numpy as np
 import warnings
@@ -32,6 +32,7 @@ import re
 from marvin.core import marvin_pickle
 from functools import wraps
 from marvin.tools.query.results import remote_mode_only
+from marvin.tools.query.query_utils import query_params
 
 try:
     import cPickle as pickle
@@ -307,19 +308,14 @@ class Query(object):
         '''
         dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
         if any(dapschema):
-            dapcols = ['spaxelprop.x', 'spaxelprop.y']
+            dapcols = ['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name']
             self.defaultparams.extend(dapcols)
             self.params.extend(dapcols)
-            qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
-            self.queryparams.extend(qpdap)
-            self.queryparams_order.extend([q.key for q in qpdap])
-            # oldcols = ['spaxel.x', 'spaxel.y']
-            # if 'spaxel.x' in self.defaultparams:
-            #     for n in oldcols:
-            #         self.defaultparams.remove(n)
-            #         self.params.remove(n)
-            #         self.queryparams.remove(n)
-            #         self.queryparams_order.remove(n.split('.')[1])
+            self.params = list(OrderedDict.fromkeys(self.params))
+            self._create_query_modelclasses()
+            # qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
+            # self.queryparams.extend(qpdap)
+            # self.queryparams_order.extend([q.key for q in qpdap])
 
     def set_returnparams(self, returnparams):
         ''' Loads the user input parameters into the query params limit
@@ -333,7 +329,7 @@ class Query(object):
 
         '''
         if returnparams:
-            returnparams = [returnparams] if type(returnparams) != list else returnparams
+            returnparams = [returnparams] if not isinstance(returnparams, list) else returnparams
             self._returnparams = returnparams
         self.params.extend(returnparams)
 
@@ -383,18 +379,7 @@ class Query(object):
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
 
-    def get_available_params(self):
-        ''' Retrieve the available parameters to query on
-
-        Retrieves a list of all the available query parameters.
-        Used primarily for the web autocompletion.
-
-        Parameters:
-
-        Returns:
-            mykeys (list):
-                a list of all of the available queryable parameters
-        '''
+    def _get_all_params(self):
         if self.mode == 'local':
             keys = list(self.marvinform._param_form_lookup.keys())
             keys.sort()
@@ -415,33 +400,31 @@ class Query(object):
             except MarvinError as e:
                 raise MarvinError('API Query call to get params failed: {0}'.format(e))
             else:
-                mykeys = ii.getData()
-                return mykeys
+                qparams = ii.getData()
+                return qparams
 
-    def _read_best_params(self):
-        bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best.cfg')
-        f = open(bestpath, 'r')
-        bestkeys = f.read().splitlines()
-        bestkeys = [k.strip() for k in bestkeys]
-        return bestkeys
+    def get_available_params(self, paramdisplay='best'):
+        ''' Retrieve the available parameters to query on
 
-    def get_best_params(self):
-        ''' Retrieves a list of best parameters to query on '''
-        if self.mode == 'local':
-            keys = self.get_available_params()
-            bestkeys = self._read_best_params()
-            return bestkeys
-        elif self.mode == 'remote':
-            # Get the query route
-            url = config.urlmap['api']['getparams']['url']
-            params = {'paramdisplay': 'best'}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query call to get params failed: {0}'.format(e))
-            else:
-                bestkeys = ii.getData()
-                return bestkeys
+        Retrieves a list of the available query parameters.
+        Can either retrieve a list of all the parameters or only the vetted parameters.
+
+        Parameters:
+            paramdisplay (str {all|best}):
+                String indicating to grab either all or just the vetted parameters.
+                Default is to only return 'best', i.e. vetted parameters
+
+        Returns:
+            qparams (list):
+                a list of all of the available queryable parameters
+        '''
+        assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
+
+        if paramdisplay == 'all':
+            qparams = self._get_all_params()
+        elif paramdisplay == 'best':
+            qparams = query_params
+        return qparams
 
     @remote_mode_only
     def save(self, path=None, overwrite=False):
@@ -460,6 +443,7 @@ class Query(object):
         '''
         self.session = None
         self.marvinform = None
+        self.myforms = None
         self._modelgraph = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
@@ -469,7 +453,7 @@ class Query(object):
 
         # check for file extension
         if not os.path.splitext(path)[1]:
-            path = os.path.join(path+'.mpf')
+            path = os.path.join(path + '.mpf')
 
         path = os.path.realpath(path)
 
@@ -745,6 +729,7 @@ class Query(object):
             self.totalcount = count
             if count > 1000:
                 query = self.query.slice(0, self.limit)
+                count = query.count()
                 warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 query = self.query

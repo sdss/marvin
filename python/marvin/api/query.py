@@ -1,9 +1,11 @@
 from flask_classy import route
-from flask import request, jsonify, Response
+from flask import request, jsonify, Response, current_app
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
+from marvin.tools.query.query_utils import bestparams
+from marvin.web.extensions import limiter
 import json
 
 
@@ -38,12 +40,13 @@ def _getCubes(searchfilter, **kwargs):
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=runtime,
-                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.count)
+                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
     return output
 
 
 class QueryView(BaseView):
     """Class describing API calls related to queries."""
+    decorators = [limiter.limit("60/minute")]
 
     def index(self):
         '''Returns general query info
@@ -327,11 +330,11 @@ class QueryView(BaseView):
 
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
-        q = Query(mode='local')
+        q = Query(mode='local', release=args['release'])
         if paramdisplay == 'all':
-            params = q.get_available_params()
+            params = q.get_available_params('all')
         elif paramdisplay == 'best':
-            params = q.get_best_params()
+            params = bestparams
         self.results['data'] = params
         self.results['status'] = 1
         output = jsonify(self.results)

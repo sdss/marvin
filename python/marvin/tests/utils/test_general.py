@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 
-test_general.py
+test_general_pytest.py
 
 Created by José Sánchez-Gallego on 7 Apr 2016.
 Licensed under a 3-clause BSD license.
@@ -10,6 +10,8 @@ Licensed under a 3-clause BSD license.
 Revision history:
     7 Apr 2016 J. Sánchez-Gallego
       Initial version
+    15 Jun 2016 B. Andrews
+      Converted to pytest
 
 """
 
@@ -17,36 +19,28 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import OrderedDict
-import unittest
-from astropy.io import fits
-from astropy.wcs import WCS
 import os
 
+import pytest
 import numpy as np
-from numpy.testing import assert_allclose
+from astropy.io import fits
+from astropy.wcs import WCS
 
 import marvin
 from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.tests import TemplateTestCase, Call, template
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
-from marvin.tests import MarvinTest
 from marvin.utils.dap.datamodel import get_default_plot_params
 
-class TestConvertCoords(MarvinTest):
 
-    __metaclass__ = TemplateTestCase
+@pytest.fixture(scope='function')
+def wcs(galaxy):
+    return WCS(fits.getheader(galaxy.cubepath, 1))
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestConvertCoords, cls).setUpClass()
-        outver = 'v1_5_1'
-        filename = os.path.join(cls.mangaredux, outver, str(cls.plate), 'stack', cls.cubename)
-        cls.testHeader = fits.getheader(filename, 1)
-        cls.testWcs = WCS(cls.testHeader)
-        cls.testShape = fits.getdata(filename, 1).shape[1:]
 
-    def test_pix_center(self):
+class TestConvertCoords(object):
+
+    def test_pix_center(self, galaxy):
         """Tests mode='pix', xyorig='center'."""
 
         coords = [[0, 0],
@@ -67,10 +61,10 @@ class TestConvertCoords(MarvinTest):
                     [20, 18],
                     [17, 17]]
 
-        cubeCoords = convertCoords(coords, mode='pix', shape=self.testShape)
-        assert_allclose(cubeCoords, np.array(expected))
+        cubeCoords = convertCoords(coords, mode='pix', shape=galaxy.shape)
+        pytest.approx(cubeCoords, np.array(expected))
 
-    def test_pix_lower(self):
+    def test_pix_lower(self, galaxy):
         """Tests mode='pix', xyorig='lower'."""
 
         coords = [[0, 0],
@@ -85,11 +79,11 @@ class TestConvertCoords(MarvinTest):
                     [2, 2],
                     [0, 0]]
 
-        cubeCoords = convertCoords(coords, mode='pix', shape=self.testShape,
+        cubeCoords = convertCoords(coords, mode='pix', shape=galaxy.shape,
                                    xyorig='lower')
-        assert_allclose(cubeCoords, np.array(expected))
+        pytest.approx(cubeCoords, np.array(expected))
 
-    def test_sky(self):
+    def test_sky(self, wcs):
         """Tests mode='sky'."""
 
         coords = np.array([[232.5447, 48.690201],
@@ -102,197 +96,110 @@ class TestConvertCoords(MarvinTest):
                     [33, 33],
                     [33, 26]]
 
-        cubeCoords = convertCoords(coords, mode='sky', wcs=self.testWcs)
+        cubeCoords = convertCoords(coords, mode='sky', wcs=wcs)
 
-        assert_allclose(cubeCoords, np.array(expected))
+        pytest.approx(cubeCoords, np.array(expected))
 
-    # This allows to do multiple calls to the same test.
-    _outside_calls = {
-        'pix_center_-50_0': Call(
-            {'coords': [[-50, 0]], 'mode': 'pix', 'xyorig': 'center'}, []),
-        'pix_center_50_50': Call(
-            {'coords': [[50, 50]], 'mode': 'pix', 'xyorig': 'center'}, []),
-        'pix_lower_-50_0': Call(
-            {'coords': [[-50, 0]], 'mode': 'pix', 'xyorig': 'lower'}, []),
-        'pix_center_50_50': Call(
-            {'coords': [[50, 50]], 'mode': 'pix', 'xyorig': 'lower'}, []),
-        'pix_sky_230_48': Call({'coords': [[230, 48]], 'mode': 'sky'}, []),
-        'pix_center_233_48': Call({'coords': [[233, 48]], 'mode': 'sky'}, [])
-    }
+    @pytest.mark.parametrize('coords, mode, xyorig',
+                             [([-100, 0], 'pix', 'center'),
+                              ([100, 100], 'pix', 'center'),
+                              ([-100, 0], 'pix', 'lower'),
+                              ([100, 100], 'pix', 'lower'),
+                              ([230, 48], 'sky', None),
+                              ([233, 48], 'sky', None)],
+                             ids=['-50_0_cen', '50_50_cen', '-50_0_low', '50_50_low',
+                                  '230_48_sky', '233_48_sky'])
+    def test_coords_outside_cube(self, coords, mode, xyorig, galaxy, wcs):
+        kwargs = {'coords': coords, 'mode': mode}
 
-    @template(_outside_calls)
-    def _test_outside(self, kwargs, expected):
+        if xyorig is not None:
+            kwargs['xyorig'] = xyorig
 
-        mode = kwargs.get('mode')
-        if mode == 'sky':
-            kwargs['wcs'] = self.testWcs
+        if kwargs['mode'] == 'sky':
+            kwargs['wcs'] = wcs
 
-        with self.assertRaises(MarvinError) as cm:
-            convertCoords(shape=self.testShape, **kwargs)
-        self.assertIn('some indices are out of limits', str(cm.exception))
+        with pytest.raises(MarvinError) as cm:
+            convertCoords(shape=galaxy.shape, **kwargs)
+
+        assert 'some indices are out of limits' in str(cm.value)
 
 
-class TestGetNSAData(MarvinTest):
+class TestGetNSAData(object):
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestGetNSAData, cls).setUpClass()
+    def _test_nsa(self, galaxy, data):
+        assert isinstance(data, DotableCaseInsensitive)
+        assert 'iauname' in data.keys()
+        assert data['iauname'] == galaxy.iauname
+        assert data['iauname'] == data.iauname
+        assert 'profmean_ivar' in data.keys()
+        assert 'elpetro_mag_g' in data
+        assert 'version' not in data.keys()
+        assert data['elpetro_mag_g'] == data.elpetro_mag_g
 
-    def setUp(self):
-        self.set_sasurl('local')
-        marvin.config.forceDbOn()
+    def _test_drpall(self, galaxy, data):
+        assert isinstance(data, DotableCaseInsensitive)
+        assert 'version' in data.keys()
+        assert 'profmean_ivar' not in data.keys()
+        if galaxy.release != 'MPL-4':
+            assert 'iauname' in data.keys()
+            assert data['iauname'] == galaxy.iauname
+            assert data['iauname'] == data.iauname
+            assert 'elpetro_absmag' in data.keys()
 
-    def _test_nsa(self, data):
-        self.assertIsInstance(data, DotableCaseInsensitive)
-        self.assertIn('profmean_ivar', data.keys())
-        self.assertEqual(data['profmean_ivar'][0][0], 18.5536117553711)
+    @pytest.mark.parametrize('source', [('nsa'), ('drpall')])
+    def test_nsa(self, galaxy, mode, db, source):
+        if mode == 'local' and source == 'nsa' and marvin.config.db is None:
+            with pytest.raises(MarvinError) as cm:
+                data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+            errmsg = 'get_nsa_data: cannot find a valid DB connection.'
+            assert cm.type == MarvinError
+            assert errmsg in str(cm.value)
+        else:
+            data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+            if source == 'nsa':
+                self._test_nsa(galaxy, data)
+            elif source == 'drpall':
+                self._test_drpall(galaxy, data)
 
-    def _test_drpall(self, data):
-        self.assertIsInstance(data, DotableCaseInsensitive)
-        self.assertNotIn('profmean_ivar', data.keys())
-        self.assertIn('iauname', data.keys())
-        self.assertEqual(data['iauname'], 'J153010.73+484124.8')
-
-    def test_local_nsa(self):
-        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
-        self._test_nsa(data)
-
-    def test_local_drpall(self):
-        data = get_nsa_data(self.mangaid, source='drpall', mode='local')
-        self._test_drpall(data)
-
-    def test_remote_nsa(self):
-        data = get_nsa_data(self.mangaid, source='nsa', mode='remote')
-        self._test_nsa(data)
-
-    def test_remote_drpall(self):
-        data = get_nsa_data(self.mangaid, source='drpall', mode='remote')
-        self._test_drpall(data)
-
-    def test_auto_nsa_with_db(self):
-        data = get_nsa_data(self.mangaid, source='nsa', mode='auto')
-        self._test_nsa(data)
-
-    def test_auto_drpall_with_drpall(self):
-        data = get_nsa_data(self.mangaid, source='drpall', mode='auto')
-        self._test_drpall(data)
-
-    def test_auto_nsa_without_db(self):
-        marvin.config.forceDbOff()
-        data = get_nsa_data(self.mangaid, source='nsa', mode='auto')
-        self._test_nsa(data)
-
-    def test_auto_drpall_without_drpall(self):
-        marvin.config._drpall = None
-        data = get_nsa_data(self.mangaid, source='drpall', mode='auto')
-        self._test_drpall(data)
-
-    def test_hybrid_properties_populated(self):
-        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
-        self.assertIn('elpetro_mag_g', data)
-
-    def test_nsa_dotable(self):
-        data = get_nsa_data(self.mangaid, source='nsa', mode='local')
-        self.assertEqual(data['elpetro_mag_g'], data.elpetro_mag_g)
-
-    def test_drpall_dotable(self):
-        data = get_nsa_data(self.mangaid, source='drpall', mode='local')
-        self.assertEqual(data['iauname'], data.iauname)
-
-    def test_nsa_old_target_selection(self):
-        data = get_nsa_data('1-178482', source='nsa', mode='local')
-        self.assertAlmostEqual(data['sersic_flux_ivar'][0], 1.33179831504822)
-
-    def test_nsa_12(self):
-        data = get_nsa_data('12-84679', source='nsa', mode='local')
-        self.assertAlmostEqual(data['sersic_flux_ivar'][0], 0.127634227275848)
+    @pytest.mark.parametrize('monkeyconfig', [('_drpall', None)], indirect=True, ids=['nodrpall'])
+    def test_nodrpall(self, galaxy, monkeyconfig):
+        data = get_nsa_data(galaxy.mangaid, source='drpall', mode='auto')
+        self._test_drpall(galaxy, data)
 
 
-class TestPillowImage(MarvinTest):
+class TestPillowImage(object):
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestPillowImage, cls).setUpClass()
-        outver = 'v1_5_1'
-        cls.filename = os.path.join(cls.mangaredux, outver, str(cls.plate), 'stack/images', cls.imgname)
-
-    def test_image_has_wcs(self):
-        w = getWCSFromPng(self.filename)
-        self.assertEqual(type(w), WCS)
+    def test_image_has_wcs(self, galaxy):
+        w = getWCSFromPng(galaxy.imgpath)
+        assert isinstance(w, WCS) is True
 
     def test_use_pil(self):
         try:
             import PIL
         except ImportError as e:
-            with self.assertRaises(ImportError):
+            with pytest.raises(ImportError) as cm:
                 err = 'No module named PIL'
-                self.assertEqual(err, e.args[0])
-
-class TestDataModelPlotParams(MarvinTest):
-    
-    def bitmasks(self):
-        return {'1.1.1': {'badData': {'doNotUse': 0}},
-                '2.0.2': {'nocov': 0,
-                          'badData': {'unreliable': 5,
-                                      'doNotUse': 30}
-                          }
-                }
-
-    def test_get_plot_params_default_mpl4(self):
-        desired = {'bitmasks': self.bitmasks()['1.1.1'],
-                   'cmap': 'linearlab',
-                   'percentile_clip': [5, 95],
-                   'symmetric': False,
-                   'snr_min': 1}
-        actual = get_plot_params(dapver='1.1.1', prop='emline_gflux')
-        self.assertDictEqual(actual, desired)
-
-    def test_get_plot_params_default_mpl5(self):
-        desired = {'bitmasks': self.bitmasks()['2.0.2'],
-                   'cmap': 'linearlab',
-                   'percentile_clip': [5, 95],
-                   'symmetric': False,
-                   'snr_min': 1}
-        actual = get_plot_params(dapver='2.0.2', prop='emline_gflux')
-        self.assertDictEqual(actual, desired)
-
-    def test_get_plot_params_vel_mpl4(self):
-        desired = {'bitmasks': self.bitmasks()['1.1.1'],
-                   'cmap': 'RdBu_r',
-                   'percentile_clip': [10, 90],
-                   'symmetric': True,
-                   'snr_min': None}
-        actual = get_plot_params(dapver='1.1.1', prop='stellar_vel')
-        self.assertDictEqual(actual, desired)
-    
-    def test_get_plot_params_vel_mpl5(self):
-        desired = {'bitmasks': self.bitmasks()['2.0.2'],
-                   'cmap': 'RdBu_r',
-                   'percentile_clip': [10, 90],
-                   'symmetric': True,
-                   'snr_min': None}
-        actual = get_plot_params(dapver='2.0.2', prop='stellar_vel')
-        self.assertDictEqual(actual, desired)
-    
-    def test_get_plot_params_sigma_mpl4(self):
-        desired = {'bitmasks': self.bitmasks()['1.1.1'],
-                   'cmap': 'inferno',
-                   'percentile_clip': [10, 90],
-                   'symmetric': False,
-                   'snr_min': 1}
-        actual = get_plot_params(dapver='1.1.1', prop='stellar_sigma')
-        self.assertDictEqual(actual, desired)
-
-    def test_get_plot_params_sigma_mpl5(self):
-        desired = {'bitmasks': self.bitmasks()['2.0.2'],
-                   'cmap': 'inferno',
-                   'percentile_clip': [10, 90],
-                   'symmetric': False,
-                   'snr_min': 1}
-        actual = get_plot_params(dapver='2.0.2', prop='stellar_sigma')
-        self.assertDictEqual(actual, desired)
+                assert err == str(e.args[0])
 
 
-if __name__ == '__main__':
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
+@pytest.fixture(scope='session')
+def bitmask(dapver):
+    data = {'1.1.1': {'badData': {'doNotUse': 0}},
+            '2.0.2': {'nocov': 0, 'badData': {'unreliable': 5, 'doNotUse': 30}}
+            }
+    return data[dapver]
+
+
+class TestDataModelPlotParams(object):
+
+    @pytest.mark.parametrize('name, desired',
+                             [('emline_gflux', {'cmap': 'linearlab', 'percentile_clip': [5, 95], 'symmetric': False, 'snr_min': 1}),
+                              ('stellar_vel', {'cmap': 'RdBu_r', 'percentile_clip': [10, 90], 'symmetric': True, 'snr_min': None}),
+                              ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
+                             ids=['emline', 'stvel', 'stsig'])
+    def test_get_plot_params(self, bitmask, dapver, name, desired):
+        desired['bitmasks'] = bitmask
+        actual = get_plot_params(dapver=dapver, prop=name)
+        assert desired == actual
+
+

@@ -10,7 +10,7 @@
 	<meta charset="UTF-8">
 	<title>{{title}}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.css')}}"></script>
+	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.min.css')}}"></script>
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
 	<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
@@ -22,14 +22,14 @@
 
 	<!-- Javascript sources-->
 	{# include js files #}
-	<script rel='preconnect' type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.17/jquery.actual.min.js"></script>
+	<script rel='preconnect' type="text/javascript" src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.19/jquery.actual.min.js"></script>
 	<script rel='preconnect' src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js"></script>
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
 	{#<script type="text/javascript" src="{{url_for('static',filename='js/wcs.js')}}"></script>#}
-	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/0.11.1/bloodhound.min.js"></script>
+	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.1.1/bloodhound.min.js"></script>
 	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js"></script>
 	<script rel='preconnect' src="https://cdn.ravenjs.com/3.7.0/raven.min.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
@@ -55,8 +55,8 @@
 
 	<!-- Javascript Code Block -->
 	{{ JSGlue.include() }}
-	<script type='text/javascript' src="{{url_for('lib',filename='dist/marvin.js')}}"></script>
-	<script type='text/javascript'>
+	<script type='application/javascript' src="{{url_for('lib',filename='dist/marvin.js')}}"></script>
+	<script type='application/javascript'>
 		var m = new Marvin();
 	</script>
 	{% block code %}{% endblock code %}

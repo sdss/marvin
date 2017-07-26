@@ -2,9 +2,10 @@
 * @Author: Brian Cherinka
 * @Date:   2016-05-13 13:26:21
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-01-18 21:02:39
+* @Last Modified time: 2017-06-28 11:59:04
 */
 
+//jshint esversion: 6
 'use strict';
 
 class Search {
@@ -16,6 +17,18 @@ class Search {
         this.returnparams = $('#returnparams');
         this.parambox = $('#parambox');
         this.searchbox = $("#searchbox");
+
+        this.builder = $('#builder');
+        this.sqlalert = $('#sqlalert');
+        this.getsql = $('#get-sql');
+        this.resetsql = $('#reset-sql');
+        this.runsql = $('#run-sql');
+
+        // Event Handlers
+        this.getsql.on('click', this, this.getSQL);
+        this.resetsql.on('click', this, this.resetSQL);
+        this.runsql.on('click', this, this.runSQL);
+
     }
 
     // Print
@@ -25,9 +38,9 @@ class Search {
 
     // Extract
     extractor(input) {
-        var regexp = new RegExp('([^,]+)$');
+        let regexp = new RegExp('([^,]+)$');
         // parse input for newly typed text
-        var result = regexp.exec(input);
+        let result = regexp.exec(input);
         // select last entry after comma
         if(result && result[1]) {
             return result[1].trim();
@@ -38,20 +51,21 @@ class Search {
     // Initialize Query Param Typeahead
     initTypeahead(typediv, formdiv, url, fxn) {
 
-        var _this = this;
-        var typediv = (typediv === undefined) ? this.typeahead : $(typediv);
-        var formdiv = (formdiv === undefined) ? this.searchform : $(formdiv);
+        const _this = this;
+        let typeurl;
+        typediv = (typediv === undefined) ? this.typeahead : $(typediv);
+        formdiv = (formdiv === undefined) ? this.searchform : $(formdiv);
         // get the typeahead search page getparams url
         try {
-            var typeurl = (url === undefined) ? Flask.url_for('search_page.getparams', {'paramdisplay':'best'}) : url;
+            typeurl = (url === undefined) ? Flask.url_for('search_page.getparams', {'paramdisplay':'best'}) : url;
         } catch (error) {
             Raven.captureException(error);
             console.error('Error getting search getparams url:',error);
         }
-        var afterfxn = (fxn === undefined) ? null : fxn;
+        const afterfxn = (fxn === undefined) ? null : fxn;
 
         function customQueryTokenizer(str) {
-            var newstr = str.toString();
+            let newstr = str.toString();
             return [_this.extractor(newstr)];
         };
 
@@ -63,9 +77,7 @@ class Search {
         prefetch: typeurl,
         remote: {
             url: typeurl,
-            filter: function(qpars) {
-                return qpars;
-            }
+            filter: (qpars)=>{ return qpars; }
         }
         });
 
@@ -82,25 +94,74 @@ class Search {
         updater: function(item) {
             // used to updated the input box with selected option
             // item = selected item from dropdown
-            var currenttext = this.$element.val();
-            var removedtemptype = currenttext.replace(/[^,]*$/,'');
-            var newtext = removedtemptype+item+', ';
+            let currenttext = this.$element.val();
+            let removedtemptype = currenttext.replace(/[^,]*$/,'');
+            let newtext = removedtemptype+item+', ';
             return newtext;
         },
         matcher: function (item) {
             // used to determined if a query matches an item
-            var tquery = _this.extractor(this.query);
+            let tquery = _this.extractor(this.query);
+            console.log('query', this.query);
+            console.log(tquery);
             if(!tquery) return false;
-            return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+            return ~item.toLowerCase().indexOf(tquery.toLowerCase());
         },
         highlighter: function (item) {
           // used to highlight autocomplete results ; returns html
-          var oquery = _this.extractor(this.query);
-          var query = oquery.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+          let oquery = _this.extractor(this.query);
+          let query = oquery.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
           return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
-            return '<strong>' + match + '</strong>'
-          })
+            return '<strong>' + match + '</strong>';
+          });
         }
         });
+    }
+
+    // Setup Query Builder
+    setupQB(params) {
+        $('.modal-dialog').draggable(); // makes the modal dialog draggable
+        this.builder.queryBuilder({plugins:['bt-selectpicker', 'not-group', 'invert'], filters:params,
+            operators:['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
+                       'between', 'contains', 'begins_with', 'ends_with']});
+    }
+
+    // Get the SQL from the QB
+    getSQL(event) {
+        let _this = event.data;
+        try {
+          var result = _this.builder.queryBuilder('getSQL', false);
+            if (result.sql.length) {
+              _this.sqlalert.html("");
+              // remove the quotations
+              let newsql = result.sql.replace(/[']+/g, "");
+              // replace any like and percents with = and *
+              let likeidx = newsql.indexOf('LIKE');
+              if (likeidx !== -1) {
+                newsql = newsql.replace('LIKE(', '= ').replace(/[%]/g, '*');
+                let idx = newsql.indexOf(')', likeidx);
+                newsql = newsql.replace(newsql.charAt(idx), " ");
+              }
+              _this.searchbox.val(newsql);
+            }
+        } catch (error) {
+          _this.sqlalert.html("<p class='text-center text-danger'>Must provide valid input.</p>");
+        }
+    }
+
+    // Reset the SQL in SearchBox
+    resetSQL(event) {
+        let _this = event.data;
+       _this.searchbox.val("");
+    }
+
+    // Run the Query from the QB
+    runSQL(event) {
+        let _this = event.data;
+        if (_this.searchbox.val() === "") {
+            _this.sqlalert.html("<p class='text-center text-danger'>You must generate SQL first!</p>");
+        } else {
+            _this.searchform.submit();
+        }
     }
 }

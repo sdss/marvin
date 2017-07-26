@@ -1,69 +1,44 @@
-#!/usr/bin/env python
-# encoding: utf-8
+# !usr/bin/env python2
+# -*- coding: utf-8 -*-
 #
-# test_marvin_pickle.py
+# Licensed under a 3-clause BSD license.
 #
-# Created by Brett Andrews on 30 Nov 2016.
+# @Author: Brian Cherinka
+# @Date:   2017-06-12 19:13:30
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2017-06-12 19:23:07
 
-
-from __future__ import division, print_function, absolute_import
-
+from __future__ import print_function, division, absolute_import
+from marvin.core import marvin_pickle
+import pytest
 import os
-import unittest
 
-import marvin
-import marvin.tests
-import marvin.core.marvin_pickle
+data = dict(a=7, b=[10, 2])
 
 
-class TestMarvinPickle(marvin.tests.MarvinTest):
-    """Test marvin_pickle class."""
+class TestMarvinPickle(object):
 
-    @classmethod
-    def setUpClass(cls):
-        marvin.config.use_sentry = False
-        marvin.config.add_github_message = False
-        cls.data = dict(a=7, b=[10, 2])
-        files = ['~/tmp_testMarvinPickleSpecifyPath.pck',
-                 '~/tmp_testMarvinPickleDeleteOnRestore.pck',
-                 '~/tmp_testMarvinPickleOverwriteTrue.pck']
-        for fn in files:
-            if os.path.exists(fn):
-                os.remove(fn)
+    def test_specify_path(self, temp_scratch):
+        file = temp_scratch.join('tmp_testMarvinPickleSpecifyPath.pck')
+        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=False)
+        assert file.check() is True
+        revived_data = marvin_pickle.restore(path_out)
+        assert data == revived_data
 
-    def setUp(self):
-        self._files_created = []
+    def test_overwrite_true(self, temp_scratch):
+        file = temp_scratch.join('tmp_testMarvinPickleOverwriteTrue.pck')
+        open(str(file), 'a').close()
+        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=True)
+        assert file.check() is True
+        revived_data = marvin_pickle.restore(path_out)
+        assert data == revived_data
 
-    def tearDown(self):
-        for fp in self._files_created:
-            if os.path.exists(fp):
-                os.remove(fp)
+    def test_delete_on_restore(self, temp_scratch):
+        file = temp_scratch.join('tmp_testMarvinPickleDeleteOnRestore.pck')
+        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=False)
+        assert file.check() is True
+        revived_data = marvin_pickle.restore(path_out, delete=True)
+        assert data == revived_data
+        assert os.path.isfile(str(file)) is False
 
-    def testMarvinPickleSpecifyPath(self):
-        self.path_in = os.path.expanduser('~/tmp_testMarvinPickleSpecifyPath.pck')
-        path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
-        revivedData = marvin.core.marvin_pickle.restore(path_out)
-        self._files_created.append(path_out)
-        self.assertDictEqual(self.data, revivedData)
 
-    def testMarvinPickleOverwriteTrue(self):
-        fname = '~/tmp_testMarvinPickleOverwriteTrue.pck'
-        self.path_in = os.path.expanduser(fname)
-        open(self.path_in, 'a').close()
-        path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=True)
-        self._files_created.append(path_out)
-        revivedData = marvin.core.marvin_pickle.restore(path_out)
-        self.assertDictEqual(self.data, revivedData)
-
-    def testMarvinPickleDeleteOnRestore(self):
-        self.path_in = os.path.expanduser('~/tmp_testMarvinPickleDeleteOnRestore.pck')
-        path_out = marvin.core.marvin_pickle.save(obj=self.data, path=self.path_in, overwrite=False)
-        self._files_created.append(path_out)
-        revivedData = marvin.core.marvin_pickle.restore(path_out, delete=True)
-        self.assertDictEqual(self.data, revivedData)
-        self.assertFalse(os.path.isfile(self.path_in))
-
-if __name__ == '__main__':
-    # set to 1 for the usual '...F..' style output, or 2 for more verbose output.
-    verbosity = 2
-    unittest.main(verbosity=verbosity)
