@@ -48,6 +48,7 @@ Marvin at a Glance
 * :doc:`faq`
 * :doc:`getting-started`
 * :doc:`tutorials`
+* :doc:`exercises`
 
 Components
 ==========
