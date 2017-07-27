@@ -10,5 +10,7 @@ Here are exercises and activities designed to stimulate your usage of Marvin in 
 
 :download:`Computing Star-Formation Rates and SFR Densities using Marvin <exercises/EL_Formulation.pdf>`
 
+:download:`Investigating Gas and Stellar Kinematics using Marvin <exercises/marvin-kinematics.ipynb>`
+
 
 |
