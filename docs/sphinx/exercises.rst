@@ -10,7 +10,5 @@ Here are exercises and activities designed to stimulate your usage of Marvin in 
 
 :download:`Computing Star-Formation Rates and SFR Densities using Marvin <exercises/EL_Formulation.pdf>`
 
-:download:`Quantifying Morphology using Marvin`
-
 
 |
