@@ -1,3 +1,8 @@
+# @Author: Brett Andrews <andrews>
+# @Date:   2017-07-26 11:07:00
+# @Last modified by:   andrews
+# @Last modified time: 2017-07-26 17:07:79
+
 #!/usr/bin/env python
 # encoding: utf-8
 #
@@ -548,6 +553,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
+        # TODO extend to allow for different property names and make channel optional
         map_1 = self.getMap(property_name, channel=channel_1)
         map_2 = self.getMap(property_name, channel=channel_2)
 
