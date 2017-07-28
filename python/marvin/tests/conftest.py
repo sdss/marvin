@@ -29,7 +29,8 @@ def pytest_addoption(parser):
     # run slow tests
     parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
     # control releases run
-    parser.addoption('--release', type=str, default=None, help='Run a certain release only')
+    #parser.addoption('--release', type=str, default=None, help='Run a certain release only')
+    parser.addoption('--travis-only', action='store_true', default=False, help='Run a Travis only subset')
 
 
 def pytest_runtest_setup(item):
@@ -38,39 +39,54 @@ def pytest_runtest_setup(item):
         pytest.skip('Requires --runslow option to run.')
 
 
+# def pytest_configure(config):
+#     ''' Runs during configuration of conftest.  Checks and sets a global instance for a
+#         SpecificRelease based on the pytest command line input of --release
+#     '''
+#     opt = config.getoption('--release')
+#     global sprelease
+#     sprelease = SpecificRelease(opt)
+
 def pytest_configure(config):
     ''' Runs during configuration of conftest.  Checks and sets a global instance for a
-        SpecificRelease based on the pytest command line input of --release
+        TravisSubset based on the pytest command line input of --travis-only
     '''
-    opt = config.getoption('--release')
-    global sprelease
-    sprelease = SpecificRelease(opt)
-
+    option = config.getoption('--travis-only')
+    global travis
+    if option:
+        print('option')
+        travis = TravisSubset()
 
 # specific release instance
-sprelease = None
+travis = None
 
 
-class SpecificRelease(object):
-    def __init__(self, release):
-        self.chosen_release = release
-        self.set_new_releases()
+class TravisSubset(object):
+    def __init__(self):
+        self.new_releases = releases
+        self.new_bintypes = ['SPX', 'VOR10', 'NONE', 'STON']
+        self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
 
-    def set_new_releases(self):
-        global releases
-        if self.chosen_release is None:
-            new = releases
-        elif self.chosen_release == 'latest':
-            new = max([r for r in releases if 'MPL' in r])
-        elif 'MPL' in self.chosen_release or 'DR' in self.chosen_release:
-            newr = [r for r in releases if r == self.chosen_release]
-            new = releases if not newr else newr
-        self.new_releases = new
+# class SpecificRelease(object):
+#     def __init__(self, release):
+#         self.chosen_release = release
+#         self.set_new_releases()
 
-    @pytest.fixture()
-    def skiprelease(self):
-        if releases != self.new_releases:
-            pass
+#     def set_new_releases(self):
+#         global releases
+#         if self.chosen_release is None:
+#             new = releases
+#         elif self.chosen_release == 'latest':
+#             new = max([r for r in releases if 'MPL' in r])
+#         elif 'MPL' in self.chosen_release or 'DR' in self.chosen_release:
+#             newr = [r for r in releases if r == self.chosen_release]
+#             new = releases if not newr else newr
+#         self.new_releases = new
+
+#     @pytest.fixture()
+#     def skiprelease(self):
+#         if releases != self.new_releases:
+#             pass
 
 # Global Parameters for FIXTURES
 # ------------------------------
@@ -128,8 +144,15 @@ def get_params(request):
 
     # placeholder until the marvin_test_if decorator works in 2.7
     release, bintype, template = request.param
-    if sprelease and release not in sprelease.new_releases:
+    if travis and release not in travis.new_releases:
         pytest.skip('Skipping non-requested release')
+
+    if travis and bintype not in travis.new_bintypes:
+        pytest.skip('Skipping non-requested release')
+
+    if travis and template not in travis.new_templates:
+        pytest.skip('Skipping non-requested release')
+
     return request.param
 
 
