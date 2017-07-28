@@ -12,7 +12,7 @@ Here are exercises and activities designed to stimulate your usage of Marvin in 
 
 :download:`Investigating Gas and Stellar Kinematics using Marvin <exercises/marvin_kinematics.ipynb>`
 
-:download:`Investigating Gas and Stellar Kinematics using Marvin [Solution] <exercises/marvin_kinematics.ipynb>`
+:download:`Investigating Gas and Stellar Kinematics using Marvin [Solution] <exercises/marvin_kinematics_solution.ipynb>`
 
 
 |
