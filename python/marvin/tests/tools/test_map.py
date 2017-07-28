@@ -63,9 +63,8 @@ class TestMap(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
 
+    @marvin_test_if(map_={'data_origin': ['db']}, mark='skip')
     def test_save_and_restore(self, temp_scratch, map_):
-        if map_.data_origin == 'db':
-            pytest.skip('objects with data_origin db cannot be saved and pickled')
 
         fout = temp_scratch.join('test_map.mpf')
         map_.save(str(fout))
