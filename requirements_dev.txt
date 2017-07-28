@@ -11,3 +11,4 @@ psycopg2>=2.6.2
 blinker>=1.4
 selenium>=3.3.1
 page_objects>=1.1.0
+decorator>=4.1.2
