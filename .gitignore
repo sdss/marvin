@@ -31,6 +31,7 @@ docs/logs
 docs/sphinx/_static/logs
 docs/sphinx/api/brain/logs
 docs/sphinx/api/logs
+docs/sphinx/exercises/.ipynb_checkpoints
 docs/sphinx/jupyter/.ipynb_checkpoints
 docs/sphinx/flask_profiler.sql
 docs/sphinx/jupyter/.ipynb_checkpoints
