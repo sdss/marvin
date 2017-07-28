@@ -37,6 +37,7 @@ env:
     - MANGA_LOCALHOST=1
     - DISPLAY=:99.0
     - USE_BROWSERSTACK=1
+    - MARVIN_USES_SUBSET_IN_TRAVIS=1
 
 matrix:
   fast_finish: true
@@ -103,7 +104,7 @@ before_script:
 - python -c "from matplotlib import pyplot as plt;"
 
 script:
-- pytest python/marvin/tests ---release latest --cov marvin --cov-report term-missing
+- pytest python/marvin/tests --travis-only --cov python/marvin --cov-report html
 
 after_success:
 - coveralls

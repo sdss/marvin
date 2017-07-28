@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-12 15:22:03
+# @Last Modified time: 2017-07-28 11:03:45
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -84,7 +84,8 @@ class ApiPage(Page):
             if keys:
                 assert set(expdata.keys()) == set(self.json['data'].keys())
             else:
-                assert expdata.items() <= self.json['data'].items()
+                #assert expdata.items() <= self.json['data'].items()
+                self.assert_dict_contains_subset(expdata, self.json['data'])
         elif isinstance(expdata, list):
             assert isinstance(self.json['data'], list), 'response data should be a list'
             if issubset:
