@@ -88,7 +88,7 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - sleep 3
 # Run script to download test data files and db
-- sh $TRAVIS_BUILD_DIR/bin/setup_travis
+- travis_wait 20 sh $TRAVIS_BUILD_DIR/bin/setup_travis
 # Create unique web server port based on travis python version
 - export LOCAL_MARVIN_PORT=50${TRAVIS_PYTHON_VERSION/.}
 - echo $LOCAL_MARVIN_PORT
