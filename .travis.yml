@@ -104,7 +104,7 @@ before_script:
 - python -c "from matplotlib import pyplot as plt;"
 
 script:
-- pytest python/marvin/tests --travis-only --cov python/marvin --cov-report html
+- pytest python/marvin/tests -v --travis-only --cov python/marvin --cov-report html
 
 after_success:
 - coveralls
