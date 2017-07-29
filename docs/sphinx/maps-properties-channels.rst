@@ -5,6 +5,40 @@ Maps Properties and Channels
 
 .. # code to generate list of properties and channels
 
+    from marvin import config
+    from marvin.tools.maps import Maps
+
+    config.setRelease('MPL-4')
+    release = ''.join(config.release.lower().split('-'))
+
+    maps = Maps(plateifu='8485-1901')
+
+    print()
+
+    for prop in maps.properties:
+        
+        channel0 = '' if prop.channels is None else r'``{}``'.format(prop.channels[0])
+        if 'emline' in prop.name:
+            channel0 = ':ref:`marvin-{}-emline-channels`'.format(release)
+        if 'specindex' in prop.name:
+            channel0 = ':ref:`marvin-{}-specindex-channels`'.format(release)
+
+        print(r'"``{0}``", "{1}"'.format(prop.name, channel0))
+
+        if (prop.channels is not None) and (len(prop.channels) > 1):
+            if ('emline' not in prop.name) and ('specindex' not in prop.name):
+                for ch in prop.channels[1:]:
+                    print(r'"", "``{}``"'.format(ch))
+
+    print()
+
+    for channel in maps.properties['emline_gflux'].channels:
+        print('* ``{}``'.format(channel))
+
+    print()
+
+    for channel in maps.properties['specindex'].channels:
+        print('* ``{}``'.format(channel))
 
 
 MPL-5 Properties and Channels
