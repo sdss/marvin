@@ -1,8 +1,3 @@
-# @Author: Brett Andrews <andrews>
-# @Date:   2017-07-26 11:07:00
-# @Last modified by:   andrews
-# @Last modified time: 2017-07-26 17:07:79
-
 #!/usr/bin/env python
 # encoding: utf-8
 #
