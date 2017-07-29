@@ -63,8 +63,8 @@ travis = None
 
 class TravisSubset(object):
     def __init__(self):
-        self.new_releases = releases
-        self.new_bintypes = ['SPX', 'VOR10', 'NONE', 'STON']
+        self.new_releases = ['MPL-5']
+        self.new_bintypes = ['SPX'] #['SPX', 'VOR10', 'NONE', 'STON']
         self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
 
 # class SpecificRelease(object):

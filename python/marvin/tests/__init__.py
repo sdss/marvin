@@ -4,6 +4,8 @@
 import inspect
 from functools import wraps
 
+from decorator import decorator
+
 import pytest
 
 
@@ -77,7 +79,7 @@ def marvin_test_if(mark='skip', **kfilter):
 
             @marvin_test_if(mark='include', galaxy=dict(bintype=['STON'], template=['MILES-THIN']))
 
-        You can also mark all tests with ``data_origin='file'`` as expected
+        You can also mark all tests with ``data_origin=['file']`` as expected
         failure::
 
             @marvin_test_if(mark='xfails', data_origin=['file'])
@@ -92,46 +94,48 @@ def marvin_test_if(mark='skip', **kfilter):
 
     """
 
-    def check_params(ff):
+    def _should_skip(filter_values, fixture_value, prop_name):
+        ll = ', '.join(filter_values)
+        if mark == 'skip' and fixture_value in filter_values:
+            return pytest.skip('Skipping {0}={1!r}'.format(prop_name, ll))
+        elif mark == 'include' and fixture_value not in filter_values:
+            return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
+        elif mark == 'xfail' and fixture_value in filter_values:
+            return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
+        return False
 
-        def _should_skip(filter_values, fixture_value, prop_name):
-            ll = ', '.join(filter_values)
-            if mark == 'skip' and fixture_value in filter_values:
-                return pytest.skip('Skipping {0}={1!r}'.format(prop_name, ll))
-            elif mark == 'include' and fixture_value not in filter_values:
-                return pytest.skip('Skipping all {0} except {1!r}'.format(prop_name, ll))
-            elif mark == 'xfail' and fixture_value in filter_values:
-                return pytest.xfail('Expected failure if {0}={1!r}'.format(prop_name, ll))
-            return False
+    @decorator
+    def decorated_function(ff, *args, **kwargs):
 
-        @wraps(ff)
-        def decorated_function(self, *args, **kwargs):
+        ff_attr_names = inspect.getargspec(ff).args
+        ff_attrs = {}
+        for ii in range(len(args)):
+            ff_attrs[ff_attr_names[ii]] = args[ii]
 
-            assert mark in ['skip', 'include', 'xfail'], \
-                'valid marks are \'skip\', \'include\', and \'xfail\''
+        assert mark in ['skip', 'include', 'xfail'], \
+            'valid marks are \'skip\', \'include\', and \'xfail\''
 
-            if len(kfilter) > 1:
-                raise ValueError('marvin_test_if only accepts one filter condition.')
+        if len(kfilter) > 1:
+            raise ValueError('marvin_test_if only accepts one filter condition.')
 
-            fixture_to_filter, filter_attributes = list(kfilter.items())[0]
+        fixture_to_filter, filter_attributes = list(kfilter.items())[0]
 
-            if fixture_to_filter not in kwargs:
-                return ff(self, *args, **kwargs)
+        if fixture_to_filter not in ff_attrs:
+            return ff(*args, **kwargs)
 
-            if not isinstance(filter_attributes, dict):
-                _should_skip(filter_attributes, kwargs[fixture_to_filter], fixture_to_filter)
-            else:
-                for filter_attribute, filter_values in filter_attributes.items():
-                    fixture = kwargs[fixture_to_filter]
-                    if not hasattr(fixture, filter_attribute):
-                        continue
-                    fixture_value = getattr(fixture, filter_attribute)
-                    if _should_skip(filter_values, fixture_value, filter_attribute):
-                        break
+        if not isinstance(filter_attributes, dict):
+            _should_skip(filter_attributes, ff_attrs[fixture_to_filter], fixture_to_filter)
+        else:
+            for filter_attribute, filter_values in filter_attributes.items():
+                fixture = ff_attrs[fixture_to_filter]
+                if not hasattr(fixture, filter_attribute):
+                    continue
+                fixture_value = getattr(fixture, filter_attribute)
+                if _should_skip(filter_values, fixture_value, filter_attribute):
+                    break
 
-            return ff(self, *args, **kwargs)
-        return decorated_function
-    return check_params
+        return ff(*args, **kwargs)
+    return decorated_function
 
 
 class marvin_test_if_class(object):
