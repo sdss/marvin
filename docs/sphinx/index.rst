@@ -87,6 +87,7 @@ General Reference
    :titlesonly:
    :maxdepth: 1
 
+   maps-properties-channels
    Available Query Parameters <query-params>
    tools/visual-guide
 
