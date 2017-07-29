@@ -46,7 +46,7 @@ We can also grab the DRP and DAP data on any single spaxel. Let's get the centra
 
 Here ``maps[i, j]`` is shorthand for ``maps.getSpaxel(x=j, y=i, xyorig='lower')``, which has additional options that can be invoked by using the :meth:`~marvin.tools.maps.Maps.getSpaxel` method. For example, set (``modelcube=True``) to return the model spectrum (``spax.model``).
 
-We can then get a dictionary of all of the DAP :ref:`marvin-tools-analprop`s with ``spax.properties`` and get the value of any one of them, such as stellar velocity, by using the appropriate key ("stellar_vel" in this case), and accessing the ``value`` attribute of the :ref:`marvin-tools-analprop` object:
+We can then get a dictionary of all of the DAP :ref:`marvin-tools-analprop` s with ``spax.properties`` and get the value of any one of them, such as stellar velocity, by using the appropriate key ("stellar_vel" in this case), and accessing the ``value`` attribute of the :ref:`marvin-tools-analprop` object:
 
 ::
 
