@@ -138,7 +138,10 @@ class TestGetSpaxel(object):
 
         assert message in str(ee.value)
 
-    @pytest.mark.parametrize('coord, xyorig', [('xy', 'lower'), ('xy', 'center'), ('radec', None)])
+    @pytest.mark.parametrize('coord, xyorig',
+                             [('xy', 'lower'),
+                              ('xy', 'center'),
+                              ('radec', None)])
     def test_getSpaxel_flux(self, cube, galaxy, coord, xyorig):
         if coord == 'xy':
             x = galaxy.spaxel['x'] if xyorig == 'lower' else galaxy.spaxel['x_cen']

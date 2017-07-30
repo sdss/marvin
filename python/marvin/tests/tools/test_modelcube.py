@@ -53,6 +53,7 @@ class TestModelCubeInit(object):
 
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
+        assert pytest.approx(model_cube.nsa.z, galaxy.redshift)
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
@@ -101,8 +102,8 @@ class TestModelCube(object):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.maps, Maps)
 
-    def test_modelcube_redshift(self, modelcube, galaxy):
-        assert pytest.approx(modelcube.nsa.z, galaxy.redshift)
+    # def test_modelcube_redshift(self, modelcube, galaxy):
+    #     assert pytest.approx(modelcube.nsa.z, galaxy.redshift)
 
 
 @pytest.mark.slow
