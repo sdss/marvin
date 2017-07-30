@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 from marvin.tests import UseReleases
+from marvin import config
 
 
 @UseReleases('MPL-5')
@@ -26,8 +27,9 @@ class TestMapsProperties(object):
         assert isinstance(datamodel[0], MapsProperty)
 
     def test_MapsPropertyList(self, release):
-        datamodel = get_dap_datamodel()
-        assert datamodel.version == '2.0.2'
+        drpver, dapver = config.lookUpVersions(release)
+        datamodel = get_dap_datamodel(dapver)
+        assert datamodel.version == dapver
         assert 'EMLINE_GFLUX' in datamodel
         assert not ('emline_bad' in datamodel)
         assert isinstance(datamodel['emline_gflux'], MapsProperty)
@@ -35,12 +37,13 @@ class TestMapsProperties(object):
         assert (datamodel == 'emline_bad') is None, MapsProperty
 
     def test_MapsPropertyList_get(self, release):
-        datamodel = get_dap_datamodel()
+        drpver, dapver = config.lookUpVersions(release)
+        datamodel = get_dap_datamodel(dapver)
         assert datamodel.get('badname_badchannel') is None
         assert datamodel.get('emline_gflux') is None
         assert datamodel.get('emline_gflux_badchannel') is None
 
-        maps_prop, channel = datamodel.get('emline_gflux_oii_3727')
+        maps_prop, channel = datamodel.get('emline_gflux_ha_6564')
         assert isinstance(maps_prop, MapsProperty)
         assert maps_prop.name == 'emline_gflux'
-        assert channel == 'oii_3727'
+        assert channel == 'ha_6564'
