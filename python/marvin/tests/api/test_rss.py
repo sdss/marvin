@@ -6,16 +6,18 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 17:47:12
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 11:38:32
+# @Last Modified time: 2017-07-29 20:11:29
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
+from marvin.tests import marvin_test_if
 import pytest
 
 
 @pytest.mark.parametrize('page', [('api', 'getRSS')], ids=['getrss'], indirect=True)
 class TestGetRss(object):
 
+    @marvin_test_if(mark='skip', galaxy={'plateifu': ['7443-12701']})
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_plateifu_success(self, galaxy, page, params, reqtype):
         data = {}
