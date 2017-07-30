@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-13 16:41:27
+# @Last Modified time: 2017-07-30 17:36:14
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -81,7 +81,10 @@ def init_web(monkeypatch, set_config):
 @pytest.fixture(scope='function', autouse=True)
 def inspection(monkeypatch):
     from brain.core.inspection import Inspection
-    monkeypatch.setattr('inspection.marvin.Inspection', Inspection)
+    try:
+        monkeypatch.setattr('inspection.marvin.Inspection', Inspection)
+    except Exception as e:
+        pass
 
 
 @pytest.mark.usefixtures('app, get_templates')
