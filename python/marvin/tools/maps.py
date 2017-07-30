@@ -548,6 +548,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         """
 
+        # TODO extend to allow for different property names and make channel optional
         map_1 = self.getMap(property_name, channel=channel_1)
         map_2 = self.getMap(property_name, channel=channel_2)
 
