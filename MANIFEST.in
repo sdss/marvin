@@ -1,5 +1,6 @@
 recursive-include python/marvin/data *
 recursive-include python/marvin/extern *
+recursive-include python/marvin/tests/data *
 
 include python/marvin/db/dbconfig.ini
 include requirements.txt
