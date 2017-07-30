@@ -51,8 +51,16 @@ class MetaUse(object):
         return decorated_class
 
 
-UseBintypes = type('UseBintypes', (MetaUse,), {'fxn': use_bintypes})
-UseReleases = type('UseReleases', (MetaUse,), {'fxn': use_releases})
+class UseBintypes(MetaUse):
+    def __init__(self, *args):
+        self.args = args
+        self.fxn = use_bintypes
+
+
+class UseReleases(MetaUse):
+    def __init__(self, *args):
+        self.args = args
+        self.fxn = use_releases
 
 
 # These decorators for functions and classes allow to skip or run tests only for galaxies
