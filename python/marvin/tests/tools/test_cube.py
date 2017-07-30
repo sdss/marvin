@@ -19,6 +19,8 @@ from marvin.tests import skipIfNoDB, marvin_test_if
 def skipbins(galaxy):
     if galaxy.bintype not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
+    if galaxy.template not in ['M11-STELIB-ZSOL', 'GAU-MILESHC']:
+        pytest.skip('Skipping all templates for Cube tests')
 
 
 class TestCube(object):
@@ -54,7 +56,8 @@ class TestCube(object):
             c = Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
 
-    @pytest.mark.slow
+    # @pytest.mark.slow
+    @marvin_test_if(mark='include', cube={'plateifu': '8485-1901'})
     def test_cube_flux(self, cube):
         assert cube.flux is not None
         assert isinstance(cube.flux, np.ndarray)
