@@ -12,7 +12,9 @@ from __future__ import print_function, division, absolute_import
 from marvin.core.core import Dotable, DotableCaseInsensitive
 import pytest
 
-normal_dicts = [dict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])]
+from collections import OrderedDict
+
+normal_dicts = [OrderedDict(A=7, b=[10, 2], C='AbCdEf', d=['ghIJ', 'Lmnop'])]
 
 
 @pytest.fixture(params=normal_dicts)
@@ -37,6 +39,3 @@ class TestCoreDotable(object):
         assert dotdictci[key.upper()] == dotdictci.__getattr__(key.lower())
         assert dotdictci[key.lower()] == dotdictci.__getattr__(key.upper())
         assert dotdictci[key.lower()] == dotdictci.__getattr__(key.lower())
-
-
-
