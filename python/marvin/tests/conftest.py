@@ -6,6 +6,7 @@
 # Created by Brett Andrews on 20 Mar 2017.
 
 
+from collections import OrderedDict
 import itertools
 import os
 
@@ -95,8 +96,8 @@ releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fix
 
 def populate_bintypes_templates(releases):
     ''' Generates bintype and template dictionaries for each release '''
-    bintypes = {release: [] for release in releases}
-    templates = {release: [] for release in releases}
+    bintypes = OrderedDict((release, []) for release in releases)
+    templates = OrderedDict((release, []) for release in releases)
     for release in releases:
         __, dapver = config.lookUpVersions(release)
         bintemps = _get_bintemps(dapver)
@@ -108,6 +109,7 @@ def populate_bintypes_templates(releases):
             if template not in templates[release]:
                 templates[release].append(template)
     return bintypes, templates
+
 
 bintypes, templates = populate_bintypes_templates(releases)
 
@@ -138,7 +140,7 @@ def _params_ids(fixture_value):
     return '-'.join(fixture_value)
 
 
-@pytest.fixture(scope='session', params=_get_release_generator_chain(), ids=_params_ids)
+@pytest.fixture(scope='session', params=sorted(_get_release_generator_chain()), ids=_params_ids)
 def get_params(request):
     """Yield a tuple of (release, bintype, template)."""
 
@@ -156,7 +158,7 @@ def get_params(request):
     return request.param
 
 
-@pytest.fixture(scope='session', params=galaxy_data.keys())
+@pytest.fixture(scope='session', params=sorted(galaxy_data.keys()))
 def plateifu(request):
     """Yield a plate-ifu."""
     return request.param
