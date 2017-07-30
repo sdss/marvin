@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:34:31
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 11:19:23
+# @Last Modified time: 2017-07-30 19:32:03
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -54,7 +54,7 @@ class TestGeneralNSAFull(object):
                 'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
                 'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
-        page.assert_success(galaxy.nsa_data)
+        page.assert_success(galaxy.nsa_data['nsa'])
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('mangaid', [('1209232')], ids=['badid'])
@@ -78,7 +78,7 @@ class TestGeneralNSADrpall(object):
                 'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
                 'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
-        page.assert_success(galaxy.nsa_data)
+        page.assert_success(galaxy.nsa_data['drpall'])
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('mangaid', [('1209232')], ids=['badid'])
