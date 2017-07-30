@@ -117,6 +117,7 @@ def populate_bintypes_templates(releases):
 
 bintypes, templates = populate_bintypes_templates(releases)
 
+# TODO reduce modes to only local and remote
 modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
 dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
