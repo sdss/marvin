@@ -6,13 +6,22 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-26 11:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-07-29 20:07:96
+# @Last modified time: 2017-07-30 00:07:14
 
 import os
 
 import pytest
+import numpy as np
+import astropy
 
 from marvin.utils.plot import colorbar
+
+@pytest.fixture(scope='function')
+def image():
+    data = np.linspace(1, 9, 9).reshape(3, 3)
+    mask = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+    masked_array = np.ma.array(data, mask=mask)
+    return masked_array
 
 
 class TestColorMap(object):
@@ -58,3 +67,13 @@ class TestRange(object):
     def test_set_vmin_vmax(self, d, cbrange):
         expected = {'vmin': 0, 'vmax': 1}
         assert colorbar._set_vmin_vmax(d, cbrange) == expected
+
+    @pytest.mark.parametrize('image, sigma, expected',
+                             [(np.ma.array([1, 3, 7, 13, 29, 35], mask=[0, 1, 1, 0, 0, 0]), 1,
+                               [13, 29])])
+    def test_cbrange_sigma_clip(self, image, sigma, expected):
+        assert colorbar._cbrange_sigma_clip(image, sigma=sigma) == expected
+
+
+
+
