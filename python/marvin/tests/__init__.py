@@ -47,7 +47,7 @@ class MetaUse(object):
             # only decorate public functions
             if attr[0][0] != '_':
                 setattr(decorated_class, attr[0],
-                        self.fxn(*self.args)(getattr(decorated_class, attr[0])))
+                        self.fxn(*self.args)(attr[1]))
         return decorated_class
 
 

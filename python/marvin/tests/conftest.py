@@ -161,6 +161,8 @@ def get_params(request):
 @pytest.fixture(scope='session', params=sorted(galaxy_data.keys()))
 def plateifu(request):
     """Yield a plate-ifu."""
+    if request.param == '7443-12701':
+        pytest.skip('skipping 7443-12701')
     return request.param
 
 
