@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:08:47
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-27 11:32:13
+# @Last Modified time: 2017-07-30 19:12:14
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -28,7 +28,7 @@ class TestGetPlate(object):
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_plate_success(self, galaxy, page, params, reqtype):
         params.update({'plateid': galaxy.plate})
-        data = {'plateid': str(galaxy.plate), 'header': {}}
+        data = {'plateid': str(galaxy.plate)}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
         assert data['plateid'] == page.json['data']['plateid']
