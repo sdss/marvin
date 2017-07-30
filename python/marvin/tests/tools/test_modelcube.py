@@ -102,9 +102,6 @@ class TestModelCube(object):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.maps, Maps)
 
-    # def test_modelcube_redshift(self, modelcube, galaxy):
-    #     assert pytest.approx(modelcube.nsa.z, galaxy.redshift)
-
 
 @pytest.mark.slow
 class TestGetSpaxel(object):
