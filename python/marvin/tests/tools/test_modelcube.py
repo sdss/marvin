@@ -105,6 +105,7 @@ class TestModelCube(object):
         assert pytest.approx(modelcube.nsa.z, galaxy.redshift)
 
 
+@pytest.mark.slow
 class TestGetSpaxel(object):
 
     def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
@@ -124,7 +125,6 @@ class TestGetSpaxel(object):
         assert spaxel.stellar_continuum is not None
         assert spaxel.redcorr is not None
 
-    @pytest.mark.slow
     def test_getspaxel(self, galaxy, data_origin):
         if data_origin == 'file':
             kwargs = {'filename': galaxy.modelpath}
