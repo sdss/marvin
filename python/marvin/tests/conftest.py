@@ -575,3 +575,10 @@ def query(request, release, mode, db):
     yield q
     config.forceDbOn()
     q = None
+
+
+@pytest.fixture(autouse=True)
+def skipall():
+    pytest.skip('skipping everything')
+
+
