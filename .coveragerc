@@ -4,7 +4,9 @@ branch = true
 omit =
     # exclude things in test
     python/marvin/tests/*
+    python/marvin/extern/*
 
 [report]
 omit =
     python/marvin/tests/*
+    python/marvin/extern/*
