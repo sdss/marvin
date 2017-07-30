@@ -64,9 +64,13 @@ travis = None
 
 class TravisSubset(object):
     def __init__(self):
+        self.new_gals = ['8485-1901']
         self.new_releases = ['MPL-5']
         self.new_bintypes = ['SPX'] #['SPX', 'VOR10', 'NONE', 'STON']
         self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
+        self.new_dbs = ['nodb']
+        self.new_origins = ['file', 'api']
+        self.new_modes = ['local', 'remote']
 
 # class SpecificRelease(object):
 #     def __init__(self, release):
@@ -161,20 +165,24 @@ def get_params(request):
 @pytest.fixture(scope='session', params=sorted(galaxy_data.keys()))
 def plateifu(request):
     """Yield a plate-ifu."""
-    if request.param == '7443-12701':
-        pytest.skip('skipping 7443-12701')
+    if travis and request.param not in travis.new_gals:
+        pytest.skip('Skipping non-requested galaxies')
     return request.param
 
 
 @pytest.fixture(scope='session', params=origins)
 def data_origin(request):
     """Yield a data access mode."""
+    if travis and request.param not in travis.new_origins:
+        pytest.skip('Skipping non-requested origins')
     return request.param
 
 
 @pytest.fixture(params=modes)
 def mode(request):
     """Yield a data mode."""
+    if travis and request.param not in travis.new_modes:
+        pytest.skip('Skipping non-requested modes')
     return request.param
 
 
@@ -306,6 +314,8 @@ def db(request):
 
     Use this to parametrize over all db options.
     """
+    if travis and request.param not in travis.new_dbs:
+        pytest.skip('Skipping non-requested dbs')
     if request.param == 'db':
         config.forceDbOn()
     else:
@@ -577,8 +587,8 @@ def query(request, release, mode, db):
     q = None
 
 
-@pytest.fixture(autouse=True)
-def skipall():
-    pytest.skip('skipping everything')
+# @pytest.fixture(autouse=True)
+# def skipall():
+#     pytest.skip('skipping everything')
 
 
