@@ -221,8 +221,9 @@ class Search(BaseWebView):
 
         # only grab subset if more than 16 galaxies
         if len(plateifus) > pagesize:
-            __results__ = res.getSubset(offset, limit=pagesize)
-            plateifus = res.getListOf('plateifu')
+            # __results__ = res.getSubset(offset, limit=pagesize)
+            # plateifus = res.getListOf('plateifu')
+            plateifus = plateifus[offset:offset + pagesize]
 
         # get images
         imfiles = None

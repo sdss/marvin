@@ -19,7 +19,7 @@ from marvin.tests import skipIfNoDB, marvin_test_if
 def skipbins(galaxy):
     if galaxy.bintype not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template not in ['M11-STELIB-ZSOL', 'GAU-MILESHC']:
+    if galaxy.template not in ['MILES-THIN', 'GAU-MILESHC']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
