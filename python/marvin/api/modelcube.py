@@ -114,7 +114,9 @@ class ModelCubeView(BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
+              "data": {"plateifu": 8485-1901,
+                       "mangaid": '1-209232',
+                       "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
                        "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
                        "shape": [34, 34],
                        "wavelength": [3621.6, 3622.43, 3623.26, ...],
@@ -135,6 +137,8 @@ class ModelCubeView(BaseView):
 
         if model_cube is not None:
             self.results['data'] = {
+                'plateifu': model_cube.plateifu,
+                'mangaid': model_cube.mangaid,
                 'header': model_cube.header.tostring(),
                 'shape': model_cube.shape,
                 'wavelength': model_cube.wavelength.tolist(),
