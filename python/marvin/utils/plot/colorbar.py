@@ -85,7 +85,7 @@ def _log_tick_format(value):
     """Format tick labels for log axis.
 
     If value between ___, return as ___:
-       [0, 999], int
+       (0, 999], int
        [0.1, 0.99], 1 digit float
        otherwise: exponential notation
 
