@@ -195,7 +195,6 @@ class Plate(MarvinToolsClass, list):
         self.data_origin = 'api'
         self._makePdict()
 
-    @checkPath
     def _initCubes(self):
         ''' Initialize a list of Marvin Cube objects '''
 
