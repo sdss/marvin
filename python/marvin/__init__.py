@@ -46,6 +46,7 @@ log = initLog(logFilePath)
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
+warnings.filterwarnings('ignore', '(.)+use of getfuncargvalue is deprecated,(.)+')
 warnings.filterwarnings('ignore', category=FITSFixedWarning)
 
 # Filters for PY3
