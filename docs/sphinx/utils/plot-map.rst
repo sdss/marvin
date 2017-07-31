@@ -141,7 +141,7 @@ Spaxels Not Covered by the IFU
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    nocov = mapplot.no_coverage_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask, bit=0)
+    nocov = mapplot.no_coverage_mask(mask=ha.mask, bit=0, ivar=ha.ivar)
 
 
 **Important**: In 2.1.3, the call signature is ``no_coverage_mask(value, ivar, mask, bit)``. In version 2.1.4, this changes to ``no_coverage_mask(mask, bit, ivar=None)``.
@@ -158,8 +158,7 @@ Spaxels Flagged as Bad Data
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    bad_data = mapplot.bad_data_mask(value=ha.value, ivar=ha.ivar, mask=ha.mask,
-                                     bits={'doNotUse': 30, 'unreliable': 5})
+    bad_data = mapplot.bad_data_mask(mask=ha.mask, bits={'doNotUse': 30, 'unreliable': 5})
 
 
 **Important**: In 2.1.3, the call signature is ``bad_data_mask(mask, bits)``. In version 2.1.4, this changes to ``bad_data_mask(mask, bits)``.
