@@ -22,17 +22,10 @@
             elpetro_absmag_u_r: 1.7617149353
             sersic_n: 3.29617
         drpall:
-            elpetro_absmag_i: -19.1125469207764
-            elpetro_absmag_g_r: 0.596124649048
             z: 0.0407447
             elpetro_th50_r: 1.33067
-            elpetro_logmass: 9.565475912843823
             elpetro_ba: 0.87454
-            elpetro_absmag_i_z: 0.200687408447
             elpetro_phi: 154.873
-            elpetro_mtol_i: 1.30610692501068
-            elpetro_th90_r: 3.6882
-            elpetro_absmag_u_r: 1.7617149353
             sersic_n: 3.29617
     releasedata:
         MPL-4:
@@ -181,18 +174,11 @@
             elpetro_absmag_u_r: 1.95657157898
             sersic_n: 4.43097
         drpall:
-            elpetro_absmag_i: -19.1125469207764
-            elpetro_absmag_g_r: 0.596124649048
-            z: 0.0407447
-            elpetro_th50_r: 1.33067
-            elpetro_logmass: 9.565475912843823
-            elpetro_ba: 0.87454
-            elpetro_absmag_i_z: 0.200687408447
-            elpetro_phi: 154.873
-            elpetro_mtol_i: 1.30610692501068
-            elpetro_th90_r: 3.6882
-            elpetro_absmag_u_r: 1.7617149353
-            sersic_n: 3.29617
+            z: 0.020478
+            elpetro_th50_r: 4.26193
+            elpetro_ba: 0.743017
+            elpetro_phi: 149.48
+            sersic_n: 4.43097
     releasedata:
         MPL-4:
             spaxel:
