@@ -4,6 +4,7 @@ pytest-cov>=2.4.0
 pytest-flask>=0.10.0
 pytest-sugar>=0.8.0
 pytest-xdist>=1.18.1
+pytest-timeout>=1.2.0
 twine>=1.8.1
 invoke>=0.18.1
 uwsgi>=2.0.15

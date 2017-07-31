@@ -120,6 +120,8 @@ class TestImagesGetDir3d(object):
         assert expval == dir3d
 
 
+@pytest.mark.xfail()
+@pytest.mark.timeout(40)
 class TestImagesByList(object):
 
     @pytest.mark.parametrize('imglist, mode, errmsg',
@@ -268,5 +270,3 @@ class TestShowImage(object):
             image = showImage(release=galaxy.release, path=path, mode=mode)
         assert cm.type == MarvinError
         assert errmsg in str(cm.value)
-
-

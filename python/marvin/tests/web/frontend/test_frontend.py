@@ -23,6 +23,8 @@ def page(driver, base_url):
     return page
 
 
+@pytest.mark.xfail()
+@pytest.mark.timeout(10)
 @pytest.mark.usefixtures('live_server')
 class TestIndexPage(object):
     ''' Tests for the main Index page '''
@@ -52,6 +54,8 @@ def search_page(driver, base_url):
     return page
 
 
+@pytest.mark.xfail()
+@pytest.mark.timeout(10)
 @pytest.mark.usefixtures('live_server')
 class TestSearchPage(object):
     ''' Tests for the main Search page '''
@@ -65,6 +69,3 @@ class TestSearchPage(object):
         search_page.searchbox = Keys.RETURN
         assert search_page.results is not None
         assert search_page.table is not None
-
-
-
