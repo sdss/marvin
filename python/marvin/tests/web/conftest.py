@@ -137,13 +137,40 @@ class Page(object):
         for item in a:
             assert item in b
 
-    def assert_dict_contains_subset(self, first, second):
-        subset = first.items() <= second.items()
-        if not subset:
-            subset = all(k in second and set(v).issubset(set(second[k])) if isinstance(v, list) else second[k] == v for k, v in first.items())
-            if not subset:
-                subset = all(k in second and np.isclose(second[k], v) for k, v in first.items())
-        assert subset is True, '{0} dictionary should be subset of {1}'.format(first, second)
+    @staticmethod
+    def _compare_values_is_subset(aa, bb):
+        """Checks if one value or list is a subset of other."""
+
+        if not hasattr(aa, '__iter__') and not hasattr(aa, '__getitem__'):
+            if aa != bb and not np.isclose(aa, bb):
+                return False
+        else:
+            # Checks whether the elements are a list of lists. If so, recursively calls itself.
+            try:
+                if not set(aa).issubset(set(bb)):
+                    return False
+            except Exception:
+                if len(aa) > len(bb):
+                    return False
+                else:
+                    for ii in range(len(aa)):
+                        return Page._compare_values_is_subset(aa[ii], bb[ii])
+
+        return True
+
+    def assert_dict_contains_subset(self, subset, dictionary):
+        """Asserts whether a dictionary is a subset of other."""
+
+        missing = []
+        mismatched = []
+        for key, value in subset.items():
+            if key not in dictionary:
+                missing.append(key)
+            elif not self._compare_values_is_subset(value, dictionary[key]):
+                mismatched.append((key, (value, dictionary[key])))
+
+        assert not (missing or mismatched), \
+            '{0} dictionary should be subset of {1}'.format(subset, dictionary)
 
     def assert_status(self, status_code, message=None):
         message = message or 'HTTP Status {0} expected but got {1}'.format(status_code, self.response.status_code)
@@ -213,5 +240,3 @@ def get_templates(app):
     ''' Fixture that returns which jinja template used '''
     with captured_templates(app) as templates:
         yield templates
-
-
