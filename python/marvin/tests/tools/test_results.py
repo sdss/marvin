@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-06-12 18:18:54
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-14 16:10:14
+# @Last modified by:   andrews
+# @Last modified time: 2017-07-31 12:07:88
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, Results
@@ -141,7 +141,7 @@ class TestResultsGetParams(object):
                 assert set(cols) == set(output[0])
         elif ftype == 'dictlist':
             assert isinstance(output, dict) is True
-            assert isinstance(output.values()[0], list) is True
+            assert isinstance(list(output.values())[0], list) is True
             if name is not None:
                 assert set([name]) == set(list(output.keys()))
             else:

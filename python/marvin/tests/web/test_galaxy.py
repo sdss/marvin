@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-02-22 10:38:28
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-05 13:54:59
+# @Last modified by:   andrews
+# @Last modified time: 2017-07-31 12:07:00
 
 from __future__ import print_function, division, absolute_import
 from marvin.web.controllers.galaxy import make_nsa_dict
@@ -44,9 +44,10 @@ class TestNSA(object):
     #@marvin_test_if(mark='skip', cube=dict(nsa=[None]))
     def test_nsadict_correct(self, page, cube):
         nsa, cols = make_nsa_dict(cube.nsa)
-        assert set(cube.exp_nsa_plotcols.keys()).issubset(set(cols))
-        page.assert_dict_contains_subset(cube.exp_nsa_plotcols, nsa)
-        page.assertListIn(cube.exp_nsa_plotcols.keys(), cols)
+        for value in cube.exp_nsa_plotcols.values():
+            assert set(value.keys()).issubset(set(cols))
+            page.assert_dict_contains_subset(value, nsa)
+            page.assertListIn(value.keys(), cols)
 
     def test_initnsa_method_not_allowed(self, page, params, get_templates):
         page.load_page('get', page.url, params=params)
