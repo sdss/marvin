@@ -24,7 +24,7 @@ def page(driver, base_url):
 
 
 @pytest.mark.xfail()
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(60)
 @pytest.mark.usefixtures('live_server')
 class TestIndexPage(object):
     ''' Tests for the main Index page '''
@@ -55,7 +55,7 @@ def search_page(driver, base_url):
 
 
 @pytest.mark.xfail()
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(60)
 @pytest.mark.usefixtures('live_server')
 class TestSearchPage(object):
     ''' Tests for the main Search page '''
