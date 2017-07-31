@@ -17,7 +17,6 @@
             elpetro_ba: 0.87454
             elpetro_absmag_i_z: 0.200687408447
             elpetro_phi: 154.873
-            elpetro_mtol_i: 1.30610692501068
             elpetro_th90_r: 3.6882
             elpetro_absmag_u_r: 1.7617149353
             sersic_n: 3.29617
@@ -169,7 +168,6 @@
             elpetro_ba: 0.743017
             elpetro_absmag_i_z: 0.16561126709
             elpetro_phi: 149.48
-            elpetro_mtol_i: 1.3208532333374
             elpetro_th90_r: 11.7051
             elpetro_absmag_u_r: 1.95657157898
             sersic_n: 4.43097
