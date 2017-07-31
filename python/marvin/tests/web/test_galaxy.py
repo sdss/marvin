@@ -19,7 +19,7 @@ import pytest
 @pytest.fixture()
 def cube(galaxy, mode):
     cube = Cube(plateifu=galaxy.plateifu, mode=mode)
-    cube.exp_nsa_plotcols = galaxy.nsa_data['nsa']
+    cube.exp_nsa_plotcols = galaxy.nsa_data
     return cube
 
 
