@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-16 14:55:12
+# @Last Modified time: 2017-08-02 14:01:37
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -47,8 +47,9 @@ def deploy(ctx):
     ''' Deploy to pypi '''
     print('Deploying to Pypi!')
     ctx.run("python setup.py sdist bdist_wheel --universal")
-    ctx.run("twine register dist/sdss-marvin-*.tar.gz")
-    ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
+    # pre-registration is deprecated for new pypi releases [~July 2017]
+    #ctx.run("twine register dist/sdss-marvin-*.tar.gz")
+    #ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
     ctx.run("twine upload dist/*")
 
 
