@@ -145,7 +145,7 @@ class Results(object):
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
 
     def __repr__(self):
-        return ('Marvin Results(results={0}, \nquery={1}, \ncount={2}, \nmode={3}'.format(self.results[0], repr(self.query), self.count, self.mode))
+        return ('Marvin Results(query={0}, \ntotalcount={1}, \ncount={2}, \nmode={3}'.format(repr(self.query), self.totalcount, self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
