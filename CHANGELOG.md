@@ -1,6 +1,6 @@
 # Marvin's Change Log
 
-## [2.1.4] - unreleased
+## [2.1.4] - 2017/08/02
 ### Added:
 - Added new query_params object, for easier navigation of available query parameters.  Added new tests.
 - Added a new guided query builder using Jquery Query Builder to the Search page
@@ -16,6 +16,33 @@
 - Refactored the web settings, route registration, extensions to enable extensibility
 
 ### Fixed:
+- Issue #102: problem with urllib package when attempting to retrieve the Marvin URLMap
+- Issue #93: safari browser does not play well with marvin
+- Issue #155: Contrails in Web Map
+- Issue #174: sdss_access may not be completely python 3 compatible
+- Issue #196: Bin not loading from local sas
+- Issue #207: Get Maps in MapSpecView of Galaxy page sometimes fails to return selected maps
+- Issue #210: pip upgrade may not install new things as fresh install
+- Issue #209: marvin version from pip install is incorrect
+- Issue #268: Cube flux from file error
+- Issue #85: Python does not start in Python 3
+- Issue #273: ha.value bug
+- Issue #277: Ticks for log normalized colorbar
+- Issue #275: logger crashes on warning when other loggers try to log
+- Issue #258: 422 Invalid Parameters
+- Issue #271: Problem in dowloading image.
+- Issue #97: sqlalchemy-boolean-search not found when installed from pip source
+- Issue #227: Marvin installation in python 3.6 (update setuptools to 36)
+- Issue #262: problem with marvin update
+- Issue #270: BPT array sizing not compatible
+- Issue #88: Deployment at Utah requires automatisation
+- Issue #234: Add (and use) functions to the datamodel to determine plotting parameters
+- Issue #278: marvin_test_if decorator breaks in python 2.7
+- Issue #274: cube slicing to get a spaxel fails with maps error
+- Issue #39: implement more complete testing framework
+- Issue #242: Result object representation error with 0 query results
+- Issue #159: Marvin issues multiple warnings in PY3
+- Issue #149: Improve integrated flux maps display in web
 
 ## [2.1.3] - 2017/05/18
 ### Added:
