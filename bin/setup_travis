@@ -14,6 +14,6 @@ createuser -U postgres -g utahuser u0931042
 psql -U postgres -d manga -c "set shared_buffers to '1792MB';" -c "set default_statistics_target to 100;"
 psql -U postgres -d manga -c "set effective_cache_size to '5376MB';" -c "set work_mem to '9175kB';"
 psql -U postgres -d manga -c "set maintenance_work_mem to '448MB';"
-pg_restore -Fc -j 8 -U postgres -d manga $HOME/sas/local_mangadb_test.sql
+pg_restore -Fc -j 8 -U postgres -d manga $HOME/local_mangadb_test.sql
 psql -d manga -c "select count(c.pk) from mangadatadb.cube as c;"
 exit 0
