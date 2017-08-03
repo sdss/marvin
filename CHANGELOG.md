@@ -14,6 +14,7 @@
 - Updated the documentation on query and query_params.
 - Modified Guided Search operator options to remove options that could not be parsed by SQLA boolean_search
 - Refactored the web settings, route registration, extensions to enable extensibility
+- Issue #282: Improvements to "Go to CAS" link.  Changed to Go To SkyServer and updated link to public up-to-date link
 
 ### Fixed:
 - Issue #102: problem with urllib package when attempting to retrieve the Marvin URLMap
