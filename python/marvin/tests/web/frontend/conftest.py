@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-05 12:22:37
+# @Last Modified time: 2017-08-03 15:17:55
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -19,8 +19,9 @@ from marvin.tests.web.frontend.live_server import live_server
 from marvin.web.settings import TestConfig, CustomConfig
 
 browserstack = os.environ.get('USE_BROWSERSTACK', None)
+saucelabs = os.environ.get('USE_SAUCELABS', None)
 
-if browserstack:
+if browserstack or saucelabs:
     osdict = {'OS X': ['El Capitan', 'Sierra']}
     browserdict = {'chrome': ['55', '54'], 'firefox': ['52', '51'], 'safari': ['10', '9.1']}
 else:
@@ -29,6 +30,7 @@ else:
 
 osstuff = [(k, i) for k, v in osdict.items() for i in v]
 browserstuff = [(k, i) for k, v in browserdict.items() for i in v]
+osversions = {'El Capitan': '10.11', 'Sierra': '10.12'}
 
 
 @pytest.fixture(params=osstuff)
@@ -72,15 +74,28 @@ def driver(base_url, osinfo, browserinfo):
 
     # set driver
     if browserstack:
+        # BrowserStack
         username = os.environ.get('BROWSERSTACK_USER', None)
         access = os.environ.get('BROWSERSTACK_ACCESS_KEY', None)
+        url = 'http://{0}:{1}@hub.browserstack.com:80/wd/hub'.format(username, access)
         desired_cap = {'os': ostype, 'os_version': os_version, 'browser': browser, 'build': buildid,
                        'browser_version': browser_version, 'project': 'marvin', 'resolution': '1920x1080'}
         desired_cap['browserstack.local'] = True
         desired_cap['browserstack.debug'] = True
         desired_cap['browserstack.localIdentifier'] = os.environ['BROWSERSTACK_LOCAL_IDENTIFIER']
         driver = webdriver.Remote(
-            command_executor='http://{0}:{1}@hub.browserstack.com:80/wd/hub'.format(username, access),
+            command_executor=url,
+            desired_capabilities=desired_cap)
+    elif saucelabs:
+        # SauceLabs
+        username = os.environ.get('SAUCE_USERNAME', None)
+        access = os.environ.get('SAUCE_ACCESS_KEY', None)
+        url = 'http://{0}:{1}@ondemand.saucelabs.com:80/wd/hub'.format(username, access)
+        desired_cap = {'platform': '{0} {1}'.format(ostype, osversions[os_version]), 'browserName': browser,
+                       'build': buildid, 'version': browser_version, 'screenResolution': '1920x1440',
+                       'customData': {'project': 'Marvin'}}
+        driver = webdriver.Remote(
+            command_executor=url,
             desired_capabilities=desired_cap)
     else:
         if browser == 'chrome':
