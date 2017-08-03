@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-03 15:17:55
+# @Last Modified time: 2017-08-03 16:45:46
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -23,7 +23,7 @@ saucelabs = os.environ.get('USE_SAUCELABS', None)
 
 if browserstack or saucelabs:
     osdict = {'OS X': ['El Capitan', 'Sierra']}
-    browserdict = {'chrome': ['55', '54'], 'firefox': ['52', '51'], 'safari': ['10', '9.1']}
+    browserdict = {'chrome': ['55', '54'], 'firefox': ['52', '51'], 'safari': ['10', '9.0']}
 else:
     osdict = {'OS X': ['El Capitan']}
     browserdict = {'chrome': ['55']}
@@ -67,8 +67,8 @@ def driver(base_url, osinfo, browserinfo):
     buildid = '{0}_{1}_{2}_{3}'.format(ostype.lower().replace(' ', '_'),
                                        os_version.lower().replace(' ', '_'), browser, browser_version)
     # skip some combinations
-    if os_version == 'Sierra' and browser == 'safari' and browser_version == '9.1':
-        pytest.skip('cannot have Sierra running safari 9.1')
+    if os_version == 'Sierra' and browser == 'safari' and browser_version == '9.0':
+        pytest.skip('cannot have Sierra running safari 9.0')
     elif os_version == 'El Capitan' and browser == 'safari' and browser_version == '10':
         pytest.skip('cannot have El Capitan running safari 10')
 
@@ -93,7 +93,7 @@ def driver(base_url, osinfo, browserinfo):
         url = 'http://{0}:{1}@ondemand.saucelabs.com:80/wd/hub'.format(username, access)
         desired_cap = {'platform': '{0} {1}'.format(ostype, osversions[os_version]), 'browserName': browser,
                        'build': buildid, 'version': browser_version, 'screenResolution': '1920x1440',
-                       'customData': {'project': 'Marvin'}}
+                       'customData': {'project': 'Marvin'}, 'name': 'marvin_{0}'.format(buildid)}
         driver = webdriver.Remote(
             command_executor=url,
             desired_capabilities=desired_cap)
