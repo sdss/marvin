@@ -12,6 +12,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1.axes_divider import LocatableAxes
 import numpy as np
 import pytest
 
@@ -40,18 +41,28 @@ class TestBPT(object):
 
         bptflag = 'nooi' if useoi is False else 'global'
 
-        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=useoi)
+        masks, figure, axes = maps.get_bpt(show_plot=False, return_figure=True, use_oi=useoi)
         assert isinstance(figure, plt.Figure)
 
         for mech in self.mechanisms:
             assert mech in masks.keys()
             assert np.sum(masks[mech]['global']) == maps.bptsums[bptflag][mech]
 
+        if useoi:
+            assert len(axes) == 4
+        else:
+            assert len(axes) == 3
+
+        for ax in axes:
+            assert isinstance(ax, LocatableAxes)
+
     def test_bpt_diffsn(self, maps):
+
         if maps.bptsums is None:
             pytest.skip('no bpt data found in galaxy test data')
 
-        masks, figure = maps.get_bpt(show_plot=False, return_figure=True, use_oi=True, snr_min=5)
+        masks, figure, __ = maps.get_bpt(show_plot=False, return_figure=True,
+                                         use_oi=True, snr_min=5)
         assert isinstance(figure, plt.Figure)
 
         for mech in self.mechanisms:
@@ -59,15 +70,17 @@ class TestBPT(object):
             assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
 
     def test_bpt_oldsn(self, maps):
+
         if maps.bptsums is None:
             pytest.skip('no bpt data found in galaxy test data')
 
         with pytest.warns(MarvinDeprecationWarning) as record:
             masks = maps.get_bpt(snr=5, return_figure=False, show_plot=False)
+
         assert len(record) == 1
-        assert record[0].message.args[0] == "snr is deprecated. Use snr_min instead. snr will be removed in a future version of marvin"
+        assert record[0].message.args[0] == ('snr is deprecated. Use snr_min instead. '
+                                             'snr will be removed in a future version of marvin')
 
         for mech in self.mechanisms:
             assert mech in masks.keys()
             assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
-

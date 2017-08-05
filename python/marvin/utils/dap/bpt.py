@@ -232,12 +232,12 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
             ``'nii'`` is not available for ``'seyfert'`` and ``'liner'``. All the global masks are
             unique (a spaxel can only belong to one of them) with the exception of ``'agn'``, which
             intersects with ``'seyfert'`` and ``'liner'``. Additionally, if ``return_figure=True``,
-            ``bpt_kewley06`` will return a tuple, the first elemnt of which is the dictionary of
-            classification masks, and the second the matplotlib figure for the generated plot.
+            ``bpt_kewley06`` will also return the matplotlib figure for the generated plot, and a
+            list of axes for each one of the subplots.
 
     Example:
         >>> maps_8485_1901 = Maps(plateifu='8485-1901')
-        >>> bpt_masks = bpt_kewley06(maps_8485_1901)
+        >>> bpt_masks, fig, axes = bpt_kewley06(maps_8485_1901)
 
         Gets the global mask for star forming spaxels
 
@@ -421,4 +421,6 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
     gal_bpt.set_xlabel('x [spaxels]')
     gal_bpt.set_ylabel('y [spaxels]')
 
-    return (bpt_return_classification, fig)
+    axes = grid_bpt.axes_all + [gal_bpt]
+
+    return (bpt_return_classification, fig, axes)
