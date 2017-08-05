@@ -30,7 +30,7 @@ The BPT spaxel classifications that Marvin provides are
 
 Often the OI diagnostic line cannot be reliably measured.  If you wish to disable the use of the OI diagnostic line when classifying your spaxels, use may set the ``use_oi`` keyword to ``False``.  This turns off the OI line, and only uses the NII and SII BPTs during classification, giving you more spaxels to play with.
 
-By default, :meth:`~marvin.tools.maps.Maps.get_bpt` produces and returns a matplotlib figure with the classification plots **(based on |kewley2006|_ Fig. 4)** and the 2D spatial distribution of classified spaxels (i.e., a map of the galaxy in which each spaxel is colour-coded based on its emission mechanism).  To disable the return of the figure, set the ``return_figure`` keyword to ``False``.
+By default, :meth:`~marvin.tools.maps.Maps.get_bpt` produces and returns a matplotlib figure with the classification plots **(based on |kewley2006|_ Fig. 4)**, a list of matplotlib axes for each subplot, and the 2D spatial distribution of classified spaxels (i.e., a map of the galaxy in which each spaxel is colour-coded based on its emission mechanism).  To disable the return of the figure and axes, set the ``return_figure`` keyword to ``False``.
 
 See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to generate a BPT diagram from within :ref:`marvin-tools-maps`.  See :ref:`marvin-utils-bpt` for the API reference guide on the BPT utility code.
 
@@ -41,7 +41,7 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     maps = Maps(plateifu='8485-1901')
 
     # make a standard 3-plot BPT and retrieve the classifications
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
     # save the plot
     fig.savefig('bpt.png')
@@ -57,12 +57,13 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     masks = maps.get_bpt(return_figure=False, show_plot=False)
 
     # give me the masks and figures, but don't show me the plot (good for batch jobs)
-    masks, fig = maps.get_bpt(show_plot=False)
+    masks, fig, axes = maps.get_bpt(show_plot=False)
 
 .. image:: ../_static/bpt.png
     :width: 800px
     :align: center
     :alt: BPT
+
 
 Minimum Signal-To-Noise Ratio
 -----------------------------
@@ -76,11 +77,12 @@ When using a dictionary to define your minimum SNR, it takes the form of ``{emis
     maps = Maps(plateifu='8485-1901')
 
     # generate a bpt plot using a sinlge minimum SNR of 5
-    masks, fig = maps.get_bpt(snr_min=5)
+    masks, fig, axes = maps.get_bpt(snr_min=5)
 
     # generate a bpt plot using a minimum Halpha SNR of 5 and a minimum SII SNR of 2.  The remaining lines have minimum SNRs of 3.
     snrdict = {'ha': 5, 'sii': 2}
-    masks, fig = maps.get_bpt(snr_min=snrdict)
+    masks, fig, axes = maps.get_bpt(snr_min=snrdict)
+
 
 Using the Masks
 ---------------
@@ -97,7 +99,7 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
     maps = Maps(plateifu='8485-1901')
 
     # generate a bpt plot and retrieve the masks
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
     # look at the masks included in this dictionary
     print(masks.keys())
@@ -148,7 +150,7 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 ::
 
     # get a mask
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
     # get the spaxel x, y coordinates of our star-forming spaxels
     import numpy as np
@@ -276,9 +278,116 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ------------------
 
-Once you return the BPT figure, you are free to modify it anyway you like.
+Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram ::
 
-.. note:: Examples forthcoming
+    >>> mm = Maps(plateifu='8485-1901')
+    >>> masks, fig, axes = mm.get_bpt()
+    >>> print(fig)
+    Figure(850x1000)
+    >>> print(axes)
+    [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x118bf5d30>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1192f8a20>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1193ae6d8>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x119481cc0>]
+
+As we can see, the returned figure is a matplolib `figure <http://https://matplotlib.org/api/figure_api.html?highlight=figure#module-matplotlib.figure>`_ object, while the ``axes`` are a list of ``LocatableAxes``. Matplotlib documentation on ``LocatableAxes`` is scarce, but to most effects they can be considered as normal `axes <https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes>`_ objects.
+
+If you want to modify something in the plot but without changing its main structure, you can use the returned figure. For instance, here we will modify the star forming boundary line in the :math:`\rm [SII]/H\alpha` diagram from solid to dashed, and save the resulting plot as a PNG image ::
+
+    >>> print(fig.axes)
+    [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111323d30>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x11128b278>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111a18908>,
+     <mpl_toolkits.axes_grid1.axes_grid.CbarAxes at 0x111901320>,
+     <mpl_toolkits.axes_grid1.axes_grid.CbarAxes at 0x1119b7748>,
+     <mpl_toolkits.axes_grid1.axes_grid.CbarAxes at 0x111a52828>,
+     <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x1119de358>,
+     <mpl_toolkits.axes_grid1.axes_grid.CbarAxes at 0x111aa0fd0>]
+    >>> fig.axes[1].lines[0].set_linestyle('--')
+    >>> fig.savefig('/Users/albireo/Downloads/bpt_new.png')
+
+``fig.axes`` returns a list of four ``LocatableAxes`` (the three BPT diagrams and the 2D representation of the masks) plus a number of ``CbarAxes``. Normally, you can ignore the latter ones. Also, note that if you use the option ``use_oi=False`` when creating the BPT diagram, you will only see three ``LocatableAxes``. We select the  :math:`\rm [SII]/H\alpha` as ``fig.axes[1]``. From there, we can access all the axes attributes and methods. For instance, we can select the first line in the plot ``.lines[0]`` and change its style to dashed ``.set_linestyle('--')``.
+
+Alternatively, you may want to grab one of the axes and modify it, then saving it as a new figure. By itself, matplotlib does not allow to reuse axes in a different figure, so Marvin includes some black magic under the hood to facilitate this ::
+
+    >>> nii_ax = axes[0]
+    >>> new_fig = nii_ax.bind_to_figure()
+
+``new_fig`` is now an independent figure that contains the axes for the :math:`\rm [SII]/H\alpha` plot. Let us modify it a bit ::
+
+    >>> ax = new_fig.axes[0]
+    >>> ax.set_title('A custom plot')
+    >>> for text in ax.texts:
+    >>>     text.set_fontsize(20)
+    >>> new_fig.savefig('/Users/albireo/Downloads/nii_new.png')
+
+Here we have added a title to the plot, modified the font size of all the texts in the axes, and then saved it as a new image.
+
+.. image:: ../_static/nii_new.png
+    :width: 800px
+    :align: center
+    :alt: nii_new
+
+.. admonition:: Warning
+    :class: warning
+
+    The ``bind_to_figure()`` method is highly experimental. At best it is hacky; at worst unreliable. You should be careful when using it and critically review all plots that you generate. Note that some elements such as legends will be copied, but the styles will not be maintained. All texts and symbols maintain their original sizes, which may not be ideal for the new plot.
+
+Ultimately, you can use the masks to generate brand-new plots with your preferred styles and additional data. The :ref:`BPT module <marvin-utils-bpt>` contains functions to help producing the |kewley2006|_ classification lines. As an example, let us create a simple plot showing the :math:`\rm [NII]/H\alpha` vs :math:`[OIII]/H\beta` classification ::
+
+    from marvin.tools.maps import Maps
+    from matplotlib import pyplot as plt
+    from marvin.utils.dap.bpt import kewley_sf_nii, kewley_comp_nii
+    import numpy as np
+
+    mm = Maps(plateifu='8263-6104')
+
+    masks, fig, axes = mm.get_bpt(show_plot=False)
+
+    # Gets the masks for NII/Halpha
+    sf = masks['sf']['nii']
+    comp = masks['comp']['nii']
+    agn = masks['agn']['nii']
+
+    # Gets the necessary maps
+    ha = mm['emline_gflux_ha_6564']
+    hb = mm['emline_gflux_hb_4862']
+    nii = mm['emline_gflux_nii_6585']
+    oiii = mm['emline_gflux_oiii_5008']
+
+    # Calculates log(NII/Ha) and log(OIII/Hb)
+    log_nii_ha = np.ma.log10(nii.value / ha.value)
+    log_oiii_hb = np.ma.log10(oiii.value / hb.value)
+
+    # Creates figure and axes
+    fig, ax = plt.subplots()
+
+    # Plots SF, composite, and AGN spaxels using the masks
+    ax.scatter(log_nii_ha[sf], log_oiii_hb[sf], c='b')
+    ax.scatter(log_nii_ha[comp], log_oiii_hb[comp], c='g')
+    ax.scatter(log_nii_ha[agn], log_oiii_hb[agn], c='r')
+
+    # Creates a linspace of points for plotting the classification lines
+    xx_sf_nii = np.linspace(-2, 0.045, int(1e4))
+    xx_comp_nii = np.linspace(-2, 0.4, int(1e4))
+
+    # Uses kewley_sf_nii and kewley_comp_nii to plot the classification lines
+    ax.plot(xx_sf_nii, kewley_sf_nii(xx_sf_nii), 'k-')
+    ax.plot(xx_comp_nii, kewley_comp_nii(xx_comp_nii), 'r-')
+
+    ax.set_xlim(-2, 1)
+    ax.set_ylim(-1.5, 1.6)
+
+    ax.set_xlabel(r'log([NII]/H$\alpha$)')
+    ax.set_ylabel(r'log([OIII]/H$\beta$)')
+
+    fig.savefig('nii_custom.png')
+
+.. image:: ../_static/nii_custom.png
+    :width: 800px
+    :align: center
+    :alt: nii_custom
+
 
 Things to Try
 -------------
