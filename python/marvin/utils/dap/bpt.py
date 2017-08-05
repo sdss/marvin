@@ -12,13 +12,18 @@ from __future__ import absolute_import
 
 import warnings
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 from marvin.core.exceptions import MarvinDeprecationWarning, MarvinError
+from marvin.utils.plot import bind_to_figure
+
+
+__ALL__ = ('get_snr', 'kewley_sf_nii', 'kewley_sf_sii', 'kewley_sf_oi',
+           'kewley_comp_nii', 'kewley_agn_sii', 'kewley_agn_oi',
+           'bpt_kewley06')
 
 
 def get_snr(snr_min, emission_line, default=3):
@@ -357,26 +362,31 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
     with plt.style.context('seaborn-darkgrid'):
         fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
 
-    sf_kwargs = {'marker': 's', 's': 12, 'color': 'c', 'zorder': 50, 'alpha': 0.7, 'lw': 0.0}
+    sf_kwargs = {'marker': 's', 's': 12, 'color': 'c', 'zorder': 50, 'alpha': 0.7, 'lw': 0.0,
+                 'label': 'Star-forming'}
     sf_handler = grid_bpt[0].scatter(log_nii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
     grid_bpt[1].scatter(log_sii_ha[sf_mask], log_oiii_hb[sf_mask], **sf_kwargs)
 
-    comp_kwargs = {'marker': 's', 's': 12, 'color': 'g', 'zorder': 45, 'alpha': 0.7, 'lw': 0.0}
+    comp_kwargs = {'marker': 's', 's': 12, 'color': 'g', 'zorder': 45, 'alpha': 0.7, 'lw': 0.0,
+                   'label': 'Composite'}
     comp_handler = grid_bpt[0].scatter(log_nii_ha[comp_mask], log_oiii_hb[comp_mask],
                                        **comp_kwargs)
     grid_bpt[1].scatter(log_sii_ha[comp_mask], log_oiii_hb[comp_mask], **comp_kwargs)
 
-    seyfert_kwargs = {'marker': 's', 's': 12, 'color': 'r', 'zorder': 40, 'alpha': 0.7, 'lw': 0.0}
+    seyfert_kwargs = {'marker': 's', 's': 12, 'color': 'r', 'zorder': 40, 'alpha': 0.7, 'lw': 0.0,
+                      'label': 'Seyfert'}
     seyfert_handler = grid_bpt[0].scatter(log_nii_ha[seyfert_mask], log_oiii_hb[seyfert_mask],
                                           **seyfert_kwargs)
     grid_bpt[1].scatter(log_sii_ha[seyfert_mask], log_oiii_hb[seyfert_mask], **seyfert_kwargs)
 
-    liner_kwargs = {'marker': 's', 's': 12, 'color': 'm', 'zorder': 35, 'alpha': 0.7, 'lw': 0.0}
+    liner_kwargs = {'marker': 's', 's': 12, 'color': 'm', 'zorder': 35, 'alpha': 0.7, 'lw': 0.0,
+                    'label': 'LINER'}
     liner_handler = grid_bpt[0].scatter(log_nii_ha[liner_mask], log_oiii_hb[liner_mask],
                                         **liner_kwargs)
     grid_bpt[1].scatter(log_sii_ha[liner_mask], log_oiii_hb[liner_mask], **liner_kwargs)
 
-    amb_kwargs = {'marker': 's', 's': 12, 'color': '0.6', 'zorder': 30, 'alpha': 0.7, 'lw': 0.0}
+    amb_kwargs = {'marker': 's', 's': 12, 'color': '0.6', 'zorder': 30, 'alpha': 0.7, 'lw': 0.0,
+                  'label': 'Ambiguous '}
     amb_handler = grid_bpt[0].scatter(log_nii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask],
                                       **amb_kwargs)
     grid_bpt[1].scatter(log_sii_ha[ambiguous_mask], log_oiii_hb[ambiguous_mask], **amb_kwargs)
@@ -423,4 +433,24 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
 
     axes = grid_bpt.axes_all + [gal_bpt]
 
+    # Adds custom method to create figure
+    for ax in axes:
+        setattr(ax.__class__, 'bind_to_figure', _bind_to_figure)
+
     return (bpt_return_classification, fig, axes)
+
+
+def _bind_to_figure(self, fig=None):
+    """Copies axes to a new figure.
+
+    Uses ``marvin.utils.plot.utils.bind_to_figure`` with a number
+    of tweaks.
+
+    """
+
+    new_figure = bind_to_figure(self, fig=fig)
+
+    if new_figure.axes[0].get_ylabel() == '':
+        new_figure.axes[0].set_ylabel('log([OIII]/H$\\beta$)')
+
+    return new_figure
