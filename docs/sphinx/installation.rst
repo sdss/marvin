@@ -26,7 +26,7 @@ Installation
 .. admonition:: Attention
     :class: attention
 
-    If pip fails while installing `python-memcached`, make sure that you have the latest version of `setuptools` by running `pip install -U setuptools`. Then, try running `pip install sdss-marvin` again.
+    If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
 **or to upgrade an existing Marvin installation**::
 
@@ -35,7 +35,7 @@ Installation
 .. admonition:: Hint
     :class: hint
 
-    By default, `pip` will update any underlying package on which marvin depends. If you want to prevent that you can upgrade marvin with `pip install -U --no-deps sdss-marvin`. This could, however, make marvin to not work correctly. Instead, you can try `pip install -U --upgrade-strategy only-if-needed sdss-marvin`, which will upgrade a dependency only if needed.
+    By default, ``pip`` will update any underlying package on which marvin depends. If you want to prevent that you can upgrade marvin with ``pip install -U --no-deps sdss-marvin``. This could, however, make marvin to not work correctly. Instead, you can try ``pip install -U --upgrade-strategy only-if-needed sdss-marvin``, which will upgrade a dependency only if needed.
 
 **Developer Installation (Medium Pain)**::
 
@@ -45,7 +45,7 @@ Installation
     git submodule update
     python setup.py install
 
-If you experience problem after the intallation, check the :ref:`marvin-faq`.
+If you experience problem after the installation, check the :ref:`marvin-faq`.
 
 |
 
@@ -55,7 +55,7 @@ Set up your netrc
 -----------------
 
 While Marvin is now publicly available, not all MaNGA data is so. As a result,
-you need to add some configuration to allow you to access propietary data. To
+you need to add some configuration to allow you to access proprietary data. To
 do that, create and edit a file in your home called ``.netrc`` an copy
 these lines inside::
 
