@@ -2,7 +2,7 @@
 |
 
 .. admonition:: Warning
-    :class: custom-warning
+    :class: warning
 
     Marvin does not work well with the system Python in OSX.
     Please, make sure you are using a supported Python installation before
