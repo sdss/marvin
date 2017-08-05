@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 
 from marvin.tools.maps import Maps
-from marvin.tests import marvin_test_if_class
+from marvin.tests import marvin_test_if_class, marvin_test_if
 from marvin.core.exceptions import MarvinDeprecationWarning
 
 
@@ -84,3 +84,16 @@ class TestBPT(object):
         for mech in self.mechanisms:
             assert mech in masks.keys()
             assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
+
+    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
+    def test_bind_to_figure(self, plateifu, mpl):
+
+        maps = Maps(plateifu=plateifu, release=mpl)
+        __, __, axes = maps.get_bpt(show_plot=False, return_figure=True)
+
+        assert len(axes) == 4
+
+        for ax in axes:
+            new_fig = ax.bind_to_figure()
+            assert isinstance(new_fig, plt.Figure)
+            assert new_fig.axes[0].get_ylabel() != ''
