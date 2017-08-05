@@ -18,6 +18,12 @@ BPT Diagrams
 ------------
 
 .. autofunction:: marvin.utils.dap.bpt.bpt_kewley06
+.. autofunction:: marvin.utils.dap.bpt.kewley_sf_nii
+.. autofunction:: marvin.utils.dap.bpt.kewley_sf_sii
+.. autofunction:: marvin.utils.dap.bpt.kewley_sf_oi
+.. autofunction:: marvin.utils.dap.bpt.kewley_comp_nii
+.. autofunction:: marvin.utils.dap.bpt.kewley_agn_sii
+.. autofunction:: marvin.utils.dap.bpt.kewley_agn_oi
 
 
 .. _marvin-utils-general-images:
