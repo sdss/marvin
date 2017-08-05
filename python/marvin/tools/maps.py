@@ -654,6 +654,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         that have been classified as belonging to a certain excitation process. It also
         provides plotting functionalities.
 
+        Extensive documentation can be found in :ref:`marvin-bpt`.
+
         Parameters:
             method ({'kewley06'}):
                 The method used to determine the boundaries between different excitation
