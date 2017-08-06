@@ -87,7 +87,8 @@ def bind_to_figure(ax, fig=None):
                        zorder=line.zorder, label=collection.get_label())
 
     for text in ax.texts:
-        new_ax.text(*text.get_position(), text.get_text(), family=text.get_fontfamily(),
+        xx, yy = text.get_position()
+        new_ax.text(xx, yy, text.get_text(), family=text.get_fontfamily(),
                     fontsize=text.get_fontsize(),
                     color=text.get_color(), ha=text.get_horizontalalignment(),
                     va=text.get_verticalalignment(), zorder=text.zorder)
