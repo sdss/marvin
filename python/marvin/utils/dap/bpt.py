@@ -259,7 +259,8 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
                       'snr will be removed in a future version of marvin',
                       MarvinDeprecationWarning)
         snr_min = kwargs.pop('snr')
-    elif len(kwargs.keys()) > 0:
+
+    if len(kwargs.keys()) > 0:
         raise MarvinError('unknown keyword {0}'.format(list(kwargs.keys())[0]))
 
     # Gets the necessary emission line maps

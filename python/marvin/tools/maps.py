@@ -712,7 +712,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                           'snr will be removed in a future version of marvin',
                           marvin.core.exceptions.MarvinDeprecationWarning)
             snr_min = kwargs.pop('snr')
-        elif len(kwargs.keys()) > 0:
+
+        if len(kwargs.keys()) > 0:
             raise marvin.core.exceptions.MarvinError(
                 'unknown keyword {0}'.format(list(kwargs.keys())[0]))
 
