@@ -30,7 +30,7 @@ import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap
 import marvin.utils.dap.bpt
-import marvin.utils.six
+import six
 
 try:
     import sqlalchemy
@@ -56,7 +56,7 @@ __all__ = ('Maps')
 def _is_MPL4(dapver):
     """Returns True if the dapver version is <= MPL-4."""
 
-    assert isinstance(dapver, marvin.utils.six.string_types), 'dapver must be a string'
+    assert isinstance(dapver, six.string_types), 'dapver must be a string'
 
     if 'v' in dapver:
         dapver = dapver.strip('v').replace('_', '.')
@@ -227,7 +227,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             assert len(value) == 2, 'slice must have two elements.'
             y, x = value
             return self.getSpaxel(x=x, y=y, xyorig='lower')
-        elif isinstance(value, marvin.utils.six.string_types):
+        elif isinstance(value, six.string_types):
             parsed_property = self.properties.get(value)
             if parsed_property is None:
                 raise marvin.core.exceptions.MarvinError('invalid property')
