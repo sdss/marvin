@@ -60,6 +60,10 @@ def bind_to_figure(ax, fig=None):
     matplotlib, but it seems to be the only way to bind axes from one figure
     to a different one.
 
+    Current limitations include: 1) the legend is copied but its style is not
+    maintained; 2) scatter plots do not maintain the marker type, markers are
+    always replaced with squares.
+
     """
 
     if fig is not None:
