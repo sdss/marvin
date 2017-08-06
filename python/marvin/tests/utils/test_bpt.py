@@ -11,13 +11,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import inspect
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import LocatableAxes
 import numpy as np
 import pytest
 
+from marvin.core.exceptions import MarvinError
 from marvin.tools.maps import Maps
 from marvin.tests import marvin_test_if_class, marvin_test_if
+from marvin.utils.dap.bpt import get_snr, bpt_kewley06
 from marvin.core.exceptions import MarvinDeprecationWarning
 
 
@@ -97,3 +101,42 @@ class TestBPT(object):
             new_fig = ax.bind_to_figure()
             assert isinstance(new_fig, plt.Figure)
             assert new_fig.axes[0].get_ylabel() != ''
+
+    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
+    def test_kewley_snr_warning(self, plateifu, mpl):
+
+        maps = Maps(plateifu=plateifu, release=mpl)
+
+        with pytest.warns(MarvinDeprecationWarning) as record:
+            bpt_kewley06(maps, snr=1, return_figure=False)
+
+        assert len(record) == 1
+        assert record[0].message.args[0] == ('snr is deprecated. Use snr_min instead. '
+                                             'snr will be removed in a future version of marvin')
+
+    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
+    def test_wrong_kw(self, plateifu, mpl):
+
+        maps = Maps(plateifu=plateifu, release=mpl)
+
+        with pytest.raises(MarvinError) as error:
+            maps.get_bpt(snr=5, return_figure=False, show_plot=False, extra_keyword='hola')
+
+        with pytest.raises(MarvinError) as error2:
+            bpt_kewley06(maps, snr=5, return_figure=False, extra_keyword='hola')
+
+        assert str(error.value) == 'unknown keyword extra_keyword'
+        assert str(error2.value) == 'unknown keyword extra_keyword'
+
+
+class TestGetSNR(object):
+
+    def test_get_snr_in_dict(self):
+
+        assert get_snr({'ha': 5, 'hb': 4}, 'ha') == 5
+
+    def test_get_snr_default(self):
+
+        default = inspect.getargspec(get_snr).defaults[0]
+
+        assert get_snr({'ha': 5, 'hb': 4}, 'xx') == default
