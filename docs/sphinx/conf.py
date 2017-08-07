@@ -15,6 +15,9 @@
 import sys
 import os
 
+import matplotlib
+matplotlib.use('agg')
+
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
@@ -398,6 +401,3 @@ def patched_parse(self):
     self._unpatched_parse()
 GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
-
-import matplotlib
-matplotlib.use('agg')
