@@ -49,7 +49,7 @@ users to harness the statistical power of the MaNGA data set.
 Documentation
 -------------
 
-You can find the latest Marvin's documentation [here](http://sdss-marvin.readthedocs.io/en/latest/).
+You can find the latest Marvin documentation [here](http://sdss-marvin.readthedocs.io/en/latest/).
 
 
 Citation and Acknowledgements
