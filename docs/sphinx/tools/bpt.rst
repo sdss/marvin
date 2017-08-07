@@ -331,9 +331,9 @@ Here we have added a title to the plot, modified the font size of all the texts 
 .. admonition:: Warning
     :class: warning
 
-    The ``bind_to_figure()`` method is highly experimental. At best it is hacky; at worst unreliable. You should be careful when using it and critically review all plots that you generate. Note that some elements such as legends will be copied, but the styles will not be maintained. All texts and symbols maintain their original sizes, which may not be ideal for the new plot.
+    The ``bind_to_figure()`` method is highly experimental. At best it is hacky; at worst unreliable. You should be careful when using it and critically review all plots that you generate. Note that some elements such as legends will be copied, but the styles will not be maintained. All texts and symbols maintain their original sizes, which may not be optimal for the new plot.
 
-Ultimately, you can use the masks to generate brand-new plots with your preferred styles and additional data. The :ref:`BPT module <marvin-utils-bpt>` contains functions to help producing the |kewley2006|_ classification lines. As an example, let us create a simple plot showing the :math:`\rm [NII]/H\alpha` vs :math:`[OIII]/H\beta` classification ::
+Ultimately, you can use the masks to generate brand-new plots with your preferred styles and additional data. The :ref:`BPT module <marvin-utils-bpt>` contains functions to help producing the |kewley2006|_ classification lines. As an example, let us create a simple plot showing the :math:`\rm [NII]/H\alpha` vs :math:`\rm [OIII]/H\beta` classification ::
 
     from marvin.tools.maps import Maps
     from matplotlib import pyplot as plt
