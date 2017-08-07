@@ -8,6 +8,8 @@ Marvin is the ultimate tool to visualise and analyse MaNGA data. It is developed
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.292632.svg)](https://doi.org/10.5281/zenodo.292632)
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 ![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=WWgyaGJBbW45aityUVJtYytDcHFydU9EZE9ObVdOVVpkaUxGZkxwbzdHQT0tLUNkcW5Hc3JaRTdqR0l6ajltSUdTRXc9PQ==--21b221b6714b852f8f4215c787ffa6e2812e2ad6)
+[![readthedocs](https://readthedocs.org/projects/docs/badge/?version=stable)](https://docs.readthedocs.io/en/latest/?badge=stable)
+
 
 Installation
 ------------
@@ -64,8 +66,8 @@ Marvin's Bibtex entry to use:
         doi          = {10.5281/zenodo.292632},
         url          = {https://doi.org/10.5281/zenodo.292632}
       }
-      
+
 License
 -------
 Marvin is licensed under a 3-clause BSD style license - see the
-``LICENSE.md`` file.      
+``LICENSE.md`` file.
