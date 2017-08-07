@@ -46,6 +46,12 @@ the search results to your python session. Marvin-API is the critical link that
 allows Marvin-tools and Marvin-web to interact with the databases, which enables
 users to harness the statistical power of the MaNGA data set.
 
+Documentation
+-------------
+
+You can find the latest Marvin's documentation [here](http://sdss-marvin.readthedocs.io/en/latest/).
+
+
 Citation and Acknowledgements
 -----------------------------
 
