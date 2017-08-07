@@ -15,6 +15,7 @@
 import sys
 import os
 
+# Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
 matplotlib.use('agg')
 
