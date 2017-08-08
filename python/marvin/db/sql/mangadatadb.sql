@@ -77,12 +77,12 @@ CREATE TABLE mangadatadb.obsinfo (pk serial PRIMARY KEY NOT NULL, cube_pk intege
 	mangaid varchar(20), airtemp real, humidity real, pressure real, seeing real, psffac real, transpar real,
 	plateid integer, designid integer, cartid integer, mjd integer, exptime real, expnum varchar(20), setnum integer,
 	mgdpos varchar(10), mgdra real, mgddec real, omegaset_u real, omegaset_g real, omegaset_r real, omegaset_i real,
-	omegaset_z real,  amfit_ra real, eamfit_dec real, eamfit_theta real, eamfit_theta0 rea , eamfit_a real eamfit_b real,
+	omegaset_z real,  eamfit_ra real, eamfit_dec real, eamfit_theta real, eamfit_theta0 real, eamfit_a real, eamfit_b real,
 	eamfit_raerr real, eamfit_decerr real, eamfit_thetaerr real, eamfit_theta0err real, eamfit_aerr real, eamfit_berr real,
-	taibeg varchar(50),  adrill real, lstmid real, hamid real, airmass real, ifura double precision,
+	taibeg varchar(50), hadrill real, lstmid real, hamid real, airmass real, ifura double precision,
 	ifudec double precision, cenra double precision, cendec double precision, xfocal real, yfocal real,
 	mngtarg1 integer, mngtarg2 integer, mngtarg3 integer, bluesn2 real, redsn2 real, bluepstat real, redpstat real,
-	drp2qual integer, thisbadifu integer, pf_fwhm_g real, pf_fwhm_r real, pf_fwhm_i real, pf_fwhm_z real)
+	drp2qual integer, thisbadifu integer, pf_fwhm_g real, pf_fwhm_r real, pf_fwhm_i real, pf_fwhm_z real);
 
 # DEPRECATED TABLE for mangasampledb.nsa
 -- CREATE TABLE mangadatadb.sample (pk serial PRIMARY KEY NOT NULL, manga_tileid INTEGER, ifu_ra double precision, ifu_dec double precision,
