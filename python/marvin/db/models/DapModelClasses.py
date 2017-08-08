@@ -245,6 +245,12 @@ class SpaxelProp5(Base, SpaxelAtts):
     def __repr__(self):
         return '<SpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
+class SpaxelProp6(Base, SpaxelAtts):
+    __tablename__ = 'spaxelprop6'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    def __repr__(self):
+        return '<SpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 class CleanSpaxelProp(Base, SpaxelAtts):
     __tablename__ = 'cleanspaxelprop'
@@ -264,6 +270,16 @@ class CleanSpaxelProp5(Base, SpaxelAtts):
 
     def __repr__(self):
         return '<CleanSpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
+
+
+class CleanSpaxelProp6(Base, SpaxelAtts):
+    __tablename__ = 'cleanspaxelprop6'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    pk = Column(Integer, primary_key=True)
+
+    def __repr__(self):
+        return '<CleanSpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
 class BinMode(Base):
@@ -400,6 +416,12 @@ if fks:
     SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
     CleanSpaxelProp5.file = relationship(File, backref='cleanspaxelprops5')
 
+fks = insp.get_foreign_keys(SpaxelProp6.__table__.name, schema='mangadapdb')
+if fks:
+    SpaxelProp6.file = relationship(File, backref='spaxelprops6')
+    SpaxelProp6.binidfk = relationship(BinId, backref='spaxelprops6')
+    CleanSpaxelProp6.file = relationship(File, backref='cleanspaxelprops6')
+
 fks = insp.get_foreign_keys(ModelCube.__table__.name, schema='mangadapdb')
 if fks:
     ModelCube.file = relationship(File, backref='modelcube', uselist=False)
@@ -428,6 +450,8 @@ dap_cache = RelationshipCache(File.cube).\
                and_(RelationshipCache(CleanSpaxelProp.file)).\
                and_(RelationshipCache(SpaxelProp5.file)).\
                and_(RelationshipCache(CleanSpaxelProp5.file)).\
+               and_(RelationshipCache(SpaxelProp6.file)).\
+               and_(RelationshipCache(CleanSpaxelProp6.file)).\
                and_(RelationshipCache(ModelCube.file)).\
                and_(RelationshipCache(ModelSpaxel.modelcube)).\
                and_(RelationshipCache(RedCorr.modelcube))

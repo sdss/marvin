@@ -182,6 +182,7 @@ class Cube(Base, ArrayOps):
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb', 'extend_existing': True}
 
     specres = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    specresd = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
         return '<Cube (pk={0}, plate={1}, ifudesign={2}, tag={3})>'.format(self.pk, self.plate, self.ifu.name, self.pipelineInfo.version.version)
@@ -382,6 +383,7 @@ class Spaxel(Base, ArrayOps):
     flux = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     ivar = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     mask = deferred(Column(ARRAY_D(Integer, zero_indexes=True)))
+    disp = deferred(Column(ARRAY_D(Integer, zero_indexes=True)))
 
     def __repr__(self):
         return '<Spaxel (pk={0}, x={1}, y={2})'.format(self.pk, self.x, self.y)
@@ -408,6 +410,7 @@ class RssFiber(Base, ArrayOps):
     mask = deferred(Column(ARRAY_D(Integer, zero_indexes=True)))
     xpos = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     ypos = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    disp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
         return '<RssFiber (pk={0})>'.format(self.pk)
@@ -594,6 +597,14 @@ class Wcs(Base, ArrayOps):
         return newhdr
 
 
+class ObsInfo(Base):
+    __tablename__ = 'obsinfo'
+    __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
+
+    def __repr__(self):
+        return '<ObsInfo (pk={0},cube={1})'.format(self.pk, self.cube)
+
+
 class CubeShape(Base):
     __tablename__ = 'cube_shape'
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
@@ -767,6 +778,8 @@ Cube.ifu = relationship(IFUDesign, backref="cubes")
 Cube.carts = relationship(Cart, secondary=CartToCube.__table__, backref="cubes")
 Cube.wcs = relationship(Wcs, backref='cube', uselist=False)
 Cube.shape = relationship(CubeShape, backref='cubes', uselist=False)
+Cube.obsinfo = relationship(ObsInfo, backref='cube', uselist=False)
+
 # from SampleDB
 Cube.target = relationship(sampledb.MangaTarget, backref='cubes')
 
