@@ -2,10 +2,14 @@
 
 ## [2.1.5] - unreleased
 ### Added:
+- Better BPT documentation, in particular in the `Modifying the plot` section.
+- A hack function ``marvin.utils.plot.utils.bind_to_figure()`` that replicate the contents of a matplotlib axes in another figure.
 
 ### Changed:
+- Issue #190: ``Maps.get_bpt()`` and ``marvin.utils.dap.bpt.bpt_kewley06()`` now also return a list of axes. Each axes contains a method pointing to the ``marvin.utils.plot.utils.bind_to_figure()`` function, for easily transfer the axes to a new figure.
 
 ### Fixed:
+
 
 ## [2.1.4] - 2017/08/02
 ### Added:

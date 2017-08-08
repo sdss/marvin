@@ -30,7 +30,7 @@ import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap
 import marvin.utils.dap.bpt
-import marvin.utils.six
+import six
 
 try:
     import sqlalchemy
@@ -56,7 +56,7 @@ __all__ = ('Maps')
 def _is_MPL4(dapver):
     """Returns True if the dapver version is <= MPL-4."""
 
-    assert isinstance(dapver, marvin.utils.six.string_types), 'dapver must be a string'
+    assert isinstance(dapver, six.string_types), 'dapver must be a string'
 
     if 'v' in dapver:
         dapver = dapver.strip('v').replace('_', '.')
@@ -227,7 +227,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             assert len(value) == 2, 'slice must have two elements.'
             y, x = value
             return self.getSpaxel(x=x, y=y, xyorig='lower')
-        elif isinstance(value, marvin.utils.six.string_types):
+        elif isinstance(value, six.string_types):
             parsed_property = self.properties.get(value)
             if parsed_property is None:
                 raise marvin.core.exceptions.MarvinError('invalid property')
@@ -654,6 +654,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         that have been classified as belonging to a certain excitation process. It also
         provides plotting functionalities.
 
+        Extensive documentation can be found in :ref:`marvin-bpt`.
+
         Parameters:
             method ({'kewley06'}):
                 The method used to determine the boundaries between different excitation
@@ -685,9 +687,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 The keys of the dictionary, i.e., the classification categories, may change
                 depending on the selected `method`. Consult the :ref:`BPT <marvin-bpt>`
                 documentation for more details.
-                If ``return_figure=True``, ``get_bpt`` will return a tuple, the first elemnt of
-                which is the dictionary of classification masks, and the second the matplotlib
-                figure.
+                If ``return_figure=True``, ``get_bpt`` will also return the matplotlib figure
+                for the generated plot, and a list of axes for each one of the subplots.
 
         Example:
             >>> cube = Cube(plateifu='8485-1901')
@@ -711,7 +712,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                           'snr will be removed in a future version of marvin',
                           marvin.core.exceptions.MarvinDeprecationWarning)
             snr_min = kwargs.pop('snr')
-        elif len(kwargs.keys()) > 0:
+
+        if len(kwargs.keys()) > 0:
             raise marvin.core.exceptions.MarvinError(
                 'unknown keyword {0}'.format(list(kwargs.keys())[0]))
 
@@ -762,17 +764,19 @@ class Maps(marvin.core.core.MarvinToolsClass):
                 a Pandas Dataframe
         '''
 
-        allprops = list(itertools.chain(*[[p.fullname(c) for c in p.channels] if p.channels else [p.name] for p in self.properties]))
+        allprops = list(itertools.chain(*[[p.fullname(c) for c in p.channels]
+                                          if p.channels else [p.name] for p in self.properties]))
+
         if columns:
             allprops = [p for p in allprops if p in columns]
         data = np.array([self[p].value[mask].flatten() for p in allprops])
 
         # add a column for spaxel index
-        spaxarr = np.array([np.where(mask.flatten())[0]]) if mask is not None else np.array([np.arange(data.shape[1])])
+        spaxarr = np.array([np.where(mask.flatten())[0]]) \
+            if mask is not None else np.array([np.arange(data.shape[1])])
         data = np.concatenate((spaxarr, data), axis=0)
         allprops = ['spaxelid'] + allprops
 
         # create the dataframe
         df = pd.DataFrame(data.transpose(), columns=allprops)
         return df
-

@@ -1,10 +1,11 @@
-.. _marvin-faq:
 
 .. important::
 
     We can use your help to expand this section. If you have encountered an issue
     or have questions that should be addressed here, please
     `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
+
+.. _marvin-faq:
 
 Frequently Asked Questions
 --------------------------
@@ -80,6 +81,3 @@ As a reminder, we recommend these browsers for the best Marvin web experience:
 * Google Chrome 53+ or higher
 * Mozilla Firefox 50+ or higher
 * Safari 10+ or Safari Technology Preview
-
-
-

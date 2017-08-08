@@ -19,7 +19,7 @@ import warnings
 
 import os
 
-from marvin.utils.six import string_types
+from six import string_types
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 
@@ -29,7 +29,7 @@ def save(obj, path=None, overwrite=False):
     If ``path=None``, uses the default location of the file in the tree
     but changes the extension of the file to ``.mpf`` (MaNGA Pickle File).
     Returns the path of the saved pickle file.
-    
+
     Parameters:
         obj:
             Marvin object to pickle.
@@ -37,7 +37,7 @@ def save(obj, path=None, overwrite=False):
             Path of saved file. Default is ``None``.
         overwrite (bool):
             If ``True``, overwrite existing file. Default is ``False``.
-    
+
     Returns:
         str:
             Path of saved file.
