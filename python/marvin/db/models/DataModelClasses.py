@@ -183,6 +183,8 @@ class Cube(Base, ArrayOps):
 
     specres = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     specresd = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    prespecres = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    prespecresd = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
         return '<Cube (pk={0}, plate={1}, ifudesign={2}, tag={3})>'.format(self.pk, self.plate, self.ifu.name, self.pipelineInfo.version.version)
@@ -355,7 +357,7 @@ class Cube(Base, ArrayOps):
         if self.target:
             redshift = self.target.NSA_objects[0].z
             wave = np.array(self.wavelength.wavelength)
-            restwave = wave/(1+redshift)
+            restwave = wave / (1 + redshift)
             return restwave
         else:
             return None
@@ -383,7 +385,8 @@ class Spaxel(Base, ArrayOps):
     flux = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     ivar = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     mask = deferred(Column(ARRAY_D(Integer, zero_indexes=True)))
-    disp = deferred(Column(ARRAY_D(Integer, zero_indexes=True)))
+    disp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    predisp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
         return '<Spaxel (pk={0}, x={1}, y={2})'.format(self.pk, self.x, self.y)
@@ -411,6 +414,7 @@ class RssFiber(Base, ArrayOps):
     xpos = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     ypos = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
     disp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
+    predisp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
         return '<RssFiber (pk={0})>'.format(self.pk)

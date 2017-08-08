@@ -21,7 +21,8 @@ SET search_path TO mangadatadb;
 CREATE TABLE mangadatadb.cube (pk serial PRIMARY KEY NOT NULL, plate INTEGER, mangaid TEXT, designid INTEGER,
 					pipeline_info_pk INTEGER, wavelength_pk INTEGER, ifudesign_pk INTEGER, manga_target_pk integer,
 					specres double precision[], specresd double precision[], xfocal double precision,
-					yfocal double precision, ra DOUBLE PRECISION, dec DOUBLE PRECISION, cube_shape_pk INTEGER);
+					yfocal double precision, ra DOUBLE PRECISION, dec DOUBLE PRECISION, cube_shape_pk INTEGER,
+					prespecres double precision[], prespecresd double precision[]);
 
 CREATE INDEX q3c_cube_idx ON mangadatadb.cube (functions.q3c_ang2ipix(ra, dec));
 
@@ -32,10 +33,11 @@ CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk I
 CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux double precision[],
 				ivar double precision[], mask INTEGER[], xpos double precision[],
 				ypos double precision[], disp double precision[], exposure_no INTEGER, mjd INTEGER,
-				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER);
+				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp double precision[]);
 
 CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux double precision[], ivar double precision[],
-				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER);
+				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER,
+				predisp double precision[]);
 
 CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength double precision[],
 				bintype TEXT);
