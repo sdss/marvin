@@ -1,0 +1,3814 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ActiveLayerIndex</key>
+	<integer>0</integer>
+	<key>ApplicationVersion</key>
+	<array>
+		<string>com.omnigroup.OmniGraffle6</string>
+		<string>169.23.0.276662</string>
+	</array>
+	<key>AutoAdjust</key>
+	<true/>
+	<key>BackgroundGraphic</key>
+	<dict>
+		<key>Bounds</key>
+		<string>{{0, 0}, {1938, 1063}}</string>
+		<key>Class</key>
+		<string>SolidGraphic</string>
+		<key>ID</key>
+		<integer>2</integer>
+		<key>Style</key>
+		<dict>
+			<key>stroke</key>
+			<dict>
+				<key>Draws</key>
+				<string>NO</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>BaseZoom</key>
+	<integer>0</integer>
+	<key>CanvasOrigin</key>
+	<string>{0, 0}</string>
+	<key>CanvasSize</key>
+	<string>{1938, 1063}</string>
+	<key>ColumnAlign</key>
+	<integer>1</integer>
+	<key>ColumnSpacing</key>
+	<real>36</real>
+	<key>DisplayScale</key>
+	<string>1 in = 1.00000 in</string>
+	<key>GraphDocumentVersion</key>
+	<integer>12</integer>
+	<key>GraphicsList</key>
+	<array>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1651.6799630820751, 830.2799819111824}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>361</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 cleanspaxelprop6\
+
+\f1\b0 \ulnone pk\
+file_pk\
+spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1432.7999679744244, 830.2799819111824}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>360</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 cleanspaxelprop5\
+
+\f1\b0 \ulnone pk\
+file_pk\
+spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1213.9199728667736, 830.2799819111824}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>359</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 cleanspaxelprop\
+
+\f1\b0 \ulnone pk\
+file_pk\
+spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+			<key>ID</key>
+			<integer>358</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>64.577472079238305</real>
+			<key>Points</key>
+			<array>
+				<string>{470.76504150243403, 435.44754661838016}</string>
+				<string>{641.51998566091061, 389.08027834615422}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>357</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{267.83999401330948, 383.12998665869236}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>357</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 spaxelprop6\
+
+\f1\b0 \ulnone pk\
+file_pk\
+spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+				<key>Info</key>
+				<integer>3</integer>
+			</dict>
+			<key>ID</key>
+			<integer>354</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>37.339999404549644</real>
+			<key>Points</key>
+			<array>
+				<string>{525.23998685181141, 223.02589147094025}</string>
+				<string>{641.51998566091061, 249.42200605184325}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>340</integer>
+				<key>Info</key>
+				<integer>7</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{45.359998986124992, 305.27999317646027}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>353</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 spaxelprop5\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+file_pk\
+spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>290</integer>
+			</dict>
+			<key>ID</key>
+			<integer>330</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>59.039996427297638</real>
+			<key>Points</key>
+			<array>
+				<string>{968.32517442730295, 649.59998905658722}</string>
+				<string>{1020.5571302074904, 809.2799819111824}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>352</integer>
+				<key>Info</key>
+				<integer>4</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>352</integer>
+			</dict>
+			<key>ID</key>
+			<integer>325</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>17.763306990680576</real>
+			<key>Points</key>
+			<array>
+				<string>{1073.2465903081843, 508.10709610861346}</string>
+				<string>{996.11997632682323, 517.02216319718616}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowsFeet</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>292</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1074.2399759888649, 448.8199904486537}, {201.9599940776825, 95}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>292</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 executionplan\
+
+\f1\b0 \ulnone pk\
+id\
+comments}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{931.67997917532921, 809.2799819111824}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>290</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 binmode\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{794.15998224914074, 489.59998905658722}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>352</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{0.5096817871994026, -0.33497450313848165}</string>
+				<string>{-0.23014766545534027, 0.50135187386351809}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 structure\
+
+\f1\b0 \ulnone pk\
+binmode_pk\
+bintype_pk\
+template_kin_pk\
+template_pop_pk\
+executionplan_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>345</integer>
+				<key>Info</key>
+				<integer>4</integer>
+			</dict>
+			<key>ID</key>
+			<integer>350</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>13.817316636886346</real>
+			<key>Points</key>
+			<array>
+				<string>{609.49054855642714, 698.91041079168508}</string>
+				<string>{637.12518183019984, 660.79998688399792}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>349</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{411.11999081075197, 699.71997503936291}, {201.9599940776825, 267}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>349</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{0.50021365614027058, -0.32377733172333167}</string>
+				<string>{-0.28644383062940015, 0.50332199444766901}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 modelspaxel\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+flux []\
+ivar []\
+mask []\
+model []\
+emline []\
+emline_base []\
+emline_mask []\
+x\
+y\
+modelcube_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>346</integer>
+			</dict>
+			<key>ID</key>
+			<integer>348</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>26.585868717596753</real>
+			<key>Points</key>
+			<array>
+				<string>{461.97172781947421, 639.56266179308284}</string>
+				<string>{367.19999038428068, 654.21286867406968}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>345</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+			<key>ID</key>
+			<integer>347</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>79.925351374115053</real>
+			<key>Points</key>
+			<array>
+				<string>{664.91998372972012, 599.85069816165276}</string>
+				<string>{685.03160760819094, 419.19999541342264}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>345</integer>
+				<key>Info</key>
+				<integer>8</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{165.23999630659819, 639.53997614979744}, {201.9599940776825, 95}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>346</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 redcorr\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+value\
+modelcube_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{462.95998965203762, 586.79998688399792}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>345</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{0.50021365614027058, -0.32377733172333167}</string>
+				<string>{-0.28644383062940015, 0.50332199444766901}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 modelcube\
+
+\f1\b0 \ulnone pk\
+file_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+			<key>ID</key>
+			<integer>343</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>176.29999629855158</real>
+			<key>Points</key>
+			<array>
+				<string>{247.31999306380749, 329.99223321733967}</string>
+				<string>{641.51998566091061, 320.20670037529487}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>353</integer>
+				<key>Info</key>
+				<integer>9</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{323.27999277412891, 126.71999716758728}, {201.9599940776825, 160}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>340</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.15356291678193479, 0.4943671602818922}</string>
+				<string>{0.50244560327552656, -0.34723864883016065}</string>
+				<string>{-0.21438425382207171, -0.49224596245635333}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 spaxelprop\
+
+\f1\b0 \ulnone pk\
+file_pk\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+\cf0 spaxel_index\
+x\
+y\
+[map_columns]}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>291</integer>
+			</dict>
+			<key>ID</key>
+			<integer>331</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>7.4600000724196889</real>
+			<key>Points</key>
+			<array>
+				<string>{996.11997632682323, 615.38535375925233}</string>
+				<string>{1052.6399764716625, 664.9872318417664}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>352</integer>
+				<key>Info</key>
+				<integer>6</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>284</integer>
+			</dict>
+			<key>ID</key>
+			<integer>326</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>59.039996427297638</real>
+			<key>Points</key>
+			<array>
+				<string>{848.78469114059362, 649.59998905658722}</string>
+				<string>{795.24591643861118, 809.2799819111824}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>352</integer>
+				<key>Info</key>
+				<integer>9</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>282</integer>
+			</dict>
+			<key>ID</key>
+			<integer>323</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>-1</real>
+			<key>Points</key>
+			<array>
+				<string>{1453.8556202203035, 473.3599913418293}</string>
+				<string>{1569.2399649247527, 570.42038832439368}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>321</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>266</integer>
+			</dict>
+			<key>ID</key>
+			<integer>322</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>102.72522602663821</real>
+			<key>Points</key>
+			<array>
+				<string>{1453.8556202203035, 386.3599913418293}</string>
+				<string>{1248.4051681670271, 354.19999541342258}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>321</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1398.9599687308073, 387.3599913418293}, {183.78399454057217, 85}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>321</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{-0.20130341531249307, 0.46650992827602167}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>1</real>
+						<key>g</key>
+						<real>0.96407299999999996</real>
+						<key>r</key>
+						<real>0.70669499999999996</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 hdu_to_extcol\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+hdu_pk\
+extcol_pk}</string>
+				<key>VerticalPad</key>
+				<real>0.0</real>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>266</integer>
+				<key>Info</key>
+				<integer>8</integer>
+			</dict>
+			<key>ID</key>
+			<integer>313</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>104.47702985394801</real>
+			<key>Points</key>
+			<array>
+				<string>{1338.6392655587713, 604.75405512131863}</string>
+				<string>{1128.3243182900874, 354.19999541342264}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>263</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>266</integer>
+			</dict>
+			<key>ID</key>
+			<integer>312</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>57.000034321090084</real>
+			<key>Points</key>
+			<array>
+				<string>{1431.8000387087275, 297.41301488310125}</string>
+				<string>{1276.1999700665474, 299.26382925006453}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>311</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1432.7999679744244, 259.19999541342258}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>311</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 exttype\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>285</integer>
+			</dict>
+			<key>ID</key>
+			<integer>310</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>40.209781343244188</real>
+			<key>Points</key>
+			<array>
+				<string>{713.16028875488928, 215.23863277697953}</string>
+				<string>{678.22012660605765, 93.219070090491144}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>266</integer>
+			</dict>
+			<key>ID</key>
+			<integer>308</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>-1</real>
+			<key>Points</key>
+			<array>
+				<string>{1382.5718582057875, 152.49910047171664}</string>
+				<string>{1277.0422896802986, 220.04655016220329}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>307</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1357.9199696481228, 66.95999850332737}, {183.78399454057217, 85}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>307</integer>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>1</real>
+						<key>g</key>
+						<real>0.96407299999999996</real>
+						<key>r</key>
+						<real>0.70669499999999996</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 hdu_to_header_value\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+hdu_pk\
+header_value_pk}</string>
+				<key>VerticalPad</key>
+				<real>0.0</real>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>280</integer>
+			</dict>
+			<key>ID</key>
+			<integer>306</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>-1</real>
+			<key>Points</key>
+			<array>
+				<string>{1530.8776033452666, 152.42832223173315}</string>
+				<string>{1662.3173802697152, 222.09713795459351}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>307</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>280</integer>
+			</dict>
+			<key>ID</key>
+			<integer>304</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>11.932613842417126</real>
+			<key>Points</key>
+			<array>
+				<string>{1713.0769338694647, 141.89476768030855}</string>
+				<string>{1737.9567581160709, 207.35999536514282}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>279</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+			<key>ID</key>
+			<integer>303</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>96.282478618063578</real>
+			<key>Points</key>
+			<array>
+				<string>{1077.6449369747202, 148.7771582394991}</string>
+				<string>{843.4799797385931, 252.00127094536737}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>296</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>266</integer>
+			</dict>
+			<key>ID</key>
+			<integer>302</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>94.579998125135944</real>
+			<key>Points</key>
+			<array>
+				<string>{843.4799797385931, 375.79017687992894}</string>
+				<string>{1074.2399759888649, 333.72452272729925}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+				<key>Info</key>
+				<integer>6</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+				<key>Info</key>
+				<integer>1</integer>
+			</dict>
+			<key>ID</key>
+			<integer>301</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>27.308779555833212</real>
+			<key>Points</key>
+			<array>
+				<string>{898.23249951800324, 119.98243630175614}</string>
+				<string>{777.24591684094264, 216.19999541342258}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>CrowBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>DoubleBar</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>295</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>AllowLabelDrop</key>
+			<false/>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>352</integer>
+				<key>Info</key>
+				<integer>1</integer>
+			</dict>
+			<key>ID</key>
+			<integer>245</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>-1</real>
+			<key>Points</key>
+			<array>
+				<string>{844.21688004459759, 411.01081089950839}</string>
+				<string>{929.88591342917266, 489.59998905658728}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.40217399999999998</real>
+						<key>g</key>
+						<real>0.40217399999999998</real>
+						<key>r</key>
+						<real>0.40217399999999998</real>
+					</dict>
+					<key>HeadArrow</key>
+					<string>DoubleBar</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>CrowsFeet</string>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>288</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1078.5599758923054, 45.359998986124992}, {201.9599940776825, 117}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>296</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 current_default\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+filename\
+filepath\
+file_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{844.55998112261295, 45.359998986124992}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>295</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 filetype\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+value}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1052.6399764716625, 649.43998548388481}, {201.9599940776825, 95}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>291</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 template\
+
+\f1\b0 \ulnone pk\
+name\
+id}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{574.55998715758324, 54.622503817081451}, {196.02599672321571, 37.634990692138672}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>285</integer>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.00053359800000000004</real>
+						<key>g</key>
+						<real>0.42723100000000003</real>
+						<key>r</key>
+						<real>1</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Pattern</key>
+					<integer>1</integer>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 mangadatadb.cube}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{659.51998525857925, 809.2799819111824}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>284</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 bintype\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1569.2399649247527, 507.39998961985111}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>282</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 extcol\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1663.1999628245831, 207.35999536514282}, {201.9599940776825, 138}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>280</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 header_value\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+value\
+index\
+comment\
+header_keyword_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1597.6799642890692, 66.95999850332737}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>279</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 header_keyword\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{641.51998566091061, 216.19999541342258}, {201.9599940776825, 203}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>288</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{0.50021365614027058, -0.32377733172333167}</string>
+				<string>{-0.28644383062940015, 0.50332199444766901}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 file\
+
+\f1\b0 \ulnone pk\
+filename\
+filepath\
+num_ext\
+filetype_pk\
+cube_pk\
+structure_pk\
+pipeline_info_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1074.2399759888649, 216.19999541342258}, {201.9599940776825, 138}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>266</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+				<string>{-0.23338146908787039, 0.50253824558522986}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 hdu\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f1\b0 \cf0 \ulnone pk\
+extname_pk\
+exttype_pk\
+extno\
+file_pk}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{1269.359971627593, 605.51998646557331}, {201.9599940776825, 74}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>Vertical</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Font</key>
+				<string>Futura-Medium</string>
+			</dict>
+			<key>ID</key>
+			<integer>263</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{0.17226898654975953, -0.5006548875903305}</string>
+				<string>{0, 0}</string>
+				<string>{-0.5, -0.33634477518019379}</string>
+				<string>{0.3623747142276641, 0.49999999999999989}</string>
+				<string>{-0.5, 0.35162700952084547}</string>
+				<string>{0.5, 0.28615852939165698}</string>
+				<string>{0.5, 0.10191183939595605}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.87192899999999995</real>
+						<key>g</key>
+						<real>1</real>
+						<key>r</key>
+						<real>0.86461100000000002</real>
+					</dict>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Fuzziness</key>
+					<real>5.1873583793640137</real>
+					<key>ShadowVector</key>
+					<string>{3, 3}</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<real>0.70108700000000002</real>
+						<key>g</key>
+						<real>0.53538300000000005</real>
+						<key>r</key>
+						<real>0.393729</real>
+					</dict>
+					<key>Width</key>
+					<real>2</real>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Futura-CondensedExtraBold;\f1\fnil\fcharset0 Futura-Medium;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs32 \cf0 \ul \ulc0 extname\
+
+\f1\b0 \ulnone pk\
+name}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{37.479999452829361, 33.839999243617058}, {462, 71}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>YES</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Color</key>
+				<dict>
+					<key>b</key>
+					<string>0.521739</string>
+					<key>g</key>
+					<string>0.221981</string>
+					<key>r</key>
+					<string>0</string>
+				</dict>
+			</dict>
+			<key>ID</key>
+			<integer>46</integer>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>a</key>
+						<real>0.75</real>
+						<key>b</key>
+						<real>0.42391299999999998</real>
+						<key>g</key>
+						<real>0.42391299999999998</real>
+						<key>r</key>
+						<real>0.42391299999999998</real>
+					</dict>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Pad</key>
+				<real>0.0</real>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 GillSans;}
+{\colortbl;\red255\green255\blue255;\red0\green57\blue133;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\f0\b\fs52 \cf2 MaNGA DAP Dump Database New\
+
+\fs44 Rev: 0.1-dev
+\fs52 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc\partightenfactor0
+
+\fs28 \cf2 LastChangedDate: &lt;%date %Y-%m-%d %H:%M:%S %z%&gt; }</string>
+				<key>VerticalPad</key>
+				<real>0.0</real>
+			</dict>
+			<key>Wrap</key>
+			<string>NO</string>
+		</dict>
+	</array>
+	<key>GridInfo</key>
+	<dict>
+		<key>ShowsGrid</key>
+		<string>YES</string>
+	</dict>
+	<key>GuidesLocked</key>
+	<string>NO</string>
+	<key>GuidesVisible</key>
+	<string>YES</string>
+	<key>HPages</key>
+	<integer>4</integer>
+	<key>ImageCounter</key>
+	<integer>1</integer>
+	<key>KeepToScale</key>
+	<false/>
+	<key>Layers</key>
+	<array>
+		<dict>
+			<key>Lock</key>
+			<string>NO</string>
+			<key>Name</key>
+			<string>Layer 1</string>
+			<key>Print</key>
+			<string>YES</string>
+			<key>Slices</key>
+			<string>NO</string>
+			<key>View</key>
+			<string>YES</string>
+		</dict>
+	</array>
+	<key>LayoutInfo</key>
+	<dict>
+		<key>Animate</key>
+		<string>NO</string>
+		<key>circoMinDist</key>
+		<real>18</real>
+		<key>circoSeparation</key>
+		<real>0.0</real>
+		<key>layoutEngine</key>
+		<string>dot</string>
+		<key>neatoLineLength</key>
+		<real>0.20000000298023224</real>
+		<key>neatoSeparation</key>
+		<real>0.0</real>
+		<key>twopiSeparation</key>
+		<real>0.0</real>
+	</dict>
+	<key>LinksVisible</key>
+	<string>NO</string>
+	<key>MagnetsVisible</key>
+	<string>NO</string>
+	<key>MasterSheets</key>
+	<array/>
+	<key>ModificationDate</key>
+	<string>2017-08-08 17:57:27 +0000</string>
+	<key>Modifier</key>
+	<string>Brian Cherinka</string>
+	<key>NotesVisible</key>
+	<string>NO</string>
+	<key>Orientation</key>
+	<integer>2</integer>
+	<key>OriginVisible</key>
+	<string>NO</string>
+	<key>PageBreaks</key>
+	<string>YES</string>
+	<key>PrintInfo</key>
+	<dict>
+		<key>NSBottomMargin</key>
+		<array>
+			<string>float</string>
+			<string>36</string>
+		</array>
+		<key>NSHorizonalPagination</key>
+		<array>
+			<string>coded</string>
+			<string>BAtzdHJlYW10eXBlZIHoA4QBQISEhAhOU051bWJlcgCEhAdOU1ZhbHVlAISECE5TT2JqZWN0AIWEASqEhAFxlwCG</string>
+		</array>
+		<key>NSLeftMargin</key>
+		<array>
+			<string>float</string>
+			<string>36</string>
+		</array>
+		<key>NSPaperSize</key>
+		<array>
+			<string>size</string>
+			<string>{611.99999904632568, 792}</string>
+		</array>
+		<key>NSPrintReverseOrientation</key>
+		<array>
+			<string>coded</string>
+			<string>BAtzdHJlYW10eXBlZIHoA4QBQISEhAhOU051bWJlcgCEhAdOU1ZhbHVlAISECE5TT2JqZWN0AIWEASqEhAFxlwCG</string>
+		</array>
+		<key>NSPrinter</key>
+		<array>
+			<string>coded</string>
+			<string>BAtzdHJlYW10eXBlZIHoA4QBQISEhAlOU1ByaW50ZXIAhIQITlNPYmplY3QAhZKEhIQITlNTdHJpbmcBlIQBKx5IUCBMYXNlckpldCBDTTE0MTVmbncgKDA1MDZENSmGhg==</string>
+		</array>
+		<key>NSPrinterName</key>
+		<array>
+			<string>string</string>
+			<string>HP LaserJet CM1415fnw (0506D5)</string>
+		</array>
+		<key>NSRightMargin</key>
+		<array>
+			<string>float</string>
+			<string>36</string>
+		</array>
+		<key>NSTopMargin</key>
+		<array>
+			<string>float</string>
+			<string>36</string>
+		</array>
+	</dict>
+	<key>PrintOnePage</key>
+	<false/>
+	<key>ReadOnly</key>
+	<string>NO</string>
+	<key>RowAlign</key>
+	<integer>1</integer>
+	<key>RowSpacing</key>
+	<real>36</real>
+	<key>SheetTitle</key>
+	<string>Canvas 1</string>
+	<key>SmartAlignmentGuidesActive</key>
+	<string>YES</string>
+	<key>SmartDistanceGuidesActive</key>
+	<string>YES</string>
+	<key>UniqueID</key>
+	<integer>1</integer>
+	<key>UseEntirePage</key>
+	<false/>
+	<key>VPages</key>
+	<integer>2</integer>
+	<key>WindowInfo</key>
+	<dict>
+		<key>CurrentSheet</key>
+		<integer>0</integer>
+		<key>Expanded_Canvases</key>
+		<array>
+			<string>Canvas 1</string>
+		</array>
+		<key>Frame</key>
+		<string>{{81, 95}, {1599, 911}}</string>
+		<key>ShowInfo</key>
+		<true/>
+		<key>ShowRuler</key>
+		<true/>
+		<key>Sidebar</key>
+		<false/>
+		<key>SidebarWidth</key>
+		<integer>0</integer>
+		<key>TopSlabHeight</key>
+		<real>250</real>
+		<key>VisibleRegion</key>
+		<string>{{0, 4.2253522403749617}, {1790.1408991721921, 1057.746510840532}}</string>
+		<key>Zoom</key>
+		<real>0.70999997854232788</real>
+		<key>ZoomValues</key>
+		<array>
+			<array>
+				<string>Canvas 1</string>
+				<real>0.70999997854232788</real>
+				<real>0.70999999999999996</real>
+			</array>
+		</array>
+	</dict>
+</dict>
+</plist>
