@@ -89,7 +89,7 @@ class AnalysisProperty(Quantity):
         if self.ivar is None:
             return None
 
-        return np.abs(self.value) * np.sqrt(self.ivar)
+        return np.abs(self.value * np.sqrt(self.ivar))
 
     def __repr__(self):
 

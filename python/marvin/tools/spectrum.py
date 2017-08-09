@@ -86,7 +86,7 @@ class Spectrum(Quantity):
         if self.ivar is None:
             return None
 
-        return np.abs(self.value) * np.sqrt(self.ivar)
+        return np.abs(self.value * np.sqrt(self.ivar))
 
     @property
     def masked(self):
