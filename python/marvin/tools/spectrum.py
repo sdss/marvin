@@ -80,7 +80,7 @@ class Spectrum(Quantity):
         return np.sqrt(1. / self.ivar) * self.unit
 
     @property
-    def sn(self):
+    def snr(self):
         """The signal to noise of the measurement."""
 
         if self.ivar is None:
