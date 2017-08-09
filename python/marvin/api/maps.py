@@ -107,17 +107,17 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template_kin': None},
+    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template': None},
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/', defaults={'template_kin': None},
+    @flask_classy.route('/<name>/<bintype>/', defaults={'template': None},
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/',
+    @flask_classy.route('/<name>/<bintype>/<templatw>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
     def get(self, args, name, bintype, template):
         '''Returns the parameters needed to initialise a Maps remotely.
 
-        .. :quickref: Maps; Get a maps given a name, bintype, and template_kin
+        .. :quickref: Maps; Get a maps given a name, bintype, and template
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
@@ -135,7 +135,7 @@ class MapsView(marvin.api.base.BaseView):
         :json list shape: the maps shape [x, y]
         :json string wcs: the maps wcs_header as a string
         :json string bintype: the bintype of the maps
-        :json string template_kin: the template library of the maps
+        :json string template: the template library of the maps
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -202,15 +202,15 @@ class MapsView(marvin.api.base.BaseView):
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/',
                         methods=['GET', 'POST'], endpoint='getmap', defaults={'channel': None})
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
     @marvin.api.base.arg_validate.check_args()
     def getMap(self, args, name, bintype, template, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
-        .. :quickref: Maps; Get map data given a name, bintype, template_kin, property, and channel
+        .. :quickref: Maps; Get map data given a name, bintype, template, property, and channel
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
@@ -288,7 +288,7 @@ class MapsView(marvin.api.base.BaseView):
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/spaxels/<binid>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/spaxels/<binid>/',
                         methods=['GET', 'POST'], endpoint='getbinspaxels')
     @marvin.api.base.arg_validate.check_args()
     def getBinSpaxels(self, args, name, bintype, template, binid):
