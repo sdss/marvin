@@ -32,6 +32,7 @@ import marvin.utils.dap.bpt
 import six
 
 from marvin.utils.dap import datamodel
+from marvin.utils.dap.datamodel.base import Property
 
 try:
     import sqlalchemy
@@ -164,11 +165,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             y, x = value
             return self.getSpaxel(x=x, y=y, xyorig='lower')
         elif isinstance(value, six.string_types):
-            parsed_property = self.properties.get(value)
-            if parsed_property is None:
-                raise marvin.core.exceptions.MarvinError('invalid property')
-            maps_property, channel = parsed_property
-            return self.getMap(maps_property.name, channel=channel)
+            return self.getMap(value)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
 
@@ -451,20 +448,44 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
-    def getMap(self, property_name, channel=None):
+    def _match_properties(self, property_name, channel=None, exact=False):
+        """Returns the best match for a property_name+channel."""
+
+        if channel is not None:
+            property_name = property_name + '_' + channel
+
+        best = self.datamodel[property_name]
+        assert isinstance(best, Property), 'the retrived value is not a property.'
+
+        if exact:
+            assert best.full() == property_name, \
+                'retrieved property {0!r} does not match input {1!r}'.format(best.full(),
+                                                                             property_name)
+
+        return best
+
+    def getMap(self, property_name, channel=None, exact=False):
         """Retrieves a :class:`~marvin.tools.map.Map` object.
 
         Parameters:
             property_name (str):
-                The property of the map to be extractred.
-                E.g., `'emline_gflux'`.
+                The property of the map to be extractred. It may the name
+                of the channel (e.g. ``'emline_gflux_ha_6564'``) or just the
+                name of the property (``'emline_gflux'``).
             channel (str or None):
-                If the ``property`` contains multiple channels,
-                the channel to use, e.g., ``ha_6564'. Otherwise, ``None``.
+                If defined, the name of the channel to be appended to
+                ``property_name`` (e.g., ``'ha_6564'``).
+            exact (bool):
+                If ``exact=False``, fuzzy matching will be used, retrieving
+                the best match for the property name and channel. If ``True``,
+                will check that the name of returned map matched the input
+                value exactly.
 
         """
 
-        return marvin.tools.map.Map(self, property_name, channel=channel)
+        best = self._match_properties(property_name, channel=channel, exact=exact)
+
+        return marvin.tools.map.Map(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
         """Returns a ratio :class:`~marvin.tools.map.Map`.

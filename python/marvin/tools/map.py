@@ -19,9 +19,6 @@ import warnings
 
 from astropy.io import fits
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 
 import marvin
 import marvin.api.api
@@ -30,6 +27,7 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
 
+from marvin.utils.dap.datamodel.base import Property
 
 try:
     import sqlalchemy
@@ -59,7 +57,9 @@ class Map(object):
             The :class:`~marvin.tools.maps.Maps` instance from which we
             are extracting the ``Map``.
         property_name (str):
-            The category of the map to be extractred. E.g., `'emline_gflux'`.
+            The category of the map to be extractred (e.g., ``'emline_gflux'``)
+            or the full property name including channel
+            (``'emline_gflux_ha_6564'``).
         channel (str or None):
             If the ``property`` contains multiple channels, the channel to use,
             e.g., ``ha_6564'. Otherwise, ``None``.
@@ -71,18 +71,20 @@ class Map(object):
         assert isinstance(maps, marvin.tools.maps.Maps)
 
         self.maps = maps
-        self.property_name = property_name.lower()
-        self.channel = channel.lower() if channel else None
+        self.datamodel = maps.datamodel
+
+        if isinstance(property_name, Property):
+            self.property = property_name
+        else:
+            self.property = self.maps._match_properties(property_name, channel=channel)
+
+        assert self.property in self.datamodel.properties, \
+            'failed sanity check. Property does not match.'
+
+        self.channel = self.property.channel
         self.shape = self.maps.shape
 
         self.release = maps.release
-
-        self.maps_property = self.maps.properties[self.property_name]
-        if (self.maps_property is None or
-                (self.maps_property.channels is not None and
-                 self.channel not in self.maps_property.channels)):
-            raise marvin.core.exceptions.MarvinError(
-                'invalid combination of property name and channel.')
 
         self.value = None
         self.ivar = None
@@ -98,12 +100,17 @@ class Map(object):
         elif maps.data_origin == 'api':
             self._load_map_from_api()
 
-        self.masked = np.ma.array(self.value, mask=(self.mask > 0
-                                                    if self.mask is not None else False))
+        self.unit = self.property.unit
+        self.scale = self.property.scale
+
+        # TODO: this may be a too aggresive masking. When the maskbits are better implemented
+        # we should use the DONOTUSE mask.
+        self.value = np.ma.array(self.value,
+                                 mask=(self.mask > 0 if self.mask is not None else False))
 
     def __repr__(self):
 
-        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
+        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property.name!r}, '
                 'channel={0.channel!r})>'.format(self))
 
     @property
@@ -115,26 +122,21 @@ class Map(object):
     def _load_map_from_file(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
 
-        self.header = self.maps.data[self.property_name].header
+        self.header = self.maps.data[self.property.name].header
 
         if self.channel is not None:
-            channel_idx = self.maps_property.channels.index(self.channel)
-            self.value = self.maps.data[self.property_name].data[channel_idx]
+            channel_idx = self.property.channels.index(self.channel)
+            self.value = self.maps.data[self.property.name].data[channel_idx]
             if self.maps_property.ivar:
-                self.ivar = self.maps.data[self.property_name + '_ivar'].data[channel_idx]
+                self.ivar = self.maps.data[self.property.name + '_ivar'].data[channel_idx]
             if self.maps_property.mask:
-                self.mask = self.maps.data[self.property_name + '_mask'].data[channel_idx]
+                self.mask = self.maps.data[self.property.name + '_mask'].data[channel_idx]
         else:
-            self.value = self.maps.data[self.property_name].data
+            self.value = self.maps.data[self.property.name].data
             if self.maps_property.ivar:
-                self.ivar = self.maps.data[self.property_name + '_ivar'].data
+                self.ivar = self.maps.data[self.property.name + '_ivar'].data
             if self.maps_property.mask:
-                self.mask = self.maps.data[self.property_name + '_mask'].data
-
-        if isinstance(self.maps_property.unit, list):
-            self.unit = self.maps_property.unit[channel_idx]
-        else:
-            self.unit = self.maps_property.unit
+                self.mask = self.maps.data[self.property.name + '_mask'].data
 
         return
 
@@ -154,19 +156,19 @@ class Map(object):
         else:
             table = mdb.dapdb.SpaxelProp5
 
-        fullname_value = self.maps_property.fullname(channel=self.channel)
+        fullname_value = self.property.full()
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
         self.value = np.array(value).reshape(self.shape).T
 
-        if self.maps_property.ivar:
-            fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
+        if self.property.ivar:
+            fullname_ivar = self.property.name + '_ivar_' + self.channel
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
             self.ivar = np.array(ivar).reshape(self.shape).T
 
-        if self.maps_property.mask:
-            fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
+        if self.property.mask:
+            fullname_mask = self.property.name + '_mask_' + self.channel
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
             self.mask = np.array(mask).reshape(self.shape).T
@@ -175,18 +177,16 @@ class Map(object):
         hdus = self.maps.data.hdus
         header_dict = None
         for hdu in hdus:
-            if self.maps_property.name.upper() == hdu.extname.name.upper():
+            if self.property.name.upper() == hdu.extname.name.upper():
                 header_dict = hdu.header_to_dict()
                 break
 
         if not header_dict:
             warnings.warn('cannot find the header for property {0}.'
-                          .format(self.maps_property.name),
+                          .format(self.property.name),
                           marvin.core.exceptions.MarvinUserWarning)
         else:
             self.header = fits.Header(header_dict)
-
-        self.unit = self.maps_property.unit
 
     def _load_map_from_api(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
@@ -195,10 +195,10 @@ class Map(object):
 
         url_full = url.format(
             **{'name': self.maps.plateifu,
-               'property_name': self.property_name,
+               'property_name': self.property.name,
                'channel': self.channel,
                'bintype': self.maps.bintype,
-               'template_kin': self.maps.template_kin})
+               'template': self.maps.template})
 
         try:
             response = marvin.api.api.Interaction(url_full,
@@ -216,7 +216,6 @@ class Map(object):
         self.value = np.array(data['value'])
         self.ivar = np.array(data['ivar']) if data['ivar'] is not None else None
         self.mask = np.array(data['mask']) if data['mask'] is not None else None
-        self.unit = data['unit']
         self.header = fits.Header(data['header'])
 
         return
@@ -265,7 +264,7 @@ class Map(object):
 
     def plot(self, *args, **kwargs):
         """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
-        
+
         See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
