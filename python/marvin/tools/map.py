@@ -107,6 +107,11 @@ class Map(object):
 
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
+    
+    def __deepcopy__(self, memo):
+        return Map(maps=copy.deepcopy(self.maps, memo),
+                   property_name=copy.deepcopy(self.property_name, memo),
+                   channel=copy.deepcopy(self.channel, memo))
 
     @property
     def snr(self):
@@ -271,25 +276,20 @@ class Map(object):
         See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
-    
-    def __deepcopy__(self, memo):
-        return Map(maps=copy.deepcopy(self.maps, memo),
-                   property_name=copy.deepcopy(self.property_name, memo),
-                   channel=copy.deepcopy(self.channel, memo))
 
-    @classmethod
-    def _combine_names(cls, name1, name2, operator):
+    @staticmethod
+    def _combine_names(name1, name2, operator):
         name = copy.deepcopy(name1)
         if name1 != name2:
             name = '{0}{1}{2}'.format(name1, operator, name2)
         return name
 
-    @classmethod
-    def _add_ivar(cls, ivar1, ivar2, *args, **kwargs):
+    @staticmethod
+    def _add_ivar(ivar1, ivar2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
-    @classmethod
-    def _mul_ivar(cls, ivar1, ivar2, value1, value2, value12):
+    @staticmethod
+    def _mul_ivar(ivar1, ivar2, value1, value2, value12):
         with np.errstate(divide='ignore', invalid='ignore'):
             sig1 = 1. / np.sqrt(ivar1)
             sig2 = 1. / np.sqrt(ivar2)
@@ -298,6 +298,7 @@ class Map(object):
         return ivar12
 
     def _arith(self, map2, op):
+        """Do map arithmetic and correctly handle map attributes."""
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
 
         map12 = copy.deepcopy(self)
@@ -334,5 +335,3 @@ class Map(object):
     
     def __truediv__(self, map2):
         return self.__div__(map2)
-
-
