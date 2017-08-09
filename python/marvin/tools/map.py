@@ -275,34 +275,46 @@ class Map(object):
         return Map(maps=copy.deepcopy(self.maps, memo),
                    property_name=copy.deepcopy(self.property_name, memo),
                    channel=copy.deepcopy(self.channel, memo))
+    
+    # @classmethod
+    # def _property_channel_arithmetic(cls, property1, channel1, property2, channel2, operator):
+    #     if property1 != property2:
+    #         property1 = '{0}{1}{2}'.format(property1, operator, property2)
+    #     
+    #     if channel1 != channel2:
+    #         channel1 = '{0}{1}{2}'.format(channel1, operator, channel2)
+    #     
+    #     return property1, channel1
 
-    def _property_channel_arithmetic(self, property1, channel1, property2, channel2, operator):
-        if property1 != property2:
-            property1 = '{0}{1}{2}'.format(property1, operator, property2)
-        
-        if channel1 != channel2:
-            channel1 = '{0}{1}{2}'.format(channel1, operator, channel2)
-        
-        return property1, channel1
+    @classmethod
+    def _combine_names(cls, name1, name2, operator):
+        name = copy.deepcopy(name1)
+        if name1 != name2:
+            name = '{0}{1}{2}'.format(name1, operator, name2)
+        return name
 
-    def _add_ivar(self, ivar1, ivar2):
+    @classmethod
+    def _add_ivar(cls, ivar1, ivar2):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
     def __add__(self, map2):
         map1 = copy.deepcopy(self)
-        assert self.shape == map2.shape, 'Only maps of the same shape can be added together.'
+        assert map1.shape == map2.shape, 'Only maps of the same shape can be added together.'
 
-        self.value += map2.value
-        self.ivar = self._add_ivar(self.ivar, map2.ivar)
-        self.mask &= map2.mask
+        map1.value += map2.value
+        map1.ivar = map1._add_ivar(map1.ivar, map2.ivar)
+        map1.mask &= map2.mask
+        
+        map1.property_name = map1._combine_names(map1.property_name, map2.property_name, '+')
+        map1.channel = map1._combine_names(map1.channel, map2.channel, '+')
+        
+        # names = (map1.property_name, map1.channel, map2.property_name, map2.channel, '+')
+        # map1.property_name, map1.channel = map1._property_channel_arithmetic(*names)
 
-        names = (self.property_name, self.channel, map2.property_name, map2.channel, '+')
-        self.property_name, self.channel = self._property_channel_arithmetic(*names)
-
-        if self.unit != map2.unit:
+        if map1.unit != map2.unit:
             warnings.warn('Units do not match for map addition.')
         
-        return self
+        return map1
 
 
 
