@@ -21,7 +21,7 @@ from marvin.utils.general.general import (convertImgCoords, parseIdentifier, get
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
+from marvin.utils.dap import datamodel
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
@@ -289,8 +289,9 @@ class Galaxy(BaseWebView):
                     self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
-                self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
-                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
+                dm = datamodel[self._dapver]
+                self.galaxy['dapbintemps'] = dm.get_bintemps()
+                current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># access the header<br>cube.header<br># get NSA data<br>\
@@ -357,8 +358,10 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
-        output['dapbintemps'] = _get_bintemps(self._dapver)
-        current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
+
+        dm = datamodel[self._dapver]
+        output['dapbintemps'] = dm.get_bintemps()
+        current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         return jsonify(result=output)
 
