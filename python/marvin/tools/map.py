@@ -285,29 +285,36 @@ class Map(object):
         return name
 
     @classmethod
-    def _add_ivar(cls, ivar1, ivar2):
+    def _add_ivar(cls, ivar1, ivar2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
-    
+
+    @classmethod
+    def _mul_ivar(cls, ivar1, ivar2, value1, value2, value12):
+        sig1 = 1. / np.sqrt(ivar1)
+        sig2 = 1. / np.sqrt(ivar2)
+        sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
+        return 1. / sig12**2
 
     def _arith(self, map2, op):
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
 
-        map1 = copy.deepcopy(self)
-        assert map1.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
+        map12 = copy.deepcopy(self)
+        assert self.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
 
-        ivar_func = {'+': map1._add_ivar, '-': map1._add_ivar}  # '*': map1._mul_ivar, '/': map1._mul_ivar}
+        ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
+                     '*': self._mul_ivar, '/': self._mul_ivar}
 
-        map1.value = ops[op](map1.value, map2.value)
-        map1.ivar = ivar_func[op](map1.ivar, map2.ivar)
-        map1.mask &= map2.mask
+        map12.value = ops[op](map12.value, map2.value)
+        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
+        map12.mask &= map2.mask
     
-        map1.property_name = map1._combine_names(map1.property_name, map2.property_name, op)
-        map1.channel = map1._combine_names(map1.channel, map2.channel, op)
+        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
+        map12.channel = self._combine_names(map12.channel, map2.channel, op)
 
-        if map1.unit != map2.unit:
+        if self.unit != map2.unit:
             warnings.warn('Units do not match for map arithmetic.')
         
-        return map1
+        return map12
     
     def __add__(self, map2):
         return self._arith(map2, '+')
@@ -315,3 +322,12 @@ class Map(object):
     def __sub__(self, map2):
         return self._arith(map2, '-')
     
+    def __mul__(self, map2):
+        return self._arith(map2, '*')
+    
+    def __div__(self, map2):
+        return self._arith(map2, '/')
+    
+    def __truediv__(self, map2):
+        return self.__div__(map2)
+
