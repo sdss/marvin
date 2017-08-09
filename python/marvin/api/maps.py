@@ -114,14 +114,14 @@ class MapsView(marvin.api.base.BaseView):
     @flask_classy.route('/<name>/<bintype>/<template_kin>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
-    def get(self, args, name, bintype, template_kin):
+    def get(self, args, name, bintype, template):
         '''Returns the parameters needed to initialise a Maps remotely.
 
         .. :quickref: Maps; Get a maps given a name, bintype, and template_kin
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
         :form release: the release of MaNGA data
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -166,7 +166,7 @@ class MapsView(marvin.api.base.BaseView):
                        "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
                        "shape": [34, 34],
                        "bintype": "SPX",
-                       "template_kin": "GAU-MILESHC"
+                       "template": "GAU-MILESHC"
                        }
            }
 
@@ -186,7 +186,7 @@ class MapsView(marvin.api.base.BaseView):
         wcs_header = maps.wcs.to_header_string()
         shape = maps.shape
         bintype = maps.bintype
-        template_kin = maps.template_kin
+        template = maps.template
 
         # Redefines plateifu and mangaid from the Maps
         mangaid = maps.mangaid
@@ -198,7 +198,7 @@ class MapsView(marvin.api.base.BaseView):
                                 'wcs': wcs_header,
                                 'shape': shape,
                                 'bintype': bintype,
-                                'template_kin': template_kin}
+                                'template': template}
 
         return jsonify(self.results)
 
@@ -207,14 +207,14 @@ class MapsView(marvin.api.base.BaseView):
     @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
     @marvin.api.base.arg_validate.check_args()
-    def getMap(self, args, name, bintype, template_kin, property_name, channel):
+    def getMap(self, args, name, bintype, template, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
         .. :quickref: Maps; Get map data given a name, bintype, template_kin, property, and channel
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
         :param property_name: The property_name of the map to be extractred. E.g., `'emline_gflux'`.
         :param channel: If the ``property_name`` contains multiple channels, the channel to use, e.g., ``ha_6564'. Otherwise, ``None``
         :form release: the release of MaNGA data
@@ -291,14 +291,14 @@ class MapsView(marvin.api.base.BaseView):
     @flask_classy.route('/<name>/<bintype>/<template_kin>/spaxels/<binid>/',
                         methods=['GET', 'POST'], endpoint='getbinspaxels')
     @marvin.api.base.arg_validate.check_args()
-    def getBinSpaxels(self, args, name, bintype, template_kin, binid):
+    def getBinSpaxels(self, args, name, bintype, template, binid):
         """Returns a list of x and y indices for spaxels belonging to ``binid``.
 
         .. :quickref: Maps; Get a list of x, y indices for spaxels in a given ``binid``.
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
         :param binid: The binid to which the spaxels belong.
         :form release: the release of MaNGA data
         :resjson int status: status of response. 1 if good, -1 if bad.

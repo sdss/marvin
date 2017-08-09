@@ -139,10 +139,10 @@ class SpaxelView(BaseView):
 
         return jsonify(self.results)
 
-    @route('/<name>/properties/<template_kin>/<x>/<y>/',
+    @route('/<name>/properties/<template>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getProperties')
     @av.check_args()
-    def properties(self, args, name, x, y, template_kin):
+    def properties(self, args, name, x, y, template):
         """Returns a dictionary with the DAP properties for a spaxel.
 
         Loads a DAP Maps and uses getSpaxel to retrieve the ``(x,y)``
@@ -153,7 +153,7 @@ class SpaxelView(BaseView):
         :param name: The name of the object as plate-ifu or mangaid
         :param x: The x coordinate of the spaxel (origin is ``lower``)
         :param y: The y coordinate of the spaxel (origin is ``lower``)
-        :param template_kin: The template_kin associated with this maps. If none, default is used.
+        :param template: The template associated with this maps. If none, default is used.
         :form inconfig: json of any incoming parameters
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -225,10 +225,10 @@ class SpaxelView(BaseView):
 
         return jsonify(self.results)
 
-    @route('/<name>/models/<template_kin>/<x>/<y>/',
+    @route('/<name>/models/<template>/<x>/<y>/',
            methods=['GET', 'POST'], endpoint='getModels')
     @av.check_args()
-    def getModels(self, args, name, x, y, template_kin):
+    def getModels(self, args, name, x, y, template):
         """Returns a dictionary with the models for a spaxel.
 
         Loads a ModelCube and uses getSpaxel to retrieve the ``(x,y)``
@@ -239,7 +239,7 @@ class SpaxelView(BaseView):
         :param name: The name of the object as plate-ifu or mangaid
         :param x: The x coordinate of the spaxel (origin is ``lower``)
         :param y: The y coordinate of the spaxel (origin is ``lower``)
-        :param template_kin: The template_kin associated with this maps. If none, default is used.
+        :param template: The template associated with this maps. If none, default is used.
         :form inconfig: json of any incoming parameters
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -255,7 +255,7 @@ class SpaxelView(BaseView):
         :json list model_emline_base: model of constant baseline fitted beneath emission lines
         :json list model_emline_mask: bitmask that applies only to emission-line modeling
         :json string bintype: the spectrum spectral resolution array
-        :json string template_kin: the spectrum spectral resolution array
+        :json string template: the spectrum spectral resolution array
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -281,7 +281,7 @@ class SpaxelView(BaseView):
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
               "data": {"bintype": "SPX",
-                    "template_kin": "GAU-MILESHC",
+                    "template": "GAU-MILESHC",
                     "flux_array": [-0.001416, 0.0099, 0.0144, ...],
                     "flux_ivar": [134.613, 133.393, 132.094, ...],
                     "flux_mask": [32, 32, 32, ...],
@@ -312,6 +312,6 @@ class SpaxelView(BaseView):
                 'model_emline_base': spaxel.emline_base.flux.tolist(),
                 'model_emline_mask': spaxel.emline.mask.tolist(),
                 'bintype': spaxel.bintype,
-                'template_kin': spaxel.template_kin}
+                'template': spaxel.template}
 
         return jsonify(self.results)

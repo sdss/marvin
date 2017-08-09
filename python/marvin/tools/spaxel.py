@@ -30,6 +30,7 @@ from marvin.api import api
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
+from marvin.utils.dap import datamodel
 
 breadcrumb = MarvinBreadCrumb()
 
@@ -73,27 +74,23 @@ class Spaxel(object):
         maps (:class:`~marvin.tools.maps.Maps` object or bool)
             As ``cube`` but populates ``Spaxel.properties`` with a dictionary
             of DAP measurements corresponding to the spaxel in the maps that
-            matches ``bintype``, ``template_kin``, and ``template_pop``.
+            matches ``bintype`` and ``template``.
         modelcube (:class:`marvin.tools.modelcube.ModelCube` object or bool)
             As ``cube`` but populates ``Spaxel.model_flux``, ``Spaxel.model``,
             ``Spaxel.redcorr``, ``Spaxel.emline``, ``Spaxel.emline_base``, and
             ``Spaxel.stellar_continuum`` from the corresponding
-            spaxel of the DAP modelcube that matches ``bintype``,
-            ``template_kin``, and ``template_pop``.
+            spaxel of the DAP modelcube that matches ``bintype`` and
+            ``template``.
         bintype (str or None):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
             For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
             (defaults to ``'ALL'``). Only allowed if ``allow_binned=True.```
-        template_kin (str or None):
+        template (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
-        template_pop (str or None):
-            A placeholder for a future version in which stellar populations
-            are fitted using a different template that ``template_kin``. It
-            has no effect for now.
         release (str):
             The MPL/DR version of the data to use.
         load (bool):
@@ -144,7 +141,7 @@ class Spaxel(object):
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
             'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
-            'template_kin', 'template_pop', 'release', 'load', 'allow_binned']
+            'template_kin', 'template', 'release', 'load', 'allow_binned']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -202,17 +199,22 @@ class Spaxel(object):
         self.mangaid = kwargs.pop('mangaid', None)
 
         self.bintype = None
-        self.template_kin = None
+        self.template = None
 
         if self.maps or self.modelcube:
+
+            if 'template_kin' in kwargs:
+                warnings.warn('template_kin has been deprecated and will be removed '
+                              'in a future version. Use template.',
+                              marvin.core.exceptions.MarvinDeprecationWarning)
+                if 'template' not in kwargs:
+                    kwargs['template'] = kwargs['template_kin']
 
             # Some versions, like DR13, don't have an associated DAP, so we check.
             assert self._dapver, 'this MPL/DR version does not have an associated dapver.'
 
-            self.bintype = marvin.tools.maps._get_bintype(
-                self._dapver, bintype=kwargs.get('bintype', None))
-            self.template_kin = marvin.tools.maps._get_template_kin(
-                self._dapver, template_kin=kwargs.get('template_kin', None))
+            self.bintype = datamodel[self._dapver].get_bintype(kwargs.get('bintype', None))
+            self.template = datamodel[self._dapver].get_template(kwargs.get('template', None))
 
         self.__cube_filename = kwargs.pop('cube_filename', None)
         self.__maps_filename = kwargs.pop('maps_filename', None)
@@ -364,7 +366,7 @@ class Spaxel(object):
             self.maps = marvin.tools.maps.Maps(filename=self.__maps_filename,
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
-                                               template_kin=self.template_kin,
+                                               template=self.template,
                                                release=self._release)
         else:
             self.maps = None
@@ -389,7 +391,7 @@ class Spaxel(object):
         self._parent_shape = self.maps.shape
 
         self.bintype = self.maps.bintype
-        self.template_kin = self.maps.template_kin
+        self.template = self.maps.template
 
         # Loads the properties
         self._load_properties()
@@ -411,7 +413,7 @@ class Spaxel(object):
             self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
                                                               mangaid=self.mangaid,
                                                               plateifu=self.plateifu,
-                                                              template_kin=self.template_kin,
+                                                              template=self.template,
                                                               release=self._release)
         else:
             self.modelcube = None
@@ -422,7 +424,7 @@ class Spaxel(object):
             raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
 
         self.bintype = self.modelcube.bintype
-        self.template_kin = self.modelcube.template_kin
+        self.template = self.modelcube.template
 
         if self.plateifu is not None:
             assert self.plateifu == self.modelcube.plateifu, \
@@ -643,7 +645,7 @@ class Spaxel(object):
             routeparams = {'name': self.plateifu,
                            'x': self.x, 'y': self.y,
                            'bintype': self.bintype,
-                           'template_kin': self.template_kin}
+                           'template': self.template}
 
             url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
@@ -713,7 +715,7 @@ class Spaxel(object):
             url = marvin.config.urlmap['api']['getModels']['url']
             url_full = url.format(name=self.plateifu,
                                   bintype=self.bintype,
-                                  template_kin=self.template_kin,
+                                  template=self.template,
                                   x=self.x, y=self.y)
 
             try:

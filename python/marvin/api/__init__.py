@@ -6,8 +6,7 @@ from flask import request
 from brain.api.base import processRequest
 from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap.datamodel import dap_datamodel as dm
-from marvin.tools.maps import _get_bintemps
+from marvin.utils.dap.datamodel import datamodel as dm
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 
@@ -218,7 +217,7 @@ class ArgValidator(object):
 
     def _get_bin_temps(self):
         ''' Gets the bintemps for a given release '''
-        bintemps = _get_bintemps(self.dapver)
+        bintemps = dm[self.dapver].get_bintype()
         return bintemps
 
     def update_view_validation(self):
@@ -228,8 +227,9 @@ class ArgValidator(object):
         bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = dm[self.dapver].list_names()
-        channels = list(set(sum([i.channels for i in dm[self.dapver] if i.channels is not None], []))) + ['None']
+        properties = dm[self.dapver].list_property_names()
+        channels = list(set(sum([i.channel for i in dm[self.dapver].properties
+                                 if i.channel is not None], []))) + ['None']
 
         # update the global viewargs for each property
         propfields = {'bintype': bintypes, 'template_kin': temps, 'property_name': properties,

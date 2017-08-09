@@ -25,6 +25,7 @@ import marvin.tools.maps
 
 from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.utils.dap import datamodel
 
 
 class ModelCube(MarvinToolsClass):
@@ -42,7 +43,7 @@ class ModelCube(MarvinToolsClass):
             The DRP cube object associated with this model cube.
         maps (:class:`~marvin.tools.maps.Maps` object)
             The DAP maps object associated with this model cube. Must match
-            the ``bintype``, ``template_kin``, and ``template_pop``.
+            the ``bintype`` and ``template``.
         filename (str):
             The path of the file containing the model cube to load.
         mangaid (str):
@@ -57,15 +58,11 @@ class ModelCube(MarvinToolsClass):
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
             For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
             (defaults to ``'ALL'``).
-        template_kin (str or None):
+        template (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
-        template_pop (str or None):
-            A placeholder for a future version in which stellar populations
-            are fitted using a different template that ``template_kin``. It
-            has no effect for now.
         nsa_source ({'auto', 'drpall', 'nsa'}):
             Defines how the NSA data for this object should loaded when
             ``ModelCube.nsa`` is first called. If ``drpall``, the drpall file
@@ -92,7 +89,7 @@ class ModelCube(MarvinToolsClass):
 
         valid_kwargs = [
             'data', 'cube', 'maps', 'filename', 'mangaid', 'plateifu', 'mode',
-            'release', 'bintype', 'template_kin', 'template_pop', 'nsa_source']
+            'release', 'bintype', 'template_kin', 'template', 'nsa_source']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -101,11 +98,18 @@ class ModelCube(MarvinToolsClass):
         if kwargs.pop('template_pop', None):
             warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
 
-        self.bintype = kwargs.pop('bintype', marvin.tools.maps.__BINTYPES_UNBINNED__)
-        self.template_kin = kwargs.pop('template_kin', marvin.tools.maps.__TEMPLATES_KIN_DEFAULT__)
-        self.template_pop = None
+            if 'template_kin' in kwargs:
+                warnings.warn('template_kin has been deprecated and will be removed '
+                              'in a future version. Use template.',
+                              marvin.core.exceptions.MarvinDeprecationWarning)
+                if 'template' not in kwargs:
+                    kwargs['template'] = kwargs['template_kin']
 
         super(ModelCube, self).__init__(*args, **kwargs)
+
+        self.datamodel = datamodel[self._dapver]
+        self.bintype = self.datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self.datamodel.get_template(kwargs.pop('template', None))
 
         # Checks that DAP is at least MPL-5
         MPL5 = distutils.version.StrictVersion('2.0.2')
@@ -114,11 +118,6 @@ class ModelCube(MarvinToolsClass):
 
         self._cube = kwargs.pop('cube', None)
         self._maps = kwargs.pop('maps', None)
-
-        assert self.bintype in marvin.tools.maps.__BINTYPES__, \
-            'bintype must be on of {0}'.format(marvin.tools.maps.__BINTYPES__)
-        assert self.template_kin in marvin.tools.maps.__TEMPLATES_KIN__, \
-            'template_kin must be on of {0}'.format(marvin.tools.maps.__TEMPLATES_KIN__)
 
         self.header = None
         self.wcs = None
@@ -141,9 +140,9 @@ class ModelCube(MarvinToolsClass):
         """Representation for ModelCube."""
 
         return ('<Marvin ModelCube (plateifu={0}, mode={1}, data_origin={2}, bintype={3}, '
-                'template_kin={4})>'
+                'template={4})>'
                 .format(repr(self.plateifu), repr(self.mode),
-                        repr(self.data_origin), repr(self.bintype), repr(self.template_kin)))
+                        repr(self.data_origin), repr(self.bintype), repr(self.template)))
 
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
@@ -157,7 +156,7 @@ class ModelCube(MarvinToolsClass):
             return None
 
         plate, ifu = self.plateifu.split('-')
-        daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
+        daptype = '{0}-{1}'.format(self.bintype, self.template)
 
         return super(ModelCube, self)._getFullPath('mangadap5', ifu=ifu,
                                                    drpver=self._drpver,
@@ -172,7 +171,7 @@ class ModelCube(MarvinToolsClass):
             return None
 
         plate, ifu = self.plateifu.split('-')
-        daptype = '{0}-{1}'.format(self.bintype, self.template_kin)
+        daptype = '{0}-{1}'.format(self.bintype, self.template)
 
         return super(ModelCube, self).download('mangadap5', ifu=ifu,
                                                drpver=self._drpver,
@@ -252,8 +251,8 @@ class ModelCube(MarvinToolsClass):
                                 dapdb.Structure, dapdb.BinType).join(
                                     dapdb.Template,
                                     dapdb.Structure.template_kin_pk == dapdb.Template.pk).filter(
-                                        dapdb.BinType.name == self.bintype,
-                                        dapdb.Template.name == self.template_kin).all()
+                                        dapdb.BinType.name == self.bintype.name,
+                                        dapdb.Template.name == self.template.name).all()
 
                 if len(db_modelcube) > 1:
                     raise MarvinError('more than one ModelCube found for '
@@ -278,7 +277,7 @@ class ModelCube(MarvinToolsClass):
 
         url = marvin.config.urlmap['api']['getModelCube']['url']
         url_full = url.format(name=self.plateifu, bintype=self.bintype,
-                              template_kin=self.template_kin)
+                              template=self.template.name)
 
         try:
             response = self._toolInteraction(url_full)
@@ -294,8 +293,8 @@ class ModelCube(MarvinToolsClass):
         self.wavelength = np.array(data['wavelength'])
         self.redcorr = np.array(data['redcorr'])
 
-        self.bintype = data['bintype']
-        self.template_kin = data['template_kin']
+        self.bintype = self.datamodel.get_bintype(data['bintype'])
+        self.template = self.datamodel.get_template(data['template'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
@@ -437,7 +436,7 @@ class ModelCube(MarvinToolsClass):
         if not self._maps:
             self._maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
                                                 bintype=self.bintype,
-                                                template_kin=self.template_kin,
+                                                template=self.template,
                                                 release=self._release)
 
         return self._maps
@@ -445,22 +444,15 @@ class ModelCube(MarvinToolsClass):
     def is_binned(self):
         """Returns True if the ModelCube is not unbinned."""
 
-        if marvin.tools.maps._is_MPL4(self._dapver):
-            return self.bintype != marvin.tools.maps.__BINTYPES_MPL4_UNBINNED__
-        else:
-            return self.bintype != marvin.tools.maps.__BINTYPES_UNBINNED__
+        return self.bintype.binned
 
     def get_unbinned(self):
         """Returns a version of ``self`` corresponding to the unbinned ModelCube."""
 
-        if marvin.tools.maps._is_MPL4(self._dapver):
-            unbinned_name = marvin.tools.maps.__BINTYPES_MPL4_UNBINNED__
-        else:
-            unbinned_name = marvin.tools.maps.__BINTYPES_UNBINNED__
-
-        if self.bintype == unbinned_name:
+        if not self.is_binned:
             return self
         else:
-            return ModelCube(plateifu=self.plateifu, release=self._release, bintype=unbinned_name,
-                             template_kin=self.template_kin, template_pop=self.template_pop,
+            return ModelCube(plateifu=self.plateifu, release=self._release,
+                             bintype=self.datamodel.get_unbinned(),
+                             template=self.template,
                              mode=self.mode)
