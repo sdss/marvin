@@ -13,6 +13,7 @@ from __future__ import absolute_import
 import distutils.version
 import warnings
 import itertools
+import copy
 
 import astropy.io.fits
 import astropy.wcs
@@ -235,6 +236,14 @@ class Maps(marvin.core.core.MarvinToolsClass):
             return self.getMap(maps_property.name, channel=channel)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
+
+    def __deepcopy__(self, memo):
+        return Maps(plateifu=copy.deepcopy(self.plateifu, memo),
+                    release=copy.deepcopy(self.release, memo),
+                    bintype=copy.deepcopy(self.bintype, memo),
+                    template_kin=copy.deepcopy(self.template_kin, memo),
+                    template_pop=copy.deepcopy(self.template_pop, memo),
+                    nsa_source=copy.deepcopy(self.nsa_source, memo))
 
     @staticmethod
     def _check_versions(instance):
