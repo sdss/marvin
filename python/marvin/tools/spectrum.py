@@ -17,7 +17,7 @@ from __future__ import absolute_import
 import numpy as np
 import matplotlib.pyplot as plt
 
-from astropy.units import Quantity, dimensionless_unscaled, UnitBase
+from astropy.units import Quantity, dimensionless_unscaled
 
 
 class Spectrum(Quantity):
