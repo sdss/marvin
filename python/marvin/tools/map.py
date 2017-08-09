@@ -327,7 +327,5 @@ class Map(object):
     
     def __div__(self, map2):
         return self._arith(map2, '/')
-    
-    def __truediv__(self, map2):
-        return self.__div__(map2)
+
 
