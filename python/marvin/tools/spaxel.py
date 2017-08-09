@@ -17,6 +17,8 @@ import warnings
 
 import numpy as np
 
+from astropy import units as u
+
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
@@ -31,6 +33,8 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCr
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
 from marvin.utils.dap import datamodel
+from marvin.utils.dap.datamodel.base import spaxel as spaxel_unit
+
 
 breadcrumb = MarvinBreadCrumb()
 
@@ -472,12 +476,11 @@ class Spaxel(object):
 
             cube_hdu = self.cube.data
 
-            self.spectrum = Spectrum(cube_hdu['FLUX'].data[:, self.y, self.x],
-                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
-                                     wavelength=cube_hdu['WAVE'].data,
-                                     wavelength_unit='Angstrom',
-                                     ivar=cube_hdu['IVAR'].data[:, self.y, self.x],
-                                     mask=cube_hdu['MASK'].data[:, self.y, self.x])
+            flux = cube_hdu['FLUX'].data[:, self.y, self.x]
+            ivar = cube_hdu['IVAR'].data[:, self.y, self.x]
+            mask = cube_hdu['MASK'].data[:, self.y, self.x]
+
+            wavelength = cube_hdu['WAVE'].data
 
             self.specres = cube_hdu['SPECRES'].data
             self.specresd = cube_hdu['SPECRESD'].data
@@ -499,12 +502,11 @@ class Spaxel(object):
             if spaxel is None:
                 raise MarvinError('cannot find an spaxel for x={0.x}, y={0.y}'.format(self))
 
-            self.spectrum = Spectrum(spaxel.flux,
-                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
-                                     wavelength=cube_db.wavelength.wavelength,
-                                     wavelength_unit='Angstrom',
-                                     ivar=spaxel.ivar,
-                                     mask=spaxel.mask)
+            flux = spaxel.flux
+            ivar = spaxel.ivar
+            mask = spaxel.mask
+
+            wavelength = cube_db.wavelength.wavelength
 
             self.specres = np.array(cube_db.specres)
             self.specresd = None
@@ -523,18 +525,22 @@ class Spaxel(object):
             # Temporarily stores the arrays prior to subclassing from np.array
             data = response.getData()
 
-            # Instantiates the spectrum from the returned values from the Interaction
-            self.spectrum = Spectrum(data['flux'],
-                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
-                                     wavelength=data['wavelength'],
-                                     wavelength_unit='Angstrom',
-                                     ivar=data['ivar'],
-                                     mask=data['mask'])
+            flux = data['flux']
+            ivar = data['ivar']
+            mask = data['mask']
+
+            wavelength = data['wavelength']
 
             self.specres = np.array(data['specres'])
             self.specresd = None
 
-            return response
+        self.spectrum = Spectrum(flux,
+                                 unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+                                 scale=1e-17,
+                                 wavelength=wavelength,
+                                 wavelength_unit=u.Angstrom,
+                                 ivar=ivar,
+                                 mask=mask)
 
     def _load_properties(self):
         """Initialises Spaxel.properties."""
@@ -697,38 +703,43 @@ class Spaxel(object):
 
         self.redcorr = Spectrum(self.modelcube.redcorr,
                                 wavelength=self.modelcube.wavelength,
-                                wavelength_unit='Angstrom')
+                                wavelength_unit=u.Angstrom)
 
         self.model_flux = Spectrum(flux_array,
-                                   units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                   unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+                                   scale=1e-17,
                                    wavelength=self.modelcube.wavelength,
-                                   wavelength_unit='Angstrom',
+                                   wavelength_unit=u.Angstrom,
                                    ivar=flux_ivar,
                                    mask=mask)
 
         self.model = Spectrum(model_array,
-                              units='1E-17 erg/s/cm^2/Ang/spaxel',
+                              unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+                              scale=1e-17,
                               wavelength=self.modelcube.wavelength,
-                              wavelength_unit='Angstrom',
+                              wavelength_unit=u.Angstrom,
                               mask=mask)
 
         self.emline = Spectrum(model_emline,
-                               units='1E-17 erg/s/cm^2/Ang/spaxel',
+                               unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+                               scale=1e-17,
                                wavelength=self.modelcube.wavelength,
-                               wavelength_unit='Angstrom',
+                               wavelength_unit=u.Angstrom,
                                mask=model_emline_mask)
 
         self.emline_base = Spectrum(model_emline_base,
-                                    units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                    unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+                                    scale=1e-17,
                                     wavelength=self.modelcube.wavelength,
-                                    wavelength_unit='Angstrom',
+                                    wavelength_unit=u.Angstrom,
                                     mask=model_emline_mask)
 
         self.stellar_continuum = Spectrum(
-            self.model.flux - self.emline.flux - self.emline_base.flux,
-            units='1E-17 erg/s/cm^2/Ang/spaxel',
+            self.model.value - self.emline.value - self.emline_base.value,
+            unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+            scale=1e-17,
             wavelength=self.modelcube.wavelength,
-            wavelength_unit='Angstrom',
+            wavelength_unit=u.Angstrom,
             mask=model_emline_mask)
 
     @property

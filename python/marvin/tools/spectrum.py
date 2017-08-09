@@ -12,67 +12,81 @@
 
 from __future__ import division
 from __future__ import print_function
-import sys
+from __future__ import absolute_import
+
 import numpy as np
 import matplotlib.pyplot as plt
 
+from astropy.units import Quantity, dimensionless_unscaled, UnitBase
 
-class Spectrum(object):
+
+class Spectrum(Quantity):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
         flux (array-like):
             The 1-D array contianing the spectrum.
-        units (str, optional):
-            The units of the flux spectrum.
-        wavelength (array-like, optional):
-            The wavelength solution for ``spectrum``. Must have the same number
-            of elements.
+        unit (astropy.unit.Unit, optional):
+            The unit of the flux spectrum.
+        scale (float, optional):
+            The scale factor of the spectrum flux.
         ivar (array-like, optional):
             The inverse variance array for ``spectrum``. Must have the same
             number of elements.
         mask (array-like, optional):
             The mask array for ``spectrum``. Must have the same number of
             elements.
-        wavelength_unit (str, optional):
+        wavelength (array-like, optional):
+            The wavelength solution for ``spectrum``. Must have the same number
+            of elements.
+        wavelength_unit (astropy.unit.Unit, optional):
             The units of the wavelength solution.
+
+    Returns:
+        spectrum:
+            An astropy Quantity-like object that contains the spectrum, as well
+            as inverse variance, mask, and wavelengh (itself a Quantity array).
 
     """
 
-    def __init__(self, flux, units=None, wavelength_unit=None,
-                 ivar=None, mask=None, wavelength=None):
+    def __new__(cls, flux, scale=1, unit=dimensionless_unscaled,
+                wavelength_unit=dimensionless_unscaled, ivar=None, mask=None,
+                wavelength=None, dtype=None, copy=True):
 
-        self.flux = np.array(flux)
-        self.ivar = np.array(ivar) if ivar is not None else None
-        self.mask = np.array(mask) if mask is not None else None
-        self.wavelength = np.array(wavelength) if wavelength is not None else None
+        flux = np.array(flux) * scale
+        obj = super(Spectrum, cls).__new__(cls, flux, unit=unit, dtype=dtype, copy=copy)
 
-        self.units = units
-        self.wavelength_unit = wavelength_unit
+        obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar else None
+        obj.mask = mask
 
-        # Performs some checks.
+        if wavelength is None:
+            obj.wavelength = None
+        else:
+            obj.wavelength = np.array(wavelength)
+            if wavelength_unit:
+                obj.wavelength *= wavelength_unit
 
-        assert len(self.flux.shape) == 1, 'spectrum must be 1-D'
+        return obj
 
-        if self.ivar is not None:
-            assert len(self.ivar.shape) == 1, 'ivar must be 1-D'
-            assert len(self.flux) == len(self.ivar), \
-                'ivar must have the same lenght as the base spectrum'
+    @property
+    def error(self):
+        """The standard deviation of the measurement."""
 
-        if self.mask is not None:
-            assert len(self.mask.shape) == 1, 'mask must be 1-D'
-            assert len(self.flux) == len(self.mask), \
-                'mask must have the same lenght as the base spectrum'
+        if self.ivar is None:
+            return None
 
-        if self.wavelength is not None:
-            assert len(self.wavelength.shape) == 1, 'wavelength must be 1-D'
-            assert len(self.flux) == len(self.wavelength), \
-                'wavelength must have the same lenght as the base spectrum'
+        np.seterr(divide='ignore')
 
-    def __repr__(self):
-        """Representation for Spectrum."""
+        return np.sqrt(1. / self.ivar) * self.unit
 
-        return '<Marvin Spectrum ({0!s})'.format(self.flux)
+    @property
+    def sn(self):
+        """The signal to noise of the measurement."""
+
+        if self.ivar is None:
+            return None
+
+        return (self * np.sqrt(self.ivar)).value
 
     def plot(self, array='flux', xlim=None, ylim=(0, None), mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
@@ -147,11 +161,16 @@ class Spectrum(object):
         assert array in validSpectrum, 'array must be one of {0!r}'.format(validSpectrum)
 
         if array == 'flux':
-            data = self.flux
+            data = self.value
+            unit = 'Flux [{0}]'.format(self.unit.to_string('latex_inline'))
         elif array == 'ivar':
+            assert self.ivar is not None, 'ivar is None'
             data = self.ivar
+            unit = 'Inverse variance [{0}]'.format(((1 / self.unit) ** 2).to_string('latex_inline'))
         elif array == 'mask':
+            assert self.mask is not None, 'mask is None'
             data = self.mask
+            unit = ''
 
         xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
 
@@ -177,25 +196,12 @@ class Spectrum(object):
 
         if xlabel is None:
             if self.wavelength is not None:
-                xlabel = 'Wavelength'
-                if self.wavelength_unit == 'Angstrom':
-                    xlabel += r' $[\rm\AA]$'
-                elif self.wavelength_unit is not None:
-                    xlabel += r' [{0}]'.format(self.wavelength_unit)
+                xlabel = 'Wavelength [{0}]'.format(self.wavelength.unit.to_string('latex_inline'))
             else:
                 xlabel = ''
 
         if ylabel is None:
-            if array == 'flux':
-                ylabel = 'Flux'
-                if self.units == '1e-17 erg/s/cm^2/Ang/spaxel':
-                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
-                elif self.units is not None:
-                    ylabel += r' [{0}]'.format(self.units)
-            elif array == 'ivar':
-                ylabel = 'Inverse variance'
-            else:
-                ylabel = ''
+            ylabel = unit
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
