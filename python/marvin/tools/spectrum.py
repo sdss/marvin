@@ -57,7 +57,7 @@ class Spectrum(Quantity):
         obj = super(Spectrum, cls).__new__(cls, flux, unit=unit, dtype=dtype, copy=copy)
 
         obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar else None
-        obj.mask = mask
+        obj.mask = np.array(mask) if mask else None
 
         if wavelength is None:
             obj.wavelength = None
@@ -87,6 +87,12 @@ class Spectrum(Quantity):
             return None
 
         return (self * np.sqrt(self.ivar)).value
+
+    @property
+    def masked(self):
+        """Returns a masked array."""
+
+        return np.ma.array(self.value, mask=self.mask > 0)
 
     def plot(self, array='flux', xlim=None, ylim=(0, None), mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
