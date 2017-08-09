@@ -157,7 +157,6 @@ class Spaxel(object):
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
 
-
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
                         category=self.__class__)
@@ -555,33 +554,23 @@ class Spaxel(object):
                 prop_hdu_ivar = None if not prop.ivar else maps_hdu[prop.name + '_ivar']
                 prop_hdu_mask = None if not prop.mask else maps_hdu[prop.name + '_mask']
 
-                if prop.channels:
-                    for ii, channel in enumerate(prop.channels):
+                if prop.channel:
 
-                        if isinstance(prop.unit, str) or not prop.unit:
-                            unit = prop.unit
-                        else:
-                            unit = prop.unit[ii]
+                    ii = self.maps.datamodel[prop.name].channels.index(prop.channel)
 
-                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
-                            prop.name,
-                            channel=channel,
-                            value=prop_hdu.data[ii, self.y, self.x],
-                            ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
-                            mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None,
-                            unit=unit,
-                            description=prop.description)
+                    properties[prop.full()] = AnalysisProperty(
+                        prop,
+                        value=prop_hdu.data[ii, self.y, self.x],
+                        ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
+                        mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None)
 
                 else:
 
-                    properties[prop.fullname(channel=channel)] = AnalysisProperty(
-                        prop.name,
-                        channel=None,
+                    properties[prop.full()] = AnalysisProperty(
+                        prop,
                         value=prop_hdu.data[self.y, self.x],
                         ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
-                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None,
-                        unit=prop.unit,
-                        description=prop.description)
+                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None)
 
         elif self.maps.data_origin == 'db':
 
@@ -605,38 +594,11 @@ class Spaxel(object):
             properties = {}
             for prop in maps_properties:
 
-                if prop.channels:
-
-                    for ii, channel in enumerate(prop.channels):
-
-                        if isinstance(prop.unit, str) or not prop.unit:
-                            unit = prop.unit
-                        else:
-                            unit = prop.unit[ii]
-
-                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
-                            prop.name,
-                            channel=channel,
-                            value=getattr(spaxelprops, prop.fullname(channel=channel)),
-                            ivar=(getattr(spaxelprops, prop.fullname(channel=channel, ext='ivar'))
-                                  if prop.ivar else None),
-                            mask=(getattr(spaxelprops, prop.fullname(channel=channel, ext='mask'))
-                                  if prop.mask else None),
-                            unit=unit,
-                            description=prop.description)
-
-                else:
-
-                    properties[prop.fullname()] = AnalysisProperty(
-                        prop.name,
-                        channel=None,
-                        value=getattr(spaxelprops, prop.fullname()),
-                        ivar=(getattr(spaxelprops, prop.fullname(ext='ivar'))
-                              if prop.ivar else None),
-                        mask=(getattr(spaxelprops, prop.fullname(ext='mask'))
-                              if prop.mask else None),
-                        unit=prop.unit,
-                        description=prop.description)
+                properties[prop.full()] = AnalysisProperty(
+                    prop,
+                    value=getattr(spaxelprops, prop.full()),
+                    ivar=(getattr(spaxelprops, prop.db_column(ext='ivar')) if prop.ivar else None),
+                    mask=(getattr(spaxelprops, prop.db_column(ext='mask')) if prop.mask else None))
 
         elif self.maps.data_origin == 'api':
 
@@ -657,15 +619,12 @@ class Spaxel(object):
 
             properties = {}
             for prop_fullname in data['properties']:
-                prop = data['properties'][prop_fullname]
+                prop = self.maps.properties[prop_fullname]
                 properties[prop_fullname] = AnalysisProperty(
-                    prop['name'],
-                    channel=prop['channel'],
+                    prop,
                     value=prop['value'],
                     ivar=prop['ivar'],
-                    mask=prop['mask'],
-                    unit=prop['unit'],
-                    description=prop['description'])
+                    mask=prop['mask'])
 
         self.properties = DictOfProperties(properties)
 

@@ -156,19 +156,19 @@ class Map(object):
         else:
             table = mdb.dapdb.SpaxelProp5
 
-        fullname_value = self.property.full()
+        fullname_value = self.property.db_column()
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
         self.value = np.array(value).reshape(self.shape).T
 
         if self.property.ivar:
-            fullname_ivar = self.property.name + '_ivar_' + self.channel
+            fullname_ivar = self.property.db_column(ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
             self.ivar = np.array(ivar).reshape(self.shape).T
 
         if self.property.mask:
-            fullname_mask = self.property.name + '_mask_' + self.channel
+            fullname_mask = self.property.db_column(ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
                 table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
             self.mask = np.array(mask).reshape(self.shape).T

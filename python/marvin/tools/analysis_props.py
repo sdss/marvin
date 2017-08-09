@@ -10,14 +10,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import numpy as np
 import marvin.core.core
 
 
-__all__ = ('DictOfProperties', 'AnalysisProperty')
+__ALL__ = ('DictOfProperties', 'AnalysisProperty')
 
 
-class DictOfProperties(marvin.core.core.DotableCaseInsensitive):
-    """A dotable dictionary to list a groups of AnalysisProperty objects."""
+class DictOfProperties(marvin.core.core.FuzzyDict):
+    """A dotable fuzzy dictionary to list a groups of AnalysisProperties."""
 
     pass
 
@@ -34,37 +35,56 @@ class AnalysisProperty(object):
     ``unit`` can be defined.
 
     Parameters:
-        name (str):
-            A string with the property name to which this property belongs
-            (e.g., ``emline_gflux``, ``specindex``, etc).
-        channel (str or None):
-            The name of the property (e.g., ``ha_6564``, ``nii_6585``, etc).
+        prop (DAP Property object):
+            A Property object with model information about the data.
         value (float):
             The value of the property.
-        unit (str or None):
-            The units of ``value``.
         ivar (float or None):
             The inverse variance associated with ``value``, or ``None`` if not
             defined.
-        mask (bool):
-            The value of the mask for this value.
-        description (str):
-            A string describing the property.
+        mask (int or None):
+            The mask value associated with ``value``, or ``None`` if not
+            defined.
 
     """
 
-    def __init__(self, name, channel, value, unit=None, ivar=None, mask=None,
-                 description=''):
+    def __init__(self, prop, value, ivar=None, mask=None):
 
-        self.name = name
-        self.channel = channel
-        self.value = value
-        self.unit = unit
-        self.ivar = ivar
+        self.property = prop
+
+        self.unit = self.property.unit
+
+        self.value = value * self.property.scale * self.unit
+        self.ivar = (ivar / (self.property.scale ** 2)) if ivar else None
         self.mask = mask
-        self.description = description
+
+        self.name = self.property.name
+        self.channel = self.property.channel
+
+        self.description = self.property.description
+
+    @property
+    def error(self):
+        """The standard deviation of the measurement."""
+
+        if self.ivar is None:
+            return None
+
+        if self.ivar == 0:
+            return np.inf
+
+        return np.sqrt(1. / self.ivar) * self.unit
+
+    @property
+    def sn(self):
+        """The signal to noise of the measurement."""
+
+        if self.ivar is None:
+            return None
+
+        return (self.value * np.sqrt(self.ivar)).value
 
     def __repr__(self):
 
-        return ('<AnalysisProperty (name={0.name}, channels={0.channel}, value={0.value} '
+        return ('<AnalysisProperty (name={0.name!r}, channel={0.channel!r}, value={0.value} '
                 'ivar={0.ivar}, mask={0.mask})>'.format(self))
