@@ -23,7 +23,7 @@ from astropy import units as u
 from fuzzywuzzy import fuzz as fuzz_fuzz
 from fuzzywuzzy import process as fuzz_proc
 
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinNotImplemented
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
@@ -418,6 +418,20 @@ class Property(object):
             return self.name + '_' + self.channel
 
         return self.name
+
+    def get_binid(self):
+        """Returns the binid property associated with this property."""
+
+        if self.name == 'binid':
+            raise MarvinError('binid has not associated binid (?!)')
+
+        if self.parent is None:
+            raise MarvinError('a parent needs to be defined to get an associated binid.')
+
+        if self.binid is None:
+            return self.parent['binid']
+        else:
+            raise MarvinNotImplemented('hybrid binning has not yet been implemented.')
 
     def __repr__(self):
 
