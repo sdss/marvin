@@ -33,8 +33,7 @@ __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property'
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
 
 
-def get_best_fuzzy(value, choices, min_score=30,
-                   scorer=fuzz_fuzz.token_sort_ratio, return_score=False):
+def get_best_fuzzy(value, choices, min_score=30, scorer=fuzz_fuzz.WRatio, return_score=False):
     """Returns the best match in a list of choices using fuzzywuzzy."""
 
     bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
@@ -50,8 +49,8 @@ def get_best_fuzzy(value, choices, min_score=30,
             best = bests[0]
 
     if best is None:
-        raise ValueError('cannot find a good match between {0!r} and {1!r}. '
-                         'Your input value is too ambiguous.'.format(value, choices))
+        raise ValueError('cannot find a good match for {0!r}. '
+                         'Your input value is too ambiguous.'.format(value))
 
     return best if return_score else best[0]
 
