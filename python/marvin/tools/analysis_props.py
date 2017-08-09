@@ -60,7 +60,7 @@ class AnalysisProperty(Quantity):
 
         obj.property = prop
 
-        obj.ivar = (ivar / (obj.property.scale ** 2)) if ivar else None
+        obj.ivar = (ivar / (obj.property.scale ** 2)) if ivar is not None else None
         obj.mask = mask
 
         obj.name = obj.property.name
@@ -69,6 +69,18 @@ class AnalysisProperty(Quantity):
         obj.description = obj.property.description
 
         return obj
+
+    def __array_finalize__(self, obj):
+
+        if obj is None:
+            return
+
+        self.name = getattr(obj, 'name', None)
+        self.channel = getattr(obj, 'channel', None)
+        self.description = getattr(obj, 'description', None)
+
+        self.ivar = getattr(obj, 'ivar', None)
+        self.mask = getattr(obj, 'mask', None)
 
     @property
     def error(self):
