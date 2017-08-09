@@ -304,7 +304,9 @@ class Map(object):
         ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
                      '*': self._mul_ivar, '/': self._mul_ivar}
 
-        map12.value = ops[op](map12.value, map2.value)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            map12.value = ops[op](map12.value, map2.value)
+
         map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
         map12.mask &= map2.mask
     
@@ -327,5 +329,8 @@ class Map(object):
     
     def __div__(self, map2):
         return self._arith(map2, '/')
+    
+    def __truediv__(self, map2):
+        return self.__div__(map2)
 
 
