@@ -44,6 +44,8 @@ from __future__ import division, print_function, absolute_import
 
 import copy
 
+from astropy import units
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -91,7 +93,7 @@ def bad_data_mask(mask, bits):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    if 'unreliable' in bits.keys():     
+    if 'unreliable' in bits.keys():
         unreliable = (mask & 2**bits['unreliable']).astype(bool)
     else:
         unreliable = np.zeros(mask.shape, dtype=bool)
@@ -148,11 +150,11 @@ def log_colorbar_mask(value, log_cb):
 
 def _get_prop(title):
     """Gets property name from plot title.
-    
+
     Parameters:
         title (str):
             Plot title.
-    
+
     Returns:
         str
     """
@@ -427,7 +429,17 @@ def plot(*args, **kwargs):
     cb_kws['sigma_clip'] = sigma_clip
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
-    cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+
+    cblabel = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+    if isinstance(cblabel, units.UnitBase):
+        if dapmap.scale != 1:
+            scale_latex = units.format.Latex.format_exponential_notation(dapmap.scale)
+            cb_kws['label'] = r'${0}$\,'.format(scale_latex) + cblabel.to_string('latex_inline')
+        else:
+            cb_kws['label'] = cblabel.to_string('latex_inline')
+    else:
+        cb_kws['label'] = cblabel
+
     cb_kws['log_cb'] = log_cb
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
