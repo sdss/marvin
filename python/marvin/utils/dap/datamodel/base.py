@@ -432,6 +432,22 @@ class Property(object):
         else:
             raise MarvinNotImplemented('hybrid binning has not yet been implemented.')
 
+    def db_column(self, ext=None):
+        """Returns the name of the DB column containing this property."""
+
+        assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
+
+        if ext is None:
+            return self.full()
+
+        if ext == 'ivar':
+            assert self.ivar is True, 'no ivar for property {0!r}'.format(self.full())
+            return self.name + '_ivar' + ('_{0}'.format(self.channel) if self.channel else '')
+
+        if ext == 'mask':
+            assert self.mask is True, 'no mask for property {0!r}'.format(self.full())
+            return self.name + '_mask' + ('_{0}'.format(self.channel) if self.channel else '')
+
     def __repr__(self):
 
         return '<Property {0!r}, release={1!r}, channel={2!r}, unit={3!r}>'.format(
