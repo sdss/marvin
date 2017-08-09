@@ -8,7 +8,6 @@ Tutorials
    :titlesonly:
    :maxdepth: 1
 
-   first-steps
    tutorials/lean-tutorial
    tutorials/plotting
    Example Queries <tutorials/query-examples>
@@ -17,6 +16,6 @@ Tutorials
    tutorials/sample-selection
    tutorials/bitmasks
    tutorials/jupyter-notebooks
-   
+
 
 |

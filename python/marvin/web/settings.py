@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-13 16:21:28
+# @Last Modified time: 2017-08-03 21:04:17
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -16,7 +16,8 @@ class Config(object):
     SECRET_KEY = os.environ.get('MARVIN_SECRET', 'secret-key')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     APP_BASE = os.environ.get('MARVIN_BASE', 'marvin2')
-    PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir, os.pardir))
+    projroot = os.path.abspath(os.path.join(APP_DIR, os.pardir, os.pardir, os.pardir))
+    PROJECT_ROOT = os.environ.get('MARVIN_DIR', projroot)
     BCRYPT_LOG_ROUNDS = 13
     ASSETS_DEBUG = False
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar

@@ -15,6 +15,10 @@
 import sys
 import os
 
+# Importing matplotlib here with agg to prevent tkinter error in readthedocs
+import matplotlib
+matplotlib.use('agg')
+
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin

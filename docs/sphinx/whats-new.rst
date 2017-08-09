@@ -1,3 +1,24 @@
+What's New in Marvin 2.1.4 (August 2017)
+========================================
+
+* Refactored the Query Page in Marvin Web: Adds more intuitice parameterm naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
+
+* Adds Galaxy Postage Stamp view of the result set from a Marvin Query in the Web
+
+* Adds Rate Limiting for the Marvin API.  Adopts a limit of 200 requests/min on all routes and 60/min for queries.
+
+* Adds new query_params object in Marvin Tools for improved navigation and selection of available query parameters.  See updated documenation for :doc:`Queries <query>` and :doc:`Query Params <query-params>`
+
+* Adds ability for creating custom maps (using custom values and masks) with Marvin Plotting framework.  See updated :doc:`Plotting Tutorial <tutorials/plotting>`
+
+* New Sidebar in Marvin Documentation for easier navigation.
+
+* New Marvin :doc:`Getting Started <getting-started>` Page.
+
+* New Marvin :doc:`Exercises <exercises>` for showcasing utilization of Marvin in science workflows
+
+* Numerous bug fixes.  See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for full account of all Github Issues closed.
+
 What's New in Marvin 2.1.3 (May 2017)
 =====================================
 
@@ -10,16 +31,16 @@ What's New in Marvin 2.1.3 (May 2017)
 * Query shortcuts are now only applied on full words, to avoid blind replacements. This fixes a bug that made parameters such as `elpetro_absmag_r` being replaced by `elpetro_absmaelpetro_mag_g_r`.
 
 * Refactored :doc:`Map <tools/map>` plotting methods into :doc:`Utilities <utils/plot-map>`.
-  
+
   * Map plotting now accepts user-defined ``value``, ``ivar``, and ``mask`` arrays (e.g., BPT masks).
   * It is possible to create multi-panel map plots.
   * All plotting code no longer overwrites matplotlib rcParams.
   * Map plotting has new default gray/hatching scheme for data quality (in tools and web):
-  
+
     * gray: spaxels with NOCOV.
     * hatched: spaxels with bad data (UNRELIABLE and DONOTUSE) or S/N below some minimum value.
     * colored: good data.
-  
+
   * Map plotting no longer masks spaxels near zero velocity contour because by default (in tools and web), there is no minimum signal-to-noise ratio for velocity plots.
 
 * New tutorials: :doc:`tutorials/plotting` and :doc:`tutorials/lean-tutorial`.
