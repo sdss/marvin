@@ -13,6 +13,8 @@ from __future__ import absolute_import
 import numpy as np
 import marvin.core.core
 
+from astropy.units import Quantity
+
 
 __ALL__ = ('DictOfProperties', 'AnalysisProperty')
 
@@ -23,7 +25,7 @@ class DictOfProperties(marvin.core.core.FuzzyDict):
     pass
 
 
-class AnalysisProperty(object):
+class AnalysisProperty(Quantity):
     """A class describing a property with a value and additional information.
 
     This class is intended for internal use, not to be initialisided by the
@@ -48,20 +50,25 @@ class AnalysisProperty(object):
 
     """
 
-    def __init__(self, prop, value, ivar=None, mask=None):
+    def __new__(cls, prop, value, ivar=None, mask=None, dtype=None, copy=True):
 
-        self.property = prop
+        unit = prop.unit
+        scale = prop.scale
+        value = value * scale * unit
 
-        self.unit = self.property.unit
+        obj = super(AnalysisProperty, cls).__new__(cls, value, unit=unit, dtype=dtype, copy=copy)
 
-        self.value = value * self.property.scale * self.unit
-        self.ivar = (ivar / (self.property.scale ** 2)) if ivar else None
-        self.mask = mask
+        obj.property = prop
 
-        self.name = self.property.name
-        self.channel = self.property.channel
+        obj.ivar = (ivar / (obj.property.scale ** 2)) if ivar else None
+        obj.mask = mask
 
-        self.description = self.property.description
+        obj.name = obj.property.name
+        obj.channel = obj.property.channel
+
+        obj.description = obj.property.description
+
+        return obj
 
     @property
     def error(self):
@@ -82,7 +89,7 @@ class AnalysisProperty(object):
         if self.ivar is None:
             return None
 
-        return (self.value * np.sqrt(self.ivar)).value
+        return (self * np.sqrt(self.ivar)).value
 
     def __repr__(self):
 
