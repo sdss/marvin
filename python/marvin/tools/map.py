@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from distutils import version
 import os
 import warnings
+import copy
 
 from astropy.io import fits
 import numpy as np
@@ -269,3 +270,39 @@ class Map(object):
         See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
+    
+    def __deepcopy__(self, memo):
+        return Map(maps=copy.deepcopy(self.maps, memo),
+                   property_name=copy.deepcopy(self.property_name, memo),
+                   channel=copy.deepcopy(self.channel, memo))
+
+    def _property_channel_arithmetic(self, property1, channel1, property2, channel2, operator):
+        if property1 != property2:
+            property1 = '{0}{1}{2}'.format(property1, operator, property2)
+        
+        if channel1 != channel2:
+            channel1 = '{0}{1}{2}'.format(channel1, operator, channel2)
+        
+        return property1, channel1
+
+    def _add_ivar(self, ivar1, ivar2):
+        return 1. / ((1. / ivar1 + 1. / ivar2))
+
+    def __add__(self, map2):
+        map1 = copy.deepcopy(self)
+        assert self.shape == map2.shape, 'Only maps of the same shape can be added together.'
+
+        self.value += map2.value
+        self.ivar = self._add_ivar(self.ivar, map2.ivar)
+        self.mask &= map2.mask
+
+        names = (self.property_name, self.channel, map2.property_name, map2.channel, '+')
+        self.property_name, self.channel = self._property_channel_arithmetic(*names)
+
+        if self.unit != map2.unit:
+            warnings.warn('Units do not match for map addition.')
+        
+        return self
+
+
+
