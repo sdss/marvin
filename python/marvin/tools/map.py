@@ -96,7 +96,9 @@ class Map(Quantity):
         unit = prop.unit
         value = value * prop.scale
 
-        obj = super(Map, cls).__new__(cls, value, unit=unit, dtype=dtype, copy=copy)
+        obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
+        obj = obj.view(cls)
+        obj._set_unit(unit)
 
         obj.property = prop
         obj.channel = channel
@@ -109,6 +111,20 @@ class Map(Quantity):
         obj.mask = np.array(mask) if mask is not None else None
 
         return obj
+
+    def __getitem__(self, sl):
+
+        new_obj = super(Map, self).__getitem__(sl)
+
+        if type(new_obj) is not type(self):
+            new_obj = self._new_view(new_obj)
+
+        new_obj._set_unit(self.unit)
+
+        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
+        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+
+        return new_obj
 
     def __array_finalize__(self, obj):
 

@@ -54,7 +54,10 @@ class Spectrum(Quantity):
                 wavelength=None, dtype=None, copy=True):
 
         flux = np.array(flux) * scale
-        obj = super(Spectrum, cls).__new__(cls, flux, unit=unit, dtype=dtype, copy=copy)
+
+        obj = Quantity(flux, unit=unit, dtype=dtype, copy=copy)
+        obj = obj.view(cls)
+        obj._set_unit(unit)
 
         obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar else None
         obj.mask = np.array(mask) if mask else None
@@ -67,6 +70,31 @@ class Spectrum(Quantity):
                 obj.wavelength *= wavelength_unit
 
         return obj
+
+    def __array_finalize__(self, obj):
+
+        if obj is None:
+            return
+
+        self.ivar = getattr(obj, 'ivar', None)
+        self.mask = getattr(obj, 'mask', None)
+        self.wavelength = getattr(obj, 'wavelength', None)
+
+    def __getitem__(self, sl):
+
+        new_obj = super(Spectrum, self).__getitem__(sl)
+
+        if type(new_obj) is not type(self):
+            new_obj = self._new_view(new_obj)
+
+        new_obj._set_unit(self.unit)
+
+        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
+        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+        new_obj.wavelength = self.wavelength.__getitem__(sl) \
+            if self.wavelength is not None else self.wavelength
+
+        return new_obj
 
     @property
     def error(self):
