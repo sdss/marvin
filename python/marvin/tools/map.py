@@ -290,10 +290,12 @@ class Map(object):
 
     @classmethod
     def _mul_ivar(cls, ivar1, ivar2, value1, value2, value12):
-        sig1 = 1. / np.sqrt(ivar1)
-        sig2 = 1. / np.sqrt(ivar2)
-        sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
-        return 1. / sig12**2
+        with np.errstate(divide='ignore', invalid='ignore'):
+            sig1 = 1. / np.sqrt(ivar1)
+            sig2 = 1. / np.sqrt(ivar2)
+            sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
+            ivar12 = 1. / sig12**2
+        return ivar12
 
     def _arith(self, map2, op):
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}

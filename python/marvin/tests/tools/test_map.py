@@ -160,7 +160,9 @@ class TestMap(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 / map2
         
-        assert pytest.approx(map12.value == map1.value / map2.value)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            assert pytest.approx(map12.value == map1.value / map2.value)
+
         assert pytest.approx(map12.ivar == map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
                                                           map2.value, map12.value))
         assert pytest.approx(map12.mask == map1.mask & map2.mask)
