@@ -397,7 +397,7 @@ class Property(object):
         self.mask = mask
         self.binid = binid
 
-        self.scale = scale
+        self.scale = scale if scale is not None else 1
         self.unit = unit if unit is not None else u.dimensionless_unscaled
 
         self.description = description
@@ -432,9 +432,9 @@ class MultiChannelProperty(list):
 
         self.name = name
 
-        self.ivar = kwargs.pop('ivar', False)
-        self.mask = kwargs.pop('mask', False)
-        self.description = kwargs.pop('description', '')
+        self.ivar = kwargs.get('ivar', False)
+        self.mask = kwargs.get('mask', False)
+        self.description = kwargs.get('description', '')
 
         self.parent = kwargs.get('parent', None)
 
@@ -444,6 +444,7 @@ class MultiChannelProperty(list):
             unit = units if units is None or not isinstance(units, (list, tuple)) else units[ii]
             scale = scales \
                 if scales is None or not isinstance(scales, (list, tuple)) else scales[ii]
+
             property_list.append(Property(name, channel=channel, unit=unit, scale=scale, **kwargs))
 
         list.__init__(self, property_list)
