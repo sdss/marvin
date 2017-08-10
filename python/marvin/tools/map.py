@@ -19,9 +19,6 @@ import warnings
 
 from astropy.io import fits
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 
 import marvin
 import marvin.api.api
@@ -109,12 +106,10 @@ class Map(object):
     @property
     def snr(self):
         """Returns the signal-to-noise ratio for each spaxel in the map."""
-
         return np.abs(self.value * np.sqrt(self.ivar))
 
     def _load_map_from_file(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
-
         self.header = self.maps.data[self.property_name].header
 
         if self.channel is not None:
@@ -140,7 +135,6 @@ class Map(object):
 
     def _load_map_from_db(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='db'``."""
-
         mdb = marvin.marvindb
 
         if not mdb.isdbconnected:
@@ -190,7 +184,6 @@ class Map(object):
 
     def _load_map_from_api(self):
         """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
-
         url = marvin.config.urlmap['api']['getmap']['url']
 
         url_full = url.format(
@@ -243,7 +236,6 @@ class Map(object):
                 The realpath to which the file has been saved.
 
         """
-
         # check for file extension
         if not os.path.splitext(path)[1]:
             path = os.path.join(path + '.mpf')
@@ -260,12 +252,11 @@ class Map(object):
         in the same path as when the object was first created.
 
         """
-
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
     def plot(self, *args, **kwargs):
         """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
-        
+
         See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
