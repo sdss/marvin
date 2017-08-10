@@ -10,6 +10,7 @@ import astropy
 import matplotlib
 import pytest
 
+from marvin.core.exceptions import MarvinError
 from marvin.tools.maps import Maps
 from marvin.tools.map import Map
 from marvin.tests import marvin_test_if
@@ -32,7 +33,6 @@ def _get_maps_kwargs(galaxy, data_origin):
                                           ('stellar_vel', None),
                                           ('stellar_sigma', None)])
 def map_(request, galaxy, data_origin):
-
     maps = Maps(**_get_maps_kwargs(galaxy, data_origin))
     map_ = maps.getMap(property_name=request.param[0], channel=request.param[1])
     map_.data_origin = data_origin
@@ -72,3 +72,23 @@ class TestMap(object):
 
         map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
+
+    def test_getMap_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            map_ = maps.getMap(property_name='mythical_property')
+
+        assert 'Invalid property name.' in str(ee.value)
+
+    def test_getMap_invalid_channel(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            map_ = maps.getMap(property_name='emline_gflux', channel='mythical_channel')
+
+        assert 'Invalid channel.' in str(ee.value)
+
+
+
+
+
+

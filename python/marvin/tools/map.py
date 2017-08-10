@@ -75,11 +75,13 @@ class Map(object):
         self.release = maps.release
 
         self.maps_property = self.maps.properties[self.property_name]
-        if (self.maps_property is None or
-                (self.maps_property.channels is not None and
-                 self.channel not in self.maps_property.channels)):
-            raise marvin.core.exceptions.MarvinError(
-                'invalid combination of property name and channel.')
+
+        if self.maps_property is None:
+            raise marvin.core.exceptions.MarvinError('Invalid property name.')
+
+        if (self.maps_property.channels is not None and
+            self.channel not in self.maps_property.channels):
+            raise marvin.core.exceptions.MarvinError('Invalid channel.')
 
         self.value = None
         self.ivar = None
