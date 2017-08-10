@@ -142,6 +142,23 @@ class TestCube(object):
 
         assert cube._release == galaxy.release
 
+    def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
+        monkeypatch.setattr(marvindb, 'isdbconnected', False)
+        with pytest.raises(MarvinError) as ee:
+            cube = Cube(plateifu=galaxy.plateifu)
+
+        assert 'No db connected' in str(ee.value)
+
+    def test_load_cube_from_db_data(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._load_cube_from_db(data=cube.data)
+
+    @marvin_test_if('include', data_origin=['db'])
+    @pytest.mark.slow
+    def test_getExtensionData_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._getExtensionData(extName='flux')
+
 
 class TestGetSpaxel(object):
 
