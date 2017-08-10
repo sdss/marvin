@@ -80,7 +80,7 @@ class Map(object):
             raise marvin.core.exceptions.MarvinError('Invalid property name.')
 
         if (self.maps_property.channels is not None and
-            self.channel not in self.maps_property.channels):
+                self.channel not in self.maps_property.channels):
             raise marvin.core.exceptions.MarvinError('Invalid channel.')
 
         self.value = None
