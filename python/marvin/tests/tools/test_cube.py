@@ -11,7 +11,7 @@ from astropy import wcs
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import skipIfNoDB, marvin_test_if
 
 
@@ -100,6 +100,47 @@ class TestCube(object):
             Cube(filename='hola.fits', mode='remote')
 
         assert 'filename not allowed in remote mode' in str(ee.value)
+
+    def test_getFullPath_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube._getFullPath() is None
+
+    def test_download_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube.download() is None
+
+    def test_repr(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        args = cube.plateifu, cube.mode, cube.data_origin
+        expected = "<Marvin Cube (plateifu='{0}', mode='{1}', data_origin='{2}')>".format(*args)
+        assert cube.__repr__() == expected
+
+    def test_load_cube_from_file_with_data(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube._load_cube_from_file(data=cube.data)
+
+    def test_load_cube_from_file_OSError(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube.filename = 'hola.fits'
+        with pytest.raises((IOError, OSError)) as ee:
+            cube._load_cube_from_file()
+
+        assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
+
+    def test_load_cube_from_file_filever_ne_release(self, galaxy):
+        release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
+        with pytest.warns(MarvinUserWarning) as record:
+            cube = Cube(filename=galaxy.cubepath, release=release_wrong)
+
+        assert len(record) == 2
+        assert record[1].message.args[0] == (
+            'mismatch between file release={0} '.format(galaxy.release) +
+            'and object release={0}. '.format(release_wrong) +
+            'Setting object release to {0}'.format(galaxy.release))
+
+        assert cube._release == galaxy.release
 
 
 class TestGetSpaxel(object):
