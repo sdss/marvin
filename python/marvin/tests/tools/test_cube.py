@@ -17,9 +17,9 @@ from marvin.tests import skipIfNoDB, marvin_test_if
 
 @pytest.fixture(autouse=True)
 def skipbins(galaxy):
-    if galaxy.bintype not in ['SPX', 'NONE']:
+    if galaxy.bintype.name not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template not in ['MILES-THIN', 'GAU-MILESHC']:
+    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
@@ -153,7 +153,7 @@ class TestGetSpaxel(object):
             params = {'ra': ra, 'dec': dec}
 
         spaxel = cube.getSpaxel(**params)
-        flux = spaxel.spectrum.flux
+        flux = spaxel.spectrum.value
         assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
@@ -175,7 +175,7 @@ class TestGetSpaxel(object):
         expected = galaxy.spaxel['flux']
 
         spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).spectrum
-        assert pytest.approx(spectrum.flux[galaxy.spaxel['specidx']], expected)
+        assert pytest.approx(spectrum.value[galaxy.spaxel['specidx']], expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
@@ -198,9 +198,9 @@ class TestGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        assert pytest.approx(spaxel_slice_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_file.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_db.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_api.spectrum.value[spec_idx], flux)
 
         assert pytest.approx(spaxel_slice_file.spectrum.ivar[spec_idx], ivar)
         assert pytest.approx(spaxel_slice_db.spectrum.ivar[spec_idx], ivar)
@@ -217,9 +217,9 @@ class TestGetSpaxel(object):
         spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_file.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_db.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_api.spectrum.value[spec_idx], flux)
 
         assert pytest.approx(spaxel_getspaxel_file.spectrum.ivar[spec_idx], ivar)
         assert pytest.approx(spaxel_getspaxel_db.spectrum.ivar[spec_idx], ivar)
@@ -249,7 +249,7 @@ class TestPickling(object):
 
         assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
         cube_file = temp_scratch.join('test_cube.mpf')
-        path = cube.save(str(cube_file))
+        cube.save(str(cube_file))
         assert cube_file.check() is True
         assert cube.data is not None
 
@@ -299,7 +299,7 @@ class TestPickling(object):
 
         test_path = temp_scratch.join('test_cube_api.mpf')
 
-        path = cube.save(str(test_path))
+        cube.save(str(test_path))
         assert test_path.check() is True
 
         cube = None

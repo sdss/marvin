@@ -356,7 +356,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         url = marvin.config.urlmap['api']['getMaps']['url']
 
         url_full = url.format(name=self.plateifu,
-                              bintype=self.bintype,
+                              bintype=self.bintype.name,
                               template=self.template.name)
 
         try:

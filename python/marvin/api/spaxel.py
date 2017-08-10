@@ -131,10 +131,10 @@ class SpaxelView(BaseView):
         self.update_results(results)
 
         if spaxel is not None:
-            self.results['data'] = {'flux': spaxel.spectrum.flux.tolist(),
+            self.results['data'] = {'flux': spaxel.spectrum.value.tolist(),
                                     'ivar': spaxel.spectrum.ivar.tolist(),
                                     'mask': spaxel.spectrum.mask.tolist(),
-                                    'wavelength': spaxel.spectrum.wavelength.tolist(),
+                                    'wavelength': spaxel.spectrum.wavelength.value.tolist(),
                                     'specres': spaxel.specres.tolist()}
 
         return jsonify(self.results)
@@ -304,12 +304,12 @@ class SpaxelView(BaseView):
         if spaxel is not None:
 
             self.results['data'] = {
-                'flux_array': spaxel.model_flux.flux.tolist(),
+                'flux_array': spaxel.model_flux.value.tolist(),
                 'flux_ivar': spaxel.model_flux.ivar.tolist(),
                 'flux_mask': spaxel.model_flux.mask.tolist(),
-                'model_array': spaxel.model.flux.tolist(),
-                'model_emline': spaxel.emline.flux.tolist(),
-                'model_emline_base': spaxel.emline_base.flux.tolist(),
+                'model_array': spaxel.model.value.tolist(),
+                'model_emline': spaxel.emline.value.tolist(),
+                'model_emline_base': spaxel.emline_base.value.tolist(),
                 'model_emline_mask': spaxel.emline.mask.tolist(),
                 'bintype': spaxel.bintype,
                 'template': spaxel.template}

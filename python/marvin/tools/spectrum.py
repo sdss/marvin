@@ -59,8 +59,8 @@ class Spectrum(Quantity):
         obj = obj.view(cls)
         obj._set_unit(unit)
 
-        obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar else None
-        obj.mask = np.array(mask) if mask else None
+        obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar is not None else None
+        obj.mask = np.array(mask) if mask is not None else None
 
         if wavelength is None:
             obj.wavelength = None

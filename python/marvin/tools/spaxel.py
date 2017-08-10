@@ -612,8 +612,8 @@ class Spaxel(object):
             # dictionary with all the properties for this spaxel.
             routeparams = {'name': self.plateifu,
                            'x': self.x, 'y': self.y,
-                           'bintype': self.bintype,
-                           'template': self.template}
+                           'bintype': self.bintype.name,
+                           'template': self.template.name}
 
             url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
@@ -625,9 +625,10 @@ class Spaxel(object):
 
             properties = {}
             for prop_fullname in data['properties']:
-                prop = self.maps.properties[prop_fullname]
+                maps_prop = self.maps.datamodel[prop_fullname]
+                prop = data['properties'][prop_fullname]
                 properties[prop_fullname] = AnalysisProperty(
-                    prop,
+                    maps_prop,
                     value=prop['value'],
                     ivar=prop['ivar'],
                     mask=prop['mask'])

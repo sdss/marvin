@@ -111,7 +111,7 @@ class MapsView(marvin.api.base.BaseView):
                         methods=['GET', 'POST'], endpoint='getMaps')
     @flask_classy.route('/<name>/<bintype>/', defaults={'template': None},
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/<templatw>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
     def get(self, args, name, bintype, template):
@@ -185,8 +185,8 @@ class MapsView(marvin.api.base.BaseView):
         header = maps.header.tostring()
         wcs_header = maps.wcs.to_header_string()
         shape = maps.shape
-        bintype = maps.bintype
-        template = maps.template
+        bintype = maps.bintype.name
+        template = maps.template.name
 
         # Redefines plateifu and mangaid from the Maps
         mangaid = maps.mangaid
