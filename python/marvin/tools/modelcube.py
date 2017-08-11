@@ -104,9 +104,9 @@ class ModelCube(MarvinToolsClass):
 
         super(ModelCube, self).__init__(*args, **kwargs)
 
-        self.datamodel = datamodel[self._dapver]
-        self.bintype = self.datamodel.get_bintype(kwargs.pop('bintype', None))
-        self.template = self.datamodel.get_template(kwargs.pop('template', None))
+        self._datamodel = datamodel[self._dapver]
+        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
         # Checks that DAP is at least MPL-5
         MPL5 = distutils.version.StrictVersion('2.0.2')
@@ -211,9 +211,9 @@ class ModelCube(MarvinToolsClass):
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
-        self.datamodel = datamodel[self._dapver]
-        self.bintype = self.datamodel.get_bintype(self.header['BINKEY'].strip().upper())
-        self.template = self.datamodel.get_template(self.header['SCKEY'].strip().upper())
+        self._datamodel = datamodel[self._dapver]
+        self.bintype = self._datamodel.get_bintype(self.header['BINKEY'].strip().upper())
+        self.template = self._datamodel.get_template(self.header['SCKEY'].strip().upper())
 
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
@@ -294,8 +294,8 @@ class ModelCube(MarvinToolsClass):
         self.wavelength = np.array(data['wavelength'])
         self.redcorr = np.array(data['redcorr'])
 
-        self.bintype = self.datamodel.get_bintype(data['bintype'])
-        self.template = self.datamodel.get_template(data['template'])
+        self.bintype = self._datamodel.get_bintype(data['bintype'])
+        self.template = self._datamodel.get_template(data['template'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
@@ -454,6 +454,6 @@ class ModelCube(MarvinToolsClass):
             return self
         else:
             return ModelCube(plateifu=self.plateifu, release=self._release,
-                             bintype=self.datamodel.get_unbinned(),
+                             bintype=self._datamodel.get_unbinned(),
                              template=self.template,
                              mode=self.mode)

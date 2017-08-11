@@ -107,7 +107,7 @@ class Map(Quantity):
 
         obj.maps = maps
         obj.release = release
-        obj.datamodel = datamodel
+        obj._datamodel = datamodel
 
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
@@ -137,7 +137,7 @@ class Map(Quantity):
         self.channel = getattr(obj, 'channel', None)
         self.maps = getattr(obj, 'maps', None)
         self.release = getattr(obj, 'release', None)
-        self.datamodel = getattr(obj, 'datamodel', None)
+        self._datamodel = getattr(obj, '_datamodel', None)
 
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)

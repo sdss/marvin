@@ -562,7 +562,7 @@ class Spaxel(object):
 
                 if prop.channel:
 
-                    ii = self.maps.datamodel[prop.name].channels.index(prop.channel)
+                    ii = self.maps._datamodel[prop.name].channels.index(prop.channel)
 
                     properties[prop.full()] = AnalysisProperty(
                         prop,
@@ -625,7 +625,7 @@ class Spaxel(object):
 
             properties = {}
             for prop_fullname in data['properties']:
-                maps_prop = self.maps.datamodel[prop_fullname]
+                maps_prop = self.maps._datamodel[prop_fullname]
                 prop = data['properties'][prop_fullname]
                 properties[prop_fullname] = AnalysisProperty(
                     maps_prop,

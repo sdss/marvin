@@ -127,11 +127,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         super(Maps, self).__init__(*args, **kwargs)
 
-        self.datamodel = datamodel[self.release]
+        self._datamodel = datamodel[self.release]
 
         # We set the bintype  and template_kin again, now using the DAP version
-        self.bintype = self.datamodel.get_bintype(kwargs.pop('bintype', None))
-        self.template = self.datamodel.get_template(kwargs.pop('template', None))
+        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
         self.header = None
         self.wcs = None
@@ -148,7 +148,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             raise marvin.core.exceptions.MarvinError(
                 'data_origin={0} is not valid'.format(self.data_origin))
 
-        self.properties = self.datamodel.properties
+        self.properties = self._datamodel.properties
 
         self._check_versions(self)
 
@@ -272,7 +272,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             self._release = file_ver
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
-        self.datamodel = datamodel[self._dapver]
+        self._datamodel = datamodel[self._dapver]
 
         # Checks the bintype and template from the header
         if not _is_MPL4(self._dapver):
@@ -285,10 +285,10 @@ class Maps(marvin.core.core.MarvinToolsClass):
         header_template = self.data[0].header[header_template_key].strip().upper()
 
         if self.bintype.name != header_bintype:
-            self.bintype = self.datamodel.get_bintype(header_bintype)
+            self.bintype = self._datamodel.get_bintype(header_bintype)
 
         if self.template.name != header_template:
-            self.template = self.datamodel.get_template(header_template)
+            self.template = self._datamodel.get_template(header_template)
 
     def _load_maps_from_db(self, data=None):
         """Loads the ``mangadap.File`` object for this Maps."""
@@ -455,7 +455,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         if channel is not None:
             property_name = property_name + '_' + channel
 
-        best = self.datamodel[property_name]
+        best = self._datamodel[property_name]
         assert isinstance(best, Property), 'the retrived value is not a property.'
 
         if exact:
@@ -535,7 +535,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             return self
         else:
             return Maps(plateifu=self.plateifu, release=self._release,
-                        bintype=self.datamodel.get_unbinned(),
+                        bintype=self._datamodel.get_unbinned(),
                         template=self.template, mode=self.mode)
 
     def get_bin_spaxels(self, binid, load=False, only_list=False):
