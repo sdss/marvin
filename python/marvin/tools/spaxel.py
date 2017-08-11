@@ -680,8 +680,8 @@ class Spaxel(object):
             # dictionary with all the models for this spaxel.
             url = marvin.config.urlmap['api']['getModels']['url']
             url_full = url.format(name=self.plateifu,
-                                  bintype=self.bintype,
-                                  template=self.template,
+                                  bintype=self.bintype.name,
+                                  template=self.template.name,
                                   x=self.x, y=self.y)
 
             try:
