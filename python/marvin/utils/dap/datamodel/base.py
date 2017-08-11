@@ -278,7 +278,7 @@ class DAPDataModel(object):
             value = value.name
 
         for bintype in self.bintypes:
-            if bintype.name == value:
+            if bintype.name.upper() == value.upper():
                 return bintype
 
         raise MarvinError('invalid bintype {0!r}'.format(value))
