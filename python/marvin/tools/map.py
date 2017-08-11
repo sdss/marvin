@@ -16,6 +16,8 @@ from __future__ import absolute_import
 from distutils import version
 import os
 import warnings
+import copy
+import operator
 
 from astropy.io import fits
 import numpy as np
@@ -104,6 +106,11 @@ class Map(object):
 
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
+    
+    def __deepcopy__(self, memo):
+        return Map(maps=copy.deepcopy(self.maps, memo),
+                   property_name=copy.deepcopy(self.property_name, memo),
+                   channel=copy.deepcopy(self.channel, memo))
 
     @property
     def snr(self):
@@ -262,3 +269,62 @@ class Map(object):
         See :func:`marvin.utils.plot.map.plot` for full documentation.
         """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
+
+    @staticmethod
+    def _combine_names(name1, name2, operator):
+        name = copy.deepcopy(name1)
+        if name1 != name2:
+            name = '{0}{1}{2}'.format(name1, operator, name2)
+        return name
+
+    @staticmethod
+    def _add_ivar(ivar1, ivar2, *args, **kwargs):
+        return 1. / ((1. / ivar1 + 1. / ivar2))
+
+    @staticmethod
+    def _mul_ivar(ivar1, ivar2, value1, value2, value12):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            sig1 = 1. / np.sqrt(ivar1)
+            sig2 = 1. / np.sqrt(ivar2)
+            sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
+            ivar12 = 1. / sig12**2
+        return ivar12
+
+    def _arith(self, map2, op):
+        """Do map arithmetic and correctly handle map attributes."""
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+
+        map12 = copy.deepcopy(self)
+        assert self.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
+
+        ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
+                     '*': self._mul_ivar, '/': self._mul_ivar}
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            map12.value = ops[op](map12.value, map2.value)
+
+        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
+        map12.mask &= map2.mask
+    
+        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
+        map12.channel = self._combine_names(map12.channel, map2.channel, op)
+
+        if self.unit != map2.unit:
+            warnings.warn('Units do not match for map arithmetic.')
+        
+        return map12
+    
+    def __add__(self, map2):
+        return self._arith(map2, '+')
+
+    def __sub__(self, map2):
+        return self._arith(map2, '-')
+    
+    def __mul__(self, map2):
+        return self._arith(map2, '*')
+    
+    def __div__(self, map2):
+        return self._arith(map2, '/')
+    
+    def __truediv__(self, map2):
+        return self.__div__(map2)
