@@ -272,6 +272,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             self._release = file_ver
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+        self.datamodel = datamodel[self._dapver]
 
         # Checks the bintype and template from the header
         if not _is_MPL4(self._dapver):

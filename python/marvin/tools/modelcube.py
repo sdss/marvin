@@ -24,7 +24,7 @@ import marvin.utils.general.general
 import marvin.tools.maps
 
 from marvin.core.core import MarvinToolsClass
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError
 from marvin.utils.dap import datamodel
 
 
@@ -95,15 +95,12 @@ class ModelCube(MarvinToolsClass):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        if kwargs.pop('template_pop', None):
-            warnings.warn('template_pop is not yet in use. Ignoring value.', MarvinUserWarning)
-
-            if 'template_kin' in kwargs:
-                warnings.warn('template_kin has been deprecated and will be removed '
-                              'in a future version. Use template.',
-                              marvin.core.exceptions.MarvinDeprecationWarning)
-                if 'template' not in kwargs:
-                    kwargs['template'] = kwargs['template_kin']
+        if 'template_kin' in kwargs:
+            warnings.warn('template_kin has been deprecated and will be removed '
+                          'in a future version. Use template.',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            if 'template' not in kwargs:
+                kwargs['template'] = kwargs['template_kin']
 
         super(ModelCube, self).__init__(*args, **kwargs)
 
@@ -214,6 +211,10 @@ class ModelCube(MarvinToolsClass):
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
+        self.datamodel = datamodel[self._dapver]
+        self.bintype = self.datamodel.get_bintype(self.header['BINKEY'].strip().upper())
+        self.template = self.datamodel.get_template(self.header['SCKEY'].strip().upper())
+
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
 
@@ -276,7 +277,7 @@ class ModelCube(MarvinToolsClass):
         """Initialises a model cube from the API."""
 
         url = marvin.config.urlmap['api']['getModelCube']['url']
-        url_full = url.format(name=self.plateifu, bintype=self.bintype,
+        url_full = url.format(name=self.plateifu, bintype=self.bintype.name,
                               template=self.template.name)
 
         try:
