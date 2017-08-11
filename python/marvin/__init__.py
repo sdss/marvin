@@ -15,12 +15,13 @@ from collections import OrderedDict
 from distutils.version import StrictVersion
 
 # Set the Marvin version
-try:
-    from marvin.version import get_version
-except ImportError as e:
-    __version__ = 'dev'
-else:
-    __version__ = get_version()
+__version__ = '2.1.5dev'
+# try:
+#     from marvin.version import get_version
+# except ImportError as e:
+#     __version__ = 'dev'
+# else:
+#     __version__ = get_version()
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -286,11 +287,12 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         # set and sort the base MPL dictionary
-        mpldict = {'MPL-5': ('v2_0_1', '2.0.2'),
+        mpldict = {'MPL-6': ('v2_2_0', 'trunk'),
+                   'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1'),
                    'MPL-3': ('v1_3_3', 'v1_0_0'),
                    'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_1', None)}
+                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_2', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
