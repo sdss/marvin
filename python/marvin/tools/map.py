@@ -106,7 +106,7 @@ class Map(object):
 
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
-    
+
     def __deepcopy__(self, memo):
         return Map(maps=copy.deepcopy(self.maps, memo),
                    property_name=copy.deepcopy(self.property_name, memo),
@@ -243,7 +243,6 @@ class Map(object):
         Returns:
             path (str):
                 The realpath to which the file has been saved.
-
         """
         # check for file extension
         if not os.path.splitext(path)[1]:
@@ -259,7 +258,6 @@ class Map(object):
         unplickled. Note that, for map objects instantiated from a Maps object
         with ``data_origin='file'``, the original file must exists and be
         in the same path as when the object was first created.
-
         """
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
@@ -329,15 +327,34 @@ class Map(object):
     def __truediv__(self, map2):
         return self.__div__(map2)
 
+    def __pow__(self, power):
+        """Raises map to power.
+        Parameters:
+            power (float):
+               Power to raise the map values.
+        Returns:
+            map (:class:`~marvin.tools.map.Map` object)
+        """
+        map1 = copy.deepcopy(self)
+        map1.value = map1.value**power
+
+        sig = np.sqrt(1. / self.ivar)
+        sig1 = map1.value * power * sig * self.value
+        map1.ivar = 1 / sig1**2.
+        return map1
+
     def inst_sigma_correction(self):
         """Corrects for instrumental broadening."""
         if self.property_name == 'stellar_vel':
             map_corr = self.maps['stellar_sigmacorr']
+
         elif self.property_name == 'emline_gsigma':
             map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+
         else:
             name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(name))
 
         return (self**2 - map_corr**2)**0.5
+            

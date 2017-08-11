@@ -169,6 +169,25 @@ class TestMap(object):
         assert map12.property_name == map1._combine_names(map1.property_name, map2.property_name, '/')
         assert map12.channel == map1._combine_names(map1.channel, map2.channel, '/')
 
+    @pytest.mark.runslow
+    @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
+    @pytest.mark.parametrize('property_name, channel',
+                             [('emline_gflux', 'ha_6564'),
+                              ('stellar_vel', None)])
+    def test_pow(self, galaxy, property_name, channel, power):
+        maps = Maps(plateifu=galaxy.plateifu)
+        map_orig = maps.getMap(property_name=property_name, channel=channel)
+        map_new = map_orig**power
+        
+        sig_orig = np.sqrt(1. / map_orig.ivar)
+        sig_new = map_new.value * power * sig_orig * map_orig.value
+        ivar_new = 1 / sig_new**2.
+        
+        # TODO are these useful tests (since they just reimplement the same algorithm)
+        assert pytest.approx(map_new.value == map_orig.value**power)
+        assert pytest.approx(map_new.ivar == ivar_new)
+        assert (map_new.mask == map_orig.mask).all()
+
     def test_getMap_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         with pytest.raises(MarvinError) as ee:
