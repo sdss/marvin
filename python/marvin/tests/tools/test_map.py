@@ -64,6 +64,7 @@ class TestMap(object):
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
+        assert 'Make single panel map or one panel of multi-panel map plot.' in map_.plot.__doc__
 
     @marvin_test_if(map_={'data_origin': ['db']}, mark='skip')
     def test_save_and_restore(self, temp_scratch, map_):
@@ -208,6 +209,7 @@ class TestMap(object):
         stsigcorr = maps['stellar_sigmacorr']
         stsig_physical = (stsig**2 - stsigcorr**2)**0.5
         assert stsig_physical == stsig.inst_sigma_correction()
+        assert 0, 'Does this test work?' # TODO test this out
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -218,3 +220,6 @@ class TestMap(object):
 
         assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
+        
+        assert 0, 'Does this test work?' # TODO test this out
+

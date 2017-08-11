@@ -28,6 +28,7 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
+from marvin.utils.general.general import add_doc
 
 
 try:
@@ -261,11 +262,8 @@ class Map(object):
         """
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
+    @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
-        """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
-
-        See :func:`marvin.utils.plot.map.plot` for full documentation.
-        """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
 
     @staticmethod
