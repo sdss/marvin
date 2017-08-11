@@ -450,7 +450,7 @@ class Galaxy(object):
             self.mapspath = self.path.__getattribute__(pathtype)('mangamap', **self.access_kwargs)
             self.modelpath = None
         else:
-            __ = self.access_kwargs.pop('mode')
+            self.access_kwargs.pop('mode')
             self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS',
                                                                  **self.access_kwargs)
             self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE',

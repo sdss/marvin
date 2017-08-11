@@ -18,7 +18,6 @@ import marvin
 from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
-from marvin.tests import marvin_test_if
 
 
 def _assert_maps(maps, galaxy):
@@ -43,7 +42,7 @@ class TestMaps(object):
             maps_kwargs = dict(filename=galaxy.mapspath)
         else:
             maps_kwargs = dict(plateifu=galaxy.plateifu, release=galaxy.release,
-                               bintype=galaxy.bintype, template_kin=galaxy.template,
+                               bintype=galaxy.bintype, template=galaxy.template,
                                mode='local' if data_origin == 'db' else 'remote')
 
         return maps_kwargs
@@ -84,7 +83,7 @@ class TestMaps(object):
         assert spaxel.spectrum is not None
         assert len(spaxel.properties.keys()) > 0
 
-        expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template]
+        expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template.name]
         assert spaxel.properties['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
 
     def test_get_spaxel_test2(self, galaxy, data_origin):
@@ -109,7 +108,8 @@ class TestMaps(object):
         assert len(spaxel.properties.keys()) > 0
 
     def test_maps_redshift(self, maps, galaxy):
-        redshift = maps.nsa.redshift if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
+        redshift = maps.nsa.redshift \
+            if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):

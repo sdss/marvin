@@ -144,7 +144,7 @@ class ModelCubeView(BaseView):
                 'wavelength': model_cube.wavelength.tolist(),
                 'redcorr': model_cube.redcorr.tolist(),
                 'wcs_header': model_cube.wcs.to_header_string(),
-                'bintype': model_cube.bintype,
-                'template': model_cube.template}
+                'bintype': model_cube.bintype.name,
+                'template': model_cube.template.name}
 
         return jsonify(self.results)
