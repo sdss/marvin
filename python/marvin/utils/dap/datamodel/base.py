@@ -371,6 +371,10 @@ class Bintype(object):
 
         return '<Bintype {0!r}, binned={1!r}>'.format(self.name, self.binned)
 
+    def __str__(self):
+
+        return self.name
+
 
 class Template(object):
 
@@ -382,6 +386,10 @@ class Template(object):
     def __repr__(self):
 
         return '<Template {0!r}>'.format(self.name)
+
+    def __str__(self):
+
+        return self.name
 
 
 class Property(object):
@@ -455,6 +463,10 @@ class Property(object):
         return '<Property {0!r}, release={1!r}, channel={2!r}, unit={3!r}>'.format(
             self.name, self.parent.release if self.parent else None,
             self.channel, self.unit.to_string())
+
+    def __str__(self):
+
+        return self.full()
 
 
 class MultiChannelProperty(list):
