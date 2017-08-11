@@ -90,7 +90,23 @@ class TestMap(object):
 
         assert 'Invalid channel.' in str(ee.value)
 
+    def test_stellar_sigma_correction(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        stsig = maps['stellar_sigma']
+        stsigcorr = maps['stellar_sigmacorr']
+        stsig_physical = (stsig**2 - stsigcorr**2)**0.5
+        
+        assert stsig_physical == stsig.inst_sigma_correction()
 
+    def test_stellar_sigma_correction_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+
+        with pytest.raises(MarvinError) as ee:
+            ha.inst_sigma_correction()
+
+        assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
+                'for instrumental broadening.') in str(ee.value)
 
 
 

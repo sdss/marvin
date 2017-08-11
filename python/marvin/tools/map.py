@@ -305,26 +305,39 @@ class Map(object):
 
         map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
         map12.mask &= map2.mask
-    
+
         map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
         map12.channel = self._combine_names(map12.channel, map2.channel, op)
 
         if self.unit != map2.unit:
             warnings.warn('Units do not match for map arithmetic.')
-        
+
         return map12
-    
+
     def __add__(self, map2):
         return self._arith(map2, '+')
 
     def __sub__(self, map2):
         return self._arith(map2, '-')
-    
+
     def __mul__(self, map2):
         return self._arith(map2, '*')
-    
+
     def __div__(self, map2):
         return self._arith(map2, '/')
-    
+
     def __truediv__(self, map2):
         return self.__div__(map2)
+
+    def inst_sigma_correction(self):
+        """Corrects for instrumental broadening."""
+        if self.property_name == 'stellar_vel':
+            map_corr = self.maps['stellar_sigmacorr']
+        elif self.property_name == 'emline_gsigma':
+            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+        else:
+            name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
+            raise marvin.core.exceptions.MarvinError(
+                'Cannot correct {0} for instrumental broadening.'.format(name))
+
+        return (self**2 - map_corr**2)**0.5
