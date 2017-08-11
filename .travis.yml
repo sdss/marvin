@@ -51,9 +51,9 @@ notifications:
 # repo branches to test
 # branches:
 # - master
-branches:
-  except:
-    - new_datamodel
+# branches:
+#   except:
+#     - new_datamodel
 
 before_install:
 # Set up the .netrc file we need to download test data
