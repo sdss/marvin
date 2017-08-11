@@ -6,13 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:31:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-28 18:14:12
+# @Last Modified time: 2017-08-09 18:14:14
 
 from __future__ import print_function, division, absolute_import
 from flask_featureflags import FeatureFlag
 from raven.contrib.flask import Sentry
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_profiler import Profiler
 import flask_jsglue as jsg
 import logging
 
@@ -27,3 +28,6 @@ sentry = Sentry(logging=True, level=logging.ERROR)
 
 # Route Rate Limiter
 limiter = Limiter(key_func=get_remote_address)
+
+# Flask Profiler
+profiler = Profiler()
