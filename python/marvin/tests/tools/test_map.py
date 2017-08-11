@@ -6,10 +6,12 @@
 # Created by Brett Andrews on 2 Jul 2017.
 
 import numpy as np
+
 import astropy
 import matplotlib
 import pytest
 
+from marvin.utils.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.map import Map
 from marvin.tests import marvin_test_if
@@ -42,6 +44,7 @@ def map_(request, galaxy, data_origin):
 class TestMap(object):
 
     def test_map(self, map_, galaxy):
+
         assert map_.release == galaxy.release
 
         assert tuple(map_.shape) == tuple(galaxy.shape)
@@ -54,7 +57,7 @@ class TestMap(object):
 
         assert pytest.approx(map_.snr, np.abs(map_.value * np.sqrt(map_.ivar)))
 
-        assert map_.header['BUNIT'] == map_.unit
+        assert datamodel[map_.maps._dapver][map_.property.full()].unit == map_.unit
 
         assert isinstance(map_.header, astropy.io.fits.header.Header)
 

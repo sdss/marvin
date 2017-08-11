@@ -3,7 +3,6 @@
 #
 # Licensed under a 3-clause BSD license.
 #
-#
 # map.py
 #
 # Created by José Sánchez-Gallego on 26 Jun 2016.
@@ -103,6 +102,9 @@ class Map(Quantity):
         obj.property = prop
         obj.channel = channel
 
+        obj.header = header
+        obj.scale = 1
+
         obj.maps = maps
         obj.release = release
         obj.datamodel = datamodel
@@ -155,7 +157,7 @@ class Map(Quantity):
     def masked(self):
         """Returns a masked array."""
 
-        assert self.masks is not None, 'mask is None'
+        assert self.mask is not None, 'mask is None'
 
         return np.ma.array(self.value, mask=self.mask > 0)
 
@@ -171,8 +173,8 @@ class Map(Quantity):
 
         header = maps.data[prop.name].header
 
-        if prop.channel is not None:
-            channel_idx = prop.channels.index(prop.channel)
+        if prop.idx is not None:
+            channel_idx = prop.idx
             value = maps.data[prop.name].data[channel_idx]
             if prop.ivar:
                 ivar = maps.data[prop.name + '_ivar'].data[channel_idx]

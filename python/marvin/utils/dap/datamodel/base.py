@@ -387,7 +387,7 @@ class Template(object):
 class Property(object):
 
     def __init__(self, name, channel=None, ivar=False, mask=False, unit=None, scale=1,
-                 parent=None, binid=None, description=''):
+                 parent=None, binid=None, idx=None, description=''):
 
         self.name = name
         self.channel = channel
@@ -395,6 +395,8 @@ class Property(object):
         self.ivar = ivar
         self.mask = mask
         self.binid = binid
+
+        self.idx = idx  # The index of the channel in the MAPS file extension.
 
         self.scale = scale if scale is not None else 1
         self.unit = unit if unit is not None else u.dimensionless_unscaled
@@ -474,7 +476,8 @@ class MultiChannelProperty(list):
             scale = scales \
                 if scales is None or not isinstance(scales, (list, tuple)) else scales[ii]
 
-            property_list.append(Property(name, channel=channel, unit=unit, scale=scale, **kwargs))
+            property_list.append(Property(name, channel=channel, unit=unit, scale=scale,
+                                          idx=ii, **kwargs))
 
         list.__init__(self, property_list)
 
