@@ -51,7 +51,7 @@ class Spectrum(Quantity):
 
     def __new__(cls, flux, scale=1, unit=dimensionless_unscaled,
                 wavelength_unit=dimensionless_unscaled, ivar=None, mask=None,
-                wavelength=None, dtype=None, copy=True):
+                wavelength=None, dtype=None, copy=True, **kwargs):
 
         flux = np.array(flux) * scale
 
