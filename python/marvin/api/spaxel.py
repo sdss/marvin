@@ -311,7 +311,7 @@ class SpaxelView(BaseView):
                 'model_emline': spaxel.emline.value.tolist(),
                 'model_emline_base': spaxel.emline_base.value.tolist(),
                 'model_emline_mask': spaxel.emline.mask.tolist(),
-                'bintype': spaxel.bintype,
-                'template': spaxel.template}
+                'bintype': spaxel.bintype.name,
+                'template': spaxel.template.name}
 
         return jsonify(self.results)
