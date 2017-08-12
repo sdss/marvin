@@ -71,7 +71,7 @@ class Map(Quantity):
         assert isinstance(maps, marvin.tools.maps.Maps)
 
         maps = maps
-        datamodel = maps.datamodel
+        datamodel = maps._datamodel
 
         if isinstance(property_name, Property):
             prop = property_name
