@@ -602,7 +602,7 @@ class Spaxel(object):
 
                 properties[prop.full()] = AnalysisProperty(
                     prop,
-                    value=getattr(spaxelprops, prop.full()),
+                    getattr(spaxelprops, prop.full()),
                     ivar=(getattr(spaxelprops, prop.db_column(ext='ivar')) if prop.ivar else None),
                     mask=(getattr(spaxelprops, prop.db_column(ext='mask')) if prop.mask else None))
 
