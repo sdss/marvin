@@ -56,7 +56,9 @@ class AnalysisProperty(Quantity):
         scale = prop.scale
         value = value * scale * unit
 
-        obj = super(AnalysisProperty, cls).__new__(cls, value, unit=unit, dtype=dtype, copy=copy)
+        obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
+        obj = obj.view(cls)
+        obj._set_unit(unit)
 
         obj.property = prop
 
@@ -105,5 +107,5 @@ class AnalysisProperty(Quantity):
 
     def __repr__(self):
 
-        return ('<AnalysisProperty (name={0.name!r}, channel={0.channel!r}, value={0.value} '
-                'ivar={0.ivar}, mask={0.mask})>'.format(self))
+        return ('<AnalysisProperty (name={0.name!r}, channel={0.channel!r}, '
+                'value={0} ivar={0.ivar}, mask={0.mask})>'.format(self))
