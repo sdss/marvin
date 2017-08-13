@@ -112,26 +112,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        # For now, we set bintype and template_kin to the kwarg values, so that
-        # they can be used by getFullPath.
-        self.bintype = kwargs.get('bintype', None)
-
-        if 'template_kin' in kwargs:
-            warnings.warn('template_kin has been deprecated and will be removed '
-                          'in a future version. Use template.',
-                          marvin.core.exceptions.MarvinDeprecationWarning)
-            if 'template' not in kwargs:
-                kwargs['template'] = kwargs['template_kin']
-
-        self.template = kwargs.get('template', None)
-
         super(Maps, self).__init__(*args, **kwargs)
-
-        self._datamodel = datamodel[self.release]
-
-        # We set the bintype  and template_kin again, now using the DAP version
-        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
-        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
         self.header = None
         self.wcs = None
@@ -168,6 +149,22 @@ class Maps(marvin.core.core.MarvinToolsClass):
             return self.getMap(value)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
+
+    def _set_datamodel(self, **kwargs):
+        """Sets the datamodel, template, and bintype."""
+
+        if 'template_kin' in kwargs:
+            warnings.warn('template_kin has been deprecated and will be removed '
+                          'in a future version. Use template.',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            if 'template' not in kwargs:
+                kwargs['template'] = kwargs['template_kin']
+
+        self._datamodel = datamodel[self.release]
+
+        # We set the bintype  and template_kin again, now using the DAP version
+        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
     @staticmethod
     def _check_versions(instance):

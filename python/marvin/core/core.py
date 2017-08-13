@@ -113,6 +113,8 @@ class MarvinToolsClass(object):
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
+        self._set_datamodel()
+
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
@@ -184,6 +186,17 @@ class MarvinToolsClass(object):
         else:
             self.mode = 'remote'
             self.data_origin = 'api'
+
+    def _set_datamodel(self, **kwargs):
+        """Sets the datamodel, template, and bintype.
+
+        Most classes subclassing from MarvinToolsClass will not need to
+        override this class. Only classes such as Maps or ModelCube will need
+        to define datamodel and derivates.
+
+        """
+
+        pass
 
     def download(self, pathType=None, **pathParams):
         ''' Download using sdss_access Rsync '''

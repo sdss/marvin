@@ -95,18 +95,7 @@ class ModelCube(MarvinToolsClass):
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        if 'template_kin' in kwargs:
-            warnings.warn('template_kin has been deprecated and will be removed '
-                          'in a future version. Use template.',
-                          marvin.core.exceptions.MarvinDeprecationWarning)
-            if 'template' not in kwargs:
-                kwargs['template'] = kwargs['template_kin']
-
         super(ModelCube, self).__init__(*args, **kwargs)
-
-        self._datamodel = datamodel[self._dapver]
-        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
-        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
         # Checks that DAP is at least MPL-5
         MPL5 = distutils.version.StrictVersion('2.0.2')
@@ -145,6 +134,22 @@ class ModelCube(MarvinToolsClass):
         """Returns the spaxel for ``(x, y)``"""
 
         return self.getSpaxel(x=xy[1], y=xy[0], xyorig='lower')
+
+    def _set_datamodel(self, **kwargs):
+        """Sets the datamodel, template, and bintype."""
+
+        if 'template_kin' in kwargs:
+            warnings.warn('template_kin has been deprecated and will be removed '
+                          'in a future version. Use template.',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            if 'template' not in kwargs:
+                kwargs['template'] = kwargs['template_kin']
+
+        self._datamodel = datamodel[self.release]
+
+        # We set the bintype  and template_kin again, now using the DAP version
+        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self._datamodel.get_template(kwargs.pop('template', None))
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
