@@ -65,9 +65,10 @@ class Spectrum(Quantity):
         if wavelength is None:
             obj.wavelength = None
         else:
-            obj.wavelength = np.array(wavelength)
             if wavelength_unit:
-                obj.wavelength *= wavelength_unit
+                obj.wavelength = Quantity(np.array(wavelength), unit=wavelength_unit)
+            else:
+                obj.wavelength = np.array(wavelength)
 
         return obj
 
