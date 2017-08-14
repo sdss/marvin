@@ -146,7 +146,7 @@ class DAPDataModel(object):
         raise MarvinError('cannot set properties directly. Use add_properties() instead.')
 
     @property
-    def groups(self):
+    def extensions(self):
         """Returns a list of properties. MultiChannelProperties are not unpacked."""
 
         return self._properties
@@ -201,11 +201,11 @@ class DAPDataModel(object):
     def __getitem__(self, value):
         """Uses fuzzywuzzy to return the closest property match."""
 
-        prop_names = [prop.name for prop in self.groups]
+        prop_names = [prop.name for prop in self.extensions]
 
         # If the values matches exactly one of the property names, we return the property object.
         if value in prop_names:
-            return self.groups[prop_names.index(value)]
+            return self.extensions[prop_names.index(value)]
 
         # Finds the best property+channel
         propety_channel_names = self.list_property_names()
@@ -332,7 +332,7 @@ class DAPDataModel(object):
         model_table.meta['default_template'] = self.default_template
 
         if compact:
-            iterable = self.groups
+            iterable = self.extensions
         else:
             iterable = self.properties
 
