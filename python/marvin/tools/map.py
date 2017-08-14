@@ -117,6 +117,9 @@ class Map(object):
         # make an empty Map object
         if self.property_name not in self.maps.properties:
             pass  # parse property_name
+        if ((self.channel is not None) and
+            (self.channel is not self.maps.properties[self.property_name].channels)):
+            pass  # parse channel
         map_ = Map(maps=copy.deepcopy(self.maps, memo),
                    property_name=self.header['EXTNAME'].lower(),
                    channel=)
@@ -284,6 +287,12 @@ class Map(object):
         if name1 != name2:
             name = '{0}{1}{2}'.format(name1, operator, name2)
         return name
+
+    @staticmethod
+    def _parse_name(name):
+        # out = name.split()  # regex split on +-/*
+        # return out
+        pass
 
     @staticmethod
     def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
