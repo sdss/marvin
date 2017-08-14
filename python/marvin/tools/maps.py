@@ -13,6 +13,7 @@ from __future__ import absolute_import
 import distutils.version
 import warnings
 import itertools
+import copy
 
 import astropy.io.fits
 import astropy.wcs
@@ -165,6 +166,13 @@ class Maps(marvin.core.core.MarvinToolsClass):
         # We set the bintype  and template_kin again, now using the DAP version
         self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
         self.template = self._datamodel.get_template(kwargs.pop('template', None))
+
+    def __deepcopy__(self, memo):
+        return Maps(plateifu=copy.deepcopy(self.plateifu, memo),
+                    release=copy.deepcopy(self.release, memo),
+                    bintype=copy.deepcopy(self.bintype, memo),
+                    template=copy.deepcopy(self.template, memo),
+                    nsa_source=copy.deepcopy(self.nsa_source, memo))
 
     @staticmethod
     def _check_versions(instance):

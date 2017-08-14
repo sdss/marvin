@@ -10,14 +10,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import pytest
+import copy
 
+import pytest
+import numpy as np
+import astropy
 import astropy.io.fits
 
 import marvin
 from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
+from marvin.utils.dap.datamodel.base import Property
 
 
 def _assert_maps(maps, galaxy):
@@ -121,3 +125,30 @@ class TestMaps(object):
         with pytest.raises(MarvinError) as ee:
             maps.release = 'a'
             assert 'the release cannot be changed' in str(ee.exception)
+
+    def test_deepcopy(self, galaxy):
+        maps1 = Maps(plateifu=galaxy.plateifu)
+        maps2 = copy.deepcopy(maps1)
+
+        for attr in vars(maps1):
+            if not attr.startswith('_'):
+                value = getattr(maps1, attr)
+                value2 = getattr(maps2, attr)
+
+                if isinstance(value, np.ndarray):
+                    assert np.isclose(value, value2).all()
+
+                elif isinstance(value, astropy.wcs.wcs.WCS):
+                    for key in vars(value):
+                        assert getattr(value, key) == getattr(value2, key)
+
+                elif isinstance(value, marvin.tools.cube.Cube):
+                    pass
+
+                elif (isinstance(value, list) and len(value) > 0 and
+                      isinstance(value[0], Property)):
+                        for property1, property2 in zip(value, value2):
+                            assert property1 == property2
+
+                else:
+                    assert value == value2, attr
