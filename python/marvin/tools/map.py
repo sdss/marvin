@@ -104,22 +104,34 @@ class Map(object):
                                                     if self.mask is not None else False))
 
     def __repr__(self):
-
         return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
                 'channel={0.channel!r})>'.format(self))
 
     def __deepcopy__(self, memo):
-        return Map(maps=copy.deepcopy(self.maps, memo),
-                   property_name=copy.deepcopy(self.property_name, memo),
-                   channel=copy.deepcopy(self.channel, memo))
+        """Make a deep copy of a map."""
+        # OLD
+        # map_ = Map(maps=copy.deepcopy(self.maps, memo),
+        #            property_name=copy.deepcopy(self.property_name, memo),
+        #            channel=copy.deepcopy(self.channel, memo))
+
+        # make an empty Map object
+        if self.property_name not in self.maps.properties:
+            pass  # parse property_name
+        map_ = Map(maps=copy.deepcopy(self.maps, memo),
+                   property_name=self.header['EXTNAME'].lower(),
+                   channel=)
+        map_.property_name = self.property_name
+        map_.channel = self.channel
+        
+        return map_
 
     @property
     def snr(self):
-        """Returns the signal-to-noise ratio for each spaxel in the map."""
+        """Return the signal-to-noise ratio for each spaxel in the map."""
         return np.abs(self.value * np.sqrt(self.ivar))
 
     def _load_map_from_file(self):
-        """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
+        """Initialise the Map from a ``Maps`` with ``data_origin='file'``."""
         self.header = self.maps.data[self.property_name].header
 
         if self.channel is not None:
@@ -274,7 +286,7 @@ class Map(object):
         return name
 
     @staticmethod
-    def _add_ivar(ivar1, ivar2, *args, **kwargs):
+    def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
     @staticmethod
@@ -288,6 +300,9 @@ class Map(object):
 
     def _arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
+        
+        # TODO Merge headers?.........................................................................
+        
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
 
         map12 = copy.deepcopy(self)
@@ -299,7 +314,12 @@ class Map(object):
         with np.errstate(divide='ignore', invalid='ignore'):
             map12.value = ops[op](map12.value, map2.value)
 
+        map12.ivar = map12.ivar if map12.ivar is not None else np.zeros(map12.shape)
+        map2.ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
         map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
+
+        map12.mask = map12.mask if map12.mask is not None else np.zeros(map12.shape, dtype=int)
+        map2.mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12.mask &= map2.mask
 
         map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
@@ -308,42 +328,60 @@ class Map(object):
         if self.unit != map2.unit:
             warnings.warn('Units do not match for map arithmetic.')
 
+        # TODO test this!
+        if self.release != map2.release:
+            warnings.warn('Releases do not match in map arithmetic.')
+
         return map12
 
     def __add__(self, map2):
+        """Add two maps."""
         return self._arith(map2, '+')
 
     def __sub__(self, map2):
+        """Subtract two maps."""
         return self._arith(map2, '-')
 
     def __mul__(self, map2):
+        """Multiply two maps."""
         return self._arith(map2, '*')
 
     def __div__(self, map2):
+        """Divide two maps."""
         return self._arith(map2, '/')
 
     def __truediv__(self, map2):
+        """Divide two maps."""
         return self.__div__(map2)
 
     def __pow__(self, power):
-        """Raises map to power.
+        """Raise map to power.
+
         Parameters:
             power (float):
                Power to raise the map values.
+
         Returns:
             map (:class:`~marvin.tools.map.Map` object)
         """
         map1 = copy.deepcopy(self)
         map1.value = map1.value**power
 
-        sig = np.sqrt(1. / self.ivar)
-        sig1 = map1.value * power * sig * self.value
-        map1.ivar = 1 / sig1**2.
+        if map1.ivar is None:
+            map1.ivar = np.zeros(map1.shape)
+        else:
+            sig = np.sqrt(1. / map1.ivar)
+            sig1 = map1.value * power * sig * self.value
+            map1.ivar = 1 / sig1**2.
+
         return map1
 
     def inst_sigma_correction(self):
-        """Corrects for instrumental broadening."""
+        """Correct for instrumental broadening."""
         if self.property_name == 'stellar_vel':
+            if self.release == 'MPL-4':
+                raise marvin.core.exceptions.MarvinError(
+                    'Instrumental broadening correction not implemented for MPL-4.')
             map_corr = self.maps['stellar_sigmacorr']
 
         elif self.property_name == 'emline_gsigma':
@@ -354,5 +392,11 @@ class Map(object):
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(name))
 
+
+        # TODO problem with error propogation (corr HDUs have ivar == None)
+        # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
+        
+        map_corr.ivar = np.zeros(map_corr.value.shape)
+
         return (self**2 - map_corr**2)**0.5
-            
+

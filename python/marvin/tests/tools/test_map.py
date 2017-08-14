@@ -184,7 +184,6 @@ class TestMap(object):
         sig_new = map_new.value * power * sig_orig * map_orig.value
         ivar_new = 1 / sig_new**2.
         
-        # TODO are these useful tests (since they just reimplement the same algorithm)
         assert pytest.approx(map_new.value == map_orig.value**power)
         assert pytest.approx(map_new.ivar == ivar_new)
         assert (map_new.mask == map_orig.mask).all()
@@ -203,13 +202,25 @@ class TestMap(object):
 
         assert 'Invalid channel.' in str(ee.value)
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
         stsigcorr = maps['stellar_sigmacorr']
-        stsig_physical = (stsig**2 - stsigcorr**2)**0.5
-        assert stsig_physical == stsig.inst_sigma_correction()
-        assert 0, 'Does this test work?' # TODO test this out
+        expected = (stsig**2 - stsigcorr**2)**0.5
+        actual = stsig.inst_sigma_correction()
+        assert pytest.approx(actual.value == expected.value)
+        assert pytest.approx(actual.ivar == expected.ivar)
+        assert (actual.mask == expected.mask).all()
+
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_stellar_sigma_correction_MPL4(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        stsig = maps['stellar_sigma']
+        with pytest.raises(MarvinError) as ee:
+            stsig.inst_sigma_correction()
+        
+        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -220,6 +231,4 @@ class TestMap(object):
 
         assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
-        
-        assert 0, 'Does this test work?' # TODO test this out
 
