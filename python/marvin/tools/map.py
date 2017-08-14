@@ -161,6 +161,15 @@ class Map(Quantity):
 
         return np.ma.array(self.value, mask=self.mask > 0)
 
+    def __repr__(self):
+
+        if np.isscalar(self.value):
+            return super(Map, self).__repr__()
+        else:
+            return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
+                    'channel={0.channel!r})>\n{2!r} {3}'.format(self, self.property.name,
+                                                                self.value, self.unit.to_string()))
+
     @property
     def snr(self):
         """Returns the signal-to-noise ratio for each spaxel in the map."""
