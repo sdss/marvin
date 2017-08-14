@@ -313,8 +313,33 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
-    def to_table(self, compact=True, pprint=False, description=False):
-        """Returns an astropy table with all the properties in this model."""
+    def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
+        """Returns an astropy table with all the properties in this model.
+
+        Parameters:
+            compact (bool):
+                If ``True``, groups extensions (multichannel properties) in one
+                line. Otherwise, shows a row for each extension and channel.
+            pprint (bool):
+                Whether the table should be printed to screen using astropy's
+                table pretty print.
+            description (bool):
+                If ``True``, an extra column with the description of the
+                property will be added.
+            max_width (int or None):
+                A keyword to pass to ``astropy.table.Table.pprint()`` with the
+                maximum width of the table, in characters.
+
+        Returns:
+            result (``astropy.table.Table``):
+                An astropy table containing the name of the property, the
+                channel (or channels, if ``compact=True``), whether the
+                property has ``ivar`` or ``mask``, the units, and a
+                description (if ``description=True``). Additonal information
+                such as the bintypes, templates, release, etc. is included in
+                the metadata of the table (use ``.meta`` to access them).
+
+        """
 
         if compact:
             model_table = table.Table(
@@ -340,10 +365,7 @@ class DAPDataModel(object):
             if isinstance(prop, MultiChannelProperty):
                 channel = ', '.join(prop.channels)
                 units = [pp.unit.to_string() for pp in prop]
-                if len(set(units)) == 1:
-                    unit = units[0]
-                else:
-                    unit = 'multiple'
+                unit = units[0] if len(set(units)) == 1 else 'multiple'
             else:
                 channel = '' if not prop.channel else prop.channel
                 unit = prop.unit.to_string()
@@ -354,7 +376,7 @@ class DAPDataModel(object):
             model_table.remove_column('description')
 
         if pprint:
-            model_table.pprint()
+            model_table.pprint(max_width=max_width, max_lines=1e6)
 
         return model_table
 
