@@ -30,6 +30,7 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
 
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.dap.datamodel.base import Property
 
 try:
@@ -50,9 +51,11 @@ class Map(Quantity):
     A ``Map`` returns and astropy 2D Quantity-like array with additional
     attributes for ``ivar`` and ``mask``.
 
-    ``Map`` objects are not intended to be initialised directly, at least
-    for now. To get a ``Map`` instance, use the
-    :func:`~marvin.tools.maps.Maps.getMap` method.
+    A ``Map`` is normally initialised from a ``Maps`` by calling the
+    :func:`~marvin.tools.maps.Maps.getMap` method. It can be initialialised
+    directly by providing a ``Maps`` instance, the ``property_name`` of the
+    property to retrieve, and the ``channel``, if necessary. Alternatively,
+    a set of ``value``, ``unit``, ``ivar``, and ``mask`` can be passed. This
 
     Parameters:
         maps (:class:`~marvin.tools.maps.Maps` object):
@@ -68,7 +71,22 @@ class Map(Quantity):
 
     """
 
-    def __new__(cls, maps, property_name, channel=None, dtype=None, copy=True):
+    def __new__(cls, maps=None, property_name=None, channel=None,
+                value=None, unit=None, ivar=None, mask=None, dtype=None, copy=True):
+
+        if maps is not None and property_name is not None:
+            assert value is None and unit is None, \
+                'when initialising a Map from a Maps, value and unit must be None'
+            return cls._init_map_from_maps(maps, property_name, channel,
+                                           dtype=dtype, copy=copy)
+        elif value is not None and unit is not None:
+            return cls._init_map_from_value(cls, value, unit, dtype=dtype, copy=copy)
+        else:
+            raise MarvinError('incorrect combination of input parameters.')
+
+    @classmethod
+    def _init_map_from_maps(cls, maps, property_name, channel, dtype=None, copy=True):
+        """Initialises a Map from a Maps."""
 
         assert isinstance(maps, marvin.tools.maps.Maps)
 
@@ -80,8 +98,7 @@ class Map(Quantity):
         else:
             prop = maps._match_properties(property_name, channel=channel)
 
-        assert prop in datamodel.properties, \
-            'failed sanity check. Property does not match.'
+        assert prop in datamodel.properties, 'failed sanity check. Property does not match.'
 
         channel = prop.channel
 
@@ -97,9 +114,8 @@ class Map(Quantity):
         unit = prop.unit
         value = value * prop.scale
 
-        obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
-        obj = obj.view(cls)
-        obj._set_unit(unit)
+        obj = cls._init_map_from_value(cls, value, unit, ivar=ivar, mask=mask,
+                                       dtype=dtype, copy=copy)
 
         obj.property = prop
         obj.channel = channel
@@ -112,6 +128,18 @@ class Map(Quantity):
         obj._datamodel = datamodel
 
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
+        obj.mask = np.array(mask) if mask is not None else None
+
+        return obj
+
+    def _init_map_from_value(cls, value, unit, ivar=None, mask=None, dtype=None, copy=True):
+        """Initialises a Map from a value and a unit."""
+
+        obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
+        obj = obj.view(cls)
+        obj._set_unit(unit)
+
+        obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 
         return obj
@@ -165,8 +193,8 @@ class Map(Quantity):
 
     def __repr__(self):
 
-        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property.full()!r}, '
-                'channel={0.channel!r})>'.format(self))
+        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
+                'channel={0.channel!r})>'.format(self, self.property.full()))
 
     def __deepcopy__(self, memo):
         return Map(maps=copy.deepcopy(self.maps, memo),
@@ -244,9 +272,8 @@ class Map(Quantity):
                 break
 
         if not header_dict:
-            warnings.warn('cannot find the header for property {0}.'
-                          .format(prop.name),
-                          marvin.core.exceptions.MarvinUserWarning)
+            warnings.warn('cannot find the header for property {0}.'.format(prop.name),
+                          MarvinUserWarning)
         else:
             header = fits.Header(header_dict)
 
@@ -356,27 +383,34 @@ class Map(Quantity):
 
     def _arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
+
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
 
-        map12 = copy.deepcopy(self)
+        # map12 = copy.deepcopy(self)
         assert self.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
 
         ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
                      '*': self._mul_ivar, '/': self._mul_ivar}
 
         with np.errstate(divide='ignore', invalid='ignore'):
-            map12.value = ops[op](map12.value, map2.value)
+            map12_value = ops[op](self.value, map2.value)
 
-        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
-        map12.mask &= map2.mask
+        map12_ivar = ivar_func[op](self.ivar, map2.ivar, self.value, map2.value, self.value)
+        map12_mask = self.mask & map2.mask
 
-        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
-        map12.channel = self._combine_names(map12.channel, map2.channel, op)
+        # map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
+        # map12.channel = self._combine_names(map12.channel, map2.channel, op)
 
         if self.unit != map2.unit:
             warnings.warn('Units do not match for map arithmetic.')
 
-        return map12
+        if op in ['*', '/']:
+            map12_unit = ops[op](self.unit, map2.unit)
+        else:
+            map12_unit = self.unit
+
+        return CompositeMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
+                            mask=map12_mask, copy=True)
 
     def __add__(self, map2):
         return self._arith(map2, '+')
@@ -392,3 +426,11 @@ class Map(Quantity):
 
     def __truediv__(self, map2):
         return self.__div__(map2)
+
+
+class CompositeMap(Map):
+    """Creates a Map which is a composite of two maps."""
+
+    def __repr__(self):
+
+        return ('<Marvin CompositeMap>')
