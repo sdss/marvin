@@ -55,7 +55,7 @@ class Map(Quantity):
     :func:`~marvin.tools.maps.Maps.getMap` method. It can be initialialised
     directly by providing a ``Maps`` instance, the ``property_name`` of the
     property to retrieve, and the ``channel``, if necessary. Alternatively,
-    a set of ``value``, ``unit``, ``ivar``, and ``mask`` can be passed. This
+    a set of ``value``, ``unit``, ``ivar``, and ``mask`` can be passed.
 
     Parameters:
         maps (:class:`~marvin.tools.maps.Maps` object):
@@ -86,7 +86,7 @@ class Map(Quantity):
 
     @classmethod
     def _init_map_from_maps(cls, maps, property_name, channel, dtype=None, copy=True):
-        """Initialises a Map from a Maps."""
+        """Initialise a Map from a Maps."""
 
         assert isinstance(maps, marvin.tools.maps.Maps)
 
@@ -133,7 +133,7 @@ class Map(Quantity):
         return obj
 
     def _init_map_from_value(cls, value, unit, ivar=None, mask=None, dtype=None, copy=True):
-        """Initialises a Map from a value and a unit."""
+        """Initialise a Map from a value and a unit."""
 
         obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
         obj = obj.view(cls)
@@ -174,7 +174,7 @@ class Map(Quantity):
 
     @property
     def error(self):
-        """The standard deviation of the measurement."""
+        """Computes the standard deviation of the measurement."""
 
         if self.ivar is None:
             return None
@@ -185,7 +185,7 @@ class Map(Quantity):
 
     @property
     def masked(self):
-        """Returns a masked array."""
+        """Return a masked array."""
 
         assert self.mask is not None, 'mask is None'
 
@@ -203,13 +203,13 @@ class Map(Quantity):
 
     @property
     def snr(self):
-        """Returns the signal-to-noise ratio for each spaxel in the map."""
+        """Return the signal-to-noise ratio for each spaxel in the map."""
 
         return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
     def _get_from_file(maps, prop):
-        """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
+        """Initialise the Map from a ``Maps`` with ``data_origin='file'``."""
 
         header = maps.data[prop.name].header
 
@@ -231,7 +231,7 @@ class Map(Quantity):
 
     @staticmethod
     def _get_from_db(maps, prop):
-        """Initialises the Map from a ``Maps`` with ``data_origin='db'``."""
+        """Initialise the Map from a ``Maps`` with ``data_origin='db'``."""
 
         mdb = marvin.marvindb
 
@@ -281,7 +281,7 @@ class Map(Quantity):
 
     @staticmethod
     def _get_from_api(maps, prop):
-        """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
+        """Initialise the Map from a ``Maps`` with ``data_origin='api'``."""
 
         url = marvin.config.urlmap['api']['getmap']['url']
 
@@ -313,7 +313,7 @@ class Map(Quantity):
         return value, ivar, mask, header
 
     def save(self, path, overwrite=False):
-        """Pickles the map to a file.
+        """Pickle the map to a file.
 
         This method will fail if the map is associated to a Maps loaded
         from the db.
@@ -343,7 +343,7 @@ class Map(Quantity):
 
     @classmethod
     def restore(cls, path, delete=False):
-        """Restores a Map object from a pickled file.
+        """Restore a Map object from a pickled file.
 
         If ``delete=True``, the pickled file will be removed after it has been
         unplickled. Note that, for map objects instantiated from a Maps object
@@ -354,6 +354,7 @@ class Map(Quantity):
 
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
+    # TODO Brett: merge in add_doc wrapper from vdisp branch
     def plot(self, *args, **kwargs):
         """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
 
@@ -434,3 +435,6 @@ class CompositeMap(Map):
     def __repr__(self):
 
         return ('<Marvin CompositeMap>')
+    
+    # TODO create a more general class that also encompasses modified maps
+    # e.g., a map raised to a power or multiplied by a scalar
