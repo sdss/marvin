@@ -332,11 +332,12 @@ class DAPDataModel(object):
 
         Returns:
             result (``astropy.table.Table``):
-                An astropy table containing the name of the property, the
-                channel (or channels, if ``compact=True``), whether the
-                property has ``ivar`` or ``mask``, the units, and a
-                description (if ``description=True``). Additonal information
-                such as the bintypes, templates, release, etc. is included in
+                If ``pprint=False``, returns an astropy table containing
+                the name of the property, the channel (or channels, if
+                ``compact=True``), whether the property has ``ivar`` or
+                ``mask``, the units, and a description (if
+                ``description=True``). Additonal information such as the
+                bintypes, templates, release, etc. is included in
                 the metadata of the table (use ``.meta`` to access them).
 
         """
@@ -377,6 +378,7 @@ class DAPDataModel(object):
 
         if pprint:
             model_table.pprint(max_width=max_width, max_lines=1e6)
+            return
 
         return model_table
 
