@@ -13,6 +13,7 @@ from __future__ import absolute_import
 import distutils.version
 import warnings
 import itertools
+import copy
 
 import astropy.io.fits
 import astropy.wcs
@@ -28,27 +29,17 @@ import marvin.tools.cube
 import marvin.tools.map
 import marvin.tools.spaxel
 import marvin.utils.general.general
-import marvin.utils.dap
 import marvin.utils.dap.bpt
 import six
+
+from marvin.utils.dap import datamodel
+from marvin.utils.dap.datamodel.base import Property
 
 try:
     import sqlalchemy
 except ImportError:
     sqlalchemy = None
 
-
-# The values in the bintypes dictionary for MPL-4 are the execution plan id
-# for each bintype.
-__BINTYPES_MPL4__ = {'NONE': 3, 'RADIAL': 7, 'STON': 1}
-__BINTYPES_MPL4_UNBINNED__ = 'NONE'
-__BINTYPES__ = ['ALL', 'NRE', 'SPX', 'VOR10']
-__BINTYPES_UNBINNED__ = 'SPX'
-
-__TEMPLATES_KIN_MPL4__ = ['M11-STELIB-ZSOL', 'MIUSCAT-THIN', 'MILES-THIN']
-__TEMPLATES_KIN_MPL4_DEFAULT__ = 'MIUSCAT-THIN'
-__TEMPLATES_KIN__ = ['GAU-MILESHC']
-__TEMPLATES_KIN_DEFAULT__ = 'GAU-MILESHC'
 
 __all__ = ('Maps')
 
@@ -65,59 +56,6 @@ def _is_MPL4(dapver):
     MPL4_version = distutils.version.StrictVersion('1.1.1')
 
     return dap_version <= MPL4_version
-
-
-def _get_bintype(dapver, bintype=None):
-    """Checks the bintype and returns the default value if None."""
-
-    if bintype is not None:
-        bintype = bintype.upper()
-        bintypes_check = __BINTYPES_MPL4__.keys() if _is_MPL4(dapver) else __BINTYPES__
-        assert bintype in bintypes_check, ('invalid bintype. bintype must be one of {0}'
-                                           .format(bintypes_check))
-        return bintype
-
-    # Defines the default value depending on the version
-    if _is_MPL4(dapver):
-        return __BINTYPES_MPL4_UNBINNED__
-    else:
-        return __BINTYPES_UNBINNED__
-
-
-def _get_template_kin(dapver, template_kin=None):
-    """Checks the template_kin and returns the default value if None."""
-
-    if template_kin is not None:
-        template_kin = template_kin.upper()
-        templates_check = __TEMPLATES_KIN_MPL4__ if _is_MPL4(dapver) else __TEMPLATES_KIN__
-        assert template_kin in templates_check, ('invalid template_kin. '
-                                                 'template_kin must be one of {0}'
-                                                 .format(templates_check))
-        return template_kin
-
-    # Defines the default value depending on the version
-    if _is_MPL4(dapver):
-        return __TEMPLATES_KIN_MPL4_DEFAULT__
-    else:
-        return __TEMPLATES_KIN_DEFAULT__
-
-
-def _get_bintemps(dapver, default=None):
-    ''' Get a list of all bin-template types for a given MPL '''
-
-    if _is_MPL4(dapver):
-        bins = __BINTYPES_MPL4__.keys()
-        temps = __TEMPLATES_KIN_MPL4__
-    else:
-        bins = __BINTYPES__
-        temps = __TEMPLATES_KIN__
-
-    bintemps = ['-'.join(item) for item in list(itertools.product(bins, temps))]
-
-    if default:
-        bintemps = '{0}-{1}'.format(_get_bintype(dapver), _get_template_kin(dapver))
-
-    return bintemps
 
 
 class Maps(marvin.core.core.MarvinToolsClass):
@@ -142,15 +80,11 @@ class Maps(marvin.core.core.MarvinToolsClass):
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
             For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
             (defaults to ``'SPX'``).
-        template_kin (str or None):
+        template (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
-        template_pop (str or None):
-            A placeholder for a future version in which stellar populations
-            are fitted using a different template that ``template_kin``. It
-            has no effect for now.
         nsa_source ({'auto', 'drpall', 'nsa'}):
             Defines how the NSA data for this object should loaded when
             ``Maps.nsa`` is first called. If ``drpall``, the drpall file will
@@ -173,28 +107,13 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         valid_kwargs = [
             'data', 'filename', 'mangaid', 'plateifu', 'mode', 'release',
-            'bintype', 'template_kin', 'template_pop', 'nsa_source']
+            'bintype', 'template_kin', 'template', 'nsa_source']
 
         assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
         for kw in kwargs:
             assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-        # For now, we set bintype and template_kin to the kwarg values, so that
-        # they can be used by getFullPath.
-        self.bintype = kwargs.get('bintype', None)
-        self.template_kin = kwargs.get('template_kin', None)
-
         super(Maps, self).__init__(*args, **kwargs)
-
-        if kwargs.pop('template_pop', None):
-            warnings.warn('template_pop is not yet in use. Ignoring value.',
-                          marvin.core.exceptions.MarvinUserWarning)
-
-        # We set the bintype  and template_kin again, now using the DAP version
-        self.bintype = _get_bintype(self._dapver, bintype=kwargs.pop('bintype', None))
-        self.template_kin = _get_template_kin(self._dapver,
-                                              template_kin=kwargs.pop('template_kin', None))
-        self.template_pop = None
 
         self.header = None
         self.wcs = None
@@ -211,14 +130,14 @@ class Maps(marvin.core.core.MarvinToolsClass):
             raise marvin.core.exceptions.MarvinError(
                 'data_origin={0} is not valid'.format(self.data_origin))
 
-        self.properties = marvin.utils.dap.get_dap_datamodel(self._dapver)
+        self.properties = self._datamodel.properties
 
         self._check_versions(self)
 
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '
-                'data_origin={0.data_origin!r}, bintype={0.bintype}, '
-                'template_kin={0.template_kin})>'.format(self))
+                'data_origin={0.data_origin!r}, bintype={0.bintype.name!r}, '
+                'template={0.template.name!r})>'.format(self))
 
     def __getitem__(self, value):
         """Gets either a spaxel or a map depending on the type on input."""
@@ -228,13 +147,32 @@ class Maps(marvin.core.core.MarvinToolsClass):
             y, x = value
             return self.getSpaxel(x=x, y=y, xyorig='lower')
         elif isinstance(value, six.string_types):
-            parsed_property = self.properties.get(value)
-            if parsed_property is None:
-                raise marvin.core.exceptions.MarvinError('invalid property')
-            maps_property, channel = parsed_property
-            return self.getMap(maps_property.name, channel=channel)
+            return self.getMap(value)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
+
+    def _set_datamodel(self, **kwargs):
+        """Sets the datamodel, template, and bintype."""
+
+        if 'template_kin' in kwargs:
+            warnings.warn('template_kin has been deprecated and will be removed '
+                          'in a future version. Use template.',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            if 'template' not in kwargs:
+                kwargs['template'] = kwargs['template_kin']
+
+        self._datamodel = datamodel[self.release]
+
+        # We set the bintype  and template_kin again, now using the DAP version
+        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
+        self.template = self._datamodel.get_template(kwargs.pop('template', None))
+
+    def __deepcopy__(self, memo):
+        return Maps(plateifu=copy.deepcopy(self.plateifu, memo),
+                    release=copy.deepcopy(self.release, memo),
+                    bintype=copy.deepcopy(self.bintype, memo),
+                    template=copy.deepcopy(self.template, memo),
+                    nsa_source=copy.deepcopy(self.nsa_source, memo))
 
     @staticmethod
     def _check_versions(instance):
@@ -290,17 +228,13 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         plate, ifu = self.plateifu.split('-')
 
-        bintype = _get_bintype(self._dapver, bintype=self.bintype)
-        template_kin = _get_template_kin(self._dapver, template_kin=self.template_kin)
-
         if _is_MPL4(self._dapver):
-            niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(template_kin),
-                                        __BINTYPES_MPL4__[bintype]))
+            niter = int('{0}{1}'.format(self.template.n, self.bintype.n))
             params = dict(drpver=self._drpver, dapver=self._dapver,
-                          plate=plate, ifu=ifu, bintype=bintype, n=niter,
-                          path_type='mangamap')
+                          plate=plate, ifu=ifu, bintype=self.bintype.name,
+                          n=niter, path_type='mangamap')
         else:
-            daptype = '{0}-{1}'.format(bintype, template_kin)
+            daptype = '{0}-{1}'.format(self.bintype.name, self.template.name)
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
                           path_type='mangadap5')
@@ -324,6 +258,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         header = self.data['EMLINE_GFLUX'].header
         naxis = header['NAXIS']
         wcs_pre = astropy.wcs.WCS(header)
+
         # Takes only the first two axis.
         self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
         self.shape = self.data['EMLINE_GFLUX'].data.shape[-2:]
@@ -342,22 +277,23 @@ class Maps(marvin.core.core.MarvinToolsClass):
             self._release = file_ver
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+        self._datamodel = datamodel[self._dapver]
 
-        # Checks the bintype and template_kin from the header
+        # Checks the bintype and template from the header
         if not _is_MPL4(self._dapver):
             header_bintype = self.data[0].header['BINKEY'].strip().upper()
             header_bintype = 'SPX' if header_bintype == 'NONE' else header_bintype
         else:
             header_bintype = self.data[0].header['BINTYPE'].strip().upper()
 
-        header_template_kin_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
-        header_template_kin = self.data[0].header[header_template_kin_key].strip().upper()
+        header_template_key = 'TPLKEY' if _is_MPL4(self._dapver) else 'SCKEY'
+        header_template = self.data[0].header[header_template_key].strip().upper()
 
-        if self.bintype != header_bintype:
-            self.bintype = header_bintype
+        if self.bintype.name != header_bintype:
+            self.bintype = self._datamodel.get_bintype(header_bintype)
 
-        if self.template_kin != header_template_kin:
-            self.template_kin = header_template_kin
+        if self.template.name != header_template:
+            self.template = self._datamodel.get_template(header_template)
 
     def _load_maps_from_db(self, data=None):
         """Loads the ``mangadap.File`` object for this Maps."""
@@ -394,8 +330,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
                             dapdb.Structure, dapdb.BinType).join(
                                 dapdb.Template,
                                 dapdb.Structure.template_kin_pk == dapdb.Template.pk).filter(
-                                    dapdb.BinType.name == self.bintype,
-                                    dapdb.Template.name == self.template_kin).all()
+                                    dapdb.BinType.name == self.bintype.name,
+                                    dapdb.Template.name == self.template.name).all()
 
             if len(db_maps_file) > 1:
                 raise marvin.core.exceptions.MarvinError(
@@ -426,8 +362,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
         url = marvin.config.urlmap['api']['getMaps']['url']
 
         url_full = url.format(name=self.plateifu,
-                              bintype=self.bintype,
-                              template_kin=self.template_kin)
+                              bintype=self.bintype.name,
+                              template=self.template.name)
 
         try:
             response = self._toolInteraction(url_full)
@@ -514,24 +450,48 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         kwargs['cube'] = self.cube if spectrum else False
         kwargs['maps'] = self.get_unbinned()
-        kwargs['modelcube'] = modelcube if not _is_MPL4(self._dapver) else False
+        kwargs['modelcube'] = modelcube if _is_MPL4(self._dapver) else False
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
-    def getMap(self, property_name, channel=None):
+    def _match_properties(self, property_name, channel=None, exact=False):
+        """Returns the best match for a property_name+channel."""
+
+        if channel is not None:
+            property_name = property_name + '_' + channel
+
+        best = self._datamodel[property_name]
+        assert isinstance(best, Property), 'the retrived value is not a property.'
+
+        if exact:
+            assert best.full() == property_name, \
+                'retrieved property {0!r} does not match input {1!r}'.format(best.full(),
+                                                                             property_name)
+
+        return best
+
+    def getMap(self, property_name, channel=None, exact=False):
         """Retrieves a :class:`~marvin.tools.map.Map` object.
 
         Parameters:
             property_name (str):
-                The property of the map to be extractred.
-                E.g., `'emline_gflux'`.
+                The property of the map to be extractred. It may the name
+                of the channel (e.g. ``'emline_gflux_ha_6564'``) or just the
+                name of the property (``'emline_gflux'``).
             channel (str or None):
-                If the ``property`` contains multiple channels,
-                the channel to use, e.g., ``ha_6564'. Otherwise, ``None``.
+                If defined, the name of the channel to be appended to
+                ``property_name`` (e.g., ``'ha_6564'``).
+            exact (bool):
+                If ``exact=False``, fuzzy matching will be used, retrieving
+                the best match for the property name and channel. If ``True``,
+                will check that the name of returned map matched the input
+                value exactly.
 
         """
 
-        return marvin.tools.map.Map(self, property_name, channel=channel)
+        best = self._match_properties(property_name, channel=channel, exact=exact)
+
+        return marvin.tools.map.Map(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
         """Returns a ratio :class:`~marvin.tools.map.Map`.
@@ -571,25 +531,17 @@ class Maps(marvin.core.core.MarvinToolsClass):
     def is_binned(self):
         """Returns True if the Maps is not unbinned."""
 
-        if _is_MPL4(self._dapver):
-            return self.bintype != __BINTYPES_MPL4_UNBINNED__
-        else:
-            return self.bintype != __BINTYPES_UNBINNED__
+        return self.bintype.binned
 
     def get_unbinned(self):
         """Returns a version of ``self`` corresponding to the unbinned Maps."""
 
-        if _is_MPL4(self._dapver):
-            unbinned_name = __BINTYPES_MPL4_UNBINNED__
-        else:
-            unbinned_name = __BINTYPES_UNBINNED__
-
-        if self.bintype == unbinned_name:
+        if self.is_binned is False:
             return self
         else:
-            return Maps(plateifu=self.plateifu, release=self._release, bintype=unbinned_name,
-                        template_kin=self.template_kin, template_pop=self.template_pop,
-                        mode=self.mode)
+            return Maps(plateifu=self.plateifu, release=self._release,
+                        bintype=self._datamodel.get_unbinned(),
+                        template=self.template, mode=self.mode)
 
     def get_bin_spaxels(self, binid, load=False, only_list=False):
         """Returns the list of spaxels belonging to a given ``binid``.
@@ -620,7 +572,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
             url_full = url.format(name=self.plateifu,
                                   bintype=self.bintype,
-                                  template_kin=self.template_kin,
+                                  template=self.template,
                                   binid=binid)
 
             try:

@@ -11,15 +11,15 @@ from astropy import wcs
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
 from marvin.core.core import DotableCaseInsensitive
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import skipIfNoDB, marvin_test_if
 
 
 @pytest.fixture(autouse=True)
 def skipbins(galaxy):
-    if galaxy.bintype not in ['SPX', 'NONE']:
+    if galaxy.bintype.name not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template not in ['MILES-THIN', 'GAU-MILESHC']:
+    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
@@ -101,6 +101,64 @@ class TestCube(object):
 
         assert 'filename not allowed in remote mode' in str(ee.value)
 
+    def test_getFullPath_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube._getFullPath() is None
+
+    def test_download_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube.download() is None
+
+    def test_repr(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        args = cube.plateifu, cube.mode, cube.data_origin
+        expected = "<Marvin Cube (plateifu='{0}', mode='{1}', data_origin='{2}')>".format(*args)
+        assert cube.__repr__() == expected
+
+    def test_load_cube_from_file_with_data(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube._load_cube_from_file(data=cube.data)
+
+    def test_load_cube_from_file_OSError(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube.filename = 'hola.fits'
+        with pytest.raises((IOError, OSError)) as ee:
+            cube._load_cube_from_file()
+
+        assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
+
+    def test_load_cube_from_file_filever_ne_release(self, galaxy):
+        release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
+        with pytest.warns(MarvinUserWarning) as record:
+            cube = Cube(filename=galaxy.cubepath, release=release_wrong)
+
+        assert len(record) == 2
+        assert record[1].message.args[0] == (
+            'mismatch between file release={0} '.format(galaxy.release) +
+            'and object release={0}. '.format(release_wrong) +
+            'Setting object release to {0}'.format(galaxy.release))
+
+        assert cube._release == galaxy.release
+
+    def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
+        monkeypatch.setattr(marvindb, 'isdbconnected', False)
+        with pytest.raises(MarvinError) as ee:
+            cube = Cube(plateifu=galaxy.plateifu)
+
+        assert 'No db connected' in str(ee.value)
+
+    def test_load_cube_from_db_data(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._load_cube_from_db(data=cube.data)
+
+    @marvin_test_if('include', data_origin=['db'])
+    @pytest.mark.slow
+    def test_getExtensionData_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._getExtensionData(extName='flux')
+
 
 class TestGetSpaxel(object):
 
@@ -153,7 +211,7 @@ class TestGetSpaxel(object):
             params = {'ra': ra, 'dec': dec}
 
         spaxel = cube.getSpaxel(**params)
-        flux = spaxel.spectrum.flux
+        flux = spaxel.spectrum.value
         assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
@@ -175,7 +233,7 @@ class TestGetSpaxel(object):
         expected = galaxy.spaxel['flux']
 
         spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).spectrum
-        assert pytest.approx(spectrum.flux[galaxy.spaxel['specidx']], expected)
+        assert pytest.approx(spectrum.value[galaxy.spaxel['specidx']], expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
@@ -198,9 +256,9 @@ class TestGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        assert pytest.approx(spaxel_slice_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_file.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_db.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_api.spectrum.value[spec_idx], flux)
 
         assert pytest.approx(spaxel_slice_file.spectrum.ivar[spec_idx], ivar)
         assert pytest.approx(spaxel_slice_db.spectrum.ivar[spec_idx], ivar)
@@ -217,9 +275,9 @@ class TestGetSpaxel(object):
         spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_file.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_db.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_api.spectrum.value[spec_idx], flux)
 
         assert pytest.approx(spaxel_getspaxel_file.spectrum.ivar[spec_idx], ivar)
         assert pytest.approx(spaxel_getspaxel_db.spectrum.ivar[spec_idx], ivar)
@@ -249,7 +307,7 @@ class TestPickling(object):
 
         assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
         cube_file = temp_scratch.join('test_cube.mpf')
-        path = cube.save(str(cube_file))
+        cube.save(str(cube_file))
         assert cube_file.check() is True
         assert cube.data is not None
 
@@ -299,7 +357,7 @@ class TestPickling(object):
 
         test_path = temp_scratch.join('test_cube_api.mpf')
 
-        path = cube.save(str(test_path))
+        cube.save(str(test_path))
         assert test_path.check() is True
 
         cube = None

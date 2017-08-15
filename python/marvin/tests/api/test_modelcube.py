@@ -21,9 +21,11 @@ class TestGetModelCubes(object):
     def test_modelcube_success(self, galaxy, page, params, reqtype):
         if galaxy.release == 'MPL-4':
             pytest.skip('MPL-4 does not have modelcubes')
-        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype, 'template_kin': galaxy.template})
-        data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid, 'bintype': galaxy.bintype,
-                'template_kin': galaxy.template, 'shape': galaxy.shape, 'redcorr': []}
+        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype.name,
+                       'template': galaxy.template.name})
+        data = {'plateifu': galaxy.plateifu, 'mangaid': galaxy.mangaid,
+                'bintype': galaxy.bintype.name, 'template': galaxy.template.name,
+                'shape': galaxy.shape, 'redcorr': []}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 
@@ -32,19 +34,18 @@ class TestGetModelCubes(object):
                               ('badname', 'name', 'String does not match expected pattern.', None, None),
                               ('84', 'name', 'Shorter than minimum length 4.', None, None),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILESHC'),
+                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILESHC'),
                               ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC'),
-                              ('8485-1901', 'template_kin', 'Not a valid choice.', 'SPX', 'MILES'),
+                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILES'),
                               ('8485-1901', 'bintype', 'Field may not be null.', None, None),
-                              ('8485-1901', 'template_kin', 'Field may not be null.', 'SPX', None)],
+                              ('8485-1901', 'template', 'Field may not be null.', 'SPX', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
                                   'wrongmplbintype', 'wrongmpltemplate', 'nobintype', 'notemplate'])
     def test_modelcube_failures(self, galaxy, page, params, name, missing, errmsg, bintype, template):
-        params.update({'name': name, 'bintype': bintype, 'template_kin': template})
+        params.update({'name': name, 'bintype': bintype, 'template': template})
         if name is None:
             page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
         else:
             url = page.url.format(**params)
-            url = url.replace('None/', '') if missing in ['bintype', 'template_kin'] else url
+            url = url.replace('None/', '') if missing in ['bintype', 'template'] else url
             page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
-

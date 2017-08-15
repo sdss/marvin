@@ -242,9 +242,9 @@ class MarvinConfig(object):
             except Exception as e:
                 warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
-                self._urlmap = URLMapDict()
+                self.urlmap = URLMapDict()
             else:
-                self._urlmap = response.getRouteMap()
+                self.urlmap = response.getRouteMap()
 
         return self._urlmap
 
@@ -252,6 +252,7 @@ class MarvinConfig(object):
     def urlmap(self, value):
         """Manually sets the URLMap."""
         self._urlmap = value
+        arg_validate.urlmap = self._urlmap
 
     @property
     def xyorig(self):
@@ -413,6 +414,7 @@ class MarvinConfig(object):
         elif sasmode == 'utah':
             marvin_base = 'test/marvin2/' if test else 'marvin2/'
             self.sasurl = 'https://api.sdss.org/{0}'.format(marvin_base)
+        self.urlmap = None
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -479,3 +481,5 @@ if not marvindir:
 # Inits the URL Route Map
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
+
+from marvin.api.base import arg_validate

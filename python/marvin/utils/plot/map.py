@@ -44,6 +44,8 @@ from __future__ import division, print_function, absolute_import
 
 import copy
 
+from astropy import units
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -91,7 +93,7 @@ def bad_data_mask(mask, bits):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    if 'unreliable' in bits.keys():     
+    if 'unreliable' in bits.keys():
         unreliable = (mask & 2**bits['unreliable']).astype(bool)
     else:
         unreliable = np.zeros(mask.shape, dtype=bool)
@@ -148,11 +150,11 @@ def log_colorbar_mask(value, log_cb):
 
 def _get_prop(title):
     """Gets property name from plot title.
-    
+
     Parameters:
         title (str):
             Plot title.
-    
+
     Returns:
         str
     """
@@ -395,6 +397,9 @@ def plot(*args, **kwargs):
     ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
     mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
+    if mask is None:
+        use_mask = False
+
     title = set_title(title,
                       property_name=getattr(dapmap, 'property_name', None),
                       channel=getattr(dapmap, 'channel', None))
@@ -412,10 +417,15 @@ def plot(*args, **kwargs):
         percentile_clip = False
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
+    all_true = np.zeros(value.shape, dtype=bool)
+    nocov = params['bitmasks'].get('nocov', None)
+    nocov_mask = no_coverage_mask(mask, nocov, ivar) if mask is not None else all_true
+    
     badData = params['bitmasks']['badData']
-    bad_data = bad_data_mask(mask, badData) if use_mask else np.zeros(value.shape)
-    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
+    bad_data = bad_data_mask(mask, badData) if use_mask else all_true
+    
+    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else all_true
+    
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
@@ -427,7 +437,17 @@ def plot(*args, **kwargs):
     cb_kws['sigma_clip'] = sigma_clip
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
-    cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+
+    cblabel = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+    if isinstance(cblabel, units.UnitBase):
+        if dapmap.scale != 1:
+            scale_latex = units.format.Latex.format_exponential_notation(dapmap.scale)
+            cb_kws['label'] = r'${0}$\,'.format(scale_latex) + cblabel.to_string('latex_inline')
+        else:
+            cb_kws['label'] = cblabel.to_string('latex_inline')
+    else:
+        cb_kws['label'] = cblabel
+
     cb_kws['log_cb'] = log_cb
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
