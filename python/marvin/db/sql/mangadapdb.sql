@@ -231,15 +231,15 @@ CREATE INDEX CONCURRENTLY emline5_gflux_sii_idx ON mangadapdb.spaxelprop5 using 
 CREATE INDEX CONCURRENTLY emline5_gflux_oii_idx ON mangadapdb.spaxelprop5 using BTREE(emline_gflux_oiid_3728);
 CREATE INDEX CONCURRENTLY emline5_gflux_nii_idx ON mangadapdb.spaxelprop5 using BTREE(emline_gflux_nii_6585);
 
-CREATE INDEX CONCURRENTLY binid5_idx ON mangadapdb.spaxelprop6 using BTREE(binid);
-CREATE INDEX CONCURRENTLY file5_pk_idx ON mangadapdb.spaxelprop6 using BTREE(file_pk);
-CREATE INDEX CONCURRENTLY spaxel5_index_idx ON mangadapdb.spaxelprop6 using BTREE(spaxel_index);
-CREATE INDEX CONCURRENTLY emline5_gflux_ha_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_ha_6564);
-CREATE INDEX CONCURRENTLY emline5_gflux_hb_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_hb_4862);
-CREATE INDEX CONCURRENTLY emline5_gflux_oiii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_oiii_5008);
-CREATE INDEX CONCURRENTLY emline5_gflux_sii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_sii_6718);
-CREATE INDEX CONCURRENTLY emline5_gflux_oii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_oiid_3728);
-CREATE INDEX CONCURRENTLY emline5_gflux_nii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_nii_6585);
+CREATE INDEX CONCURRENTLY binid6_idx ON mangadapdb.spaxelprop6 using BTREE(binid);
+CREATE INDEX CONCURRENTLY file6_pk_idx ON mangadapdb.spaxelprop6 using BTREE(file_pk);
+CREATE INDEX CONCURRENTLY spaxel6_index_idx ON mangadapdb.spaxelprop6 using BTREE(spaxel_index);
+CREATE INDEX CONCURRENTLY emline6_gflux_ha_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_ha_6564);
+CREATE INDEX CONCURRENTLY emline6_gflux_hb_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_hb_4862);
+CREATE INDEX CONCURRENTLY emline6_gflux_oiii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_oiii_5008);
+CREATE INDEX CONCURRENTLY emline6_gflux_sii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_sii_6718);
+CREATE INDEX CONCURRENTLY emline6_gflux_oii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_oiid_3728);
+CREATE INDEX CONCURRENTLY emline6_gflux_nii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_nii_6585);
 
 CREATE INDEX CONCURRENTLY mc_file_pk_idx ON mangadapdb.modelcube using BTREE(file_pk);
 CREATE INDEX CONCURRENTLY rc_mc_pk_idx ON mangadapdb.redcorr using BTREE(modelcube_pk);

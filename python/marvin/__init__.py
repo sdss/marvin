@@ -15,12 +15,13 @@ from collections import OrderedDict
 from distutils.version import StrictVersion
 
 # Set the Marvin version
-try:
-    from marvin.version import get_version
-except ImportError as e:
-    __version__ = 'dev'
-else:
-    __version__ = get_version()
+__version__ = '2.1.5dev'
+# try:
+#     from marvin.version import get_version
+# except ImportError as e:
+#     __version__ = 'dev'
+# else:
+#     __version__ = get_version()
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -241,9 +242,9 @@ class MarvinConfig(object):
             except Exception as e:
                 warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
-                self._urlmap = URLMapDict()
+                self.urlmap = URLMapDict()
             else:
-                self._urlmap = response.getRouteMap()
+                self.urlmap = response.getRouteMap()
 
         return self._urlmap
 
@@ -251,6 +252,7 @@ class MarvinConfig(object):
     def urlmap(self, value):
         """Manually sets the URLMap."""
         self._urlmap = value
+        arg_validate.urlmap = self._urlmap
 
     @property
     def xyorig(self):
@@ -286,17 +288,19 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         # set and sort the base MPL dictionary
-        mpldict = {'MPL-5': ('v2_0_1', '2.0.2'),
+        mpldict = {'MPL-6': ('v2_2_0', 'trunk'),
+                   'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1'),
                    'MPL-3': ('v1_3_3', 'v1_0_0'),
                    'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_1', None)}
+                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_2', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
         # Check the versioning config
         if not self.release:
-            topkey = list(self._mpldict)[0]
+            #topkey = list(self._mpldict)[0]
+            topkey = 'MPL-5'
             log.info('No release version set. Setting default to {0}'.format(topkey))
             self.release = topkey
 
@@ -410,6 +414,7 @@ class MarvinConfig(object):
         elif sasmode == 'utah':
             marvin_base = 'test/marvin2/' if test else 'marvin2/'
             self.sasurl = 'https://api.sdss.org/{0}'.format(marvin_base)
+        self.urlmap = None
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -476,3 +481,5 @@ if not marvindir:
 # Inits the URL Route Map
 from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
+
+from marvin.api.base import arg_validate

@@ -17,7 +17,7 @@ from marvin import config
 from marvin.api import ArgValidator
 import json
 
-arg_validate = ArgValidator(urlmap=config.urlmap)
+arg_validate = ArgValidator(urlmap=None)
 
 
 class BaseView(BrainBaseView):
@@ -43,6 +43,5 @@ class BaseView(BrainBaseView):
         if not arg_validate.urlmap:
             bv = BrainGeneralRequestsView()
             resp = bv.buildRouteMap()
-            config.urlmap = json.loads(resp.get_data())['urlmap']
+            config.urlmap = json.loads(resp.get_data().decode('utf-8'))['urlmap']
             arg_validate.urlmap = config.urlmap
-

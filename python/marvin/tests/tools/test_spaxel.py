@@ -67,7 +67,7 @@ class TestSpaxelInit(object):
         self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
 
     def test_cube_maps_object_filename(self, galaxy):
-        if galaxy.bintype not in ['SPX', 'NONE']:
+        if galaxy.bintype.name not in ['SPX', 'NONE']:
             pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
 
         cube = Cube(filename=galaxy.cubepath)
@@ -97,14 +97,14 @@ class TestSpaxelInit(object):
 
     def test_db_maps_template(self, galaxy):
         spaxel = Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True,
-                        plateifu=galaxy.plateifu, template_kin=galaxy.template)
-        assert spaxel.maps.template_kin == galaxy.template
+                        plateifu=galaxy.plateifu, template=galaxy.template)
+        assert spaxel.maps.template == galaxy.template
 
     def test_api_maps_invalid_template(self, galaxy):
-        with pytest.raises(AssertionError) as cm:
+        with pytest.raises(MarvinError) as cm:
             Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True, plateifu=galaxy.plateifu,
-                   template_kin='invalid-template')
-        assert 'invalid template_kin' in str(cm.value)
+                   template='invalid-template')
+        assert 'invalid template' in str(cm.value)
 
     def test_load_false(self, galaxy):
         spaxel = Spaxel(plateifu=galaxy.plateifu, x=15, y=16, load=False)
@@ -121,7 +121,7 @@ class TestSpaxelInit(object):
         self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
 
     def test_fails_unbinned_maps(self, galaxy):
-        if galaxy.bintype in ['SPX', 'NONE']:
+        if galaxy.bintype.name in ['SPX', 'NONE']:
             pytest.skip("Can instantiate a Spaxel from a binned Maps.")
 
         maps = Maps(plateifu=galaxy.plateifu, bintype=galaxy.bintype, release=galaxy.release)
@@ -166,7 +166,7 @@ class TestPickling(object):
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
     def test_pickling_only_cube_file(self, temp_scratch, galaxy):
-        if galaxy.bintype != 'SPX':
+        if galaxy.bintype.name != 'SPX':
             pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
 
         cube = Cube(filename=galaxy.cubepath)

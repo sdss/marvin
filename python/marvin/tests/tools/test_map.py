@@ -8,6 +8,7 @@
 import copy
 
 import numpy as np
+
 import astropy
 import matplotlib
 import pytest

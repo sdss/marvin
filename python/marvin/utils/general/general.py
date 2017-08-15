@@ -985,7 +985,7 @@ def _check_file_parameters(obj1, obj2):
 
 
 def get_plot_params(dapver, prop):
-    """Returns default plotting parameters for a property."""
+    """Return default plotting parameters for a property."""
     params = get_default_plot_params(dapver)
 
     if 'vel' in prop:
@@ -997,3 +997,10 @@ def get_plot_params(dapver, prop):
 
     return params[key]
 
+
+def add_doc(value):
+    """Wrap method to programatically add docstring."""
+    def _doc(func):
+        func.__doc__ = value
+        return func
+    return _doc

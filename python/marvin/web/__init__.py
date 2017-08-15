@@ -11,7 +11,6 @@ from flask import session, request, render_template, g, jsonify
 import sys
 import os
 import logging
-import flask_profiler
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
@@ -19,7 +18,7 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -136,7 +135,7 @@ def register_extensions(app, app_base=None):
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/app_base/flask-profiler
     if app.config['USE_PROFILER']:
         try:
-            flask_profiler.init_app(app)
+            profiler.init_app(app)
         except Exception as e:
             pass
 
