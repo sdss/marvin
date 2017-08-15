@@ -114,7 +114,7 @@ class Map(Quantity):
         unit = prop.unit
         value = value * prop.scale
 
-        obj = cls._init_map_from_value(cls, value, unit, ivar=ivar, mask=mask,
+        obj = cls._init_map_from_value(value, unit, ivar=ivar, mask=mask,
                                        dtype=dtype, copy=copy)
 
         obj.property = prop
@@ -132,6 +132,7 @@ class Map(Quantity):
 
         return obj
 
+    @classmethod
     def _init_map_from_value(cls, value, unit, ivar=None, mask=None, dtype=None, copy=True):
         """Initialise a Map from a value and a unit."""
 
