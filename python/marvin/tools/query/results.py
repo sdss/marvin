@@ -5,6 +5,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
+from marvin.tools.query.forms import MarvinForm
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList
 from marvin.api.api import Interaction
@@ -12,6 +13,7 @@ import warnings
 import json
 import os
 import datetime
+import numpy as np
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
@@ -318,7 +320,7 @@ class Results(object):
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
-            filename = filename+'.fits'
+            filename = filename + '.fits'
         table = self.toTable()
         table.write(filename, format='fits')
         print('Writing new FITS file {0}'.format(filename))
@@ -336,7 +338,7 @@ class Results(object):
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
-            filename = filename+'.csv'
+            filename = filename + '.csv'
         table = self.toTable()
         table.write(filename, format='csv')
         print('Writing new CSV file {0}'.format(filename))
@@ -422,7 +424,7 @@ class Results(object):
 
         # check for file extension
         if not os.path.splitext(path)[1]:
-            path = os.path.join(path+'.mpf')
+            path = os.path.join(path + '.mpf')
 
         path = os.path.realpath(path)
 
@@ -516,7 +518,7 @@ class Results(object):
         #             '.'+t.split('.')[1]) == 1 else t for t in columns]
         colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
         names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
-                    t.split('.')[1]) == 1 else t for t in columns]
+            t.split('.')[1]) == 1 else t for t in columns]
         # replace . with _
         if under:
             names = [n if '.' not in n else n.replace('.', '_')for n in names]
@@ -555,7 +557,7 @@ class Results(object):
             mapping = None
         return mapping
 
-    def getListOf(self, name=None, to_json=False):
+    def getListOf(self, name=None, to_json=False, to_ndarray=False, return_all=None):
         ''' Extract a list of a single parameter from results
 
             Parameters:
@@ -564,6 +566,10 @@ class Results(object):
                     it returns all parameters.
                 to_json (bool):
                     True/False boolean to convert the output into a JSON format
+                to_ndarray (bool):
+                    True/False boolean to convert the output into a Numpy array
+                return_all (bool):
+                    if True, returns the entire result set for that column
 
             Returns:
                 output (list):
@@ -586,14 +592,36 @@ class Results(object):
         if not refname:
             raise MarvinError('Name {0} not a property in results.  Try another.'.format(refname))
 
-        output = None
-        try:
-            output = [r.__getattribute__(refname) for r in self.results]
-        except AttributeError as e:
-            raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(refname, e))
+        # deal with the output
+        if return_all:
+            # grab all of that column
+            if self.mode == 'local':
+                results = self._queryobj._query_column(refname)
+                output = [r.__getattribute__(refname) for r in results]
+            elif self.mode == 'remote':
+                # Get the query route
+                url = config.urlmap['api']['getcolumn']['url'].format(colname=refname)
+
+                params = {'searchfilter': self.searchfilter, 'format_type': 'list'}
+                try:
+                    ii = Interaction(route=url, params=params)
+                except MarvinError as e:
+                    raise MarvinError('API Query getList call failed: {0}'.format(e))
+                else:
+                    output = ii.getData()
+        else:
+            # only deal with current page
+            output = None
+            try:
+                output = [r.__getattribute__(refname) for r in self.results]
+            except AttributeError as e:
+                raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(refname, e))
 
         if to_json:
             output = json.dumps(output) if output else None
+
+        if to_ndarray:
+            output = np.array(output) if output else None
 
         return output
 
@@ -1023,12 +1051,23 @@ class Results(object):
             maps = kwargs.get('maps', True)
             modelcube = kwargs.get('modelcube', True)
 
-            for res in self.results[0:limit]:
-                spaxkwargs = {'plateifu': res.__getattribute__(self._getRefName('cube.plateifu')),
-                              'x': res.__getattribute__(self._getRefName('spaxelprop.x')),
-                              'y': res.__getattribute__(self._getRefName('spaxelprop.y')),
-                              'load': load, 'maps': maps, 'modelcube': modelcube}
-                self.objects.append(Spaxel(**spaxkwargs))
+            tab = self.toTable()
+            uniq_plateifus = list(set(self.getListOf('plateifu')))
+
+            for plateifu in uniq_plateifus:
+                c = Cube(plateifu=plateifu, mode=mode)
+                univals = tab['cube.plateifu'] == plateifu
+                x = tab[univals]['spaxelprop.x'].tolist()
+                y = tab[univals]['spaxelprop.y'].tolist()
+                spaxels = c[y, x]
+                self.objects.extend(spaxels)
+
+            # for res in self.results[0:limit]:
+            #     spaxkwargs = {'plateifu': res.__getattribute__(self._getRefName('cube.plateifu')),
+            #                   'x': res.__getattribute__(self._getRefName('spaxelprop.x')),
+            #                   'y': res.__getattribute__(self._getRefName('spaxelprop.y')),
+            #                   'load': load, 'maps': maps, 'modelcube': modelcube}
+            #     self.objects.append(Spaxel(**spaxkwargs))
         elif tooltype == 'rss':
             self.objects = [RSS(plateifu=res.__getattribute__(
                             self._getRefName('cube.plateifu')),

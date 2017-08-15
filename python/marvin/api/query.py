@@ -9,20 +9,26 @@ from marvin.web.extensions import limiter
 import json
 
 
-def _getCubes(searchfilter, **kwargs):
-    """Run query locally at Utah."""
+def _run_query(searchfilter, **kwargs):
+    ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
     kwargs['returnparams'] = kwargs.pop('params', None)
     kwargs['returntype'] = kwargs.pop('rettype', None)
 
     try:
-        # q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
-        #                mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
         q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
+    else:
+        return q, r
 
+
+def _getCubes(searchfilter, **kwargs):
+    """Run query locally at Utah and format the output into the full JSON """
+
+    # run the query
+    q, r = _run_query(searchfilter, **kwargs)
     results = r.results
 
     # get the subset keywords
@@ -184,6 +190,67 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/cubes/getcolumn/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
+    @av.check_args(use_params='query', required='searchfilter')
+    def query_allcolumn(self, args, colname):
+        ''' Retrieves the entire result set for a single column
+
+        .. :quickref: Query; Retrieves the entire result set for a single column
+
+        :query string release: the release of MaNGA
+        :form searchfilter: your string searchfilter expression
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson string data: dictionary of returned data
+        :json list column: the list of results for the specified column
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/query/cubes/getcolumn/cube.plateifu/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "chunk": 100,
+              "count": 4,
+              "data": ["8485-1901", "8485-1902", "8485-12701", "7443-12701", "8485-12702"],
+           }
+
+        '''
+        searchfilter = args.pop('searchfilter', None)
+        format_type = args.pop('format_type', 'list')
+        try:
+            query, results = _run_query(searchfilter, **args)
+        except MarvinError as e:
+            self.results['error'] = str(e)
+            self.results['traceback'] = get_traceback(asstring=True)
+        else:
+            self.results['status'] = 1
+            if format_type == 'list':
+                column = results.getListOf(colname, return_all=True)
+            self.results['data'] = column
+
         return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')

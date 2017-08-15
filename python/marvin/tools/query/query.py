@@ -939,6 +939,12 @@ class Query(object):
         labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
         self.query = self.session.query(*labeledqps)
 
+    def _query_column(self, column_name):
+        ''' query and return a specific column from the current query '''
+        qp = self.marvinform._param_form_lookup.mapToColumn(column_name)
+        qp = qp.label(column_name)
+        return self.query.from_self(qp).all()
+
     def _getPipeInfo(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
 
