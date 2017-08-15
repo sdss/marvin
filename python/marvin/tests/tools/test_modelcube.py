@@ -9,17 +9,16 @@
 from __future__ import division, print_function, absolute_import
 
 import os
+import six
 
 import pytest
 from astropy.io import fits
 from astropy.wcs import WCS
 
-from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
-from marvin.tests import marvin_test_if, marvin_test_if_class
 
 
 @pytest.fixture(autouse=True)
@@ -28,14 +27,18 @@ def skipmpl4(galaxy):
         pytest.skip('No modelcubes in MPL-4')
 
 
+def is_string(string):
+    return isinstance(string, six.string_types)
+
+
 class TestModelCubeInit(object):
 
-    def _test_init(self, model_cube, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+    def _test_init(self, model_cube, galaxy, bintype=None, template=None):
         assert model_cube._release == galaxy.release
         assert model_cube._drpver == galaxy.drpver
         assert model_cube._dapver == galaxy.dapver
-        assert model_cube.bintype == bintype
-        assert model_cube.template_kin == template_kin
+        assert model_cube.bintype == bintype if bintype else galaxy.bintype
+        assert model_cube.template == template if template else galaxy.template
         assert model_cube.plateifu == galaxy.plateifu
         assert model_cube.mangaid == galaxy.mangaid
         assert isinstance(model_cube.header, fits.Header)
@@ -106,14 +109,14 @@ class TestModelCube(object):
 @pytest.mark.slow
 class TestGetSpaxel(object):
 
-    def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template_kin='GAU-MILESHC'):
+    def _test_getspaxel(self, spaxel, galaxy, bintype='SPX', template='GAU-MILESHC'):
         assert spaxel._drpver == galaxy.drpver
         assert spaxel._dapver == galaxy.dapver
         assert spaxel.plateifu == galaxy.plateifu
         assert spaxel.mangaid == galaxy.mangaid
         assert spaxel.modelcube is not None
         assert spaxel.modelcube.bintype == bintype
-        assert spaxel.modelcube.template_kin == template_kin
+        assert spaxel.modelcube.template == template
         assert spaxel._parent_shape == tuple(galaxy.shape)
 
         assert spaxel.model_flux is not None
