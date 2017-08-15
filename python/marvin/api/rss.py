@@ -180,7 +180,7 @@ class RSSView(BaseView):
             self.results['data']['wavelength'] = rss[0].wavelength.tolist()
 
             for ii, fiber in enumerate(rss):
-                flux = fiber.flux.tolist()
+                flux = fiber.value.tolist()
                 ivar = fiber.ivar.tolist()
                 mask = fiber.mask.tolist()
                 self.results['data'][ii] = [flux, ivar, mask]

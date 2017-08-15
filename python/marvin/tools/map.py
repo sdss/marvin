@@ -3,7 +3,6 @@
 #
 # Licensed under a 3-clause BSD license.
 #
-#
 # map.py
 #
 # Created by José Sánchez-Gallego on 26 Jun 2016.
@@ -16,12 +15,13 @@ from __future__ import absolute_import
 from distutils import version
 import os
 import warnings
+import copy
+import operator
 
 from astropy.io import fits
+from astropy.units import Quantity
+
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 
 import marvin
 import marvin.api.api
@@ -29,7 +29,10 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
+from marvin.utils.general.general import add_doc
 
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.utils.dap.datamodel.base import Property
 
 try:
     import sqlalchemy
@@ -37,7 +40,7 @@ except ImportError:
     sqlalchemy = None
 
 
-class Map(object):
+class Map(Quantity):
     """Describes a single DAP map in a Maps object.
 
     Unlike a ``Maps`` object, which contains all the information from a DAP
@@ -46,100 +49,195 @@ class Map(object):
     channels. A ``Map`` would be, for example, the map for ``emline_gflux`` and
     channel ``ha_6564``.
 
-    A ``Map`` is basically a set of three Numpy 2D arrays (``value``, ``ivar``,
-    and ``mask``), with extra information and additional methods for
-    functionality.
+    A ``Map`` returns and astropy 2D Quantity-like array with additional
+    attributes for ``ivar`` and ``mask``.
 
-    ``Map`` objects are not intended to be initialised directly, at least
-    for now. To get a ``Map`` instance, use the
-    :func:`~marvin.tools.maps.Maps.getMap` method.
+    A ``Map`` is normally initialised from a ``Maps`` by calling the
+    :func:`~marvin.tools.maps.Maps.getMap` method. It can be initialialised
+    directly by providing a ``Maps`` instance, the ``property_name`` of the
+    property to retrieve, and the ``channel``, if necessary. Alternatively,
+    a set of ``value``, ``unit``, ``ivar``, and ``mask`` can be passed.
 
     Parameters:
         maps (:class:`~marvin.tools.maps.Maps` object):
             The :class:`~marvin.tools.maps.Maps` instance from which we
             are extracting the ``Map``.
         property_name (str):
-            The category of the map to be extractred. E.g., `'emline_gflux'`.
+            The category of the map to be extractred (e.g., ``'emline_gflux'``)
+            or the full property name including channel
+            (``'emline_gflux_ha_6564'``).
         channel (str or None):
             If the ``property`` contains multiple channels, the channel to use,
             e.g., ``ha_6564'. Otherwise, ``None``.
 
     """
 
-    def __init__(self, maps, property_name, channel=None):
+    def __new__(cls, maps=None, property_name=None, channel=None,
+                value=None, unit=None, ivar=None, mask=None, dtype=None, copy=True):
+
+        if maps is not None and property_name is not None:
+            assert value is None and unit is None, \
+                'when initialising a Map from a Maps, value and unit must be None'
+            return cls._init_map_from_maps(maps, property_name, channel,
+                                           dtype=dtype, copy=copy)
+        elif value is not None and unit is not None:
+            return cls._init_map_from_value(cls, value, unit, dtype=dtype, copy=copy)
+        else:
+            raise MarvinError('incorrect combination of input parameters.')
+
+    @classmethod
+    def _init_map_from_maps(cls, maps, property_name, channel, dtype=None, copy=True):
+        """Initialise a Map from a Maps."""
 
         assert isinstance(maps, marvin.tools.maps.Maps)
 
-        self.maps = maps
-        self.property_name = property_name.lower()
-        self.channel = channel.lower() if channel else None
-        self.shape = self.maps.shape
+        maps = maps
+        datamodel = maps._datamodel
 
-        self.release = maps.release
+        if isinstance(property_name, Property):
+            prop = property_name
+        else:
+            prop = maps._match_properties(property_name, channel=channel)
 
-        self.maps_property = self.maps.properties[self.property_name]
-        if (self.maps_property is None or
-                (self.maps_property.channels is not None and
-                 self.channel not in self.maps_property.channels)):
-            raise marvin.core.exceptions.MarvinError(
-                'invalid combination of property name and channel.')
+        assert prop in datamodel.properties, 'failed sanity check. Property does not match.'
 
-        self.value = None
-        self.ivar = None
-        self.mask = None
+        channel = prop.channel
 
-        self.header = None
-        self.unit = None
+        release = maps.release
 
         if maps.data_origin == 'file':
-            self._load_map_from_file()
+            value, ivar, mask, header = cls._get_from_file(maps, prop)
         elif maps.data_origin == 'db':
-            self._load_map_from_db()
+            value, ivar, mask, header = cls._get_from_db(maps, prop)
         elif maps.data_origin == 'api':
-            self._load_map_from_api()
+            value, ivar, mask, header = cls._get_from_api(maps, prop)
 
-        self.masked = np.ma.array(self.value, mask=(self.mask > 0
-                                                    if self.mask is not None else False))
+        unit = prop.unit
+        value = value * prop.scale
+
+        obj = cls._init_map_from_value(value, unit, ivar=ivar, mask=mask,
+                                       dtype=dtype, copy=copy)
+
+        obj.property = prop
+        obj.channel = channel
+
+        obj.header = header
+        obj.scale = 1
+
+        obj.maps = maps
+        obj.release = release
+        obj._datamodel = datamodel
+
+        obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
+        obj.mask = np.array(mask) if mask is not None else None
+
+        return obj
+
+    @classmethod
+    def _init_map_from_value(cls, value, unit, ivar=None, mask=None, dtype=None, copy=True):
+        """Initialise a Map from a value and a unit."""
+
+        obj = Quantity(value, unit=unit, dtype=dtype, copy=copy)
+        obj = obj.view(cls)
+        obj._set_unit(unit)
+
+        obj.ivar = np.array(ivar) if ivar is not None else None
+        obj.mask = np.array(mask) if mask is not None else None
+
+        return obj
+
+    def __getitem__(self, sl):
+
+        new_obj = super(Map, self).__getitem__(sl)
+
+        if type(new_obj) is not type(self):
+            new_obj = self._new_view(new_obj)
+
+        new_obj._set_unit(self.unit)
+
+        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
+        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+
+        return new_obj
+
+    def __array_finalize__(self, obj):
+
+        if obj is None:
+            return
+
+        self.property = getattr(obj, 'property', None)
+        self.channel = getattr(obj, 'channel', None)
+        self.maps = getattr(obj, 'maps', None)
+        self.release = getattr(obj, 'release', None)
+        self._datamodel = getattr(obj, '_datamodel', None)
+
+        self.ivar = getattr(obj, 'ivar', None)
+        self.mask = getattr(obj, 'mask', None)
+
+    @property
+    def error(self):
+        """Computes the standard deviation of the measurement."""
+
+        if self.ivar is None:
+            return None
+
+        np.seterr(divide='ignore')
+
+        return np.sqrt(1. / self.ivar) * self.unit
+
+    @property
+    def masked(self):
+        """Return a masked array."""
+
+        assert self.mask is not None, 'mask is None'
+
+        return np.ma.array(self.value, mask=self.mask > 0)
 
     def __repr__(self):
 
-        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={0.property_name!r}, '
-                'channel={0.channel!r})>'.format(self))
+        if np.isscalar(self.value):
+            return super(Map, self).__repr__()
+        else:
+            return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
+                    'channel={0.channel!r})>\n{2!r} {3}'.format(self, self.property.name,
+                                                                self.value, self.unit.to_string()))
+
+    def __deepcopy__(self, memo):
+        return Map(maps=copy.deepcopy(self.maps, memo),
+                   property_name=copy.deepcopy(self.property.full(), memo),
+                   channel=copy.deepcopy(self.channel, memo))
 
     @property
     def snr(self):
-        """Returns the signal-to-noise ratio for each spaxel in the map."""
+        """Return the signal-to-noise ratio for each spaxel in the map."""
 
         return np.abs(self.value * np.sqrt(self.ivar))
 
-    def _load_map_from_file(self):
-        """Initialises the Map from a ``Maps`` with ``data_origin='file'``."""
+    @staticmethod
+    def _get_from_file(maps, prop):
+        """Initialise the Map from a ``Maps`` with ``data_origin='file'``."""
 
-        self.header = self.maps.data[self.property_name].header
+        header = maps.data[prop.name].header
 
-        if self.channel is not None:
-            channel_idx = self.maps_property.channels.index(self.channel)
-            self.value = self.maps.data[self.property_name].data[channel_idx]
-            if self.maps_property.ivar:
-                self.ivar = self.maps.data[self.property_name + '_ivar'].data[channel_idx]
-            if self.maps_property.mask:
-                self.mask = self.maps.data[self.property_name + '_mask'].data[channel_idx]
+        if prop.idx is not None:
+            channel_idx = prop.idx
+            value = maps.data[prop.name].data[channel_idx]
+            if prop.ivar:
+                ivar = maps.data[prop.name + '_ivar'].data[channel_idx]
+            if prop.mask:
+                mask = maps.data[prop.name + '_mask'].data[channel_idx]
         else:
-            self.value = self.maps.data[self.property_name].data
-            if self.maps_property.ivar:
-                self.ivar = self.maps.data[self.property_name + '_ivar'].data
-            if self.maps_property.mask:
-                self.mask = self.maps.data[self.property_name + '_mask'].data
+            value = maps.data[prop.name].data
+            if prop.ivar:
+                ivar = maps.data[prop.name + '_ivar'].data
+            if prop.mask:
+                mask = maps.data[prop.name + '_mask'].data
 
-        if isinstance(self.maps_property.unit, list):
-            self.unit = self.maps_property.unit[channel_idx]
-        else:
-            self.unit = self.maps_property.unit
+        return value, ivar, mask, header
 
-        return
-
-    def _load_map_from_db(self):
-        """Initialises the Map from a ``Maps`` with ``data_origin='db'``."""
+    @staticmethod
+    def _get_from_db(maps, prop):
+        """Initialise the Map from a ``Maps`` with ``data_origin='db'``."""
 
         mdb = marvin.marvindb
 
@@ -149,60 +247,60 @@ class Map(object):
         if sqlalchemy is None:
             raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
 
-        if version.StrictVersion(self.maps._dapver) <= version.StrictVersion('1.1.1'):
+        if version.StrictVersion(maps._dapver) <= version.StrictVersion('1.1.1'):
             table = mdb.dapdb.SpaxelProp
         else:
             table = mdb.dapdb.SpaxelProp5
 
-        fullname_value = self.maps_property.fullname(channel=self.channel)
+        fullname_value = prop.db_column()
         value = mdb.session.query(getattr(table, fullname_value)).filter(
-            table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-        self.value = np.array(value).reshape(self.shape).T
+            table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
+        value = np.array(value).reshape(maps.shape).T
 
-        if self.maps_property.ivar:
-            fullname_ivar = self.maps_property.fullname(channel=self.channel, ext='ivar')
+        if prop.ivar:
+            fullname_ivar = prop.db_column(ext='ivar')
             ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
-                table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.ivar = np.array(ivar).reshape(self.shape).T
+                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
+            ivar = np.array(ivar).reshape(maps.shape).T
 
-        if self.maps_property.mask:
-            fullname_mask = self.maps_property.fullname(channel=self.channel, ext='mask')
+        if prop.mask:
+            fullname_mask = prop.db_column(ext='mask')
             mask = mdb.session.query(getattr(table, fullname_mask)).filter(
-                table.file_pk == self.maps.data.pk).order_by(table.spaxel_index).all()
-            self.mask = np.array(mask).reshape(self.shape).T
+                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
+            mask = np.array(mask).reshape(maps.shape).T
 
         # Gets the header
-        hdus = self.maps.data.hdus
+        hdus = maps.data.hdus
         header_dict = None
         for hdu in hdus:
-            if self.maps_property.name.upper() == hdu.extname.name.upper():
+            if prop.name.upper() == hdu.extname.name.upper():
                 header_dict = hdu.header_to_dict()
                 break
 
         if not header_dict:
-            warnings.warn('cannot find the header for property {0}.'
-                          .format(self.maps_property.name),
-                          marvin.core.exceptions.MarvinUserWarning)
+            warnings.warn('cannot find the header for property {0}.'.format(prop.name),
+                          MarvinUserWarning)
         else:
-            self.header = fits.Header(header_dict)
+            header = fits.Header(header_dict)
 
-        self.unit = self.maps_property.unit
+        return value, ivar, mask, header
 
-    def _load_map_from_api(self):
-        """Initialises the Map from a ``Maps`` with ``data_origin='api'``."""
+    @staticmethod
+    def _get_from_api(maps, prop):
+        """Initialise the Map from a ``Maps`` with ``data_origin='api'``."""
 
         url = marvin.config.urlmap['api']['getmap']['url']
 
         url_full = url.format(
-            **{'name': self.maps.plateifu,
-               'property_name': self.property_name,
-               'channel': self.channel,
-               'bintype': self.maps.bintype,
-               'template_kin': self.maps.template_kin})
+            **{'name': maps.plateifu,
+               'property_name': prop.name,
+               'channel': prop.channel,
+               'bintype': maps.bintype.name,
+               'template': maps.template.name})
 
         try:
             response = marvin.api.api.Interaction(url_full,
-                                                  params={'release': self.maps._release})
+                                                  params={'release': maps._release})
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
                 'found a problem when getting the map: {0}'.format(str(ee)))
@@ -213,16 +311,15 @@ class Map(object):
             raise marvin.core.exceptions.MarvinError(
                 'something went wrong. Error is: {0}'.format(response.results['error']))
 
-        self.value = np.array(data['value'])
-        self.ivar = np.array(data['ivar']) if data['ivar'] is not None else None
-        self.mask = np.array(data['mask']) if data['mask'] is not None else None
-        self.unit = data['unit']
-        self.header = fits.Header(data['header'])
+        value = np.array(data['value'])
+        ivar = np.array(data['ivar']) if data['ivar'] is not None else None
+        mask = np.array(data['mask']) if data['mask'] is not None else None
+        header = fits.Header(data['header'])
 
-        return
+        return value, ivar, mask, header
 
     def save(self, path, overwrite=False):
-        """Pickles the map to a file.
+        """Pickle the map to a file.
 
         This method will fail if the map is associated to a Maps loaded
         from the db.
@@ -241,9 +338,7 @@ class Map(object):
         Returns:
             path (str):
                 The realpath to which the file has been saved.
-
         """
-
         # check for file extension
         if not os.path.splitext(path)[1]:
             path = os.path.join(path + '.mpf')
@@ -252,20 +347,158 @@ class Map(object):
 
     @classmethod
     def restore(cls, path, delete=False):
-        """Restores a Map object from a pickled file.
+        """Restore a Map object from a pickled file.
 
         If ``delete=True``, the pickled file will be removed after it has been
         unplickled. Note that, for map objects instantiated from a Maps object
         with ``data_origin='file'``, the original file must exists and be
         in the same path as when the object was first created.
-
         """
-
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
+    @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
-        """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
-        
-        See :func:`marvin.utils.plot.map.plot` for full documentation.
-        """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
+
+    @staticmethod
+    def _combine_names(name1, name2, operator):
+        name = copy.deepcopy(name1)
+        if name1 != name2:
+            name = '{0}{1}{2}'.format(name1, operator, name2)
+        return name
+
+    @staticmethod
+    def _parse_name(name):
+        # out = name.split()  # regex split on +-/*
+        # return out
+        pass
+
+    @staticmethod
+    def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
+        return 1. / ((1. / ivar1 + 1. / ivar2))
+
+    @staticmethod
+    def _mul_ivar(ivar1, ivar2, value1, value2, value12):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            sig1 = 1. / np.sqrt(ivar1)
+            sig2 = 1. / np.sqrt(ivar2)
+            sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
+            ivar12 = 1. / sig12**2
+        return ivar12
+
+    def _arith(self, map2, op):
+        """Do map arithmetic and correctly handle map attributes."""
+
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+
+        # map12 = copy.deepcopy(self)
+        assert self.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
+
+        ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
+                     '*': self._mul_ivar, '/': self._mul_ivar}
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            map12_value = ops[op](self.value, map2.value)
+
+        map12.ivar = map12.ivar if map12.ivar is not None else np.zeros(map12.shape)
+        map2.ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
+        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
+
+        map12.mask = map12.mask if map12.mask is not None else np.zeros(map12.shape, dtype=int)
+        map2.mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
+        map12.mask &= map2.mask
+
+        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
+        map12.channel = self._combine_names(map12.channel, map2.channel, op)
+
+        if self.unit != map2.unit:
+            warnings.warn('Units do not match for map arithmetic.')
+
+        if op in ['*', '/']:
+            map12_unit = ops[op](self.unit, map2.unit)
+        else:
+            map12_unit = self.unit
+
+        # TODO test this!
+        if self.release != map2.release:
+            warnings.warn('Releases do not match in map arithmetic.')
+
+        return CompositeMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
+                            mask=map12_mask, copy=True)
+
+    def __add__(self, map2):
+        """Add two maps."""
+        return self._arith(map2, '+')
+
+    def __sub__(self, map2):
+        """Subtract two maps."""
+        return self._arith(map2, '-')
+
+    def __mul__(self, map2):
+        """Multiply two maps."""
+        return self._arith(map2, '*')
+
+    def __div__(self, map2):
+        """Divide two maps."""
+        return self._arith(map2, '/')
+
+    def __truediv__(self, map2):
+        """Divide two maps."""
+        return self.__div__(map2)
+
+    def __pow__(self, power):
+        """Raise map to power.
+
+        Parameters:
+            power (float):
+               Power to raise the map values.
+
+        Returns:
+            map (:class:`~marvin.tools.map.Map` object)
+        """
+        map1 = copy.deepcopy(self)
+        map1.value = map1.value**power
+
+        if map1.ivar is None:
+            map1.ivar = np.zeros(map1.shape)
+        else:
+            sig = np.sqrt(1. / map1.ivar)
+            sig1 = map1.value * power * sig * self.value
+            map1.ivar = 1 / sig1**2.
+
+        return map1
+
+    def inst_sigma_correction(self):
+        """Correct for instrumental broadening."""
+        if self.property_name == 'stellar_vel':
+            if self.release == 'MPL-4':
+                raise marvin.core.exceptions.MarvinError(
+                    'Instrumental broadening correction not implemented for MPL-4.')
+            map_corr = self.maps['stellar_sigmacorr']
+
+        elif self.property_name == 'emline_gsigma':
+            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+
+        else:
+            name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
+            raise marvin.core.exceptions.MarvinError(
+                'Cannot correct {0} for instrumental broadening.'.format(name))
+
+
+        # TODO problem with error propogation (corr HDUs have ivar == None)
+        # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
+
+        map_corr.ivar = np.zeros(map_corr.value.shape)
+
+        return (self**2 - map_corr**2)**0.5
+
+
+class CompositeMap(Map):
+    """Creates a Map which is a composite of two maps."""
+
+    def __repr__(self):
+
+        return ('<Marvin CompositeMap>')
+
+    # TODO create a more general class that also encompasses modified maps
+    # e.g., a map raised to a power or multiplied by a scalar
