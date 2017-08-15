@@ -29,6 +29,7 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
+from marvin.utils.general.general import add_doc
 
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.dap.datamodel.base import Property
@@ -333,9 +334,7 @@ class Map(Quantity):
         Returns:
             path (str):
                 The realpath to which the file has been saved.
-
         """
-
         # check for file extension
         if not os.path.splitext(path)[1]:
             path = os.path.join(path + '.mpf')
@@ -350,17 +349,11 @@ class Map(Quantity):
         unplickled. Note that, for map objects instantiated from a Maps object
         with ``data_origin='file'``, the original file must exists and be
         in the same path as when the object was first created.
-
         """
-
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    # TODO Brett: merge in add_doc wrapper from vdisp branch
+    @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
-        """Convenience method that wraps :func:`marvin.utils.plot.map.plot`.
-
-        See :func:`marvin.utils.plot.map.plot` for full documentation.
-        """
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
 
     @staticmethod
@@ -371,7 +364,13 @@ class Map(Quantity):
         return name
 
     @staticmethod
-    def _add_ivar(ivar1, ivar2, *args, **kwargs):
+    def _parse_name(name):
+        # out = name.split()  # regex split on +-/*
+        # return out
+        pass
+
+    @staticmethod
+    def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
     @staticmethod
@@ -397,11 +396,16 @@ class Map(Quantity):
         with np.errstate(divide='ignore', invalid='ignore'):
             map12_value = ops[op](self.value, map2.value)
 
-        map12_ivar = ivar_func[op](self.ivar, map2.ivar, self.value, map2.value, self.value)
-        map12_mask = self.mask & map2.mask
+        map12.ivar = map12.ivar if map12.ivar is not None else np.zeros(map12.shape)
+        map2.ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
+        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
 
-        # map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
-        # map12.channel = self._combine_names(map12.channel, map2.channel, op)
+        map12.mask = map12.mask if map12.mask is not None else np.zeros(map12.shape, dtype=int)
+        map2.mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
+        map12.mask &= map2.mask
+
+        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
+        map12.channel = self._combine_names(map12.channel, map2.channel, op)
 
         if self.unit != map2.unit:
             warnings.warn('Units do not match for map arithmetic.')
@@ -411,23 +415,78 @@ class Map(Quantity):
         else:
             map12_unit = self.unit
 
+        # TODO test this!
+        if self.release != map2.release:
+            warnings.warn('Releases do not match in map arithmetic.')
+
         return CompositeMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
                             mask=map12_mask, copy=True)
 
     def __add__(self, map2):
+        """Add two maps."""
         return self._arith(map2, '+')
 
     def __sub__(self, map2):
+        """Subtract two maps."""
         return self._arith(map2, '-')
 
     def __mul__(self, map2):
+        """Multiply two maps."""
         return self._arith(map2, '*')
 
     def __div__(self, map2):
+        """Divide two maps."""
         return self._arith(map2, '/')
 
     def __truediv__(self, map2):
+        """Divide two maps."""
         return self.__div__(map2)
+
+    def __pow__(self, power):
+        """Raise map to power.
+
+        Parameters:
+            power (float):
+               Power to raise the map values.
+
+        Returns:
+            map (:class:`~marvin.tools.map.Map` object)
+        """
+        map1 = copy.deepcopy(self)
+        map1.value = map1.value**power
+
+        if map1.ivar is None:
+            map1.ivar = np.zeros(map1.shape)
+        else:
+            sig = np.sqrt(1. / map1.ivar)
+            sig1 = map1.value * power * sig * self.value
+            map1.ivar = 1 / sig1**2.
+
+        return map1
+
+    def inst_sigma_correction(self):
+        """Correct for instrumental broadening."""
+        if self.property_name == 'stellar_vel':
+            if self.release == 'MPL-4':
+                raise marvin.core.exceptions.MarvinError(
+                    'Instrumental broadening correction not implemented for MPL-4.')
+            map_corr = self.maps['stellar_sigmacorr']
+
+        elif self.property_name == 'emline_gsigma':
+            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+
+        else:
+            name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
+            raise marvin.core.exceptions.MarvinError(
+                'Cannot correct {0} for instrumental broadening.'.format(name))
+
+
+        # TODO problem with error propogation (corr HDUs have ivar == None)
+        # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
+        
+        map_corr.ivar = np.zeros(map_corr.value.shape)
+
+        return (self**2 - map_corr**2)**0.5
 
 
 class CompositeMap(Map):

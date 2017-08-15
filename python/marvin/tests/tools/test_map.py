@@ -13,6 +13,7 @@ import astropy
 import matplotlib
 import pytest
 
+from marvin.core.exceptions import MarvinError
 from marvin.utils.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.map import Map
@@ -36,7 +37,6 @@ def _get_maps_kwargs(galaxy, data_origin):
                                           ('stellar_vel', None),
                                           ('stellar_sigma', None)])
 def map_(request, galaxy, data_origin):
-
     maps = Maps(**_get_maps_kwargs(galaxy, data_origin))
     map_ = maps.getMap(property_name=request.param[0], channel=request.param[1])
     map_.data_origin = data_origin
@@ -67,6 +67,7 @@ class TestMap(object):
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
+        assert 'Make single panel map or one panel of multi-panel map plot.' in map_.plot.__doc__
 
     @marvin_test_if(map_={'data_origin': ['db']}, mark='skip')
     def test_save_and_restore(self, temp_scratch, map_):
@@ -175,3 +176,66 @@ class TestMap(object):
         assert map12.property_name == map1._combine_names(map1.property_name,
                                                           map2.property_name, '/')
         assert map12.channel == map1._combine_names(map1.channel, map2.channel, '/')
+
+    @pytest.mark.runslow
+    @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
+    @pytest.mark.parametrize('property_name, channel',
+                             [('emline_gflux', 'ha_6564'),
+                              ('stellar_vel', None)])
+    def test_pow(self, galaxy, property_name, channel, power):
+        maps = Maps(plateifu=galaxy.plateifu)
+        map_orig = maps.getMap(property_name=property_name, channel=channel)
+        map_new = map_orig**power
+        
+        sig_orig = np.sqrt(1. / map_orig.ivar)
+        sig_new = map_new.value * power * sig_orig * map_orig.value
+        ivar_new = 1 / sig_new**2.
+        
+        assert pytest.approx(map_new.value == map_orig.value**power)
+        assert pytest.approx(map_new.ivar == ivar_new)
+        assert (map_new.mask == map_orig.mask).all()
+
+    def test_getMap_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            map_ = maps.getMap(property_name='mythical_property')
+
+        assert 'Invalid property name.' in str(ee.value)
+
+    def test_getMap_invalid_channel(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError) as ee:
+            map_ = maps.getMap(property_name='emline_gflux', channel='mythical_channel')
+
+        assert 'Invalid channel.' in str(ee.value)
+
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    def test_stellar_sigma_correction(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        stsig = maps['stellar_sigma']
+        stsigcorr = maps['stellar_sigmacorr']
+        expected = (stsig**2 - stsigcorr**2)**0.5
+        actual = stsig.inst_sigma_correction()
+        assert pytest.approx(actual.value == expected.value)
+        assert pytest.approx(actual.ivar == expected.ivar)
+        assert (actual.mask == expected.mask).all()
+
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_stellar_sigma_correction_MPL4(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        stsig = maps['stellar_sigma']
+        with pytest.raises(MarvinError) as ee:
+            stsig.inst_sigma_correction()
+        
+        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
+
+    def test_stellar_sigma_correction_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+
+        with pytest.raises(MarvinError) as ee:
+            ha.inst_sigma_correction()
+
+        assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
+                'for instrumental broadening.') in str(ee.value)
+
