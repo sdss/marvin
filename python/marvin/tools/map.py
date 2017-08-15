@@ -195,8 +195,12 @@ class Map(Quantity):
 
     def __repr__(self):
 
-        return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
-                'channel={0.channel!r})>'.format(self, self.property.full()))
+        if np.isscalar(self.value):
+            return super(Map, self).__repr__()
+        else:
+            return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
+                    'channel={0.channel!r})>\n{2!r} {3}'.format(self, self.property.name,
+                                                                self.value, self.unit.to_string()))
 
     def __deepcopy__(self, memo):
         return Map(maps=copy.deepcopy(self.maps, memo),
@@ -483,7 +487,7 @@ class Map(Quantity):
 
         # TODO problem with error propogation (corr HDUs have ivar == None)
         # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
-        
+
         map_corr.ivar = np.zeros(map_corr.value.shape)
 
         return (self**2 - map_corr**2)**0.5
@@ -495,6 +499,6 @@ class CompositeMap(Map):
     def __repr__(self):
 
         return ('<Marvin CompositeMap>')
-    
+
     # TODO create a more general class that also encompasses modified maps
     # e.g., a map raised to a power or multiplied by a scalar

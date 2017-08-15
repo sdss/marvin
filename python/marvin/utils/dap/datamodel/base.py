@@ -146,7 +146,7 @@ class DAPDataModel(object):
         raise MarvinError('cannot set properties directly. Use add_properties() instead.')
 
     @property
-    def groups(self):
+    def extensions(self):
         """Returns a list of properties. MultiChannelProperties are not unpacked."""
 
         return self._properties
@@ -201,11 +201,11 @@ class DAPDataModel(object):
     def __getitem__(self, value):
         """Uses fuzzywuzzy to return the closest property match."""
 
-        prop_names = [prop.name for prop in self.groups]
+        prop_names = [prop.name for prop in self.extensions]
 
         # If the values matches exactly one of the property names, we return the property object.
         if value in prop_names:
-            return self.groups[prop_names.index(value)]
+            return self.extensions[prop_names.index(value)]
 
         # Finds the best property+channel
         propety_channel_names = self.list_property_names()
@@ -313,8 +313,34 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
-    def to_table(self, compact=True, pprint=False, description=False):
-        """Returns an astropy table with all the properties in this model."""
+    def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
+        """Returns an astropy table with all the properties in this model.
+
+        Parameters:
+            compact (bool):
+                If ``True``, groups extensions (multichannel properties) in one
+                line. Otherwise, shows a row for each extension and channel.
+            pprint (bool):
+                Whether the table should be printed to screen using astropy's
+                table pretty print.
+            description (bool):
+                If ``True``, an extra column with the description of the
+                property will be added.
+            max_width (int or None):
+                A keyword to pass to ``astropy.table.Table.pprint()`` with the
+                maximum width of the table, in characters.
+
+        Returns:
+            result (``astropy.table.Table``):
+                If ``pprint=False``, returns an astropy table containing
+                the name of the property, the channel (or channels, if
+                ``compact=True``), whether the property has ``ivar`` or
+                ``mask``, the units, and a description (if
+                ``description=True``). Additonal information such as the
+                bintypes, templates, release, etc. is included in
+                the metadata of the table (use ``.meta`` to access them).
+
+        """
 
         if compact:
             model_table = table.Table(
@@ -332,7 +358,7 @@ class DAPDataModel(object):
         model_table.meta['default_template'] = self.default_template
 
         if compact:
-            iterable = self.groups
+            iterable = self.extensions
         else:
             iterable = self.properties
 
@@ -340,10 +366,7 @@ class DAPDataModel(object):
             if isinstance(prop, MultiChannelProperty):
                 channel = ', '.join(prop.channels)
                 units = [pp.unit.to_string() for pp in prop]
-                if len(set(units)) == 1:
-                    unit = units[0]
-                else:
-                    unit = 'multiple'
+                unit = units[0] if len(set(units)) == 1 else 'multiple'
             else:
                 channel = '' if not prop.channel else prop.channel
                 unit = prop.unit.to_string()
@@ -354,7 +377,8 @@ class DAPDataModel(object):
             model_table.remove_column('description')
 
         if pprint:
-            model_table.pprint()
+            model_table.pprint(max_width=max_width, max_lines=1e6)
+            return
 
         return model_table
 
