@@ -22,7 +22,7 @@ If you would like to contribute to Marvin's development, you can clone this git 
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    pip install -r requirements.txt
+    pip install -r requirements_dev.txt
     git submodule init
     git submodule update
     python setup.py install
