@@ -21,7 +21,7 @@ from marvin.utils.general.general import (convertImgCoords, parseIdentifier, get
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin.utils.dap import datamodel
+from marvin.tools.maps import _get_bintemps, _get_bintype, _get_template_kin
 from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
@@ -73,13 +73,13 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
 
 
 def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
-              bintype=None, template=None):
+              bintype=None, template_kin=None, template_pop=None):
     ''' Get and format a map for the web '''
     name = '{0}_{1}'.format(parameter.lower(), channel)
     webmap = None
     try:
         maps = cube.getMaps(plateifu=cube.plateifu, mode='local',
-                            bintype=bintype, template=template)
+                            bintype=bintype, template_kin=template_kin)
         data = maps.getMap(parameter, channel=channel)
     except Exception as e:
         mapmsg = 'Could not get map: {0}'.format(e)
@@ -90,7 +90,7 @@ def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
         webmap = {'values': [it.tolist() for it in data.value],
                   'ivar': [it.tolist() for it in data.ivar] if data.ivar is not None else None,
                   'mask': [it.tolist() for it in data.mask] if data.mask is not None else None}
-        mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template)
+        mapmsg = "{0}: {1}-{2}".format(name, maps.bintype, maps.template_kin)
     return webmap, mapmsg
 
 
@@ -116,7 +116,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
         except ValueError as e:
             parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
-                                   bintype=bintype, template=temp)
+                                   bintype=bintype, template_kin=temp)
         plotparams = get_plot_params(dapver=dapver, prop=parameter)
         mapdict.append({'data': webmap, 'msg': mapmsg, 'plotparams': plotparams})
 
@@ -289,9 +289,8 @@ class Galaxy(BaseWebView):
                     self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
-                dm = datamodel[self._dapver]
-                self.galaxy['dapbintemps'] = dm.get_bintemps()
-                current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+                self.galaxy['dapbintemps'] = _get_bintemps(self._dapver)
+                current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># access the header<br>cube.header<br># get NSA data<br>\
@@ -358,10 +357,8 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
-
-        dm = datamodel[self._dapver]
-        output['dapbintemps'] = dm.get_bintemps()
-        current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+        output['dapbintemps'] = _get_bintemps(self._dapver)
+        current_session['bintemp'] = '{0}-{1}'.format(_get_bintype(self._dapver), _get_template_kin(self._dapver))
 
         return jsonify(result=output)
 

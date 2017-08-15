@@ -62,20 +62,20 @@ class ModelCubeView(BaseView):
 
     route_base = '/modelcubes/'
 
-    @route('/<name>/', defaults={'bintype': None, 'template': None},
+    @route('/<name>/', defaults={'bintype': None, 'template_kin': None},
            methods=['GET', 'POST'], endpoint='getModelCube')
-    @route('/<name>/<bintype>/', defaults={'template': None},
+    @route('/<name>/<bintype>/', defaults={'template_kin': None},
            methods=['GET', 'POST'], endpoint='getModelCube')
-    @route('/<name>/<bintype>/<template>/', methods=['GET', 'POST'], endpoint='getModelCube')
+    @route('/<name>/<bintype>/<template_kin>/', methods=['GET', 'POST'], endpoint='getModelCube')
     @av.check_args()
-    def get(self, args, name, bintype, template):
+    def get(self, args, name, bintype, template_kin):
         """Retrieves a ModelCube.
 
-        .. :quickref: ModelCube; Get a modelcube given a name, bintype, and template
+        .. :quickref: ModelCube; Get a modelcube given a name, bintype, and template_kin
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template: The template associated with this maps.  If not defined, the default is used
+        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
         :form release: the release of MaNGA data
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -89,7 +89,7 @@ class ModelCubeView(BaseView):
         :json list redcorr: the modelcube redcorr array
         :json string wcs_header: the modelcube wcs_header as a string
         :json string bintype: the bintype of the modelcube
-        :json string template: the template library of the modelcube
+        :json string template_kin: the template library of the modelcube
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -122,7 +122,7 @@ class ModelCubeView(BaseView):
                        "wavelength": [3621.6, 3622.43, 3623.26, ...],
                        "redcorr": [1.06588, 1.065866, 1.06585, ...],
                        "bintype": "SPX",
-                       "template": "GAU-MILESHC"
+                       "template_kin": "GAU-MILESHC"
                       }
            }
 
@@ -144,7 +144,7 @@ class ModelCubeView(BaseView):
                 'wavelength': model_cube.wavelength.tolist(),
                 'redcorr': model_cube.redcorr.tolist(),
                 'wcs_header': model_cube.wcs.to_header_string(),
-                'bintype': model_cube.bintype.name,
-                'template': model_cube.template.name}
+                'bintype': model_cube.bintype,
+                'template_kin': model_cube.template_kin}
 
         return jsonify(self.results)

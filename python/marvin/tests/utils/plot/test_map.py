@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-10 16:08:78
+# @Last modified time: 2017-07-19 10:07:33
 
 import numpy as np
 import matplotlib
@@ -271,7 +271,7 @@ class TestMapPlot(object):
                               ('stellar_sigma', 'sigma')])
     def test_get_prop(self, title, expected):
         assert mapplot._get_prop(title) == expected
-
+    
     def test_return_cb(self, maps):
         map_ = maps.getMap('emline_gflux', channel='ha_6564')
         fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)

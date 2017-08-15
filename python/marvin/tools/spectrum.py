@@ -12,116 +12,67 @@
 
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_import
-
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from astropy.units import Quantity, dimensionless_unscaled
 
-
-class Spectrum(Quantity):
+class Spectrum(object):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
         flux (array-like):
             The 1-D array contianing the spectrum.
-        unit (astropy.unit.Unit, optional):
-            The unit of the flux spectrum.
-        scale (float, optional):
-            The scale factor of the spectrum flux.
+        units (str, optional):
+            The units of the flux spectrum.
+        wavelength (array-like, optional):
+            The wavelength solution for ``spectrum``. Must have the same number
+            of elements.
         ivar (array-like, optional):
             The inverse variance array for ``spectrum``. Must have the same
             number of elements.
         mask (array-like, optional):
             The mask array for ``spectrum``. Must have the same number of
             elements.
-        wavelength (array-like, optional):
-            The wavelength solution for ``spectrum``. Must have the same number
-            of elements.
-        wavelength_unit (astropy.unit.Unit, optional):
+        wavelength_unit (str, optional):
             The units of the wavelength solution.
-
-    Returns:
-        spectrum:
-            An astropy Quantity-like object that contains the spectrum, as well
-            as inverse variance, mask, and wavelengh (itself a Quantity array).
 
     """
 
-    def __new__(cls, flux, scale=1, unit=dimensionless_unscaled,
-                wavelength_unit=dimensionless_unscaled, ivar=None, mask=None,
-                wavelength=None, dtype=None, copy=True, **kwargs):
+    def __init__(self, flux, units=None, wavelength_unit=None,
+                 ivar=None, mask=None, wavelength=None):
 
-        flux = np.array(flux) * scale
+        self.flux = np.array(flux)
+        self.ivar = np.array(ivar) if ivar is not None else None
+        self.mask = np.array(mask) if mask is not None else None
+        self.wavelength = np.array(wavelength) if wavelength is not None else None
 
-        obj = Quantity(flux, unit=unit, dtype=dtype, copy=copy)
-        obj = obj.view(cls)
-        obj._set_unit(unit)
+        self.units = units
+        self.wavelength_unit = wavelength_unit
 
-        obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar is not None else None
-        obj.mask = np.array(mask) if mask is not None else None
+        # Performs some checks.
 
-        if wavelength is None:
-            obj.wavelength = None
-        else:
-            if wavelength_unit:
-                obj.wavelength = Quantity(np.array(wavelength), unit=wavelength_unit)
-            else:
-                obj.wavelength = np.array(wavelength)
+        assert len(self.flux.shape) == 1, 'spectrum must be 1-D'
 
-        return obj
+        if self.ivar is not None:
+            assert len(self.ivar.shape) == 1, 'ivar must be 1-D'
+            assert len(self.flux) == len(self.ivar), \
+                'ivar must have the same lenght as the base spectrum'
 
-    def __array_finalize__(self, obj):
+        if self.mask is not None:
+            assert len(self.mask.shape) == 1, 'mask must be 1-D'
+            assert len(self.flux) == len(self.mask), \
+                'mask must have the same lenght as the base spectrum'
 
-        if obj is None:
-            return
+        if self.wavelength is not None:
+            assert len(self.wavelength.shape) == 1, 'wavelength must be 1-D'
+            assert len(self.flux) == len(self.wavelength), \
+                'wavelength must have the same lenght as the base spectrum'
 
-        self.ivar = getattr(obj, 'ivar', None)
-        self.mask = getattr(obj, 'mask', None)
-        self.wavelength = getattr(obj, 'wavelength', None)
+    def __repr__(self):
+        """Representation for Spectrum."""
 
-    def __getitem__(self, sl):
-
-        new_obj = super(Spectrum, self).__getitem__(sl)
-
-        if type(new_obj) is not type(self):
-            new_obj = self._new_view(new_obj)
-
-        new_obj._set_unit(self.unit)
-
-        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
-        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
-        new_obj.wavelength = self.wavelength.__getitem__(sl) \
-            if self.wavelength is not None else self.wavelength
-
-        return new_obj
-
-    @property
-    def error(self):
-        """The standard deviation of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
-    def snr(self):
-        """The signal to noise of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        return np.abs(self.value * np.sqrt(self.ivar))
-
-    @property
-    def masked(self):
-        """Returns a masked array."""
-
-        return np.ma.array(self.value, mask=self.mask > 0)
+        return '<Marvin Spectrum ({0!s})'.format(self.flux)
 
     def plot(self, array='flux', xlim=None, ylim=(0, None), mask_color=None,
              xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
@@ -196,16 +147,11 @@ class Spectrum(Quantity):
         assert array in validSpectrum, 'array must be one of {0!r}'.format(validSpectrum)
 
         if array == 'flux':
-            data = self.value
-            unit = 'Flux [{0}]'.format(self.unit.to_string('latex_inline'))
+            data = self.flux
         elif array == 'ivar':
-            assert self.ivar is not None, 'ivar is None'
             data = self.ivar
-            unit = 'Inverse variance [{0}]'.format(((1 / self.unit) ** 2).to_string('latex_inline'))
         elif array == 'mask':
-            assert self.mask is not None, 'mask is None'
             data = self.mask
-            unit = ''
 
         xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
 
@@ -231,12 +177,25 @@ class Spectrum(Quantity):
 
         if xlabel is None:
             if self.wavelength is not None:
-                xlabel = 'Wavelength [{0}]'.format(self.wavelength.unit.to_string('latex_inline'))
+                xlabel = 'Wavelength'
+                if self.wavelength_unit == 'Angstrom':
+                    xlabel += r' $[\rm\AA]$'
+                elif self.wavelength_unit is not None:
+                    xlabel += r' [{0}]'.format(self.wavelength_unit)
             else:
                 xlabel = ''
 
         if ylabel is None:
-            ylabel = unit
+            if array == 'flux':
+                ylabel = 'Flux'
+                if self.units == '1e-17 erg/s/cm^2/Ang/spaxel':
+                    ylabel += r' $[\rm 10^{-17}\,erg\,s^{-1}\,cm^{-2}\,\AA^{-1}\,spaxel^{-1}]$'
+                elif self.units is not None:
+                    ylabel += r' [{0}]'.format(self.units)
+            elif array == 'ivar':
+                ylabel = 'Inverse variance'
+            else:
+                ylabel = ''
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)

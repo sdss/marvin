@@ -28,7 +28,6 @@ from marvin.core import marvin_pickle
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
-from marvin.utils.dap.datamodel.base import get_best_fuzzy
 from marvin.utils.db import testDbConnection
 from marvin.utils.general import mangaid2plateifu, get_nsa_data
 
@@ -113,8 +112,6 @@ class MarvinToolsClass(object):
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
-        self._set_datamodel()
-
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
@@ -186,17 +183,6 @@ class MarvinToolsClass(object):
         else:
             self.mode = 'remote'
             self.data_origin = 'api'
-
-    def _set_datamodel(self, **kwargs):
-        """Sets the datamodel, template, and bintype.
-
-        Most classes subclassing from MarvinToolsClass will not need to
-        override this class. Only classes such as Maps or ModelCube will need
-        to define datamodel and derivates.
-
-        """
-
-        pass
 
     def download(self, pathType=None, **pathParams):
         ''' Download using sdss_access Rsync '''
@@ -380,21 +366,6 @@ class DotableCaseInsensitive(Dotable):
         if key is False:
             raise KeyError('{0} key or attribute not found'.format(value))
         return dict.__getitem__(self, key)
-
-
-class FuzzyDict(dict):
-    """A dotable dictionary that uses fuzzywuzzy to select the key."""
-
-    def __getattr__(self, value):
-        if '__' in value:
-            return super(FuzzyDict, self).__getattr__(value)
-        return self.__getitem__(value)
-
-    def __getitem__(self, value):
-
-        best = get_best_fuzzy(value, self.keys())
-
-        return dict.__getitem__(self, best)
 
 
 class OrderedDefaultDict(OrderedDict):

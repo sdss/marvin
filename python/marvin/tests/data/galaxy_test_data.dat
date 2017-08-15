@@ -50,7 +50,7 @@
                         ivar: 0.925622344017
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 29.345
                 MILES-THIN:
                     model: []
@@ -60,7 +60,7 @@
                         ivar: 0.921766579151
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 29.2763
                 MIUSCAT-THIN:
                     model: []
@@ -70,7 +70,7 @@
                         ivar: 0.920904278755
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 29.4449
             bins:
                 100:
@@ -102,15 +102,15 @@
                 x: 17
                 y: 17
                 GAU-MILESHC:
-                    model: [4.71273e-18, 1.2857299999999999e+36, 32, 0, 0, 0, 128]
+                    model: [0.471273, 128.573, 32, 0, 0, 0, 128]
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 4.708968353269999e+35
+                        ivar: 47.0896835327
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 3.14754e-16
+                        unit: '1E-17 erg/s/cm^2/spaxel'
+                        value: 31.4754
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -201,7 +201,7 @@
                         ivar: 16.4909667969
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 0.0573237
                 MILES-THIN:
                     model: []
@@ -211,7 +211,7 @@
                         ivar: 0.0
                         mask: 1
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 0.0
                 MIUSCAT-THIN:
                     model: []
@@ -221,7 +221,7 @@
                         ivar: 5.71516084671
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 0.141774
             bins:
                 100:
@@ -260,7 +260,7 @@
                         ivar: 680.29498291
                         mask: 32
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1E-17 erg/s/cm^2/spaxel'
                         value: 0.0578471
             bins:
                 100:

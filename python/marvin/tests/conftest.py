@@ -18,10 +18,8 @@ from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
 from marvin.tools.query import Query
-from marvin.utils.dap import datamodel
-
+from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
 from sdss_access.path import Path
-
 import yaml
 
 
@@ -75,7 +73,8 @@ def populate_bintypes_templates(releases):
     bintypes = OrderedDict((release, []) for release in releases)
     templates = OrderedDict((release, []) for release in releases)
     for release in releases:
-        bintemps = datamodel[release].get_bintemps()
+        __, dapver = config.lookUpVersions(release)
+        bintemps = _get_bintemps(dapver)
         for bintemp in bintemps:
             bintype = bintemp.split('-')[0]
             template = '-'.join(bintemp.split('-')[1:])
@@ -419,24 +418,27 @@ class Galaxy(object):
 
     def set_params(self, bintype=None, template=None, release=None):
         """Set bintype, template, etc."""
-
         self.release = release
-
         self.drpver, self.dapver = config.lookUpVersions(self.release)
         self.drpall = 'drpall-{0}.fits'.format(self.drpver)
 
-        self.bintype = datamodel[self.dapver].get_bintype(bintype)
-        self.template = datamodel[self.dapver].get_template(template)
-        self.bintemp = '{0}-{1}'.format(self.bintype.name, self.template.name)
+        default_bintemp = _get_bintemps(self.dapver, default=True)
+        default_bin, default_temp = default_bintemp.split('-', 1)
+
+        self.bintype = bintype if bintype is not None else default_bin
+        self.template = template if template is not None else default_temp
+
+        self.bintemp = '{0}-{1}'.format(self.bintype, self.template)
 
         if release == 'MPL-4':
-            self.niter = int('{0}{1}'.format(self.template.n, self.bintype.n))
+            self.niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template),
+                                             __BINTYPES_MPL4__[self.bintype]))
         else:
             self.niter = '*'
 
         self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver,
                               'dapver': self.dapver, 'dir3d': self.dir3d, 'mpl': self.release,
-                              'bintype': self.bintype.name, 'n': self.niter, 'mode': '*',
+                              'bintype': self.bintype, 'n': self.niter, 'mode': '*',
                               'daptype': self.bintemp}
 
     def set_filepaths(self, pathtype='full'):
@@ -450,7 +452,7 @@ class Galaxy(object):
             self.mapspath = self.path.__getattribute__(pathtype)('mangamap', **self.access_kwargs)
             self.modelpath = None
         else:
-            self.access_kwargs.pop('mode')
+            __ = self.access_kwargs.pop('mode')
             self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS',
                                                                  **self.access_kwargs)
             self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE',
@@ -559,3 +561,5 @@ def query(request, release, mode, db):
 # @pytest.fixture(autouse=True)
 # def skipall():
 #     pytest.skip('skipping everything')
+
+

@@ -47,11 +47,10 @@ class TestGetProperties(object):
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('expprop', [('emline_gflux_ha_6564')], ids=['haflux'])
     def test_props_success(self, galaxy, page, params, reqtype, expprop):
-        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'],
-                       'template': galaxy.template.name})
+        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'], 'template_kin': galaxy.template})
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success()
-        expval = galaxy.dap[galaxy.template.name][expprop]
+        expval = galaxy.dap[galaxy.template][expprop]
         props = page.json['data']['properties']
         assert expprop in props
         assert expval == props[expprop]
@@ -63,10 +62,10 @@ class TestGetProperties(object):
                               ('84', 'name', 'Shorter than minimum length 4.', 0, 0, 'GAU-MILESHC'),
                               ('8485-1901', 'x', 'Must be between 0 and 100.', -1, 17, 'GAU-MILESHC'),
                               ('8485-1901', 'y', 'Must be between 0 and 100.', 17, -1, 'GAU-MILESHC'),
-                              ('8485-1901', 'template', 'Not a valid choice.', 17, 17, 'MILESHC')],
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 17, 17, 'MILESHC')],
                              ids=['norelease', 'badname', 'shortname', 'badx', 'bady', 'badtemplate'])
     def test_props_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, x, y, template):
-        params.update({'name': name, 'x': x, 'y': y, 'template': template})
+        params.update({'name': name, 'x': x, 'y': y, 'template_kin': template})
         if name is None:
             params.update({'name': galaxy.plateifu})
             page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, errmsg=errmsg)
@@ -81,15 +80,14 @@ class TestGetModels(object):
     def test_models_success(self, galaxy, page, params, reqtype):
         if galaxy.release == 'MPL-4':
             pytest.skip('MPL-4 does not have modelcubes')
-        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'],
-                       'y': galaxy.dap['y'], 'template': galaxy.template.name})
+        params.update({'name': galaxy.plateifu, 'x': galaxy.dap['x'], 'y': galaxy.dap['y'], 'template_kin': galaxy.template})
         page.load_page(reqtype, page.url.format(**params), params=params)
-        data = {'bintype': galaxy.bintype.name, 'template': galaxy.template.name, 'flux_array': [],
+        data = {'bintype': galaxy.bintype, 'template_kin': galaxy.template, 'flux_array': [],
                 'flux_mask': [], 'flux_ivar': [], 'model_array': [], 'model_emline': [],
                 'model_emline_base': [], 'model_emline_mask': []}
         page.assert_success(data, keys=True)
         jdata = page.json['data']
-        expdata = galaxy.dap[galaxy.template.name]['model']
+        expdata = galaxy.dap[galaxy.template]['model']
         mcdata = [jdata['flux_array'][0], jdata['flux_ivar'][0], jdata['flux_mask'][0],
                   jdata['model_array'][0], jdata['model_emline'][0], jdata['model_emline_base'][0],
                   jdata['model_emline_mask'][0]]
@@ -102,10 +100,10 @@ class TestGetModels(object):
                               ('84', 'name', 'Shorter than minimum length 4.', 0, 0, 'GAU-MILESHC'),
                               ('8485-1901', 'x', 'Must be between 0 and 100.', -1, 17, 'GAU-MILESHC'),
                               ('8485-1901', 'y', 'Must be between 0 and 100.', 17, -1, 'GAU-MILESHC'),
-                              ('8485-1901', 'template', 'Not a valid choice.', 17, 17, 'MILESHC')],
+                              ('8485-1901', 'template_kin', 'Not a valid choice.', 17, 17, 'MILESHC')],
                              ids=['norelease', 'badname', 'shortname', 'badx', 'bady', 'badtemplate'])
     def test_models_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, x, y, template):
-        params.update({'name': name, 'x': x, 'y': y, 'template': template})
+        params.update({'name': name, 'x': x, 'y': y, 'template_kin': template})
         if name is None:
             params.update({'name': galaxy.plateifu})
             page.route_no_valid_params(page.url.format(**params), missing, reqtype=reqtype, errmsg=errmsg)

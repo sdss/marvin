@@ -255,7 +255,7 @@ class RSSFiber(Spectrum):
         kwargs['units'] = flux_units
         kwargs['wavelength_unit'] = wavelength_unit
 
-        # Spectrum.__init__(self, **kwargs)
+        Spectrum.__init__(self, *args, **kwargs)
 
     def __repr__(self):
         """Representation for RSSFiber."""

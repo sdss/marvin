@@ -6,7 +6,8 @@ from flask import request
 from brain.api.base import processRequest
 from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap.datamodel import datamodel as dm
+from marvin.utils.dap.datamodel import dap_datamodel as dm
+from marvin.tools.maps import _get_bintemps
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 
@@ -22,7 +23,7 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'galid': fields.String(required=True, location='view_args', validate=[validate.Length(min=4),
                                    validate.Regexp('^[0-9-]*$')]),
             'bintype': fields.String(required=True, location='view_args'),
-            'template': fields.String(required=True, location='view_args'),
+            'template_kin': fields.String(required=True, location='view_args'),
             'property_name': fields.String(required=True, location='view_args'),
             'channel': fields.String(required=True, location='view_args'),
             'binid': fields.Integer(required=True, location='view_args', validate=validate.Range(min=-1, max=5800)),
@@ -200,7 +201,7 @@ class ArgValidator(object):
         local_viewargs = self._extract_view_args()
 
         # check if any local_view args need new validation
-        props = ['bintype', 'template', 'property_name', 'channel']
+        props = ['bintype', 'template_kin', 'property_name', 'channel']
         ismatch = set(local_viewargs) & set(props)
         if ismatch:
             self.update_view_validation()
@@ -217,7 +218,7 @@ class ArgValidator(object):
 
     def _get_bin_temps(self):
         ''' Gets the bintemps for a given release '''
-        bintemps = dm[self.dapver].get_bintemps()
+        bintemps = _get_bintemps(self.dapver)
         return bintemps
 
     def update_view_validation(self):
@@ -227,12 +228,11 @@ class ArgValidator(object):
         bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = [gr.name for gr in dm[self.dapver].extensions]
-        channels = list(set([i.channel for i in dm[self.dapver].properties
-                             if i.channel is not None])) + ['None']
+        properties = dm[self.dapver].list_names()
+        channels = list(set(sum([i.channels for i in dm[self.dapver] if i.channels is not None], []))) + ['None']
 
         # update the global viewargs for each property
-        propfields = {'bintype': bintypes, 'template': temps, 'property_name': properties,
+        propfields = {'bintype': bintypes, 'template_kin': temps, 'property_name': properties,
                       'channel': channels}
         for key, val in propfields.items():
             self._update_viewarg(key, val)

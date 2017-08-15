@@ -164,8 +164,8 @@ class Cube(MarvinToolsClass):
         else:
             try:
                 self.data = fits.open(self.filename)
-            except (IOError, OSError) as err:
-                raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
+            except IOError as err:
+                raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[1].header
         self.shape = self.data['FLUX'].data.shape[1:]

@@ -17,8 +17,6 @@ import warnings
 
 import numpy as np
 
-from astropy import units as u
-
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
@@ -32,9 +30,6 @@ from marvin.api import api
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
-from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel.base import spaxel as spaxel_unit
-
 
 breadcrumb = MarvinBreadCrumb()
 
@@ -78,23 +73,27 @@ class Spaxel(object):
         maps (:class:`~marvin.tools.maps.Maps` object or bool)
             As ``cube`` but populates ``Spaxel.properties`` with a dictionary
             of DAP measurements corresponding to the spaxel in the maps that
-            matches ``bintype`` and ``template``.
+            matches ``bintype``, ``template_kin``, and ``template_pop``.
         modelcube (:class:`marvin.tools.modelcube.ModelCube` object or bool)
             As ``cube`` but populates ``Spaxel.model_flux``, ``Spaxel.model``,
             ``Spaxel.redcorr``, ``Spaxel.emline``, ``Spaxel.emline_base``, and
             ``Spaxel.stellar_continuum`` from the corresponding
-            spaxel of the DAP modelcube that matches ``bintype`` and
-            ``template``.
+            spaxel of the DAP modelcube that matches ``bintype``,
+            ``template_kin``, and ``template_pop``.
         bintype (str or None):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
             For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
             (defaults to ``'ALL'``). Only allowed if ``allow_binned=True.```
-        template (str or None):
+        template_kin (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
+        template_pop (str or None):
+            A placeholder for a future version in which stellar populations
+            are fitted using a different template that ``template_kin``. It
+            has no effect for now.
         release (str):
             The MPL/DR version of the data to use.
         load (bool):
@@ -145,7 +144,7 @@ class Spaxel(object):
         valid_kwargs = [
             'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
             'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
-            'template_kin', 'template', 'release', 'load', 'allow_binned']
+            'template_kin', 'template_pop', 'release', 'load', 'allow_binned']
 
         assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
         for kw in kwargs:
@@ -160,6 +159,7 @@ class Spaxel(object):
         if not self.cube and not self.maps and not self.modelcube:
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
+
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
@@ -202,22 +202,17 @@ class Spaxel(object):
         self.mangaid = kwargs.pop('mangaid', None)
 
         self.bintype = None
-        self.template = None
+        self.template_kin = None
 
         if self.maps or self.modelcube:
-
-            if 'template_kin' in kwargs:
-                warnings.warn('template_kin has been deprecated and will be removed '
-                              'in a future version. Use template.',
-                              marvin.core.exceptions.MarvinDeprecationWarning)
-                if 'template' not in kwargs:
-                    kwargs['template'] = kwargs['template_kin']
 
             # Some versions, like DR13, don't have an associated DAP, so we check.
             assert self._dapver, 'this MPL/DR version does not have an associated dapver.'
 
-            self.bintype = datamodel[self._dapver].get_bintype(kwargs.get('bintype', None))
-            self.template = datamodel[self._dapver].get_template(kwargs.get('template', None))
+            self.bintype = marvin.tools.maps._get_bintype(
+                self._dapver, bintype=kwargs.get('bintype', None))
+            self.template_kin = marvin.tools.maps._get_template_kin(
+                self._dapver, template_kin=kwargs.get('template_kin', None))
 
         self.__cube_filename = kwargs.pop('cube_filename', None)
         self.__maps_filename = kwargs.pop('maps_filename', None)
@@ -369,7 +364,7 @@ class Spaxel(object):
             self.maps = marvin.tools.maps.Maps(filename=self.__maps_filename,
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
-                                               template=self.template,
+                                               template_kin=self.template_kin,
                                                release=self._release)
         else:
             self.maps = None
@@ -394,7 +389,7 @@ class Spaxel(object):
         self._parent_shape = self.maps.shape
 
         self.bintype = self.maps.bintype
-        self.template = self.maps.template
+        self.template_kin = self.maps.template_kin
 
         # Loads the properties
         self._load_properties()
@@ -416,7 +411,7 @@ class Spaxel(object):
             self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
                                                               mangaid=self.mangaid,
                                                               plateifu=self.plateifu,
-                                                              template=self.template,
+                                                              template_kin=self.template_kin,
                                                               release=self._release)
         else:
             self.modelcube = None
@@ -427,7 +422,7 @@ class Spaxel(object):
             raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
 
         self.bintype = self.modelcube.bintype
-        self.template = self.modelcube.template
+        self.template_kin = self.modelcube.template_kin
 
         if self.plateifu is not None:
             assert self.plateifu == self.modelcube.plateifu, \
@@ -476,11 +471,12 @@ class Spaxel(object):
 
             cube_hdu = self.cube.data
 
-            flux = cube_hdu['FLUX'].data[:, self.y, self.x]
-            ivar = cube_hdu['IVAR'].data[:, self.y, self.x]
-            mask = cube_hdu['MASK'].data[:, self.y, self.x]
-
-            wavelength = cube_hdu['WAVE'].data
+            self.spectrum = Spectrum(cube_hdu['FLUX'].data[:, self.y, self.x],
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=cube_hdu['WAVE'].data,
+                                     wavelength_unit='Angstrom',
+                                     ivar=cube_hdu['IVAR'].data[:, self.y, self.x],
+                                     mask=cube_hdu['MASK'].data[:, self.y, self.x])
 
             self.specres = cube_hdu['SPECRES'].data
             self.specresd = cube_hdu['SPECRESD'].data
@@ -502,11 +498,12 @@ class Spaxel(object):
             if spaxel is None:
                 raise MarvinError('cannot find an spaxel for x={0.x}, y={0.y}'.format(self))
 
-            flux = spaxel.flux
-            ivar = spaxel.ivar
-            mask = spaxel.mask
-
-            wavelength = cube_db.wavelength.wavelength
+            self.spectrum = Spectrum(spaxel.flux,
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=cube_db.wavelength.wavelength,
+                                     wavelength_unit='Angstrom',
+                                     ivar=spaxel.ivar,
+                                     mask=spaxel.mask)
 
             self.specres = np.array(cube_db.specres)
             self.specresd = None
@@ -525,22 +522,18 @@ class Spaxel(object):
             # Temporarily stores the arrays prior to subclassing from np.array
             data = response.getData()
 
-            flux = data['flux']
-            ivar = data['ivar']
-            mask = data['mask']
-
-            wavelength = data['wavelength']
+            # Instantiates the spectrum from the returned values from the Interaction
+            self.spectrum = Spectrum(data['flux'],
+                                     units='1E-17 erg/s/cm^2/Ang/spaxel',
+                                     wavelength=data['wavelength'],
+                                     wavelength_unit='Angstrom',
+                                     ivar=data['ivar'],
+                                     mask=data['mask'])
 
             self.specres = np.array(data['specres'])
             self.specresd = None
 
-        self.spectrum = Spectrum(flux,
-                                 unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                 scale=1e-17,
-                                 wavelength=wavelength,
-                                 wavelength_unit=u.Angstrom,
-                                 ivar=ivar,
-                                 mask=mask)
+            return response
 
     def _load_properties(self):
         """Initialises Spaxel.properties."""
@@ -560,23 +553,33 @@ class Spaxel(object):
                 prop_hdu_ivar = None if not prop.ivar else maps_hdu[prop.name + '_ivar']
                 prop_hdu_mask = None if not prop.mask else maps_hdu[prop.name + '_mask']
 
-                if prop.channel:
+                if prop.channels:
+                    for ii, channel in enumerate(prop.channels):
 
-                    ii = self.maps._datamodel[prop.name].channels.index(prop.channel)
+                        if isinstance(prop.unit, str) or not prop.unit:
+                            unit = prop.unit
+                        else:
+                            unit = prop.unit[ii]
 
-                    properties[prop.full()] = AnalysisProperty(
-                        prop,
-                        value=prop_hdu.data[ii, self.y, self.x],
-                        ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
-                        mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None)
+                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                            prop.name,
+                            channel=channel,
+                            value=prop_hdu.data[ii, self.y, self.x],
+                            ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
+                            mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None,
+                            unit=unit,
+                            description=prop.description)
 
                 else:
 
-                    properties[prop.full()] = AnalysisProperty(
-                        prop,
+                    properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                        prop.name,
+                        channel=None,
                         value=prop_hdu.data[self.y, self.x],
                         ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
-                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None)
+                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None,
+                        unit=prop.unit,
+                        description=prop.description)
 
         elif self.maps.data_origin == 'db':
 
@@ -600,11 +603,38 @@ class Spaxel(object):
             properties = {}
             for prop in maps_properties:
 
-                properties[prop.full()] = AnalysisProperty(
-                    prop,
-                    getattr(spaxelprops, prop.full()),
-                    ivar=(getattr(spaxelprops, prop.db_column(ext='ivar')) if prop.ivar else None),
-                    mask=(getattr(spaxelprops, prop.db_column(ext='mask')) if prop.mask else None))
+                if prop.channels:
+
+                    for ii, channel in enumerate(prop.channels):
+
+                        if isinstance(prop.unit, str) or not prop.unit:
+                            unit = prop.unit
+                        else:
+                            unit = prop.unit[ii]
+
+                        properties[prop.fullname(channel=channel)] = AnalysisProperty(
+                            prop.name,
+                            channel=channel,
+                            value=getattr(spaxelprops, prop.fullname(channel=channel)),
+                            ivar=(getattr(spaxelprops, prop.fullname(channel=channel, ext='ivar'))
+                                  if prop.ivar else None),
+                            mask=(getattr(spaxelprops, prop.fullname(channel=channel, ext='mask'))
+                                  if prop.mask else None),
+                            unit=unit,
+                            description=prop.description)
+
+                else:
+
+                    properties[prop.fullname()] = AnalysisProperty(
+                        prop.name,
+                        channel=None,
+                        value=getattr(spaxelprops, prop.fullname()),
+                        ivar=(getattr(spaxelprops, prop.fullname(ext='ivar'))
+                              if prop.ivar else None),
+                        mask=(getattr(spaxelprops, prop.fullname(ext='mask'))
+                              if prop.mask else None),
+                        unit=prop.unit,
+                        description=prop.description)
 
         elif self.maps.data_origin == 'api':
 
@@ -612,8 +642,8 @@ class Spaxel(object):
             # dictionary with all the properties for this spaxel.
             routeparams = {'name': self.plateifu,
                            'x': self.x, 'y': self.y,
-                           'bintype': self.bintype.name,
-                           'template': self.template.name}
+                           'bintype': self.bintype,
+                           'template_kin': self.template_kin}
 
             url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
 
@@ -625,13 +655,15 @@ class Spaxel(object):
 
             properties = {}
             for prop_fullname in data['properties']:
-                maps_prop = self.maps._datamodel[prop_fullname]
                 prop = data['properties'][prop_fullname]
                 properties[prop_fullname] = AnalysisProperty(
-                    maps_prop,
+                    prop['name'],
+                    channel=prop['channel'],
                     value=prop['value'],
                     ivar=prop['ivar'],
-                    mask=prop['mask'])
+                    mask=prop['mask'],
+                    unit=prop['unit'],
+                    description=prop['description'])
 
         self.properties = DictOfProperties(properties)
 
@@ -680,8 +712,8 @@ class Spaxel(object):
             # dictionary with all the models for this spaxel.
             url = marvin.config.urlmap['api']['getModels']['url']
             url_full = url.format(name=self.plateifu,
-                                  bintype=self.bintype.name,
-                                  template=self.template.name,
+                                  bintype=self.bintype,
+                                  template_kin=self.template_kin,
                                   x=self.x, y=self.y)
 
             try:
@@ -704,43 +736,38 @@ class Spaxel(object):
 
         self.redcorr = Spectrum(self.modelcube.redcorr,
                                 wavelength=self.modelcube.wavelength,
-                                wavelength_unit=u.Angstrom)
+                                wavelength_unit='Angstrom')
 
         self.model_flux = Spectrum(flux_array,
-                                   unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                   scale=1e-17,
+                                   units='1E-17 erg/s/cm^2/Ang/spaxel',
                                    wavelength=self.modelcube.wavelength,
-                                   wavelength_unit=u.Angstrom,
+                                   wavelength_unit='Angstrom',
                                    ivar=flux_ivar,
                                    mask=mask)
 
         self.model = Spectrum(model_array,
-                              unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                              scale=1e-17,
+                              units='1E-17 erg/s/cm^2/Ang/spaxel',
                               wavelength=self.modelcube.wavelength,
-                              wavelength_unit=u.Angstrom,
+                              wavelength_unit='Angstrom',
                               mask=mask)
 
         self.emline = Spectrum(model_emline,
-                               unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                               scale=1e-17,
+                               units='1E-17 erg/s/cm^2/Ang/spaxel',
                                wavelength=self.modelcube.wavelength,
-                               wavelength_unit=u.Angstrom,
+                               wavelength_unit='Angstrom',
                                mask=model_emline_mask)
 
         self.emline_base = Spectrum(model_emline_base,
-                                    unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                    scale=1e-17,
+                                    units='1E-17 erg/s/cm^2/Ang/spaxel',
                                     wavelength=self.modelcube.wavelength,
-                                    wavelength_unit=u.Angstrom,
+                                    wavelength_unit='Angstrom',
                                     mask=model_emline_mask)
 
         self.stellar_continuum = Spectrum(
-            self.model.value - self.emline.value - self.emline_base.value,
-            unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-            scale=1e-17,
+            self.model.flux - self.emline.flux - self.emline_base.flux,
+            units='1E-17 erg/s/cm^2/Ang/spaxel',
             wavelength=self.modelcube.wavelength,
-            wavelength_unit=u.Angstrom,
+            wavelength_unit='Angstrom',
             mask=model_emline_mask)
 
     @property
