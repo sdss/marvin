@@ -29,7 +29,6 @@ def _getCubes(searchfilter, **kwargs):
 
     # run the query
     q, r = _run_query(searchfilter, **kwargs)
-    results = r.results
 
     # get the subset keywords
     start = kwargs.get('start', None)
@@ -37,12 +36,20 @@ def _getCubes(searchfilter, **kwargs):
     limit = kwargs.get('limit', None)
     params = kwargs.get('params', None)
 
-    # get a subset
+    # retrieve a subset
     chunk = None
     if start:
         chunk = int(end) - int(start)
         results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
+
+    # get results
+    return_all = kwargs.get('return_all', None)
+    if return_all:
+        r._getAll()
+    results = r.results
+
+    # set up the output
     runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=runtime,

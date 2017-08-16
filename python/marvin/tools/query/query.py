@@ -29,6 +29,7 @@ import numpy as np
 import warnings
 import os
 import re
+import six
 from marvin.core import marvin_pickle
 from functools import wraps
 from marvin.tools.query.results import remote_mode_only
@@ -225,7 +226,7 @@ class Query(object):
             self._create_query_modelclasses()
             # this adds spaxel x, y into default for query 1 dap zonal query
             self._adjust_defaults()
-            print('my params', self.params)
+            # print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -267,7 +268,7 @@ class Query(object):
 
         if self.mode == 'local':
             fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
-            fparams = [fparams] if type(fparams) != list else fparams
+            fparams = [fparams] if not isinstance(fparams, list) else fparams
             inschema = [name in c.class_.__table__.schema for c in fparams]
         elif self.mode == 'remote':
             inschema = []
@@ -559,7 +560,7 @@ class Query(object):
 
         if searchfilter:
             # if params is a string, then parse and filter
-            if type(searchfilter) == str or type(searchfilter) == unicode:
+            if isinstance(searchfilter, six.string_types):
                 searchfilter = self._check_shortcuts_in_filter(searchfilter)
                 try:
                     parsed = parse_boolean_search(searchfilter)
@@ -1003,7 +1004,7 @@ class Query(object):
         except IndexError as e:
             isin = False
         except AttributeError as e:
-            if type(self.query) == str:
+            if isinstance(self.query, six.string_types):
                 isin = name in self.query
             else:
                 isin = False
@@ -1055,8 +1056,7 @@ class Query(object):
         bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
                                       func.count(self._junkclass.pk).label('goodcount')).\
             filter(self._junkclass.binid != -1).\
-            group_by(self._junkclass.file_pk).subquery('bingood',
-                                                           with_labels=True)
+            group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
         return bincount
 
     def getCountOf(self, expression):
@@ -1116,7 +1116,7 @@ class Query(object):
 
         # parse the function into name, condition, operator, and value
         name, condition, ops, value = self._parseFxn(fxn)
-        percent = float(value)/100.
+        percent = float(value) / 100.
         op = opdict[ops]
 
         # Retrieve the necessary subqueries
@@ -1126,7 +1126,7 @@ class Query(object):
         # Join to the main query
         self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
             join(valcount, valcount.c.valfile == self._junkclass.file_pk).\
-            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))
+            filter(op(valcount.c.valcount, percent * bincount.c.goodcount))
 
         # Group the results by main defaultdatadb parameters,
         # so as not to include all spaxels

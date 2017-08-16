@@ -14,6 +14,7 @@ import json
 import os
 import datetime
 import numpy as np
+import six
 from functools import wraps
 from astropy.table import Table
 from collections import OrderedDict, namedtuple
@@ -147,7 +148,7 @@ class Results(object):
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
 
     def __repr__(self):
-        return ('Marvin Results(query={0}, \ntotalcount={1}, \ncount={2}, \nmode={3}'.format(repr(self.query), self.totalcount, self.count, self.mode))
+        return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3}'.format(self.searchfilter, self.totalcount, self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
@@ -158,10 +159,7 @@ class Results(object):
         '''
 
         # check unicode or str
-        try:
-            isstr = type(self.query) == unicode
-        except NameError as e:
-            isstr = type(self.query) == str
+        isstr = isinstance(self.query, six.string_types)
 
         # return the string query or compile the real query
         if isstr:
@@ -171,7 +169,7 @@ class Results(object):
 
     def _getRunTime(self):
         ''' Sets the query runtime as a datetime timedelta object '''
-        if type(self._runtime) == dict:
+        if isinstance(self._runtime, dict):
             return datetime.timedelta(**self._runtime)
         else:
             return self._runtime
@@ -302,7 +300,7 @@ class Results(object):
                 >>>   4-4602     1901      -9999.0
         '''
         try:
-            tabres = Table(rows=self.results, names=self.getColumns())
+            tabres = Table(rows=self.results, names=self.paramtocol.keys())
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
@@ -410,10 +408,11 @@ class Results(object):
 
         # set Marvin query object to None, in theory this could be pickled as well
         self._queryobj = None
-        try:
-            isnotstr = type(self.query) != unicode
-        except NameError as e:
-            isnotstr = type(self.query) != str
+        isnotstr = not isinstance(self.query, six.string_types)
+        # try:
+        #     isnotstr = type(self.query) != unicode
+        # except NameError as e:
+        #     isnotstr = type(self.query) != str
         if isnotstr:
             self.query = None
 
@@ -952,8 +951,8 @@ class Results(object):
 
         return self.results
 
-    @local_mode_only
-    def getAll(self):
+    #@local_mode_only
+    def _getAll(self):
         ''' Retrieve all of the results of a query
 
             Parameters:
@@ -963,8 +962,22 @@ class Results(object):
                 results (list):
                     A list of query results.
         '''
-        self.results = self.query.all()
-        return self.results
+        if self.mode == 'local':
+            self.results = self.query.all()
+        elif self.mode == 'remote':
+            # Get the query route
+            url = config.urlmap['api']['querycubes']['url']
+
+            params = {'searchfilter': self.searchfilter, 'return_all': True}
+            try:
+                ii = Interaction(route=url, params=params)
+            except MarvinError as e:
+                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            else:
+                self.results = ii.getData()
+                self._makeNamedTuple()
+                self.count = self.totalcount
+                print('Returned all {0} results'.format(self.totalcount))
 
     def convertToTool(self, tooltype, **kwargs):
         ''' Converts the list of results into Marvin Tool objects
@@ -1043,7 +1056,7 @@ class Results(object):
         elif tooltype == 'spaxel':
 
             assert 'spaxelprop.x' in paramlist and 'spaxelprop.y' in paramlist, \
-                    'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel.'
+                   'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel.'
 
             self.objects = []
 

@@ -51,7 +51,8 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'sort': fields.String(allow_none=True),
                     'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
-                    'params': fields.DelimitedList(fields.String(), allow_none=True)
+                    'params': fields.DelimitedList(fields.String(), allow_none=True),
+                    'return_all': fields.Boolean(allow_none=True)
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
