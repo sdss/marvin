@@ -78,7 +78,7 @@ MPL5_maps = [
     Property('spx_snr', ivar=False, mask=False,
              formats={'string': 'r-band SNR'},
              description='r-band signal-to-noise ratio per pixel.'),
-    Property('binid', ivar=False, mask=False, unit=None,
+    Property('binid', ivar=False, mask=False,
              formats={'string': 'Bin ID'},
              description='Numerical ID for spatial bins.'),
     MultiChannelProperty('bin_lwskycoo', ivar=False, mask=False,
@@ -103,7 +103,6 @@ MPL5_maps = [
              formats={'string': 'Bin area'},
              description='Area of each bin.'),
     Property('bin_farea', ivar=False, mask=False,
-             unit=None,
              formats={'string': 'Bin fractional area'},
              description='Fractional area that the bin covers for the expected bin '
                          'shape (only relevant for radial binning).'),
@@ -112,7 +111,6 @@ MPL5_maps = [
              formats={'string': 'r-band binned spectra mean flux'},
              description='Mean flux in the r-band for the binned spectra.'),
     Property('bin_snr', ivar=False, mask=False,
-             unit=None,
              formats={'string': 'Bin SNR'},
              description='r-band signal-to-noise ratio per pixel in the binned spectra.'),
     Property('stellar_vel', ivar=True, mask=True,
@@ -140,7 +138,6 @@ MPL5_maps = [
                          description='68%% and 99%% growth of the fractional residuals between '
                                      'the model and data'),
     Property('stellar_cont_rchi2', ivar=False, mask=False,
-             unit=None,
              formats={'string': 'Stellar continuum reduced chi-square',
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
              description='Reduced chi-square of the stellar continuum fit.'),

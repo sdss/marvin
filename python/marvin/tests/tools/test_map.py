@@ -79,6 +79,10 @@ class TestMap(object):
         map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
 
+
+# @pytest.mark.skip
+class TestArithmetic(object):
+
     @pytest.mark.parametrize('property_name, channel',
                              [('emline_gflux', 'ha_6564'),
                               ('stellar_vel', None)])
@@ -186,11 +190,11 @@ class TestMap(object):
         maps = Maps(plateifu=galaxy.plateifu)
         map_orig = maps.getMap(property_name=property_name, channel=channel)
         map_new = map_orig**power
-        
+
         sig_orig = np.sqrt(1. / map_orig.ivar)
         sig_new = map_new.value * power * sig_orig * map_orig.value
         ivar_new = 1 / sig_new**2.
-        
+
         assert pytest.approx(map_new.value == map_orig.value**power)
         assert pytest.approx(map_new.ivar == ivar_new)
         assert (map_new.mask == map_orig.mask).all()
@@ -198,14 +202,14 @@ class TestMap(object):
     def test_getMap_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         with pytest.raises(MarvinError) as ee:
-            map_ = maps.getMap(property_name='mythical_property')
+            maps.getMap(property_name='mythical_property')
 
         assert 'Invalid property name.' in str(ee.value)
 
     def test_getMap_invalid_channel(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         with pytest.raises(MarvinError) as ee:
-            map_ = maps.getMap(property_name='emline_gflux', channel='mythical_channel')
+            maps.getMap(property_name='emline_gflux', channel='mythical_channel')
 
         assert 'Invalid channel.' in str(ee.value)
 
@@ -226,7 +230,7 @@ class TestMap(object):
         stsig = maps['stellar_sigma']
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
-        
+
         assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):

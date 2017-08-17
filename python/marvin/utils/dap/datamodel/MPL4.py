@@ -131,7 +131,6 @@ MPL4_maps = [
                          channels=MPL4_specindex_channels,
                          description='Measurements of spectral indices.'),
     Property('binid', ivar=False, mask=False, channel=None,
-             unit=None,
              formats={'string': 'Bin ID'},
              description='ID number for the bin for which the pixel value was '
                          'calculated; bins are sorted by S/N.')

@@ -452,8 +452,8 @@ class Property(object):
 
     """
 
-    def __init__(self, name, channel=None, ivar=False, mask=False, unit=None,
-                 scale=None, formats={}, parent=None, binid=None, description=''):
+    def __init__(self, name, channel=None, ivar=False, mask=False, unit=u.dimensionless_unscaled,
+                 scale=1, formats={}, parent=None, binid=None, description=''):
 
         self.name = name
         self.channel = channel
@@ -464,8 +464,12 @@ class Property(object):
 
         self.formats = formats
 
-        self.scale = scale if (scale is not None or self.channel is None) else self.channel.scale
-        self.unit = unit if (unit is not None or self.channel is None) else self.channel.unit
+        if self.channel is None:
+            self.scale = scale
+            self.unit = unit
+        else:
+            self.scale = scale if scale is not None else self.channel.scale
+            self.unit = unit if unit is not None else self.channel.unit
 
         # Makes sure the channel shares the units and scale
         if self.channel:
@@ -685,3 +689,7 @@ class Channel(object):
     def __repr__(self):
 
         return '<Channel {0!r} unit={1!r}>'.format(self.name, self.unit.to_string())
+
+    def __str__(self):
+
+        return self.name

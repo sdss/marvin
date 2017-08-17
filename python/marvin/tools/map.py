@@ -194,8 +194,8 @@ class Map(Quantity):
 
         header = maps.data[prop.name].header
 
-        if prop.idx is not None:
-            channel_idx = prop.idx
+        if prop.channel is not None:
+            channel_idx = prop.channel.idx
             value = maps.data[prop.name].data[channel_idx]
             ivar = maps.data[prop.name + '_ivar'].data[channel_idx] if prop.ivar else None
             mask = maps.data[prop.name + '_mask'].data[channel_idx] if prop.mask else None
@@ -267,7 +267,7 @@ class Map(Quantity):
         url_full = url.format(
             **{'name': maps.plateifu,
                'property_name': prop.name,
-               'channel': prop.channel,
+               'channel': prop.channel.name if prop.channel else None,
                'bintype': maps.bintype.name,
                'template': maps.template.name})
 
@@ -393,7 +393,7 @@ class Map(Quantity):
 
         map1_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
-        map12_mask = map1_mask & map2.mask
+        map12_mask = map1_mask & map2_mask
 
         if self.unit == map2.unit:
             if op in ['*', '/']:
@@ -485,7 +485,8 @@ class Map(Quantity):
         else:
             # name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
-                'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))  # TODO Test
+                'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))
+            # TODO Test
 
         # TODO problem with error propogation (corr HDUs have ivar == None)
         # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
@@ -499,20 +500,18 @@ class Map(Quantity):
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
 
 
-
-
 class EnhancedMap(Map):
     """Creates a Map that has been modified."""
-    
+
     # TODO
     # pass "scale", "release" to _init_map_from_value
     # remove "property", "channel", "maps", "_datamodel"
     # parents doesn't work for second operation
 
     def __new__(cls, value, unit, *args, **kwargs):
-        __ = [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
+        [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
-    
+
     def __init__(self, *args, **kwargs):
         self.history = kwargs['history']
         self.parents = kwargs['parents']
@@ -520,7 +519,7 @@ class EnhancedMap(Map):
     def __repr__(self):
 
         return ('<Marvin EnhancedMap>')
-    
+
     def __deepcopy__(self, memo):
         pass  # TODO override Map.__deepcopy__
 
@@ -532,6 +531,6 @@ class EnhancedMap(Map):
 
     def _get_from_api():
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
-    
+
     def inst_sigma_correction():
-        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")        
+        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
