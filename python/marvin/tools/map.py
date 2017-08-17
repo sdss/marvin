@@ -15,7 +15,7 @@ from __future__ import absolute_import
 from distutils import version
 import os
 import warnings
-import copy
+from copy import deepcopy
 import operator
 
 from astropy.io import fits
@@ -72,8 +72,8 @@ class Map(Quantity):
 
     """
 
-    def __new__(cls, maps=None, property_name=None, channel=None,
-                value=None, unit=None, ivar=None, mask=None, dtype=None, copy=True):
+    def __new__(cls, maps=None, property_name=None, channel=None, value=None, unit=None, ivar=None,
+                mask=None, dtype=None, copy=True, *args, **kwargs):
 
         if maps is not None and property_name is not None:
             assert value is None and unit is None, \
@@ -84,6 +84,48 @@ class Map(Quantity):
             return cls._init_map_from_value(cls, value, unit, dtype=dtype, copy=copy)
         else:
             raise MarvinError('incorrect combination of input parameters.')
+
+    def __repr__(self):
+
+        if np.isscalar(self.value):
+            return super(Map, self).__repr__()
+        else:
+            return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
+                    'channel={0.channel!r})>\n{2!r} {3}'.format(self, self.property.name,
+                                                                self.value, self.unit.to_string()))
+
+    def __getitem__(self, sl):
+
+        new_obj = super(Map, self).__getitem__(sl)
+
+        if type(new_obj) is not type(self):
+            new_obj = self._new_view(new_obj)
+
+        new_obj._set_unit(self.unit)
+
+        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
+        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+
+        return new_obj
+
+    def __deepcopy__(self, memo):
+        return Map(maps=deepcopy(self.maps, memo),
+                   property_name=deepcopy(self.property.full(), memo),
+                   channel=deepcopy(self.channel, memo))
+
+    def __array_finalize__(self, obj):
+
+        if obj is None:
+            return
+
+        self.property = getattr(obj, 'property', None)
+        self.channel = getattr(obj, 'channel', None)
+        self.maps = getattr(obj, 'maps', None)
+        self.release = getattr(obj, 'release', None)
+        self._datamodel = getattr(obj, '_datamodel', None)
+
+        self.ivar = getattr(obj, 'ivar', None)
+        self.mask = getattr(obj, 'mask', None)
 
     @classmethod
     def _init_map_from_maps(cls, maps, property_name, channel, dtype=None, copy=True):
@@ -145,73 +187,6 @@ class Map(Quantity):
         obj.mask = np.array(mask) if mask is not None else None
 
         return obj
-
-    def __getitem__(self, sl):
-
-        new_obj = super(Map, self).__getitem__(sl)
-
-        if type(new_obj) is not type(self):
-            new_obj = self._new_view(new_obj)
-
-        new_obj._set_unit(self.unit)
-
-        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
-        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
-
-        return new_obj
-
-    def __array_finalize__(self, obj):
-
-        if obj is None:
-            return
-
-        self.property = getattr(obj, 'property', None)
-        self.channel = getattr(obj, 'channel', None)
-        self.maps = getattr(obj, 'maps', None)
-        self.release = getattr(obj, 'release', None)
-        self._datamodel = getattr(obj, '_datamodel', None)
-
-        self.ivar = getattr(obj, 'ivar', None)
-        self.mask = getattr(obj, 'mask', None)
-
-    @property
-    def error(self):
-        """Computes the standard deviation of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
-    def masked(self):
-        """Return a masked array."""
-
-        assert self.mask is not None, 'mask is None'
-
-        return np.ma.array(self.value, mask=self.mask > 0)
-
-    def __repr__(self):
-
-        if np.isscalar(self.value):
-            return super(Map, self).__repr__()
-        else:
-            return ('<Marvin Map (plateifu={0.maps.plateifu!r}, property={1!r}, '
-                    'channel={0.channel!r})>\n{2!r} {3}'.format(self, self.property.name,
-                                                                self.value, self.unit.to_string()))
-
-    def __deepcopy__(self, memo):
-        return Map(maps=copy.deepcopy(self.maps, memo),
-                   property_name=copy.deepcopy(self.property.full(), memo),
-                   channel=copy.deepcopy(self.channel, memo))
-
-    @property
-    def snr(self):
-        """Return the signal-to-noise ratio for each spaxel in the map."""
-
-        return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
     def _get_from_file(maps, prop):
@@ -356,22 +331,37 @@ class Map(Quantity):
         """
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    @add_doc(marvin.utils.plot.map.plot.__doc__)
-    def plot(self, *args, **kwargs):
-        return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
+    @property
+    def masked(self):
+        """Return a masked array."""
+
+        assert self.mask is not None, 'mask is None'
+
+        return np.ma.array(self.value, mask=self.mask > 0)
+
+    @property
+    def error(self):
+        """Computes the standard deviation of the measurement."""
+
+        if self.ivar is None:
+            return None
+
+        np.seterr(divide='ignore')
+
+        return np.sqrt(1. / self.ivar) * self.unit
+
+    @property
+    def snr(self):
+        """Return the signal-to-noise ratio for each spaxel in the map."""
+
+        return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
     def _combine_names(name1, name2, operator):
-        name = copy.deepcopy(name1)
+        name = deepcopy(name1)
         if name1 != name2:
-            name = '{0}{1}{2}'.format(name1, operator, name2)
+            name = '({0} {1} {2})'.format(name1, operator, name2)
         return name
-
-    @staticmethod
-    def _parse_name(name):
-        # out = name.split()  # regex split on +-/*
-        # return out
-        pass
 
     @staticmethod
     def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
@@ -391,7 +381,6 @@ class Map(Quantity):
 
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
 
-        # map12 = copy.deepcopy(self)
         assert self.shape == map2.shape, 'Cannot do map arithmetic on maps of different shapes.'
 
         ivar_func = {'+': self._add_ivar, '-': self._add_ivar,
@@ -400,31 +389,42 @@ class Map(Quantity):
         with np.errstate(divide='ignore', invalid='ignore'):
             map12_value = ops[op](self.value, map2.value)
 
-        map12.ivar = map12.ivar if map12.ivar is not None else np.zeros(map12.shape)
-        map2.ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
-        map12.ivar = ivar_func[op](map12.ivar, map2.ivar, self.value, map2.value, map12.value)
+        map1_ivar = self.ivar if self.ivar is not None else np.zeros(self.shape)
+        map2_ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
+        map12_ivar = ivar_func[op](map1_ivar, map2_ivar, self.value, map2.value, map12_value)
 
-        map12.mask = map12.mask if map12.mask is not None else np.zeros(map12.shape, dtype=int)
-        map2.mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
-        map12.mask &= map2.mask
+        map1_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
+        map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
+        map12_mask = map1_mask & map2.mask
 
-        map12.property_name = self._combine_names(map12.property_name, map2.property_name, op)
-        map12.channel = self._combine_names(map12.channel, map2.channel, op)
-
-        if self.unit != map2.unit:
-            warnings.warn('Units do not match for map arithmetic.')
-
-        if op in ['*', '/']:
-            map12_unit = ops[op](self.unit, map2.unit)
+        if self.unit == map2.unit:
+            if op in ['*', '/']:
+                map12_unit = ops[op](self.unit, map2.unit)
+            else:
+                map12_unit = self.unit
         else:
-            map12_unit = self.unit
+            warnings.warn('Units do not match for map arithmetic.')
+            map12_unit = None
 
         # TODO test this!
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
-        return CompositeMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
-                            mask=map12_mask, copy=True)
+        # TODO TEST appending previous histories
+        map1_history = getattr(self, 'history', self.property)
+        map2_history = getattr(map2, 'history', map2.property)
+        history = self._combine_names(map1_history, map2_history, op)
+
+        parents = []
+        for map_ in [self, map2]:
+            if getattr(map_, 'parents', False):
+                parents.append(self.parents)
+            else:
+                parents.append(map_)
+
+        return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
+                           mask=map12_mask, copy=True, history=history,
+                           parents=parents)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -456,7 +456,7 @@ class Map(Quantity):
         Returns:
             map (:class:`~marvin.tools.map.Map` object)
         """
-        map1 = copy.deepcopy(self)
+        map1 = deepcopy(self)
         map1.value = map1.value**power
 
         if map1.ivar is None:
@@ -466,23 +466,28 @@ class Map(Quantity):
             sig1 = map1.value * power * sig * self.value
             map1.ivar = 1 / sig1**2.
 
-        return map1
+        history = getattr(map1, 'history', map1.property) + '^{}'.format(power)
+        parents = [self]
+
+        return EnhancedMap(value=map1.value, unit=map1.unit, ivar=map1.ivar,
+                           mask=map1.mask, copy=True, history=history,
+                           parents=parents)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening."""
-        if self.property_name == 'stellar_vel':
+        if self.property == 'stellar_vel':
             if self.release == 'MPL-4':
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
             map_corr = self.maps['stellar_sigmacorr']
 
-        elif self.property_name == 'emline_gsigma':
+        elif self.property == 'emline_gsigma':
             map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
 
         else:
-            name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
+            # name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
-                'Cannot correct {0} for instrumental broadening.'.format(name))
+                'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))  # TODO Test
 
 
         # TODO problem with error propogation (corr HDUs have ivar == None)
@@ -492,13 +497,44 @@ class Map(Quantity):
 
         return (self**2 - map_corr**2)**0.5
 
+    @add_doc(marvin.utils.plot.map.plot.__doc__)
+    def plot(self, *args, **kwargs):
+        return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
 
-class CompositeMap(Map):
-    """Creates a Map which is a composite of two maps."""
+
+
+
+class EnhancedMap(Map):
+    """Creates a Map that has been modified."""
+    
+    # TODO
+    # pass "scale", "release" to _init_map_from_value
+    # remove "property", "channel", "maps", "_datamodel"
+    # parents doesn't work for second operation
+
+    def __new__(cls, value, unit, *args, **kwargs):
+        __ = [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
+        return cls._init_map_from_value(value, unit, *args, **kwargs)
+    
+    def __init__(self, *args, **kwargs):
+        self.history = kwargs['history']
+        self.parents = kwargs['parents']
 
     def __repr__(self):
 
-        return ('<Marvin CompositeMap>')
+        return ('<Marvin EnhancedMap>')
+    
+    def __deepcopy__(self, memo):
+        pass  # TODO override Map.__deepcopy__
 
-    # TODO create a more general class that also encompasses modified maps
-    # e.g., a map raised to a power or multiplied by a scalar
+    def _get_from_file():
+        raise AttributeError("'EnhancedMap' has no attribute '_get_from_file'.")
+
+    def _get_from_db():
+        raise AttributeError("'EnhancedMap' has no attribute '_get_from_db'.")
+
+    def _get_from_api():
+        raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
+    
+    def inst_sigma_correction():
+        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")        

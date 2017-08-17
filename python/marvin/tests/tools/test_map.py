@@ -118,9 +118,9 @@ class TestMap(object):
         assert pytest.approx(map12.ivar == map1._add_ivar(map1.ivar, map2.ivar))
         assert pytest.approx(map12.mask == map1.mask & map2.mask)
 
-        assert map12.property_name == map1._combine_names(map1.property_name,
-                                                          map2.property_name, '+')
-        assert map12.channel == map1._combine_names(map1.channel, map2.channel, '+')
+        # assert map12.property_name == map1._combine_names(map1.property_name,
+        #                                                   map2.property_name, '+')
+        # assert map12.channel == map1._combine_names(map1.channel, map2.channel, '+')
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -135,9 +135,9 @@ class TestMap(object):
         assert pytest.approx(map12.ivar == map1._add_ivar(map1.ivar, map2.ivar))
         assert pytest.approx(map12.mask == map1.mask & map2.mask)
 
-        assert map12.property_name == map1._combine_names(map1.property_name,
-                                                          map2.property_name, '-')
-        assert map12.channel == map1._combine_names(map1.channel, map2.channel, '-')
+        # assert map12.property_name == map1._combine_names(map1.property_name,
+        #                                                   map2.property_name, '-')
+        # assert map12.channel == map1._combine_names(map1.channel, map2.channel, '-')
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -153,9 +153,9 @@ class TestMap(object):
                                                           map2.value, map12.value))
         assert pytest.approx(map12.mask == map1.mask & map2.mask)
 
-        assert map12.property_name == map1._combine_names(map1.property_name,
-                                                          map2.property_name, '*')
-        assert map12.channel == map1._combine_names(map1.channel, map2.channel, '*')
+        # assert map12.property_name == map1._combine_names(map1.property_name,
+        #                                                   map2.property_name, '*')
+        # assert map12.channel == map1._combine_names(map1.channel, map2.channel, '*')
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -173,9 +173,9 @@ class TestMap(object):
                                                           map2.value, map12.value))
         assert pytest.approx(map12.mask == map1.mask & map2.mask)
 
-        assert map12.property_name == map1._combine_names(map1.property_name,
-                                                          map2.property_name, '/')
-        assert map12.channel == map1._combine_names(map1.channel, map2.channel, '/')
+        # assert map12.property_name == map1._combine_names(map1.property_name,
+        #                                                   map2.property_name, '/')
+        # assert map12.channel == map1._combine_names(map1.channel, map2.channel, '/')
 
     @pytest.mark.runslow
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
@@ -239,3 +239,5 @@ class TestMap(object):
         assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
 
+
+# class TestEnhancedMap(object):
