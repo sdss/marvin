@@ -197,16 +197,12 @@ class Map(Quantity):
         if prop.idx is not None:
             channel_idx = prop.idx
             value = maps.data[prop.name].data[channel_idx]
-            if prop.ivar:
-                ivar = maps.data[prop.name + '_ivar'].data[channel_idx]
-            if prop.mask:
-                mask = maps.data[prop.name + '_mask'].data[channel_idx]
+            ivar = maps.data[prop.name + '_ivar'].data[channel_idx] if prop.ivar else None
+            mask = maps.data[prop.name + '_mask'].data[channel_idx] if prop.mask else None
         else:
             value = maps.data[prop.name].data
-            if prop.ivar:
-                ivar = maps.data[prop.name + '_ivar'].data
-            if prop.mask:
-                mask = maps.data[prop.name + '_mask'].data
+            ivar = maps.data[prop.name + '_ivar'].data if prop.ivar else None
+            mask = maps.data[prop.name + '_mask'].data if prop.mask else None
 
         return value, ivar, mask, header
 
@@ -231,6 +227,8 @@ class Map(Quantity):
         value = mdb.session.query(getattr(table, fullname_value)).filter(
             table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
         value = np.array(value).reshape(maps.shape).T
+        ivar = None
+        mask = None
 
         if prop.ivar:
             fullname_ivar = prop.db_column(ext='ivar')
@@ -488,7 +486,6 @@ class Map(Quantity):
             # name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))  # TODO Test
-
 
         # TODO problem with error propogation (corr HDUs have ivar == None)
         # sigc_ivar = self.ivar * (map_corr.value / self.value)^2

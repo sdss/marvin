@@ -248,18 +248,13 @@ CREATE INDEX CONCURRENTLY ms_x_idx ON mangadapdb.modelspaxel using BTREE(x);
 CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 
 
-# CleanSpaxelProp after the initial load of SpaxelProp
+# CleanSpaxelProp after the initial load of SpaxelProp.  Run these only after populating the spaxeprop tables with
+# the new columns and data for each MPL.
 #
+-- # MPL-4
 -- create table mangadapdb.cleanspaxelprop as select s.* from mangadapdb.spaxelprop as s where s.binid != -1;
 -- alter table mangadapdb.cleanspaxelprop add constraint file_fk foreign key (file_pk) references mangadapdb.file(pk);
 
--- create table mangadapdb.cleanspaxelprop5 as select s.* from mangadapdb.spaxelprop5 as s where s.binid != -1;
--- alter table mangadapdb.cleanspaxelprop5 add constraint file_fk foreign key (file_pk) references mangadapdb.file(pk);
-
--- create table mangadapdb.cleanspaxelprop6 as select s.* from mangadapdb.spaxelprop6 as s where s.binid != -1;
--- alter table mangadapdb.cleanspaxelprop6 add constraint file_fk foreign key (file_pk) references mangadapdb.file(pk);
-
--- # MPL-4
 -- CREATE INDEX CONCURRENTLY clean_binid_idx ON mangadapdb.cleanspaxelprop using BTREE(binid);
 -- CREATE INDEX CONCURRENTLY clean_file_pk_idx ON mangadapdb.cleanspaxelprop using BTREE(file_pk);
 -- CREATE INDEX CONCURRENTLY clean_spaxel_index_idx ON mangadapdb.cleanspaxelprop using BTREE(spaxel_index);
@@ -272,6 +267,9 @@ CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 -- CREATE INDEX CONCURRENTLY clean_emline_ew_ha_idx ON mangadapdb.cleanspaxelprop using BTREE(emline_ew_ha_6564);
 
 -- # MPL-5
+-- create table mangadapdb.cleanspaxelprop5 as select s.* from mangadapdb.spaxelprop5 as s where s.binid != -1;
+-- alter table mangadapdb.cleanspaxelprop5 add constraint file_fk foreign key (file_pk) references mangadapdb.file(pk);
+
 -- CREATE INDEX CONCURRENTLY clean_binid5_pk_idx ON mangadapdb.cleanspaxelprop5 using BTREE(binid);
 -- CREATE INDEX CONCURRENTLY clean_file5_pk_idx ON mangadapdb.cleanspaxelprop5 using BTREE(file_pk);
 -- CREATE INDEX CONCURRENTLY clean_spaxel5_index_idx ON mangadapdb.cleanspaxelprop5 using BTREE(spaxel_index);
@@ -285,6 +283,12 @@ CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 -- CREATE INDEX CONCURRENTLY clean_d40005_idx ON mangadapdb.cleanspaxelprop5 using BTREE(specindex_d4000);
 
 -- # MPL-6
+
+-- create table mangadapdb.cleanspaxelprop6 as select s.* from mangadapdb.spaxelprop6 as s
+--     where (s.binid_binned_spectra != -1 and s.binid_stellar_continua != -1 and s.binid_spectral_indices != -1
+--         and s.binid_em_line_moments != -1 and s.binid_em_line_models != -1);
+-- alter table mangadapdb.cleanspaxelprop6 add constraint file_fk foreign key (file_pk) references mangadapdb.file(pk);
+
 -- CREATE INDEX CONCURRENTLY clean_binid6_pk_idx ON mangadapdb.cleanspaxelprop6 using BTREE(binid);
 -- CREATE INDEX CONCURRENTLY clean_file6_pk_idx ON mangadapdb.cleanspaxelprop6 using BTREE(file_pk);
 -- CREATE INDEX CONCURRENTLY clean_spaxel6_index_idx ON mangadapdb.cleanspaxelprop6 using BTREE(spaxel_index);
