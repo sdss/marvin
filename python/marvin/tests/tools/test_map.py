@@ -80,7 +80,7 @@ class TestMap(object):
         assert tuple(map_.shape) == tuple(map_restored.shape)
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 class TestArithmetic(object):
 
     @pytest.mark.parametrize('property_name, channel',
