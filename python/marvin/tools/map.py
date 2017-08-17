@@ -49,7 +49,7 @@ class Map(Quantity):
     channels. A ``Map`` would be, for example, the map for ``emline_gflux`` and
     channel ``ha_6564``.
 
-    A ``Map`` returns and astropy 2D Quantity-like array with additional
+    A ``Map`` returns an astropy 2D Quantity-like array with additional
     attributes for ``ivar`` and ``mask``.
 
     A ``Map`` is normally initialised from a ``Maps`` by calling the
@@ -76,12 +76,16 @@ class Map(Quantity):
                 mask=None, dtype=None, copy=True, *args, **kwargs):
 
         if maps is not None and property_name is not None:
+
             assert value is None and unit is None, \
                 'when initialising a Map from a Maps, value and unit must be None'
+
             return cls._init_map_from_maps(maps, property_name, channel,
                                            dtype=dtype, copy=copy)
+
         elif value is not None and unit is not None:
             return cls._init_map_from_value(cls, value, unit, dtype=dtype, copy=copy)
+
         else:
             raise MarvinError('incorrect combination of input parameters.')
 
@@ -393,7 +397,7 @@ class Map(Quantity):
 
         map1_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
-        map12_mask = map1_mask & map2.mask
+        map12_mask = map1_mask & map2_mask
 
         if self.unit == map2.unit:
             if op in ['*', '/']:
@@ -503,7 +507,7 @@ class Map(Quantity):
 
 class EnhancedMap(Map):
     """Creates a Map that has been modified."""
-    
+
     # TODO
     # pass "scale", "release" to _init_map_from_value
     # remove "property", "channel", "maps", "_datamodel"
@@ -512,15 +516,15 @@ class EnhancedMap(Map):
     def __new__(cls, value, unit, *args, **kwargs):
         __ = [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
-    
+
     def __init__(self, *args, **kwargs):
         self.history = kwargs['history']
         self.parents = kwargs['parents']
 
     def __repr__(self):
+        return ('<Marvin EnhancedMap {0.history!r}>'
+                '\n{0.value!r} {1!r}').format(self, self.unit.to_string())
 
-        return ('<Marvin EnhancedMap>')
-    
     def __deepcopy__(self, memo):
         pass  # TODO override Map.__deepcopy__
 
@@ -532,6 +536,7 @@ class EnhancedMap(Map):
 
     def _get_from_api():
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
-    
+
     def inst_sigma_correction():
-        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")        
+        """Override Map.inst_sigma_correction with AttributeError."""
+        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
