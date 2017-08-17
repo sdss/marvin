@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import copy as copy_mod
 import itertools
+import re
 import six
 
 from collections import OrderedDict
@@ -530,7 +531,7 @@ class Property(object):
 
         return self.full()
 
-    def to_string(self, mode='string', include_channel=True, latexify=True):
+    def to_string(self, mode='string', include_channel=True):
         """Return a string representation of the channel."""
 
         if mode == 'latex':
@@ -541,10 +542,7 @@ class Property(object):
                 latex = self.to_string(include_channel=False).replace(' ', '\\ ')
 
             if self.channel and include_channel:
-                latex = latex + ':\\ ' + self.channel.to_string('latex', latexify=False)
-
-            if latexify is True:
-                latex = '$\\mathrm{{{0}}}$'.format(latex)
+                latex = latex + ':\\ ' + self.channel.to_string('latex')
 
             return latex
 
@@ -669,16 +667,15 @@ class Channel(object):
         self.idx = idx
         self.description = description
 
-    def to_string(self, mode='string', latexify=True):
+    def to_string(self, mode='string'):
         """Return a string representation of the channel."""
 
         if mode == 'latex':
             if 'latex' in self.formats:
                 latex = self.formats['latex']
+                latex = re.sub(r'forb{(.+)}', r'lbrack\\textrm{\1}\\rbrack', latex)
             else:
                 latex = self.to_string().replace(' ', '\\ ')
-            if latexify is True:
-                latex = '$\\mathrm{{{0}}}$'.format(latex)
             return latex
         elif mode is not None and mode in self.formats:
             return self.formats[mode]
