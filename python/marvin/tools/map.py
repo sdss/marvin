@@ -436,7 +436,8 @@ class Map(Quantity):
         parents = self._create_parents(self, map2)
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
-                           copy=True, history=history, parents=parents)
+                           scale=self.scale, release=self.release, history=history,
+                           parents=parents, copy=True)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -475,8 +476,8 @@ class Map(Quantity):
         history = '{0}^{1}'.format(getattr(self, 'history', '({})'.format(self.property)), power)
         parents = getattr(self, 'parents', self)
 
-        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, copy=True,
-                           history=history, parents=parents)
+        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, scale=self.scale,
+                           release=self.release, history=history, parents=parents, copy=True)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening."""
@@ -512,34 +513,43 @@ class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
     # TODO
-    # pass "scale", "release" to _init_map_from_value
     # remove "property", "channel", "maps", "_datamodel"
     # parents doesn't work for second operation
 
     def __new__(cls, value, unit, *args, **kwargs):
-        __ = [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
+        ignore = ['release', 'scale', 'history', 'parents']
+        __ = [kwargs.pop(it) for it in ignore if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        self.history = kwargs['history']
-        self.parents = kwargs['parents']
+        self.release = kwargs.get('release', None)
+        self.scale = kwargs.get('scale', None)
+        self.history = kwargs.get('history', None)
+        self.parents = kwargs.get('parents', None)
 
     def __repr__(self):
         return ('<Marvin EnhancedMap {0.history!r}>'
                 '\n{0.value!r} {1!r}').format(self, self.unit.to_string())
 
     def __deepcopy__(self, memo):
-        pass  # TODO override Map.__deepcopy__
+        return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
+                           ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
+                           scale=deepcopy(self.scale, memo), release=deepcopy(self.release, memo),
+                           history=deepcopy(self.history, memo),
+                           parents=deepcopy(self.parents, memo), copy=True)
 
-    def _get_from_file():
+    def _init_map_from_maps(self):
+        raise AttributeError("'EnhancedMap' has no attribute '_init_map_from_maps'.")
+
+    def _get_from_file(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_file'.")
 
-    def _get_from_db():
+    def _get_from_db(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_db'.")
 
-    def _get_from_api():
+    def _get_from_api(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
 
-    def inst_sigma_correction():
+    def inst_sigma_correction(self):
         """Override Map.inst_sigma_correction with AttributeError."""
-        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
+        raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
