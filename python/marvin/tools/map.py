@@ -359,13 +359,6 @@ class Map(Quantity):
         return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
-    def _combine_names(name1, name2, operator):
-        name = deepcopy(name1)
-        if name1 != name2:
-            name = '({0} {1} {2})'.format(name1, operator, name2)
-        return name
-
-    @staticmethod
     def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
@@ -377,6 +370,39 @@ class Map(Quantity):
             sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
             ivar12 = 1. / sig12**2
         return ivar12
+
+    @staticmethod
+    def _pow_ivar(ivar, value, power):
+        if ivar is None:
+            return np.zeros(value.shape)
+        else:
+            sig = np.sqrt(1. / ivar)
+            sig_out = value**power * power * sig * value
+            return 1 / sig_out**2.
+
+    @staticmethod
+    def _unit_propagation(unit1, unit2, op, op_func):
+        if unit1 == unit2:
+            if op in ['*', '/']:
+                unit12 = op_func(unit1, unit2)
+            else:
+                unit12 = unit1
+        else:
+            warnings.warn('Units do not match for map arithmetic.')
+            unit12 = None
+
+        return unit12
+
+    @staticmethod
+    def _create_history(map1, map2, op):
+        map1_history = getattr(map1, 'history', map1.property.full())
+        map2_history = getattr(map2, 'history', map2.property.full())
+        history = '({0} {1} {2})'.format(map1_history, op, map2_history)
+        return history
+
+    @staticmethod
+    def _create_parents(map1, map2):
+        return [getattr(map_, 'parents', map_) for map_ in [map1, map2]]
 
     def _arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
@@ -399,34 +425,18 @@ class Map(Quantity):
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12_mask = map1_mask & map2_mask
 
-        if self.unit == map2.unit:
-            if op in ['*', '/']:
-                map12_unit = ops[op](self.unit, map2.unit)
-            else:
-                map12_unit = self.unit
-        else:
-            warnings.warn('Units do not match for map arithmetic.')
-            map12_unit = None
+        map12_unit = self._unit_propagation(self.unit, map2.unit, op, ops[op])
 
         # TODO test this!
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
         # TODO TEST appending previous histories
-        map1_history = getattr(self, 'history', self.property)
-        map2_history = getattr(map2, 'history', map2.property)
-        history = self._combine_names(map1_history, map2_history, op)
+        history = self._create_history(self, map2, op)
+        parents = self._create_parents(self, map2)
 
-        parents = []
-        for map_ in [self, map2]:
-            if getattr(map_, 'parents', False):
-                parents.append(self.parents)
-            else:
-                parents.append(map_)
-
-        return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
-                           mask=map12_mask, copy=True, history=history,
-                           parents=parents)
+        return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
+                           copy=True, history=history, parents=parents)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -456,24 +466,17 @@ class Map(Quantity):
                Power to raise the map values.
 
         Returns:
-            map (:class:`~marvin.tools.map.Map` object)
+            map (:class:`~marvin.tools.map.EnhancedMap` object)
         """
-        map1 = deepcopy(self)
-        map1.value = map1.value**power
+        value = self.value**power
+        ivar = self._pow_ivar(self.ivar, self.value, power)
+        unit = self.unit**power
 
-        if map1.ivar is None:
-            map1.ivar = np.zeros(map1.shape)
-        else:
-            sig = np.sqrt(1. / map1.ivar)
-            sig1 = map1.value * power * sig * self.value
-            map1.ivar = 1 / sig1**2.
+        history = '{0}^{1}'.format(getattr(self, 'history', '({})'.format(self.property)), power)
+        parents = getattr(self, 'parents', self)
 
-        history = getattr(map1, 'history', map1.property) + '^{}'.format(power)
-        parents = [self]
-
-        return EnhancedMap(value=map1.value, unit=map1.unit, ivar=map1.ivar,
-                           mask=map1.mask, copy=True, history=history,
-                           parents=parents)
+        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, copy=True,
+                           history=history, parents=parents)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening."""
