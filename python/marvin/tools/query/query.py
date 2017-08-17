@@ -243,8 +243,8 @@ class Query(object):
                 self._buildDapQuery()
 
     def __repr__(self):
-        return ('Marvin Query(mode={0}, limit={1}, sort={2}, order={3})'
-                .format(repr(self.mode), self.limit, self.sort, repr(self.order)))
+        return ('Marvin Query(filter={4}, mode={0}, limit={1}, sort={2}, order={3})'
+                .format(repr(self.mode), self.limit, self.sort, repr(self.order), self.searchfilter))
 
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''
@@ -763,7 +763,7 @@ class Query(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter,
-                      'params': self._returnparams,
+                      'params': ','.join(self._returnparams),
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
@@ -782,13 +782,15 @@ class Query(object):
                 count = ii.results['count']
                 chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
-                runtime = ii.results['runtime']
+                query_runtime = ii.results['runtime']
+                resp_runtime = ii.response_time
                 # close the session and engine
                 #self.session.close()
                 #marvindb.db.engine.dispose()
             print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk,
+                           runtime=query_runtime, response_time=resp_runtime)
 
     def _cleanUpQueries(self):
         ''' Attempt to clean up idle queries on the server

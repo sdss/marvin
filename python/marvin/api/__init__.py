@@ -147,7 +147,6 @@ class ArgValidator(object):
                     newparams = self.update_param_validation(local_param)
                 else:
                     newparams = deepcopy(params)
-
                 # add to params final args
                 self.final_args.update(newparams[local_param])
 
@@ -290,8 +289,6 @@ class ArgValidator(object):
             def wrapper(*args, **kwargs):
                 # args and kwargs here are the view function args and kwargs
                 self._get_release_endpoint(args[0])
-                # self.release = args[0]._release
-                # self.endpoint = args[0]._endpoint
                 # check the kwargs for any parameters
                 self._check_mainkwargs(**mainkwargs)
                 # create the arguments dictionary

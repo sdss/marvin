@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-14 17:13:58
+# @Last Modified time: 2017-08-16 22:53:18
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -106,6 +106,9 @@ class TestQueryReturnParams(object):
         query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
         assert 'nsa.z' in query.params
         assert set(rps).issubset(set(query.params))
+        res = query.run()
+        assert set(rps).issubset(set(query.params))
+        assert set(rps).issubset(set(res.paramtocol.keys()))
 
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('rps, errmsg',

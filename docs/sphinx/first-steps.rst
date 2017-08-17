@@ -112,32 +112,32 @@ My First Map
     # get a Maps object
     from marvin.tools.maps import Maps
     maps = Maps(mangaid='1-209232')
-    
+
     print(maps)
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype=SPX, template_kin=GAU-MILESHC)>
-    
+
     # get the NASA-Sloan Atlas info about the galaxy
     maps.nsa
-    
+
     # list the available map categories (similar to the extensions in a DAP FITS file)
     maps.properties
-    
+
     # show the available channels for a map category
     maps.properties['emline_gflux'].channels
-        
+
     # get a map using the getMap() method...
     haflux = maps.getMap('emline_gflux', channel='ha_6564')
-    
+
     # ...or with a shortcut
     haflux2 = maps['emline_gflux_ha_6564']
 
     # If a map category has channels, then specify an individual map by joining the category name
     # (e.g., 'emline_gflux') and channel name (e.g., 'ha_6564') with an underscore
     # (e.g., 'emline_gflux_ha_6564'). Otherwise, just use the category name (e.g., 'stellar_vel').
-    
+
     # get the map values, inverse variances, and masks
     haflux.value
-    
+
     array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -145,7 +145,7 @@ My First Map
            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
            [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
-    
+
     haflux.ivar
     array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -163,20 +163,20 @@ My First Map
            [1073741843, 1073741843, 1073741843, ..., 1073741843, 1073741843, 1073741843],
            [1073741843, 1073741843, 1073741843, ..., 1073741843, 1073741843, 1073741843],
            [1073741843, 1073741843, 1073741843, ..., 1073741843, 1073741843, 1073741843]])
-    
+
     # plot the map
     fig, ax = haflux.plot()
-        
+
     # save plot to Downloads directory
     import os
     fig.savefig(os.path.join(os.path.expanduser('~'), 'Downloads', 'my-first-map.png'))
-    
+
     # get the central spaxel with getSpaxel()...
     spax = maps.getSpaxel(x=0, y=0)
-    
+
     # ...or with a shortcut (defaults to xyorig=lower, whereas getSpaxel() defaults to xyorig='center')
     spax2 = maps[17, 17]
-    
+
     # show the DAP properties
     spax.properties
 
@@ -210,10 +210,10 @@ Now let's play with a Marvin Query
     151
 
     # How long did my query take?
-    r.query_runtime
+    r.query_time
     datetime.timedelta(0, 0, 204274)  # a Python datetime timedelta object (days, seconds, microseconds)
     # see total seconds
-    r.query_runtime.total_seconds()
+    r.query_time.total_seconds()
     0.204274
 
     # Results are returned in chunks of 10 by default

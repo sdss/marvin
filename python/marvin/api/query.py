@@ -46,7 +46,7 @@ def _getCubes(searchfilter, **kwargs):
     # get results
     return_all = kwargs.get('return_all', None)
     if return_all:
-        r._getAll()
+        r.getAll()
     results = r.results
 
     # set up the output

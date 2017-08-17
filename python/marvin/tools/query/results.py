@@ -16,7 +16,7 @@ import datetime
 import numpy as np
 import six
 from functools import wraps
-from astropy.table import Table
+from astropy.table import Table, vstack
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
 
@@ -111,7 +111,8 @@ class Results(object):
         self.count = kwargs.get('count', None)
         self.totalcount = kwargs.get('totalcount', self.count)
         self._runtime = kwargs.get('runtime', None)
-        self.query_runtime = self._getRunTime() if self._runtime is not None else None
+        self.query_time = self._getRunTime() if self._runtime is not None else None
+        self.response_time = kwargs.get('response_time', None)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
         self.chunk = self.limit if self.limit else kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
@@ -148,7 +149,7 @@ class Results(object):
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
 
     def __repr__(self):
-        return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3}'.format(self.searchfilter, self.totalcount, self.count, self.mode))
+        return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3})'.format(self.searchfilter, self.totalcount, self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
@@ -260,17 +261,18 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
-
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'sort': refname, 'order': order, 'limit': self.limit}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query Sort call failed: {0}'.format(e))
-            else:
-                self.results = ii.getData()
-                self._makeNamedTuple()
-                sortedres = self.results
+            self._interaction(url, params, named_tuple=True, calltype='Sort')
+            sortedres = self.results
+            # try:
+            #     ii = Interaction(route=url, params=params)
+            # except MarvinError as e:
+            #     raise MarvinError('API Query Sort call failed: {0}'.format(e))
+            # else:
+            #     self.results = ii.getData()
+            #     self._makeNamedTuple()
+            #     sortedres = self.results
 
         return sortedres
 
@@ -556,6 +558,69 @@ class Results(object):
             mapping = None
         return mapping
 
+    def total_time(self):
+        ''' Computes the total runtime of the query
+
+        This returns the total time of a query including both the time
+        of the query to run on the server-side and the time of the HTTP
+
+        Returns:
+            float: The total time of your query in seconds
+
+        '''
+        if self.response_time and self.query_time:
+            tt = self.response_time + self.query_time
+        else:
+            time_type = 'response' if self.response_time else 'query'
+            print('Reporting only {0} runtime:'.format(time_type))
+            tt = (self.response_time or self.query_time)
+        return tt.total_seconds()
+
+    def _interaction(self, url, params, calltype='', named_tuple=None):
+        ''' Perform a remote Interaction call
+
+        Parameters:
+            url (str):
+                The url of the request
+            params (dict):
+                A dictionary of parameters (get or post) to send with the request
+            calltype (str):
+                The method call sending the request
+            named_tuple (bool):
+                If True, sets the response output as the new results and creates a
+                new named tuple set
+
+        Returns:
+            output:
+                The output data from the request
+
+        Raises:
+            MarvinError: Raises on any HTTP Request error
+
+        '''
+
+        # check if the returnparams parameter is in the proper format
+        if 'params' in params:
+            return_params = params.get('params')
+            if isinstance(return_params, list):
+                params['params'] = ','.join(return_params)
+
+        # send the request
+        try:
+            ii = Interaction(route=url, params=params)
+        except MarvinError as e:
+            raise MarvinError('API Query {0} call failed: {1}'.format(calltype, e))
+        else:
+            output = ii.getData()
+            self.response_time = ii.response_time
+            self._runtime = ii.results['runtime']
+            self.query_time = self._getRunTime()
+            if named_tuple:
+                self.results = output
+                self._makeNamedTuple()
+            else:
+                return output
+
     def getListOf(self, name=None, to_json=False, to_ndarray=False, return_all=None):
         ''' Extract a list of a single parameter from results
 
@@ -600,14 +665,14 @@ class Results(object):
             elif self.mode == 'remote':
                 # Get the query route
                 url = config.urlmap['api']['getcolumn']['url'].format(colname=refname)
-
                 params = {'searchfilter': self.searchfilter, 'format_type': 'list'}
-                try:
-                    ii = Interaction(route=url, params=params)
-                except MarvinError as e:
-                    raise MarvinError('API Query getList call failed: {0}'.format(e))
-                else:
-                    output = ii.getData()
+                # try:
+                #     ii = Interaction(route=url, params=params)
+                # except MarvinError as e:
+                #     raise MarvinError('API Query getList call failed: {0}'.format(e))
+                # else:
+                #     output = ii.getData()
+                output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
             output = None
@@ -785,17 +850,18 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
-
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            else:
-                self.results = ii.getData()
-                self._makeNamedTuple()
+            self._interaction(url, params, calltype='getNext', named_tuple=True)
+
+            # try:
+            #     ii = Interaction(route=url, params=params)
+            # except MarvinError as e:
+            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            # else:
+            #     self.results = ii.getData()
+            #     self._makeNamedTuple()
 
         self.start = newstart
         self.end = newend
@@ -867,13 +933,15 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            else:
-                self.results = ii.getData()
-                self._makeNamedTuple()
+            self._interaction(url, params, calltype='getPrevious', named_tuple=True)
+
+            # try:
+            #     ii = Interaction(route=url, params=params)
+            # except MarvinError as e:
+            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            # else:
+            #     self.results = ii.getData()
+            #     self._makeNamedTuple()
 
         self.start = newstart
         self.end = newend
@@ -884,7 +952,7 @@ class Results(object):
 
         return self.results
 
-    def getSubset(self, start, limit=10):
+    def getSubset(self, start, limit=None):
         ''' Extracts a subset of results
 
             Parameters:
@@ -912,6 +980,9 @@ class Results(object):
                 >>> (u'27-1167', u'1902', -9999.0)]
         '''
 
+        if not limit:
+            limit = self.chunk
+
         if limit < 0:
             warnings.warn('Limit cannot be negative. Setting to {0}'.format(self.chunk), MarvinUserWarning)
             limit = self.chunk
@@ -937,13 +1008,14 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': start, 'end': end, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            else:
-                self.results = ii.getData()
-                self._makeNamedTuple()
+            self._interaction(url, params, calltype='getSubset', named_tuple=True)
+            # try:
+            #     ii = Interaction(route=url, params=params)
+            # except MarvinError as e:
+            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            # else:
+            #     self.results = ii.getData()
+            #     self._makeNamedTuple()
 
         self.count = len(self.results)
         if self.returntype:
@@ -951,17 +1023,56 @@ class Results(object):
 
         return self.results
 
+    def merge_subsets(self, subsets):
+        ''' Merges a list of subsets together into a single list '''
+
+        isnested = all(isinstance(i, list) for i in subsets)
+        if not isnested:
+            raise MarvinError('Input must be a list of result subsets (list of lists)')
+
+        # check that subsets have the same number of columns and same column names
+        same_count = len(set([len(s[0]) for s in subsets]))
+        same_cols = all([list(s[0]._fields) == self.columns for s in subsets])
+
+        # merge subsets
+        if same_count:
+            if same_cols:
+                # combine into one set
+                output = sum(subsets, [])
+                print('Setting results to new subset of size {0}.'.format(len(output)))
+                self.results = output
+                self.count = len(self.results)
+                return self.results
+            else:
+                raise MarvinUserWarning('Cannot merge subsets. Different named columns from base set. '
+                                        'Ensure all columns are the same.')
+        else:
+            raise MarvinUserWarning('Cannot merge subsets. Column number mismatch among subsets. '
+                                    'Ensure all subsets have the same number of columns')
+
+    def merge_tables(self, tables):
+        ''' Merges a list of Astropy tables of results together '''
+        return vstack(tables)
+
     #@local_mode_only
-    def _getAll(self):
+    def getAll(self):
         ''' Retrieve all of the results of a query
 
-            Parameters:
-                None
+            Attempts to return all the results of a query.  The efficiency of this
+            method depends heavily on how many rows and columns you wish to return.
+
+            A cutoff limit is applied for results with more than 500,000 rows or
+            results with more than 25 columns.
 
             Returns:
-                results (list):
-                    A list of query results.
+                The full list of query results.
         '''
+
+        if self.totalcount > 500000 or len(self.columns) > 25:
+            raise MarvinUserWarning("Cannot retrieve all results. The total number of requested "
+                                    "rows or columns is too high. Please use the getSubset "
+                                    "method retrieve pages.")
+
         if self.mode == 'local':
             self.results = self.query.all()
         elif self.mode == 'remote':
@@ -969,15 +1080,20 @@ class Results(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter, 'return_all': True}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            else:
-                self.results = ii.getData()
-                self._makeNamedTuple()
-                self.count = self.totalcount
-                print('Returned all {0} results'.format(self.totalcount))
+            self._interaction(url, params, calltype='getAll', named_tuple=True)
+            self.count = self.totalcount
+            print('Returned all {0} results'.format(self.totalcount))
+            # try:
+            #     ii = Interaction(route=url, params=params)
+            # except MarvinError as e:
+            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
+            # else:
+            #     self.results = ii.getData()
+            #     self._makeNamedTuple()
+            #     self.count = self.totalcount
+            #     self._runtime = ii.results['runtime']
+            #     self.query_time = self._getRunTime()
+            #     print('Returned all {0} results'.format(self.totalcount))
 
     def convertToTool(self, tooltype, **kwargs):
         ''' Converts the list of results into Marvin Tool objects
