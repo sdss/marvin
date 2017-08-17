@@ -763,7 +763,7 @@ class Query(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter,
-                      'params': ','.join(self._returnparams),
+                      'params': ','.join(self._returnparams) if self._returnparams else None,
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,

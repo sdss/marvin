@@ -15,8 +15,9 @@ import os
 import datetime
 import numpy as np
 import six
+from fuzzywuzzy import process
 from functools import wraps
-from astropy.table import Table, vstack
+from astropy.table import Table, vstack, hstack
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
 
@@ -265,14 +266,6 @@ class Results(object):
                       'sort': refname, 'order': order, 'limit': self.limit}
             self._interaction(url, params, named_tuple=True, calltype='Sort')
             sortedres = self.results
-            # try:
-            #     ii = Interaction(route=url, params=params)
-            # except MarvinError as e:
-            #     raise MarvinError('API Query Sort call failed: {0}'.format(e))
-            # else:
-            #     self.results = ii.getData()
-            #     self._makeNamedTuple()
-            #     sortedres = self.results
 
         return sortedres
 
@@ -306,6 +299,53 @@ class Results(object):
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
+
+    def merge_tables(self, tables, direction='vert', **kwargs):
+        ''' Merges a list of Astropy tables of results together
+
+        Combines two Astropy tables using either the Astropy
+        vstack or hstack method.  vstack refers to vertical stacking of table rows.
+        hstack refers to horizonal stacking of table columns.  hstack assumes the rows in each
+        table refer to the same object.  Buyer beware: stacking tables without proper understanding
+        of your rows and columns may results in deleterious results.
+
+        merge_tables also accepts all keyword arguments that Astropy vstack and hstack method do.
+        See `vstack <http://docs.astropy.org/en/stable/table/operations.html#stack-vertically>`_
+        See `hstack <http://docs.astropy.org/en/stable/table/operations.html#stack-horizontally>`_
+
+        Parameters:
+            tables (list):
+                A list of Astropy Table objects.  Required.
+            direction (str):
+                The direction of the table stacking, either vertical ('vert') or horizontal ('hor').
+                Default is 'vert'.  Direction string can be fuzzy.
+
+        Returns:
+            A new Astropy table that is the stacked combination of all input tables
+
+        Example:
+            >>> # query 1
+            >>> q, r = doQuery(searchfilter='nsa.z < 0.1', returnparams=['g_r', 'cube.ra', 'cube.dec'])
+            >>> # query 2
+            >>> q2, r2 = doQuery(searchfilter='nsa.z < 0.1')
+            >>>
+            >>> # convert to tables
+            >>> table_1 = r.toTable()
+            >>> table_2 = r2.toTable()
+            >>> tables = [table_1, table_2]
+            >>>
+            >>> # vertical (row) stacking
+            >>> r.merge_tables(tables, direction='vert')
+            >>> # horizontal (column) stacking
+            >>> r.merge_tables(tables, direction='hor')
+
+        '''
+        choices = ['vertical', 'horizontal']
+        stackdir, score = process.extractOne(direction, choices)
+        if stackdir == 'vertical':
+            return vstack(tables, **kwargs)
+        elif stackdir == 'horizontal':
+            return hstack(tables, **kwargs)
 
     def toFits(self, filename='myresults.fits'):
         ''' Output the results as a FITS file
@@ -411,10 +451,6 @@ class Results(object):
         # set Marvin query object to None, in theory this could be pickled as well
         self._queryobj = None
         isnotstr = not isinstance(self.query, six.string_types)
-        # try:
-        #     isnotstr = type(self.query) != unicode
-        # except NameError as e:
-        #     isnotstr = type(self.query) != str
         if isnotstr:
             self.query = None
 
@@ -558,24 +594,6 @@ class Results(object):
             mapping = None
         return mapping
 
-    def total_time(self):
-        ''' Computes the total runtime of the query
-
-        This returns the total time of a query including both the time
-        of the query to run on the server-side and the time of the HTTP
-
-        Returns:
-            float: The total time of your query in seconds
-
-        '''
-        if self.response_time and self.query_time:
-            tt = self.response_time + self.query_time
-        else:
-            time_type = 'response' if self.response_time else 'query'
-            print('Reporting only {0} runtime:'.format(time_type))
-            tt = (self.response_time or self.query_time)
-        return tt.total_seconds()
-
     def _interaction(self, url, params, calltype='', named_tuple=None):
         ''' Perform a remote Interaction call
 
@@ -666,12 +684,6 @@ class Results(object):
                 # Get the query route
                 url = config.urlmap['api']['getcolumn']['url'].format(colname=refname)
                 params = {'searchfilter': self.searchfilter, 'format_type': 'list'}
-                # try:
-                #     ii = Interaction(route=url, params=params)
-                # except MarvinError as e:
-                #     raise MarvinError('API Query getList call failed: {0}'.format(e))
-                # else:
-                #     output = ii.getData()
                 output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
@@ -754,7 +766,6 @@ class Results(object):
         # Test if name is in results
         if name:
             refname = self._getRefName(name)
-            print('refname', refname)
             if refname:
                 # Format results
                 newname = lookup[refname]
@@ -855,14 +866,6 @@ class Results(object):
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getNext', named_tuple=True)
 
-            # try:
-            #     ii = Interaction(route=url, params=params)
-            # except MarvinError as e:
-            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            # else:
-            #     self.results = ii.getData()
-            #     self._makeNamedTuple()
-
         self.start = newstart
         self.end = newend
         self.count = len(self.results)
@@ -935,14 +938,6 @@ class Results(object):
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getPrevious', named_tuple=True)
 
-            # try:
-            #     ii = Interaction(route=url, params=params)
-            # except MarvinError as e:
-            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            # else:
-            #     self.results = ii.getData()
-            #     self._makeNamedTuple()
-
         self.start = newstart
         self.end = newend
         self.count = len(self.results)
@@ -1009,13 +1004,6 @@ class Results(object):
                       'start': start, 'end': end, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getSubset', named_tuple=True)
-            # try:
-            #     ii = Interaction(route=url, params=params)
-            # except MarvinError as e:
-            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            # else:
-            #     self.results = ii.getData()
-            #     self._makeNamedTuple()
 
         self.count = len(self.results)
         if self.returntype:
@@ -1050,9 +1038,19 @@ class Results(object):
             raise MarvinUserWarning('Cannot merge subsets. Column number mismatch among subsets. '
                                     'Ensure all subsets have the same number of columns')
 
-    def merge_tables(self, tables):
-        ''' Merges a list of Astropy tables of results together '''
-        return vstack(tables)
+    def combine_columns(self, results):
+        ''' Combine columns from multiple Marvin Results objects '''
+
+        # make results a list if it is not
+        if not isinstance(results, list):
+            results = [results]
+
+        # check if all items in the results list are of Marvin Results type
+        isnested = all(isinstance(i, Results) for i in results)
+        if not isnested:
+            raise MarvinError('Input must be a list of Marvin Results objects')
+
+        # check for consistency between Results
 
     #@local_mode_only
     def getAll(self):
@@ -1083,17 +1081,6 @@ class Results(object):
             self._interaction(url, params, calltype='getAll', named_tuple=True)
             self.count = self.totalcount
             print('Returned all {0} results'.format(self.totalcount))
-            # try:
-            #     ii = Interaction(route=url, params=params)
-            # except MarvinError as e:
-            #     raise MarvinError('API Query GetNext call failed: {0}'.format(e))
-            # else:
-            #     self.results = ii.getData()
-            #     self._makeNamedTuple()
-            #     self.count = self.totalcount
-            #     self._runtime = ii.results['runtime']
-            #     self.query_time = self._getRunTime()
-            #     print('Returned all {0} results'.format(self.totalcount))
 
     def convertToTool(self, tooltype, **kwargs):
         ''' Converts the list of results into Marvin Tool objects
