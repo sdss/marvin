@@ -114,10 +114,6 @@ class TestMap(object):
         map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
 
-
-@pytest.mark.skip
-class TestArithmetic(object):
-
     @pytest.mark.parametrize('property_name, channel',
                              [('emline_gflux', 'ha_6564'),
                               ('stellar_vel', None)])
@@ -347,4 +343,5 @@ class TestMapArith(object):
         assert pytest.approx(actual.ivar == expected.ivar)
         assert (actual.mask == expected.mask).all()
 
-# class TestEnhancedMap(object):
+
+class TestEnhancedMap(object):
