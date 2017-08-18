@@ -33,7 +33,7 @@ import marvin.utils.dap.bpt
 import six
 
 from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel.base import Property
+from marvin.utils.dap.datamodel.base import Property, Channel
 
 try:
     import sqlalchemy
@@ -456,6 +456,8 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
     def _match_properties(self, property_name, channel=None, exact=False):
         """Returns the best match for a property_name+channel."""
+
+        channel = channel.name if isinstance(channel, Channel) else channel
 
         if channel is not None:
             property_name = property_name + '_' + channel
