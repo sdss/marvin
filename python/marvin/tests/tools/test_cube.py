@@ -133,9 +133,8 @@ class TestCube(object):
         release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
         with pytest.warns(MarvinUserWarning) as record:
             cube = Cube(filename=galaxy.cubepath, release=release_wrong)
-
-        assert len(record) == 2
-        assert record[1].message.args[0] == (
+        assert len(record) >= 1
+        assert record[-1].message.args[0] == (
             'mismatch between file release={0} '.format(galaxy.release) +
             'and object release={0}. '.format(release_wrong) +
             'Setting object release to {0}'.format(galaxy.release))
