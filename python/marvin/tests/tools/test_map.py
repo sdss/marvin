@@ -16,7 +16,7 @@ import pytest
 from marvin.core.exceptions import MarvinError
 from marvin.utils.dap import datamodel
 from marvin.tools.maps import Maps
-from marvin.tools.map import Map
+from marvin.tools.map import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 
 value1 = np.array([[16.35, 0.8],
@@ -345,3 +345,22 @@ class TestMapArith(object):
 
 
 class TestEnhancedMap(object):
+
+    def test_overridden_methods(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        nii = maps['emline_gflux_nii_6585']
+        n2ha = nii / ha
+
+        assert isinstance(n2ha, EnhancedMap)
+
+        methods = ['_init_map_from_maps', '_get_from_file', '_get_from_db', '_get_from_api',
+                   'inst_sigma_correction']
+
+        for method in methods:
+            with pytest.raises(AttributeError) as ee:
+                meth = getattr(n2ha, method)
+                meth()
+
+            assert "'EnhancedMap' has no attribute '{}'.".format(method) in str(ee.value)
+                

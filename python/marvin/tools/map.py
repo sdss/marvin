@@ -546,4 +546,4 @@ class EnhancedMap(Map):
 
     def inst_sigma_correction(self):
         """Override Map.inst_sigma_correction with AttributeError."""
-        raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
+        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
