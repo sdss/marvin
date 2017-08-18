@@ -60,6 +60,59 @@ def remote_mode_only(fxn):
     return wrapper
 
 
+def marvintuple(name, params=None, **kwargs):
+    ''' Custom namedtuple class factory for Marvin Results rows
+
+    Parameters:
+        name (str):
+            The name of the Class
+        params (list):
+            The list of parameters to add as fields to the namedtuple
+
+    Returns:
+        a new namedtuple class
+
+    '''
+
+    # check the params input
+    if params and isinstance(params, six.string_types):
+        params = params.split(',') if ',' in params else [params]
+        params = [p.strip() for p in params]
+
+    # pop any extra keywords
+    results = kwargs.pop('results', None)
+
+    # create default namedtuple and find new columns
+    default = namedtuple(name, 'mangaid, plate, plateifu, ifu_name')
+    newcols = set(params) - set(default._fields) if params else None
+    finalfields = default._fields + tuple(newcols) if newcols else default._fields
+    nt = namedtuple(name, finalfields, **kwargs)
+
+    def new_add(self, other):
+        ''' Overloaded add to combine tuples without duplicates '''
+
+        if self._release:
+            assert self._release == other._release, 'Cannot add result rows from different releases'
+        if self._searchfilter:
+            assert self._searchfilter == other._searchfilter, ('Cannot add result rows generated '
+                                                               'using different search filters')
+
+        self_dict = self._asdict()
+        other_dict = other._asdict()
+        self_dict.update(other_dict)
+
+        new_fields = tuple(self_dict.keys())
+        marvin_row = marvintuple(self.__class__.__name__, new_fields, results=self._results)
+        return marvin_row(**self_dict)
+
+    # append new properties and overloaded methods
+    nt.__add__ = new_add
+    nt._results = results
+    nt._release = results._release if results else None
+    nt._searchfilter = results.searchfilter if results else None
+    return nt
+
+
 class Results(object):
     ''' A class to handle results from queries on the MaNGA dataset
 
@@ -148,6 +201,7 @@ class Results(object):
         self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', None)
         self.limit = self._queryobj.limit if self._queryobj else kwargs.get('limit', None)
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
+        self._release = self._queryobj._release if self._queryobj else kwargs.get('release', None)
 
     def __repr__(self):
         return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3})'.format(self.searchfilter, self.totalcount, self.count, self.mode))
@@ -420,9 +474,9 @@ class Results(object):
         ''' '''
         ntnames = self._reduceNames(self._params, under=True)
         try:
-            nt = namedtuple('NamedTuple', ntnames)
+            nt = namedtuple('MarvinRow', ntnames)
         except ValueError as e:
-            raise MarvinError('Cannot created NamedTuple from remote Results: {0}'.format(e))
+            raise MarvinError('Cannot created MarvinRow from remote Results: {0}'.format(e))
         else:
             globals()[nt.__name__] = nt
 
@@ -431,6 +485,7 @@ class Results(object):
         def keys(self):
             return qpo
         nt.keys = keys
+        #nt = marvintuple('ResultRow', ntnames, results=self)
         self.results = [nt(*r) for r in self.results]
 
     def save(self, path=None, overwrite=False):
@@ -1050,7 +1105,30 @@ class Results(object):
         if not isnested:
             raise MarvinError('Input must be a list of Marvin Results objects')
 
+        # check for same search criteria
+        same_search = all([i.searchfilter == self.searchfilter for i in results])
+        if not same_search:
+            raise MarvinUserWarning('Cannot merge columns. The seach filter in your Marvin '
+                                    'Results do not match with each other or the base set')
+
         # check for consistency between Results
+        plateifus = self.getListOf('plateifu')
+        same_rows = all([i.getListOf('plateifu') == plateifus for i in results])
+        if not same_rows:
+            raise MarvinUserWarning('Cannot merge columns. The rows in your Marvin '
+                                    'Results do not match with each other or the base set')
+
+        # get new columns
+        all_columns = (sum([i._params for i in results], []))
+        all_columns = list(OrderedDict.fromkeys(all_columns))
+        new_columns = set(all_columns) - set(self._params)
+
+        kwargs = {'results': 'new', 'count': self.count, 'mode': self.mode, 'queryobj': 'new',
+                  'totalcount': self.totalcount, 'chunk': self.limit, 'runtime': self.runtime}
+        return Results(**kwargs)
+        # Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
+        #                    returntype=self.returntype, totalcount=totalcount, chunk=chunk,
+        #                    runtime=query_runtime, response_time=resp_runtime)
 
     #@local_mode_only
     def getAll(self):

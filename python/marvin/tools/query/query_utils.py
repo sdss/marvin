@@ -207,18 +207,19 @@ class QueryParameter(object):
             The type of the parameter (e.g. string, integer, float)
     '''
 
-    def __init__(self, full, table=None, name=None, short=None, display=None, dtype=None):
+    def __init__(self, full, table=None, name=None, short=None, display=None, remote=None, dtype=None):
         self.full = full
         self.table = table
         self.name = name
         self.short = short
         self.display = display
         self.dtype = dtype
+        self.remote = remote
         self._set_names()
-        self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
     def __repr__(self):
-        return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, display={0.display}>'.format(self))
+        return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, '
+                'remote={0.remote}, display={0.display}>'.format(self))
 
     def _set_names(self):
         ''' Sets alternate names if it can '''
@@ -228,6 +229,8 @@ class QueryParameter(object):
             self.short = self.name
         if not self.display:
             self.display = self.name.title()
+        if not self.remote:
+            self.remote = self.full.replace('.', '_') if self.name == 'name' else self.name
 
 bestparams = get_params()
 query_params = ParameterGroupList(bestparams)
