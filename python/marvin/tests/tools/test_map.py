@@ -246,17 +246,17 @@ class TestMapArith(object):
 
     def test_getMap_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(ValueError) as ee:
             maps.getMap(property_name='mythical_property')
 
-        assert 'Invalid property name.' in str(ee.value)
+        assert 'Your input value is too ambiguous.' in str(ee.value)
 
     def test_getMap_invalid_channel(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(ValueError) as ee:
             maps.getMap(property_name='emline_gflux', channel='mythical_channel')
 
-        assert 'Invalid channel.' in str(ee.value)
+        assert 'Your input value is too ambiguous.' in str(ee.value)
 
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction(self, galaxy):
