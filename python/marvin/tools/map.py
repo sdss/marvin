@@ -482,7 +482,11 @@ class Map(Quantity):
                            release=self.release, history=history, parents=parents, copy=True)
 
     def inst_sigma_correction(self):
-        """Correct for instrumental broadening."""
+        """Correct for instrumental broadening.
+
+        Correct observed stellar or emission line velocity dispersion
+        for instrumental broadening.
+        """
         if self.property.name == 'stellar_sigma':
 
             if self.release == 'MPL-4':
@@ -492,7 +496,8 @@ class Map(Quantity):
             map_corr = self.maps['stellar_sigmacorr']
 
         elif self.property.name == 'emline_gsigma':
-            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel.name)
+            map_corr = self.maps.getMap(property_name='emline_instsigma',
+                                        channel=self.channel.name)
 
         else:
             raise marvin.core.exceptions.MarvinError(
