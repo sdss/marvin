@@ -70,17 +70,17 @@ install:
 - source activate test_env
 - pip install -U pip wheel --quiet
 - pip install --upgrade setuptools --quiet
-- pip install -r requirements.txt --quiet
-- pip install psycopg2 --quiet
-- pip install blinker --quiet
-- pip install pytest --quiet
-- pip install pytest-cov --quiet
-- pip install pytest-flask --quiet
-- pip install pytest-sugar --quiet
-- pip install pytest-timeout --quiet
-- pip install pytest-xdist --quiet
-- pip install selenium --quiet
-- pip install page_objects --quiet
+- pip install -r requirements_dev.txt --quiet
+# - pip install psycopg2 --quiet
+# - pip install blinker --quiet
+# - pip install pytest --quiet
+# - pip install pytest-cov --quiet
+# - pip install pytest-flask --quiet
+# - pip install pytest-sugar --quiet
+# - pip install pytest-timeout --quiet
+# - pip install pytest-xdist --quiet
+# - pip install selenium --quiet
+# - pip install page_objects --quiet
 - python setup.py install
 
 before_script:

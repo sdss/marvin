@@ -21,14 +21,12 @@ import warnings
 import astropy.io.fits
 
 from brain.core.exceptions import BrainError
-from collections import OrderedDict
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
-from marvin.utils.dap.datamodel.base import get_best_fuzzy
 from marvin.utils.db import testDbConnection
 from marvin.utils.general import mangaid2plateifu, get_nsa_data
 
@@ -43,7 +41,7 @@ except ImportError:
     RsyncAccess = None
 
 
-__all__ = ['MarvinToolsClass', 'Dotable', 'DotableCaseInsensitive']
+__ALL__ = ['MarvinToolsClass']
 
 
 def kwargsGet(kwargs, key, replacement):
@@ -330,78 +328,3 @@ class MarvinToolsClass(object):
         """Fails when trying to set the release after instatiation."""
 
         raise MarvinError('the release cannot be changed once the object has been instantiated.')
-
-
-class Dotable(dict):
-    """A custom dict class that allows dot access to nested dictionaries.
-
-    Copied from http://hayd.github.io/2013/dotable-dictionaries/. Note that
-    this allows you to use dots to get dictionary values, but not to set them.
-
-    """
-
-    def __getattr__(self, value):
-        if '__' in value:
-            return dict.__getattr__(self, value)
-        else:
-            return self.__getitem__(value)
-
-    # def __init__(self, d):
-    #     dict.__init__(self, ((k, self.parse(v)) for k, v in d.iteritems()))
-
-    @classmethod
-    def parse(cls, v):
-        if isinstance(v, dict):
-            return cls(v)
-        elif isinstance(v, list):
-            return [cls.parse(i) for i in v]
-        else:
-            return v
-
-
-class DotableCaseInsensitive(Dotable):
-    """Like dotable but access to attributes and keys is case insensitive."""
-
-    def _match(self, list_of_keys, value):
-
-        lower_values = [str(xx).lower() for xx in list_of_keys]
-        if value.lower() in lower_values:
-            return list_of_keys[lower_values.index(value.lower())]
-        else:
-            return False
-
-    def __getattr__(self, value):
-        if '__' in value:
-            return super(DotableCaseInsensitive, self).__getattr__(value)
-        return self.__getitem__(value)
-
-    def __getitem__(self, value):
-        key = self._match(list(self.keys()), value)
-        if key is False:
-            raise KeyError('{0} key or attribute not found'.format(value))
-        return dict.__getitem__(self, key)
-
-
-class FuzzyDict(dict):
-    """A dotable dictionary that uses fuzzywuzzy to select the key."""
-
-    def __getattr__(self, value):
-        if '__' in value:
-            return super(FuzzyDict, self).__getattr__(value)
-        return self.__getitem__(value)
-
-    def __getitem__(self, value):
-
-        best = get_best_fuzzy(value, self.keys())
-
-        return dict.__getitem__(self, best)
-
-
-class OrderedDefaultDict(OrderedDict):
-    def __init__(self, default_factory=None, *args, **kwargs):
-        OrderedDict.__init__(self, *args, **kwargs)
-        self.default_factory = default_factory
-
-    def __missing__(self, key):
-        result = self[key] = self.default_factory()
-        return result

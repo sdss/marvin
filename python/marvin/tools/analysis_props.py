@@ -11,7 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
-import marvin.core.core
+import marvin.utils.general.structs
 
 from astropy.units import Quantity
 
@@ -19,7 +19,7 @@ from astropy.units import Quantity
 __ALL__ = ('DictOfProperties', 'AnalysisProperty')
 
 
-class DictOfProperties(marvin.core.core.FuzzyDict):
+class DictOfProperties(marvin.utils.general.structs.FuzzyDict):
     """A dotable fuzzy dictionary to list a groups of AnalysisProperties."""
 
     pass

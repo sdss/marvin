@@ -18,19 +18,15 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
-from collections import OrderedDict
-import os
-
 import pytest
 import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 
 import marvin
-from marvin.core.core import DotableCaseInsensitive
+from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
-from marvin.utils.dap.datamodel import get_default_plot_params
 
 
 @pytest.fixture(scope='function')
@@ -201,5 +197,3 @@ class TestDataModelPlotParams(object):
         desired['bitmasks'] = bitmask
         actual = get_plot_params(dapver=dapver, prop=name)
         assert desired == actual
-
-

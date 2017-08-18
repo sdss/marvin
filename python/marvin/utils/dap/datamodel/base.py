@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import copy as copy_mod
 import itertools
+import re
 import six
 
 from collections import OrderedDict
@@ -20,39 +21,15 @@ from collections import OrderedDict
 import astropy.table as table
 from astropy import units as u
 
-from fuzzywuzzy import fuzz as fuzz_fuzz
-from fuzzywuzzy import process as fuzz_proc
-
 from marvin.core.exceptions import MarvinError, MarvinNotImplemented
+from marvin.utils.general.structs import get_best_fuzzy
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
-           'MultiChannelProperty', 'spaxel', 'datamodel')
+           'MultiChannelProperty', 'spaxel', 'datamodel', 'Channel')
 
 
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
-
-
-def get_best_fuzzy(value, choices, min_score=30, scorer=fuzz_fuzz.WRatio, return_score=False):
-    """Returns the best match in a list of choices using fuzzywuzzy."""
-
-    bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
-
-    if len(bests) == 0:
-        best = None
-    elif len(bests) == 1:
-        best = bests[0]
-    else:
-        if bests[0][1] == bests[1][1]:
-            best = None
-        else:
-            best = bests[0]
-
-    if best is None:
-        raise ValueError('cannot find a good match for {0!r}. '
-                         'Your input value is too ambiguous.'.format(value))
-
-    return best if return_score else best[0]
 
 
 class DAPDataModelList(OrderedDict):
@@ -146,7 +123,7 @@ class DAPDataModel(object):
         raise MarvinError('cannot set properties directly. Use add_properties() instead.')
 
     @property
-    def groups(self):
+    def extensions(self):
         """Returns a list of properties. MultiChannelProperties are not unpacked."""
 
         return self._properties
@@ -201,16 +178,21 @@ class DAPDataModel(object):
     def __getitem__(self, value):
         """Uses fuzzywuzzy to return the closest property match."""
 
-        prop_names = [prop.name for prop in self.groups]
+        prop_names = [prop.name for prop in self.extensions]
 
         # If the values matches exactly one of the property names, we return the property object.
         if value in prop_names:
-            return self.groups[prop_names.index(value)]
+            return self.extensions[prop_names.index(value)]
 
         # Finds the best property+channel
         propety_channel_names = self.list_property_names()
 
-        best = get_best_fuzzy(value, propety_channel_names)
+        try:
+            best = get_best_fuzzy(value, propety_channel_names)
+        except ValueError:
+            # Second pass, removes _
+            best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
+            best = best.replace(' ', '_')
 
         return self.properties[propety_channel_names.index(best)]
 
@@ -224,10 +206,9 @@ class DAPDataModel(object):
     def default_bintype(self, value):
         """Sets the default bintype."""
 
-        if isinstance(value, six.string_types):
-            for bintype in self.bintypes:
-                if value == bintype.name:
-                    value = bintype
+        for bintype in self.bintypes:
+            if str(value) == bintype.name:
+                value = bintype
 
         if value not in self.bintypes and value is not None:
             raise ValueError('{0!r} not found in list of bintypes.'.format(value))
@@ -244,10 +225,9 @@ class DAPDataModel(object):
     def default_template(self, value):
         """Sets the default template."""
 
-        if isinstance(value, six.string_types):
-            for template in self.templates:
-                if value == template.name:
-                    value = template
+        for template in self.templates:
+            if str(value) == template.name:
+                value = template
 
         if value not in self.templates and value is not None:
             raise ValueError('{0!r} not found in list of templates.'.format(value))
@@ -274,11 +254,8 @@ class DAPDataModel(object):
         if value is None:
             return self.default_bintype
 
-        if isinstance(value, Bintype):
-            value = value.name
-
         for bintype in self.bintypes:
-            if bintype.name.upper() == value.upper():
+            if bintype.name.upper() == str(value).upper():
                 return bintype
 
         raise MarvinError('invalid bintype {0!r}'.format(value))
@@ -293,11 +270,8 @@ class DAPDataModel(object):
         if value is None:
             return self.default_template
 
-        if isinstance(value, Template):
-            value = value.name
-
         for template in self.templates:
-            if template.name == value:
+            if template.name.upper() == str(value).upper():
                 return template
 
         raise MarvinError('invalid template {0!r}'.format(value))
@@ -313,8 +287,34 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
-    def to_table(self, compact=True, pprint=False, description=False):
-        """Returns an astropy table with all the properties in this model."""
+    def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
+        """Returns an astropy table with all the properties in this model.
+
+        Parameters:
+            compact (bool):
+                If ``True``, groups extensions (multichannel properties) in one
+                line. Otherwise, shows a row for each extension and channel.
+            pprint (bool):
+                Whether the table should be printed to screen using astropy's
+                table pretty print.
+            description (bool):
+                If ``True``, an extra column with the description of the
+                property will be added.
+            max_width (int or None):
+                A keyword to pass to ``astropy.table.Table.pprint()`` with the
+                maximum width of the table, in characters.
+
+        Returns:
+            result (``astropy.table.Table``):
+                If ``pprint=False``, returns an astropy table containing
+                the name of the property, the channel (or channels, if
+                ``compact=True``), whether the property has ``ivar`` or
+                ``mask``, the units, and a description (if
+                ``description=True``). Additonal information such as the
+                bintypes, templates, release, etc. is included in
+                the metadata of the table (use ``.meta`` to access them).
+
+        """
 
         if compact:
             model_table = table.Table(
@@ -332,7 +332,7 @@ class DAPDataModel(object):
         model_table.meta['default_template'] = self.default_template
 
         if compact:
-            iterable = self.groups
+            iterable = self.extensions
         else:
             iterable = self.properties
 
@@ -340,10 +340,7 @@ class DAPDataModel(object):
             if isinstance(prop, MultiChannelProperty):
                 channel = ', '.join(prop.channels)
                 units = [pp.unit.to_string() for pp in prop]
-                if len(set(units)) == 1:
-                    unit = units[0]
-                else:
-                    unit = 'multiple'
+                unit = units[0] if len(set(units)) == 1 else 'multiple'
             else:
                 channel = '' if not prop.channel else prop.channel
                 unit = prop.unit.to_string()
@@ -354,18 +351,21 @@ class DAPDataModel(object):
             model_table.remove_column('description')
 
         if pprint:
-            model_table.pprint()
+            model_table.pprint(max_width=max_width, max_lines=1e6)
+            return
 
         return model_table
 
 
 class Bintype(object):
+    """A class representing a bintype."""
 
-    def __init__(self, bintype, binned=True, default=False, n=None):
+    def __init__(self, bintype, binned=True, n=None, description=''):
 
         self.name = bintype
         self.binned = binned
         self.n = n
+        self.description = description
 
     def __repr__(self):
 
@@ -377,11 +377,13 @@ class Bintype(object):
 
 
 class Template(object):
+    """A class representing a template."""
 
-    def __init__(self, template, n=None):
+    def __init__(self, template, n=None, description=''):
 
         self.name = template
         self.n = n
+        self.description = description
 
     def __repr__(self):
 
@@ -393,9 +395,40 @@ class Template(object):
 
 
 class Property(object):
+    """A class representing a DAP property.
 
-    def __init__(self, name, channel=None, ivar=False, mask=False, unit=None, scale=1,
-                 parent=None, binid=None, idx=None, description=''):
+    Parameters:
+        name (str):
+            The name of the property.
+        channel (:class:`Channel` object or None):
+            The channel associated to the property, if any.
+        ivar (bool):
+            Whether the property has an inverse variance measurement.
+        mask (bool):
+            Whether the property has an associated mask.
+        unit (astropy unit or None):
+            The unit for this channel. If not defined, the unit from the
+            ``channel`` will be used.
+        scale (float or None):
+            The scaling factor for the property. If not defined, the scaling
+            factor from the ``channel`` will be used.
+        formats (dict):
+            A dictionary with formats that can be used to represent the
+            property. Default ones are ``latex`` and ``string``.
+        parent (:class:`DAPDataModel` object or None):
+            The associated :class:`DAPDataModel` object. Usually it is set to
+            ``None`` and populated when the property is added to the
+            ``DAPDataModel`` object.
+        binid (:class:`Property` object or None):
+            The ``binid`` :class:`Property` object associated with this
+            propety. Useful in case of hybrid binning.
+        description (str):
+            A description of the property.
+
+    """
+
+    def __init__(self, name, channel=None, ivar=False, mask=False, unit=u.dimensionless_unscaled,
+                 scale=1, formats={}, parent=None, binid=None, description=''):
 
         self.name = name
         self.channel = channel
@@ -404,10 +437,19 @@ class Property(object):
         self.mask = mask
         self.binid = binid
 
-        self.idx = idx  # The index of the channel in the MAPS file extension.
+        self.formats = formats
 
-        self.scale = scale if scale is not None else 1
-        self.unit = unit if unit is not None else u.dimensionless_unscaled
+        if self.channel is None:
+            self.scale = scale
+            self.unit = unit
+        else:
+            self.scale = scale if scale is not None else self.channel.scale
+            self.unit = unit if unit is not None else self.channel.unit
+
+        # Makes sure the channel shares the units and scale
+        if self.channel:
+            self.channel.scale = self.scale
+            self.channel.unit = self.unit
 
         self.description = description
 
@@ -424,7 +466,7 @@ class Property(object):
         """Returns the name + channel string."""
 
         if self.channel:
-            return self.name + '_' + self.channel
+            return self.name + '_' + self.channel.name
 
         return self.name
 
@@ -452,28 +494,86 @@ class Property(object):
 
         if ext == 'ivar':
             assert self.ivar is True, 'no ivar for property {0!r}'.format(self.full())
-            return self.name + '_ivar' + ('_{0}'.format(self.channel) if self.channel else '')
+            return self.name + '_ivar' + ('_{0}'.format(self.channel.name) if self.channel else '')
 
         if ext == 'mask':
             assert self.mask is True, 'no mask for property {0!r}'.format(self.full())
-            return self.name + '_mask' + ('_{0}'.format(self.channel) if self.channel else '')
+            return self.name + '_mask' + ('_{0}'.format(self.channel.name) if self.channel else '')
 
     def __repr__(self):
 
         return '<Property {0!r}, release={1!r}, channel={2!r}, unit={3!r}>'.format(
             self.name, self.parent.release if self.parent else None,
-            self.channel, self.unit.to_string())
+            self.channel.name if self.channel else 'None', self.unit.to_string())
 
     def __str__(self):
 
         return self.full()
 
+    def to_string(self, mode='string', include_channel=True):
+        """Return a string representation of the channel."""
+
+        if mode == 'latex':
+
+            if mode in self.formats:
+                latex = self.formats[mode]
+            else:
+                latex = self.to_string(include_channel=False).replace(' ', '\\ ')
+
+            if self.channel and include_channel:
+                latex = latex + ':\\ ' + self.channel.to_string('latex')
+
+            return latex
+
+        else:
+
+            if mode in self.formats:
+                string = self.formats[mode]
+            else:
+                string = self.name
+
+            if self.channel is None or include_channel is False:
+                return string
+            else:
+                return string + ': ' + self.channel.to_string(mode=mode)
+
 
 class MultiChannelProperty(list):
+    """A class representing a list of channels for the same property.
 
-    def __init__(self, name, channels=[], units=None, scales=None, **kwargs):
+    Parameters:
+        name (str):
+            The name of the property.
+        channels (list of :class:`Channel` objects):
+            The channels associated to the property.
+        ivar (bool):
+            Whether the properties have an inverse variance measurement.
+        mask (bool):
+            Whether the properties have an associated mask.
+        unit (astropy unit or None):
+            The unit for these channels. If set, it will override any unit
+            defined in the individual channels.
+        scale (float):
+            The scaling factor for these channels. If set, it will override
+            any unit defined in the individual channels.
+        formats (dict):
+            A dictionary with formats that can be used to represent the
+            property. Default ones are ``latex`` and ``string``.
+        parent (:class:`DAPDataModel` object or None):
+            The associated :class:`DAPDataModel` object. Usually it is set to
+            ``None`` and populated when the property is added to the
+            ``DAPDataModel`` object.
+        description (str):
+            A description of the property.
+        kwargs (dict):
+            Arguments to be passed to each ``Property`` on initialisation.
+
+    """
+
+    def __init__(self, name, channels=[], unit=None, scale=None, **kwargs):
 
         self.name = name
+        self.channels = channels
 
         self.ivar = kwargs.get('ivar', False)
         self.mask = kwargs.get('mask', False)
@@ -481,21 +581,13 @@ class MultiChannelProperty(list):
 
         self.parent = kwargs.get('parent', None)
 
-        property_list = []
-        for ii in range(len(channels)):
-            channel = channels[ii]
-            unit = units if units is None or not isinstance(units, (list, tuple)) else units[ii]
-            scale = scales \
-                if scales is None or not isinstance(scales, (list, tuple)) else scales[ii]
+        self_list = []
+        for ii, channel in enumerate(channels):
+            this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
+            self_list.append(Property(self.name, channel=channel,
+                                      unit=this_unit, scale=scale, **kwargs))
 
-            property_list.append(Property(name, channel=channel, unit=unit, scale=scale,
-                                          idx=ii, **kwargs))
-
-        list.__init__(self, property_list)
-
-    @property
-    def channels(self):
-        return [prop.channel for prop in self]
+        list.__init__(self, self_list)
 
     def set_parent(self, parent):
         """Sets parent for the instance and all listed Property objects."""
@@ -520,4 +612,59 @@ class MultiChannelProperty(list):
     def __repr__(self):
 
         return '<MultiChannelProperty {0!r}, release={1!r}, channels={2!r}>'.format(
-            self.name, self.parent.release if self.parent else None, self.channels)
+            self.name, self.parent.release if self.parent else None,
+            [channel.name for channel in self.channels])
+
+
+class Channel(object):
+    """A class representing a channel in a property.
+
+    Parameters:
+        name (str):
+            The channel name.
+        unit (astropy unit or None):
+            The unit for this channel.
+        scale (float):
+            The scaling factor for the channel.
+        formats (dict):
+            A dictionary with formats that can be used to represent the
+            channel. Default ones are ``latex`` and ``string``.
+        idx (int):
+            The index of the channel in the MAPS file extension.
+        description (str):
+            A description for the channel.
+
+    """
+
+    def __init__(self, name, unit=u.dimensionless_unscaled, scale=1, formats={}, idx=None,
+                 description=''):
+
+        self.name = name
+        self.unit = unit
+        self.scale = scale
+        self.formats = formats
+        self.idx = idx
+        self.description = description
+
+    def to_string(self, mode='string'):
+        """Return a string representation of the channel."""
+
+        if mode == 'latex':
+            if 'latex' in self.formats:
+                latex = self.formats['latex']
+                latex = re.sub(r'forb{(.+)}', r'lbrack\\textrm{\1}\\rbrack', latex)
+            else:
+                latex = self.to_string().replace(' ', '\\ ')
+            return latex
+        elif mode is not None and mode in self.formats:
+            return self.formats[mode]
+        else:
+            return self.name
+
+    def __repr__(self):
+
+        return '<Channel {0!r} unit={1!r}>'.format(self.name, self.unit.to_string())
+
+    def __str__(self):
+
+        return self.name

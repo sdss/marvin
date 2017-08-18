@@ -215,11 +215,12 @@ class SpaxelView(BaseView):
             for name in spaxel.properties:
                 prop = spaxel.properties[name]
                 spaxel_properties[name] = {}
-                for key in ['name', 'channel', 'value', 'ivar', 'mask', 'description']:
+                for key in ['name', 'value', 'ivar', 'mask', 'description']:
                     propval = getattr(prop, key)
                     if type(propval).__module__ == np.__name__:
-                        propval = np.asscalar(propval)
+                        propval = np.asscalar(str(propval))
                     spaxel_properties[name][key] = propval
+                spaxel_properties[name]['channel'] = prop.channel.name if prop.channel else None
                 spaxel_properties[name]['unit'] = prop.unit.to_string()
 
             self.results['data'] = {'properties': spaxel_properties}

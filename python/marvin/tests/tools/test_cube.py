@@ -5,14 +5,12 @@ import re
 
 import pytest
 import numpy as np
-from astropy.io import fits
 from astropy import wcs
 
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
-from marvin.core.core import DotableCaseInsensitive
-from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB, marvin_test_if
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.tests import marvin_test_if
 
 
 @pytest.fixture(autouse=True)
@@ -49,11 +47,12 @@ class TestCube(object):
         assert galaxy.ra == cube.ra
 
     @pytest.mark.parametrize('plateifu, mode, errmsg',
-                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found')],
+                             [('8485-0923', 'local', 'Could not retrieve cube for '
+                                                     'plate-ifu 8485-0923: No Results Found')],
                              ids=['noresults'])
     def test_cube_from_db_fail(self, plateifu, mode, errmsg):
         with pytest.raises(MarvinError) as cm:
-            c = Cube(plateifu=plateifu, mode=mode)
+            Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
 
     # @pytest.mark.slow
@@ -74,7 +73,8 @@ class TestCube(object):
 
     def test_cube_redshift(self, cube, galaxy):
         assert cube.data_origin == cube.exporigin
-        redshift = cube.nsa.redshift if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
+        redshift = cube.nsa.redshift \
+            if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):
@@ -101,6 +101,63 @@ class TestCube(object):
 
         assert 'filename not allowed in remote mode' in str(ee.value)
 
+    def test_getFullPath_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube._getFullPath() is None
+
+    def test_download_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube.download() is None
+
+    def test_repr(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        args = cube.plateifu, cube.mode, cube.data_origin
+        expected = "<Marvin Cube (plateifu='{0}', mode='{1}', data_origin='{2}')>".format(*args)
+        assert cube.__repr__() == expected
+
+    def test_load_cube_from_file_with_data(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube._load_cube_from_file(data=cube.data)
+
+    def test_load_cube_from_file_OSError(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube.filename = 'hola.fits'
+        with pytest.raises((IOError, OSError)) as ee:
+            cube._load_cube_from_file()
+
+        assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
+
+    def test_load_cube_from_file_filever_ne_release(self, galaxy):
+        release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
+        with pytest.warns(MarvinUserWarning) as record:
+            cube = Cube(filename=galaxy.cubepath, release=release_wrong)
+        assert len(record) >= 1
+        assert record[-1].message.args[0] == (
+            'mismatch between file release={0} '.format(galaxy.release) +
+            'and object release={0}. '.format(release_wrong) +
+            'Setting object release to {0}'.format(galaxy.release))
+
+        assert cube._release == galaxy.release
+
+    def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
+        monkeypatch.setattr(marvindb, 'isdbconnected', False)
+        with pytest.raises(MarvinError) as ee:
+            Cube(plateifu=galaxy.plateifu)
+
+        assert 'No db connected' in str(ee.value)
+
+    def test_load_cube_from_db_data(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._load_cube_from_db(data=cube.data)
+
+    @marvin_test_if('include', data_origin=['db'])
+    @pytest.mark.slow
+    def test_getExtensionData_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._getExtensionData(extName='flux')
+
 
 class TestGetSpaxel(object):
 
@@ -110,7 +167,8 @@ class TestGetSpaxel(object):
                 del kwargs[k]
         return kwargs
 
-    @pytest.mark.parametrize('x, y, ra, dec, excType, message',
+    @pytest.mark.parametrize(
+        'x, y, ra, dec, excType, message',
         [(1, None, 1, None, AssertionError, 'Either use (x, y) or (ra, dec)'),
          (1, None, 1, 1, AssertionError, 'Either use (x, y) or (ra, dec)'),
          (1, None, None, None, AssertionError, 'Specify both x and y'),

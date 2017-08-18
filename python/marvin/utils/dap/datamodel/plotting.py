@@ -10,14 +10,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from . import datamodel
-
 
 __ALL__ = ('get_dap_maplist', 'get_default_mapset', 'get_default_plot_params')
 
 
 def get_dap_maplist(dapver=None, web=None):
     ''' Returns a list of all possible maps for dapver '''
+
+    from . import datamodel
 
     dapdm = datamodel[dapver]
     daplist = []

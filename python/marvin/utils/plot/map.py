@@ -323,6 +323,11 @@ def plot(*args, **kwargs):
         title (str):
             If ``None``, set automatically from property (and channel) name(s).
             For no title, set to ''. Default is ``None``.
+        title_mode (str):
+            The mode to generate a title automatically, if ``title`` is not
+            set. Usually ``'string'`` or ``'latex'``.
+            See :func:`~marvin.utils.dap.datamodel.base.Property.to_string`
+            for details.
         cblabel (str):
             If ``None``, set automatically from unit. For no colorbar label,
             set to ''. Default is ``None``.
@@ -379,6 +384,7 @@ def plot(*args, **kwargs):
     cbrange = kwargs.get('cbrange', None)
     log_cb = kwargs.get('log_cb', False)
     title = kwargs.get('title', None)
+    title_mode = kwargs.get('title_mode', 'latex')
     cblabel = kwargs.get('cblabel', None)
     sky_coords = kwargs.get('sky_coords', False)
     use_mask = kwargs.get('use_mask', True)
@@ -397,13 +403,21 @@ def plot(*args, **kwargs):
     ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
     mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
-    title = set_title(title,
-                      property_name=getattr(dapmap, 'property_name', None),
-                      channel=getattr(dapmap, 'channel', None))
+    if mask is None:
+        use_mask = False
+
+    if title is None:
+        if hasattr(dapmap, 'property'):
+            title = dapmap.property.to_string(title_mode)
+            prop = dapmap.property.full()
+        else:
+            title = 'Extended DAP map'
+            prop = ''
+    else:
+        prop = dapmap.property.full() if hasattr(dapmap, 'property') else ''
 
     # get plotparams from datamodel
     dapver = config.lookUpVersions()[1]
-    prop = _get_prop(title)
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
@@ -414,10 +428,15 @@ def plot(*args, **kwargs):
         percentile_clip = False
 
     # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
+    all_true = np.zeros(value.shape, dtype=bool)
+    nocov = params['bitmasks'].get('nocov', None)
+    nocov_mask = no_coverage_mask(mask, nocov, ivar) if mask is not None else all_true
+
     badData = params['bitmasks']['badData']
-    bad_data = bad_data_mask(mask, badData) if use_mask else np.zeros(value.shape)
-    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
+    bad_data = bad_data_mask(mask, badData) if use_mask else all_true
+
+    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else all_true
+
     log_cb_mask = log_colorbar_mask(value, log_cb)
 
     # final masked array to show
