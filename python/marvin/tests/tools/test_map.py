@@ -209,6 +209,16 @@ class TestMapArith(object):
                               '(emline_gflux_sii_6732 / emline_gflux_ha_6564))')
         assert Map._create_history(n2ha, s2ha, '/') == expected_n2ha_s2ha
 
+    def test_create_parents(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        nii = maps['emline_gflux_nii_6585']
+        ha = maps['emline_gflux_ha_6564']
+        n2ha = nii / ha
+
+        assert Map._create_parents(nii, ha) == [nii, ha]
+        assert Map._create_parents(n2ha, ha) == [[nii, ha], ha]
+        assert Map._create_parents(n2ha, n2ha) == [[nii, ha], [nii, ha]]
+
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
                               ('emline_gvel', 'ha_6564', 'stellar_vel', None)])
