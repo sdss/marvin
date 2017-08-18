@@ -397,8 +397,8 @@ class Map(Quantity):
 
     @staticmethod
     def _create_history(map1, map2, op):
-        map1_history = getattr(map1, 'history', map1.property.full())
-        map2_history = getattr(map2, 'history', map2.property.full())
+        map1_history = getattr(map1, 'history', map1.property)
+        map2_history = getattr(map2, 'history', map2.property)
         history = '({0} {1} {2})'.format(map1_history, op, map2_history)
         return history
 

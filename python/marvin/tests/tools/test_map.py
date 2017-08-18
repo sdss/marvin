@@ -190,6 +190,25 @@ class TestMapArith(object):
         with pytest.warns(UserWarning):
             assert Map._unit_propagation(unit1, unit2, op) is None
 
+    def test_create_history(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        nii = maps['emline_gflux_nii_6585']
+        ha = maps['emline_gflux_ha_6564']
+        sii = maps['emline_gflux_sii_6732']
+        n2ha = nii / ha
+        s2ha = sii / ha
+
+        expected_n2ha = '(emline_gflux_nii_6585 / emline_gflux_ha_6564)'
+        assert Map._create_history(nii, ha, '/') == expected_n2ha
+
+        expected_s2ha_nii = ('((emline_gflux_sii_6732 / emline_gflux_ha_6564) / '
+                             'emline_gflux_nii_6585)')
+        assert Map._create_history(s2ha, nii, '/') == expected_s2ha_nii
+
+        expected_n2ha_s2ha = ('((emline_gflux_nii_6585 / emline_gflux_ha_6564) / '
+                              '(emline_gflux_sii_6732 / emline_gflux_ha_6564))')
+        assert Map._create_history(n2ha, s2ha, '/') == expected_n2ha_s2ha
+
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
                               ('emline_gvel', 'ha_6564', 'stellar_vel', None)])
