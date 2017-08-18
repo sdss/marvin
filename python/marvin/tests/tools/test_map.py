@@ -144,6 +144,20 @@ class TestArithmetic(object):
                 else:
                     assert value == value2, attr
 
+    def test_getMap_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(ValueError) as ee:
+            maps.getMap(property_name='mythical_property')
+
+        assert 'Your input value is too ambiguous.' in str(ee.value)
+
+    def test_getMap_invalid_channel(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(ValueError) as ee:
+            maps.getMap(property_name='emline_gflux', channel='mythical_channel')
+
+        assert 'Your input value is too ambiguous.' in str(ee.value)
+
 
 class TestMapArith(object):
 
@@ -292,20 +306,6 @@ class TestMapArith(object):
         assert pytest.approx(map_new.value == map_orig.value**power)
         assert pytest.approx(map_new.ivar == ivar_new)
         assert (map_new.mask == map_orig.mask).all()
-
-    def test_getMap_invalid_property(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(ValueError) as ee:
-            maps.getMap(property_name='mythical_property')
-
-        assert 'Your input value is too ambiguous.' in str(ee.value)
-
-    def test_getMap_invalid_channel(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(ValueError) as ee:
-            maps.getMap(property_name='emline_gflux', channel='mythical_channel')
-
-        assert 'Your input value is too ambiguous.' in str(ee.value)
 
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction(self, galaxy):
