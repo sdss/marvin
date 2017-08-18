@@ -5,11 +5,11 @@
 #
 # Created by Brett Andrews on 2 Jul 2017.
 
-import copy
+from copy import deepcopy
 
 import numpy as np
-
 import astropy
+from astropy import units as u
 import matplotlib
 import pytest
 
@@ -50,6 +50,9 @@ ivar_pow_m2 = np.array([[2.67322500e+02, 1.6e-01],
                         [np.nan, 2.5e+09]])
 ivar_pow_m05 = np.array([[0.97859327, 5],
                          [np.nan, np.nan]])
+
+u_flux = u.erg / u.cm**2 / u.s / u.def_unit('spaxel')
+u_flux2 = u_flux * u_flux
 
 
 def _get_maps_kwargs(galaxy, data_origin):
@@ -121,7 +124,7 @@ class TestArithmetic(object):
     def test_deepcopy(self, galaxy, property_name, channel):
         maps = Maps(plateifu=galaxy.plateifu)
         map1 = maps.getMap(property_name=property_name, channel=channel)
-        map2 = copy.deepcopy(map1)
+        map2 = deepcopy(map1)
 
         for attr in vars(map1):
             if not attr.startswith('_'):
@@ -169,6 +172,23 @@ class TestMapArith(object):
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
         assert pytest.approx(Map._pow_ivar(None, np.arange(4), power) == np.zeros(4))
+
+    @pytest.mark.parametrize('unit1, unit2, op, expected',
+                             [(u_flux, u_flux, '+', u_flux),
+                              (u_flux, u_flux, '-', u_flux),
+                              (u_flux, u_flux, '*', u_flux2),
+                              (u_flux, u_flux, '/', u.dimensionless_unscaled),
+                              (u.km, u.s, '*', u.km * u.s),
+                              (u.km, u.s, '/', u.km / u.s)])
+    def test_unit_propagation(self, unit1, unit2, op, expected):
+        assert Map._unit_propagation(unit1, unit2, op) == expected
+
+    @pytest.mark.parametrize('unit1, unit2, op',
+                             [(u_flux, u.km, '+'),
+                              (u_flux, u.km, '-')])
+    def test_unit_propagation_mismatch(self, unit1, unit2, op):
+        with pytest.warns(UserWarning):
+            assert Map._unit_propagation(unit1, unit2, op) is None
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),

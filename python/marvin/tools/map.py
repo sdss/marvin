@@ -381,15 +381,17 @@ class Map(Quantity):
             return 1 / sig_out**2.
 
     @staticmethod
-    def _unit_propagation(unit1, unit2, op, op_func):
-        if unit1 == unit2:
-            if op in ['*', '/']:
-                unit12 = op_func(unit1, unit2)
-            else:
-                unit12 = unit1
+    def _unit_propagation(unit1, unit2, op):
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+
+        if op in ['*', '/']:
+            unit12 = ops[op](unit1, unit2)
         else:
-            warnings.warn('Units do not match for map arithmetic.')
-            unit12 = None
+            if unit1 == unit2:
+                unit12 = unit1
+            else:
+                warnings.warn('Units do not match for map arithmetic.', UserWarning)
+                unit12 = None
 
         return unit12
 
@@ -425,7 +427,7 @@ class Map(Quantity):
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12_mask = map1_mask & map2_mask
 
-        map12_unit = self._unit_propagation(self.unit, map2.unit, op, ops[op])
+        map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
         # TODO test this!
         if self.release != map2.release:
