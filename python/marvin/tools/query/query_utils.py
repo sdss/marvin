@@ -214,11 +214,20 @@ class QueryParameter(object):
         self.short = short
         self.display = display
         self.dtype = dtype
+        self._set_names()
         self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
     def __repr__(self):
         return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, display={0.display}>'.format(self))
 
+    def _set_names(self):
+        ''' Sets alternate names if it can '''
+        if not self.table or not self.name:
+            self.table, self.name = self.full.split('.')
+        if not self.short:
+            self.short = self.name
+        if not self.display:
+            self.display = self.name.title()
 
 bestparams = get_params()
 query_params = ParameterGroupList(bestparams)
