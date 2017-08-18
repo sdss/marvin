@@ -9,7 +9,7 @@
 # @Last Modified time: 2017-06-12 19:13:15
 
 from __future__ import print_function, division, absolute_import
-from marvin.core.core import Dotable, DotableCaseInsensitive
+from marvin.utils.general.structs import Dotable, DotableCaseInsensitive
 import pytest
 
 from collections import OrderedDict

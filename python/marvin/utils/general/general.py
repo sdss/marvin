@@ -12,7 +12,7 @@ from astropy import table
 
 import marvin
 from marvin import log
-from marvin.utils.dap.datamodel import get_default_plot_params
+from marvin.utils.dap.datamodel.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain.core.exceptions import BrainError
 
@@ -881,7 +881,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
     """
 
     from marvin import config, marvindb
-    from marvin.core.core import DotableCaseInsensitive
+    from .structs import DotableCaseInsensitive
 
     valid_modes = ['auto', 'local', 'remote']
     assert mode in valid_modes, 'mode must be one of {0}'.format(valid_modes)
