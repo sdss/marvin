@@ -5,14 +5,12 @@ import re
 
 import pytest
 import numpy as np
-from astropy.io import fits
 from astropy import wcs
 
 from marvin import config, marvindb
 from marvin.tools.cube import Cube
-from marvin.core.core import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.tests import skipIfNoDB, marvin_test_if
+from marvin.tests import marvin_test_if
 
 
 @pytest.fixture(autouse=True)
@@ -49,11 +47,12 @@ class TestCube(object):
         assert galaxy.ra == cube.ra
 
     @pytest.mark.parametrize('plateifu, mode, errmsg',
-                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found')],
+                             [('8485-0923', 'local', 'Could not retrieve cube for '
+                                                     'plate-ifu 8485-0923: No Results Found')],
                              ids=['noresults'])
     def test_cube_from_db_fail(self, plateifu, mode, errmsg):
         with pytest.raises(MarvinError) as cm:
-            c = Cube(plateifu=plateifu, mode=mode)
+            Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
 
     # @pytest.mark.slow
@@ -74,7 +73,8 @@ class TestCube(object):
 
     def test_cube_redshift(self, cube, galaxy):
         assert cube.data_origin == cube.exporigin
-        redshift = cube.nsa.redshift if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
+        redshift = cube.nsa.redshift \
+            if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):
@@ -145,7 +145,7 @@ class TestCube(object):
     def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
         monkeypatch.setattr(marvindb, 'isdbconnected', False)
         with pytest.raises(MarvinError) as ee:
-            cube = Cube(plateifu=galaxy.plateifu)
+            Cube(plateifu=galaxy.plateifu)
 
         assert 'No db connected' in str(ee.value)
 
@@ -168,7 +168,8 @@ class TestGetSpaxel(object):
                 del kwargs[k]
         return kwargs
 
-    @pytest.mark.parametrize('x, y, ra, dec, excType, message',
+    @pytest.mark.parametrize(
+        'x, y, ra, dec, excType, message',
         [(1, None, 1, None, AssertionError, 'Either use (x, y) or (ra, dec)'),
          (1, None, 1, 1, AssertionError, 'Either use (x, y) or (ra, dec)'),
          (1, None, None, None, AssertionError, 'Specify both x and y'),
