@@ -330,7 +330,7 @@ class TestMapArith(object):
         with pytest.raises(MarvinError) as ee:
             ha.inst_sigma_correction()
 
-        assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
+        assert ('Cannot correct {0}_{1} '.format(ha.property.name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
 
     def test_emline_sigma_correction(self, galaxy):
@@ -363,4 +363,3 @@ class TestEnhancedMap(object):
                 meth()
 
             assert "'EnhancedMap' has no attribute '{}'.".format(method) in str(ee.value)
-                
