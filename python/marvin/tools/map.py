@@ -359,7 +359,7 @@ class Map(Quantity):
         return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
-    def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
+    def _add_ivar(ivar1, ivar2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
     @staticmethod
