@@ -220,6 +220,7 @@ class SpaxelView(BaseView):
                     if type(propval).__module__ == np.__name__:
                         propval = np.asscalar(str(propval))
                     spaxel_properties[name][key] = propval
+                spaxel_properties[name]['channel'] = prop.channel.name if prop.channel else None
                 spaxel_properties[name]['unit'] = prop.unit.to_string()
 
             self.results['data'] = {'properties': spaxel_properties}
