@@ -16,12 +16,15 @@ from .base import Bintype, Template, DAPDataModel, Property, MultiChannelPropert
 from .MPL4 import MPL4_emline_channels
 
 
-GAU_MILESHC = Template('GAU-MILESHC')
+GAU_MILESHC = Template('GAU-MILESHC',
+                       description='Set of stellar templates derived from the MILES library.')
 
-ALL = Bintype('ALL')
-NRE = Bintype('NRE')
-SPX = Bintype('SPX', binned=False)
-VOR10 = Bintype('VOR10')
+ALL = Bintype('ALL', description='Sum of all spectra in each datacube.')
+NRE = Bintype('NRE', description='Two radial bins, binning all spectra from 0-1 '
+                                 'and 1-2 (elliptical Petrosian) effective radii.')
+SPX = Bintype('SPX', binned=False, description='Unbinned spaxels.')
+VOR10 = Bintype('VOR10', description='Spectra binned to S/N~10 using the Voronoi '
+                                     'binning algorithm (Cappellari & Copin 2003).')
 
 
 last_idx = len(MPL4_emline_channels)

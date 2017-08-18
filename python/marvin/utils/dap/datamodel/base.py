@@ -21,10 +21,8 @@ from collections import OrderedDict
 import astropy.table as table
 from astropy import units as u
 
-from fuzzywuzzy import fuzz as fuzz_fuzz
-from fuzzywuzzy import process as fuzz_proc
-
 from marvin.core.exceptions import MarvinError, MarvinNotImplemented
+from marvin.utils.general.structs import get_best_fuzzy
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
@@ -32,28 +30,6 @@ __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property'
 
 
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
-
-
-def get_best_fuzzy(value, choices, min_score=30, scorer=fuzz_fuzz.WRatio, return_score=False):
-    """Returns the best match in a list of choices using fuzzywuzzy."""
-
-    bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
-
-    if len(bests) == 0:
-        best = None
-    elif len(bests) == 1:
-        best = bests[0]
-    else:
-        if bests[0][1] == bests[1][1]:
-            best = None
-        else:
-            best = bests[0]
-
-    if best is None:
-        raise ValueError('cannot find a good match for {0!r}. '
-                         'Your input value is too ambiguous.'.format(value))
-
-    return best if return_score else best[0]
 
 
 class DAPDataModelList(OrderedDict):
@@ -211,7 +187,12 @@ class DAPDataModel(object):
         # Finds the best property+channel
         propety_channel_names = self.list_property_names()
 
-        best = get_best_fuzzy(value, propety_channel_names)
+        try:
+            best = get_best_fuzzy(value, propety_channel_names)
+        except ValueError:
+            # Second pass, removes _
+            best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
+            best = best.replace(' ', '_')
 
         return self.properties[propety_channel_names.index(best)]
 
@@ -225,10 +206,9 @@ class DAPDataModel(object):
     def default_bintype(self, value):
         """Sets the default bintype."""
 
-        if isinstance(value, six.string_types):
-            for bintype in self.bintypes:
-                if value == bintype.name:
-                    value = bintype
+        for bintype in self.bintypes:
+            if str(value) == bintype.name:
+                value = bintype
 
         if value not in self.bintypes and value is not None:
             raise ValueError('{0!r} not found in list of bintypes.'.format(value))
@@ -245,10 +225,9 @@ class DAPDataModel(object):
     def default_template(self, value):
         """Sets the default template."""
 
-        if isinstance(value, six.string_types):
-            for template in self.templates:
-                if value == template.name:
-                    value = template
+        for template in self.templates:
+            if str(value) == template.name:
+                value = template
 
         if value not in self.templates and value is not None:
             raise ValueError('{0!r} not found in list of templates.'.format(value))
@@ -275,11 +254,8 @@ class DAPDataModel(object):
         if value is None:
             return self.default_bintype
 
-        if isinstance(value, Bintype):
-            value = value.name
-
         for bintype in self.bintypes:
-            if bintype.name.upper() == value.upper():
+            if bintype.name.upper() == str(value).upper():
                 return bintype
 
         raise MarvinError('invalid bintype {0!r}'.format(value))
@@ -294,11 +270,8 @@ class DAPDataModel(object):
         if value is None:
             return self.default_template
 
-        if isinstance(value, Template):
-            value = value.name
-
         for template in self.templates:
-            if template.name == value:
+            if template.name.upper() == str(value).upper():
                 return template
 
         raise MarvinError('invalid template {0!r}'.format(value))
@@ -387,11 +360,12 @@ class DAPDataModel(object):
 class Bintype(object):
     """A class representing a bintype."""
 
-    def __init__(self, bintype, binned=True, default=False, n=None):
+    def __init__(self, bintype, binned=True, n=None, description=''):
 
         self.name = bintype
         self.binned = binned
         self.n = n
+        self.description = description
 
     def __repr__(self):
 
@@ -405,10 +379,11 @@ class Bintype(object):
 class Template(object):
     """A class representing a template."""
 
-    def __init__(self, template, n=None):
+    def __init__(self, template, n=None, description=''):
 
         self.name = template
         self.n = n
+        self.description = description
 
     def __repr__(self):
 

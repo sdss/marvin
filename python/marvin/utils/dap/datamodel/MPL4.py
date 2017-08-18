@@ -15,13 +15,15 @@ from astropy import units as u
 from .base import Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
 
 
-M11_STELIB_ZSOL = Template('M11-STELIB-ZSOL', n=0)
-MIUSCAT_THIN = Template('MIUSCAT-THIN', n=1)
-MILES_THIN = Template('MILES-THIN', n=2)
+M11_STELIB_ZSOL = Template('M11-STELIB-ZSOL', n=0,
+                           description='M11 stellar template, solar metallicity.')
+MIUSCAT_THIN = Template('MIUSCAT-THIN', n=1, description='MIUSCAT stellar template.')
+MILES_THIN = Template('MILES-THIN', n=2, description='MILES stellar template.')
 
-NONE = Bintype('NONE', binned=False, n=3)
-RADIAL = Bintype('RADIAL', n=7)
-STON = Bintype('STON', n=1)
+NONE = Bintype('NONE', binned=False, n=3, description='No binning.')
+RADIAL = Bintype('RADIAL', n=7, description='Bin spectra from 0-1 Re and from 1-2 Re in two bins.')
+STON = Bintype('STON', n=1, description='Bin to S/N=30; only include S/N>5 spectra; '
+                                        'fit V, sigma, h3, h4 for stellar kinematics.')
 
 
 MPL4_emline_channels = [
