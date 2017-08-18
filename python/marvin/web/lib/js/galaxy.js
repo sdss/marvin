@@ -2,11 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-<<<<<<< HEAD
 * @Last Modified time: 2017-04-09 08:58:10
-=======
-* @Last Modified time: 2016-09-26 17:40:15
->>>>>>> upstream/marvin_refactor
 */
 
 //
