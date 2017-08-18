@@ -508,8 +508,6 @@ class Map(Quantity):
 class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
-    # TODO remove "property", "channel", "maps", "_datamodel"
-
     def __new__(cls, value, unit, *args, **kwargs):
         ignore = ['release', 'scale', 'history', 'parents']
         [kwargs.pop(it) for it in ignore if it in kwargs]
