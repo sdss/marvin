@@ -49,7 +49,7 @@ class Map(Quantity):
     channels. A ``Map`` would be, for example, the map for ``emline_gflux`` and
     channel ``ha_6564``.
 
-    A ``Map`` returns and astropy 2D Quantity-like array with additional
+    A ``Map`` returns an astropy 2D Quantity-like array with additional
     attributes for ``ivar`` and ``mask``.
 
     A ``Map`` is normally initialised from a ``Maps`` by calling the
@@ -76,12 +76,16 @@ class Map(Quantity):
                 mask=None, dtype=None, copy=True, *args, **kwargs):
 
         if maps is not None and property_name is not None:
+
             assert value is None and unit is None, \
                 'when initialising a Map from a Maps, value and unit must be None'
+
             return cls._init_map_from_maps(maps, property_name, channel,
                                            dtype=dtype, copy=copy)
+
         elif value is not None and unit is not None:
             return cls._init_map_from_value(cls, value, unit, dtype=dtype, copy=copy)
+
         else:
             raise MarvinError('incorrect combination of input parameters.')
 
@@ -355,14 +359,7 @@ class Map(Quantity):
         return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
-    def _combine_names(name1, name2, operator):
-        name = deepcopy(name1)
-        if name1 != name2:
-            name = '({0} {1} {2})'.format(name1, operator, name2)
-        return name
-
-    @staticmethod
-    def _add_ivar(ivar1, ivar2, value1, value2, *args, **kwargs):
+    def _add_ivar(ivar1, ivar2, *args, **kwargs):
         return 1. / ((1. / ivar1 + 1. / ivar2))
 
     @staticmethod
@@ -373,6 +370,39 @@ class Map(Quantity):
             sig12 = abs(value12) * ((sig1 / abs(value1)) + (sig2 / abs(value2)))
             ivar12 = 1. / sig12**2
         return ivar12
+
+    @staticmethod
+    def _pow_ivar(ivar, value, power):
+        if ivar is None:
+            return np.zeros(value.shape)
+        else:
+            sig = np.sqrt(1. / ivar)
+            sig_out = value**power * power * sig * value
+            return 1 / sig_out**2.
+
+    @staticmethod
+    def _unit_propagation(unit1, unit2, op, op_func):
+        if unit1 == unit2:
+            if op in ['*', '/']:
+                unit12 = op_func(unit1, unit2)
+            else:
+                unit12 = unit1
+        else:
+            warnings.warn('Units do not match for map arithmetic.')
+            unit12 = None
+
+        return unit12
+
+    @staticmethod
+    def _create_history(map1, map2, op):
+        map1_history = getattr(map1, 'history', map1.property.full())
+        map2_history = getattr(map2, 'history', map2.property.full())
+        history = '({0} {1} {2})'.format(map1_history, op, map2_history)
+        return history
+
+    @staticmethod
+    def _create_parents(map1, map2):
+        return [getattr(map_, 'parents', map_) for map_ in [map1, map2]]
 
     def _arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
@@ -395,34 +425,19 @@ class Map(Quantity):
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12_mask = map1_mask & map2_mask
 
-        if self.unit == map2.unit:
-            if op in ['*', '/']:
-                map12_unit = ops[op](self.unit, map2.unit)
-            else:
-                map12_unit = self.unit
-        else:
-            warnings.warn('Units do not match for map arithmetic.')
-            map12_unit = None
+        map12_unit = self._unit_propagation(self.unit, map2.unit, op, ops[op])
 
         # TODO test this!
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
         # TODO TEST appending previous histories
-        map1_history = getattr(self, 'history', self.property)
-        map2_history = getattr(map2, 'history', map2.property)
-        history = self._combine_names(map1_history, map2_history, op)
+        history = self._create_history(self, map2, op)
+        parents = self._create_parents(self, map2)
 
-        parents = []
-        for map_ in [self, map2]:
-            if getattr(map_, 'parents', False):
-                parents.append(self.parents)
-            else:
-                parents.append(map_)
-
-        return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar,
-                           mask=map12_mask, copy=True, history=history,
-                           parents=parents)
+        return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
+                           scale=self.scale, release=self.release, history=history,
+                           parents=parents, copy=True)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -452,24 +467,17 @@ class Map(Quantity):
                Power to raise the map values.
 
         Returns:
-            map (:class:`~marvin.tools.map.Map` object)
+            map (:class:`~marvin.tools.map.EnhancedMap` object)
         """
-        map1 = deepcopy(self)
-        map1.value = map1.value**power
+        value = self.value**power
+        ivar = self._pow_ivar(self.ivar, self.value, power)
+        unit = self.unit**power
 
-        if map1.ivar is None:
-            map1.ivar = np.zeros(map1.shape)
-        else:
-            sig = np.sqrt(1. / map1.ivar)
-            sig1 = map1.value * power * sig * self.value
-            map1.ivar = 1 / sig1**2.
+        history = '{0}^{1}'.format(getattr(self, 'history', '({})'.format(self.property)), power)
+        parents = getattr(self, 'parents', self)
 
-        history = getattr(map1, 'history', map1.property) + '^{}'.format(power)
-        parents = [self]
-
-        return EnhancedMap(value=map1.value, unit=map1.unit, ivar=map1.ivar,
-                           mask=map1.mask, copy=True, history=history,
-                           parents=parents)
+        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, scale=self.scale,
+                           release=self.release, history=history, parents=parents, copy=True)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening."""
@@ -504,33 +512,43 @@ class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
     # TODO
-    # pass "scale", "release" to _init_map_from_value
     # remove "property", "channel", "maps", "_datamodel"
     # parents doesn't work for second operation
 
     def __new__(cls, value, unit, *args, **kwargs):
-        [kwargs.pop(it) for it in ['history', 'parents'] if it in kwargs]
+        ignore = ['release', 'scale', 'history', 'parents']
+        [kwargs.pop(it) for it in ignore if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        self.history = kwargs['history']
-        self.parents = kwargs['parents']
+        self.release = kwargs.get('release', None)
+        self.scale = kwargs.get('scale', None)
+        self.history = kwargs.get('history', None)
+        self.parents = kwargs.get('parents', None)
 
     def __repr__(self):
-
-        return ('<Marvin EnhancedMap>')
+        return ('<Marvin EnhancedMap {0.history!r}>'
+                '\n{0.value!r} {1!r}').format(self, self.unit.to_string())
 
     def __deepcopy__(self, memo):
-        pass  # TODO override Map.__deepcopy__
+        return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
+                           ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
+                           scale=deepcopy(self.scale, memo), release=deepcopy(self.release, memo),
+                           history=deepcopy(self.history, memo),
+                           parents=deepcopy(self.parents, memo), copy=True)
 
-    def _get_from_file():
+    def _init_map_from_maps(self):
+        raise AttributeError("'EnhancedMap' has no attribute '_init_map_from_maps'.")
+
+    def _get_from_file(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_file'.")
 
-    def _get_from_db():
+    def _get_from_db(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_db'.")
 
-    def _get_from_api():
+    def _get_from_api(self):
         raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
 
-    def inst_sigma_correction():
-        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
+    def inst_sigma_correction(self):
+        """Override Map.inst_sigma_correction with AttributeError."""
+        raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")

@@ -458,7 +458,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         """Returns the best match for a property_name+channel."""
 
         if channel is not None:
-            property_name = property_name + '_' + channel
+            property_name = property_name + '_' + channel.name
 
         best = self._datamodel[property_name]
         assert isinstance(best, Property), 'the retrived value is not a property.'
