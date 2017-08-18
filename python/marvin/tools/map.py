@@ -483,25 +483,20 @@ class Map(Quantity):
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening."""
-        if self.property == 'stellar_vel':
+        if self.property.name == 'stellar_sigma':
+
             if self.release == 'MPL-4':
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
+
             map_corr = self.maps['stellar_sigmacorr']
 
-        elif self.property == 'emline_gsigma':
-            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+        elif self.property.name == 'emline_gsigma':
+            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel.name)
 
         else:
-            # name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))
-            # TODO Test
-
-        # TODO problem with error propogation (corr HDUs have ivar == None)
-        # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
-
-        map_corr.ivar = np.zeros(map_corr.value.shape)
 
         return (self**2 - map_corr**2)**0.5
 
@@ -513,9 +508,7 @@ class Map(Quantity):
 class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
-    # TODO
-    # remove "property", "channel", "maps", "_datamodel"
-    # parents doesn't work for second operation
+    # TODO remove "property", "channel", "maps", "_datamodel"
 
     def __new__(cls, value, unit, *args, **kwargs):
         ignore = ['release', 'scale', 'history', 'parents']

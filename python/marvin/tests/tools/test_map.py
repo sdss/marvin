@@ -337,5 +337,14 @@ class TestMapArith(object):
         assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
 
+    def test_emline_sigma_correction(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        hasig = maps['emline_gsigma_ha_6564']
+        emsigcorr = maps['emline_instsigma_ha_6564']
+        expected = (hasig**2 - emsigcorr**2)**0.5
+        actual = hasig.inst_sigma_correction()
+        assert pytest.approx(actual.value == expected.value)
+        assert pytest.approx(actual.ivar == expected.ivar)
+        assert (actual.mask == expected.mask).all()
 
 # class TestEnhancedMap(object):
