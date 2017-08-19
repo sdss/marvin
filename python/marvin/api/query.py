@@ -24,6 +24,12 @@ def _run_query(searchfilter, **kwargs):
         return q, r
 
 
+def _get_runtime(query):
+    ''' Retrive a dictionary of the runtime to pass back in JSON '''
+    runtime = {'days': query.runtime.days, 'seconds': query.runtime.seconds, 'microseconds': query.runtime.microseconds}
+    return runtime
+
+
 def _getCubes(searchfilter, **kwargs):
     """Run query locally at Utah and format the output into the full JSON """
 
@@ -50,9 +56,8 @@ def _getCubes(searchfilter, **kwargs):
     results = r.results
 
     # set up the output
-    runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
     output = dict(data=results, query=r.showQuery(), chunk=limit,
-                  filter=searchfilter, params=q.params, returnparams=params, runtime=runtime,
+                  filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
                   queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
     return output
 
@@ -255,8 +260,9 @@ class QueryView(BaseView):
         else:
             self.results['status'] = 1
             if format_type == 'list':
-                column = results.getListOf(colname, return_all=True)
+                column = results.getListOf(str(colname), return_all=True)
             self.results['data'] = column
+            self.results['runtime'] = _get_runtime(query)
 
         return Response(json.dumps(self.results), mimetype='application/json')
 

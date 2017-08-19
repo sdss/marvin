@@ -6,9 +6,11 @@ from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.query.forms import MarvinForm
+from marvin.tools.query.query_utils import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList
+from marvin.utils.general import getImagesByList, downloadList, parseIdentifier
 from marvin.api.api import Interaction
+from operator import add
 import warnings
 import json
 import os
@@ -65,12 +67,20 @@ def marvintuple(name, params=None, **kwargs):
 
     Parameters:
         name (str):
-            The name of the Class
-        params (list):
-            The list of parameters to add as fields to the namedtuple
+            The name of the Class.  Required.
+        params (str|list):
+            The list of parameters to add as fields to the namedtuple.  Can be a list of names
+            or a comma-separated string of names.
 
     Returns:
         a new namedtuple class
+
+    Example:
+        >>> # create new class with two fields
+        >>> mt = marvintuple('Row', ['mangaid', 'plateifu'])
+        >>>
+        >>> # create a new instance of the class, with values
+        >>> row = mt('1-209232', '8485-1901')
 
     '''
 
@@ -84,7 +94,7 @@ def marvintuple(name, params=None, **kwargs):
 
     # create default namedtuple and find new columns
     default = namedtuple(name, 'mangaid, plate, plateifu, ifu_name')
-    newcols = set(params) - set(default._fields) if params else None
+    newcols = [col for col in params if col not in default._fields] if params else None
     finalfields = default._fields + tuple(newcols) if newcols else default._fields
     nt = namedtuple(name, finalfields, **kwargs)
 
@@ -96,6 +106,8 @@ def marvintuple(name, params=None, **kwargs):
         if self._searchfilter:
             assert self._searchfilter == other._searchfilter, ('Cannot add result rows generated '
                                                                'using different search filters')
+
+        assert self.plateifu == other.plateifu, 'The plateifus must be the same to add these rows'
 
         self_dict = self._asdict()
         other_dict = other._asdict()
@@ -111,6 +123,51 @@ def marvintuple(name, params=None, **kwargs):
     nt._release = results._release if results else None
     nt._searchfilter = results.searchfilter if results else None
     return nt
+
+
+class ResultSet(list):
+    ''' A Set of Results '''
+    def __init__(self, _objects, **kwargs):
+        list.__init__(self, _objects)
+        self.count = kwargs.get('count', None)
+        self.total = kwargs.get('total', None)
+        self.pages = int(np.ceil(self.total / float(self.count)))
+        self._results = kwargs.get('results', None)
+        self.columns = kwargs.get('columns', None)
+        self.index = kwargs.get('index') if kwargs.get('index') else 0
+        self.current_page = (int(self.index) + self.count) / self.count
+        if self._results:
+            self.columns = self._results.columns if not self.columns else self.columns
+            self.choices = self.columns.list_params(remote=True)
+
+    def __repr__(self):
+        old = list.__repr__(self)
+        return ('<ResultSet(set={0}/{1}, count_in_set={2}, '
+                'total={3})>\n{4}'.format(self.current_page, self.pages, self.count,
+                                          self.total, old.replace('),', '),\n')))
+
+    def __getitem__(self, value):
+        if isinstance(value, six.string_types):
+            if value in self.columns:
+                colname = self.columns[value].remote
+                rows = [row.__getattribute__(colname) for row in self]
+            else:
+                rows = [row for row in self if value in row]
+            if rows:
+                return rows[0] if len(rows) == 1 else rows
+            else:
+                raise ValueError('{0} not found in the list'.format(value))
+        else:
+            return list.__getitem__(self, value)
+
+    def __add__(self, other):
+        newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
+        newcols = ParameterGroup('Columns', [{'full': p} for p in newcols])
+        newresults = self._results
+        newresults.columns = newcols
+        newset = map(add, self, other)
+        return ResultSet(newset, count=self.count, total=self.total, index=self.index,
+                         columns=newcols, results=newresults)
 
 
 class Results(object):
@@ -182,12 +239,12 @@ class Results(object):
                         category=self.__class__)
 
         # Convert remote results to NamedTuple
-        if self.mode == 'remote':
-            self._makeNamedTuple()
+        #if self.mode == 'remote':
+        self._makeNamedTuple()
 
         # Setup columns, and parameters
-        if self.count > 0:
-            self._setupColumns()
+        #if self.count > 0:
+        #    self._setupColumns()
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -470,23 +527,30 @@ class Results(object):
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
 
-    def _makeNamedTuple(self):
+    def _makeNamedTuple(self, index=None):
         ''' '''
-        ntnames = self._reduceNames(self._params, under=True)
-        try:
-            nt = namedtuple('MarvinRow', ntnames)
-        except ValueError as e:
-            raise MarvinError('Cannot created MarvinRow from remote Results: {0}'.format(e))
-        else:
-            globals()[nt.__name__] = nt
+        #ntnames = self._reduceNames(self._params, under=True)
+        # try:
+        #     nt = namedtuple('MarvinRow', ntnames)
+        # except ValueError as e:
+        #     raise MarvinError('Cannot created MarvinRow from remote Results: {0}'.format(e))
+        # else:
+        #     globals()[nt.__name__] = nt
 
-        qpo = ntnames
+        # qpo = ntnames
 
-        def keys(self):
-            return qpo
-        nt.keys = keys
-        #nt = marvintuple('ResultRow', ntnames, results=self)
-        self.results = [nt(*r) for r in self.results]
+        # def keys(self):
+        #     return qpo
+        # nt.keys = keys
+        #if 'name' in ntnames:
+        #    ntnames[ntnames.index('name')] = 'ifu_name'
+
+        self.columns = self.getColumns()
+        ntnames = self.columns.list_params(remote=True)
+        nt = marvintuple('ResultRow', ntnames, results=self)
+        results = [nt(*r) for r in self.results]
+        self.count = len(self.results)
+        self.results = ResultSet(results, count=self.count, total=self.totalcount, index=index, results=self)
 
     def save(self, path=None, overwrite=False):
         ''' Save the results as a pickle object
@@ -584,9 +648,6 @@ class Results(object):
     def getColumns(self):
         ''' Get the column names of the returned reults
 
-            Parameters:
-                None
-
             Returns:
                 columns (list):
                     A list of column names from the results
@@ -598,56 +659,57 @@ class Results(object):
                 >>> [u'mangaid', u'name', u'nsa.z']
         '''
         try:
-            self.columns = list(self.results[0].keys()) if self.results else None
+            #self.columns = list(self.results[0]._fields) if self.results else None
+            self.columns = ParameterGroup('Columns', [{'full': p} for p in self._params])
         except Exception as e:
-            raise MarvinError('Could not get table keys from results.  Results not an SQLalchemy results collection: {0}'.format(e))
+            raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
 
-    def _reduceNames(self, columns, under=None):
-        ''' reduces the full table.parameter names to non-dotted versions '''
-        # fullstr = ','.join(columns)
-        # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
-        #             '.'+t.split('.')[1]) == 1 else t for t in columns]
-        colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
-        names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
-            t.split('.')[1]) == 1 else t for t in columns]
-        # replace . with _
-        if under:
-            names = [n if '.' not in n else n.replace('.', '_')for n in names]
-        return names
+    # def _reduceNames(self, columns, under=None):
+    #     ''' reduces the full table.parameter names to non-dotted versions '''
+    #     # fullstr = ','.join(columns)
+    #     # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
+    #     #             '.'+t.split('.')[1]) == 1 else t for t in columns]
+    #     colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
+    #     names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
+    #         t.split('.')[1]) == 1 else t for t in columns]
+    #     # replace . with _
+    #     if under:
+    #         names = [n if '.' not in n else n.replace('.', '_')for n in names]
+    #     return names
 
-    def _setupColumns(self):
-        ''' Auto sets up all the column/parameter name info '''
-        columns = self.getColumns()
-        redcol = self._reduceNames(columns)
-        tmp = self.mapColumnsToParams(inputs=redcol)
-        tmp = self.mapParamsToColumns(inputs=redcol)
+    # def _setupColumns(self):
+    #     ''' Auto sets up all the column/parameter name info '''
+    #     columns = self.getColumns()
+    #     redcol = self._reduceNames(columns)
+    #     tmp = self.mapColumnsToParams(inputs=redcol)
+    #     tmp = self.mapParamsToColumns(inputs=redcol)
 
-    def mapColumnsToParams(self, col=None, inputs=None):
-        ''' Map the columns names from results to the original parameter names '''
-        columns = self.getColumns()
-        #params = self._params if self.mode == 'local' else self._params
-        cols = columns if not inputs else inputs
-        if cols:
-            if not self.coltoparam:
-                self.coltoparam = OrderedDict(zip(cols, self._params))
-            mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
-        else:
-            mapping = None
-        return mapping
+    # def mapColumnsToParams(self, col=None, inputs=None):
+    #     ''' Map the columns names from results to the original parameter names '''
+    #     columns = self.getColumns()
+    #     #params = self._params if self.mode == 'local' else self._params
+    #     cols = columns if not inputs else inputs
+    #     if cols:
+    #         if not self.coltoparam:
+    #             self.coltoparam = OrderedDict(zip(cols, self._params))
+    #         mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
+    #     else:
+    #         mapping = None
+    #     return mapping
 
-    def mapParamsToColumns(self, param=None, inputs=None):
-        ''' Map original parameter names to the column names '''
-        columns = self.getColumns()
-        #params = self._params if self.mode == 'local' else self._params
-        cols = columns if not inputs else inputs
-        if cols:
-            if not self.paramtocol:
-                self.paramtocol = OrderedDict(zip(self._params, cols))
-            mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
-        else:
-            mapping = None
-        return mapping
+    # def mapParamsToColumns(self, param=None, inputs=None):
+    #     ''' Map original parameter names to the column names '''
+    #     columns = self.getColumns()
+    #     #params = self._params if self.mode == 'local' else self._params
+    #     cols = columns if not inputs else inputs
+    #     if cols:
+    #         if not self.paramtocol:
+    #             self.paramtocol = OrderedDict(zip(self._params, cols))
+    #         mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
+    #     else:
+    #         mapping = None
+    #     return mapping
 
     def _interaction(self, url, params, calltype='', named_tuple=None):
         ''' Perform a remote Interaction call
@@ -694,6 +756,13 @@ class Results(object):
             else:
                 return output
 
+    def _check_column(self, name):
+        ''' Check if a name exists as a column '''
+        try:
+            name_in_col = name in self.columns
+        except KeyError as e:
+            raise MarvinError('Column {0} not found in results: {1}'.format(name, e))
+
     def getListOf(self, name=None, to_json=False, to_ndarray=False, return_all=None):
         ''' Extract a list of a single parameter from results
 
@@ -724,29 +793,24 @@ class Results(object):
 
         assert name, 'Must specify a column name'
 
-        # get reference name
-        refname = self._getRefName(name)
-        if not refname:
-            raise MarvinError('Name {0} not a property in results.  Try another.'.format(refname))
+        # check column name and get full name
+        self._check_column()
+        fullname = self.columns[name].full
 
         # deal with the output
         if return_all:
             # grab all of that column
             if self.mode == 'local':
-                results = self._queryobj._query_column(refname)
-                output = [r.__getattribute__(refname) for r in results]
+                results = self._queryobj._query_column(fullname)
+                output = list(sum(results, ()))
             elif self.mode == 'remote':
                 # Get the query route
-                url = config.urlmap['api']['getcolumn']['url'].format(colname=refname)
+                url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
                 params = {'searchfilter': self.searchfilter, 'format_type': 'list'}
                 output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
-            output = None
-            try:
-                output = [r.__getattribute__(refname) for r in self.results]
-            except AttributeError as e:
-                raise MarvinError('Name {0} not a property in results.  Try another: {1}'.format(refname, e))
+            output = self.results[name]
 
         if to_json:
             output = json.dumps(output) if output else None
@@ -1151,6 +1215,7 @@ class Results(object):
 
         if self.mode == 'local':
             self.results = self.query.all()
+            self._makeNamedTuple()
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']

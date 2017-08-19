@@ -17,13 +17,20 @@ def get_best_fuzzy(name, choices, cutoff=0):
     items = process.extractBests(name, choices, score_cutoff=cutoff)
     if items:
         scores = [s[1] for s in items]
+        # finds items with the same score
         morethanone = sum(np.max(scores) == scores) > 1
         if morethanone:
-            exact = [s for s in items if s[0].name.lower() == name.lower()]
+            # tries to find an exact string match
+            exact = []
+            for s in items:
+                itemname = s[0].name if isinstance(s[0], QueryParameter) else s[0]
+                if itemname.lower() == name.lower():
+                    exact.append(s)
+            # returns exact match or fails with ambiguity
             if exact:
                 return exact[0]
             else:
-                options = [s[0].name for s in items if s[1] == np.max(scores)]
+                options = [s[0].name if isinstance(s[0], QueryParameter) else s[0] for s in items if s[1] == np.max(scores)]
                 raise KeyError('{0} is too ambiguous.  Did you mean one of {1}?'.format(name, options))
         else:
             return items[0]
@@ -126,11 +133,19 @@ class ParameterGroup(list):
         self.score = None
         queryparams = [QueryParameter(**item) for item in items]
         list.__init__(self, queryparams)
+        self._check_names()
 
     def __repr__(self):
-        return ('<ParameterGroup name={0.name}, paramcount={1}>'.format(self, len(self)))
+        old = list.__repr__(self)
+        old = old.replace('>,', '>,\n')
+        return ('<ParameterGroup name={0.name}, paramcount={1}>\n '
+                '{2}'.format(self, len(self), old))
 
-    def list_params(self, subset=None, display=None, short=None, full=None):
+    @property
+    def full(self):
+        return self.list_params(full=True)
+
+    def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
         ''' List the parameter names for a given group
 
         Lists the Query Parameters of the given group
@@ -144,6 +159,8 @@ class ParameterGroup(list):
                 Set to return the short names
             full (bool):
                 Set to return the full names
+            remote (bool):
+                Set to return the remote query names
 
         Returns:
             param (list):
@@ -162,6 +179,8 @@ class ParameterGroup(list):
             return [param.display for param in paramlist]
         elif full:
             return [param.full for param in paramlist]
+        elif remote:
+            return [param.remote for param in paramlist]
         else:
             return [param for param in paramlist]
 
@@ -185,6 +204,13 @@ class ParameterGroup(list):
         else:
             return list.__getitem__(self, name)
 
+    def _check_names(self):
+        names = self.list_params(remote=True)
+        for i, name in enumerate(names):
+            if names.count(name) > 1:
+                self[i].remote = self[i]._under
+                self[i].display = '{0} {1}'.format(self[i].table.title(), self[i].display)
+
 
 class QueryParameter(object):
     ''' A Query Parameter class
@@ -207,7 +233,8 @@ class QueryParameter(object):
             The type of the parameter (e.g. string, integer, float)
     '''
 
-    def __init__(self, full, table=None, name=None, short=None, display=None, remote=None, dtype=None):
+    def __init__(self, full, table=None, name=None, short=None, display=None,
+                 remote=None, dtype=None, **kwargs):
         self.full = full
         self.table = table
         self.name = name
@@ -215,6 +242,7 @@ class QueryParameter(object):
         self.display = display
         self.dtype = dtype
         self.remote = remote
+        self.value = kwargs.get('value', None)
         self._set_names()
 
     def __repr__(self):
@@ -223,14 +251,18 @@ class QueryParameter(object):
 
     def _set_names(self):
         ''' Sets alternate names if it can '''
+        self._under = self.full.replace('.', '_')
         if not self.table or not self.name:
-            self.table, self.name = self.full.split('.')
+            if '.' in self.full:
+                self.table, self.name = self.full.split('.')
+            else:
+                self.name = self.full
         if not self.short:
             self.short = self.name
         if not self.display:
             self.display = self.name.title()
         if not self.remote:
-            self.remote = self.full.replace('.', '_') if self.name == 'name' else self.name
+            self.remote = self._under if 'name' in self.name else self.name
 
 bestparams = get_params()
 query_params = ParameterGroupList(bestparams)
