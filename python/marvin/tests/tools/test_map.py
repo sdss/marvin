@@ -5,18 +5,18 @@
 #
 # Created by Brett Andrews on 2 Jul 2017.
 
-import copy
+from copy import deepcopy
 
 import numpy as np
-
 import astropy
+from astropy import units as u
 import matplotlib
 import pytest
 
 from marvin.core.exceptions import MarvinError
 from marvin.utils.dap import datamodel
 from marvin.tools.maps import Maps
-from marvin.tools.map import Map
+from marvin.tools.map import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 
 value1 = np.array([[16.35, 0.8],
@@ -50,6 +50,9 @@ ivar_pow_m2 = np.array([[2.67322500e+02, 1.6e-01],
                         [np.nan, 2.5e+09]])
 ivar_pow_m05 = np.array([[0.97859327, 5],
                          [np.nan, np.nan]])
+
+u_flux = u.erg / u.cm**2 / u.s / u.def_unit('spaxel')
+u_flux2 = u_flux * u_flux
 
 
 def _get_maps_kwargs(galaxy, data_origin):
@@ -111,17 +114,13 @@ class TestMap(object):
         map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
 
-
-@pytest.mark.skip
-class TestArithmetic(object):
-
     @pytest.mark.parametrize('property_name, channel',
                              [('emline_gflux', 'ha_6564'),
                               ('stellar_vel', None)])
     def test_deepcopy(self, galaxy, property_name, channel):
         maps = Maps(plateifu=galaxy.plateifu)
         map1 = maps.getMap(property_name=property_name, channel=channel)
-        map2 = copy.deepcopy(map1)
+        map2 = deepcopy(map1)
 
         for attr in vars(map1):
             if not attr.startswith('_'):
@@ -140,6 +139,20 @@ class TestArithmetic(object):
 
                 else:
                     assert value == value2, attr
+
+    def test_getMap_invalid_property(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(ValueError) as ee:
+            maps.getMap(property_name='mythical_property')
+
+        assert 'Your input value is too ambiguous.' in str(ee.value)
+
+    def test_getMap_invalid_channel(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(ValueError) as ee:
+            maps.getMap(property_name='emline_gflux', channel='mythical_channel')
+
+        assert 'Your input value is too ambiguous.' in str(ee.value)
 
 
 class TestMapArith(object):
@@ -169,6 +182,52 @@ class TestMapArith(object):
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
         assert pytest.approx(Map._pow_ivar(None, np.arange(4), power) == np.zeros(4))
+
+    @pytest.mark.parametrize('unit1, unit2, op, expected',
+                             [(u_flux, u_flux, '+', u_flux),
+                              (u_flux, u_flux, '-', u_flux),
+                              (u_flux, u_flux, '*', u_flux2),
+                              (u_flux, u_flux, '/', u.dimensionless_unscaled),
+                              (u.km, u.s, '*', u.km * u.s),
+                              (u.km, u.s, '/', u.km / u.s)])
+    def test_unit_propagation(self, unit1, unit2, op, expected):
+        assert Map._unit_propagation(unit1, unit2, op) == expected
+
+    @pytest.mark.parametrize('unit1, unit2, op',
+                             [(u_flux, u.km, '+'),
+                              (u_flux, u.km, '-')])
+    def test_unit_propagation_mismatch(self, unit1, unit2, op):
+        with pytest.warns(UserWarning):
+            assert Map._unit_propagation(unit1, unit2, op) is None
+
+    def test_create_history(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        nii = maps['emline_gflux_nii_6585']
+        ha = maps['emline_gflux_ha_6564']
+        sii = maps['emline_gflux_sii_6732']
+        n2ha = nii / ha
+        s2ha = sii / ha
+
+        expected_n2ha = '(emline_gflux_nii_6585 / emline_gflux_ha_6564)'
+        assert Map._create_history(nii, ha, '/') == expected_n2ha
+
+        expected_s2ha_nii = ('((emline_gflux_sii_6732 / emline_gflux_ha_6564) / '
+                             'emline_gflux_nii_6585)')
+        assert Map._create_history(s2ha, nii, '/') == expected_s2ha_nii
+
+        expected_n2ha_s2ha = ('((emline_gflux_nii_6585 / emline_gflux_ha_6564) / '
+                              '(emline_gflux_sii_6732 / emline_gflux_ha_6564))')
+        assert Map._create_history(n2ha, s2ha, '/') == expected_n2ha_s2ha
+
+    def test_create_parents(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        nii = maps['emline_gflux_nii_6585']
+        ha = maps['emline_gflux_ha_6564']
+        n2ha = nii / ha
+
+        assert Map._create_parents(nii, ha) == [nii, ha]
+        assert Map._create_parents(n2ha, ha) == [[nii, ha], ha]
+        assert Map._create_parents(n2ha, n2ha) == [[nii, ha], [nii, ha]]
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -244,20 +303,6 @@ class TestMapArith(object):
         assert pytest.approx(map_new.ivar == ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
-    def test_getMap_invalid_property(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(ValueError) as ee:
-            maps.getMap(property_name='mythical_property')
-
-        assert 'Your input value is too ambiguous.' in str(ee.value)
-
-    def test_getMap_invalid_channel(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(ValueError) as ee:
-            maps.getMap(property_name='emline_gflux', channel='mythical_channel')
-
-        assert 'Your input value is too ambiguous.' in str(ee.value)
-
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -285,8 +330,36 @@ class TestMapArith(object):
         with pytest.raises(MarvinError) as ee:
             ha.inst_sigma_correction()
 
-        assert ('Cannot correct {0}_{1} '.format(ha.property_name, ha.channel) +
+        assert ('Cannot correct {0}_{1} '.format(ha.property.name, ha.channel) +
                 'for instrumental broadening.') in str(ee.value)
 
+    def test_emline_sigma_correction(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        hasig = maps['emline_gsigma_ha_6564']
+        emsigcorr = maps['emline_instsigma_ha_6564']
+        expected = (hasig**2 - emsigcorr**2)**0.5
+        actual = hasig.inst_sigma_correction()
+        assert pytest.approx(actual.value == expected.value)
+        assert pytest.approx(actual.ivar == expected.ivar)
+        assert (actual.mask == expected.mask).all()
 
-# class TestEnhancedMap(object):
+
+class TestEnhancedMap(object):
+
+    def test_overridden_methods(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        nii = maps['emline_gflux_nii_6585']
+        n2ha = nii / ha
+
+        assert isinstance(n2ha, EnhancedMap)
+
+        methods = ['_init_map_from_maps', '_get_from_file', '_get_from_db', '_get_from_api',
+                   'inst_sigma_correction']
+
+        for method in methods:
+            with pytest.raises(AttributeError) as ee:
+                meth = getattr(n2ha, method)
+                meth()
+
+            assert "'EnhancedMap' has no attribute '{}'.".format(method) in str(ee.value)

@@ -381,22 +381,24 @@ class Map(Quantity):
             return 1 / sig_out**2.
 
     @staticmethod
-    def _unit_propagation(unit1, unit2, op, op_func):
-        if unit1 == unit2:
-            if op in ['*', '/']:
-                unit12 = op_func(unit1, unit2)
-            else:
-                unit12 = unit1
+    def _unit_propagation(unit1, unit2, op):
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+
+        if op in ['*', '/']:
+            unit12 = ops[op](unit1, unit2)
         else:
-            warnings.warn('Units do not match for map arithmetic.')
-            unit12 = None
+            if unit1 == unit2:
+                unit12 = unit1
+            else:
+                warnings.warn('Units do not match for map arithmetic.', UserWarning)
+                unit12 = None
 
         return unit12
 
     @staticmethod
     def _create_history(map1, map2, op):
-        map1_history = getattr(map1, 'history', map1.property.full())
-        map2_history = getattr(map2, 'history', map2.property.full())
+        map1_history = getattr(map1, 'history', map1.property)
+        map2_history = getattr(map2, 'history', map2.property)
         history = '({0} {1} {2})'.format(map1_history, op, map2_history)
         return history
 
@@ -425,7 +427,7 @@ class Map(Quantity):
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12_mask = map1_mask & map2_mask
 
-        map12_unit = self._unit_propagation(self.unit, map2.unit, op, ops[op])
+        map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
         # TODO test this!
         if self.release != map2.release:
@@ -480,26 +482,26 @@ class Map(Quantity):
                            release=self.release, history=history, parents=parents, copy=True)
 
     def inst_sigma_correction(self):
-        """Correct for instrumental broadening."""
-        if self.property == 'stellar_vel':
+        """Correct for instrumental broadening.
+
+        Correct observed stellar or emission line velocity dispersion
+        for instrumental broadening.
+        """
+        if self.property.name == 'stellar_sigma':
+
             if self.release == 'MPL-4':
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
+
             map_corr = self.maps['stellar_sigmacorr']
 
-        elif self.property == 'emline_gsigma':
-            map_corr = self.maps.getMap(property_name='emline_instsigma', channel=self.channel)
+        elif self.property.name == 'emline_gsigma':
+            map_corr = self.maps.getMap(property_name='emline_instsigma',
+                                        channel=self.channel.name)
 
         else:
-            # name = '_'.join((it for it in [self.property_name, self.channel] if it is not None))
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))
-            # TODO Test
-
-        # TODO problem with error propogation (corr HDUs have ivar == None)
-        # sigc_ivar = self.ivar * (map_corr.value / self.value)^2
-
-        map_corr.ivar = np.zeros(map_corr.value.shape)
 
         return (self**2 - map_corr**2)**0.5
 
@@ -510,10 +512,6 @@ class Map(Quantity):
 
 class EnhancedMap(Map):
     """Creates a Map that has been modified."""
-
-    # TODO
-    # remove "property", "channel", "maps", "_datamodel"
-    # parents doesn't work for second operation
 
     def __new__(cls, value, unit, *args, **kwargs):
         ignore = ['release', 'scale', 'history', 'parents']
@@ -551,4 +549,4 @@ class EnhancedMap(Map):
 
     def inst_sigma_correction(self):
         """Override Map.inst_sigma_correction with AttributeError."""
-        raise AttributeError("'EnhancedMap' has no attribute '_get_from_api'.")
+        raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
