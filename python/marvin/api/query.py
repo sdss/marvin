@@ -182,17 +182,8 @@ class QueryView(BaseView):
 
         '''
         searchfilter = args.pop('searchfilter', None)
-        # searchfilter = self.results['inconfig'].get('searchfilter', None)
-        # params = self.results['inconfig'].get('params', None)
-        # rettype = self.results['inconfig'].get('returntype', None)
-        # limit = self.results['inconfig'].get('limit', 100)
-        # sort = self.results['inconfig'].get('sort', None)
-        # order = self.results['inconfig'].get('order', 'asc')
-        # release = self.results['inconfig'].get('release', None)
 
         try:
-            # res = _getCubes(searchfilter, params=params, rettype=rettype,
-            #                 limit=limit, sort=sort, order=order, release=release)
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
@@ -253,8 +244,7 @@ class QueryView(BaseView):
         '''
         searchfilter = args.pop('searchfilter', None)
         format_type = args.pop('format_type', 'list')
-        print('format_type', format_type)
-        print(args)
+
         try:
             query, results = _run_query(searchfilter, **args)
         except MarvinError as e:
@@ -348,20 +338,8 @@ class QueryView(BaseView):
 
         '''
         searchfilter = args.pop('searchfilter', None)
-        # searchfilter = self.results['inconfig'].get('searchfilter', None)
-        # params = self.results['inconfig'].get('params', None)
-        # start = self.results['inconfig'].get('start', None)
-        # end = self.results['inconfig'].get('end', None)
-        # rettype = self.results['inconfig'].get('returntype', None)
-        # limit = self.results['inconfig'].get('limit', 100)
-        # sort = self.results['inconfig'].get('sort', None)
-        # order = self.results['inconfig'].get('order', 'asc')
-        # release = self.results['inconfig'].get('release', None)
 
         try:
-            # res = _getCubes(searchfilter, params=params, start=int(start),
-            #                 end=int(end), rettype=rettype, limit=limit,
-            #                 sort=sort, order=order, release=release)
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)

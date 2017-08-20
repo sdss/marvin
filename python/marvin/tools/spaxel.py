@@ -456,9 +456,8 @@ class Spaxel(object):
         xCentre = int(self.x - xMid)
         yCentre = int(self.y - yMid)
 
-        return ('<Marvin Spaxel (x={0.x:d}, y={0.y:d}; x_cen={1:d}, y_cen={2:d}>'.format(self,
-                                                                                         xCentre,
-                                                                                         yCentre))
+        return ('<Marvin Spaxel (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
+                'x_cen={1:d}, y_cen={2:d})>'.format(self, xCentre, yCentre))
 
     def _is_MPL4(self):
         """Returns True if the dapver correspond to MPL-4."""

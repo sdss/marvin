@@ -22,6 +22,7 @@ from functools import wraps
 from astropy.table import Table, vstack, hstack
 from collections import OrderedDict, namedtuple
 from marvin.core import marvin_pickle
+import matplotlib.pyplot as plt
 
 try:
     import cPickle as pickle
@@ -189,48 +190,60 @@ class ResultSet(list):
             raise MarvinError('Cannot output dictionaries.  Check your input format_type.')
         return output
 
+    def to_list(self):
+        ''' Convert to a standard Python list object '''
+        return list(self)
+
+    def sort(self, name=None, reverse=False):
+        ''' '''
+        if name:
+            colname = self.columns[name].remote
+            return list.sort(self, key=lambda row: row.__getattribute__(colname), reverse=reverse)
+        else:
+            return list.sort(self)
+
 
 class Results(object):
     ''' A class to handle results from queries on the MaNGA dataset
 
-        Parameters:
-            results (list):
-                List of results satisfying the input Query
-            query (object / str):
-                The query used to produce these results. In local mode, the query is an
-                SQLalchemy object that can be used to redo the query, or extract subsets
-                of results from the query. In remote more, the query is a literal string
-                representation of the SQL query.
-            returntype (str):
-                The MarvinTools object to convert the results into.  If initially set, the results
-                are automaticaly converted into the specified Marvin Tool Object on initialization
-            objects (list):
-                The list of Marvin Tools objects created by returntype
-            count (int):
-                The number of objects in the returned query results
-            totalcount (int):
-                The total number of objects in the full query results
-            mode ({'auto', 'local', 'remote'}):
-                The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
-            chunk (int):
-                For paginated results, the number of results to return.  Defaults to 10.
-            start (int):
-                For paginated results, the starting index value of the results.  Defaults to 0.
-            end (int):
-                For paginated results, the ending index value of the resutls.  Defaults to start+chunk.
+    Parameters:
+        results (list):
+            List of results satisfying the input Query
+        query (object / str):
+            The query used to produce these results. In local mode, the query is an
+            SQLalchemy object that can be used to redo the query, or extract subsets
+            of results from the query. In remote more, the query is a literal string
+            representation of the SQL query.
+        returntype (str):
+            The MarvinTools object to convert the results into.  If initially set, the results
+            are automaticaly converted into the specified Marvin Tool Object on initialization
+        objects (list):
+            The list of Marvin Tools objects created by returntype
+        count (int):
+            The number of objects in the returned query results
+        totalcount (int):
+            The total number of objects in the full query results
+        mode ({'auto', 'local', 'remote'}):
+            The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
+        chunk (int):
+            For paginated results, the number of results to return.  Defaults to 10.
+        start (int):
+            For paginated results, the starting index value of the results.  Defaults to 0.
+        end (int):
+            For paginated results, the ending index value of the resutls.  Defaults to start+chunk.
 
-        Returns:
-            results: An object representing the Results entity
+    Returns:
+        results: An object representing the Results entity
 
-        Example:
-            >>> f = 'nsa.z < 0.012 and ifu.name = 19*'
-            >>> q = Query(searchfilter=f)
-            >>> r = q.run()
-            >>> print(r)
-            >>> Results(results=[(u'4-3602', u'1902', -9999.0), (u'4-3862', u'1902', -9999.0), (u'4-3293', u'1901', -9999.0), (u'4-3988', u'1901', -9999.0), (u'4-4602', u'1901', -9999.0)],
-            >>>         query=<sqlalchemy.orm.query.Query object at 0x115217090>,
-            >>>         count=64,
-            >>>         mode=local)
+    Example:
+        >>> f = 'nsa.z < 0.012 and ifu.name = 19*'
+        >>> q = Query(searchfilter=f)
+        >>> r = q.run()
+        >>> print(r)
+        >>> Results(results=[(u'4-3602', u'1902', -9999.0), (u'4-3862', u'1902', -9999.0), (u'4-3293', u'1901', -9999.0), (u'4-3988', u'1901', -9999.0), (u'4-4602', u'1901', -9999.0)],
+        >>>         query=<sqlalchemy.orm.query.Query object at 0x115217090>,
+        >>>         count=64,
+        >>>         mode=local)
 
     '''
 
@@ -286,9 +299,9 @@ class Results(object):
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
 
-            Returns:
-                querystring (str):
-                    A string representation of the SQL query
+        Returns:
+            querystring (str):
+                A string representation of the SQL query
         '''
 
         # check unicode or str
@@ -310,28 +323,29 @@ class Results(object):
     def download(self, images=False, limit=None):
         ''' Download results via sdss_access
 
-            Uses sdss_access to download the query results via rsync.
-            Downloads them to the local sas. The data type downloaded
-            is indicated by the returntype parameter
+        Uses sdss_access to download the query results via rsync.
+        Downloads them to the local sas. The data type downloaded
+        is indicated by the returntype parameter
 
-            i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux/...
+        i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux/...
 
-            Parameters:
-                images (bool):
-                    Set to only download the images of the query results
+        Parameters:
+            images (bool):
+                Set to only download the images of the query results
 
-            Returns:
-                NA: na
+        Returns:
+            NA: na
 
-            Example:
-                >>> r = q.run()
-                >>> r.returntype = 'cube'
-                >>> r.download()
+        Example:
+            >>> r = q.run()
+            >>> r.returntype = 'cube'
+            >>> r.download()
         '''
 
-        plates = self.getListOf(name='plate')
-        ifus = self.getListOf(name='ifu.name')
-        plateifu = ['{0}-{1}'.format(z[0], z[1]) for z in zip(plates, ifus)]
+        #plates = self.getListOf(name='plate')
+        #ifus = self.getListOf(name='ifu.name')
+        #plateifu = ['{0}-{1}'.format(z[0], z[1]) for z in zip(plates, ifus)]
+        plateifu = self.getListOf('plateifu')
         if images:
             tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
         else:
@@ -340,52 +354,49 @@ class Results(object):
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
 
-            Sorts the results by a given parameter / column name.  Sets
-            the results to the new sorted results.
+        Sorts the results (in place) by a given parameter / column name.  Sets
+        the results to the new sorted results.
 
-            Parameters:
-                name (str):
-                order ({'asc', 'desc'}):
+        Parameters:
+            name (str):
+                The column name to sort on
+            order ({'asc', 'desc'}):
+                To sort in ascending or descending order.  Default is asc.
 
-            Returns:
-                sortedres (list):
-                    The listed of sorted results.
+        Example:
+            >>> r = q.run()
+            >>> r.getColumns()
+            >>> [u'mangaid', u'name', u'nsa.z']
+            >>> r.results
+            >>> [(u'4-3988', u'1901', -9999.0),
+            >>>  (u'4-3862', u'1902', -9999.0),
+            >>>  (u'4-3293', u'1901', -9999.0),
+            >>>  (u'4-3602', u'1902', -9999.0),
+            >>>  (u'4-4602', u'1901', -9999.0)]
 
-            Example:
-                >>> r = q.run()
-                >>> r.getColumns()
-                >>> [u'mangaid', u'name', u'nsa.z']
-                >>> r.results
-                >>> [(u'4-3988', u'1901', -9999.0),
-                >>>  (u'4-3862', u'1902', -9999.0),
-                >>>  (u'4-3293', u'1901', -9999.0),
-                >>>  (u'4-3602', u'1902', -9999.0),
-                >>>  (u'4-4602', u'1901', -9999.0)]
+            >>> # Sort the results by mangaid
+            >>> r.sort('mangaid')
+            >>> [(u'4-3293', u'1901', -9999.0),
+            >>>  (u'4-3602', u'1902', -9999.0),
+            >>>  (u'4-3862', u'1902', -9999.0),
+            >>>  (u'4-3988', u'1901', -9999.0),
+            >>>  (u'4-4602', u'1901', -9999.0)]
 
-                >>> # Sort the results by mangaid
-                >>> r.sort('mangaid')
-                >>> [(u'4-3293', u'1901', -9999.0),
-                >>>  (u'4-3602', u'1902', -9999.0),
-                >>>  (u'4-3862', u'1902', -9999.0),
-                >>>  (u'4-3988', u'1901', -9999.0),
-                >>>  (u'4-4602', u'1901', -9999.0)]
-
-                >>> # Sort the results by IFU name in descending order
-                >>> r.sort('ifu.name', order='desc')
-                >>> [(u'4-3602', u'1902', -9999.0),
-                >>>  (u'4-3862', u'1902', -9999.0),
-                >>>  (u'4-3293', u'1901', -9999.0),
-                >>>  (u'4-3988', u'1901', -9999.0),
-                >>>  (u'4-4602', u'1901', -9999.0)]
+            >>> # Sort the results by IFU name in descending order
+            >>> r.sort('ifu.name', order='desc')
+            >>> [(u'4-3602', u'1902', -9999.0),
+            >>>  (u'4-3862', u'1902', -9999.0),
+            >>>  (u'4-3293', u'1901', -9999.0),
+            >>>  (u'4-3988', u'1901', -9999.0),
+            >>>  (u'4-4602', u'1901', -9999.0)]
         '''
-        refname = self._getRefName(name)
-        self.sortcol = refname
+        remotename = self._check_column(name, 'remote')
+        self.sortcol = remotename
         self.order = order
 
         if self.mode == 'local':
             reverse = True if order == 'desc' else False
-            sortedres = sorted(self.results, key=lambda row: row.__getattribute__(refname), reverse=reverse)
-            self.results = sortedres
+            self.results.sort(remotename, reverse=reverse)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -394,39 +405,38 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'sort': refname, 'order': order, 'limit': self.limit}
+                      'sort': remotename, 'order': order, 'limit': self.limit}
             self._interaction(url, params, named_tuple=True, calltype='Sort')
-            sortedres = self.results
 
-        return sortedres
+        return self.results
 
     def toTable(self):
         ''' Output the results as an Astropy Table
 
-            Uses the Python Astropy package
+        Uses the Python Astropy package
 
-            Parameters:
-                None
+        Parameters:
+            None
 
-            Returns:
-                tableres:
-                    Astropy Table
+        Returns:
+            tableres:
+                Astropy Table
 
-            Example:
-                >>> r = q.run()
-                >>> r.toTable()
-                >>> <Table length=5>
-                >>> mangaid    name   nsa.z
-                >>> unicode6 unicode4   float64
-                >>> -------- -------- ------------
-                >>>   4-3602     1902      -9999.0
-                >>>   4-3862     1902      -9999.0
-                >>>   4-3293     1901      -9999.0
-                >>>   4-3988     1901      -9999.0
-                >>>   4-4602     1901      -9999.0
+        Example:
+            >>> r = q.run()
+            >>> r.toTable()
+            >>> <Table length=5>
+            >>> mangaid    name   nsa.z
+            >>> unicode6 unicode4   float64
+            >>> -------- -------- ------------
+            >>>   4-3602     1902      -9999.0
+            >>>   4-3862     1902      -9999.0
+            >>>   4-3293     1901      -9999.0
+            >>>   4-3988     1901      -9999.0
+            >>>   4-4602     1901      -9999.0
         '''
         try:
-            tabres = Table(rows=self.results, names=self.paramtocol.keys())
+            tabres = Table(rows=self.results, names=self.columns.full)
         except ValueError as e:
             raise MarvinError('Could not make astropy Table from results: {0}'.format(e))
         return tabres
@@ -522,55 +532,58 @@ class Results(object):
     def toDataFrame(self):
         '''Output the results as an pandas dataframe.
 
-            Uses the pandas package.
+        Uses the pandas package.
 
-            Parameters:
-                None
+        Parameters:
+            None
 
-            Returns:
-                dfres:
-                    pandas dataframe
+        Returns:
+            dfres:
+                pandas dataframe
 
-            Example:
-                >>> r = q.run()
-                >>> r.toDataFrame()
-                mangaid  plate   name     nsa_mstar         z
-                0  1-22286   7992  12704  1.702470e+11  0.099954
-                1  1-22301   7992   6101  9.369260e+10  0.105153
-                2  1-22414   7992   6103  7.489660e+10  0.092272
-                3  1-22942   7992  12705  8.470360e+10  0.104958
-                4  1-22948   7992   9102  1.023530e+11  0.119399
+        Example:
+            >>> r = q.run()
+            >>> r.toDataFrame()
+            mangaid  plate   name     nsa_mstar         z
+            0  1-22286   7992  12704  1.702470e+11  0.099954
+            1  1-22301   7992   6101  9.369260e+10  0.105153
+            2  1-22414   7992   6103  7.489660e+10  0.092272
+            3  1-22942   7992  12705  8.470360e+10  0.104958
+            4  1-22948   7992   9102  1.023530e+11  0.119399
         '''
         try:
-            dfres = pd.DataFrame(self.results)
+            dfres = pd.DataFrame(self.results.to_list())
         except (ValueError, NameError) as e:
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
 
     def _makeNamedTuple(self, index=None, rows=None):
-        ''' '''
-        #ntnames = self._reduceNames(self._params, under=True)
-        # try:
-        #     nt = namedtuple('MarvinRow', ntnames)
-        # except ValueError as e:
-        #     raise MarvinError('Cannot created MarvinRow from remote Results: {0}'.format(e))
-        # else:
-        #     globals()[nt.__name__] = nt
+        ''' Creates a Marvin ResultSet
 
-        # qpo = ntnames
+        Parameters:
+            index (int):
+                The starting index of the result subset
 
-        # def keys(self):
-        #     return qpo
-        # nt.keys = keys
-        #if 'name' in ntnames:
-        #    ntnames[ntnames.index('name')] = 'ifu_name'
+            rows (list|ResultSet):
+                A list of rows containing the value data to input into the ResultSet
 
-        rows = rows if rows else self.results
+        Returns:
+            creates a marvin ResultSet and sets it as the results attribute
+
+        '''
+
+        # grab the columns from the results
         self.columns = self.getColumns()
         ntnames = self.columns.list_params(remote=True)
+        # dynamically create a new ResultRow Class
         nt = marvintuple('ResultRow', ntnames, results=self)
-        results = [nt(*r) for r in rows]
-        self.count = len(self.results)
+        rows = rows if rows else self.results
+        if not isinstance(rows, ResultSet):
+            results = [nt(*r) for r in rows]
+        else:
+            results = rows
+        self.count = len(results)
+        # Build the ResultSet
         self.results = ResultSet(results, count=self.count, total=self.totalcount, index=index, results=self)
 
     def save(self, path=None, overwrite=False):
@@ -645,20 +658,20 @@ class Results(object):
     def toJson(self):
         ''' Output the results as a JSON object
 
-            Uses Python json package to convert the results to JSON representation
+        Uses Python json package to convert the results to JSON representation
 
-            Parameters:
-                None
+        Parameters:
+            None
 
-            Returns:
-                jsonres:
-                    JSONed results
+        Returns:
+            jsonres:
+                JSONed results
 
-            Example:
-                >>> r = q.run()
-                >>> r.toJson()
-                >>> '[["4-3602", "1902", -9999.0], ["4-3862", "1902", -9999.0], ["4-3293", "1901", -9999.0],
-                >>>   ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
+        Example:
+            >>> r = q.run()
+            >>> r.toJson()
+            >>> '[["4-3602", "1902", -9999.0], ["4-3862", "1902", -9999.0], ["4-3293", "1901", -9999.0],
+            >>>   ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
         '''
         try:
             jsonres = json.dumps(self.results)
@@ -667,72 +680,30 @@ class Results(object):
         return jsonres
 
     def getColumns(self):
-        ''' Get the column names of the returned reults
+        ''' Get the columns of the returned reults
 
-            Returns:
-                columns (list):
-                    A list of column names from the results
+        Returns a ParameterGroup containing the columns from the
+        returned results.  Each row of the ParameterGroup is a
+        QueryParameter.
 
-            Example:
-                >>> r = q.run()
-                >>> cols = r.getColumns()
-                >>> print(cols)
-                >>> [u'mangaid', u'name', u'nsa.z']
+        Returns:
+            columns (list):
+                A list of column names from the results
+
+        Example:
+            >>> r = q.run()
+            >>> cols = r.getColumns()
+            >>> print(cols)
+            >>> [u'mangaid', u'name', u'nsa.z']
+
         '''
         try:
-            #self.columns = list(self.results[0]._fields) if self.results else None
             self.columns = ParameterGroup('Columns', [{'full': p} for p in self._params])
         except Exception as e:
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
 
-    # def _reduceNames(self, columns, under=None):
-    #     ''' reduces the full table.parameter names to non-dotted versions '''
-    #     # fullstr = ','.join(columns)
-    #     # names = [t if '.' not in t else t.split('.')[1] if fullstr.count(
-    #     #             '.'+t.split('.')[1]) == 1 else t for t in columns]
-    #     colsplit = [c if '.' not in c else c.split('.')[1] for c in columns]
-    #     names = [t if '.' not in t else t.split('.')[1] if colsplit.count(
-    #         t.split('.')[1]) == 1 else t for t in columns]
-    #     # replace . with _
-    #     if under:
-    #         names = [n if '.' not in n else n.replace('.', '_')for n in names]
-    #     return names
-
-    # def _setupColumns(self):
-    #     ''' Auto sets up all the column/parameter name info '''
-    #     columns = self.getColumns()
-    #     redcol = self._reduceNames(columns)
-    #     tmp = self.mapColumnsToParams(inputs=redcol)
-    #     tmp = self.mapParamsToColumns(inputs=redcol)
-
-    # def mapColumnsToParams(self, col=None, inputs=None):
-    #     ''' Map the columns names from results to the original parameter names '''
-    #     columns = self.getColumns()
-    #     #params = self._params if self.mode == 'local' else self._params
-    #     cols = columns if not inputs else inputs
-    #     if cols:
-    #         if not self.coltoparam:
-    #             self.coltoparam = OrderedDict(zip(cols, self._params))
-    #         mapping = self.coltoparam[col] if col else list(self.coltoparam.values())
-    #     else:
-    #         mapping = None
-    #     return mapping
-
-    # def mapParamsToColumns(self, param=None, inputs=None):
-    #     ''' Map original parameter names to the column names '''
-    #     columns = self.getColumns()
-    #     #params = self._params if self.mode == 'local' else self._params
-    #     cols = columns if not inputs else inputs
-    #     if cols:
-    #         if not self.paramtocol:
-    #             self.paramtocol = OrderedDict(zip(self._params, cols))
-    #         mapping = self.paramtocol[param] if param else list(self.paramtocol.values())
-    #     else:
-    #         mapping = None
-    #     return mapping
-
-    def _interaction(self, url, params, calltype='', named_tuple=None):
+    def _interaction(self, url, params, calltype='', named_tuple=None, **kwargs):
         ''' Perform a remote Interaction call
 
         Parameters:
@@ -771,9 +742,10 @@ class Results(object):
             self.response_time = ii.response_time
             self._runtime = ii.results['runtime']
             self.query_time = self._getRunTime()
+            index = kwargs.get('index', None)
             if named_tuple:
                 self.results = output
-                self._makeNamedTuple()
+                self._makeNamedTuple(index=index)
             else:
                 return output
 
@@ -791,29 +763,29 @@ class Results(object):
     def getListOf(self, name=None, to_json=False, to_ndarray=False, return_all=None):
         ''' Extract a list of a single parameter from results
 
-            Parameters:
-                name (str):
-                    Name of the parameter name to return.  If not specified,
-                    it returns all parameters.
-                to_json (bool):
-                    True/False boolean to convert the output into a JSON format
-                to_ndarray (bool):
-                    True/False boolean to convert the output into a Numpy array
-                return_all (bool):
-                    if True, returns the entire result set for that column
+        Parameters:
+            name (str):
+                Name of the parameter name to return.  If not specified,
+                it returns all parameters.
+            to_json (bool):
+                True/False boolean to convert the output into a JSON format
+            to_ndarray (bool):
+                True/False boolean to convert the output into a Numpy array
+            return_all (bool):
+                if True, returns the entire result set for that column
 
-            Returns:
-                output (list):
-                    A list of results for one parameter
+        Returns:
+            output (list):
+                A list of results for one parameter
 
-            Example:
-                >>> r = q.run()
-                >>> r.getListOf('mangaid')
-                >>> [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602']
+        Example:
+            >>> r = q.run()
+            >>> r.getListOf('mangaid')
+            >>> [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602']
 
-            Raises:
-                AssertionError:
-                    Raised when no name is specified.
+        Raises:
+            AssertionError:
+                Raised when no name is specified.
         '''
 
         assert name, 'Must specify a column name'
@@ -825,7 +797,8 @@ class Results(object):
         if return_all:
             # # grab all of that column
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
-            params = {'searchfilter': self.searchfilter, 'format_type': 'list', 'return_all': True}
+            params = {'searchfilter': self.searchfilter, 'format_type': 'list',
+                      'return_all': True, 'params': self.returnparams}
             output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
@@ -842,46 +815,46 @@ class Results(object):
     def getDictOf(self, name=None, format_type='listdict', to_json=False, return_all=None):
         ''' Get a dictionary of specified parameters
 
-            Parameters:
-                name (str):
-                    Name of the parameter name to return.  If not specified,
-                    it returns all parameters.
-                format_type ({'listdict', 'dictlist'}):
-                    The format of the results. Listdict is a list of dictionaries.
-                    Dictlist is a dictionary of lists. Default is listdict.
-                to_json (bool):
-                    True/False boolean to convert the output into a JSON format
-                return_all (bool):
-                    if True, returns the entire result set for that column
+        Parameters:
+            name (str):
+                Name of the parameter name to return.  If not specified,
+                it returns all parameters.
+            format_type ({'listdict', 'dictlist'}):
+                The format of the results. Listdict is a list of dictionaries.
+                Dictlist is a dictionary of lists. Default is listdict.
+            to_json (bool):
+                True/False boolean to convert the output into a JSON format
+            return_all (bool):
+                if True, returns the entire result set for that column
 
-            Returns:
-                output (list, dict):
-                    Can be either a list of dictionaries, or a dictionary of lists
+        Returns:
+            output (list, dict):
+                Can be either a list of dictionaries, or a dictionary of lists
 
-            Example:
-                >>> # get some results
-                >>> r = q.run()
-                >>> # Get a list of dictionaries
-                >>> r.getDictOf(format_type='listdict')
-                >>> [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa.z': -9999.0},
-                >>>  {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa.z': -9999.0},
-                >>>  {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa.z': -9999.0},
-                >>>  {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa.z': -9999.0},
-                >>>  {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa.z': -9999.0}]
+        Example:
+            >>> # get some results
+            >>> r = q.run()
+            >>> # Get a list of dictionaries
+            >>> r.getDictOf(format_type='listdict')
+            >>> [{'cube.mangaid': u'4-3988', 'ifu.name': u'1901', 'nsa.z': -9999.0},
+            >>>  {'cube.mangaid': u'4-3862', 'ifu.name': u'1902', 'nsa.z': -9999.0},
+            >>>  {'cube.mangaid': u'4-3293', 'ifu.name': u'1901', 'nsa.z': -9999.0},
+            >>>  {'cube.mangaid': u'4-3602', 'ifu.name': u'1902', 'nsa.z': -9999.0},
+            >>>  {'cube.mangaid': u'4-4602', 'ifu.name': u'1901', 'nsa.z': -9999.0}]
 
-                >>> # Get a dictionary of lists
-                >>> r.getDictOf(format_type='dictlist')
-                >>> {'cube.mangaid': [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602'],
-                >>>  'ifu.name': [u'1901', u'1902', u'1901', u'1902', u'1901'],
-                >>>  'nsa.z': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
+            >>> # Get a dictionary of lists
+            >>> r.getDictOf(format_type='dictlist')
+            >>> {'cube.mangaid': [u'4-3988', u'4-3862', u'4-3293', u'4-3602', u'4-4602'],
+            >>>  'ifu.name': [u'1901', u'1902', u'1901', u'1902', u'1901'],
+            >>>  'nsa.z': [-9999.0, -9999.0, -9999.0, -9999.0, -9999.0]}
 
-                >>> # Get a dictionary of only one parameter
-                >>> r.getDictOf('mangaid')
-                >>> [{'cube.mangaid': u'4-3988'},
-                >>>  {'cube.mangaid': u'4-3862'},
-                >>>  {'cube.mangaid': u'4-3293'},
-                >>>  {'cube.mangaid': u'4-3602'},
-                >>>  {'cube.mangaid': u'4-4602'}]
+            >>> # Get a dictionary of only one parameter
+            >>> r.getDictOf('mangaid')
+            >>> [{'cube.mangaid': u'4-3988'},
+            >>>  {'cube.mangaid': u'4-3862'},
+            >>>  {'cube.mangaid': u'4-3293'},
+            >>>  {'cube.mangaid': u'4-3602'},
+            >>>  {'cube.mangaid': u'4-4602'}]
 
         '''
 
@@ -895,7 +868,8 @@ class Results(object):
         # deal with the output
         if return_all:
             # grab all or of a specific column
-            params = {'searchfilter': self.searchfilter, 'return_all': True, 'format_type': format_type}
+            params = {'searchfilter': self.searchfilter, 'return_all': True,
+                      'format_type': format_type, 'params': self.returnparams}
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
             output = self._interaction(url, params, calltype='getDict')
         else:
@@ -907,51 +881,30 @@ class Results(object):
 
         return output
 
-    def _getRefName(self, name):
-        ''' Get the appropriate reference column / parameter name
-
-        This converts an input name into the respective column name
-        '''
-        cols = self.getColumns()
-
-        if name in cols:
-            # name already in the list of column names
-            refname = name
-        else:
-            if not self.coltoparam:
-                pars = self.mapColumnsToParams()
-            if not self.paramtocol:
-                tmp = self.mapParamsToColumns()
-
-            refname = self.coltoparam[name] if name in self.coltoparam else \
-                self.paramtocol[name] if name in self.paramtocol else None
-
-        return refname
-
     def getNext(self, chunk=None):
         ''' Retrieve the next chunk of results
 
-            Returns the next chunk of results from the query.
-            from start to end in units of chunk.  Used with getPrevious
-            to paginate through a long list of results
+        Returns the next chunk of results from the query.
+        from start to end in units of chunk.  Used with getPrevious
+        to paginate through a long list of results
 
-            Parameters:
-                chunk (int):
-                    The number of objects to return
+        Parameters:
+            chunk (int):
+                The number of objects to return
 
-            Returns:
-                results (list):
-                    A list of query results
+        Returns:
+            results (list):
+                A list of query results
 
-            Example:
-                >>> r = q.run()
-                >>> r.getNext(5)
-                >>> Retrieving next 5, from 35 to 40
-                >>> [(u'4-4231', u'1902', -9999.0),
-                >>>  (u'4-14340', u'1901', -9999.0),
-                >>>  (u'4-14510', u'1902', -9999.0),
-                >>>  (u'4-13634', u'1901', -9999.0),
-                >>>  (u'4-13538', u'1902', -9999.0)]
+        Example:
+            >>> r = q.run()
+            >>> r.getNext(5)
+            >>> Retrieving next 5, from 35 to 40
+            >>> [(u'4-4231', u'1902', -9999.0),
+            >>>  (u'4-14340', u'1901', -9999.0),
+            >>>  (u'4-14510', u'1902', -9999.0),
+            >>>  (u'4-13634', u'1901', -9999.0),
+            >>>  (u'4-13538', u'1902', -9999.0)]
 
         '''
 
@@ -978,6 +931,8 @@ class Results(object):
         log.info('Retrieving next {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
+            if self.results:
+                self._makeNamedTuple(index=newstart)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -988,7 +943,7 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getNext', named_tuple=True)
+            self._interaction(url, params, calltype='getNext', named_tuple=True, index=newstart)
 
         self.start = newstart
         self.end = newend
@@ -1002,27 +957,27 @@ class Results(object):
     def getPrevious(self, chunk=None):
         ''' Retrieve the previous chunk of results.
 
-            Returns a previous chunk of results from the query.
-            from start to end in units of chunk.  Used with getNext
-            to paginate through a long list of results
+        Returns a previous chunk of results from the query.
+        from start to end in units of chunk.  Used with getNext
+        to paginate through a long list of results
 
-            Parameters:
-                chunk (int):
-                    The number of objects to return
+        Parameters:
+            chunk (int):
+                The number of objects to return
 
-            Returns:
-                results (list):
-                    A list of query results
+        Returns:
+            results (list):
+                A list of query results
 
-            Example:
-                >>> r = q.run()
-                >>> r.getPrevious(5)
-                >>> Retrieving previous 5, from 30 to 35
-                >>> [(u'4-3988', u'1901', -9999.0),
-                >>>  (u'4-3862', u'1902', -9999.0),
-                >>>  (u'4-3293', u'1901', -9999.0),
-                >>>  (u'4-3602', u'1902', -9999.0),
-                >>>  (u'4-4602', u'1901', -9999.0)]
+        Example:
+            >>> r = q.run()
+            >>> r.getPrevious(5)
+            >>> Retrieving previous 5, from 30 to 35
+            >>> [(u'4-3988', u'1901', -9999.0),
+            >>>  (u'4-3862', u'1902', -9999.0),
+            >>>  (u'4-3293', u'1901', -9999.0),
+            >>>  (u'4-3602', u'1902', -9999.0),
+            >>>  (u'4-4602', u'1901', -9999.0)]
 
          '''
 
@@ -1049,6 +1004,8 @@ class Results(object):
         log.info('Retrieving previous {0}, from {1} to {2}'.format(self.chunk, newstart, newend))
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
+            if self.results:
+                self._makeNamedTuple(index=newstart)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -1060,7 +1017,7 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getPrevious', named_tuple=True)
+            self._interaction(url, params, calltype='getPrevious', named_tuple=True, index=newstart)
 
         self.start = newstart
         self.end = newend
@@ -1074,29 +1031,29 @@ class Results(object):
     def getSubset(self, start, limit=None):
         ''' Extracts a subset of results
 
-            Parameters:
-                start (int):
-                    The starting index of your subset extraction
-                limit (int):
-                    The limiting number of results to return.
+        Parameters:
+            start (int):
+                The starting index of your subset extraction
+            limit (int):
+                The limiting number of results to return.
 
-            Returns:
-                results (list):
-                    A list of query results
+        Returns:
+            results (list):
+                A list of query results
 
-            Example:
-                >>> r = q.run()
-                >>> r.getSubset(0, 10)
-                >>> [(u'14-12', u'1901', -9999.0),
-                >>> (u'14-13', u'1902', -9999.0),
-                >>> (u'27-134', u'1901', -9999.0),
-                >>> (u'27-100', u'1902', -9999.0),
-                >>> (u'27-762', u'1901', -9999.0),
-                >>> (u'27-759', u'1902', -9999.0),
-                >>> (u'27-827', u'1901', -9999.0),
-                >>> (u'27-828', u'1902', -9999.0),
-                >>> (u'27-1170', u'1901', -9999.0),
-                >>> (u'27-1167', u'1902', -9999.0)]
+        Example:
+            >>> r = q.run()
+            >>> r.getSubset(0, 10)
+            >>> [(u'14-12', u'1901', -9999.0),
+            >>> (u'14-13', u'1902', -9999.0),
+            >>> (u'27-134', u'1901', -9999.0),
+            >>> (u'27-100', u'1902', -9999.0),
+            >>> (u'27-762', u'1901', -9999.0),
+            >>> (u'27-759', u'1902', -9999.0),
+            >>> (u'27-827', u'1901', -9999.0),
+            >>> (u'27-828', u'1902', -9999.0),
+            >>> (u'27-1170', u'1901', -9999.0),
+            >>> (u'27-1167', u'1902', -9999.0)]
         '''
 
         if not limit:
@@ -1116,6 +1073,8 @@ class Results(object):
         self.chunk = limit
         if self.mode == 'local':
             self.results = self.query.slice(start, end).all()
+            if self.results:
+                self._makeNamedTuple(index=start)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -1127,7 +1086,7 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': start, 'end': end, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getSubset', named_tuple=True)
+            self._interaction(url, params, calltype='getSubset', named_tuple=True, index=start)
 
         self.count = len(self.results)
         if self.returntype:
@@ -1143,8 +1102,8 @@ class Results(object):
             raise MarvinError('Input must be a list of result subsets (list of lists)')
 
         # check that subsets have the same number of columns and same column names
-        same_count = len(set([len(s[0]) for s in subsets]))
-        same_cols = all([list(s[0]._fields) == self.columns for s in subsets])
+        same_count = all([len(s[0]) for s in subsets])
+        same_cols = all([list(s[0]._fields) == self.columns.list_params(remote=True) for s in subsets])
 
         # merge subsets
         if same_count:
@@ -1162,55 +1121,18 @@ class Results(object):
             raise MarvinUserWarning('Cannot merge subsets. Column number mismatch among subsets. '
                                     'Ensure all subsets have the same number of columns')
 
-    def combine_columns(self, results):
-        ''' Combine columns from multiple Marvin Results objects '''
-
-        # make results a list if it is not
-        if not isinstance(results, list):
-            results = [results]
-
-        # check if all items in the results list are of Marvin Results type
-        isnested = all(isinstance(i, Results) for i in results)
-        if not isnested:
-            raise MarvinError('Input must be a list of Marvin Results objects')
-
-        # check for same search criteria
-        same_search = all([i.searchfilter == self.searchfilter for i in results])
-        if not same_search:
-            raise MarvinUserWarning('Cannot merge columns. The seach filter in your Marvin '
-                                    'Results do not match with each other or the base set')
-
-        # check for consistency between Results
-        plateifus = self.getListOf('plateifu')
-        same_rows = all([i.getListOf('plateifu') == plateifus for i in results])
-        if not same_rows:
-            raise MarvinUserWarning('Cannot merge columns. The rows in your Marvin '
-                                    'Results do not match with each other or the base set')
-
-        # get new columns
-        all_columns = (sum([i._params for i in results], []))
-        all_columns = list(OrderedDict.fromkeys(all_columns))
-        new_columns = set(all_columns) - set(self._params)
-
-        kwargs = {'results': 'new', 'count': self.count, 'mode': self.mode, 'queryobj': 'new',
-                  'totalcount': self.totalcount, 'chunk': self.limit, 'runtime': self.runtime}
-        return Results(**kwargs)
-        # Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-        #                    returntype=self.returntype, totalcount=totalcount, chunk=chunk,
-        #                    runtime=query_runtime, response_time=resp_runtime)
-
-    #@local_mode_only
     def getAll(self):
         ''' Retrieve all of the results of a query
 
-            Attempts to return all the results of a query.  The efficiency of this
-            method depends heavily on how many rows and columns you wish to return.
+        Attempts to return all the results of a query.  The efficiency of this
+        method depends heavily on how many rows and columns you wish to return.
 
-            A cutoff limit is applied for results with more than 500,000 rows or
-            results with more than 25 columns.
+        A cutoff limit is applied for results with more than 500,000 rows or
+        results with more than 25 columns.
 
-            Returns:
-                The full list of query results.
+        Returns:
+            The full list of query results.
+
         '''
 
         if self.totalcount > 500000 or len(self.columns) > 25:
@@ -1225,7 +1147,9 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'return_all': True}
+            params = {'searchfilter': self.searchfilter, 'return_all': True,
+                      'params': self.returnparams, 'limit': self.limit,
+                      'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getAll', named_tuple=True)
             self.count = self.totalcount
             print('Returned all {0} results'.format(self.totalcount))
@@ -1233,41 +1157,41 @@ class Results(object):
     def convertToTool(self, tooltype, **kwargs):
         ''' Converts the list of results into Marvin Tool objects
 
-            Creates a list of Marvin Tool objects from a set of query results.
-            The new list is stored in the Results.objects property.
-            If the Query.returntype parameter is specified, then the Results object
-            will automatically convert the results to the desired Tool on initialization.
+        Creates a list of Marvin Tool objects from a set of query results.
+        The new list is stored in the Results.objects property.
+        If the Query.returntype parameter is specified, then the Results object
+        will automatically convert the results to the desired Tool on initialization.
 
-            Parameters:
-                tooltype (str):
-                    The requested Marvin Tool object that the results are converted into.
-                    Overrides the returntype parameter.  If not set, defaults
-                    to the returntype parameter.
-                limit (int):
-                    Limit the number of results you convert to Marvin tools.  Useful
-                    for extremely large result sets.  Default is None.
-                mode (str):
-                    The mode to use when attempting to convert to Tool. Default mode
-                    is to use the mode internal to Results. (most often remote mode)
+        Parameters:
+            tooltype (str):
+                The requested Marvin Tool object that the results are converted into.
+                Overrides the returntype parameter.  If not set, defaults
+                to the returntype parameter.
+            limit (int):
+                Limit the number of results you convert to Marvin tools.  Useful
+                for extremely large result sets.  Default is None.
+            mode (str):
+                The mode to use when attempting to convert to Tool. Default mode
+                is to use the mode internal to Results. (most often remote mode)
 
-            Example:
-                >>> # Get the results from some query
-                >>> r = q.run()
-                >>> r.results
-                >>> [NamedTuple(mangaid=u'14-12', name=u'1901', nsa.z=-9999.0),
-                >>>  NamedTuple(mangaid=u'14-13', name=u'1902', nsa.z=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-134', name=u'1901', nsa.z=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-100', name=u'1902', nsa.z=-9999.0),
-                >>>  NamedTuple(mangaid=u'27-762', name=u'1901', nsa.z=-9999.0)]
+        Example:
+            >>> # Get the results from some query
+            >>> r = q.run()
+            >>> r.results
+            >>> [NamedTuple(mangaid=u'14-12', name=u'1901', nsa.z=-9999.0),
+            >>>  NamedTuple(mangaid=u'14-13', name=u'1902', nsa.z=-9999.0),
+            >>>  NamedTuple(mangaid=u'27-134', name=u'1901', nsa.z=-9999.0),
+            >>>  NamedTuple(mangaid=u'27-100', name=u'1902', nsa.z=-9999.0),
+            >>>  NamedTuple(mangaid=u'27-762', name=u'1901', nsa.z=-9999.0)]
 
-                >>> # convert results to Marvin Cube tools
-                >>> r.convertToTool('cube')
-                >>> r.objects
-                >>> [<Marvin Cube (plateifu='7444-1901', mode='remote', data_origin='api')>,
-                >>>  <Marvin Cube (plateifu='7444-1902', mode='remote', data_origin='api')>,
-                >>>  <Marvin Cube (plateifu='7995-1901', mode='remote', data_origin='api')>,
-                >>>  <Marvin Cube (plateifu='7995-1902', mode='remote', data_origin='api')>,
-                >>>  <Marvin Cube (plateifu='8000-1901', mode='remote', data_origin='api')>]
+            >>> # convert results to Marvin Cube tools
+            >>> r.convertToTool('cube')
+            >>> r.objects
+            >>> [<Marvin Cube (plateifu='7444-1901', mode='remote', data_origin='api')>,
+            >>>  <Marvin Cube (plateifu='7444-1902', mode='remote', data_origin='api')>,
+            >>>  <Marvin Cube (plateifu='7995-1901', mode='remote', data_origin='api')>,
+            >>>  <Marvin Cube (plateifu='7995-1902', mode='remote', data_origin='api')>,
+            >>>  <Marvin Cube (plateifu='8000-1901', mode='remote', data_origin='api')>]
 
         '''
 
@@ -1279,13 +1203,12 @@ class Results(object):
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
         # get the parameter list to check against
-        paramlist = self.paramtocol.keys()
+        #paramlist = self.paramtocol.keys()
+        paramlist = self.columns.full
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
-            self.objects = [Cube(plateifu=res.__getattribute__(
-                            self._getRefName('cube.plateifu')),
-                            mode=mode) for res in self.results[0:limit]]
+            self.objects = [Cube(plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
 
             isbin = 'bintype.name' in paramlist
@@ -1293,14 +1216,14 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.plateifu}
 
                 if isbin:
-                    binval = res.__getattribute__(self._getRefName('bintype.name'))
+                    binval = res.bintype_name
                     mapkwargs['bintype'] = binval
 
                 if istemp:
-                    tempval = res.__getattribute__(self._getRefName('template.name'))
+                    tempval = res.template_name
                     mapkwargs['template_kin'] = tempval
 
                 self.objects.append(Maps(**mapkwargs))
@@ -1325,17 +1248,8 @@ class Results(object):
                 y = tab[univals]['spaxelprop.y'].tolist()
                 spaxels = c[y, x]
                 self.objects.extend(spaxels)
-
-            # for res in self.results[0:limit]:
-            #     spaxkwargs = {'plateifu': res.__getattribute__(self._getRefName('cube.plateifu')),
-            #                   'x': res.__getattribute__(self._getRefName('spaxelprop.x')),
-            #                   'y': res.__getattribute__(self._getRefName('spaxelprop.y')),
-            #                   'load': load, 'maps': maps, 'modelcube': modelcube}
-            #     self.objects.append(Spaxel(**spaxkwargs))
         elif tooltype == 'rss':
-            self.objects = [RSS(plateifu=res.__getattribute__(
-                            self._getRefName('cube.plateifu')),
-                            mode=mode) for res in self.results[0:limit]]
+            self.objects = [RSS(plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
 
             isbin = 'bintype.name' in paramlist
@@ -1343,15 +1257,38 @@ class Results(object):
             self.objects = []
 
             for res in self.results[0:limit]:
-                mapkwargs = {'mode': mode, 'plateifu': res.__getattribute__(self._getRefName('cube.plateifu'))}
+                mapkwargs = {'mode': mode, 'plateifu': res.plateifu}
 
                 if isbin:
-                    binval = res.__getattribute__(self._getRefName('bintype.name'))
+                    binval = res.bintype_name
                     mapkwargs['bintype'] = binval
 
                 if istemp:
-                    tempval = res.__getattribute__(self._getRefName('template.name'))
+                    tempval = res.template_name
                     mapkwargs['template_kin'] = tempval
 
                 self.objects.append(ModelCube(**mapkwargs))
+
+    def plot(self, x_name, y_name):
+        ''' Make a scatter plot from two columns of results '''
+
+        assert all([x_name, y_name]), 'Must provide both an x and y column'
+
+        # get the values of the two columns
+        if self.count != self.totalcount:
+            x_col = self.getListOf(x_name, return_all=True)
+            y_col = self.getListOf(y_name, return_all=True)
+        else:
+            x_col = self.results[x_name]
+            y_col = self.results[y_name]
+
+        # make the scatter plot
+        text = iter(['Low Outlier', 'LoLo', 'Lo', 'Average', 'Hi', 'HiHi', 'High Outlier'])
+        fig, ax = plt.subplots()
+        ax.set_xlabel(x_name)
+        ax.set_ylabel(y_name)
+        ax.scatter(x_col, y_col, s=50)
+
+        output = (fig, ax)
+        return output
 
