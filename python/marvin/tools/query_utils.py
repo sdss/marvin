@@ -43,7 +43,7 @@ def get_best_fuzzy(name, choices, cutoff=0):
 
 
 def get_params():
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../data', 'query_params_best.cfg')
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../data', 'query_params_best.cfg')
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
