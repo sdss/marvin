@@ -15,8 +15,8 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCr
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
-from marvin.tools.query.results import Results
-from marvin.tools.query.forms import MarvinForm
+from marvin.tools.results import Results
+from marvin.tools.forms import MarvinForm
 from marvin.api.api import Interaction
 from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
@@ -32,8 +32,8 @@ import re
 import six
 from marvin.core import marvin_pickle
 from functools import wraps
-from marvin.tools.query.results import remote_mode_only
-from marvin.tools.query.query_utils import query_params
+from marvin.tools.results import remote_mode_only
+from marvin.tools.query_utils import query_params
 
 try:
     import cPickle as pickle

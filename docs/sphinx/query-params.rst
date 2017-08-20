@@ -25,7 +25,7 @@ From within Marvin, to list which groups are available import the **query_params
 ::
 
     # import the query_params
-    from marvin.tools.query.query_utils import query_params
+    from marvin.tools.query_utils import query_params
 
     # display the list of parameter groups
     query_params

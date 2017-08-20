@@ -5,8 +5,8 @@ from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
-from marvin.tools.query.forms import MarvinForm
-from marvin.tools.query.query_utils import ParameterGroup, query_params
+from marvin.tools.forms import MarvinForm
+from marvin.tools.query_utils import ParameterGroup, query_params
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList, parseIdentifier
 from marvin.api.api import Interaction

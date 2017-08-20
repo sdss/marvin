@@ -16,7 +16,7 @@ import sys
 from collections import OrderedDict
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.tools.query.query_utils import query_params
+from marvin.tools.query_utils import query_params
 from collections import defaultdict
 from wtforms import StringField, Field, FieldList, validators
 from wtforms import SelectMultipleField, ValidationError, SubmitField

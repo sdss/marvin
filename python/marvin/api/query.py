@@ -4,7 +4,7 @@ from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
-from marvin.tools.query.query_utils import bestparams
+from marvin.tools.query_utils import bestparams
 from marvin.web.extensions import limiter
 import json
 
