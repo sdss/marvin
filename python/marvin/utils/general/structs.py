@@ -126,7 +126,10 @@ class FuzzyList(list):
 
         self_values = [str(item) for item in self]
 
-        item = get_best_fuzzy(value, self_values)
+        try:
+            item = get_best_fuzzy(value, self_values)
+        except ValueError as e:
+            item = None
 
         if item:
             return True

@@ -6,11 +6,15 @@
 from __future__ import print_function, division
 import os
 import numpy as np
+import six
 import yaml
 import yamlordereddictloader
 from fuzzywuzzy import process
+from marvin.utils.dap import datamodel
+from marvin import config
 
 # Query Parameter Datamodel
+query_params = None
 
 
 def get_best_fuzzy(name, choices, cutoff=0):
@@ -63,6 +67,11 @@ class ParameterGroupList(list):
         elif isinstance(items, dict):
             paramgroups = [ParameterGroup(key, vals) for key, vals in items.items()]
             list.__init__(self, paramgroups)
+
+    @property
+    def parameters(self):
+        ''' List all the queryable parameters '''
+        return [param for group in self for param in group]
 
     def list_groups(self):
         '''Returns a list of query groups.
@@ -132,12 +141,20 @@ class ParameterGroup(list):
     Parameters:
         name (str):
             The name of the group
+        items (list|dict):
+            A list or dictionary of parameters.  If a list of names is input,
+            each name will be used as the full name.
 
     '''
     def __init__(self, name, items):
         self.name = name
         self.score = None
-        queryparams = [QueryParameter(**item) for item in items]
+
+        queryparams = []
+        for item in items:
+            this_param = self._make_query_parameter(item)
+            queryparams.append(this_param)
+
         list.__init__(self, queryparams)
         self._check_names()
 
@@ -150,6 +167,34 @@ class ParameterGroup(list):
     @property
     def full(self):
         return self.list_params(full=True)
+
+    @property
+    def remote(self):
+        return self.list_params(remote=True)
+
+    @property
+    def short(self):
+        return self.list_params(short=True)
+
+    @property
+    def display(self):
+        return self.list_params(display=True)
+
+    def _make_query_parameter(self, item):
+        ''' Create an return a QueryParameter '''
+        if isinstance(item, dict):
+            item.update({'group': self.name})
+            this_param = QueryParameter(**item)
+        elif isinstance(item, six.string_types):
+            is_best = [p for p in query_params.parameters if item in p.full and (item == p.name or item == p.full)]
+            if is_best:
+                best_dict = is_best[0].__dict__
+                best_dict.update({'group': self.name})
+                this_param = QueryParameter(**best_dict)
+            else:
+                this_param = QueryParameter(item, group=self.name)
+
+        return this_param
 
     def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
         ''' List the parameter names for a given group
@@ -249,7 +294,9 @@ class QueryParameter(object):
         self.dtype = dtype
         self.remote = remote
         self.value = kwargs.get('value', None)
+        self.group = kwargs.get('group', None)
         self._set_names()
+        self._check_datamodels()
 
     def __repr__(self):
         return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, '
@@ -269,6 +316,16 @@ class QueryParameter(object):
             self.display = self.name.title()
         if not self.remote:
             self.remote = self._under if 'name' in self.name else self.name
+
+    def _check_datamodels(self):
+        ''' Check if the query parameter lives in the datamodel '''
+
+        self.property = None
+        # DAP datmodels
+        dm = datamodel[config.release]
+        if self.full in dm:
+            self.property = dm[self.full]
+
 
 bestparams = get_params()
 query_params = ParameterGroupList(bestparams)

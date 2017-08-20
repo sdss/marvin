@@ -6,7 +6,7 @@ from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.query.forms import MarvinForm
-from marvin.tools.query.query_utils import ParameterGroup
+from marvin.tools.query.query_utils import ParameterGroup, query_params
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList, parseIdentifier
 from marvin.api.api import Interaction
@@ -173,7 +173,7 @@ class ResultSet(list):
         if self.index == other.index:
             # column-wise add
             newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-            newcols = ParameterGroup('Columns', [{'full': p} for p in newcols])
+            newcols = ParameterGroup('Columns', newcols)
             newresults.columns = newcols
             new_set = map(add, self, other)
         else:
@@ -735,7 +735,7 @@ class Results(object):
 
         '''
         try:
-            self.columns = ParameterGroup('Columns', [{'full': p} for p in self._params])
+            self.columns = ParameterGroup('Columns', self._params)
         except Exception as e:
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
@@ -918,7 +918,23 @@ class Results(object):
         return output
 
     def loop(self, chunk=None):
-        ''' Loop over the full set, getting all the results '''
+        ''' Loop over the full set of results
+
+        Starts a loop to collect all the results (in chunks)
+        until the current count reaches the total number
+        of results.  Uses extendSet.
+
+        Parameters:
+            chunk (int):
+                The number of objects to return
+
+        Example:
+            >>> # get some results from a query
+            >>> r = q.run()
+            >>> # start a loop, grabbing in chunks of 400
+            >>> r.loop(chunk=400)
+
+        '''
 
         while self.count < self.totalcount:
             self.extendSet(chunk=chunk)
@@ -1180,33 +1196,6 @@ class Results(object):
             self.convertToTool()
 
         return self.results
-
-    def merge_subsets(self, subsets):
-        ''' Merges a list of subsets together into a single list '''
-
-        isnested = all(isinstance(i, list) for i in subsets)
-        if not isnested:
-            raise MarvinError('Input must be a list of result subsets (list of lists)')
-
-        # check that subsets have the same number of columns and same column names
-        same_count = all([len(s[0]) for s in subsets])
-        same_cols = all([list(s[0]._fields) == self.columns.list_params(remote=True) for s in subsets])
-
-        # merge subsets
-        if same_count:
-            if same_cols:
-                # combine into one set
-                output = sum(subsets, [])
-                print('Setting results to new subset of size {0}.'.format(len(output)))
-                self.results = output
-                self.count = len(self.results)
-                return self.results
-            else:
-                raise MarvinUserWarning('Cannot merge subsets. Different named columns from base set. '
-                                        'Ensure all columns are the same.')
-        else:
-            raise MarvinUserWarning('Cannot merge subsets. Column number mismatch among subsets. '
-                                    'Ensure all subsets have the same number of columns')
 
     def getAll(self):
         ''' Retrieve all of the results of a query

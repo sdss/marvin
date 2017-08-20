@@ -201,10 +201,14 @@ class DAPDataModel(object):
         propety_channel_names = self.list_property_names()
         try:
             best = get_best_fuzzy(value, propety_channel_names)
-        except ValueError:
-            # Second pass, removes _
-            best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
-            best = best.replace(' ', '_')
+        except ValueError as e:
+            # Second pass, removes
+            try:
+                best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
+            except ValueError as e:
+                best = None
+            else:
+                best = best.replace(' ', '_')
         return True if best else False
 
 
