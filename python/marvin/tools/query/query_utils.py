@@ -73,7 +73,7 @@ class ParameterGroupList(list):
         '''
         return [group.name for group in self]
 
-    def list_params(self, groups=None):
+    def list_params(self, groups=None, name_type='full'):
         '''Returns a list of parameters from all groups.
 
         Return a string list of the full parameter names.
@@ -83,17 +83,23 @@ class ParameterGroupList(list):
             groups (str|list):
                 A string or list of strings representing the groups
                 of parameters you wish to return
+            name_type (str):
+                The type of name to generate (full, name, short, remote, display).  Default is full.
 
         Returns:
             params (list):
                 A list of full parameter names
         '''
+
+        assert name_type in ['full', 'short', 'name', 'remote', 'display'], \
+            'name_type must be (full, short, name, remote, display)'
+
         if groups:
             groups = groups if isinstance(groups, list) else [groups]
             grouplist = [self[g] for g in groups]
-            return [param.full for group in grouplist for param in group]
+            return [param.__getattribute__(name_type) for group in grouplist for param in group]
         else:
-            return [param.full for group in self for param in group]
+            return [param.__getattribute__(name_type) for group in self for param in group]
 
     def __eq__(self, name):
         item = get_best_fuzzy(name, self, cutoff=50)
@@ -138,7 +144,7 @@ class ParameterGroup(list):
     def __repr__(self):
         old = list.__repr__(self)
         old = old.replace('>,', '>,\n')
-        return ('<ParameterGroup name={0.name}, paramcount={1}>\n '
+        return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
                 '{2}'.format(self, len(self), old))
 
     @property

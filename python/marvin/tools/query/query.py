@@ -332,8 +332,14 @@ class Query(object):
         '''
         if returnparams:
             returnparams = [returnparams] if not isinstance(returnparams, list) else returnparams
-            self._returnparams = returnparams
-        self.params.extend(returnparams)
+
+            # look up shortcut names for the return parameters
+            full_returnparams = [self.marvinform._param_form_lookup._nameShortcuts[rp]
+                                 if rp in self.marvinform._param_form_lookup._nameShortcuts else rp
+                                 for rp in returnparams]
+
+            self._returnparams = full_returnparams
+        self.params.extend(full_returnparams)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type

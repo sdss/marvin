@@ -175,7 +175,7 @@ class DAPDataModel(object):
 
         return [prop.full() for prop in self.properties]
 
-    def __getitem__(self, value):
+    def __eq__(self, value):
         """Uses fuzzywuzzy to return the closest property match."""
 
         prop_names = [prop.name for prop in self.extensions]
@@ -195,6 +195,21 @@ class DAPDataModel(object):
             best = best.replace(' ', '_')
 
         return self.properties[propety_channel_names.index(best)]
+
+    def __contains__(self, value):
+
+        propety_channel_names = self.list_property_names()
+        try:
+            best = get_best_fuzzy(value, propety_channel_names)
+        except ValueError:
+            # Second pass, removes _
+            best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
+            best = best.replace(' ', '_')
+        return True if best else False
+
+
+    def __getitem__(self, value):
+        return self == value
 
     @property
     def default_bintype(self):

@@ -13,8 +13,10 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 import sys
+from collections import OrderedDict
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.tools.query.query_utils import query_params
 from collections import defaultdict
 from wtforms import StringField, Field, FieldList, validators
 from wtforms import SelectMultipleField, ValidationError, SubmitField
@@ -188,9 +190,13 @@ class ParamFormLookupDict(dict):
 
     def _init_name_shortcuts(self):
         ''' initialize the name shortcuts '''
-        self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
-                               'g_r': 'elpetro_mag_g_r',
-                               'abs_g_r': 'elpetro_absmag_g_r'}
+        # self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
+        #                        'g_r': 'elpetro_mag_g_r',
+        #                        'abs_g_r': 'elpetro_absmag_g_r'}
+
+        short = query_params.list_params(name_type='short')
+        name = query_params.list_params(name_type='name')
+        self._nameShortcuts = OrderedDict(zip(short, name))
 
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''

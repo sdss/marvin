@@ -17,6 +17,7 @@ import os
 import datetime
 import numpy as np
 import six
+import copy
 from fuzzywuzzy import process
 from functools import wraps
 from astropy.table import Table, vstack, hstack
@@ -136,6 +137,7 @@ class ResultSet(list):
         self._results = kwargs.get('results', None)
         self.columns = kwargs.get('columns', None)
         self.index = kwargs.get('index') if kwargs.get('index') else 0
+        self.end_index = self.index + self.count
         self.current_page = (int(self.index) + self.count) / self.count
         if self._results:
             self.columns = self._results.columns if not self.columns else self.columns
@@ -143,9 +145,8 @@ class ResultSet(list):
 
     def __repr__(self):
         old = list.__repr__(self)
-        return ('<ResultSet(set={0}/{1}, count_in_set={2}, '
-                'total={3})>\n{4}'.format(self.current_page, self.pages, self.count,
-                                          self.total, old.replace('),', '),\n')))
+        return ('<ResultSet(set={0.current_page}/{0.pages}, index={0.index}:{0.end_index}, '
+                'count_in_set={0.count}, total={0.total})>\n{1}'.format(self, old.replace('),', '),\n')))
 
     def __getitem__(self, value):
         if isinstance(value, six.string_types):
@@ -163,13 +164,42 @@ class ResultSet(list):
             return list.__getitem__(self, value)
 
     def __add__(self, other):
-        newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-        newcols = ParameterGroup('Columns', [{'full': p} for p in newcols])
         newresults = self._results
-        newresults.columns = newcols
-        newset = map(add, self, other)
-        return ResultSet(newset, count=self.count, total=self.total, index=self.index,
+
+        if not isinstance(other, ResultSet):
+            raise MarvinUserWarning('Can only add ResultSets together')
+
+        # add elements
+        if self.index == other.index:
+            # column-wise add
+            newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
+            newcols = ParameterGroup('Columns', [{'full': p} for p in newcols])
+            newresults.columns = newcols
+            new_set = map(add, self, other)
+        else:
+            # row-wise add
+
+            # warn if the subsets are not consecutive
+            if abs(self.index - other.index) > self.count:
+                warnings.warn('You are combining non-consectuive sets! '
+                              'The indexing and ordering will be messed up')
+
+            # copy the sets
+            new_set = copy.copy(self) if self.index < other.index else copy.copy(other)
+            set_b = copy.copy(other) if self.index < other.index else copy.copy(self)
+            # filter out any rows that already exist in the set
+            rows = [row for row in set_b if row not in new_set]
+            # extend the set
+            new_set.extend(rows)
+            newcols = self.columns
+            self.count = len(new_set)
+            self.index = min(self.index, other.index)
+
+        return ResultSet(new_set, count=self.count, total=self.total, index=self.index,
                          columns=newcols, results=newresults)
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def to_dict(self, name=None, format_type='listdict'):
         ''' Convert the ResultSet into a dictionary '''
@@ -271,17 +301,26 @@ class Results(object):
         breadcrumb.drop(message='Initializing MarvinResults {0}'.format(self.__class__),
                         category=self.__class__)
 
-        # Convert remote results to NamedTuple
-        #if self.mode == 'remote':
-        self._makeNamedTuple()
-
-        # Setup columns, and parameters
-        #if self.count > 0:
-        #    self._setupColumns()
+        # Convert results to NamedTuple
+        self._create_result_set()
 
         # Auto convert to Marvin Object
         if self.returntype:
             self.convertToTool(self.returntype)
+
+    def __add__(self, other):
+        assert isinstance(other, Results) is True, 'Can only add Marvin Results together'
+        assert self._release == other._release, 'Cannot add Marvin Results from different releases'
+        assert self.searchfilter == other.searchfilter, 'Cannot add Marvin Results with different search filters'
+        results = self.results + other.results
+        returnparams = self.returnparams + [p for p in other.returnparams if p not in self.returnparams]
+        params = self._params + [p for p in other._params if p not in self._params]
+        return Results(results=results, params=params, returnparams=returnparams, limit=self.limit,
+                       searchfilter=self.searchfilter, count=len(results), totalcount=self.totalcount,
+                       release=self._release, mode=self.mode)
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def _updateQueryObj(self, **kwargs):
         ''' update parameters using the _queryobj '''
@@ -332,6 +371,8 @@ class Results(object):
         Parameters:
             images (bool):
                 Set to only download the images of the query results
+            limit (int):
+                A limit of the number of results to download
 
         Returns:
             NA: na
@@ -342,9 +383,6 @@ class Results(object):
             >>> r.download()
         '''
 
-        #plates = self.getListOf(name='plate')
-        #ifus = self.getListOf(name='ifu.name')
-        #plateifu = ['{0}-{1}'.format(z[0], z[1]) for z in zip(plates, ifus)]
         plateifu = self.getListOf('plateifu')
         if images:
             tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
@@ -406,7 +444,7 @@ class Results(object):
             url = config.urlmap['api']['querycubes']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'sort': remotename, 'order': order, 'limit': self.limit}
-            self._interaction(url, params, named_tuple=True, calltype='Sort')
+            self._interaction(url, params, create_set=True, calltype='Sort')
 
         return self.results
 
@@ -557,13 +595,12 @@ class Results(object):
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
 
-    def _makeNamedTuple(self, index=None, rows=None):
+    def _create_result_set(self, index=None, rows=None):
         ''' Creates a Marvin ResultSet
 
         Parameters:
             index (int):
                 The starting index of the result subset
-
             rows (list|ResultSet):
                 A list of rows containing the value data to input into the ResultSet
 
@@ -576,9 +613,9 @@ class Results(object):
         self.columns = self.getColumns()
         ntnames = self.columns.list_params(remote=True)
         # dynamically create a new ResultRow Class
-        nt = marvintuple('ResultRow', ntnames, results=self)
         rows = rows if rows else self.results
         if not isinstance(rows, ResultSet):
+            nt = marvintuple('ResultRow', ntnames, results=self)
             results = [nt(*r) for r in rows]
         else:
             results = rows
@@ -703,7 +740,7 @@ class Results(object):
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
 
-    def _interaction(self, url, params, calltype='', named_tuple=None, **kwargs):
+    def _interaction(self, url, params, calltype='', create_set=None, **kwargs):
         ''' Perform a remote Interaction call
 
         Parameters:
@@ -713,7 +750,7 @@ class Results(object):
                 A dictionary of parameters (get or post) to send with the request
             calltype (str):
                 The method call sending the request
-            named_tuple (bool):
+            create_set (bool):
                 If True, sets the response output as the new results and creates a
                 new named tuple set
 
@@ -743,9 +780,8 @@ class Results(object):
             self._runtime = ii.results['runtime']
             self.query_time = self._getRunTime()
             index = kwargs.get('index', None)
-            if named_tuple:
-                self.results = output
-                self._makeNamedTuple(index=index)
+            if create_set:
+                self._create_result_set(index=index, rows=output)
             else:
                 return output
 
@@ -881,6 +917,48 @@ class Results(object):
 
         return output
 
+    def loop(self, chunk=None):
+        ''' Loop over the full set, getting all the results '''
+
+        while self.count < self.totalcount:
+            self.extendSet(chunk=chunk)
+
+    def extendSet(self, chunk=None, start=None):
+        ''' Extend the Result set with the next page
+
+        Extends the current ResultSet with the next page of results
+        or a specified page.  Calls either getNext or getSubset.
+
+        Parameters:
+            chunk (int):
+                The number of objects to return
+            start (int):
+                The starting index of your subset extraction
+
+        Returns:
+            A new results set
+
+        Example:
+            >>> # run a query
+            >>> r = q.run()
+            >>> # extend the current result set with the next page
+            >>> r.extendSet()
+            >>>
+
+        See Also:
+            getNext, getSubset
+
+        '''
+
+        oldset = copy.copy(self.results)
+        if start is not None:
+            nextset = self.getSubset(start, limit=chunk)
+        else:
+            nextset = self.getNext(chunk=chunk)
+        newset = oldset + nextset
+        self.count = len(newset)
+        self.results = newset
+
     def getNext(self, chunk=None):
         ''' Retrieve the next chunk of results
 
@@ -905,6 +983,9 @@ class Results(object):
             >>>  (u'4-14510', u'1902', -9999.0),
             >>>  (u'4-13634', u'1901', -9999.0),
             >>>  (u'4-13538', u'1902', -9999.0)]
+
+        See Also:
+            getAll, getPrevious, getSubset
 
         '''
 
@@ -932,7 +1013,7 @@ class Results(object):
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
             if self.results:
-                self._makeNamedTuple(index=newstart)
+                self._create_result_set(index=newstart)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -943,7 +1024,8 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getNext', named_tuple=True, index=newstart)
+            self._interaction(url, params, calltype='getNext', create_set=True,
+                              index=newstart)
 
         self.start = newstart
         self.end = newend
@@ -979,6 +1061,9 @@ class Results(object):
             >>>  (u'4-3602', u'1902', -9999.0),
             >>>  (u'4-4602', u'1901', -9999.0)]
 
+        See Also:
+            getNext, getAll, getSubset
+
          '''
 
         if chunk and chunk < 0:
@@ -1005,7 +1090,7 @@ class Results(object):
         if self.mode == 'local':
             self.results = self.query.slice(newstart, newend).all()
             if self.results:
-                self._makeNamedTuple(index=newstart)
+                self._create_result_set(index=newstart)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -1017,7 +1102,8 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': newstart, 'end': newend, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getPrevious', named_tuple=True, index=newstart)
+            self._interaction(url, params, calltype='getPrevious', create_set=True,
+                              index=newstart)
 
         self.start = newstart
         self.end = newend
@@ -1054,6 +1140,10 @@ class Results(object):
             >>> (u'27-828', u'1902', -9999.0),
             >>> (u'27-1170', u'1901', -9999.0),
             >>> (u'27-1167', u'1902', -9999.0)]
+
+        See Also:
+            getNext, getPrevious, getAll
+
         '''
 
         if not limit:
@@ -1065,16 +1155,13 @@ class Results(object):
 
         start = 0 if int(start) < 0 else int(start)
         end = start + int(limit)
-        # if end > self.count:
-        #     end = self.count
-        #     start = end - int(limit)
         self.start = start
         self.end = end
         self.chunk = limit
         if self.mode == 'local':
             self.results = self.query.slice(start, end).all()
             if self.results:
-                self._makeNamedTuple(index=start)
+                self._create_result_set(index=start)
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -1086,7 +1173,7 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'start': start, 'end': end, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getSubset', named_tuple=True, index=start)
+            self._interaction(url, params, calltype='getSubset', create_set=True, index=start)
 
         self.count = len(self.results)
         if self.returntype:
@@ -1133,16 +1220,19 @@ class Results(object):
         Returns:
             The full list of query results.
 
+        See Also:
+            getNext, getPrevious, getSubset
+
         '''
 
         if self.totalcount > 500000 or len(self.columns) > 25:
             raise MarvinUserWarning("Cannot retrieve all results. The total number of requested "
-                                    "rows or columns is too high. Please use the getSubset "
-                                    "method retrieve pages.")
+                                    "rows or columns is too high. Please use the getNext, getPrevious, "
+                                    "or getSubset methods to retrieve pages.")
 
         if self.mode == 'local':
             self.results = self.query.from_self().all()
-            self._makeNamedTuple()
+            self._create_result_set()
         elif self.mode == 'remote':
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
@@ -1150,7 +1240,7 @@ class Results(object):
             params = {'searchfilter': self.searchfilter, 'return_all': True,
                       'params': self.returnparams, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
-            self._interaction(url, params, calltype='getAll', named_tuple=True)
+            self._interaction(url, params, calltype='getAll', create_set=True)
             self.count = self.totalcount
             print('Returned all {0} results'.format(self.totalcount))
 
@@ -1203,7 +1293,6 @@ class Results(object):
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
         # get the parameter list to check against
-        #paramlist = self.paramtocol.keys()
         paramlist = self.columns.full
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))

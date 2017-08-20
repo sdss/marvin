@@ -50,7 +50,7 @@ def _getCubes(searchfilter, **kwargs):
     chunk = limit if not chunk else limit
 
     # get results
-    return_all = kwargs.get('return_all', None)
+    #return_all = kwargs.get('return_all', None)
     # if return_all:
     #     r.getAll()
     results = r.results

@@ -114,13 +114,31 @@ class FuzzyDict(OrderedDict):
 class FuzzyList(list):
     """A list that uses fuzzywuzzy to select the item."""
 
-    def __getitem__(self, value):
+    def __eq__(self, value):
 
         self_values = [str(item) for item in self]
 
         best = get_best_fuzzy(value, self_values)
 
         return self[self_values.index(best)]
+
+    def __contains__(self, value):
+
+        self_values = [str(item) for item in self]
+
+        item = get_best_fuzzy(value, self_values)
+
+        if item:
+            return True
+        else:
+            return False
+
+    def __getitem__(self, value):
+
+        if isinstance(value, six.string_types):
+            return self == value
+        else:
+            return list.__getitem__(self, value)
 
 
 class OrderedDefaultDict(OrderedDict):
