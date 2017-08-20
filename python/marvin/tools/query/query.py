@@ -181,6 +181,7 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
+        self.return_all = kwargs.get('return_all', False)
         self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
 
         # drop breadcrumb
@@ -728,11 +729,12 @@ class Query(object):
             count = self.query.count()
 
             self.totalcount = count
-            if count > 1000:
+            if count > 1000 and self.return_all is False:
                 query = self.query.slice(0, self.limit)
                 count = query.count()
-                warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
+                warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
                 query = self.query
 
             if qmode == 'all':
@@ -759,6 +761,9 @@ class Query(object):
             if not config.urlmap:
                 raise MarvinError('No URL Map found.  Cannot make remote call')
 
+            if self.return_all:
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
+
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
@@ -767,7 +772,8 @@ class Query(object):
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
-                      'release': self._release}
+                      'release': self._release,
+                      'return_all': self.return_all}
             try:
                 ii = Interaction(route=url, params=params)
             except Exception as e:
@@ -787,7 +793,13 @@ class Query(object):
                 # close the session and engine
                 #self.session.close()
                 #marvindb.db.engine.dispose()
-            print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
+
+            if self.return_all:
+                msg = 'Returning all {0} results'.format(totalcount)
+            else:
+                msg = 'Only returning the first {0} results.'.format(count)
+
+            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime)

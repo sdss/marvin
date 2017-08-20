@@ -34,7 +34,7 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
             'cube_extension': fields.String(required=True, location='view_args',
                                             validate=validate.OneOf(['flux', 'ivar', 'mask'])),
-            'colname': fields.String(required=True, location='view_args')
+            'colname': fields.String(required=True, location='view_args', allow_none=True)
             }
 
 # List of all form parameters that are needed in all the API routes
@@ -52,7 +52,8 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
                     'params': fields.DelimitedList(fields.String(), allow_none=True),
-                    'return_all': fields.Boolean(allow_none=True)
+                    'return_all': fields.Boolean(allow_none=True),
+                    'format_type': fields.String(allow_none=True, validate=validate.OneOf(['list', 'listdict', 'dictlist']))
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)

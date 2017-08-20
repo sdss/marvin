@@ -1,5 +1,5 @@
 from flask_classy import route
-from flask import request, jsonify, Response, current_app
+from flask import request, jsonify, Response, current_app, redirect, url_for
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
@@ -51,8 +51,8 @@ def _getCubes(searchfilter, **kwargs):
 
     # get results
     return_all = kwargs.get('return_all', None)
-    if return_all:
-        r.getAll()
+    # if return_all:
+    #     r.getAll()
     results = r.results
 
     # set up the output
@@ -204,7 +204,8 @@ class QueryView(BaseView):
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
         return Response(json.dumps(self.results), mimetype='application/json')
 
-    @route('/cubes/getcolumn/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
+    @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
+    @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
     @av.check_args(use_params='query', required='searchfilter')
     def query_allcolumn(self, args, colname):
         ''' Retrieves the entire result set for a single column
@@ -228,7 +229,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/cubes/getcolumn/cube.plateifu/ HTTP/1.1
+           GET /marvin2/api/query/cubes/columns/plateifu/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -252,6 +253,8 @@ class QueryView(BaseView):
         '''
         searchfilter = args.pop('searchfilter', None)
         format_type = args.pop('format_type', 'list')
+        print('format_type', format_type)
+        print(args)
         try:
             query, results = _run_query(searchfilter, **args)
         except MarvinError as e:
@@ -260,7 +263,12 @@ class QueryView(BaseView):
         else:
             self.results['status'] = 1
             if format_type == 'list':
-                column = results.getListOf(str(colname), return_all=True)
+                column = results.getListOf(colname)
+            elif format_type in ['listdict', 'dictlist']:
+                if colname == 'None':
+                    column = results.getDictOf(format_type=format_type)
+                else:
+                    column = results.getDictOf(colname, format_type=format_type)
             self.results['data'] = column
             self.results['runtime'] = _get_runtime(query)
 

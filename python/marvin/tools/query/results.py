@@ -148,6 +148,7 @@ class ResultSet(list):
 
     def __getitem__(self, value):
         if isinstance(value, six.string_types):
+            value = str(value)
             if value in self.columns:
                 colname = self.columns[value].remote
                 rows = [row.__getattribute__(colname) for row in self]
@@ -168,6 +169,25 @@ class ResultSet(list):
         newset = map(add, self, other)
         return ResultSet(newset, count=self.count, total=self.total, index=self.index,
                          columns=newcols, results=newresults)
+
+    def to_dict(self, name=None, format_type='listdict'):
+        ''' Convert the ResultSet into a dictionary '''
+
+        keys = self.columns.list_params(remote=True)
+
+        if format_type == 'listdict':
+            if name:
+                output = [{k: res.__getattribute__(k) for k in [name]} for res in self]
+            else:
+                output = [{k: res.__getattribute__(k) for k in keys} for res in self]
+        elif format_type == 'dictlist':
+            if name:
+                output = {k: [res._asdict()[k] for res in self] for k in [name]}
+            else:
+                output = {k: [res._asdict()[k] for res in self] for k in keys}
+        else:
+            raise MarvinError('Cannot output dictionaries.  Check your input format_type.')
+        return output
 
 
 class Results(object):
@@ -527,7 +547,7 @@ class Results(object):
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
 
-    def _makeNamedTuple(self, index=None):
+    def _makeNamedTuple(self, index=None, rows=None):
         ''' '''
         #ntnames = self._reduceNames(self._params, under=True)
         # try:
@@ -545,10 +565,11 @@ class Results(object):
         #if 'name' in ntnames:
         #    ntnames[ntnames.index('name')] = 'ifu_name'
 
+        rows = rows if rows else self.results
         self.columns = self.getColumns()
         ntnames = self.columns.list_params(remote=True)
         nt = marvintuple('ResultRow', ntnames, results=self)
-        results = [nt(*r) for r in self.results]
+        results = [nt(*r) for r in rows]
         self.count = len(self.results)
         self.results = ResultSet(results, count=self.count, total=self.totalcount, index=index, results=self)
 
@@ -756,12 +777,16 @@ class Results(object):
             else:
                 return output
 
-    def _check_column(self, name):
+    def _check_column(self, name, name_type):
         ''' Check if a name exists as a column '''
         try:
             name_in_col = name in self.columns
         except KeyError as e:
             raise MarvinError('Column {0} not found in results: {1}'.format(name, e))
+        else:
+            assert name_type in ['full', 'remote', 'name', 'short', 'display'], \
+                'name_type must be one of "full, remote, name, short, display"'
+            return self.columns[str(name)].__getattribute__(name_type)
 
     def getListOf(self, name=None, to_json=False, to_ndarray=False, return_all=None):
         ''' Extract a list of a single parameter from results
@@ -794,20 +819,14 @@ class Results(object):
         assert name, 'Must specify a column name'
 
         # check column name and get full name
-        self._check_column()
-        fullname = self.columns[name].full
+        fullname = self._check_column(name, 'full')
 
         # deal with the output
         if return_all:
-            # grab all of that column
-            if self.mode == 'local':
-                results = self._queryobj._query_column(fullname)
-                output = list(sum(results, ()))
-            elif self.mode == 'remote':
-                # Get the query route
-                url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
-                params = {'searchfilter': self.searchfilter, 'format_type': 'list'}
-                output = self._interaction(url, params, calltype='getList')
+            # # grab all of that column
+            url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
+            params = {'searchfilter': self.searchfilter, 'format_type': 'list', 'return_all': True}
+            output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
             output = self.results[name]
@@ -820,7 +839,7 @@ class Results(object):
 
         return output
 
-    def getDictOf(self, name=None, format_type='listdict', to_json=False):
+    def getDictOf(self, name=None, format_type='listdict', to_json=False, return_all=None):
         ''' Get a dictionary of specified parameters
 
             Parameters:
@@ -832,6 +851,8 @@ class Results(object):
                     Dictlist is a dictionary of lists. Default is listdict.
                 to_json (bool):
                     True/False boolean to convert the output into a JSON format
+                return_all (bool):
+                    if True, returns the entire result set for that column
 
             Returns:
                 output (list, dict):
@@ -864,38 +885,22 @@ class Results(object):
 
         '''
 
-        # Try to get the sqlalchemy results keys
-        keys = self.getColumns()
-        tmp = self.mapColumnsToParams()
-        tmp = self.mapParamsToColumns()
+        # get the remote and full name
+        remotename = self._check_column(name, 'remote') if name else None
+        fullname = self._check_column(name, 'full') if name else None
 
-        if self.mode == 'local':
-            lookup = OrderedDict(zip(keys, keys))
-        elif self.mode == 'remote':
-            lookup = self.coltoparam
+        # create the dictionary
+        output = self.results.to_dict(name=remotename, format_type=format_type)
 
-        # Format results
-        if format_type == 'listdict':
-            output = [{lookup[k]: res.__getattribute__(k) for k in keys} for res in self.results]
-        elif format_type == 'dictlist':
-            output = {lookup[k]: [res.__getattribute__(k) for res in self.results] for k in keys}
+        # deal with the output
+        if return_all:
+            # grab all or of a specific column
+            params = {'searchfilter': self.searchfilter, 'return_all': True, 'format_type': format_type}
+            url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
+            output = self._interaction(url, params, calltype='getDict')
         else:
-            raise MarvinError('No output.  Check your input format_type.')
-
-        # Test if name is in results
-        if name:
-            refname = self._getRefName(name)
-            if refname:
-                # Format results
-                newname = lookup[refname]
-                if format_type == 'listdict':
-                    output = [{newname: i[newname]} for i in output]
-                elif format_type == 'dictlist':
-                    output = {newname: output[newname]}
-                else:
-                    output = None
-            else:
-                raise MarvinError('Name {0} not a property in results.  Try another'.format(name))
+            # only deal with current page
+            output = self.results.to_dict(name=remotename, format_type=format_type)
 
         if to_json:
             output = json.dumps(output) if output else None
@@ -1214,7 +1219,7 @@ class Results(object):
                                     "method retrieve pages.")
 
         if self.mode == 'local':
-            self.results = self.query.all()
+            self.results = self.query.from_self().all()
             self._makeNamedTuple()
         elif self.mode == 'remote':
             # Get the query route
