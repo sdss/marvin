@@ -107,7 +107,7 @@ class Search(BaseWebView):
                     self.search['count'] = res.totalcount
                     self.search['runtime'] = res.query_time.total_seconds()
                     if res.count > 0:
-                        cols = res.mapColumnsToParams()
+                        cols = res.columns.remote
                         rows = res.getDictOf(format_type='listdict')
                         output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
                     else:
@@ -155,10 +155,6 @@ class Search(BaseWebView):
         form = processRequest(request=request)
         args = av.manual_parse(self, request, use_params='query')
 
-        #{'sort': u'cube.mangaid', 'task': None, 'end': None, 'searchfilter': None,
-        #'paramdisplay': None, 'start': None, 'rettype': None, 'limit': 10, 'offset': 30,
-        #'release': u'MPL-4', 'params': None, 'order': u'asc'}
-
         # remove args
         __tmp__ = args.pop('release', None)
         __tmp__ = args.pop('searchfilter', None)
@@ -170,11 +166,6 @@ class Search(BaseWebView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        # limit = form.get('limit', 10, type=int)
-        # offset = form.get('offset', None, type=int)
-        # order = form.get('order', None, type=str)
-        # sort = form.get('sort', None, type=str)
-        # search = form.get('search', None, type=str)
 
         # exit if no searchvalue is found
         if not searchvalue:
@@ -183,12 +174,10 @@ class Search(BaseWebView):
 
         # do query
         q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
-        # q, res = doQuery(searchfilter=searchvalue, release=self._release,
-        #                  limit=limit, order=order, sort=sort, returnparams=returnparams)
         # get subset on a given page
         __results__ = res.getSubset(offset, limit=limit)
         # get keys
-        cols = res.mapColumnsToParams()
+        cols = res.columns.remote
         # create output
         rows = res.getDictOf(format_type='listdict')
         output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
@@ -221,8 +210,6 @@ class Search(BaseWebView):
 
         # only grab subset if more than 16 galaxies
         if len(plateifus) > pagesize:
-            # __results__ = res.getSubset(offset, limit=pagesize)
-            # plateifus = res.getListOf('plateifu')
             plateifus = plateifus[offset:offset + pagesize]
 
         # get images

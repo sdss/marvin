@@ -512,11 +512,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-<<<<<<< HEAD
 * @Last Modified time: 2017-04-09 08:58:10
-=======
-* @Last Modified time: 2016-09-26 17:40:15
->>>>>>> upstream/marvin_refactor
 */
 
 //
@@ -2606,7 +2602,7 @@ var Search = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-06-04 02:03:56
+* @Last Modified time: 2017-08-20 23:08:17
 */
 
 //jshint esversion: 6
@@ -2675,7 +2671,7 @@ var Table = function () {
                 url: url,
                 showColumns: true,
                 showToggle: true,
-                sortName: 'cube.mangaid',
+                sortName: 'mangaid',
                 sortOrder: 'asc',
                 formatNoMatches: function formatNoMatches() {
                     return "This table is empty...";
@@ -2696,7 +2692,7 @@ var Table = function () {
                 colmap.field = name;
                 colmap.title = name;
                 colmap.sortable = true;
-                if (name.match('cube.plateifu|cube.mangaid')) {
+                if (name.match('plateifu|mangaid')) {
                     colmap.formatter = _this.linkformatter;
                 }
                 cols.push(colmap);

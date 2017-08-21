@@ -55,14 +55,14 @@ def doQuery(*args, **kwargs):
 
     Parameters:
         N/A:
-            See the :class:`~marvin.tools.query.query.Query` class for a list
+            See the :class:`~marvin.tools.query.Query` class for a list
             of inputs.
 
     Returns:
         query, results:
             A tuple containing the built
-            :class:`~marvin.tools.query.query.Query` instance, and the
-            :class:`~marvin.tools.query.results.Results` instance.
+            :class:`~marvin.tools.query.Query` instance, and the
+            :class:`~marvin.tools.results.Results` instance.
     """
     q = Query(*args, **kwargs)
     try:

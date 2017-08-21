@@ -189,17 +189,17 @@ Reference/API
 
 .. rubric:: Class
 
-.. autosummary:: marvin.tools.query.query_utils.ParameterGroupList
-.. autosummary:: marvin.tools.query.query_utils.ParameterGroup
-.. autosummary:: marvin.tools.query.query_utils.QueryParameter
+.. autosummary:: marvin.tools.query_utils.ParameterGroupList
+.. autosummary:: marvin.tools.query_utils.ParameterGroup
+.. autosummary:: marvin.tools.query_utils.QueryParameter
 
 .. rubric:: Methods
 
 .. autosummary::
 
-    marvin.tools.query.query_utils.ParameterGroupList.list_groups
-    marvin.tools.query.query_utils.ParameterGroupList.list_params
-    marvin.tools.query.query_utils.ParameterGroup.list_params
+    marvin.tools.query_utils.ParameterGroupList.list_groups
+    marvin.tools.query_utils.ParameterGroupList.list_params
+    marvin.tools.query_utils.ParameterGroup.list_params
 
 .. _marvin_parameter_list:
 

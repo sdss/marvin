@@ -83,7 +83,7 @@ Reference/API
 
 .. rubric:: Class
 
-.. autosummary:: marvin.tools.query.query.Query
+.. autosummary:: marvin.tools.query.Query
 
 .. rubric:: Methods
 

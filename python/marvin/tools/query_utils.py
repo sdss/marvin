@@ -316,6 +316,8 @@ class QueryParameter(object):
             self.display = self.name.title()
         if not self.remote:
             self.remote = self._under if 'name' in self.name else self.name
+        # used for a token string on the web
+        self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
     def _check_datamodels(self):
         ''' Check if the query parameter lives in the datamodel '''
