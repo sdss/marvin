@@ -62,6 +62,27 @@ def _getCubes(searchfilter, **kwargs):
     return output
 
 
+def _get_column(results, colname, format_type=None):
+    ''' Gets a column from a Query '''
+
+    column = None
+    if format_type == 'list':
+        try:
+            column = results.getListOf(colname)
+        except MarvinError as e:
+            raise MarvinError('Cannot get list for column {0}: {1}'.format(colname, e))
+    elif format_type in ['listdict', 'dictlist']:
+        try:
+            if colname == 'None':
+                column = results.getDictOf(format_type=format_type)
+            else:
+                column = results.getDictOf(colname, format_type=format_type)
+        except MarvinError as e:
+            raise MarvinError('Cannot get dictionary for column {0}: {1}'.format(colname, e))
+
+    return column
+
+
 class QueryView(BaseView):
     """Class describing API calls related to queries."""
     decorators = [limiter.limit("60/minute")]
@@ -251,16 +272,16 @@ class QueryView(BaseView):
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
         else:
-            self.results['status'] = 1
-            if format_type == 'list':
-                column = results.getListOf(colname)
-            elif format_type in ['listdict', 'dictlist']:
-                if colname == 'None':
-                    column = results.getDictOf(format_type=format_type)
-                else:
-                    column = results.getDictOf(colname, format_type=format_type)
-            self.results['data'] = column
-            self.results['runtime'] = _get_runtime(query)
+            print('column', colname, results.columns)
+            try:
+                column = _get_column(results, colname, format_type=format_type)
+            except MarvinError as e:
+                self.results['error'] = str(e)
+                self.results['traceback'] = get_traceback(asstring=True)
+            else:
+                self.results['status'] = 1
+                self.results['data'] = column
+                self.results['runtime'] = _get_runtime(query)
 
         return Response(json.dumps(self.results), mimetype='application/json')
 

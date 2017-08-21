@@ -1347,26 +1347,127 @@ class Results(object):
 
                 self.objects.append(ModelCube(**mapkwargs))
 
-    def plot(self, x_name, y_name):
+    def plot(self, x_name, y_name, **kwargs):
         ''' Make a scatter plot from two columns of results '''
 
         assert all([x_name, y_name]), 'Must provide both an x and y column'
 
+        # get the named column
+        x_col = self.columns[x_name]
+        y_col = self.columns[y_name]
+
         # get the values of the two columns
         if self.count != self.totalcount:
-            x_col = self.getListOf(x_name, return_all=True)
-            y_col = self.getListOf(y_name, return_all=True)
+            x_data = self.getListOf(x_name, return_all=True)
+            y_data = self.getListOf(y_name, return_all=True)
         else:
-            x_col = self.results[x_name]
-            y_col = self.results[y_name]
+            x_data = self.results[x_name]
+            y_data = self.results[y_name]
+
+        ### everything below here goes in the standalone scatter
+        #
+        xlim = kwargs.get('xlim', None)
+        ylim = kwargs.get('ylim', None)
+        xlabel = kwargs.get('xlabel', None)
+        ylabel = kwargs.get('ylabel', None)
+        hist = kwargs.get('hist', True)
+        bins = kwargs.get('bins', None)
+
+        # create the figure and axes
+        if hist:
+            fig = plt.figure()
+        else:
+            fig, ax_joint = plt.subplots()
+        ax_marg_x = None
+        ax_marg_y = None
+
+        # create histogram axes
+        if hist:
+            from matplotlib.gridspec import GridSpec
+
+            if hist is True:
+                gs = GridSpec(4, 4)
+                ax_joint = fig.add_subplot(gs[1:4, 0:3])
+                ax_marg_x = fig.add_subplot(gs[0, 0:3])
+                ax_marg_y = fig.add_subplot(gs[1:4, 3])
+            elif hist == 'x':
+                gs = GridSpec(2, 1, height_ratios=[1, 2])
+                ax_joint = fig.add_subplot(gs[1])
+                ax_marg_x = fig.add_subplot(gs[0])
+            elif hist == 'y':
+                gs = GridSpec(1, 2, width_ratios=[2, 1])
+                ax_joint = fig.add_subplot(gs[0])
+                ax_marg_y = fig.add_subplot(gs[1])
+
+        # turn off histogram axes
+        if ax_marg_x:
+            plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+        if ax_marg_y:
+            plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+
+        # histogram labels
+        ax_marg_y.set_xlabel('Counts')
+        ax_marg_x.set_ylabel('Counts')
+
+        # statistics
+        xstats = {'mean': np.nanmean(x_data), 'std': np.nanstd(x_data), 'median': np.nanmedian(x_data),
+                  'per10': np.nanpercentile(x_data, 10), 'per25': np.nanpercentile(x_data, 10),
+                  'per75': np.nanpercentile(x_data, 10), 'per90': np.nanpercentile(x_data, 10)}
+        ystats = {'mean': np.nanmean(y_data), 'std': np.nanstd(y_data), 'median': np.nanmedian(y_data),
+                  'per10': np.nanpercentile(y_data, 10), 'per25': np.nanpercentile(y_data, 10),
+                  'per75': np.nanpercentile(y_data, 10), 'per90': np.nanpercentile(y_data, 10)}
+        xtitle = 'Stats: $\\mu={mean:.3f}, \\sigma={std:.3f}$'.format(**xstats)
+        ytitle = 'Stats: $\\mu={mean:.3f}, \\sigma={std:.3f}$'.format(**ystats)
+        ax_marg_x.set_title(xtitle)
+        #ax_marg_y.set_title(ytitle)
+        ax_marg_y.set_ylabel(ytitle)
+        ax_marg_y.yaxis.set_label_position('right')
+        ax_marg_y.yaxis.label.set_fontsize(12.0)
+
+        # set display names
+        if xlabel is None:
+            x_display = '{0} [{1}]'.format(x_col.property.to_string('latex'),
+                                           x_col.property.unit.to_string('latex')) if x_col.property else x_col.display
+        if ylabel is None:
+            y_display = '{0} [{1}]'.format(y_col.property.to_string('latex'),
+                                           y_col.property.unit.to_string('latex')) if y_col.property else y_col.display
+
+        ax_joint.set_xlabel(x_display)
+        ax_joint.set_ylabel(y_display)
+
+        # set limits
+        if xlim is not None:
+            assert len(xlim) == 2, 'x-range must be a list or tuple of 2'
+            ax_joint.set_xlim(*xlim)
+
+        if ylim is not None:
+            assert len(ylim) == 2, 'y-range must be a list or tuple of 2'
+            ax_joint.set_ylim(*ylim)
+
+        # mask the columns
+        xmask = np.ma.masked_array(x_data, mask=np.isnan(x_data))
+        ymask = np.ma.masked_array(y_data, mask=np.isnan(y_data))
+
+        # make histogram
+        if hist:
+            xbin, ybin = bins if bins else [50, 50]
+            hist_data = {}
+            if ax_marg_x:
+                xhist, xbins, xpatches = ax_marg_x.hist(xmask[~xmask.mask], bins=xbin, color='lightblue', edgecolor='black', range=xlim)
+                hist_data['xhist'] = {'counts': xhist, 'binedges': xbins, 'binsize': xbin, 'bins': np.digitize(x_data, xbins)}
+            if ax_marg_y:
+                yhist, ybins, ypatches = ax_marg_y.hist(ymask[~ymask.mask], bins=ybin, orientation='horizontal', color='lightblue', edgecolor='black', range=ylim)
+                hist_data['yhist'] = {'counts': yhist, 'binedges': ybins, 'binsize': ybin, 'bins': np.digitize(x_data, xbins)}
 
         # make the scatter plot
-        text = iter(['Low Outlier', 'LoLo', 'Lo', 'Average', 'Hi', 'HiHi', 'High Outlier'])
-        fig, ax = plt.subplots()
-        ax.set_xlabel(x_name)
-        ax.set_ylabel(y_name)
-        ax.scatter(x_col, y_col, s=50)
+        ax_joint.scatter(xmask, ymask, c='r', s=20, marker='o', edgecolors='black')
 
-        output = (fig, ax)
+        axes = [ax_joint]
+        if ax_marg_x:
+            axes.append(ax_marg_x)
+        if ax_marg_y:
+            axes.append(ax_marg_y)
+
+        output = (fig, axes, hist_data) if hist else (fig, axes)
         return output
 

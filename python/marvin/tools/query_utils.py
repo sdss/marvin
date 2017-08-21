@@ -17,9 +17,14 @@ from marvin import config
 query_params = None
 
 
-def get_best_fuzzy(name, choices, cutoff=0):
+def get_best_fuzzy(name, choices, cutoff=0, return_score=False):
     items = process.extractBests(name, choices, score_cutoff=cutoff)
-    if items:
+
+    if not items:
+        return None
+    elif len(items) == 1:
+        best = items[0]
+    else:
         scores = [s[1] for s in items]
         # finds items with the same score
         morethanone = sum(np.max(scores) == scores) > 1
@@ -27,19 +32,19 @@ def get_best_fuzzy(name, choices, cutoff=0):
             # tries to find an exact string match
             exact = []
             for s in items:
-                itemname = s[0].name if isinstance(s[0], QueryParameter) else s[0]
-                if itemname.lower() == name.lower():
+                #itemname = s[0].name if isinstance(s[0], QueryParameter) else s[0]
+                if s[0].lower() == name.lower():
                     exact.append(s)
             # returns exact match or fails with ambiguity
             if exact:
-                return exact[0]
+                best = exact[0]
             else:
                 options = [s[0].name if isinstance(s[0], QueryParameter) else s[0] for s in items if s[1] == np.max(scores)]
                 raise KeyError('{0} is too ambiguous.  Did you mean one of {1}?'.format(name, options))
         else:
-            return items[0]
-    else:
-        return None
+            best = items[0]
+
+    return best if return_score else best[0]
 
 
 def get_params():
@@ -111,16 +116,14 @@ class ParameterGroupList(list):
             return [param.__getattribute__(name_type) for group in self for param in group]
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=50)
+        item = get_best_fuzzy(name, self.list_groups(), cutoff=50)
         if item:
-            self.score = item[1]
-            return item[0]
+            return self[self.list_groups().index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=50)
+        item = get_best_fuzzy(name, self.list_groups(), cutoff=50)
         if item:
-            self.score = item[1]
-            return item[0]
+            return self[self.list_groups().index(item)]
         else:
             return False
 
@@ -236,15 +239,13 @@ class ParameterGroup(list):
             return [param for param in paramlist]
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=25)
+        item = get_best_fuzzy(name, self.full, cutoff=25)
         if item:
-            self.score = item[1]
-            return item[0]
+            return self[self.full.index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=25)
+        item = get_best_fuzzy(name, self.full, cutoff=25)
         if item:
-            self.score = item[1]
             return True
         else:
             return False
