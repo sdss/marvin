@@ -165,7 +165,7 @@ Map Plotting
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
-  * :ref:`marvin-plotting-map-starforming`
+  * :ref:`Plot Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-map-starforming>`
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
@@ -225,6 +225,38 @@ In addition to performing the arithmetic operation on the ``value``, the resulti
     #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
     #         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) erg / (cm2 s spaxel)]
 
+
+Correcting Velocity Dispersion for Instrumental Broadening ``````````````````````````````````````````````````````````
+The DAP reports the measured stellar and emission line velocity dispersions (``sigma``) that have NOT been corrected for the effect of instrumental broadening. The instrumental broadening is reported separately as ``stellar_sigmacorr`` or ``emline_instsigma``.  To get the physical velocity dispersion the instrumental broadening must be subtracted in quadrature from the measured dispersion.  The :meth:`~marvin.tools.map.Map.inst_sigma_correction` method does this while properly handling all of the other :mod:`~marvin.tools.map.Map` attributes and returns an :mod:`~marvin.tools.map.EnhancedMap`.
+
+
+.. code-block:: python
+
+    stsig_uncorrected = maps['stellar_sigma']
+    stsig = stsig_uncorrected.inst_sigma_correction()
+    
+    stsig
+    # <Marvin EnhancedMap '((stellar_sigma)^2 - (stellar_sigmacorr)^2)^0.5'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'km / s'
+    
+    hasig_uncorrected = maps['emline_gsigma_ha_6564']
+    hasig = hasig_uncorrected.inst_sigma_correction()
+    
+    hasig
+    # <Marvin EnhancedMap '((emline_gsigma_ha_6564)^2 - (emline_instsigma_ha_6564)^2)^0.5'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'km / s'
 
 
 
