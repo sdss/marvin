@@ -328,3 +328,12 @@ class MarvinToolsClass(object):
         """Fails when trying to set the release after instatiation."""
 
         raise MarvinError('the release cannot be changed once the object has been instantiated.')
+
+    def __del__(self):
+        """Destructor for closing FITS files."""
+
+        if self.data_origin == 'file' and isinstance(self.data, astropy.io.fits.HDUList):
+            try:
+                self.data.close()
+            except Exception as ee:
+                warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)

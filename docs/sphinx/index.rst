@@ -70,6 +70,9 @@ Components
     * :doc:`tools/bpt`
 
   * :doc:`tools/map`
+
+    * :doc:`tools/enhanced-map`
+
   * :doc:`Utilities <utils>`
 
     * :doc:`Image <utils/images>`

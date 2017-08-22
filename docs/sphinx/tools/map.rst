@@ -22,7 +22,7 @@ To get a map, we first need to create a :mod:`marvin.tools.maps.Maps` object, wh
     maps = Maps(plateifu='8485-1901')
 
 
-By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `MPL-5 Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
+By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
 
 * ``SPX`` - spaxels are unbinned,
 * ``VOR10`` - spaxels are Voronoi binned to a minimum continuum SNR of 10,
@@ -31,7 +31,7 @@ By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, bu
 
 .. code-block:: python
 
-    maps_ = Maps(mangaid='1-209232', bintype='VOR10')
+    maps = Maps(mangaid='1-209232', bintype='VOR10')
 
 
 Once we have a :mod:`~marvin.tools.maps.Maps` object, we can "slice" it to get the H\ :math:`\alpha` (Gaussian-fitted) flux map.
@@ -49,9 +49,22 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 
 .. code-block:: python
 
-    ha_ = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
+    ha = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
     stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
 
+**New in 2.2.0**: You can guess at the map property name (and channel), and Marvin will return the map if there is a unique (and valid) property and channel.
+
+.. code-block:: python
+
+    maps['gflux ha']        # == maps['emline_gflux_ha_6564']
+    maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
+    maps['stellar sig']     # == maps['stellar_sigma']
+    
+    # There are several properties of the Halpha line (velocity, sigma, etc.).
+    maps['ha']  # ValueError
+    
+    # There are two [O III] lines.
+    maps['gflux oiii']  # ValueError
 
 The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
 
@@ -152,7 +165,7 @@ Map Plotting
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
   * :ref:`marvin-plotting-custom-map-axes`
-  * :ref:`marvin-plotting-map-starforming`
+  * :ref:`Plot Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-map-starforming>`
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
@@ -162,21 +175,103 @@ Applying Bitmasks to a Map
 * :doc:`../tutorials/bitmasks`
 
 
+Map Arithmetic
+``````````````
+
+**New in 2.2.0** :mod:`~marvin.tools.map.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
+
+.. code-block:: python
+
+    ha = maps['emline_gflux_ha_6564']
+    nii = maps['emline_gflux_nii_6585']
+    
+    sum_ = nii + ha
+    diff = nii - ha
+    prod = nii * ha
+    quot = nii / ha
+    pow_ = ha**0.5
+    
+    prod
+    # <Marvin EnhancedMap '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'erg2 / (cm4 s2 spaxel2)'
+
+In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.map.EnhancedMap` has correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.map.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.map.Map` object(s).
+
+.. code-block:: python
+
+    prod.history  # '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'
+
+    prod.parents
+    # [<Marvin Map (plateifu='8485-1901', property='emline_gflux', channel=<Channel 'nii_6585' unit='km / s'>)>
+    #  array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         ...,
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) erg / (cm2 s spaxel),
+    #  <Marvin Map (plateifu='8485-1901', property='emline_gflux', channel=<Channel 'ha_6564' unit='km / s'>)>
+    #  array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         ...,
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) erg / (cm2 s spaxel)]
+
+
+Correcting Velocity Dispersion for Instrumental Broadening ``````````````````````````````````````````````````````````
+The DAP reports the measured stellar and emission line velocity dispersions (``sigma``) that have NOT been corrected for the effect of instrumental broadening. The instrumental broadening is reported separately as ``stellar_sigmacorr`` or ``emline_instsigma``.  To get the physical velocity dispersion the instrumental broadening must be subtracted in quadrature from the measured dispersion.  The :meth:`~marvin.tools.map.Map.inst_sigma_correction` method does this while properly handling all of the other :mod:`~marvin.tools.map.Map` attributes and returns an :mod:`~marvin.tools.map.EnhancedMap`.
+
+
+.. code-block:: python
+
+    stsig_uncorrected = maps['stellar_sigma']
+    stsig = stsig_uncorrected.inst_sigma_correction()
+    
+    stsig
+    # <Marvin EnhancedMap '((stellar_sigma)^2 - (stellar_sigmacorr)^2)^0.5'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'km / s'
+    
+    hasig_uncorrected = maps['emline_gsigma_ha_6564']
+    hasig = hasig_uncorrected.inst_sigma_correction()
+    
+    hasig
+    # <Marvin EnhancedMap '((emline_gsigma_ha_6564)^2 - (emline_instsigma_ha_6564)^2)^0.5'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'km / s'
+
+
+
 Accessing the Parent Maps Object
 ````````````````````````````````
 
-One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.base.Property` via the :attr:`~marvin.tools.map.Map.property` attribute.
 
 .. code-block:: python
 
     ha.maps == maps  # True
     
-    ha.maps_property
-    # <MapsProperty name=emline_gflux, ivar=True, mask=True, n_channels=21>
+    ha.property
+    # <Property 'emline_gflux', release='2.0.2', channel='ha_6564', unit='erg / (cm2 s spaxel)'>
     
-    ha.maps_property.channels
-    # ['oiid_3728', 'hb_4862', 'oiii_4960', 'oiii_5008', ..., 'siii_9533']
-
 
 Saving and Restoring a Map
 ``````````````````````````
@@ -203,10 +298,13 @@ Reference/API
 
 .. autosummary::
 
-    marvin.tools.map.Map.plot
-    marvin.tools.map.Map.restore
     marvin.tools.map.Map.save
+    marvin.tools.map.Map.restore
+    marvin.tools.map.Map.masked
+    marvin.tools.map.Map.error
     marvin.tools.map.Map.snr
+    marvin.tools.map.Map.plot
+    marvin.tools.map.Map.inst_sigma_correction
 
 
 |
