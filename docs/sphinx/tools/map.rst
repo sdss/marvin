@@ -175,6 +175,59 @@ Applying Bitmasks to a Map
 * :doc:`../tutorials/bitmasks`
 
 
+Map Arithmetic
+``````````````
+
+**New in v2.2** :mod:`~marvin.tools.map.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
+
+.. code-block:: python
+
+    ha = maps['emline_gflux_ha_6564']
+    nii = maps['emline_gflux_nii_6585']
+    
+    sum_ = nii + ha
+    diff = nii - ha
+    prod = nii * ha
+    quot = nii / ha
+    pow_ = ha**0.5
+    
+    prod
+    # <Marvin EnhancedMap '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'>
+    # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        ...,
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'erg2 / (cm4 s2 spaxel2)'
+
+In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.map.EnhancedMap` with correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.map.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.map.Map` object(s).
+
+.. code-block:: python
+
+    prod.history  # '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'
+
+    prod.parents
+    # [<Marvin Map (plateifu='8485-1901', property='emline_gflux', channel=<Channel 'nii_6585' unit='km / s'>)>
+    #  array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         ...,
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) erg / (cm2 s spaxel),
+    #  <Marvin Map (plateifu='8485-1901', property='emline_gflux', channel=<Channel 'ha_6564' unit='km / s'>)>
+    #  array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         ...,
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+    #         [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) erg / (cm2 s spaxel)]
+
+
+
+
 Accessing the Parent Maps Object
 ````````````````````````````````
 
