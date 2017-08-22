@@ -56,15 +56,15 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 
 .. code-block:: python
 
-    maps['gflux ha']  # == maps['emline_gflux_ha_6564']
+    maps['gflux ha']        # == maps['emline_gflux_ha_6564']
     maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
-    maps['stellar sig']  # == maps['stellar_sigma']
+    maps['stellar sig']     # == maps['stellar_sigma']
     
-    # There are several properties of the Halpha line (velocity, sigma, etc.)
+    # There are several properties of the Halpha line (velocity, sigma, etc.).
     maps['ha']  # ValueError
     
     # There are two [O III] lines.
-    maps['gflux oiii']  # ValueError: cannot find a good match for 'gflux oiii'. Your input value is too ambiguous.
+    maps['gflux oiii']  # ValueError
 
 The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
 
