@@ -52,7 +52,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
     ha = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
     stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
 
-**New in v2.2**: You can guess at the map property name (and channel), and Marvin will return the map if there is a unique (and valid) property and channel.
+**New in 2.2.0**: You can guess at the map property name (and channel), and Marvin will return the map if there is a unique (and valid) property and channel.
 
 .. code-block:: python
 
@@ -178,7 +178,7 @@ Applying Bitmasks to a Map
 Map Arithmetic
 ``````````````
 
-**New in v2.2** :mod:`~marvin.tools.map.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
+**New in 2.2.0** :mod:`~marvin.tools.map.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
 
 .. code-block:: python
 
@@ -201,7 +201,7 @@ Map Arithmetic
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'erg2 / (cm4 s2 spaxel2)'
 
-In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.map.EnhancedMap` with correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.map.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.map.Map` object(s).
+In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.map.EnhancedMap` has correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.map.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.map.Map` object(s).
 
 .. code-block:: python
 
