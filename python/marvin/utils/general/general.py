@@ -7,6 +7,7 @@ import numpy as np
 import PIL
 import inspect
 from scipy.interpolate import griddata
+from collections import OrderedDict
 
 from astropy import wcs
 from astropy import table
@@ -34,7 +35,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
-           'isCallableWithArgs')
+           'isCallableWithArgs', 'map_bins_to_column')
 
 drpTable = {}
 
@@ -1175,3 +1176,49 @@ def isCallableWithArgs(func, argdict, arg_type='opt', strict=False):
         return not missingArgs(func, argdict, arg_type=arg_type) and not invalidArgs(func, argdict)
     else:
         return not invalidArgs(func, argdict)
+
+
+def map_bins_to_column(column, indices):
+    ''' Maps a dictionary of array indices to column data
+
+    Takes a given data column and a dictionary of indices (see the indices key
+    from output of the histgram data in :meth:`marvin.utils.plot.scatter.hist`),
+    and produces a dictionary with the data values from column mapped in
+    individual bins.
+
+    Parameters:
+        column (list):
+            A column of data
+        indices (dict):
+            A dictionary of providing a list of array indices belonging to each
+            bin in a histogram.
+
+    Returns:
+        A dictionary containing, for each binid, a list of column data in that bin.
+
+    Example:
+        >>>
+        >>> # provide a list of data in each bin of an output histogram
+        >>> x = np.random.random(10)*10
+        >>> hdata = hist(x, bins=3, return_fig=False)
+        >>> inds = hdata['indices']
+        >>> pmap = map_bins_to_column(x, inds)
+        >>> OrderedDict([(1,
+        >>>   [2.5092488009906235,
+        >>>    1.7494530589363955,
+        >>>    2.5070840461208754,
+        >>>    2.188355400587354,
+        >>>    2.6987990403658992,
+        >>>    1.6023553861428441]),
+        >>>  (3, [7.9214280403215875, 7.488908995456573, 7.190598204420587]),
+        >>>  (4, [8.533028236560906])])
+
+    '''
+    assert isinstance(indices, dict) is True, 'indices must be a dictionary of binids'
+    assert len(column) == len(sum(indices.values(), [])), 'input column and indices values must have same len'
+    coldict = OrderedDict()
+    colarr = np.array(column)
+    for key, val in indices.items():
+        coldict[key] = colarr[val].tolist()
+    return coldict
+

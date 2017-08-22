@@ -8,7 +8,7 @@ from marvin.tools.spaxel import Spaxel
 from marvin.tools.forms import MarvinForm
 from marvin.tools.query_utils import ParameterGroup, query_params
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, parseIdentifier
+from marvin.utils.general import getImagesByList, downloadList, parseIdentifier, map_bins_to_column
 from marvin.api.api import Interaction
 from operator import add
 import warnings
@@ -1348,9 +1348,43 @@ class Results(object):
                 self.objects.append(ModelCube(**mapkwargs))
 
     def plot(self, x_name, y_name, **kwargs):
-        ''' Make a scatter plot from two columns of results '''
+        ''' Make a scatter plot from two columns of results
+
+        Creates a Matplotlib scatter plot from Results columns.
+        Accepts as input two string column names.  Will extract the total
+        entire column (if not already available) and plot them.  Creates
+        a scatter plot with (optionally) adjoining 1-d histograms for each column.
+
+        See :meth:`marvin.utils.plot.scatter.plot` and
+        :meth:`marvin.utils.plot.scatter.hist` for details.
+
+        Parameters:
+            x_name (str):
+                The name of the x-column of data. Required
+            y_name (str):
+                The name of the y-column of data. Required
+            return_plateifus (bool):
+                If True, includes the plateifus in each histogram bin in the
+                histogram output.  Default is True.
+            **kwargs (dict):
+                Any other keyword argument that will be passed to Marvin's
+                scatter and hist plotting methods
+
+        Returns:
+            The histogram data, figure, and axes from the plotting function
+
+        Example:
+            >>> # do a query and get the results
+            >>> q = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
+            >>> r = q.run()
+            >>> # plot the total columns of Redshift vs g-r magnitude
+            >>> fig, axes, hist_data = r.plot('nsa.z', 'g_r')
+
+        '''
 
         assert all([x_name, y_name]), 'Must provide both an x and y column'
+        return_plateifus = kwargs.pop('return_plateifus', True)
+        with_hist = kwargs.get('with_hist', True)
 
         # get the named column
         x_col = self.columns[x_name]
@@ -1365,5 +1399,16 @@ class Results(object):
             y_data = self.results[y_name]
 
         output = marvin.utils.plot.scatter.plot(x_data, y_data, x_col=x_col, y_col=y_col, **kwargs)
+
+        # computes a list of plateifus in each bin
+        if return_plateifus and with_hist:
+            plateifus = self.getListOf('plateifu', return_all=True)
+            hdata = output[2]
+            if 'xhist' in hdata:
+                hdata['xhist']['xbins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
+            if 'yhist' in hdata:
+                hdata['yhist']['ybins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
+            output = output[0:2] + (hdata,)
+
         return output
 

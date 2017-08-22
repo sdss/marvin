@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-22 11:47:24
+# @Last Modified time: 2017-08-22 14:15:12
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -21,8 +21,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def _compute_stats(data):
-    ''' Compute some statistics '''
+def compute_stats(data):
+    ''' Compute some statistics
+
+    Computes some basic statistics given a data array, excluding NaN values.
+    Computes and returns the following Numpy statistics: mean, standard deviation,
+    median, and the 10th, 25th, 75th, and 90th percentiles.
+
+    Parameters:
+        data (list|ndarray):
+            A list or Numpy array of data
+
+    Returns:
+        A dictionary of statistics values
+
+    '''
     stats = {'mean': np.nanmean(data), 'std': np.nanstd(data), 'median': np.nanmedian(data),
              'per10': np.nanpercentile(data, 10), 'per25': np.nanpercentile(data, 10),
              'per75': np.nanpercentile(data, 10), 'per90': np.nanpercentile(data, 10)}
@@ -80,7 +93,7 @@ def _create_figure(hist=None, hist_axes_visible=None):
 
 def _create_hist_title(data):
     ''' create a title for the histogram '''
-    stats = _compute_stats(data)
+    stats = compute_stats(data)
     hist_title = 'Stats: $\\mu={mean:.3f}, \\sigma={std:.3f}$'.format(**stats)
     return hist_title
 
@@ -126,7 +139,6 @@ def _prep_func_kwargs(func, kwargs):
     new_kwargs = kwargs.copy()
     for key in invalid:
         __ = new_kwargs.pop(key)
-    print('new', new_kwargs, func, isCallableWithArgs(func, new_kwargs))
     if isCallableWithArgs(func, new_kwargs):
         return new_kwargs
     else:
@@ -134,9 +146,57 @@ def _prep_func_kwargs(func, kwargs):
 
 
 def plot(x, y, **kwargs):
-    ''' Scatter plot '''
+    ''' Create a scatter plot given two columns of data
 
-    assert all([x, y]), 'Must provide both an x and y column'
+    Creates a Matplotlib scatter plot using two input arrays of data.  By default, will also
+    create and dispay histograms for the x and y data.  This can be disabled setting the "with_hist"
+    keyword to False, or "x", or "y" for displaying only that column. Accepts all the same keyword
+    arguments as matplotlib scatter and hist methods.
+
+    Parameters:
+        x (list|ndarray):
+            The x array of data
+        y (list|ndarray):
+            The y array of data
+        xmask (ndarray):
+            A mask to apply to the x-array of data
+        ymask (ndarray):
+            A mask to apply to the y-array of data
+        x_col (Marvin column):
+            Optional Marvin DataModel Property or QueryParameter to use for display
+        y_col (Marvin columnd):
+            Optional Marvin DataModel Property or QueryParameter to use for display
+        with_hist (bool|str):
+            If True, creates the plot with both x,y histograms.  False, disables it.  If 'x' or 'y',
+            only creates that histogram.  Default is True.
+        hist_axes_visible (bool):
+            If True, disables the x-axis ticks for each histogram.  Default is True.
+        xlim (tuple):
+            A tuple limited the range of the x-axis
+        ylim (tuple):
+            A tuple limited the range of the y-axis
+        xlabel (str):
+            The x axis label
+        ylabel (str):
+            The y axis label
+        kwargs (dict):
+            Any other keyword arguments to be passed to `matplotlib.pyplot.scatter
+                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_ or
+            `matplotlib.pyplot.hist<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`.
+
+    Returns:
+        A tuple of the matplotlib figure, axes, and histogram data (if returned)
+
+    Example:
+        >>> # create a scatter plot
+        >>> import numpy as np
+        >>> from marvin.utils.scatter import plot
+        >>> x = np.random.random(100)
+        >>> y = np.random.random(100)
+        >>> plot(x, y)
+    '''
+
+    assert np.all([x, y]), 'Must provide both an x and y column'
     assert isinstance(x, (list, np.ndarray)), 'x data must be a list or Numpy array '
     assert isinstance(y, (list, np.ndarray)), 'y data must be a list or Numpy array '
 
@@ -216,7 +276,58 @@ def plot(x, y, **kwargs):
 
 
 def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
-    ''' Create a histogram of an array '''
+    ''' Create a histogram of an array
+
+    Plots a histogram of an input column of data.  Input can be a list or a Numpy
+    array.  Converts the input into a Numpy MaskedArray, applying the optional mask.  If no
+    mask is supplied, it masks any NaN values.  Accepts all the same keyword arguments as
+    matplotlib hist method.
+
+    Also computes and returns a dictionary of histogram data.  The dictionary includes the following
+    keys:
+        bins - The number of bins used
+        counts - A list of the count of objects within each bin
+        binedges - A list of the left binedge used in defining each bin
+        binids - An array of the same shape as input data, containing the binid of each element
+        indices - A dictionary of a list of array indices within each bin
+
+    Parameters:
+        data (list|ndarray):
+            A column of data to plot with.  Required.
+        mask (ndarray):
+            A mask to use on the data, applied to the data in a Numpy Masked Array.
+        fig (plt.fig):
+            An optional matplotlib figure object
+        ax (plt.ax):
+            An optional matplotlib axis object
+        bins (int):
+            The number of bins to use.  Default is 50 bins.
+        column (Marvin column):
+            Optional Marvin DataModel Property or QueryParameter to use for display
+        xlabel (str):
+            The x axis label
+        ylabel (str):
+            The y axis label
+        title (str):
+            The plot title
+        rotate_title (bool):
+            If True, moves the title text to the right y-axis during a horizontal histogram.  Default is False.
+        return_fig (bool):
+            If True, return the figure and axis object.  Default is True.
+        kwargs (dict):
+            Any other keyword arguments to be passed to `matplotlib.pyplot.hist
+                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
+
+    Returns:
+        Tuple of histogram data, the matplotlib figure and axis objects
+
+    Example:
+        >>> # histogram some random data
+        >>> from marvin.utils.plot.scatter import hist
+        >>> import numpy as np
+        >>> x = np.random.random(100)
+        >>> hist_data, fig, ax = hist(x)
+    '''
 
     assert isinstance(data, (list, np.ndarray)), 'data must be a list or Numpy array '
     data = _make_masked(data, mask=mask)
@@ -274,7 +385,7 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         dd[binid].append(i)
     indices = OrderedDict(dd)
 
-    hist_data = {'counts': counts, 'binedges': binedges, 'binsize': bins,
+    hist_data = {'counts': counts, 'binedges': binedges, 'bins': bins,
                  'binids': binids, 'indices': indices}
 
     output = (hist_data, fig, ax) if return_fig else hist_data
