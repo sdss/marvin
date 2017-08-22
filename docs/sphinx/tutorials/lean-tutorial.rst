@@ -170,7 +170,9 @@ Calculate [NII]6585/H\ :math:`\alpha` flux ratio:
 .. code-block:: python
 
     maps_7992_6101 = galaxies[1]
-    nii_ha = maps_7992_6101.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
+    nii = maps_7992_6101['emline_gflux_nii_6585']
+    ha = maps_7992_6101['emline_gflux_ha_6564']
+    nii_ha = nii / ha
 
 
 Plot the [NII]/H\ :math:`\alpha` flux ratio for the star-forming spaxels:

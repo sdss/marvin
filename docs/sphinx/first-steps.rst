@@ -164,6 +164,10 @@ My First Map
            [1073741843, 1073741843, 1073741843, ..., 1073741843, 1073741843, 1073741843],
            [1073741843, 1073741843, 1073741843, ..., 1073741843, 1073741843, 1073741843]])
     
+    # use map arithmetic ( + , - , * , / , or ** )
+    niiflux = maps['emline_gflux_nii_6585']
+    nii_ha = niiflux / haflux
+    
     # plot the map
     fig, ax = haflux.plot()
         
