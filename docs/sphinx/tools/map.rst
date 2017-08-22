@@ -22,7 +22,7 @@ To get a map, we first need to create a :mod:`marvin.tools.maps.Maps` object, wh
     maps = Maps(plateifu='8485-1901')
 
 
-By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `MPL-5 Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
+By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, but we can also choose from additional bintypes (see the `Technical Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/GettingStarted#typeselection>`_ for a more complete description of each bintype and the associated usage warnings):
 
 * ``SPX`` - spaxels are unbinned,
 * ``VOR10`` - spaxels are Voronoi binned to a minimum continuum SNR of 10,
@@ -31,7 +31,7 @@ By default, :mod:`~marvin.tools.maps.Maps` returns the unbinned maps ``SPX``, bu
 
 .. code-block:: python
 
-    maps_ = Maps(mangaid='1-209232', bintype='VOR10')
+    maps = Maps(mangaid='1-209232', bintype='VOR10')
 
 
 Once we have a :mod:`~marvin.tools.maps.Maps` object, we can "slice" it to get the H\ :math:`\alpha` (Gaussian-fitted) flux map.
@@ -49,9 +49,22 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 
 .. code-block:: python
 
-    ha_ = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
+    ha = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
     stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
 
+**New in v2.2**: You can guess at the map property name (and channel), and Marvin will return the map if there is a unique (and valid) property and channel.
+
+.. code-block:: python
+
+    maps['gflux ha']  # == maps['emline_gflux_ha_6564']
+    maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
+    maps['stellar sig']  # == maps['stellar_sigma']
+    
+    # There are several properties of the Halpha line (velocity, sigma, etc.)
+    maps['ha']  # ValueError
+    
+    # There are two [O III] lines.
+    maps['gflux oiii']  # ValueError: cannot find a good match for 'gflux oiii'. Your input value is too ambiguous.
 
 The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
 
@@ -165,18 +178,15 @@ Applying Bitmasks to a Map
 Accessing the Parent Maps Object
 ````````````````````````````````
 
-One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.MapsProperty` via the :attr:`~marvin.tools.map.Map.map_property` attribute.
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.base.Property` via the :attr:`~marvin.tools.map.Map.property` attribute.
 
 .. code-block:: python
 
     ha.maps == maps  # True
     
-    ha.maps_property
-    # <MapsProperty name=emline_gflux, ivar=True, mask=True, n_channels=21>
+    ha.property
+    # <Property 'emline_gflux', release='2.0.2', channel='ha_6564', unit='erg / (cm2 s spaxel)'>
     
-    ha.maps_property.channels
-    # ['oiid_3728', 'hb_4862', 'oiii_4960', 'oiii_5008', ..., 'siii_9533']
-
 
 Saving and Restoring a Map
 ``````````````````````````
@@ -203,10 +213,13 @@ Reference/API
 
 .. autosummary::
 
-    marvin.tools.map.Map.plot
-    marvin.tools.map.Map.restore
     marvin.tools.map.Map.save
+    marvin.tools.map.Map.restore
+    marvin.tools.map.Map.masked
+    marvin.tools.map.Map.error
     marvin.tools.map.Map.snr
+    marvin.tools.map.Map.plot
+    marvin.tools.map.Map.inst_sigma_correction
 
 
 |
