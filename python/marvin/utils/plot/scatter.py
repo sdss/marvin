@@ -6,14 +6,17 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-21 18:50:52
+# @Last Modified time: 2017-08-22 11:47:24
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
 from marvin.utils.dap import datamodel
+from marvin.core.exceptions import MarvinUserWarning
 from marvin.tools.query_utils import QueryParameter
 from marvin.utils.dap.datamodel.base import Property
+from marvin.utils.general import invalidArgs, isCallableWithArgs
 from matplotlib.gridspec import GridSpec
+from collections import defaultdict, OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -103,6 +106,33 @@ def _get_axis_label(column, axis=''):
     return label
 
 
+def _format_hist_kwargs(axis, **kwargs):
+    ''' Format the histogram kwargs from plot '''
+    kwargs['color'] = kwargs.get('hist_color', 'lightblue')
+    if axis == 'x':
+        kwargs['ylabel'] = kwargs.get('xhist_label', 'Counts')
+        kwargs['title'] = kwargs.get('xhist_title', None)
+    elif axis == 'y':
+        kwargs['ylabel'] = kwargs.get('yhist_label', 'Counts')
+        kwargs['title'] = kwargs.get('yhist_title', None)
+    kwargs['color'] = kwargs.get('hist_color', 'lightblue')
+    kwargs['edgecolor'] = kwargs.get('edgecolors', 'black')
+    return kwargs
+
+
+def _prep_func_kwargs(func, kwargs):
+    ''' Prepare the keyword arguments for the proper function input '''
+    invalid = invalidArgs(func, kwargs)
+    new_kwargs = kwargs.copy()
+    for key in invalid:
+        __ = new_kwargs.pop(key)
+    print('new', new_kwargs, func, isCallableWithArgs(func, new_kwargs))
+    if isCallableWithArgs(func, new_kwargs):
+        return new_kwargs
+    else:
+        raise MarvinUserWarning('Cannot call func {0} with current kwargs {1}. Check your inputs'.format(func, new_kwargs))
+
+
 def plot(x, y, **kwargs):
     ''' Scatter plot '''
 
@@ -118,31 +148,26 @@ def plot(x, y, **kwargs):
     y_col = kwargs.pop('y_col', None)
 
     # scatterplot keyword arguments
-    xlim = kwargs.get('xlim', None)
-    ylim = kwargs.get('ylim', None)
-    xlabel = kwargs.get('xlabel', None)
-    ylabel = kwargs.get('ylabel', None)
-    color = kwargs.get('color', 'r')
-    size = kwargs.get('size', 20)
-    marker = kwargs.get('marker', 'o')
+    xlim = kwargs.pop('xlim', None)
+    ylim = kwargs.pop('ylim', None)
+    xlabel = kwargs.pop('xlabel', None)
+    ylabel = kwargs.pop('ylabel', None)
+    color = kwargs.pop('color', 'r')
+    size = kwargs.pop('size', 20)
+    marker = kwargs.pop('marker', 'o')
     edgecolors = kwargs.get('edgecolors', 'black')
 
     # histogram keywords
-    hist = kwargs.get('hist', True)
-    bins = kwargs.get('bins', [50, 50])
-    hist_axes_visible = kwargs.get('hist_axes_visible', False)
-    xhist_label = kwargs.get('xhist_label', 'Counts')
-    yhist_label = kwargs.get('yhist_label', 'Counts')
-    xhist_title = kwargs.get('xhist_title', None)
-    yhist_title = kwargs.get('yhist_title', None)
-    hist_color = kwargs.get('hist_color', 'lightblue')
+    with_hist = kwargs.pop('with_hist', True)
+    bins = kwargs.pop('bins', [50, 50])
+    hist_axes_visible = kwargs.pop('hist_axes_visible', False)
 
     # convert to numpy masked arrays
     x = _make_masked(x, mask=xmask)
     y = _make_masked(y, mask=ymask)
 
     # create figure and axes objects
-    fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=hist, hist_axes_visible=hist_axes_visible)
+    fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, hist_axes_visible=hist_axes_visible)
 
     # set limits
     if xlim is not None:
@@ -160,46 +185,100 @@ def plot(x, y, **kwargs):
     ax_scat.set_ylabel(ylabel)
 
     # create the scatter plot
-    ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **kwargs)
+    scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
+    ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
 
     # set axes object
     axes = [ax_scat]
 
     # create histogram dictionary
-    if hist:
+    if with_hist:
         hist_data = {}
-        xbin, ybin = bins if isinstance(bins, list) else (bins, None) if hist == 'x' else (None, bins)
+        xbin, ybin = bins if isinstance(bins, list) else (bins, None) if with_hist == 'x' else (None, bins)
 
     # set x-histogram
     if ax_hist_x:
-        # set label
-        ax_hist_x.set_ylabel(yhist_label)
-        # set title
-        xhist_title = xhist_title if xhist_title else _create_hist_title(x)
-        ax_hist_x.set_title(xhist_title)
-        # add to axes
+        xhist_kwargs = _format_hist_kwargs('x', **kwargs)
+        xhist, fig, ax_hist_x = hist(x, bins=xbin, fig=fig, ax=ax_hist_x, **xhist_kwargs)
         axes.append(ax_hist_x)
-        # create histogram
-        xhist, xbins, xpatches = ax_hist_x.hist(x[~x.mask], bins=xbin, color=hist_color,
-                                                edgecolor=edgecolors, range=xlim, **kwargs)
-        hist_data['xhist'] = {'counts': xhist, 'binedges': xbins, 'binsize': xbin, 'bins': np.digitize(x, xbins)}
+        hist_data['xhist'] = xhist
 
     # set y-histogram
     if ax_hist_y:
-        # set label
-        ax_hist_y.set_xlabel(xhist_label)
-        # set title
-        yhist_title = yhist_title if yhist_title else _create_hist_title(y)
-        ax_hist_y.set_ylabel(yhist_title)
-        ax_hist_y.yaxis.set_label_position('right')
-        ax_hist_y.yaxis.label.set_fontsize(12.0)
-        # add to axes
+        yhist_kwargs = _format_hist_kwargs('y', **kwargs)
+        yhist, fig, ax_hist_y = hist(y, bins=ybin, fig=fig, ax=ax_hist_y, orientation='horizontal',
+                                     rotate_title=True, **yhist_kwargs)
         axes.append(ax_hist_y)
-        # create histogram
-        yhist, ybins, ypatches = ax_hist_y.hist(y[~y.mask], bins=ybin, orientation='horizontal',
-                                                color=hist_color, edgecolor=edgecolors, range=ylim, **kwargs)
-        hist_data['yhist'] = {'counts': yhist, 'binedges': ybins, 'binsize': ybin, 'bins': np.digitize(y, ybins)}
+        hist_data['yhist'] = yhist
 
-    output = (fig, axes, hist_data) if hist else (fig, axes)
+    output = (fig, axes, hist_data) if with_hist else (fig, axes)
     return output
+
+
+def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
+    ''' Create a histogram of an array '''
+
+    assert isinstance(data, (list, np.ndarray)), 'data must be a list or Numpy array '
+    data = _make_masked(data, mask=mask)
+
+    # general keywords
+    column = kwargs.pop('column', None)
+    xlabel = kwargs.pop('xlabel', None)
+    ylabel = kwargs.pop('ylabel', 'Counts')
+    title = kwargs.pop('title', None)
+    rotate_title = kwargs.pop('rotate_title', False)
+    return_fig = kwargs.pop('return_fig', True)
+
+    # histogram keywords
+    bins = bins if bins else 50
+    color = kwargs.pop('color', 'lightblue')
+    edgecolor = kwargs.pop('edgecolor', 'black')
+    hrange = kwargs.pop('range', None)
+    orientation = kwargs.pop('orientation', 'vertical')
+
+    # create a figure and axis if they don't exist
+    if fig is None and ax is None:
+        fig, ax = plt.subplots()
+    elif fig is None:
+        fig = plt.figure()
+
+    # set labels
+    xlabel = xlabel if xlabel else _get_axis_label(column, axis='x') if column else ''
+    ax.set_ylabel(ylabel) if orientation == 'vertical' else ax.set_ylabel(xlabel)
+    ax.set_xlabel(xlabel) if orientation == 'vertical' else ax.set_xlabel(ylabel)
+
+    # reset the label positions
+    ax.yaxis.set_label_position('left')
+    ax.xaxis.set_label_position('bottom')
+
+    # set title
+    title = title if title else _create_hist_title(data)
+    ax.set_title(title)
+
+    if rotate_title:
+        ax.set_title('')
+        ax.set_ylabel(title)
+        ax.yaxis.set_label_position('right')
+        ax.yaxis.label.set_fontsize(12.0)
+
+    # create histogram
+    hist_kwargs = _prep_func_kwargs(plt.hist, kwargs)
+    counts, binedges, patches = ax.hist(data[~data.mask], bins=bins, color=color,
+                                        orientation=orientation, edgecolor=edgecolor,
+                                        range=hrange, **hist_kwargs)
+
+    # compute a dictionary of the binids containing a list of the array indices in each bin
+    binids = np.digitize(data, binedges)
+    dd = defaultdict(list)
+    for i, binid in enumerate(binids):
+        dd[binid].append(i)
+    indices = OrderedDict(dd)
+
+    hist_data = {'counts': counts, 'binedges': binedges, 'binsize': bins,
+                 'binids': binids, 'indices': indices}
+
+    output = (hist_data, fig, ax) if return_fig else hist_data
+    return output
+
+
 

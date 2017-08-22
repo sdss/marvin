@@ -2,9 +2,10 @@
 import collections
 import os
 import warnings
-
+import sys
 import numpy as np
 import PIL
+import inspect
 from scipy.interpolate import griddata
 
 from astropy import wcs
@@ -31,7 +32,9 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
+           'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
+           'isCallableWithArgs')
 
 drpTable = {}
 
@@ -1004,3 +1007,171 @@ def add_doc(value):
         func.__doc__ = value
         return func
     return _doc
+
+
+def use_inspect(func):
+    ''' Inspect a function of arguments and keywords.
+
+    Inspects a function or class method.  Uses a different inspect for Python 2 vs 3
+    Only tested to work with args and defaults.  varargs (variable arguments)
+    and varkw (keyword arguments) seem to always be empty.
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A tuple of arguments, variable arguments, keywords, and default values
+
+    '''
+    pyver = sys.version_info.major
+    if pyver == 2:
+        args, varargs, varkw, defaults = inspect.getargspec(func)
+    elif pyver == 3:
+        sig = inspect.signature(func)
+        args = []
+        defaults = []
+        varargs = varkw = None
+        for par in sig.parameters.values():
+            # most parameters seem to be of this kind
+            if par.kind == par.POSITIONAL_OR_KEYWORD:
+                args.append(par.name)
+                # parameters with default of inspect empty are required
+                if par.default != inspect._empty:
+                    defaults.append(par.default)
+
+    return args, varargs, varkw, defaults
+
+
+def getRequiredArgs(func):
+    ''' Gets the required arguments from a function or method
+
+    Uses this difference between arguments and defaults to indicate
+    required versus optional arguments
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of required arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getRequiredArgs(plt.scatter)
+        >>> ['x', 'y']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    if defaults:
+        args = args[:-len(defaults)]
+    return args
+
+
+def getKeywordArgs(func):
+    ''' Gets the keyword arguments from a function or method
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of keyword arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getKeywordArgs(plt.scatter)
+        >>> ['edgecolors', 'c', 'vmin', 'linewidths', 'marker', 's', 'cmap',
+        >>>  'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    req_args = getRequiredArgs(func)
+    opt_args = list(set(args) - set(req_args))
+    return opt_args
+
+
+def missingArgs(func, argdict, arg_type='args'):
+    ''' Return missing arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+
+    Returns:
+        A list of missing arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for missing required args
+        >>> missginArgs(plt.scatter, testdict)
+        >>> {'x', 'y'}
+        >>> # test for missing optional args
+        >>> missingArgs(plt.scatter, testdict, arg_type='opt')
+        >>> ['vmin', 'linewidths', 'marker', 's', 'cmap', 'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    assert arg_type in ['args', 'req', 'kwargs', 'opt'], 'arg_type must be one of (args|req|kwargs|opt)'
+    if arg_type in ['args', 'req']:
+        return set(getRequiredArgs(func)).difference(argdict)
+    elif arg_type in ['kwargs', 'opt']:
+        return set(getKeywordArgs(func)).difference(argdict)
+
+
+def invalidArgs(func, argdict):
+    ''' Return invalid arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+
+    Returns:
+        A list of invalid arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> invalidArgs(plt.scatter, testdict)
+        >>>  {'xlabel', 'xlim', 'ylabel', 'ylim'}
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    return set(argdict) - set(args)
+
+
+def isCallableWithArgs(func, argdict, arg_type='opt', strict=False):
+    ''' Test if the function is callable with the an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+        strict (bool):
+            If True, validates input dictionary against both missing and invalid keyword arguments. Default is False
+
+    Returns:
+        Boolean indicating whether the function is callable
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> isCallableWithArgs(plt.scatter, testdict)
+        >>> False
+
+    '''
+    if strict:
+        return not missingArgs(func, argdict, arg_type=arg_type) and not invalidArgs(func, argdict)
+    else:
+        return not invalidArgs(func, argdict)
