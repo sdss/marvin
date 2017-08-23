@@ -26,7 +26,8 @@ from marvin.utils.general.structs import get_best_fuzzy
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
-           'MultiChannelProperty', 'spaxel', 'datamodel', 'Channel')
+           'MultiChannelProperty', 'spaxel', 'datamodel', 'Channel', 'Bit'
+           'Maskbit')
 
 
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -78,8 +79,8 @@ class DAPDataModelList(OrderedDict):
 class DAPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
-    def __init__(self, release, bintypes=[], templates=[], properties=[], default_template=None,
-                 default_bintype=None, aliases=[]):
+    def __init__(self, release, bintypes=[], templates=[], properties=[], bitmasks=[],
+                 default_template=None, default_bintype=None, aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -89,6 +90,8 @@ class DAPDataModel(object):
 
         self._properties = []
         self.add_properties(properties, copy=True)
+
+        self.bitmasks = bitmasks
 
         self._default_bintype = None
         self.default_bintype = default_bintype
@@ -668,3 +671,83 @@ class Channel(object):
     def __str__(self):
 
         return self.name
+
+class Bit(object):
+    """A class representing a single bit of a maskbit.
+
+    Parameters:
+        value (int):
+            Value of .
+        name (str):
+            Name of bit.
+        description (str):
+            Description of bit.
+    """
+
+    def __init__(self, value, name, description):
+
+        self.value = value
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+
+        return '<Bit {0} name={1!r}>'.format(self.value, self.name)
+
+
+class Maskbit(object):
+    """A class representing a maskbit.
+    
+    Parameters:
+        bits (list):
+            List of ``marvin.utils.dap.datamodel.base.Bit`` objects.
+        name (str):
+            Name of maskbit.
+        description (str):
+            Description of maskbit.
+    """
+
+    def __init__(self, bits, name, description):
+
+        self.bits = bits
+        self.name = name
+        self.description = description
+
+    def __repr__(self):
+
+        return '<Maskbit name={0!r}>'.format(self.name)
+
+    def to_table(self, pprint=False, description=True, max_width=1000):
+        """Returns an astropy table with all of the bits.
+
+        Parameters:
+            pprint (bool):
+                Whether the table should be printed to screen using
+                astropy's table pretty print.
+            description (bool):
+                If ``True``, an extra column with the description of
+                the property will be added. Default is ``True``.
+            max_width (int or None):
+                A keyword to pass to ``astropy.table.Table.pprint()``
+                with the maximum width of the table, in characters.
+
+        Returns:
+            result (``astropy.table.Table``):
+                If ``pprint=False``, returns an astropy table
+                containing the value and names of the bits.
+        """
+
+        model_table = table.Table(None, names=['bit', 'name', 'description'],
+                                  dtype=['i2', 'S30', 'S500'])
+
+        for bit in self.bits:
+            model_table.add_row((bit.value, bit.name, bit.description))
+
+        if not description:
+            model_table.remove_column('description')
+
+        if pprint:
+            model_table.pprint(max_width=max_width, max_lines=1e6)
+            return
+
+        return model_table

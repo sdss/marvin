@@ -12,7 +12,8 @@ from __future__ import absolute_import
 
 from astropy import units as u
 
-from .base import Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
+from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
+                   Channel, Bit, Maskbit)
 from .MPL4 import MPL4_emline_channels
 
 
@@ -192,6 +193,29 @@ MPL5_maps = [
 ]
 
 
+MPL5_dappixmask_bits = [
+    Bit(value=0, name='NOCOV', description='No coverage in this spaxel'),
+    Bit(value=1, name='LOWCOV', description='Low coverage in this spaxel'),
+    Bit(value=2, name='DEADFIBER', description='Major contributing fiber is dead'),
+    Bit(value=3, name='FORESTAR', description='Foreground star'),
+    Bit(value=4, name='NOVALUE',
+        description='Spaxel was not fit because it did not meet selection criteria'),
+    Bit(value=5, name='UNRELIABLE',
+        description='Value is deemed unreliable; see TRM for definition'),
+    Bit(value=6, name='MATHERROR', description='Mathematical error in computing value'),
+    Bit(value=7, name='FITFAILED', description='Attempted fit for property failed'),
+    Bit(value=8, name='NEARBOUND',
+        description='Fitted value is too near an imposed boundary; see TRM'),
+    Bit(value=9, name='NOCORRECTION', description='Appropriate correction not available'),
+    Bit(value=10, name='MULTICOMP', description='Multi-component velocity features present'),
+    Bit(value=30, name='DONOTUSE', description='Do not use this spaxel for science')
+]
+
+MPL5_dappixmask = Maskbit(bits=MPL5_dappixmask_bits, name='DAPPIXMASK',
+                          description='2d image bitmap used to describe the quality of individual '
+                                      'pixel measurements in the DAP MAPS file.')
+
+
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
-                    templates=[GAU_MILESHC], properties=MPL5_maps,
+                    templates=[GAU_MILESHC], properties=MPL5_maps, bitmasks=[MPL5_dappixmask],
                     default_bintype='SPX', default_template='GAU-MILESHC')
