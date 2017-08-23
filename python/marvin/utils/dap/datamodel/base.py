@@ -338,7 +338,7 @@ class DAPDataModel(object):
 
         for prop in iterable:
             if isinstance(prop, MultiChannelProperty):
-                channel = ', '.join(prop.channels)
+                channel = ', '.join([ch.name for ch in prop.channels])
                 units = [pp.unit.to_string() for pp in prop]
                 unit = units[0] if len(set(units)) == 1 else 'multiple'
             else:
