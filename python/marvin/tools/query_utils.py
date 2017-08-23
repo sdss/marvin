@@ -32,8 +32,8 @@ def get_best_fuzzy(name, choices, cutoff=0, return_score=False):
             # tries to find an exact string match
             exact = []
             for s in items:
-                #itemname = s[0].name if isinstance(s[0], QueryParameter) else s[0]
-                if s[0].lower() == name.lower():
+                itemname = s[0].name if isinstance(s[0], QueryParameter) else s[0]
+                if itemname.lower() == name.lower():
                     exact.append(s)
             # returns exact match or fails with ambiguity
             if exact:
@@ -198,6 +198,9 @@ class ParameterGroup(list):
                 this_param = QueryParameter(item, group=self.name)
 
         return this_param
+
+    def add_parameter(name):
+        pass
 
     def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
         ''' List the parameter names for a given group

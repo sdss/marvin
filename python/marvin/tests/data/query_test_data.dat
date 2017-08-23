@@ -2,7 +2,7 @@
 MPL-4:
     params:
         all:
-            count: 646
+            count: 713
             subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.specindex_nad']
         best:
             count: 41
@@ -29,7 +29,7 @@ MPL-4:
             row: ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
         npergood(emline_gflux_ha_6564 > 5) > 20:
             count: 6
-        abs_g_r > -1:
+        absmag_g_r > -1:
             count: 1389
         haflux > 25:
             count: 34
@@ -38,7 +38,7 @@ MPL-4:
 MPL-5:
     params:
         all:
-            count: 766
+            count: 833
             subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.spx_snr', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
@@ -63,7 +63,7 @@ MPL-5:
 
         npergood(emline_gflux_ha_6564 > 5) > 20:
             count: 1
-        abs_g_r > -1:
+        absmag_g_r > -1:
             count: 5
         haflux > 25:
             count: 18

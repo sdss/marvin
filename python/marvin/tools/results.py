@@ -291,8 +291,6 @@ class Results(object):
         self.chunk = self.limit if self.limit else kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
-        self.coltoparam = None
-        self.paramtocol = None
         self.objects = None
         self.sortcol = None
         self.order = None
@@ -614,9 +612,13 @@ class Results(object):
         ntnames = self.columns.list_params(remote=True)
         # dynamically create a new ResultRow Class
         rows = rows if rows else self.results
+        row_is_dict = isinstance(rows[0], dict)
         if not isinstance(rows, ResultSet):
             nt = marvintuple('ResultRow', ntnames, results=self)
-            results = [nt(*r) for r in rows]
+            if row_is_dict:
+                results = [nt(**r) for r in rows]
+            else:
+                results = [nt(*r) for r in rows]
         else:
             results = rows
         self.count = len(results)
@@ -666,6 +668,9 @@ class Results(object):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
+        # convert results into a dict
+        self.results = self.results.to_dict()
+
         try:
             pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
@@ -690,7 +695,9 @@ class Results(object):
             Results (instance):
                 The instantiated Marvin Results class
         '''
-        return marvin_pickle.restore(path, delete=delete)
+        obj = marvin_pickle.restore(path, delete=delete)
+        obj._create_result_set()
+        return obj
 
     def toJson(self):
         ''' Output the results as a JSON object

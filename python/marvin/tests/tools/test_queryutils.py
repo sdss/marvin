@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-20 19:34:52
+# @Last Modified time: 2017-08-22 22:38:05
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query_utils import query_params, QueryParameter
@@ -19,7 +19,9 @@ def data():
     groups = ['Metadata', 'Spaxel Metadata', 'Emission Lines', 'Kinematics', 'Spectral Indices', 'NSA Catalog']
     spaxelparams = ['spaxelprop.x', 'spaxelprop.y', 'spaxelprop.spx_snr']
     specindparams = ['spaxelprop.specindex_d4000']
-    nsaparams = ['nsa.z', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r']
+    nsaparams = ['nsa.iauname', 'nsa.ra', 'nsa.dec', 'nsa.z', 'nsa.elpetro_ba', 'nsa.elpetro_mag_g_r',
+                 'nsa.elpetro_absmag_g_r', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r', 'nsa.sersic_logmass',
+                 'nsa.sersic_ba']
     data = {'groups': groups, 'spaxelmeta': spaxelparams, 'nsa': nsaparams, 'specind': specindparams}
 
     return data
@@ -140,11 +142,51 @@ class TestQueryParams(object):
                              [('nsa', 'z', 'nsa.z', 'z', 'z', 'Redshift'),
                               ('metadata', 'ra', 'cube.ra', 'ra', 'ra', 'RA'),
                               ('emission', 'gflux_ha', 'spaxelprop.emline_gflux_ha_6564', 'emline_gflux_ha_6564', 'haflux', 'Halpha Flux'),
-                              ('spaxelmeta', 'x', 'spaxelprop.x', 'x', 'x', 'Spaxel X')])
+                              ('spaxelmeta', 'spaxelprop.x', 'spaxelprop.x', 'x', 'x', 'Spaxel X')])
     def test_query_param(self, group, param, full, name, short, display):
         par = query_params[group][param]
         assert par.full == full
         assert par.name == name
         assert par.short == short
         assert par.display == display
+
+    def get_qp(name, grp):
+        qp = grp[name]
+        return qp
+
+    @pytest.mark.parametrize('full',
+                             [('nsa.iauname'), ('nsa.ra'), ('nsa.dec'), ('nsa.z'), ('nsa.elpetro_ba'),
+                              ('nsa.elpetro_mag_g_r'), ('nsa.elpetro_absmag_g_r'), ('nsa.elpetro_logmass'),
+                              ('nsa.elpetro_th50_r'), ('nsa.sersic_logmass'), ('nsa.sersic_ba')])
+    def test_nsa_names(self, full):
+        nsa = query_params['nsa']
+        assert full in nsa
+        assert full == nsa[full].full
+        short = full.split('.')[1]
+        assert full == nsa[short].full
+        nospace = short.replace(' ', '')
+        assert full == nsa[nospace].full
+
+    @pytest.mark.parametrize('grp, name', [('emisison', 'flux_ha')])
+    def test_datamodel(self, grp, name):
+        emgrp = query_params[grp]
+        param = emgrp[name]
+        assert param.property is not None
+
+    @pytest.mark.parametrize('group, name, full',
+                             [('metadata', 'cube.plate', 'cube.plate'),
+                              #('metadata', 'cube.plateifu', 'cube.plateifu'),
+                              #('metadata', 'plate', 'cube.plate'),
+                              ('metadata', 'plateifu', 'cube.plateifu'),
+                              #('spaxelmeta', 'x', 'spaxelprop.x'),
+                              #('spaxelmeta', 'spaxelx', 'spaxelprop.x'),
+                              ('spaxelmeta', 'spaxelprop.x', 'spaxelprop.x'),
+                              ('spaxelmeta', 'spaxelpropx', 'spaxelprop.x'),
+                              ('nsa', 'nsa.elpetro_ba', 'nsa.elpetro_ba'),
+                              ('nsa', 'nsa.elpetroba', 'nsa.elpetro_ba'),
+                              ('nsa', 'elpetro_ba', 'nsa.elpetro_ba')])
+    def test_problem_names(self, group, name, full):
+        grp = query_params[group]
+        qp = grp[name]
+        assert qp.full == full
 
