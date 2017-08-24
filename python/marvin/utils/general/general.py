@@ -31,7 +31,8 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_mask',
+           'get_plot_params', 'add_doc')
 
 drpTable = {}
 
@@ -982,6 +983,29 @@ def _check_file_parameters(obj1, obj2):
                       .format(param, obj1.__repr__, obj2.__repr__, getattr(obj1, param),
                               getattr(obj2, param)))
         assert getattr(obj1, param) == getattr(obj2, param), assert_msg
+
+
+    
+def get_mask(mask, bits, bitnames=()):
+    """Produce a custom mask from a list of bit names.
+
+    Parameters:
+        mask (array):
+            Mask values.
+        bits (dict):
+            Bit lookup dictionary.
+        bitnames (str, list):
+            Names of bits to combine. If only one item, then it can be
+            passed as a string. Otherwise, provide a list.
+    """
+    if len(bitnames) == 0:
+        return mask > 0
+    else:
+        if isinstance(bitnames, str):
+            bitnames = (bitnames,)
+
+        masks = [mask & 2**bits[bitname].value > 0 for bitname in bitnames]
+        return np.logical_or.reduce(masks)
 
 
 def get_plot_params(dapver, prop):

@@ -29,7 +29,8 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
-from marvin.utils.general.general import add_doc
+import marvin.utils.general
+from marvin.utils.general import add_doc
 
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.dap.datamodel.base import Property
@@ -176,6 +177,8 @@ class Map(Quantity):
 
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
+
+        obj.maskbit = obj._datamodel.bitmasks['DAPPIXMASK'] if mask is not None else None
 
         return obj
 
@@ -504,6 +507,10 @@ class Map(Quantity):
                 'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))
 
         return (self**2 - map_corr**2)**0.5
+
+    @add_doc(marvin.utils.general.get_mask.__doc__)
+    def get_mask(self, *args, **kwargs):
+        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, *args, **kwargs)
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
