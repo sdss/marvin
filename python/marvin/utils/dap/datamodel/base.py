@@ -79,7 +79,7 @@ class DAPDataModelList(OrderedDict):
 class DAPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
-    def __init__(self, release, bintypes=[], templates=[], properties=[], bitmasks=[],
+    def __init__(self, release, bintypes=[], templates=[], properties=[], bitmasks={},
                  default_template=None, default_bintype=None, aliases=[]):
 
         self.release = release
@@ -699,8 +699,8 @@ class Maskbit(object):
     """A class representing a maskbit.
     
     Parameters:
-        bits (list):
-            List of ``marvin.utils.dap.datamodel.base.Bit`` objects.
+        bits (OrderedDict):
+            Collection of ``marvin.utils.dap.datamodel.base.Bit`` objects.
         name (str):
             Name of maskbit.
         description (str):
@@ -740,7 +740,7 @@ class Maskbit(object):
         model_table = table.Table(None, names=['bit', 'name', 'description'],
                                   dtype=['i2', 'S30', 'S500'])
 
-        for bit in self.bits:
+        for bit in self.bits.values():
             model_table.add_row((bit.value, bit.name, bit.description))
 
         if not description:
