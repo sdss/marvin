@@ -11,7 +11,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+from collections import OrderedDict
+
 import pytest
+import astropy
 
 from marvin.utils.dap.datamodel import Bit, Maskbit
 # from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
@@ -50,9 +53,16 @@ from marvin.utils.dap.datamodel import Bit, Maskbit
 #         assert maps_prop.name == 'emline_gflux'
 #         assert channel == 'ha_6564'
 
+bits = OrderedDict([
+    ('BITZERO', Bit(0, 'BITZERO', 'The zeroth bit.')),
+    ('BITONE', Bit(1, 'BITONE', 'The first bit.'))
+])
+name = 'MYMASK'
+description = 'My first Maskbit.'
+
 class TestBit(object):
 
-    def testBitInit(self):
+    def test_bit_init(self):
         value = 0
         name = 'firstbit'
         description = 'The first bit.'
@@ -62,4 +72,27 @@ class TestBit(object):
         assert firstbit.name == name
         assert firstbit.description == description
         assert str(firstbit) == "<Bit  0 name='firstbit'>"
+
+
+class TestMaskbit(object):
+
+    def test_maskbit_init(self, bits=bits, name=name, description=description):
+
+        mb = Maskbit(bits=bits, name=name, description=description)
+
+        assert mb.bits == bits
+        assert mb.name == name
+        assert mb.description == description
+        assert str(mb) == "<Maskbit name='MYMASK'>"
+
+    def test_maskbit_to_table(self, bits=bits, name=name, description=description):
+
+        mb = Maskbit(bits=bits, name=name, description=description)
+        table = mb.to_table()
         
+        assert isinstance(table, astropy.table.table.Table)
+        assert table.colnames == ['bit', 'name', 'description']
+        assert table[0]['bit'] == 0
+        assert table[0]['name'].decode('utf-8') == 'BITZERO'
+        assert table[0]['description'].decode('utf-8') == 'The zeroth bit.'
+
