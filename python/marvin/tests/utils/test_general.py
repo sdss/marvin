@@ -197,18 +197,6 @@ def bitmask(dapver):
     return data[dapver]
 
 
-class TestDataModelPlotParams(object):
-
-    @pytest.mark.parametrize('name, desired',
-                             [('emline_gflux', {'cmap': 'linearlab', 'percentile_clip': [5, 95], 'symmetric': False, 'snr_min': 1}),
-                              ('stellar_vel', {'cmap': 'RdBu_r', 'percentile_clip': [10, 90], 'symmetric': True, 'snr_min': None}),
-                              ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
-                             ids=['emline', 'stvel', 'stsig'])
-    def test_get_plot_params(self, bitmask, dapver, name, desired):
-        desired['bitmasks'] = bitmask
-        actual = get_plot_params(dapver=dapver, prop=name)
-        assert desired == actual
-
 class TestMaskbit(object):
 
     def test_get_mask_no_bitnames(self, mask=mask, bit_lookup=bit_lookup):
@@ -252,3 +240,16 @@ class TestMaskbit(object):
         actual = get_bits(0, bit_lookup, output='object')
         expected = []
         assert actual == expected
+
+
+class TestDataModelPlotParams(object):
+
+    @pytest.mark.parametrize('name, desired',
+                             [('emline_gflux', {'cmap': 'linearlab', 'percentile_clip': [5, 95], 'symmetric': False, 'snr_min': 1}),
+                              ('stellar_vel', {'cmap': 'RdBu_r', 'percentile_clip': [10, 90], 'symmetric': True, 'snr_min': None}),
+                              ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
+                             ids=['emline', 'stvel', 'stsig'])
+    def test_get_plot_params(self, bitmask, dapver, name, desired):
+        desired['bitmasks'] = bitmask
+        actual = get_plot_params(dapver=dapver, prop=name)
+        assert desired == actual
