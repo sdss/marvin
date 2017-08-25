@@ -31,7 +31,7 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_mask',
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_mask', 'get_bits',
            'get_plot_params', 'add_doc')
 
 drpTable = {}
@@ -986,17 +986,21 @@ def _check_file_parameters(obj1, obj2):
 
 
     
-def get_mask(mask, bits, bitnames=()):
+def get_mask(mask, bit_lookup, bitnames=()):
     """Produce a custom mask from a list of bit names.
 
     Parameters:
         mask (array):
             Mask values.
-        bits (dict):
+        bit_lookup (dict):
             Bit lookup dictionary.
         bitnames (str, list):
             Names of bits to combine. If only one item, then it can be
             passed as a string. Otherwise, provide a list.
+    
+    Returns:
+        array:
+            Custom mask.
     """
     if len(bitnames) == 0:
         return mask > 0
@@ -1004,8 +1008,37 @@ def get_mask(mask, bits, bitnames=()):
         if isinstance(bitnames, str):
             bitnames = (bitnames,)
 
-        masks = [mask & 2**bits[bitname].value > 0 for bitname in bitnames]
+        masks = [mask & 2**bit_lookup[bitname].value > 0 for bitname in bitnames]
         return np.logical_or.reduce(masks)
+
+
+def get_bits(value, bit_lookup, output='name'):
+    """For a given mask value, return the list of bits set.
+
+    Parameters:
+        value (array):
+            Mask value.
+        bit_lookup (dict):
+            Bit lookup dictionary.
+        output (str):
+            Format of output. Allowed options are
+                - ``'name'`` for bit names,
+                - ``'value'`` for bit values, and
+                - ``'object'`` for .
+            Default is ``'name'``.
+
+    Returns:
+        list:
+            Bits that are set.
+    """
+    assert output in ['name', 'value', 'object'], "'output' must be 'name', 'value', or 'object'"
+
+    bits_set = []
+    for bit in bit_lookup.values():
+        if value & 2**bit.value > 0:
+            bits_set.append(getattr(bit, output, bit))    
+
+    return bits_set
 
 
 def get_plot_params(dapver, prop):
