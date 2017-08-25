@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 
-test_general_pytest.py
+test_general.py
 
 Created by José Sánchez-Gallego on 7 Apr 2016.
 Licensed under a 3-clause BSD license.
@@ -18,6 +18,8 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
+from collections import OrderedDict
+
 import pytest
 import numpy as np
 from astropy.io import fits
@@ -26,8 +28,17 @@ from astropy.wcs import WCS
 import marvin
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_mask, get_bits,
+                                  get_plot_params)
+from marvin.utils.dap.datamodel.base import Bit
 
+
+mask = np.array([[0, 1], [2, 3]])
+bit_lookup = OrderedDict([
+    ('BITZERO', Bit(0, 'BITZERO', 'The zeroth bit.')),
+    ('BITONE', Bit(1, 'BITONE', 'The first bit.')),
+    ('BITTWO', Bit(2, 'BITTWO', 'The second bit.'))
+])
 
 @pytest.fixture(scope='function')
 def wcs(galaxy):
@@ -197,3 +208,28 @@ class TestDataModelPlotParams(object):
         desired['bitmasks'] = bitmask
         actual = get_plot_params(dapver=dapver, prop=name)
         assert desired == actual
+
+class TestMaskbit(object):
+
+    def test_get_mask_no_bitnames(self, mask=mask, bit_lookup=bit_lookup):
+        actual = get_mask(mask, bit_lookup, bitnames=())
+        expected = mask > 0
+        assert (actual == expected).all()
+
+    def test_get_mask_one_bitname_as_string(self, mask=mask, bit_lookup=bit_lookup):
+        actual = get_mask(mask, bit_lookup, bitnames='BITZERO')
+        expected = (mask & 2**0) > 0
+        assert (actual == expected).all()
+
+    def test_get_mask_one_bitname_as_list(self, mask=mask, bit_lookup=bit_lookup):
+        actual = get_mask(mask, bit_lookup, bitnames=('BITZERO',))
+        expected = (mask & 2**0) > 0
+        assert (actual == expected).all()
+    
+    def test_get_mask_multiple_bitnames(self, mask=mask, bit_lookup=bit_lookup):
+        actual = get_mask(mask, bit_lookup, bitnames=('BITZERO', 'BITONE'))
+        mask0 = (mask & 2**0) > 0
+        mask1 = (mask & 2**1) > 0
+        expected = np.logical_or.reduce((mask0, mask1))
+        assert (actual == expected).all()
+
