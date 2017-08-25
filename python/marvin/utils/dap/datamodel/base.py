@@ -692,7 +692,7 @@ class Bit(object):
 
     def __repr__(self):
 
-        return '<Bit {0} name={1!r}>'.format(self.value, self.name)
+        return '<Bit {0:>2} name={1!r}>'.format(self.value, self.name)
 
 
 class Maskbit(object):
