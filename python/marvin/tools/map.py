@@ -510,7 +510,33 @@ class Map(Quantity):
 
     @add_doc(marvin.utils.general.get_mask.__doc__)
     def get_mask(self, *args, **kwargs):
+        bitnames = args[0] if len(args) == 1 else kwargs.get('bitnames', ())
+
+        if len(bitnames) == 0:
+            bitnames = ('NOCOV', 'UNRELIABLE', 'DONOTUSE')  # Do we want to hardcode this?
+
         return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, *args, **kwargs)
+
+    @add_doc(marvin.utils.general.get_bits.__doc__)
+    def get_bits(self, value, *args, **kwargs):
+        return marvin.utils.general.get_bits(value, self.maskbit.bits, *args, **kwargs)
+
+    def get_bits_all_spax(self, *args, **kwargs):
+        """Get the bits for all spaxels.
+        
+        Parameters:
+            output (str):
+                Format of output. Allowed options are
+                    - ``'name'`` for bit names,
+                    - ``'value'`` for bit values, and
+                    - ``'object'`` for .
+                Default is ``'name'``.
+        
+        Returns:
+            list:
+                Three level nested list of shape (Map.shape[0], Map.shape[1], number of bits set).
+        """
+        return [[self.get_bits(jj, *args, **kwargs) for jj in ii] for ii in self.mask]
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
