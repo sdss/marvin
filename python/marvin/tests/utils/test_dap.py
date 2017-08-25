@@ -11,6 +11,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import pytest
+
+from marvin.utils.dap.datamodel import Bit, Maskbit
 # from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 # from marvin.tests import UseReleases
 # from marvin import config
@@ -46,3 +49,17 @@ from __future__ import absolute_import
 #         assert isinstance(maps_prop, MapsProperty)
 #         assert maps_prop.name == 'emline_gflux'
 #         assert channel == 'ha_6564'
+
+class TestBit(object):
+
+    def testBitInit(self):
+        value = 0
+        name = 'firstbit'
+        description = 'The first bit.'
+        firstbit = Bit(value=value, name=name, description=description)
+
+        assert firstbit.value == value
+        assert firstbit.name == name
+        assert firstbit.description == description
+        assert str(firstbit) == "<Bit  0 name='firstbit'>"
+        
