@@ -233,3 +233,22 @@ class TestMaskbit(object):
         expected = np.logical_or.reduce((mask0, mask1))
         assert (actual == expected).all()
 
+    def test_get_bits_name(self, bit_lookup=bit_lookup):
+        actual = get_bits(3, bit_lookup, output='name')
+        expected = ['BITZERO', 'BITONE']
+        assert actual == expected
+
+    def test_get_bits_value(self, bit_lookup=bit_lookup):
+        actual = get_bits(3, bit_lookup, output='value')
+        expected = [0, 1]
+        assert actual == expected
+
+    def test_get_bits_object(self, bit_lookup=bit_lookup):
+        actual = get_bits(3, bit_lookup, output='object')
+        expected = [bit_lookup['BITZERO'], bit_lookup['BITONE']]
+        assert actual == expected
+
+    def test_get_bits_zero(self, bit_lookup=bit_lookup):
+        actual = get_bits(0, bit_lookup, output='object')
+        expected = []
+        assert actual == expected
