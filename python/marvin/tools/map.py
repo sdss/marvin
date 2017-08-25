@@ -28,6 +28,7 @@ import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
+from marvin.utils.dap.datamodel.plotting import get_default_plot_params
 import marvin.utils.plot.map
 import marvin.utils.general
 from marvin.utils.general import add_doc
@@ -338,11 +339,15 @@ class Map(Quantity):
 
     @property
     def masked(self):
-        """Return a masked array."""
+        """Return a masked array using the recommended masks."""
 
         assert self.mask is not None, 'mask is None'
 
-        return np.ma.array(self.value, mask=self.mask > 0)
+        __, dapver = marvin.config.lookUpVersions(self.release)
+        default_params = get_default_plot_params(dapver)
+        bitnames = ['NOCOV'] + default_params['default']['bitmasks']['bad_data']
+
+        return np.ma.array(self.value, mask=self.get_mask(bitnames=bitnames))
 
     @property
     def error(self):
@@ -512,8 +517,11 @@ class Map(Quantity):
     def get_mask(self, *args, **kwargs):
         bitnames = args[0] if len(args) == 1 else kwargs.get('bitnames', ())
 
+        # If no bitnames are given, then use the default bits according to the datamodel.
         if len(bitnames) == 0:
-            bitnames = ('NOCOV', 'UNRELIABLE', 'DONOTUSE')  # Do we want to hardcode this?
+            __, dapver = marvin.config.lookUpVersions(self.release)
+            default_params = get_default_plot_params(dapver)
+            bitnames = ['NOCOV'] + default_params['default']['bitmasks']['bad_data']
 
         return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, *args, **kwargs)
 
