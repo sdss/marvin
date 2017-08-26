@@ -345,7 +345,7 @@ class Map(Quantity):
 
         __, dapver = marvin.config.lookUpVersions(self.release)
         default_params = get_default_plot_params(dapver)
-        bitnames = ['NOCOV'] + default_params['default']['bitmasks']['bad_data']
+        bitnames = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.get_mask(bitnames=bitnames))
 
@@ -521,9 +521,9 @@ class Map(Quantity):
         if len(bitnames) == 0:
             __, dapver = marvin.config.lookUpVersions(self.release)
             default_params = get_default_plot_params(dapver)
-            bitnames = ['NOCOV'] + default_params['default']['bitmasks']['bad_data']
+            bitnames = default_params['default']['bitmasks']
 
-        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, *args, **kwargs)
+        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, bitnames)
 
     @add_doc(marvin.utils.general.get_bits.__doc__)
     def get_bits(self, value, *args, **kwargs):
