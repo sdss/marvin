@@ -196,24 +196,27 @@ MPL5_maps = [
 
 
 MPL5_dappixmask_bits = OrderedDict(
-    NOCOV=Bit(value=0, name='NOCOV', description='No coverage in this spaxel'),
-    LOWCOV=Bit(value=1, name='LOWCOV', description='Low coverage in this spaxel'),
-    DEADFIBER=Bit(value=2, name='DEADFIBER', description='Major contributing fiber is dead'),
-    FORESTAR=Bit(value=3, name='FORESTAR', description='Foreground star'),
+    NOCOV=Bit(value=0, name='NOCOV', description='No coverage in this spaxel.'),
+    LOWCOV=Bit(value=1, name='LOWCOV', description='Low coverage in this spaxel.'),
+    DEADFIBER=Bit(value=2, name='DEADFIBER', description='Major contributing fiber is dead.'),
+    FORESTAR=Bit(value=3, name='FORESTAR', description='Foreground star.'),
     NOVALUE=Bit(value=4, name='NOVALUE',
-                description='Spaxel was not fit because it did not meet selection criteria'),
+                description='Spaxel was not fit because it did not meet selection criteria.'),
     UNRELIABLE=Bit(value=5, name='UNRELIABLE',
-                   description='Value is deemed unreliable; see TRM for definition'),
-    MATHERROR=Bit(value=6, name='MATHERROR', description='Mathematical error in computing value'),
-    FITFAILED=Bit(value=7, name='FITFAILED', description='Attempted fit for property failed'),
+                   description='Value is deemed unreliable; see TRM for definition.'),
+    MATHERROR=Bit(value=6, name='MATHERROR', description='Mathematical error in computing value.'),
+    FITFAILED=Bit(value=7, name='FITFAILED', description='Attempted fit for property failed.'),
     NEARBOUND=Bit(value=8, name='NEARBOUND',
-                  description='Fitted value is too near an imposed boundary; see TRM'),
+                  description='Fitted value is too near an imposed boundary; see TRM.'),
     NOCORRECTION=Bit(value=9, name='NOCORRECTION',
-                     description='Appropriate correction not available'),
+                     description='Appropriate correction not available.'),
     MULTICOMP=Bit(value=10, name='MULTICOMP',
-                  description='Multi-component velocity features present'),
-    DONOTUSE=Bit(value=30, name='DONOTUSE', description='Do not use this spaxel for science')
+                  description='Multi-component velocity features present.'),
+    DONOTUSE=Bit(value=30, name='DONOTUSE', description="Do not use this spaxel for science. "
+                 "Consolidation of following bits: 'LOWCOV', 'FORESTAR', 'NOVALUE', 'MATHERROR', "
+                 "'FITFAILED', and 'NEARBOUND'.")
 )
+
 
 MPL5_dappixmask = Maskbit(bits=MPL5_dappixmask_bits, name='DAPPIXMASK',
                           description='2d image bitmap used to describe the quality of individual '
