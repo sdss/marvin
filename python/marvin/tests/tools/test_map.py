@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-26 12:08:85
+# @Last modified time: 2017-08-26 14:08:31
 
 from copy import deepcopy
 
@@ -117,7 +117,7 @@ class TestMap(object):
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
         assert 'Make single panel map or one panel of multi-panel map plot.' in map_.plot.__doc__
 
-    @marvin_test_if(map_={'data_origin': ['db']}, mark='skip')
+    @marvin_test_if(mark='skip', map_={'data_origin': ['db']})
     def test_save_and_restore(self, temp_scratch, map_):
 
         fout = temp_scratch.join('test_map.mpf')
@@ -360,6 +360,14 @@ class TestMapArith(object):
 
 
 class TestMaskbit(object):
+    
+    def test_masked(self, map_release_only):
+        __, dapver = config.lookUpVersions(map_release_only.release)
+        params = get_default_plot_params(dapver)
+        expected = map_release_only.get_mask(bitnames=params['default']['bitmasks'])
+
+        assert pytest.approx(map_release_only.masked.data, map_release_only.value)
+        assert (map_release_only.masked.mask == expected).all()
 
     def test_get_mask_no_bitnames(self, map_release_only):
 
