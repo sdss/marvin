@@ -13,11 +13,13 @@ from astropy import units as u
 import matplotlib
 import pytest
 
+from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.utils.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.map import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.utils.dap.datamodel.plotting import get_default_plot_params
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -76,6 +78,14 @@ def map_(request, galaxy, data_origin):
     map_ = maps.getMap(property_name=request.param[0], channel=request.param[1])
     map_.data_origin = data_origin
     return map_
+
+
+@pytest.fixture(scope='function')
+def haflux(galaxy, data_origin):
+    maps = Maps(**_get_maps_kwargs(galaxy, data_origin))
+    ha = maps['emline_gflux_ha_6564']
+    ha.data_origin = data_origin
+    return ha
 
 
 class TestMap(object):
@@ -337,11 +347,75 @@ class TestMapArith(object):
         maps = Maps(plateifu=galaxy.plateifu)
         hasig = maps['emline_gsigma_ha_6564']
         emsigcorr = maps['emline_instsigma_ha_6564']
+
         expected = (hasig**2 - emsigcorr**2)**0.5
         actual = hasig.inst_sigma_correction()
+
         assert pytest.approx(actual.value == expected.value)
         assert pytest.approx(actual.ivar == expected.ivar)
         assert (actual.mask == expected.mask).all()
+
+
+class TestMaskbit(object):
+
+    def test_get_mask_no_bitnames(self, haflux):
+
+        actual = haflux.get_mask()
+
+        __, dapver = config.lookUpVersions(haflux.release)
+        params = get_default_plot_params(dapver)
+        expected = haflux.get_mask(bitnames=params['default']['bitmasks'])
+
+        assert (actual == expected).all()
+
+    def test_get_mask_one_bitname_as_string(self, haflux):
+        actual = haflux.get_mask(bitnames='DONOTUSE')
+        expected = (haflux.mask & 2**haflux.maskbit.bits['DONOTUSE'].value) > 0
+        assert (actual == expected).all()
+
+    def test_get_mask_one_bitname_as_list(self, haflux):
+        actual = haflux.get_mask(bitnames=('DONOTUSE',))
+        expected = (haflux.mask & 2**haflux.maskbit.bits['DONOTUSE'].value) > 0
+        assert (actual == expected).all()
+    
+    @marvin_test_if(mark='skip', haflux=dict(release=['MPL-4']))
+    def test_get_mask_multiple_bitnames(self, haflux):
+        actual = haflux.get_mask(bitnames=('NOCOV', 'DONOTUSE'))
+
+        mask0 = (haflux.mask & 2**haflux.maskbit.bits['NOCOV'].value) > 0
+        mask1 = (haflux.mask & 2**haflux.maskbit.bits['DONOTUSE'].value) > 0
+        expected = np.logical_or.reduce((mask0, mask1))
+
+        assert (actual == expected).all()
+
+    @marvin_test_if(mark='include', haflux=dict(release=['MPL-4']))
+    @pytest.mark.parametrize('output, expected',
+                             [('name', ['DONOTUSE']),
+                              ('value', [0])])
+    def test_get_bits_mpl4(self, haflux, output, expected):
+        assert haflux.get_bits(1, output=output) == expected
+
+    @marvin_test_if(mark='skip', haflux=dict(release=['MPL-4']))
+    @pytest.mark.parametrize('output, expected',
+                             [('name', ['NOCOV', 'LOWCOV']),
+                              ('value', [0, 1])])
+    def test_get_bits(self, haflux, output, expected):
+        assert haflux.get_bits(3, output=output) == expected
+
+    @marvin_test_if(mark='include', haflux=dict(release=['MPL-4']))
+    def test_get_bits_object_mpl4(self, haflux):
+        actual = haflux.get_bits(1, output='object')
+        expected = [haflux.maskbit.bits['DONOTUSE']]
+        assert actual == expected
+
+    @marvin_test_if(mark='skip', haflux=dict(release=['MPL-4']))
+    def test_get_bits_object(self, haflux):
+        actual = haflux.get_bits(3, output='object')
+        expected = [haflux.maskbit.bits['NOCOV'], haflux.maskbit.bits['LOWCOV']]
+        assert actual == expected
+
+    def test_get_bits_zero(self, haflux):
+        assert haflux.get_bits(0, output='object') == []
 
 
 class TestEnhancedMap(object):
