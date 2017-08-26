@@ -441,7 +441,6 @@ class Map(Quantity):
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
-        # TODO TEST appending previous histories
         history = self._create_history(self, map2, op)
         parents = self._create_parents(self, map2)
 
