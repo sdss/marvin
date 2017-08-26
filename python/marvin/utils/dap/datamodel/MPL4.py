@@ -10,9 +10,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+from collections import OrderedDict
+
 from astropy import units as u
 
-from .base import Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
+from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
+                   Channel, Bit, Maskbit)
 
 
 M11_STELIB_ZSOL = Template('M11-STELIB-ZSOL', n=0,
@@ -139,7 +142,17 @@ MPL4_maps = [
 ]
 
 
+MPL4_dappixmask_bits = OrderedDict(
+    DONOTUSE=Bit(value=0, name='DONOTUSE', description='Do not use this spaxel for science')
+)
+
+
+MPL4_dappixmask = Maskbit(bits=MPL4_dappixmask_bits, name='DAPPIXMASK',
+                          description='2d image bitmap used to describe the quality of individual '
+                                      'pixel measurements in the DAP MAPS file.')
+
+
 MPL4 = DAPDataModel('1.1.1', aliases=['MPL-4', 'MPL4'], bintypes=[NONE, RADIAL, STON],
                     templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN],
-                    properties=MPL4_maps,
+                    properties=MPL4_maps, bitmasks={'DAPPIXMASK': MPL4_dappixmask}, 
                     default_bintype='NONE', default_template='MIUSCAT-THIN')
