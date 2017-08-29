@@ -1009,7 +1009,7 @@ def get_mask(mask, bit_lookup, bitnames=()):
             bitnames = (bitnames,)
 
         try:
-            masks = [mask & 2**bit_lookup[bitname].value > 0 for bitname in bitnames]
+            masks = [mask & 2**bit_lookup[bitname.upper()].value > 0 for bitname in bitnames]
         except KeyError as ee:
             raise MarvinError('Invalid mask bit name: {}'.format(str(ee)))
 

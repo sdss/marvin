@@ -209,6 +209,11 @@ class TestMaskbit(object):
         expected = (mask & 2**0) > 0
         assert (actual == expected).all()
 
+    def test_get_mask_one_bitname_as_string_lower(self, mask=mask, bit_lookup=bit_lookup):
+        actual = get_mask(mask, bit_lookup, bitnames='bitzero')
+        expected = (mask & 2**0) > 0
+        assert (actual == expected).all()
+
     def test_get_mask_one_bitname_as_list(self, mask=mask, bit_lookup=bit_lookup):
         actual = get_mask(mask, bit_lookup, bitnames=('BITZERO',))
         expected = (mask & 2**0) > 0
