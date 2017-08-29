@@ -1008,7 +1008,11 @@ def get_mask(mask, bit_lookup, bitnames=()):
         if isinstance(bitnames, str):
             bitnames = (bitnames,)
 
-        masks = [mask & 2**bit_lookup[bitname].value > 0 for bitname in bitnames]
+        try:
+            masks = [mask & 2**bit_lookup[bitname].value > 0 for bitname in bitnames]
+        except KeyError as ee:
+            raise MarvinError('Invalid mask bit name: {}'.format(str(ee)))
+
         return np.logical_or.reduce(masks)
 
 

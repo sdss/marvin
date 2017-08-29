@@ -221,6 +221,12 @@ class TestMaskbit(object):
         expected = np.logical_or.reduce((mask0, mask1))
         assert (actual == expected).all()
 
+    def test_get_mask_invalid_bitnames(self, mask=mask, bit_lookup=bit_lookup):
+        with pytest.raises(MarvinError) as cm:
+            get_mask(mask, bit_lookup, bitnames=('NOT_A_BITNAME',))
+
+        assert 'Invalid mask bit name:' in str(cm)
+
     def test_get_bits_name(self, bit_lookup=bit_lookup):
         actual = get_bits(3, bit_lookup, output='name')
         expected = ['BITZERO', 'BITONE']
