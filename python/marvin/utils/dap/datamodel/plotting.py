@@ -54,11 +54,8 @@ def get_default_mapset(dapver=None):
 def get_default_plot_params(dapver=None):
     """Returns default map plotting parameters."""
 
-    bitmasks = {'1.1.1': {'badData': {'doNotUse': 0}},
-                '2.0.2': {'nocov': 0,
-                          'badData': {'unreliable': 5,
-                                      'doNotUse': 30}
-                          }
+    bitmasks = {'1.1.1': ['DONOTUSE'],
+                '2.0.2': ['NOCOV', 'UNRELIABLE', 'DONOTUSE']
                 }
 
     plot_defaults = {
