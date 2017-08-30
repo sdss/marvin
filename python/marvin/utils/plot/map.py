@@ -54,27 +54,7 @@ from matplotlib.colors import LogNorm
 from marvin import config
 from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
-from marvin.utils.general import get_mask, get_plot_params
-
-
-# def no_coverage_mask(mask, bit, ivar=None):
-#     """Mask spaxels that are not covered by the IFU.
-# 
-#     Parameters:
-#         mask (array):
-#             Mask for value.
-#         bit (int):
-#             Bit for "NOCOV."
-#         ivar (array):
-#             Inverse variance for image. Default is None.
-# 
-#     Returns:
-#         array: Boolean array for mask (i.e., True corresponds to value to be
-#         masked out).
-#     """
-#     assert (bit is not None) or (ivar is not None), 'Must provide a bit or ivar array.'
-# 
-#     return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
+from marvin.utils.general import get_plot_params
 
 
 def mask_nocov(dapmap, ivar=None):
@@ -96,50 +76,6 @@ def mask_nocov(dapmap, ivar=None):
         return dapmap.get_mask(bitnames='NOCOV')
     except (MarvinError, AttributeError):
         return ivar == 0
-
-
-# def bad_data_mask(mask, bits):
-#     """Mask spaxels that are flagged as bad data by the DAP.
-# 
-#     The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
-#     Note: MPL-4 used only a good = 0 and bad = 1 mask. The "bad" flag
-#     corresponds most closely to "DONOTUSE."
-# 
-#     Parameters:
-#         mask (array):
-#             Mask for value.
-#         bits (dict):
-#             Bits that indicate bad data.
-# 
-#     Returns:
-#         array: Boolean array for mask (i.e., True corresponds to value to be
-#         masked out).
-#     """
-#     if 'unreliable' in bits.keys():
-#         unreliable = (mask & 2**bits['unreliable']).astype(bool)
-#     else:
-#         unreliable = np.zeros(mask.shape, dtype=bool)
-# 
-#     donotuse = (mask & 2**bits['doNotUse']).astype(bool)
-#     return np.logical_or.reduce((unreliable, donotuse))
-
-# def apply_masks(mask, dapmap, use_masks=()):
-#     """Mask spaxels according to maskbit names.
-# 
-#     Parameters:
-#         mask (array):
-#             Mask for value.
-#         dapmap (marvin.tools.map.Map):
-#             Marvin Map object.
-#         use_masks (list):
-#             Masks to use. Default is ``()``.
-# 
-#     Returns:
-#         array: Boolean array for mask (i.e., True corresponds to value to be
-#         masked out).
-#     """
-#     masks = [dapmap.get_mask(bitnames=it) for it in use_mask]
-#     return np.logical_or.reduce(masks)
 
 
 def mask_low_snr(value, ivar, snr_min):
@@ -186,8 +122,30 @@ def mask_neg_values(value):
     return mask
 
 
+def _format_use_masks(use_masks, mask, default_masks):
+    """Convert input format of ``use_masks`` into list of strings.
+
+    Parameters:
+        use_masks (bool, list):
+            If ``True``, use the ``default_masks``. If ``False``, do
+            not use any masks. Otherwise, use a list of bitnames.
+        mask (array):
+            Mask values.
+        default_masks:
+            Default bitmasks to use if ``use_mask == True``.
+
+    Returns:
+        list:
+            Names of bitmasks to apply.
+    """
+    if (mask is None) or (use_masks is False):
+        return []
+    else:
+        return default_masks if isinstance(use_masks, bool) else use_masks
+
+
 def _get_prop(title):
-    """Gets property name from plot title.
+    """Get property name from plot title.
 
     Parameters:
         title (str):
@@ -413,7 +371,7 @@ def plot(*args, **kwargs):
 
     assert (value is not None) or (dapmap is not None), \
         'Map.plot() requires specifying ``value`` or ``dapmap``.'
-    
+
     # user-defined value, ivar, or mask overrides dapmap attributes
     value = value if value is not None else getattr(dapmap, 'value', None)
     ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
@@ -421,15 +379,12 @@ def plot(*args, **kwargs):
     all_true = np.zeros(value.shape, dtype=bool)
     mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
 
-    if mask is None:
-        use_masks = []
-
     if title is None:
         if hasattr(dapmap, 'property'):
             title = dapmap.property.to_string(title_mode)
             prop = dapmap.property.full()
         else:
-            title = getattr(dapmap, 'history', '') 
+            title = getattr(dapmap, 'history', '')
             prop = ''
     else:
         prop = dapmap.property.full() if hasattr(dapmap, 'property') else ''
@@ -445,61 +400,17 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
-
-    """Mask creation
-
-    USING MPL-4 dapmap:
-    ha.plot(use_mask=False)       # Don't use any masks
-    ha.plot(use_mask='NOCOV')     # Mask spaxel where ivar == 0
-    ha.plot(use_mask=('NOCOV',))  # Mask spaxel where ivar == 0
-    ha.plot(use_mask=True) == ha.plot(use_mask=('DONOTUSE'))
-    ha.plot(use_mask=('NOCOV', 'DONOTUSE'))  # Mask spaxels outside of IFU (i.e, where ivar ==0) AND anything masked
-    ha.plot(use_mask=('UNRELIABLE', 'DONOTUSE'))  # Throw error
-    
-    USING MPL-5 dapmap:
-    ha.plot(use_mask=False)       # Don't use any masks
-    ha.plot(use_mask='NOCOV')     # Only mask spaxels outside of IFU
-    ha.plot(use_mask=('NOCOV',))  # Only mask spaxels outside of IFU
-    ha.plot(use_mask=True) == ha.plot(use_mask=('NOCOV', 'UNRELIABLE', 'DONOTUSE'))
-    ha.plot(use_mask=('NOCOV', 'DONOTUSE'))       # Should work
-    ha.plot(use_mask=('UNRELIABLE', 'DONOTUSE'))  # Should work
-
-    USING map from value:
-    ha.plot(use_mask=False)       # Don't use any masks
-    ha.plot(use_mask='NOCOV')     # Mask spaxel where ivar == 0
-    ha.plot(use_mask=('NOCOV',))  # Mask spaxel where ivar == 0
-    ha.plot(use_mask=True) == ha.plot(use_mask=(DEFAULT_MASKS))  # mask > 0 if mask defined
-    ha.plot(use_mask=('NOCOV', 'DONOTUSE')) # mask > 0 if mask defined and where ivar == 0
-    ha.plot(use_mask=('UNRELIABLE', 'DONOTUSE'))  # Throw error
-    """
-
-
-    # # TODO MPL-4: 'DONOTUSE'
-    # # TODO MPL-5: 'NOCOV', 'UNRELIABLE', 'DONOTUSE'
-    # bad_data_bits = params['bitmasks']
+    # if mask is None:
+    #     use_masks = []
     # 
-    # if (use_mask is True) and (dapmap is not None):
-    #     use_mask = ['NOCOV'] + bad_data_bits
-    # 
-    # # TODO FIX THIS UP
-    # if 'NOCOV' in use_mask:
-    #     nocov = dapmap.get_mask('NOCOV')  # dapmap._datamodel.bitmasks['DAPPIXMASK'].bits['NOCOV'].value
-    #     nocov_mask = no_coverage_mask(mask, nocov, ivar) if mask is not None else all_true
-    # else:
-    #     nocov_mask = all_true
-    # 
-    # if (mask is not None) and (dapmap is not None):
-    #     nocov_mask = get_mask(mask=mask, bits=dapmap.maskbit.bits, bitnames='NOCOV')
-    # else:
-    #     nocov_mask = all_true
+    # # Convert from boolean to list if necessary.
+    # if use_masks is False:
+    #     use_masks = []
+    # # Do NOT change following line to ``elif use_mask:`` because ``use_mask`` can be a list.
+    # elif use_masks is True:
+    #     use_masks = params['bitmasks']
 
-
-    # Convert from boolean to list if necessary.
-    if use_masks is False:
-        use_masks = []
-    # Do NOT change following line to ``elif use_mask:`` because ``use_mask`` can be a list.
-    elif use_masks is True:
-        use_masks = params['bitmasks']
+    use_masks = _format_use_masks(use_masks, mask, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
     nocov = mask_nocov(dapmap, ivar) if ('NOCOV' in use_masks) and (ivar is not None) else all_true

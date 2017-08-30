@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-29 14:08:54
+# @Last modified time: 2017-08-30 15:08:34
 
 import numpy as np
 import matplotlib
@@ -14,6 +14,7 @@ import pytest
 
 from marvin import config
 from marvin.core.exceptions import MarvinError
+from marvin.tests import marvin_test_if, use_releases
 from marvin.tools.maps import Maps
 import marvin.utils.plot.map as mapplot
 from marvin.utils.general import get_plot_params
@@ -110,13 +111,6 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
-@pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
-                                        'specindex'])
-def bits(request, set_release):
-    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
-    return params['bitmasks']
-
-
 class TestMasks(object):
 
     @pytest.mark.parametrize('ivar, expected',
@@ -146,6 +140,41 @@ class TestMasks(object):
     def test_mask_neg_values(self, value, expected):
         actual = mapplot.mask_neg_values(value)
         assert np.all(actual == expected)
+    
+    @pytest.mark.parametrize('use_masks, mask, expected',
+                             [(False, mask_daplike, []),
+                              (False, None, []),
+                              (True, None, []),
+                              (['DONOTUSE'], None, []),
+                              (True, mask_daplike, ['DONOTUSE']),
+                              (['DONOTUSE'], mask_daplike, ['DONOTUSE'])
+                              ])
+    def test_format_use_masks_mpl4(self, use_masks, mask, expected, set_release):
+
+        if config.release != 'MPL-4':
+            pytest.skip('Only include MPL-4.')
+
+        for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
+            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            actual = mapplot._format_use_masks(use_masks, mask, params['bitmasks'])
+            assert actual == expected
+
+    @pytest.mark.parametrize('use_masks, mask, expected',
+                             [(False, mask_daplike, []),
+                              (False, None, []),
+                              (True, None, []),
+                              (['DONOTUSE'], None, []),
+                              (True, mask_daplike, ['NOCOV', 'UNRELIABLE', 'DONOTUSE']),
+                              (['LOWCOV', 'DONOTUSE'], mask_daplike, ['LOWCOV', 'DONOTUSE'])])
+    def test_format_use_masks(self, use_masks, mask, expected, set_release):
+
+        if config.release == 'MPL-4':
+            pytest.skip('Skip MPL-4.')
+
+        for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
+            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            actual = mapplot._format_use_masks(use_masks, mask, params['bitmasks'])
+            assert actual == expected
 
 
 class TestMapPlot(object):
