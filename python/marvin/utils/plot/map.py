@@ -400,16 +400,6 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
-    # if mask is None:
-    #     use_masks = []
-    # 
-    # # Convert from boolean to list if necessary.
-    # if use_masks is False:
-    #     use_masks = []
-    # # Do NOT change following line to ``elif use_mask:`` because ``use_mask`` can be a list.
-    # elif use_masks is True:
-    #     use_masks = params['bitmasks']
-
     use_masks = _format_use_masks(use_masks, mask, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
