@@ -49,7 +49,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 
 .. code-block:: python
 
-    ha = maps.getMap('emline_gflux', channel='ha_6564')  # == maps['emline_gflux_ha_6564']
+    ha = maps.getMap('emline_gflux', channel='ha_6564')   # == maps['emline_gflux_ha_6564']
     stvel = maps.getMap('stellar_vel')                    # == maps['stellar_vel']
 
 **New in 2.2.0**: You can guess at the map property name (and channel), and Marvin will return the map if there is a unique (and valid) property and channel.
@@ -88,7 +88,7 @@ The values, inverse variances, and bitmasks of the map can be accessed via the :
     #          0.        ,   0.        ])
 
 
-The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :attr:`~marvin.tools.map.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
+The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_. The ``data`` attribute is the :attr:`~marvin.tools.map.Map.value` array and the ``mask`` attribute is a boolean array.  ``mask`` is ``True`` for a given spaxel if any of the recommended bad data flags (NOCOV, UNRELIABLE, and DONOTUSE) are set (**New in 2.2.0**; previously, spaxels with any flags set were masked---i.e., where ``ha.mask > 0``).
 
 .. code-block:: python
 
@@ -130,23 +130,61 @@ Bit	 Name	       Description
 
 **Note**: For MPL-5, DONOTUSE is a consolidation of the flags NOCOV, LOWCOV, DEADFIBER, FORESTAR, NOVALUE, MATHERROR, FITFAILED, and NEARBOUND.
 
+
+**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_mask` creates a mask from a list of maskbit names by joining the individual masks (i.e., an element-by-element ``OR``).  If no maskbit names are provided, then :meth:`~marvin.tools.map.Map.get_mask` defaults to the recommended masks.
+
 .. code-block:: python
 
-    import numpy as np
-    nocov     = (ha.mask & 2**0) > 0
-    lowcov    = (ha.mask & 2**1) > 0
-    deadfiber = (ha.mask & 2**2) > 0
-    forestar  = (ha.mask & 2**3) > 0
-    novalue   = (ha.mask & 2**4) > 0
-    matherror = (ha.mask & 2**6) > 0
-    fitfailed = (ha.mask & 2**7) > 0
-    nearbound = (ha.mask & 2**8) > 0
+    ha.get_mask(['NOCOV', 'UNRELIABLE', 'DONOTUSE'])
 
-    bad_data = np.logical_or.reduce((nocov, lowcov, deadfiber, forestar, novalue, matherror, fitfailed, nearbound))
+    # get_mask() accepts a string if only one maskbit name is given.
+    ha.get_mask('NOCOV')  # == ha.get_mask(['NOCOV'])
+
+    # For MPL-5+, get_mask() defaults to 'NOCOV', 'UNRELIABLE', and 'DONOTUSE'.
+    ha.get_mask()
+
+
+**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_bits` converts an integer into its constituent bits and will output the bit names (default), bit values, or :class:`~marvin.utils.dap.datamodel.base.Bit` objects.
+
+.. code-block:: python
+
+    ha.get_bits(1073741843)  # == ha.get_bits(1073741843, output='name')
+    # ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
+
+    ha.get_bits(1073741843, output='value')
+    # [0, 1, 4, 30]
+    # 2**0 + 2**1 + 2**4 + 2**30 = 1073741843
+
+    ha.get_bits(1073741843, output='object')
+    # [<Bit  0 name='NOCOV'>,
+    #  <Bit  1 name='LOWCOV'>,
+    #  <Bit  4 name='NOVALUE'>,
+    #  <Bit 30 name='DONOTUSE'>]
+
+
+**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_bits_all_spax` applies :meth:`~marvin.tools.map.Map.get_bits` to the whole :attr:`~marvin.tools.map.Map.mask` array.
+
+.. code-block:: python
+
+    names = ha.get_bits_all_spax()  # == ha.get_bits_all_spax(output='name')
+    values = ha.get_bits_all_spax(output='value')
+    objects = ha.get_bits_all_spax(output='object')
+
+    # ``names``, ``values``, and ``objects`` are nested lists of dimensions (34, 34, X).
+    # The first two dimensions are the size of the input ``mask`` array.
+    # The length of the last dimension (X) equals the number of bits set.
+
+    names[0][0]
+    # ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
     
-    donotuse  = (ha.mask & 2**30) > 0
+    values[0][0]
+    # [0, 1, 4, 30]
     
-    (bad_data == donotuse).all()  # True
+    objects[0][0]
+    # [<Bit  0 name='NOCOV'>,
+    #  <Bit  1 name='LOWCOV'>,
+    #  <Bit  4 name='NOVALUE'>,
+    #  <Bit 30 name='DONOTUSE'>]
 
 
 .. _marvin-map-using:
@@ -266,13 +304,16 @@ Reference/API
 
 .. autosummary::
 
-    marvin.tools.map.Map.save
-    marvin.tools.map.Map.restore
-    marvin.tools.map.Map.masked
     marvin.tools.map.Map.error
-    marvin.tools.map.Map.snr
-    marvin.tools.map.Map.plot
+    marvin.tools.map.Map.get_mask
+    marvin.tools.map.Map.get_bits
+    marvin.tools.map.Map.get_bits_all_spax
     marvin.tools.map.Map.inst_sigma_correction
+    marvin.tools.map.Map.masked
+    marvin.tools.map.Map.plot
+    marvin.tools.map.Map.restore
+    marvin.tools.map.Map.save
+    marvin.tools.map.Map.snr
 
 
 |
