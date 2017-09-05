@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-26 14:08:31
+# @Last modified time: 2017-08-31 16:08:29
 
 from copy import deepcopy
 
@@ -364,7 +364,7 @@ class TestMaskbit(object):
     def test_masked(self, map_release_only):
         __, dapver = config.lookUpVersions(map_release_only.release)
         params = get_default_plot_params(dapver)
-        expected = map_release_only.get_mask(bitnames=params['default']['bitmasks'])
+        expected = map_release_only.get_mask(bitnames=params['default']['bitmasks'], dtype=bool)
 
         assert pytest.approx(map_release_only.masked.data, map_release_only.value)
         assert (map_release_only.masked.mask == expected).all()
@@ -381,21 +381,21 @@ class TestMaskbit(object):
 
     def test_get_mask_one_bitname_as_string(self, map_release_only):
         actual = map_release_only.get_mask(bitnames='DONOTUSE')
-        expected = (map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value) > 0
+        expected = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
         assert (actual == expected).all()
 
     def test_get_mask_one_bitname_as_list(self, map_release_only):
         actual = map_release_only.get_mask(bitnames=('DONOTUSE',))
-        expected = (map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value) > 0
+        expected = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
         assert (actual == expected).all()
     
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
     def test_get_mask_multiple_bitnames(self, map_release_only):
         actual = map_release_only.get_mask(bitnames=('NOCOV', 'DONOTUSE'))
 
-        mask0 = (map_release_only.mask & 2**map_release_only.maskbit.bits['NOCOV'].value) > 0
-        mask1 = (map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value) > 0
-        expected = np.logical_or.reduce((mask0, mask1))
+        mask0 = map_release_only.mask & 2**map_release_only.maskbit.bits['NOCOV'].value
+        mask1 = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
+        expected = np.sum((mask0, mask1), axis=0, dtype=int)
 
         assert (actual == expected).all()
 

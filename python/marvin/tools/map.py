@@ -347,7 +347,7 @@ class Map(Quantity):
         default_params = get_default_plot_params(dapver)
         bitnames = default_params['default']['bitmasks']
 
-        return np.ma.array(self.value, mask=self.get_mask(bitnames=bitnames))
+        return np.ma.array(self.value, mask=self.get_mask(bitnames=bitnames, dtype=bool))
 
     @property
     def error(self):
@@ -514,7 +514,8 @@ class Map(Quantity):
 
     @add_doc(marvin.utils.general.get_mask.__doc__)
     def get_mask(self, *args, **kwargs):
-        bitnames = args[0] if len(args) == 1 else kwargs.get('bitnames', ())
+        bitnames = list(args).pop(0) if len(args) == 1 else kwargs.pop('bitnames', ())
+        dtype = list(args).pop(1) if len(args) == 2 else kwargs.pop('dtype', int)
 
         # If no bitnames are given, then use the default bits according to the datamodel.
         if len(bitnames) == 0:
@@ -522,7 +523,7 @@ class Map(Quantity):
             default_params = get_default_plot_params(dapver)
             bitnames = default_params['default']['bitmasks']
 
-        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, bitnames)
+        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, bitnames, dtype)
 
     @add_doc(marvin.utils.general.get_bits.__doc__)
     def get_bits(self, value, *args, **kwargs):
@@ -530,7 +531,7 @@ class Map(Quantity):
 
     def get_bits_all_spax(self, *args, **kwargs):
         """Get the bits for all spaxels.
-        
+
         Parameters:
             output (str):
                 Format of output. Allowed options are
@@ -538,7 +539,7 @@ class Map(Quantity):
                     - ``'value'`` for bit values, and
                     - ``'object'`` for .
                 Default is ``'name'``.
-        
+
         Returns:
             list:
                 Three level nested list of shape (Map.shape[0], Map.shape[1], number of bits set).
