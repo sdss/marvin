@@ -89,11 +89,11 @@ Reference/API
 
 .. autosummary::
 
-    marvin.tools.query.query.Query.run
-    marvin.tools.query.query.Query.reset
-    marvin.tools.query.query.Query.show
-    marvin.tools.query.query.Query.save
-    marvin.tools.query.query.Query.restore
+    marvin.tools.query.Query.run
+    marvin.tools.query.Query.reset
+    marvin.tools.query.Query.show
+    marvin.tools.query.Query.save
+    marvin.tools.query.Query.restore
 
 
 |

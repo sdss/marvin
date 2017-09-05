@@ -169,7 +169,7 @@ class Query(object):
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
-        self.quiet = None
+        self.quiet = kwargs.get('quiet', None)
         self._errors = []
         self._basetable = None
         self._modelgraph = marvindb.modelgraph

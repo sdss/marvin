@@ -65,3 +65,14 @@ Colorbar Plotting Utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-utils-scatter-plot:
+
+Scatter/Histogram Plotting Utilities
+------------------------------------
+
+.. automodule:: marvin.utils.plot.scatter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

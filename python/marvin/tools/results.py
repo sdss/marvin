@@ -67,6 +67,12 @@ def remote_mode_only(fxn):
 def marvintuple(name, params=None, **kwargs):
     ''' Custom namedtuple class factory for Marvin Results rows
 
+    A class factory designed to create a new Marvin ResultRow class object. marvintuple
+    creates a new class definition which can be instantiated.  Parameters can be pushed into
+    an instance as individual arguments, or as key-value pairs.  See the
+    `namedtuple <https://docs.python.org/2/library/collections.html#collections.namedtuple>`_
+    for details on the Python container.
+
     Parameters:
         name (str):
             The name of the Class.  Required.
@@ -83,6 +89,8 @@ def marvintuple(name, params=None, **kwargs):
         >>>
         >>> # create a new instance of the class, with values
         >>> row = mt('1-209232', '8485-1901')
+        >>> # or
+        >>> row = mt(mangaid='1-209232', plateifu='8485-1901')
 
     '''
 
@@ -128,20 +136,38 @@ def marvintuple(name, params=None, **kwargs):
 
 
 class ResultSet(list):
-    ''' A Set of Results '''
+    ''' A Set of Results
+
+    A list object representing a set of query results.  Each row of the list is a
+    ResultRow object, which is a custom Marvin namedtuple object.  ResultSets can be
+    extended column-wise or row-wise by adding them together.
+
+    Parameters:
+        _objects (list):
+            A list of objects. Required.
+        count (int):
+            The count of objects in the current list
+        totalcount (int):
+            The total count of objects in the full results
+        index (int):
+            The index of the current set within the total set.
+        columns (list):
+            A list of columns accompanying this set
+        results (Results):
+            The Marvin Results object this set is a part of
+
+    '''
     def __init__(self, _objects, **kwargs):
         list.__init__(self, _objects)
-        self.count = kwargs.get('count', None)
-        self.total = kwargs.get('total', None)
-        self.pages = int(np.ceil(self.total / float(self.count)))
         self._results = kwargs.get('results', None)
         self.columns = kwargs.get('columns', None)
+        self.count = kwargs.get('count', None)
+        self.total = kwargs.get('total', None)
+        self._populate_from_results()
+        self.pages = int(np.ceil(self.total / float(self.count))) if self.count else 0
         self.index = kwargs.get('index') if kwargs.get('index') else 0
         self.end_index = self.index + self.count
         self.current_page = (int(self.index) + self.count) / self.count
-        if self._results:
-            self.columns = self._results.columns if not self.columns else self.columns
-            self.choices = self.columns.list_params(remote=True)
 
     def __repr__(self):
         old = list.__repr__(self)
@@ -201,8 +227,33 @@ class ResultSet(list):
     def __radd__(self, other):
         return self.__add__(other)
 
+    def _populate_from_results(self):
+        ''' Populate some parameters from the results '''
+        if self._results:
+            self.columns = self._results.columns if not self.columns else self.columns
+            self.choices = self.columns.list_params(remote=True)
+            self.count = self._results.count if not self.count else self.count
+            self.total = self._results.totalcount if not self.total else self.total
+        else:
+            self.count = self.count if self.count else len(self)
+            self.total = self.total if self.total else len(self)
+
     def to_dict(self, name=None, format_type='listdict'):
-        ''' Convert the ResultSet into a dictionary '''
+        ''' Convert the ResultSet into a dictionary
+
+        Converts the set of results into a list of dictionaries.  Optionally
+        accepts a column name keyword to extract only that column.
+
+        Parameters:
+            name (str):
+                Name of the column you wish to extract.  Default is None.
+            format_type (str):
+                The format of the output dictionary.  Can either be a list of dictionaries
+                or a dictionary of lists.
+
+        Returns:
+            The output converted into dictionary format.
+        '''
 
         keys = self.columns.list_params(remote=True)
 
@@ -221,11 +272,25 @@ class ResultSet(list):
         return output
 
     def to_list(self):
-        ''' Convert to a standard Python list object '''
+        ''' Converts to a standard Python list object '''
         return list(self)
 
     def sort(self, name=None, reverse=False):
-        ''' '''
+        ''' Sort the results
+
+        In-place sorting of the result set.  This is the standard list sorting mechanism.
+        When no name is specified, does standard list sorting with no key.
+
+        Parameters:
+            name (str):
+                Columne name to sort on.  Default is None.
+            reverse (bool):
+                If True, sorts in reverse (descending) order.
+
+        Returns:
+            A sorted list
+
+        '''
         if name:
             colname = self.columns[name].remote
             return list.sort(self, key=lambda row: row.__getattribute__(colname), reverse=reverse)
@@ -300,7 +365,8 @@ class Results(object):
                         category=self.__class__)
 
         # Convert results to NamedTuple
-        self._create_result_set()
+        if self.count > 0:
+            self._create_result_set()
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -1405,7 +1471,7 @@ class Results(object):
             x_data = self.results[x_name]
             y_data = self.results[y_name]
 
-        output = marvin.utils.plot.scatter.plot(x_data, y_data, x_col=x_col, y_col=y_col, **kwargs)
+        output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
 
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:

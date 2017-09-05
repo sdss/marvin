@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-22 14:15:12
+# @Last Modified time: 2017-08-25 12:57:49
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -19,10 +19,11 @@ from matplotlib.gridspec import GridSpec
 from collections import defaultdict, OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
+import six
 
 
 def compute_stats(data):
-    ''' Compute some statistics
+    ''' Compute some statistics given a data array
 
     Computes some basic statistics given a data array, excluding NaN values.
     Computes and returns the following Numpy statistics: mean, standard deviation,
@@ -113,8 +114,11 @@ def _get_axis_label(column, axis=''):
             label = column.display
     elif isinstance(column, Property):
         label = _get_dap_datamodel_property_label(column)
+    elif isinstance(column, six.string_types):
+        label = column
     else:
-        label = '{0} axis'.format(axis).strip()
+        # label = '{0} axis'.format(axis).strip()
+        label = ''
 
     return label
 
@@ -162,10 +166,6 @@ def plot(x, y, **kwargs):
             A mask to apply to the x-array of data
         ymask (ndarray):
             A mask to apply to the y-array of data
-        x_col (Marvin column):
-            Optional Marvin DataModel Property or QueryParameter to use for display
-        y_col (Marvin columnd):
-            Optional Marvin DataModel Property or QueryParameter to use for display
         with_hist (bool|str):
             If True, creates the plot with both x,y histograms.  False, disables it.  If 'x' or 'y',
             only creates that histogram.  Default is True.
@@ -175,10 +175,13 @@ def plot(x, y, **kwargs):
             A tuple limited the range of the x-axis
         ylim (tuple):
             A tuple limited the range of the y-axis
-        xlabel (str):
-            The x axis label
-        ylabel (str):
-            The y axis label
+        xlabel (str|Marvin column):
+            The x axis label or a Marvin DataModel Property or QueryParameter to use for display
+        ylabel (str|Marvin column):
+            The y axis label or a Marvin DataModel Property or QueryParameter to use for display
+        bins (int|tuple):
+            A number or tuple specifying the number of bins to use in the histogram.  Default is 50.  An integer
+            number is adopted for both x and y bins.  A tuple is used to customize per axis.
         kwargs (dict):
             Any other keyword arguments to be passed to `matplotlib.pyplot.scatter
                 <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_ or
@@ -204,8 +207,6 @@ def plot(x, y, **kwargs):
     use_datamodel = kwargs.pop('usemodel', None)
     xmask = kwargs.pop('xmask', None)
     ymask = kwargs.pop('ymask', None)
-    x_col = kwargs.pop('x_col', None)
-    y_col = kwargs.pop('y_col', None)
 
     # scatterplot keyword arguments
     xlim = kwargs.pop('xlim', None)
@@ -215,7 +216,7 @@ def plot(x, y, **kwargs):
     color = kwargs.pop('color', 'r')
     size = kwargs.pop('size', 20)
     marker = kwargs.pop('marker', 'o')
-    edgecolors = kwargs.get('edgecolors', 'black')
+    edgecolors = kwargs.pop('edgecolors', 'black')
 
     # histogram keywords
     with_hist = kwargs.pop('with_hist', True)
@@ -239,8 +240,8 @@ def plot(x, y, **kwargs):
         ax_scat.set_ylim(*ylim)
 
     # set display names
-    xlabel = xlabel if xlabel else _get_axis_label(x_col, axis='x')
-    ylabel = ylabel if ylabel else _get_axis_label(y_col, axis='y')
+    xlabel = _get_axis_label(xlabel, axis='x')
+    ylabel = _get_axis_label(ylabel, axis='y')
     ax_scat.set_xlabel(xlabel)
     ax_scat.set_ylabel(ylabel)
 
@@ -254,7 +255,7 @@ def plot(x, y, **kwargs):
     # create histogram dictionary
     if with_hist:
         hist_data = {}
-        xbin, ybin = bins if isinstance(bins, list) else (bins, None) if with_hist == 'x' else (None, bins)
+        xbin, ybin = bins if isinstance(bins, list) else (bins, bins)
 
     # set x-histogram
     if ax_hist_x:
@@ -302,10 +303,8 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
             An optional matplotlib axis object
         bins (int):
             The number of bins to use.  Default is 50 bins.
-        column (Marvin column):
-            Optional Marvin DataModel Property or QueryParameter to use for display
-        xlabel (str):
-            The x axis label
+        xlabel (str|Marvin Column):
+            The x axis label or a Marvin DataModel Property or QueryParameter to use for display
         ylabel (str):
             The y axis label
         title (str):
@@ -333,7 +332,6 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
     data = _make_masked(data, mask=mask)
 
     # general keywords
-    column = kwargs.pop('column', None)
     xlabel = kwargs.pop('xlabel', None)
     ylabel = kwargs.pop('ylabel', 'Counts')
     title = kwargs.pop('title', None)
@@ -354,7 +352,7 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         fig = plt.figure()
 
     # set labels
-    xlabel = xlabel if xlabel else _get_axis_label(column, axis='x') if column else ''
+    xlabel = _get_axis_label(xlabel, axis='x')
     ax.set_ylabel(ylabel) if orientation == 'vertical' else ax.set_ylabel(xlabel)
     ax.set_xlabel(xlabel) if orientation == 'vertical' else ax.set_xlabel(ylabel)
 
