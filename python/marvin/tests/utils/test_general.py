@@ -189,6 +189,7 @@ class TestPillowImage(object):
                 assert err == str(e.args[0])
 
 
+# TODO Remove!!!!!!!!!!
 @pytest.fixture(scope='session')
 def bitmask(dapver):
     data = {'1.1.1': {'badData': {'doNotUse': 0}},
@@ -221,9 +222,9 @@ class TestMaskbit(object):
     
     def test_get_mask_multiple_bitnames(self, mask=mask, bit_lookup=bit_lookup):
         actual = get_mask(mask, bit_lookup, bitnames=('BITZERO', 'BITONE'))
-        mask0 = (mask & 2**0) > 0
-        mask1 = (mask & 2**1) > 0
-        expected = np.logical_or.reduce((mask0, mask1))
+        mask0 = (mask & 2**0)
+        mask1 = (mask & 2**1)
+        expected = np.sum((mask0, mask1), axis=0, dtype=int)
         assert (actual == expected).all()
 
     def test_get_mask_invalid_bitnames(self, mask=mask, bit_lookup=bit_lookup):
@@ -231,6 +232,15 @@ class TestMaskbit(object):
             get_mask(mask, bit_lookup, bitnames=('NOT_A_BITNAME',))
 
         assert 'Invalid mask bit name:' in str(cm)
+
+    @pytest.mark.parametrize('bitnames, dtype, expected',
+                             [('BITONE', bool, [[False, False], [True, True]]),
+                              (['BITZERO', 'BITONE'], bool, [[False, True], [True, True]]),
+                              ('BITONE', int, [[0, 0], [2, 2]]),
+                              (['BITZERO', 'BITONE'], int, [[0, 1], [2, 3]]),
+                              ])
+    def test_get_mask_dtype(self, bitnames, dtype, expected, mask=mask, bit_lookup=bit_lookup):
+        assert (get_mask(mask, bit_lookup, bitnames, dtype) == np.array(expected)).all()
 
     def test_get_bits_name(self, bit_lookup=bit_lookup):
         actual = get_bits(3, bit_lookup, output='name')
