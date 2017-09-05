@@ -983,7 +983,7 @@ def _check_file_parameters(obj1, obj2):
         assert getattr(obj1, param) == getattr(obj2, param), assert_msg
 
 
-def get_mask(mask, bit_lookup, bitnames=()):
+def get_mask(mask, bit_lookup, bitnames=(), dtype=int):
     """Produce a custom mask from a list of bit names.
 
     Parameters:
@@ -994,6 +994,9 @@ def get_mask(mask, bit_lookup, bitnames=()):
         bitnames (str, list):
             Names of bits to combine. If only one item, then it can be
             passed as a string. Otherwise, provide a list.
+        dtype (str):
+            Specify the dtype of the output mask (either ``bool`` or
+            ``int``). Default is ``int`.
 
     Returns:
         array:
@@ -1004,9 +1007,29 @@ def get_mask(mask, bit_lookup, bitnames=()):
 
             >>> maps = Maps(plateifu='8485-1901')
             >>> ha = maps['emline_gflux_ha_6564']
-            >>> mask = get_mask(ha.mask, ha.maskbit.bits, ['NOCOV', 'DONOTUSE'])
+            >>> mask_int = get_mask(ha.mask, ha.maskbit.bits, ['NOCOV', 'DONOTUSE'], dtype=int)
 
-            >>> mask
+            >>> mask_int
+            array([[1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825],
+                   [1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825],
+                   [1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825],
+                   ...,
+                   [1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825],
+                   [1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825],
+                   [1073741825, 1073741825, 1073741825, ..., 1073741825, 1073741825, 1073741825]])
+
+            >>> mask_int[17]
+            array([1073741825, 1073741825, 1073741824, 1073741824, 1073741824,
+                   1073741824, 1073741824,          0,          0,          0,
+                            0,          0,          0,          0,          0,
+                            0,          0,          0,          0,          0,
+                            0,          0,          0,          0,          0,
+                            0,          0,          0,          0, 1073741824,
+                   1073741824, 1073741824, 1073741825, 1073741825])
+
+            >>> mask_bool = get_mask(ha.mask, ha.maskbit.bits, ['NOCOV', 'DONOTUSE'], dtype=bool)
+
+            >>> mask_bool
             array([[ True,  True,  True, ...,  True,  True,  True],
                    [ True,  True,  True, ...,  True,  True,  True],
                    [ True,  True,  True, ...,  True,  True,  True],
@@ -1015,7 +1038,7 @@ def get_mask(mask, bit_lookup, bitnames=()):
                    [ True,  True,  True, ...,  True,  True,  True],
                    [ True,  True,  True, ...,  True,  True,  True]], dtype=bool)
 
-            >>> mask[17]
+            >>> mask_bool[17]
             array([ True,  True,  True,  True,  True,  True,  True, False, False,
                    False, False, False, False, False, False, False, False, False,
                    False, False, False, False, False, False, False, False, False,
@@ -1024,15 +1047,17 @@ def get_mask(mask, bit_lookup, bitnames=()):
     if len(bitnames) == 0:
         return mask > 0
     else:
+        assert dtype in [int, bool], "``dtype`` must be either ``int`` or ``bool``."
+
         if isinstance(bitnames, str):
-            bitnames = (bitnames,)
+            bitnames = [bitnames]
 
         try:
-            masks = [mask & 2**bit_lookup[bitname.upper()].value > 0 for bitname in bitnames]
+            masks = [mask & 2**bit_lookup[bitname.upper()].value for bitname in bitnames]
         except KeyError as ee:
             raise MarvinError('Invalid mask bit name: {}'.format(str(ee)))
 
-        return np.logical_or.reduce(masks)
+        return np.sum(masks, axis=0, dtype=dtype)
 
 
 def get_bits(value, bit_lookup, output='name'):
