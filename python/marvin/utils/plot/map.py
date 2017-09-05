@@ -308,8 +308,10 @@ def plot(*args, **kwargs):
         sky_coords (bool):
             If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise
             show in spaxel coordinates. Default is ``False``.
-        use_masks (bool):
-            Use DAP bitmasks. Default is ``True``.
+        use_masks (bool, str, list):
+            Use DAP bitmasks. If ``True``, use the recommended DAP masks.
+            Otherwise provide a mask name as a string or multiple mask names as
+            a list of strings. Default is ``True``.
         plt_style (str):
             Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
         fig (matplotlib Figure object):
@@ -404,7 +406,7 @@ def plot(*args, **kwargs):
 
     # Create no coverage, bad data, low SNR, and negative value masks.
     nocov = mask_nocov(dapmap, ivar) if ('NOCOV' in use_masks) and (ivar is not None) else all_true
-    bad_data = dapmap.get_mask(use_masks) if (not use_masks) and (dapmap is not None) else all_true
+    bad_data = dapmap.get_mask(use_masks) if use_masks and (dapmap is not None) else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if not use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true
 
@@ -441,7 +443,7 @@ def plot(*args, **kwargs):
 
     # setup background
     nocov_kws = copy.deepcopy(imshow_kws)
-    nocov_image = np.ma.array(np.ones(value.shape), mask=~nocov)
+    nocov_image = np.ma.array(np.ones(value.shape), mask=~nocov.astype(bool))
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
