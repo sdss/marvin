@@ -8,7 +8,7 @@ First Steps
 
 Let's get the DAP maps of a galaxy by creating a :ref:`marvin-tools-maps` object from its ``mangaid``, ``plateifu``, or ``filename`` (you must specify the full file path). Now we can get the H\ :math:`\alpha` flux :ref:`marvin-tools-map` object and plot it.
 
-::
+.. code-block:: python
 
     from marvin.tools.maps import Maps
     maps = Maps(mangaid='1-209232')
@@ -21,7 +21,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
 
 To save the plot:
 
-::
+.. code-block:: python
 
     fig.savefig('haflux.pdf')
 
@@ -29,18 +29,18 @@ Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.
 
 * Clip at 5th and 95th percentiles (10th and 90th percentiles for velocity and sigma plots).
 * Velocity plots are symmetric about 0.
-* **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``NOVALUE``, ``BADVALUE``, ``MATHERROR``, ``BADFIT``, or ``DONOTUSE`` set.
+* **no data** (gray): either ``ivar = 0`` or DAP bitmasks ``UNRELIABLE`` or ``DONOTUSE`` set.
 * **no measurement** (hatched): pass **no data** criteria but DAP did not produce a measurement or  signal-to-noise ratio < 1.
 
 The DAP map data is stored as 2-D arrays in the ``value``, ``ivar``, and ``mask`` attributes of the ``haflux`` :ref:`marvin-tools-map` object:
 
-::
+.. code-block:: python
 
     haflux.value
 
 We can also grab the DRP and DAP data on any single spaxel. Let's get the central spaxel (x=17, y=17):
 
-::
+.. code-block:: python
 
     spax = maps[17, 17]
 
@@ -48,13 +48,13 @@ Here ``maps[i, j]`` is shorthand for ``maps.getSpaxel(x=j, y=i, xyorig='lower')`
 
 We can then get a dictionary of all of the DAP :ref:`marvin-tools-analprop` s with ``spax.properties`` and get the value of any one of them, such as stellar velocity, by using the appropriate key ("stellar_vel" in this case), and accessing the ``value`` attribute of the :ref:`marvin-tools-analprop` object:
 
-::
+.. code-block:: python
 
     spax.properties['stellar_vel'].value
 
 The beauty of Marvin is that you can link to other data about the same galaxy (see :ref:`visual-guide`). Let's see the spectrum.
 
-::
+.. code-block:: python
 
     spax.spectrum.plot()
 
@@ -76,7 +76,7 @@ By default, :ref:`marvin-tools-maps` selects the unbinned maps ``SPX``, but we c
 * ``NRE`` - spaxels are binned into two radial bins, binning all spectra from 0-1 and 1-2 (elliptical Petrosian) effective radii, and
 * ``ALL`` - all spectra binned together.
 
-::
+.. code-block:: python
 
     maps = Maps(mangaid='1-209232', bintype='VOR10')
 
@@ -85,7 +85,7 @@ Download
 
 Download the maps using ``rsync`` via `sdss_access <https://github.com/sdss/sdss_access>`_ (see :ref:`marvin-sdss-depends`):
 
-::
+.. code-block:: python
 
     maps.download()
 
@@ -98,12 +98,11 @@ Setting the Colorbar Range
 
 :meth:`~marvin.tools.map.Map.plot` uses ``percentile_clip`` to select the best range of values to display. It defaults to clipping at ``(10, 90)`` for velocities and sigmas and ``(5, 95)`` for other properites. However, you can specify your own percentile clipping limits, sigma clipping limits (``sigma_clip``), or minimum and maximum values (``cbrange``).
 
-::
+.. code-block:: python
 
     fig, ax = haflux.plot(percentile_clip=(1, 99))
     fig, ax = haflux.plot(sigma_clip=2)
 
 :meth:`~marvin.tools.map.Map.plot` adopts a minimum signal-to-noise ratio of ``1`` as its threshold for considering a value as valid. You can control this cutoff with the ``snr_min`` keyword.
-
 
 |

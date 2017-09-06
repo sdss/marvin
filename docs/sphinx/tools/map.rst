@@ -207,12 +207,6 @@ Map Plotting
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
 
 
-Applying Bitmasks to a Map
-``````````````````````````
-
-* :doc:`../tutorials/bitmasks`
-
-
 Map Arithmetic
 ``````````````
 

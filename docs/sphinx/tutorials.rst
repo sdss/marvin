@@ -14,7 +14,6 @@ Tutorials
    tutorials/query-practice
    tutorials/boolean-search-tutorial
    tutorials/sample-selection
-   tutorials/bitmasks
    tutorials/jupyter-notebooks
 
 
