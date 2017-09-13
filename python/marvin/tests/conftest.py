@@ -18,7 +18,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
 from marvin.tools.query import Query
-from marvin.utils.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel
 
 from sdss_access.path import Path
 

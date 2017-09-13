@@ -21,7 +21,7 @@ import marvin
 from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap.datamodel.base import Property
+from marvin.utils.datamodel.dap.base import Property
 
 
 def _assert_maps(maps, galaxy):

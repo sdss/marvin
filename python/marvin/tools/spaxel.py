@@ -32,8 +32,8 @@ from marvin.api import api
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
 from marvin.tools.spectrum import Spectrum
-from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel.base import spaxel as spaxel_unit
+from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap.base import spaxel as spaxel_unit
 
 
 breadcrumb = MarvinBreadCrumb()

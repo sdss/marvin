@@ -21,8 +21,8 @@ from marvin.utils.general.general import (convertImgCoords, parseIdentifier, get
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
+from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av

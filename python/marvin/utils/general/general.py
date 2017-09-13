@@ -14,7 +14,7 @@ from astropy import table
 
 import marvin
 from marvin import log
-from marvin.utils.dap.datamodel.plotting import get_default_plot_params
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain.core.exceptions import BrainError
 

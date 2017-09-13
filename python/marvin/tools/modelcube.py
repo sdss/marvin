@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-10 17:54:00
+# @Last Modified time: 2017-09-13 15:54:38
 
 from __future__ import print_function, division, absolute_import
 
@@ -25,7 +25,7 @@ import marvin.tools.maps
 
 from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel
 
 
 class ModelCube(MarvinToolsClass):

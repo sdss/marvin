@@ -11,7 +11,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-# from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
+# from marvin.utils.datamodel.dap import MapsProperty, MapsPropertyList, get_dap_datamodel
 # from marvin.tests import UseReleases
 # from marvin import config
 

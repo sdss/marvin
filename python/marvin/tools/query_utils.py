@@ -10,7 +10,7 @@ import six
 import yaml
 import yamlordereddictloader
 from fuzzywuzzy import process
-from marvin.utils.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel
 from marvin import config
 
 # Query Parameter Datamodel

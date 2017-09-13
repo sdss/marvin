@@ -32,7 +32,7 @@ import marvin.utils.plot.map
 from marvin.utils.general.general import add_doc
 
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.dap.datamodel.base import Property
+from marvin.utils.datamodel.dap.base import Property
 
 try:
     import sqlalchemy

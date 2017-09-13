@@ -32,8 +32,8 @@ import marvin.utils.general.general
 import marvin.utils.dap.bpt
 import six
 
-from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel.base import Property, Channel
+from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap.base import Property, Channel
 
 try:
     import sqlalchemy
