@@ -57,7 +57,7 @@ travis = None
 class TravisSubset(object):
     def __init__(self):
         self.new_gals = ['8485-1901']
-        self.new_releases = ['MPL-5']
+        self.new_releases = ['MPL-6']
         self.new_bintypes = ['SPX']  # ['SPX', 'VOR10', 'NONE', 'STON']
         self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
         self.new_dbs = ['nodb']

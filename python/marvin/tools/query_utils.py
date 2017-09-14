@@ -299,6 +299,7 @@ class QueryParameter(object):
         self.remote = remote
         self.value = kwargs.get('value', None)
         self.group = kwargs.get('group', None)
+        self.schema = kwargs.get('schema', None)
         self._set_names()
         self._check_datamodels()
 
@@ -310,8 +311,11 @@ class QueryParameter(object):
         ''' Sets alternate names if it can '''
         self._under = self.full.replace('.', '_')
         if not self.table or not self.name:
-            if '.' in self.full:
+            if self.full.count('.') == 1:
                 self.table, self.name = self.full.split('.')
+            elif self.full.count('.') == 2:
+                self.schema, self.table, self.name = self.full.split('.')
+                self.full = '{0}.{1}'.format(self.table, self.name)
             else:
                 self.name = self.full
         if not self.short:

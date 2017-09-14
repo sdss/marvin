@@ -299,8 +299,7 @@ class MarvinConfig(object):
 
         # Check the versioning config
         if not self.release:
-            #topkey = list(self._mpldict)[0]
-            topkey = 'MPL-5'
+            topkey = list(self._mpldict)[0]
             log.info('No release version set. Setting default to {0}'.format(topkey))
             self.release = topkey
 

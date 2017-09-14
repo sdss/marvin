@@ -28,7 +28,8 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 import re
 import warnings
 
-# flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT; need some kind of toggle for web version and not???
+# flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT;
+# need some kind of toggle for web version and not???
 if config._inapp:
     from flask_wtf import Form
 else:
@@ -46,18 +47,25 @@ BaseModelForm = model_form_factory(Form)
 
 
 class ModelForm(BaseModelForm):
-    ''' sub class a new ModelForm so it works with Flask-WTF in APP mode;  for auto CSRF tokens...who knows...'''
+    ''' sub class a new WTF ModelForm so it works with Flask-WTF in APP mode;
+    for auto CSRF tokens...who knows...
+    '''
     @classmethod
     def get_session(self):
         return marvindb.session
 
-''' Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class ; '''
+# Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class
 modelclasses = marvindb.buildUberClassDict()
 
 
-# class factory
+# Class factory
 def formClassFactory(name, model, baseclass):
-    ''' Generates a new WTForm class based on SQLalchemy model class.  Each class contains as attributes
+    ''' Generates a new WTForm Class based on SQLalchemy Model Class.
+
+    Subclasses a base WTF Form class that also contains the SQLAlchemy
+    Model Class information inside it.
+
+    Each class contains as attributes:
         Meta = a class called Meta.  Meta.model contains the SQLalchemy ModelClass
         data = a dictionary of parameters: form input that gets mapped to the sqlalchemy parameter
         errors = a dictionary of errors returned by invalid form validation
@@ -67,13 +75,25 @@ def formClassFactory(name, model, baseclass):
         e.g.
         The ModelClass IFUDesign mapped to mangadatadb.ifu_design sql table gets transformed into
         WTForm IFUDesignForm, with IFUDesignForm.Meta.model = marvin.db.models.DataModelClasses.IFUDesign
+
+    Parameters:
+        name (str):
+            The name of the Form Class
+        mdoel (class):
+            The SQLAlchemy Model Class
+        baseclass (class):
+            The base class to sub class from
+
+    Returns:
+        the new WTF form subclass
     '''
 
     Meta = type('Meta', (object,), {'model': model})
     newclass = type(name, (baseclass,), {'Meta': Meta})
     return newclass
 
-# build a wtform select field for operators; tested but no longer used ; can't seem to attach operator field to every individual parameter
+# build a wtform select field for operators; tested but no longer used
+# can't seem to attach operator field to every individual parameter
 opdict = {'le': '<=', 'ge': '>=', 'gt': '>', 'lt': '<', 'ne': '!=', 'eq': '='}
 ops = [(key, val) for key, val in opdict.items()]
 # operator = SelectField(u'Operator', choices=ops)
@@ -313,9 +333,12 @@ class MarvinForm(object):
     ''' Core Marvin Form object. '''
 
     def __init__(self, *args, **kwargs):
-        ''' Initialize the obect.  On init, generates all the WTForms from the ModelClasses.
+        ''' Initializes a Marvin Form
 
-        _param_form_lookup = dictionary of all modelclass parameters of form {'SQLalchemy ModelClass parameter name': WTForm Class}
+        Generates all the WTForms from the SQLAlchemy ModelClasses defined in the MaNGA DB.
+
+        _param_form_lookup = dictionary of all modelclass parameters
+        of form {'SQLalchemy ModelClass parameter name': WTForm Class}
         '''
 
         self._release = kwargs.get('release', config.release)
@@ -327,6 +350,11 @@ class MarvinForm(object):
         self._generateFxns()
         self.SearchForm = SearchForm
         self._cleanParams(**kwargs)
+
+    def __repr__(self):
+        nforms = len([f for f in self.__dict__.keys() if 'Form' in f])
+        return ('<MarvinForm (release={0._release}, n_parameters={1}, n_functions={2}, '
+                'n_forms={3})>'.format(self, len(self._param_form_lookup), len(self._param_fxn_lookup), nforms))
 
     def _generateFormClasses(self, classes):
         ''' Loops over all ModelClasses and generates a new WTForm class.  New form classes are named as [ModelClassName]Form.
