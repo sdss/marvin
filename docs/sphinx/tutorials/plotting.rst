@@ -306,15 +306,16 @@ Custom Values and Custom Mask
     ha = maps['emline_gflux_ha_6564']
 
     # Mask spaxels without IFU coverage
-    nocov = ha.mask & 2**0
+    # nocov = ha.mask & 2**0
+    nocov = ha.get_mask('NOCOV')
 
-    # Mask spaxels with low Halpha flux (need to assign bit 30)
+    # Mask spaxels with low Halpha flux
     low_ha = (ha.value < 6) * 2**30
     
     # Combine masks using bitwise OR (`|`)
     mask = nocov | low_ha
 
-    fig, ax = mapplot.plot(value=ha.value, mask=mask)
+    fig, ax = mapplot.plot(value=ha.value, mask=mask, use_masks=) # TODO mask_nocov requires dapmap or ivar
 
 .. image:: ../_static/custom_mask.png
 
