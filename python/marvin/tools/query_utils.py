@@ -78,6 +78,11 @@ class ParameterGroupList(list):
         ''' List all the queryable parameters '''
         return [param for group in self for param in group]
 
+    @property
+    def groups(self):
+        ''' List all the parameter groups '''
+        return self.list_groups()
+
     def list_groups(self):
         '''Returns a list of query groups.
 
@@ -161,11 +166,14 @@ class ParameterGroup(list):
         list.__init__(self, queryparams)
         self._check_names()
 
+    # def __repr__(self):
+    #     old = list.__repr__(self)
+    #     old = old.replace('>,', '>,\n')
+    #     return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
+    #             '{2}'.format(self, len(self), old))
+
     def __repr__(self):
-        old = list.__repr__(self)
-        old = old.replace('>,', '>,\n')
-        return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
-                '{2}'.format(self, len(self), old))
+        return '<ParameterGroup name={0.name}, n_parameters={1}>'.format(self, len(self))
 
     @property
     def full(self):

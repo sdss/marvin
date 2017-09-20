@@ -23,6 +23,7 @@ from astropy import units as u
 
 from marvin.core.exceptions import MarvinError, MarvinNotImplemented
 from marvin.utils.general.structs import get_best_fuzzy
+from marvin.utils.datamodel import DataModelList
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
@@ -30,49 +31,6 @@ __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property'
 
 
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
-
-
-class DAPDataModelList(OrderedDict):
-    """A dictionary of DAP datamodels."""
-
-    def __init__(self, models=None):
-
-        if models is not None:
-            assert all([isinstance(model, DAPDataModel) for model in models]), \
-                'values must be DAPDataModel instances.'
-            OrderedDict.__init__(self, ((model.release, model) for model in models))
-        else:
-            OrderedDict.__init__(self, {})
-
-    def __setitem__(self, key, value):
-        """Sets a new datamodel."""
-
-        assert isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
-
-        super(DAPDataModelList, self).__setitem__(key, value)
-
-    def __getitem__(self, release):
-        """Returns model based on release and aliases."""
-
-        if release in self.keys():
-            return super(DAPDataModelList, self).__getitem__(release)
-
-        for model in self.values():
-            if release in model.aliases:
-                return model
-
-        raise KeyError('cannot find release or alias {0!r}'.format(release))
-
-    def __repr__(self):
-
-        return repr([xx for xx in self.values()])
-
-    def add_datamodel(self, dm):
-        """Adds a new datamodel. Uses its release as key."""
-
-        assert isinstance(dm, DAPDataModel), 'value must be a DAPDataModel'
-
-        self[dm.release] = dm
 
 
 class DAPDataModel(object):
@@ -374,6 +332,11 @@ class DAPDataModel(object):
             return
 
         return model_table
+
+
+class DAPDataModelList(DataModelList):
+    """A dictionary of DAP datamodels."""
+    base = {'DAPDataModel': DAPDataModel}
 
 
 class Bintype(object):

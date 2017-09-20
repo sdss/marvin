@@ -64,6 +64,17 @@ def remote_mode_only(fxn):
     return wrapper
 
 
+class ColumnGroup(ParameterGroup):
+    ''' Subclass of Parameter Group '''
+
+    def __repr__(self):
+        ''' New repr for the Results Column Parameter Group '''
+        old = list.__repr__(self)
+        old = old.replace('>,', '>,\n')
+        return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
+                '{2}'.format(self, len(self), old))
+
+
 def marvintuple(name, params=None, **kwargs):
     ''' Custom namedtuple class factory for Marvin Results rows
 
@@ -199,7 +210,7 @@ class ResultSet(list):
         if self.index == other.index:
             # column-wise add
             newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-            newcols = ParameterGroup('Columns', newcols)
+            newcols = ColumnGroup('Columns', newcols)
             newresults.columns = newcols
             new_set = map(add, self, other)
         else:
@@ -808,7 +819,7 @@ class Results(object):
 
         '''
         try:
-            self.columns = ParameterGroup('Columns', self._params)
+            self.columns = ColumnGroup('Columns', self._params)
         except Exception as e:
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
