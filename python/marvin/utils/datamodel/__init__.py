@@ -6,24 +6,25 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 10:31:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-20 16:49:11
+# @Last Modified time: 2017-09-20 16:57:51
 
 from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
+from six import with_metaclass
 
 
 class MetaDataModel(type):
     ''' MetaClass to construct a new DataModelList class '''
     def __new__(cls, name, parents, dict):
         if 'base' in dict:
-            dict['base_name'] = dict['base'].items()[0][0].strip()
-            dict['base_model'] = dict['base'].items()[0][1]
+            item = dict['base'].items()[0]
+            dict['base_name'] = item[0].strip()
+            dict['base_model'] = item[1]
         return super(MetaDataModel, cls).__new__(cls, name, parents, dict)
 
 
-class DataModelList(OrderedDict):
+class DataModelList(with_metaclass(MetaDataModel, OrderedDict)):
     ''' Base Class for a list of DataModels '''
-    __metaclass__ = MetaDataModel
 
     def __init__(self, models=None):
 
