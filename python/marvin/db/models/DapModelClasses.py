@@ -361,6 +361,14 @@ class RedCorr(Base):
         return '<RedCorr (pk={0}, modelcube={1})'.format(self.pk, self.modelcube_pk)
 
 
+class DapAll(Base):
+    __tablename__ = 'dapall'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    def __repr__(self):
+        return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
+
+
 # Now we create the remaining tables.
 insp = inspect(db.engine)
 schemaName = 'mangadapdb'
@@ -396,6 +404,7 @@ Hdu.exttype = relationship(ExtType, backref='hdus')
 Hdu.extcols = relationship(ExtCol, secondary=HduToExtCol.__table__, backref='hdus')
 Hdu.header_values = relationship(HeaderValue, secondary=HduToHeaderValue.__table__, backref='hdus')
 HeaderValue.keyword = relationship(HeaderKeyword, backref='values')
+DapAll.file = relationship(File, uselist=False, backref='dapall')
 
 Structure.executionplan = relationship(ExecutionPlan, backref='structures')
 Structure.binmode = relationship(BinMode, backref='structures')

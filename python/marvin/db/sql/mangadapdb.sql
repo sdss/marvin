@@ -66,6 +66,8 @@ create table mangadapdb.modelspaxel (pk serial primary key not null, flux real[]
 
 create table mangadapdb.redcorr (pk serial primary key not null, value double precision[], modelcube_pk integer);
 
+create table mangadapdb.dapall (pk serial primary key not null, file_pk integer);
+
 ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT cube_fk
     FOREIGN KEY (cube_pk) REFERENCES mangadatadb.cube(pk)
@@ -199,6 +201,11 @@ ALTER TABLE ONLY mangadapdb.spaxelprop6
 ALTER TABLE ONLY mangadapdb.spaxelprop6
     ADD CONSTRAINT binid_fk
     FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.dapall
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);
