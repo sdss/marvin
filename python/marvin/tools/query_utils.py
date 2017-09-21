@@ -68,10 +68,10 @@ class ParameterGroupList(list):
     def __init__(self, items):
         self.score = None
         if isinstance(items, list):
-            list.__init__(self, items)
+            paramgroups = [ParameterGroup(item, []) for item in items]
         elif isinstance(items, dict):
             paramgroups = [ParameterGroup(key, vals) for key, vals in items.items()]
-            list.__init__(self, paramgroups)
+        list.__init__(self, paramgroups)
 
     @property
     def parameters(self):
@@ -92,7 +92,7 @@ class ParameterGroupList(list):
         '''
         return [group.name for group in self]
 
-    def list_params(self, groups=None, name_type='full'):
+    def list_params(self, name_type='full', groups=None):
         '''Returns a list of parameters from all groups.
 
         Return a string list of the full parameter names.
