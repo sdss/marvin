@@ -6,11 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 15:14:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-20 15:15:44
+# @Last Modified time: 2017-09-26 10:06:53
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel
-from marvin.utils.datamodel.query.MPL5 import GROUPS, EXCLUDE
+import copy
+from marvin.utils.datamodel.query.base import query_params
+from marvin.utils.datamodel.query.MPL5 import EXCLUDE
+
+GROUPS = copy.deepcopy(query_params)
 
 # list of tables to exclude
 EXCLUDE = set(EXCLUDE) - set(['obsinfo', 'dapall'])

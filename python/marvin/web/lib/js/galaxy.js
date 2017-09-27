@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-04-09 08:58:10
+* @Last Modified time: 2017-09-27 13:49:19
 */
 
 //
@@ -181,6 +181,7 @@ var Galaxy = function () {
             if (status !== undefined && status === -1) {
                 this.specmsg.show();
             }
+            specmsg = specmsg.replace('<', '').replace('>', '');
             var newmsg = '<strong>' + specmsg + '</strong>';
             this.specmsg.empty();
             this.specmsg.html(newmsg);
@@ -208,9 +209,7 @@ var Galaxy = function () {
     }, {
         key: 'initHeatmap',
         value: function initHeatmap(maps) {
-            console.log('initHeatmap', this.mapsdiv);
             var mapchildren = this.mapsdiv.children('div');
-            console.log('mapchildren', mapchildren);
             var _this = this;
             $.each(mapchildren, function (index, child) {
                 var mapdiv = $(child).find('div').first();
@@ -306,6 +305,7 @@ var Galaxy = function () {
     }, {
         key: 'initDynamic',
         value: function initDynamic(event) {
+            var _this5 = this;
 
             var _this = event.data;
 
@@ -328,34 +328,35 @@ var Galaxy = function () {
                     var form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
                     _this.toggleload.show();
 
-                    $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json').done(function (data) {
+                    // send the form data
+                    Promise.resolve($.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')).then(function (data) {
+                        if (data.result.error) {
+                            var err = data.result.error;
+                            throw new SpaxelError('Error : ' + err);
+                        }
+                        if (data.result.specstatus === -1) {
+                            throw new SpaxelError('Error: ' + data.result.specmsg);
+                        }
+                        if (data.result.mapstatus === -1) {
+                            throw new MapError('Error: ' + data.result.mapmsg);
+                        }
+
                         var image = data.result.image;
                         var spaxel = data.result.spectra;
                         var spectitle = data.result.specmsg;
                         var maps = data.result.maps;
                         var mapmsg = data.result.mapmsg;
-
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
 
-                        // Try to load the spaxel
-                        if (data.result.specstatus !== -1) {
-                            _this.loadSpaxel(spaxel, spectitle);
-                        } else {
-                            _this.updateSpecMsg('Error: ' + spectitle, data.result.specstatus);
-                        }
-
-                        // Try to load the Maps
-                        if (data.result.mapstatus !== -1) {
-                            _this.initHeatmap(maps);
-                        } else {
-                            _this.updateMapMsg('Error: ' + mapmsg, data.result.mapstatus);
-                        }
-                    }).fail(function (data) {
-                        _this.updateSpecMsg('Error: ' + data.result.specmsg, data.result.specstatus);
-                        _this.updateMapMsg('Error: ' + data.result.mapmsg, data.result.mapstatus);
-                        _this.toggleload.hide();
+                        // Load the Spaxel and Maps
+                        _this.loadSpaxel(spaxel, spectitle);
+                        _this.initHeatmap(maps);
+                    }).catch(function (error) {
+                        var errmsg = error.message === undefined ? _this5.makeError('initDynamic') : error.message;
+                        _this.updateSpecMsg(errmsg, -1);
+                        _this.updateMapMsg(errmsg, -1);
                     });
                 }
             }
@@ -424,6 +425,7 @@ var Galaxy = function () {
             if (status !== undefined && status === -1) {
                 this.mapmsg.show();
             }
+            mapmsg = mapmsg.replace('<', '').replace('>', '');
             var newmsg = '<strong>' + mapmsg + '</strong>';
             this.mapmsg.empty();
             this.mapmsg.html(newmsg);
@@ -507,7 +509,7 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            var _this5 = this;
+            var _this6 = this;
 
             var data = void 0,
                 options = void 0;
@@ -522,17 +524,17 @@ var Galaxy = function () {
                     yrev: yrev };
             } else if (type === 'sample') {
                 (function () {
-                    var x = _this5.nsasample[_this5.nsachoices[index].x];
-                    var y = _this5.nsasample[_this5.nsachoices[index].y];
+                    var x = _this6.nsasample[_this6.nsachoices[index].x];
+                    var y = _this6.nsasample[_this6.nsachoices[index].y];
                     data = [];
                     $.each(x, function (index, value) {
                         if (value > -9999 && y[index] > -9999) {
-                            var tmp = { 'name': _this5.nsasample.plateifu[index], 'x': value, 'y': y[index] };
+                            var tmp = { 'name': _this6.nsasample.plateifu[index], 'x': value, 'y': y[index] };
                             data.push(tmp);
                         }
                     });
-                    options = { xtitle: _this5.nsachoices[index].xtitle, ytitle: _this5.nsachoices[index].ytitle,
-                        title: _this5.nsachoices[index].title, altseries: { name: 'Sample' } };
+                    options = { xtitle: _this6.nsachoices[index].xtitle, ytitle: _this6.nsachoices[index].ytitle,
+                        title: _this6.nsachoices[index].title, altseries: { name: 'Sample' } };
                 })();
             }
             return [data, options];
@@ -543,24 +545,24 @@ var Galaxy = function () {
     }, {
         key: 'setTableEvents',
         value: function setTableEvents() {
-            var _this6 = this;
+            var _this7 = this;
 
             var tabledata = this.nsatable.bootstrapTable('getData');
 
             $.each(this.nsamovers, function (index, mover) {
                 var id = mover.id;
-                $('#' + id).on('dragstart', _this6, _this6.dragStart);
-                $('#' + id).on('dragover', _this6, _this6.dragOver);
-                $('#' + id).on('drop', _this6, _this6.moverDrop);
+                $('#' + id).on('dragstart', _this7, _this7.dragStart);
+                $('#' + id).on('dragover', _this7, _this7.dragOver);
+                $('#' + id).on('drop', _this7, _this7.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
                     var id = $(mover).attr('id');
-                    $('#' + id).on('dragstart', _this6, _this6.dragStart);
-                    $('#' + id).on('dragover', _this6, _this6.dragOver);
-                    $('#' + id).on('drop', _this6, _this6.moverDrop);
+                    $('#' + id).on('dragstart', _this7, _this7.dragStart);
+                    $('#' + id).on('dragover', _this7, _this7.dragOver);
+                    $('#' + id).on('drop', _this7, _this7.moverDrop);
                 });
             });
         }
@@ -570,7 +572,7 @@ var Galaxy = function () {
     }, {
         key: 'addNSAEvents',
         value: function addNSAEvents() {
-            var _this7 = this;
+            var _this8 = this;
 
             //let _this = this;
             // NSA plot events
@@ -580,12 +582,12 @@ var Galaxy = function () {
                 var highx = $('#' + id).find('.highcharts-xaxis');
                 var highy = $('#' + id).find('.highcharts-yaxis');
 
-                highx.on('dragover', _this7, _this7.dragOver);
-                highx.on('dragenter', _this7, _this7.dragEnter);
-                highx.on('drop', _this7, _this7.dropElement);
-                highy.on('dragover', _this7, _this7.dragOver);
-                highy.on('dragenter', _this7, _this7.dragEnter);
-                highy.on('drop', _this7, _this7.dropElement);
+                highx.on('dragover', _this8, _this8.dragOver);
+                highx.on('dragenter', _this8, _this8.dragEnter);
+                highx.on('drop', _this8, _this8.dropElement);
+                highy.on('dragover', _this8, _this8.dragOver);
+                highy.on('dragenter', _this8, _this8.dragEnter);
+                highy.on('drop', _this8, _this8.dropElement);
             });
         }
 
@@ -616,12 +618,12 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
-            var _this8 = this;
+            var _this9 = this;
 
             var data = [];
             this.nsaplotcols.forEach(function (column, index) {
-                var goodsample = _this8.nsasample[column].filter(_this8.filterArray);
-                var tmp = { 'value': _this8.mygalaxy[column], 'title': column, 'sample': goodsample };
+                var goodsample = _this9.nsasample[column].filter(_this9.filterArray);
+                var tmp = { 'value': _this9.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -660,7 +662,7 @@ var Galaxy = function () {
     }, {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
-            var _this9 = this;
+            var _this10 = this;
 
             // only update the single parent div element
             if (parentid !== undefined) {
@@ -690,14 +692,14 @@ var Galaxy = function () {
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _updateNSAData5 = _this9.updateNSAData(index + 1, 'galaxy');
+                    var _updateNSAData5 = _this10.updateNSAData(index + 1, 'galaxy');
 
                     var _updateNSAData6 = _slicedToArray(_updateNSAData5, 2);
 
                     var data = _updateNSAData6[0];
                     var options = _updateNSAData6[1];
 
-                    var _updateNSAData7 = _this9.updateNSAData(index + 1, 'sample');
+                    var _updateNSAData7 = _this10.updateNSAData(index + 1, 'sample');
 
                     var _updateNSAData8 = _slicedToArray(_updateNSAData7, 2);
 
@@ -705,7 +707,7 @@ var Galaxy = function () {
                     var soptions = _updateNSAData8[1];
 
                     options.altseries = { data: sdata, name: 'Sample' };
-                    _this9.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                    _this10.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
         }

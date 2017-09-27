@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+# Licensed under a 3-clause BSD license.
+#
+
 from __future__ import print_function
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 from marvin.tools.cube import Cube
@@ -5,11 +11,12 @@ from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
-from marvin.tools.forms import MarvinForm
-from marvin.tools.query_utils import ParameterGroup, query_params
+from marvin.tools.query_utils import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, parseIdentifier, map_bins_to_column
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
 from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
+import marvin.utils.plot.scatter
 from operator import add
 import warnings
 import json
@@ -21,9 +28,7 @@ import copy
 from fuzzywuzzy import process
 from functools import wraps
 from astropy.table import Table, vstack, hstack
-from collections import OrderedDict, namedtuple
-from marvin.core import marvin_pickle
-import marvin.utils.plot.scatter
+from collections import namedtuple
 
 try:
     import cPickle as pickle

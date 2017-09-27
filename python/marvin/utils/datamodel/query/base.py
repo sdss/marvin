@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-21 16:23:38
+# @Last Modified time: 2017-09-26 15:50:45
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.forms import MarvinForm
@@ -44,8 +44,8 @@ class QueryDataModel(object):
 
     def __repr__(self):
 
-        return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}>'
-                .format(self.release, len(self.groups), len(self.keys)))
+        return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}, n_total={3}>'
+                .format(self.release, len(self.groups), len(self.parameters), len(self._keys)))
 
     def _cleanup_keys(self):
         ''' Cleans up the list for MarvinForm keys '''
@@ -70,10 +70,10 @@ class QueryDataModel(object):
 
         # final sort and set
         newkeys.sort()
-        self.keys = newkeys
+        self._keys = newkeys
 
-        # set parameters
-        self._parameters = [QueryParameter(k) for k in self.keys]
+        # # set parameters
+        # self._parameters = [QueryParameter(k) for k in self._keys]
 
     @property
     def groups(self):
@@ -96,15 +96,48 @@ class QueryDataModel(object):
 
     @property
     def parameters(self):
-        return self._parameters
+        return sum([g.parameters for g in self.groups if g.name.lower() != 'other'], [])
 
-    def add_to_group(self, group, value):
+    def add_to_group(self, group, value=None):
         ''' Add free-floating Parameters into a Group '''
-        pass
+
+        thegroup = self._groups == group
+        keys = []
+        allkeys = copy_mod.copy(self._keys)
+        if value is None:
+            allkeys = []
+            keys.extend(self._keys)
+        else:
+            for k in self._keys:
+                if value in k:
+                    mykey = allkeys.pop(allkeys.index(k))
+                    if k not in thegroup.full:
+                        keys.append(mykey)
+        self._keys = allkeys
+        thegroup.add_parameters(keys)
 
     def regroup(self, values):
         ''' Regroup a set of parameters into groups '''
-        pass
+        for group, value in values.items():
+            if isinstance(value, list):
+                for v in value:
+                    self.add_to_group(group, v)
+            else:
+                self.add_to_group(group, value)
+
+    @property
+    def best(self):
+        return [p for p in self.parameters if p.best is True]
+
+    def set_best(self, best):
+        ''' sets a list of best query parameters '''
+        for b in best:
+            if isinstance(b, QueryParameter):
+                b.best = True
+            elif isinstance(b, six.string_types):
+                for i, p in enumerate(self.parameters):
+                    if b == p.full:
+                        self.parameters[i].best = True
 
 
 class QueryDataModelList(DataModelList):
@@ -150,18 +183,19 @@ class ParameterGroupList(list):
 
     '''
 
-    def __init__(self, items):
+    def __init__(self, items, best=None):
         self.score = None
+        self.best = best
         paramgroups = self._make_groups(items)
         list.__init__(self, paramgroups)
 
     def _make_groups(self, items):
         if isinstance(items, list):
-            paramgroups = [ParameterGroup(item, []) for item in items]
+            paramgroups = [ParameterGroup(item, [], best=self.best) for item in items]
         elif isinstance(items, dict):
-            paramgroups = [ParameterGroup(key, vals) for key, vals in items.items()]
+            paramgroups = [ParameterGroup(key, vals, best=self.best) for key, vals in items.items()]
         elif isinstance(items, six.string_types):
-            paramgroups = ParameterGroup(items, [])
+            paramgroups = ParameterGroup(items, [], best=self.best)
         return paramgroups
 
     def set_parent(self, parent):
@@ -270,7 +304,6 @@ class ParameterGroupList(list):
             return super(ParameterGroupList, self).pop(idx)
 
     def remove(self, value):
-        ''' This is oddly written because the proper way is broken '''
         param = value == self
         tmp = [n for n in self if n != param]
         list.__init__(self, tmp)
@@ -291,8 +324,9 @@ class ParameterGroup(list):
             each name will be used as the full name.
 
     '''
-    def __init__(self, name, items):
+    def __init__(self, name, items, best=None):
         self.name = name
+        self.best = best
         self.score = None
 
         queryparams = []
@@ -315,13 +349,13 @@ class ParameterGroup(list):
     def _make_query_parameter(self, item):
         ''' Create and return a QueryParameter '''
         if isinstance(item, dict):
-            item.update({'group': self.name})
+            item.update({'group': self.name, 'best': self.best})
             this_param = QueryParameter(**item)
         elif isinstance(item, six.string_types):
             is_best = [p for p in query_params.parameters if item in p.full and (item == p.name or item == p.full)]
             if is_best:
                 best_dict = is_best[0].__dict__
-                best_dict.update({'group': self.name})
+                best_dict.update({'group': self.name, 'best': self.best})
                 this_param = QueryParameter(**best_dict)
             else:
                 this_param = QueryParameter(item, group=self.name)
@@ -367,7 +401,7 @@ class ParameterGroup(list):
     def add_parameters(self, values, copy=True):
         ''' '''
         for value in values:
-            self.add_group(value, copy=copy)
+            self.add_parameter(value, copy=copy)
 
     def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
         ''' List the parameter names for a given group
@@ -484,6 +518,7 @@ class QueryParameter(object):
         self.value = kwargs.get('value', None)
         self.group = kwargs.get('group', None)
         self.schema = kwargs.get('schema', None)
+        self.best = kwargs.get('best', None)
         self._set_names()
         self._check_datamodels()
 
@@ -533,7 +568,7 @@ def get_params():
         return None
 
 bestparams = get_params()
-query_params = ParameterGroupList(bestparams)
+query_params = ParameterGroupList(bestparams, best=True)
 
 
 

@@ -63,9 +63,9 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
 
         # make input array for Dygraph
         if not isinstance(modelfit, type(None)):
-            webspec = [[wave[i], [s, error[i]], [modelfit[i], 0.0]] for i, s in enumerate(spaxel.spectrum.flux)]
+            webspec = [[wave[i].value, [s.value, error[i]], [modelfit[i], 0.0]] for i, s in enumerate(spaxel.spectrum)]
         else:
-            webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spaxel.spectrum.flux)]
+            webspec = [[wave[i].value, [s.value, error[i]]] for i, s in enumerate(spaxel.spectrum)]
 
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
@@ -299,7 +299,7 @@ class Galaxy(BaseWebView):
 
                 self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>spec = \
-                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum.flux<br>ivar = \
+                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum<br>ivar = \
                     spectrum.ivar<br>mask = spectrum.mask<br>spec.plot()<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.maps import Maps<br>maps = \
@@ -363,7 +363,13 @@ class Galaxy(BaseWebView):
         output['dapbintemps'] = dm.get_bintemps()
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
-        return jsonify(result=output)
+        # try to jsonify the result
+        try:
+            jsonout = jsonify(result=output)
+        except Exception as e:
+            jsonout = jsonify(result={'specstatus': -1, 'mapstatus': -1, 'error': '{0}'.format(e)})
+
+        return jsonout
 
     @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
