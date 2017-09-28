@@ -11,7 +11,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
-from marvin.tools.query_utils import ParameterGroup
+from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
 from marvin.api.api import Interaction

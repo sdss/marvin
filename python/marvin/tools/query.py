@@ -17,11 +17,10 @@ from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.results import Results
 from marvin.utils.datamodel.query import datamodel
-from marvin.utils.datamodel.query.forms import MarvinForm
+from marvin.utils.datamodel.query.base import query_params
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 from marvin.tools.results import remote_mode_only
-from marvin.tools.query_utils import query_params
 from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
 from sqlalchemy.dialects import postgresql
@@ -454,6 +453,7 @@ class Query(object):
 
         '''
         self.session = None
+        self.datamodel = None
         self.marvinform = None
         self.myforms = None
         self._modelgraph = None
@@ -507,7 +507,10 @@ class Query(object):
         obj = marvin_pickle.restore(path, delete=delete)
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
-        obj.marvinform = MarvinForm(allspaxels=obj.allspaxels, release=obj._release)
+        obj.datamodel = datamodel[obj._release]
+        if obj.allspaxels:
+            obj.datamodel.use_all_spaxels()
+        obj.marvinform = obj.datamodel._marvinform
         return obj
 
     def set_filter(self, searchfilter=None):

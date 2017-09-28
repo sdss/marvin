@@ -6,10 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-22 22:38:05
+# @Last Modified time: 2017-09-28 17:16:51
 
 from __future__ import print_function, division, absolute_import
-from marvin.tools.query_utils import query_params, QueryParameter
+from marvin.utils.datamodel.query.base import query_params, QueryParameter
 import pytest
 import itertools
 

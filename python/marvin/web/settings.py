@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-03 21:04:17
+# @Last Modified time: 2017-09-28 17:00:39
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -22,7 +22,7 @@ class Config(object):
     ASSETS_DEBUG = False
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-    CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
+    CACHE_TYPE = 'memcached'  # Can be "memcached", "redis", etc.
     MAIL_SERVER = ''
     MAIL_PORT = 587
     MAIL_USE_SSL = False

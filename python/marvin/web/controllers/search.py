@@ -16,10 +16,10 @@ from flask_classy import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query
-from marvin.tools.forms import MarvinForm
+from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
-from marvin.tools.query_utils import query_params, bestparams
+from marvin.utils.datamodel.query.base import query_params, bestparams
 from wtforms import validators, ValidationError
 from marvin.utils.general import getImagesByList
 from marvin.web.web_utils import buildImageDict

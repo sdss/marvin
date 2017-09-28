@@ -6,13 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-13 15:54:13
+# @Last Modified time: 2017-09-28 17:15:00
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
 from marvin.utils.datamodel.dap import datamodel
 from marvin.core.exceptions import MarvinUserWarning
-from marvin.tools.query_utils import QueryParameter
+from marvin.utils.datamodel.query.base import QueryParameter
 from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general import invalidArgs, isCallableWithArgs
 from matplotlib.gridspec import GridSpec

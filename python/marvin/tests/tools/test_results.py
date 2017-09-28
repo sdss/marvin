@@ -15,7 +15,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
-from marvin.tools.query_utils import ParameterGroup, query_params
+from marvin.utils.datamodel.query.base import ParameterGroup, query_params
 from marvin import config
 from marvin.core.exceptions import MarvinError
 from collections import OrderedDict, namedtuple
