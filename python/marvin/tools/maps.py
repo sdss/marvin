@@ -450,7 +450,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         kwargs['cube'] = self.cube if spectrum else False
         kwargs['maps'] = self.get_unbinned()
-        kwargs['modelcube'] = modelcube if _is_MPL4(self._dapver) else False
+        kwargs['modelcube'] = modelcube if not _is_MPL4(self._dapver) else False
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 

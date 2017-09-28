@@ -111,7 +111,7 @@ class MarvinToolsClass(object):
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
-        self._set_datamodel()
+        self._set_datamodel(**kwargs)
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),

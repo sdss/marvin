@@ -37,7 +37,7 @@ class TestModelCubeInit(object):
         assert model_cube._release == galaxy.release
         assert model_cube._drpver == galaxy.drpver
         assert model_cube._dapver == galaxy.dapver
-        assert model_cube.bintype == bintype if bintype else galaxy.bintype
+        assert model_cube.bintype.name == bintype if bintype else galaxy.bintype.name
         assert model_cube.template == template if template else galaxy.template
         assert model_cube.plateifu == galaxy.plateifu
         assert model_cube.mangaid == galaxy.mangaid
@@ -70,7 +70,7 @@ class TestModelCubeInit(object):
         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
     def test_init_modelcube_bintype(self, galaxy, data_origin):
-        kwargs = {'bintype': galaxy.bintype}
+        kwargs = {'bintype': galaxy.bintype.name}
         if data_origin == 'file':
             kwargs['filename'] = galaxy.modelpath
         elif data_origin == 'db':
@@ -81,7 +81,7 @@ class TestModelCubeInit(object):
 
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
-        self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
+        self._test_init(model_cube, galaxy, bintype=galaxy.bintype.name)
 
 
 class TestModelCube(object):

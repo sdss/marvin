@@ -195,18 +195,21 @@ Custom Spectrum and Model Fit
     from marvin.tools.maps import Maps
     plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
 
-    maps = Maps(mangaid='1-22301')
-    spax = maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
+    maps = Maps(mangaid='1-209232')
+    spax = maps.getSpaxel(x=0, y=0, xyorig='center', modelcube=True)
 
     fig, ax = plt.subplots()
-    pObs = ax.plot(spax.spectrum.wavelength, spax.spectrum.flux)
-    pModel = ax.plot(spax.spectrum.wavelength, spax.model.flux)
-    ax.axis([7100, 7500, 0.3, 0.65])
-    plt.legend(pObs + pModel, ['observed', 'model'])
-    ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength_unit))
-    ax.set_ylabel('flux [{}]'.format(spax.spectrum.units))
 
-.. image:: ../_static/spec_7992-6101.png
+    pObs = ax.plot(spax.spectrum.wavelength, spax.spectrum.value)
+    pModel = ax.plot(spax.spectrum.wavelength, spax.model.value)
+    pEmline = ax.plot(spax.spectrum.wavelength, spax.emline.value)
+    plt.legend(pObs + pEmline + pModel, ['observed', 'emline model', 'model'])
+
+    ax.axis([6700, 7100, -0.1e-17, 3e-17])
+    ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength.unit.to_string('latex')))
+    ax.set_ylabel('flux [{}]'.format(spax.spectrum.unit.to_string('latex')))
+
+.. image:: ../_static/spec_8485-1901.png
 
 
 .. _marvin-plotting-map-starforming:
