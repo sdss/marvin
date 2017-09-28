@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-08-20 23:08:17
+* @Last Modified time: 2017-09-28 13:25:11
 */
 
 //jshint esversion: 6
@@ -13,6 +13,10 @@ class Table {
     // Constructor
     constructor(tablediv) {
         this.setTable(tablediv);
+
+        // Event Handlers
+        this.table.on('load-success.bs.table', this, this.setSuccessMsg);
+        this.table.on('load-error.bs.table', this, this.setErrMsg);
     }
 
     // Print
@@ -25,6 +29,9 @@ class Table {
         if (tablediv !== undefined) {
             console.log('setting the table');
             this.table = tablediv;
+            this.errdiv = this.table.siblings('#errdiv');
+            this.tableerr = this.errdiv.find('#tableerror');
+            this.tableerr.hide();
         }
     }
 
@@ -38,6 +45,8 @@ class Table {
             cols = this.makeColumns(data.columns);
         }
 
+        console.log(data);
+        console.log('cols', cols);
         // init the Bootstrap table
         this.table.bootstrapTable({
             classes: 'table table-bordered table-condensed table-hover',
@@ -59,6 +68,33 @@ class Table {
             sortOrder: 'asc',
             formatNoMatches: ()=>{ return "This table is empty..."; }
         });
+    }
+
+    // update the error div with a message
+    updateMsg(msg) {
+        let errmsg = `<strong>${msg}</strong>`;
+        this.tableerr.html(errmsg);
+        this.tableerr.show();
+    }
+
+    // set a table error message
+    setErrMsg(event, status, res) {
+        let _this = event.data;
+        let extra = '';
+        if (status === 502) {
+            extra = 'bad server response retrieving web table.  likely uncaught error on server side.  check logs.';
+        }
+        let msg = `Status ${status} - ${res.statusText}: ${extra}`;
+        _this.updateMsg(msg);
+    }
+
+    // set a table error message
+    setSuccessMsg(event, data) {
+        let _this = event.data;
+        _this.tableerr.hide();
+        if (data.status === -1) {
+            _this.updateMsg(data.errmsg);
+        }
     }
 
     // make the Table Columns

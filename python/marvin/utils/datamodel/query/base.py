@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-26 15:50:45
+# @Last Modified time: 2017-09-28 13:50:08
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.forms import MarvinForm
@@ -32,7 +32,7 @@ query_params = None
 class QueryDataModel(object):
     """ A class representing a Query datamodel """
 
-    def __init__(self, release, groups=[], aliases=[], exclude=[]):
+    def __init__(self, release, groups=[], aliases=[], exclude=[], **kwargs):
 
         self.release = release
         self._groups = groups
@@ -96,7 +96,7 @@ class QueryDataModel(object):
 
     @property
     def parameters(self):
-        return sum([g.parameters for g in self.groups if g.name.lower() != 'other'], [])
+        return QueryList(sum([g.parameters for g in self.groups if g.name.lower() != 'other'], []))
 
     def add_to_group(self, group, value=None):
         ''' Add free-floating Parameters into a Group '''
@@ -138,6 +138,11 @@ class QueryDataModel(object):
                 for i, p in enumerate(self.parameters):
                     if b == p.full:
                         self.parameters[i].best = True
+
+    def use_all_spaxels(self):
+        ''' Sets the datamodel to use all the spaxels '''
+        self._marvinform = MarvinForm(release=self.release, allspaxels=True)
+        self._cleanup_keys()
 
 
 class QueryDataModelList(DataModelList):
@@ -207,7 +212,7 @@ class ParameterGroupList(list):
     @property
     def parameters(self):
         ''' List all the queryable parameters '''
-        return [param for group in self for param in group]
+        return QueryList([param for group in self for param in group])
 
     @property
     def groups(self):
@@ -440,7 +445,7 @@ class ParameterGroup(list):
         elif remote:
             return [param.remote for param in paramlist]
         else:
-            return [param for param in paramlist]
+            return QueryList([param for param in paramlist])
 
     def __eq__(self, name):
         item = get_best_fuzzy(name, self.full, cutoff=25)
@@ -483,6 +488,37 @@ class ParameterGroup(list):
             if names.count(name) > 1:
                 self[i].remote = self[i]._under
                 self[i].display = '{0} {1}'.format(self[i].table.title(), self[i].display)
+
+
+class QueryList(list):
+    ''' A class for a list of Query Parameters '''
+
+    def __init__(self, items):
+        list.__init__(self, items)
+        self._full = [s.full for s in self]
+        self._remote = [s.remote for s in self]
+
+    def __eq__(self, name):
+        item = get_best_fuzzy(name, self, cutoff=25)
+        if item:
+            return item
+
+    def __contains__(self, name):
+        item = get_best_fuzzy(name, self, cutoff=25)
+        if item:
+            return True
+        else:
+            return False
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            return self == name
+        else:
+            return list.__getitem__(self, name)
+
+    def get_full_from_remote(self, value):
+        ''' Get the full name from the remote name '''
+        return self._full[self._remote.index(value)]
 
 
 class QueryParameter(object):

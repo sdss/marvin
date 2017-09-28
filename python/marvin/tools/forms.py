@@ -189,8 +189,8 @@ class ParamFormLookupDict(dict):
             elif len(matches) == 1:
                 key = matches[0]
             else:
-                raise KeyError('{0} matches multiple parameters \
-                    in the lookup table: {1}'.format(key, ', '.join(matches)))
+                raise KeyError('{0} matches multiple parameters '
+                               'in the lookup table: {1}'.format(key, ', '.join(matches)))
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))

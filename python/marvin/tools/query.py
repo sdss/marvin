@@ -16,8 +16,12 @@ from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchExcepti
 from sqlalchemy import func
 from marvin import config, marvindb
 from marvin.tools.results import Results
-from marvin.tools.forms import MarvinForm
+from marvin.utils.datamodel.query import datamodel
+from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
+from marvin.tools.results import remote_mode_only
+from marvin.tools.query_utils import query_params
 from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
 from sqlalchemy.dialects import postgresql
@@ -30,10 +34,7 @@ import warnings
 import os
 import re
 import six
-from marvin.core import marvin_pickle
 from functools import wraps
-from marvin.tools.results import remote_mode_only
-from marvin.tools.query_utils import query_params
 
 try:
     import cPickle as pickle
@@ -182,6 +183,9 @@ class Query(object):
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
         self.return_all = kwargs.get('return_all', False)
+        self.datamodel = datamodel[self._release]
+        if self.allspaxels:
+            self.datamodel.use_all_spaxels()
         self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
 
         # drop breadcrumb
@@ -893,7 +897,11 @@ class Query(object):
 
         if not isinstance(self.sort, type(None)):
             # set the sort variable ModelClass parameter
-            sortparam = self.marvinform._param_form_lookup.mapToColumn(self.sort)
+            if '.' in self.sort:
+                param = self.datamodel.parameters[str(self.sort)].full
+            else:
+                param = self.datamodel.parameters.get_full_from_remote(self.sort)
+            sortparam = self.marvinform._param_form_lookup.mapToColumn(param)
 
             # If order is specified, then do the sort
             if self.order:

@@ -169,20 +169,35 @@ class Search(BaseWebView):
 
         # exit if no searchvalue is found
         if not searchvalue:
-            output = jsonify({'webtable_error': 'No searchvalue found', 'status': -1})
+            output = jsonify({'errmsg': 'No searchvalue found', 'status': -1})
             return output
 
+        # this is to fix the brokeness with sorting on a table column using remote names
+        print('rp', returnparams, args)
+
         # do query
-        q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
+        try:
+            q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
+        except Exception as e:
+            errmsg = 'Error generating webtable: {0}'.format(e)
+            output = jsonify({'status': -1, 'errmsg': errmsg})
+            return output
+
         # get subset on a given page
-        __results__ = res.getSubset(offset, limit=limit)
-        # get keys
-        cols = res.columns.remote
-        # create output
-        rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
-        output = jsonify(output)
-        return output
+        try:
+            __results__ = res.getSubset(offset, limit=limit)
+        except Exception as e:
+            errmsg = 'Error getting table page: {0}'.format(e)
+            output = jsonify({'status': -1, 'errmsg': errmsg})
+            return output
+        else:
+            # get keys
+            cols = res.columns.remote
+            # create output
+            rows = res.getDictOf(format_type='listdict')
+            output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
+            output = jsonify(output)
+            return output
 
     @route('/postage/', methods=['GET', 'POST'], defaults={'page': 1}, endpoint='postage')
     @route('/postage/<page>/', methods=['GET', 'POST'], endpoint='postage')
