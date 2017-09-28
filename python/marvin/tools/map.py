@@ -537,7 +537,7 @@ class Map(Quantity):
                 Format of output. Allowed options are
                     - ``'name'`` for bit names,
                     - ``'value'`` for bit values, and
-                    - ``'object'`` for .
+                    - ``'object'`` for bit objects.
                 Default is ``'name'``.
 
         Returns:
