@@ -25,6 +25,7 @@ from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
+from marvin.web.extensions import cache
 from marvin.api.base import arg_validate as av
 from marvin.core.caching_query import FromCache
 from marvin.core import marvin_pickle
@@ -457,11 +458,11 @@ class Galaxy(BaseWebView):
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
+    @cache.cached(timeout=300, key_prefix='init_nsa')
     @route('/initnsaplot/', methods=['POST'], endpoint='initnsaplot')
     def init_nsaplot(self):
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         #self._drpver, self._dapver, self._release = parseSession()
-        print('args', args)
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
 
         # get the default nsa choices

@@ -186,7 +186,7 @@ class Query(object):
         self.datamodel = datamodel[self._release]
         if self.allspaxels:
             self.datamodel.use_all_spaxels()
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
+        self.marvinform = self.datamodel._marvinform
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinQuery {0}'.format(self.__class__),

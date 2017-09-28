@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-26 10:06:47
+# @Last Modified time: 2017-09-28 14:16:47
 
 from __future__ import print_function, division, absolute_import
 
@@ -26,6 +26,6 @@ MPL4 = QueryDataModel(release='MPL-4', groups=GROUPS, aliases=['MPL4', 'v1_5_1',
 
 GRPDICT = {'Emission': 'spaxelprop.emline', 'Kinematic': 'spaxelprop.stellar', 'Spectral Indices': 'spaxelprop.specindex', 'NSA Catalog': 'nsa'}
 MPL4.regroup(GRPDICT)
-
-#MPL4.add_group('Other')
+MPL4.add_group('Other')
+MPL4.add_to_group('Other')
 
