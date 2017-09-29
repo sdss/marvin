@@ -173,7 +173,7 @@ class Query(object):
         self._errors = []
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
-        self._returnparams = None
+        self._returnparams = []
         self._caching = kwargs.get('caching', True)
         self.verbose = kwargs.get('verbose', None)
         self.allspaxels = kwargs.get('allspaxels', None)
@@ -213,7 +213,7 @@ class Query(object):
         self.set_defaultparams()
 
         # get user-defined input parameters
-        returnparams = kwargs.get('returnparams', None)
+        returnparams = kwargs.get('returnparams', [])
         if returnparams:
             self.set_returnparams(returnparams)
 

@@ -409,7 +409,7 @@ class Results(object):
         self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
         self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
         self.searchfilter = self._queryobj.searchfilter if self._queryobj else kwargs.get('searchfilter', None)
-        self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', None)
+        self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', [])
         self.limit = self._queryobj.limit if self._queryobj else kwargs.get('limit', None)
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
         self._release = self._queryobj._release if self._queryobj else kwargs.get('release', None)
