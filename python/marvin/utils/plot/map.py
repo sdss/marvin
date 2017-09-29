@@ -54,15 +54,15 @@ from matplotlib.colors import LogNorm
 from marvin import config
 from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
-from marvin.utils.general import get_plot_params
+from marvin.utils.general import get_mask, get_plot_params
 
 
-def mask_nocov(dapmap, ivar=None):
+def mask_nocov(mask, dapmap, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
         dapmap (marvin.tools.map.Map):
-                Marvin Map object.
+            Marvin Map object.
         ivar (array):
             Inverse variance for image. Default is None.
 
@@ -70,10 +70,11 @@ def mask_nocov(dapmap, ivar=None):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    assert (dapmap is not None) or (ivar is not None), 'Must provide ``dapmap`` or ``ivar``.'
+    assert ((mask is not None) and (dapmap is not None)) or (ivar is not None), \
+        'Must provide either (``mask`` and ``dapmap``) or ``ivar``.'
 
     try:
-        return dapmap.get_mask(bitnames='NOCOV')
+        return get_mask(mask, dapmap.maskbit.bits, bitnames=('NOCOV'))
     except (MarvinError, AttributeError):
         return ivar == 0
 
@@ -405,8 +406,11 @@ def plot(*args, **kwargs):
     use_masks = _format_use_masks(use_masks, mask, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
-    nocov = mask_nocov(dapmap, ivar) if ('NOCOV' in use_masks) and (ivar is not None) else all_true
-    bad_data = dapmap.get_mask(use_masks) if use_masks and (dapmap is not None) else all_true
+    nocov_conditions = (('NOCOV' in use_masks) and (ivar is not None))
+    bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
+
+    nocov = mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
+    bad_data = get_mask(mask, dapmap.maskbit.bits, use_masks) if bad_data_conditions else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if not use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true
 
