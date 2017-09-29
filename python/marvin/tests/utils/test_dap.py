@@ -88,8 +88,8 @@ class TestMaskbit(object):
     def test_maskbit_to_table(self, bits=bits, name=name, description=description):
 
         mb = Maskbit(bits=bits, name=name, description=description)
-        table = mb.to_table()
-        
+        table = mb.to_table(description=True)
+
         assert isinstance(table, astropy.table.table.Table)
         assert table.colnames == ['bit', 'name', 'description']
         assert table[0]['bit'] == 0
