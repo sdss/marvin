@@ -11,6 +11,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.rss import RSS
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import Spaxel
+from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
 from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
@@ -215,7 +216,7 @@ class ResultSet(list):
         if self.index == other.index:
             # column-wise add
             newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-            newcols = ColumnGroup('Columns', newcols)
+            newcols = ColumnGroup('Columns', newcols, parent=self._results.datamodel)
             newresults.columns = newcols
             new_set = map(add, self, other)
         else:
@@ -299,7 +300,7 @@ class ResultSet(list):
 
         Parameters:
             name (str):
-                Columne name to sort on.  Default is None.
+                Column name to sort on.  Default is None.
             reverse (bool):
                 If True, sorts in reverse (descending) order.
 
@@ -372,6 +373,7 @@ class Results(object):
         self.chunk = self.limit if self.limit else kwargs.get('chunk', 100)
         self.start = kwargs.get('start', 0)
         self.end = kwargs.get('end', self.start + self.chunk)
+        self.datamodel = datamodel[self._release]
         self.objects = None
         self.sortcol = None
         self.order = None
@@ -824,7 +826,7 @@ class Results(object):
 
         '''
         try:
-            self.columns = ColumnGroup('Columns', self._params)
+            self.columns = ColumnGroup('Columns', self._params, parent=self.datamodel)
         except Exception as e:
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns

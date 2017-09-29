@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-29 11:10:06
+# @Last Modified time: 2017-09-29 14:15:18
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.forms import MarvinForm
@@ -42,6 +42,7 @@ class QueryDataModel(object):
         self.dap_datamodel = kwargs.get('dapdm', None)
         self._marvinform = MarvinForm(release=release)
         self._cleanup_keys()
+        self._check_datamodels()
 
     def __repr__(self):
 
@@ -75,6 +76,19 @@ class QueryDataModel(object):
 
         # # set parameters
         # self._parameters = [QueryParameter(k) for k in self._keys]
+
+    def _check_datamodels(self, parameters=None):
+        ''' Check and match the datamodels '''
+
+        params = [parameters] if parameters else self.parameters
+
+        # DAP datamodel
+        for qp in params:
+            if self.dap_datamodel:
+                try:
+                    qp.property = self.dap_datamodel[qp.full]
+                except ValueError as e:
+                    pass
 
     @property
     def groups(self):
@@ -209,6 +223,8 @@ class ParameterGroupList(list):
 
         assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
         self.parent = parent
+        for item in self:
+            item.set_parent(parent)
 
     @property
     def parameters(self):
@@ -330,10 +346,11 @@ class ParameterGroup(list):
             each name will be used as the full name.
 
     '''
-    def __init__(self, name, items, best=None):
+    def __init__(self, name, items, best=None, parent=None):
         self.name = name
         self.best = best
         self.score = None
+        self.parent = parent
 
         queryparams = []
         for item in items:
@@ -342,12 +359,8 @@ class ParameterGroup(list):
 
         list.__init__(self, queryparams)
         self._check_names()
-
-    # def __repr__(self):
-    #     old = list.__repr__(self)
-    #     old = old.replace('>,', '>,\n')
-    #     return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
-    #             '{2}'.format(self, len(self), old))
+        if self.parent:
+            self._check_datamodels()
 
     def __repr__(self):
         return '<ParameterGroup name={0.name}, n_parameters={1}>'.format(self, len(self))
@@ -365,8 +378,18 @@ class ParameterGroup(list):
                 this_param = QueryParameter(**best_dict)
             else:
                 this_param = QueryParameter(item, group=self.name)
+        if self.parent:
+            this_param.set_parent(self.parent)
 
         return this_param
+
+    def set_parent(self, parent):
+        """Sets datamodel parent."""
+
+        assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
+        self.parent = parent
+        for item in self:
+            item.set_parent(parent)
 
     @property
     def full(self):
@@ -490,6 +513,12 @@ class ParameterGroup(list):
                 self[i].remote = self[i]._under
                 self[i].display = '{0} {1}'.format(self[i].table.title(), self[i].display)
 
+    def _check_datamodels(self):
+        for item in self:
+            if not item.property:
+                if item.full in self.parent.dap_datamodel:
+                    item.property = self.parent.dap_datamodel[item.full]
+
 
 class QueryList(list):
     ''' A class for a list of Query Parameters '''
@@ -556,8 +585,9 @@ class QueryParameter(object):
         self.group = kwargs.get('group', None)
         self.schema = kwargs.get('schema', None)
         self.best = kwargs.get('best', None)
+        self.property = None
+        self.parent = None
         self._set_names()
-        self._check_datamodels()
 
     def __repr__(self):
         return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, '
@@ -583,14 +613,11 @@ class QueryParameter(object):
         # used for a token string on the web
         self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
-    def _check_datamodels(self):
-        ''' Check if the query parameter lives in the datamodel '''
+    def set_parent(self, parent):
+        ''' Set the parent datamodel '''
 
-        self.property = None
-        # DAP datmodels
-        dm = datamodel[config.release]
-        if self.full in dm:
-            self.property = dm[self.full]
+        assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
+        self.parent = parent
 
 
 # # Get the Common Parameters from the filelist

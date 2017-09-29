@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 14:20:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 18:02:23
+# @Last Modified time: 2017-09-29 11:18:14
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel
@@ -22,7 +22,7 @@ GROUPS = copy.deepcopy(query_params)
 # list of tables to exclude
 EXCLUDE = set(EXCLUDE) - set(['modelcube', 'modelspaxel', 'redcorr']) | set(['executionplan', 'current_default'])
 
-MPL5 = QueryDataModel(release='MPL-5', groups=GROUPS, aliases=['MPL5', 'v2_0_2', '2.0.1'], exclude=EXCLUDE)
+MPL5 = QueryDataModel(release='MPL-5', groups=GROUPS, aliases=['MPL5', 'v2_0_2', '2.0.1'], exclude=EXCLUDE, dapdm=DAPDM)
 
 GRPDICT = {'Emission': 'spaxelprop.emline', 'Kinematic': 'spaxelprop.stellar', 'Spectral Indices': 'spaxelprop.specindex', 'NSA Catalog': 'nsa'}
 MPL5.regroup(GRPDICT)
