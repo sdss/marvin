@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 17:15:00
+# @Last Modified time: 2017-09-29 15:49:24
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -366,9 +366,9 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
 
     if rotate_title:
         ax.set_title('')
-        ax.set_ylabel(title)
         ax.yaxis.set_label_position('right')
         ax.yaxis.label.set_fontsize(12.0)
+        ax.set_ylabel(title, rotation=270, verticalalignment='bottom')
 
     # create histogram
     hist_kwargs = _prep_func_kwargs(plt.hist, kwargs)

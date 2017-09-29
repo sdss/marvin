@@ -1503,3 +1503,56 @@ class Results(object):
 
         return output
 
+    def hist(self, name, **kwargs):
+        ''' Make a histogram for a given column of the results
+
+        Creates a Matplotlib histogram from a Results Column.
+        Accepts as input a string column name.  Will extract the total
+        entire column (if not already available) and plot it.
+
+        See :meth:`marvin.utils.plot.scatter.hist` for details.
+
+        Parameters:
+            name (str):
+                The name of the column of data. Required
+            return_plateifus (bool):
+                If True, includes the plateifus in each histogram bin in the
+                histogram output.  Default is True.
+            **kwargs (dict):
+                Any other keyword argument that will be passed to Marvin's
+                hist plotting methods
+
+        Returns:
+            The histogram data, figure, and axes from the plotting function
+
+        Example:
+            >>> # do a query and get the results
+            >>> q = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
+            >>> r = q.run()
+            >>> # plot a histogram of the redshift column
+            >>> hist_data, fig, axes = r.hist('nsa.z')
+
+        '''
+
+        return_plateifus = kwargs.pop('return_plateifus', True)
+
+        # get the named column
+        col = self.columns[name]
+
+        # get the values of the two columns
+        if self.count != self.totalcount:
+            data = self.getListOf(name, return_all=True)
+        else:
+            data = self.results[name]
+
+        # xhist, fig, ax_hist_x = output
+        output = marvin.utils.plot.scatter.hist(data, **kwargs)
+
+        if return_plateifus:
+            plateifus = self.getListOf('plateifu', return_all=True)
+            hdata = output[0]
+            hdata['bins_plateifu'] = map_bins_to_column(plateifus, hdata['indices'])
+            output = (hdata,) + output[1:]
+
+        return output
+
