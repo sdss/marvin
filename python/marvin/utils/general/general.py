@@ -29,7 +29,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_mask', 'get_bits',
-           'get_plot_params', 'add_doc')
+           'get_bit_int', 'get_plot_params', 'add_doc')
 
 drpTable = {}
 
@@ -1097,6 +1097,35 @@ def get_bits(value, bit_lookup, output='name'):
             bits_set.append(getattr(bit, output, bit))
 
     return bits_set
+
+
+def get_bit_int(names, bit_lookup):
+    """
+    Parameters:
+        names (list or str):
+            Names of bits to set.
+        bit_lookup(dict):
+            Bit lookup dictionary.
+
+    Returns:
+        int: Integer bit value.
+    
+    Example:
+        Get the integer bit value from one or more bit names:
+
+            >>> maps = Maps(plateifu='8485-1901')
+            >>> ha = maps['emline_gflux_ha_6564']
+            >>> get_bit_int('DONOTUSE', ha.maskbit.bits)
+            1073741824
+
+            >>> get_bit_int(['NOCOV', 'LOWCOV'], ha.maskbit.bits)
+            3
+    """
+    if isinstance(names, str):
+        names = [names]
+
+    bit_values = [bit_lookup[name].value for name in names]
+    return np.sum([2**value for value in bit_values])
 
 
 def get_plot_params(dapver, prop):
