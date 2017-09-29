@@ -717,7 +717,7 @@ class Maskbit(object):
 
         return '<Maskbit name={0!r}>'.format(self.name)
 
-    def to_table(self, pprint=False, description=True, max_width=1000):
+    def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all of the bits.
 
         Parameters:
@@ -726,7 +726,7 @@ class Maskbit(object):
                 astropy's table pretty print.
             description (bool):
                 If ``True``, an extra column with the description of
-                the property will be added. Default is ``True``.
+                the property will be added. Default is ``False``.
             max_width (int or None):
                 A keyword to pass to ``astropy.table.Table.pprint()``
                 with the maximum width of the table, in characters.
@@ -736,9 +736,9 @@ class Maskbit(object):
                 If ``pprint=False``, returns an astropy table
                 containing the value and names of the bits.
         """
-
+        # import ipdb; ipdb.set_trace()
         model_table = table.Table(None, names=['bit', 'name', 'description'],
-                                  dtype=['i2', 'S30', 'S500'])
+                                  dtype=['i2', 'S30', 'S200'])
 
         for bit in self.bits.values():
             model_table.add_row((bit.value, bit.name, bit.description))
