@@ -6,13 +6,16 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 14:20:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 14:17:12
+# @Last Modified time: 2017-09-28 18:02:23
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel
 import copy
+from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.query.base import query_params
 from marvin.utils.datamodel.query.MPL4 import EXCLUDE
+
+DAPDM = datamodel['MPL-5']
 
 GROUPS = copy.deepcopy(query_params)
 

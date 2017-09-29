@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 13:50:08
+# @Last Modified time: 2017-09-29 11:10:06
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.forms import MarvinForm
@@ -39,6 +39,7 @@ class QueryDataModel(object):
         self._groups.set_parent(self)
         self.aliases = aliases
         self._exclude = exclude
+        self.dap_datamodel = kwargs.get('dapdm', None)
         self._marvinform = MarvinForm(release=release)
         self._cleanup_keys()
 
@@ -592,7 +593,7 @@ class QueryParameter(object):
             self.property = dm[self.full]
 
 
-# Get the Common Parameters from the filelist
+# # Get the Common Parameters from the filelist
 
 def get_params():
     bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', 'query_params_best.cfg')

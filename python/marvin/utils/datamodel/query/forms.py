@@ -16,7 +16,6 @@ import sys
 from collections import OrderedDict
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.datamodel.query.base import query_params
 from collections import defaultdict
 from wtforms import StringField, Field, FieldList, validators
 from wtforms import SelectMultipleField, ValidationError, SubmitField
@@ -214,6 +213,7 @@ class ParamFormLookupDict(dict):
         #                        'g_r': 'elpetro_mag_g_r',
         #                        'abs_g_r': 'elpetro_absmag_g_r'}
 
+        from marvin.utils.datamodel.query.base import query_params
         short = query_params.list_params(name_type='short')
         name = query_params.list_params(name_type='name')
         self._nameShortcuts = OrderedDict(zip(short, name))
