@@ -29,7 +29,7 @@ import marvin
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_mask, get_bits,
-                                  get_plot_params)
+                                  get_bit_int, get_plot_params)
 from marvin.utils.dap.datamodel.base import Bit
 
 
@@ -260,6 +260,16 @@ class TestMaskbit(object):
     def test_get_bits_zero(self, bit_lookup=bit_lookup):
         actual = get_bits(0, bit_lookup, output='object')
         expected = []
+        assert actual == expected
+
+    def test_get_bit_int_single_bit(self, bit_lookup=bit_lookup):
+        actual = get_bit_int('BITONE', bit_lookup)
+        expected = 2**1
+        assert actual == expected
+
+    def test_get_bit_int_multiple_bits(self, bit_lookup=bit_lookup):
+        actual = get_bit_int(['BITZERO', 'BITONE'], bit_lookup)
+        expected = 2**0 + 2**1
         assert actual == expected
 
 
