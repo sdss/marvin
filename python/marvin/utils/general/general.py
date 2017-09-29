@@ -1088,7 +1088,8 @@ def get_bits(value, bit_lookup, output='name'):
             ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
     """
     assert output in ['name', 'value', 'object'], "'output' must be 'name', 'value', or 'object'"
-    assert isinstance(value, int) and value >= 0, "'value' must be a non-negative integer. "
+    assert isinstance(value, (int, np.int64)) and value >= 0, \
+        "'value' must be a non-negative integer. "
 
     bits_set = []
     for bit in bit_lookup.values():
