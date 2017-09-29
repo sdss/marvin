@@ -223,16 +223,16 @@ Plot H\ :math:`\alpha` Map of Star-forming Spaxels
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    masks, __ = maps.get_bpt(show_plot=False)
+    masks = maps.get_bpt(show_plot=False, return_figure=False)
 
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
     # and set bit 30 (DONOTUSE) for those spaxels.
-    mask_non_sf = ~masks['sf']['global'] * 2**30
+    mask_non_sf = ~masks['sf']['global'] * ha.get_bit_int('DONOTUSE')
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
-    
+
     ha.plot(mask=mask)
 
 .. image:: ../_static/map_bpt_mask.png
