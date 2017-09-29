@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-31 16:08:29
+# @Last modified time: 2017-09-29 11:09:14
 
 from copy import deepcopy
 
@@ -428,6 +428,20 @@ class TestMaskbit(object):
 
     def test_get_bits_zero(self, map_release_only):
         assert map_release_only.get_bits(0, output='object') == []
+    
+    @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
+    @pytest.mark.parametrize('names, expected',
+                             [('DONOTUSE', 1)])
+    def test_get_bit_int_mpl4(self, map_release_only, names, expected):
+        assert map_release_only.get_bit_int(names) == expected
+
+    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
+    @pytest.mark.parametrize('names, expected',
+                             [(['NOCOV', 'LOWCOV'], 3),
+                              ('DONOTUSE', 1073741824)])
+    def test_get_bit_int_mpl4(self, map_release_only, names, expected):
+        assert map_release_only.get_bit_int(names) == expected
+
 
 
 class TestEnhancedMap(object):

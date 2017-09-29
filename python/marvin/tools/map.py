@@ -529,6 +529,10 @@ class Map(Quantity):
     def get_bits(self, value, *args, **kwargs):
         return marvin.utils.general.get_bits(value, self.maskbit.bits, *args, **kwargs)
 
+    @add_doc(marvin.utils.general.get_bit_int.__doc__)
+    def get_bit_int(self, names):
+        return marvin.utils.general.get_bit_int(names, self.maskbit.bits)
+
     def get_bits_all_spax(self, *args, **kwargs):
         """Get the bits for all spaxels.
 
