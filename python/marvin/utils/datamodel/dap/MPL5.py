@@ -52,8 +52,8 @@ MPL5_emline_channels = MPL4_emline_channels + [
 ]
 
 MPL5_specindex_channels = [
-    Channel('d4000', formats={'string': 'D4000'}, unit=u.Angstrom, idx=0),
-    Channel('dn4000', formats={'string': 'Dn4000'}, unit=u.Angstrom, idx=1)
+    Channel('d4000', formats={'string': 'D4000'}, unit=u.dimensionless_unscaled, idx=0),
+    Channel('dn4000', formats={'string': 'Dn4000'}, unit=u.dimensionless_unscaled, idx=1)
 ]
 
 

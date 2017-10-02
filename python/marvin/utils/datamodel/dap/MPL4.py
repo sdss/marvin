@@ -53,7 +53,7 @@ MPL4_emline_channels = [
 ]
 
 MPL4_specindex_channels = [
-    Channel('d4000', formats={'string': 'D4000'}, unit=u.Angstrom, idx=0),
+    Channel('d4000', formats={'string': 'D4000'}, unit=u.dimensionless_unscaled, idx=0),
     Channel('caii0p39', formats={'string': 'CaII 0p39'}, unit=u.Angstrom, idx=1),
     Channel('hdeltaa', formats={'string': 'HDeltaA',
                                 'latex': r'H\delta\,A'}, unit=u.Angstrom, idx=2),
