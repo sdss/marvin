@@ -1100,7 +1100,8 @@ def get_bits(value, bit_lookup, output='name'):
 
 
 def get_bit_int(names, bit_lookup):
-    """
+    """For a list of bit names, return the corresponding bit integer.
+
     Parameters:
         names (list or str):
             Names of bits to set.
@@ -1109,7 +1110,7 @@ def get_bit_int(names, bit_lookup):
 
     Returns:
         int: Integer bit value.
-    
+
     Example:
         Get the integer bit value from one or more bit names:
 
