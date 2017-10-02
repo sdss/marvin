@@ -12,7 +12,7 @@ from __future__ import print_function, division, absolute_import
 
 from astropy import units as u
 
-from .base import Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
+from .base import Bintype, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
 from .MPL5 import GAU_MILESHC, ALL, NRE, SPX, VOR10
 
 
