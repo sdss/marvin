@@ -16,8 +16,6 @@ import itertools
 import re
 import six
 
-from collections import OrderedDict
-
 import astropy.table as table
 from astropy import units as u
 
