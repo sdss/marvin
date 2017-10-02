@@ -162,13 +162,13 @@ class DAPDataModel(object):
         except ValueError as e:
             # Second pass, removes
             try:
-                best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
+                best = get_best_fuzzy(value, [pcn.replace('_', ' ')
+                                              for pcn in propety_channel_names])
             except ValueError as e:
                 best = None
             else:
                 best = best.replace(' ', '_')
         return True if best else False
-
 
     def __getitem__(self, value):
         return self == value
@@ -336,6 +336,7 @@ class DAPDataModel(object):
 
 class DAPDataModelList(DataModelList):
     """A dictionary of DAP datamodels."""
+
     base = {'DAPDataModel': DAPDataModel}
 
 
