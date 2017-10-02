@@ -313,12 +313,12 @@ Custom Values and Custom Mask
     nocov = ha.get_mask('NOCOV')
 
     # Mask spaxels with low Halpha flux
-    low_ha = (ha.value < 6) * 2**30
+    low_ha = (ha.value < 6) * ha.get_bit_int('DONOTUSE')  # 2**30
     
     # Combine masks using bitwise OR (`|`)
     mask = nocov | low_ha
 
-    fig, ax = mapplot.plot(value=ha.value, mask=mask, use_masks=) # TODO mask_nocov requires dapmap or ivar
+    fig, ax = mapplot.plot(dapmap=ha, value=ha.value, mask=mask) # TODO mask_nocov requires dapmap or ivar
 
 .. image:: ../_static/custom_mask.png
 
