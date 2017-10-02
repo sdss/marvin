@@ -17,7 +17,7 @@ class MetaDataModel(type):
     ''' MetaClass to construct a new DataModelList class '''
     def __new__(cls, name, parents, dict):
         if 'base' in dict:
-            item = dict['base'].items()[0]
+            item = list(dict['base'].items())[0]
             dict['base_name'] = item[0].strip()
             dict['base_model'] = item[1]
         return super(MetaDataModel, cls).__new__(cls, name, parents, dict)
