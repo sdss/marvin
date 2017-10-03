@@ -29,7 +29,7 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.utils.plot.map
-from marvin.utils.general.general import add_doc
+from marvin.utils.general.general import add_doc, _sort_dir
 
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel.dap.base import Property
@@ -111,6 +111,11 @@ class Map(Quantity):
         new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
 
         return new_obj
+
+    def __dir__(self):
+        return_list = _sort_dir(self, Map)
+        return_list += ['value']
+        return return_list
 
     def __deepcopy__(self, memo):
         return Map(maps=deepcopy(self.maps, memo),

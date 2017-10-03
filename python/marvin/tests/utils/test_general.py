@@ -24,9 +24,14 @@ from astropy.io import fits
 from astropy.wcs import WCS
 
 import marvin
+from marvin.tools.maps import Maps
+from marvin.tools.map import Map
+from marvin.tools.cube import Cube
+from marvin.tools.spectrum import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
+                                  _sort_dir)
 
 
 @pytest.fixture(scope='function')
@@ -197,3 +202,30 @@ class TestDataModelPlotParams(object):
         desired['bitmasks'] = bitmask
         actual = get_plot_params(dapver=dapver, prop=name)
         assert desired == actual
+
+
+class TestSortDir(object):
+
+    @pytest.mark.parametrize('class_, expected',
+                             [(Map, ['channel', 'error', 'header', 'inst_sigma_correction', 'ivar',
+                                     'maps', 'mask', 'masked', 'plot', 'property', 'release',
+                                     'restore', 'save', 'scale', 'snr', 'value'])])
+    def test_sort_dir_map(self, galaxy, class_, expected):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+
+        dir_ = _sort_dir(ha, class_)
+        dir_public = [it for it in dir_ if it[0] is not '_']
+        assert set(dir_public) == set(expected)
+
+    @pytest.mark.parametrize('class_, expected',
+                             [(Spectrum, ['error', 'masked', 'plot', 'snr', 'ivar', 'mask',
+                                          'wavelength', 'value'])])
+    def test_sort_dir_spectrum(self, galaxy, class_, expected):
+        cube = Cube(plateifu=galaxy.plateifu)
+        spax = cube[0, 0]
+        spec = spax.spectrum
+
+        dir_ = _sort_dir(spec, class_)
+        dir_public = [it for it in dir_ if it[0] is not '_']
+        assert set(dir_public) == set(expected)

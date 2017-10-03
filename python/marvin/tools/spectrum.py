@@ -16,9 +16,9 @@ from __future__ import absolute_import
 
 import numpy as np
 import matplotlib.pyplot as plt
-
 from astropy.units import Quantity, dimensionless_unscaled
 
+from marvin.utils.general import _sort_dir
 
 class Spectrum(Quantity):
     """A class representing an spectrum with extra functionality.
@@ -96,6 +96,11 @@ class Spectrum(Quantity):
             if self.wavelength is not None else self.wavelength
 
         return new_obj
+
+    def __dir__(self):
+        return_list = _sort_dir(self, Spectrum)
+        return_list += ['value']
+        return return_list
 
     @property
     def error(self):

@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from astropy import wcs
 from astropy import table
+from astropy.units.quantity import Quantity
 
 import marvin
 from marvin import log
@@ -35,7 +36,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
-           'isCallableWithArgs', 'map_bins_to_column')
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir')
 
 drpTable = {}
 
@@ -1222,3 +1223,25 @@ def map_bins_to_column(column, indices):
         coldict[key] = colarr[val].tolist()
     return coldict
 
+
+def _sort_dir(instance, class_):
+    """Sort `dir()` to return child class attributes and members first.
+
+    Return the attributes and members of the child class, so that
+    ipython tab completion lists those first.
+
+    Parameters:
+        instance: Instance of `class_` (usually self).
+        class_: Class of `instance`.
+
+    Returns:
+        list: Child class attributes and members.
+    """
+    members_array = list(zip(*inspect.getmembers(np.ndarray)))[0]
+    members_quantity = list(zip(*inspect.getmembers(Quantity)))[0]
+    members_parents = members_array + members_quantity
+
+    return_list = [it[0] for it in inspect.getmembers(class_) if it[0] not in members_parents]
+    return_list += vars(instance).keys()
+    return_list += ['value']
+    return return_list
