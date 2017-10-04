@@ -12,7 +12,9 @@ from __future__ import print_function, division, absolute_import
 
 from astropy import units as u
 
-from .base import Bintype, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
+from .base import Bintype, DAPDataModel, Property, MultiChannelProperty
+from .base import spaxel, Channel, Model
+from .base import spaxel as spaxel_unit
 from .MPL5 import GAU_MILESHC, ALL, NRE, SPX, VOR10
 
 
@@ -277,10 +279,42 @@ MPL6_maps = [
 ]
 
 
+MPL6_models = [
+    Model('binned_flux', 'FLUX', 'WAVE', extension_ivar='IVAR',
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          scale=1e-17, formats={'string': 'Binned flux'},
+          description='Flux of the binned spectra'),
+    Model('binned_redcorr', 'REDCORR', 'WAVE', extension_ivar=None,
+          extension_mask=None, unit=u.dimensionless_unscaled,
+          scale=1, formats={'string': 'Binned reddening correction'},
+          description='Reddening correction applied during the fitting procedures'),
+    Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          scale=1e-17, formats={'string': 'Best fitting model'},
+          description='The best fitting model spectra (sum of the fitted '
+                      'continuum and emission-line models)'),
+    Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
+          extension_mask='EMLINE_MASK',
+          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          scale=1e-17, formats={'string': 'Emission line model spectrum'},
+          description='The model spectrum with only the emission lines.'),
+    Model('emline_base_fit', 'EMLINE_BASE', 'WAVE', extension_ivar=None,
+          extension_mask='EMLINE_MASK',
+          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          scale=1e-17, formats={'string': 'Emission line baseline fit'},
+          description='The model of the constant baseline fitted beneath the '
+                      'emission lines.'),
+    Model('binid', 'BINID', extension_wave=None, unit=u.dimensionless_unscaled,
+          scale=1, formats={'string': 'Bin ID'}, channels=MPL6_binid_channels,
+          description='Numerical ID for spatial bins.')
+]
+
+
 # MPL-6 DapDataModel goes here
 MPL6 = DAPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
                     bintypes=[ALL, NRE, VOR10, SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
+                    models=MPL6_models,
                     default_bintype='SPX',
                     default_template='GAU-MILESHC')
