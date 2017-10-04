@@ -112,28 +112,41 @@ class FuzzyDict(OrderedDict):
 
 
 class FuzzyList(list):
-    """A list that uses fuzzywuzzy to select the item."""
+    """A list that uses fuzzywuzzy to select the item.
+
+    Parameters:
+        the_list (list):
+            The list on which we will fo fuzzy searching.
+        mapper (function):
+            A function that will be used to format the items in the list
+            before searching them. By default it does a string casting.
+
+    """
+
+    def __init__(self, the_list, mapper=str):
+
+        self.mapper = mapper
+
+        list.__init__(self, the_list)
 
     def __eq__(self, value):
 
-        self_values = [str(item) for item in self]
+        self_values = [self.mapper(item) for item in self]
 
-        best = get_best_fuzzy(value, self_values)
+        try:
+            best = get_best_fuzzy(value, self_values)
+        except ValueError:
+            # Second pass, using underscores.
+            best = get_best_fuzzy(value.replace(' ', '_'), self_values)
 
         return self[self_values.index(best)]
 
     def __contains__(self, value):
 
-        self_values = [str(item) for item in self]
-
         try:
-            item = get_best_fuzzy(value, self_values)
-        except ValueError as e:
-            item = None
-
-        if item:
+            self.__eq__(value)
             return True
-        else:
+        except ValueError:
             return False
 
     def __getitem__(self, value):
