@@ -9,18 +9,20 @@
 # @Last Modified time: 2017-09-29 14:15:18
 
 from __future__ import print_function, division, absolute_import
+
 from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.utils.datamodel import DataModelList
 from marvin.core.exceptions import MarvinError
+
 import copy as copy_mod
 import os
 import numpy as np
 import six
 import yaml
 import yamlordereddictloader
+
 from fuzzywuzzy import process
-from marvin.utils.datamodel.dap import datamodel
-from marvin import config
+from fuzzywuzzy import fuzz
 
 
 __ALL__ = ('QueryDataModelList', 'QueryDataModel')
@@ -63,7 +65,9 @@ class QueryDataModel(object):
 
         # replace table names with shortcut names
         rev = {v: k for k, v in self._marvinform._param_form_lookup._tableShortcuts.items()}
-        newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
+        newkeys = [k.replace(k.split('.')[0],
+                             rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys()
+                   else k for k in mykeys]
 
         # exclude tables from list of keys
         if self._exclude:
@@ -89,6 +93,42 @@ class QueryDataModel(object):
                     qp.property = self.dap_datamodel[qp.full]
                 except ValueError as e:
                     pass
+
+    def __eq__(self, value):
+        """Uses fuzzywuzzy to return the closest parameter/group match."""
+
+        # Gets the best match for parameters and groups. If there is a match
+        # in parameters, returns it. Otherwise tries groups.
+
+        try:
+            param_best_match = self.parameters[value]
+            if param_best_match:
+                return param_best_match
+        except KeyError:
+            pass
+
+        try:
+            group_best_match = self.groups[value]
+            if group_best_match:
+                return group_best_match
+        except KeyError:
+            pass
+
+        raise ValueError('too ambiguous input {!r}'.format(value))
+
+    def __contains__(self, value):
+
+        try:
+            match = self.__eq__(value)
+            if match is None:
+                return False
+            else:
+                return True
+        except ValueError:
+            return False
+
+    def __getitem__(self, value):
+        return self == value
 
     @property
     def groups(self):
@@ -142,7 +182,7 @@ class QueryDataModel(object):
 
     @property
     def best(self):
-        return [p for p in self.parameters if p.best is True]
+        return QueryList([p for p in self.parameters if p.best is True])
 
     def set_best(self, best):
         ''' sets a list of best query parameters '''
@@ -165,8 +205,8 @@ class QueryDataModelList(DataModelList):
     base = {'QueryDataModel': QueryDataModel}
 
 
-def get_best_fuzzy(name, choices, cutoff=0, return_score=False):
-    items = process.extractBests(name, choices, score_cutoff=cutoff)
+def get_best_fuzzy(name, choices, cutoff=50, return_score=False):
+    items = process.extractBests(name, choices, score_cutoff=cutoff, scorer=fuzz.WRatio)
 
     if not items:
         return None
@@ -187,8 +227,10 @@ def get_best_fuzzy(name, choices, cutoff=0, return_score=False):
             if exact:
                 best = exact[0]
             else:
-                options = [s[0].name if isinstance(s[0], QueryParameter) else s[0] for s in items if s[1] == np.max(scores)]
-                raise KeyError('{0} is too ambiguous.  Did you mean one of {1}?'.format(name, options))
+                options = [s[0].name if isinstance(s[0], QueryParameter)
+                           else s[0] for s in items if s[1] == np.max(scores)]
+                raise KeyError('{0} is too ambiguous.  '
+                               'Did you mean one of {1}?'.format(name, options))
         else:
             best = items[0]
 
@@ -203,19 +245,19 @@ class ParameterGroupList(list):
 
     '''
 
-    def __init__(self, items, best=None):
+    def __init__(self, items):
         self.score = None
-        self.best = best
         paramgroups = self._make_groups(items)
         list.__init__(self, paramgroups)
 
-    def _make_groups(self, items):
+    def _make_groups(self, items, best=None):
         if isinstance(items, list):
-            paramgroups = [ParameterGroup(item, [], best=self.best) for item in items]
+            paramgroups = [ParameterGroup(item, []) for item in items]
         elif isinstance(items, dict):
-            paramgroups = [ParameterGroup(key, vals, best=self.best) for key, vals in items.items()]
+            paramgroups = [ParameterGroup(key, vals)
+                           for key, vals in items.items()]
         elif isinstance(items, six.string_types):
-            paramgroups = ParameterGroup(items, [], best=self.best)
+            paramgroups = ParameterGroup(items, [])
         return paramgroups
 
     def set_parent(self, parent):
@@ -277,7 +319,8 @@ class ParameterGroupList(list):
                 A string or list of strings representing the groups
                 of parameters you wish to return
             name_type (str):
-                The type of name to generate (full, name, short, remote, display).  Default is full.
+                The type of name to generate (full, name, short, remote, display).
+                Default is full.
 
         Returns:
             params (list):
@@ -295,12 +338,12 @@ class ParameterGroupList(list):
             return [param.__getattribute__(name_type) for group in self for param in group]
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=50)
+        item = get_best_fuzzy(name, self.groups, cutoff=80)
         if item:
             return self[self.groups.index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=50)
+        item = get_best_fuzzy(name, self.groups, cutoff=80)
         if item:
             return True
         else:
@@ -346,9 +389,8 @@ class ParameterGroup(list):
             each name will be used as the full name.
 
     '''
-    def __init__(self, name, items, best=None, parent=None):
+    def __init__(self, name, items, parent=None):
         self.name = name
-        self.best = best
         self.score = None
         self.parent = parent
 
@@ -368,16 +410,17 @@ class ParameterGroup(list):
     def _make_query_parameter(self, item):
         ''' Create and return a QueryParameter '''
         if isinstance(item, dict):
-            item.update({'group': self.name, 'best': self.best})
+            item.update({'group': self.name, 'best': True})
             this_param = QueryParameter(**item)
         elif isinstance(item, six.string_types):
-            is_best = [p for p in query_params.parameters if item in p.full and (item == p.name or item == p.full)]
+            is_best = [p for p in query_params.parameters
+                       if item in p.full and (item == p.name or item == p.full)]
             if is_best:
                 best_dict = is_best[0].__dict__
-                best_dict.update({'group': self.name, 'best': self.best})
+                best_dict.update({'group': self.name, 'best': True})
                 this_param = QueryParameter(**best_dict)
             else:
-                this_param = QueryParameter(item, group=self.name)
+                this_param = QueryParameter(item, group=self.name, best=False)
         if self.parent:
             this_param.set_parent(self.parent)
 
@@ -472,12 +515,12 @@ class ParameterGroup(list):
             return QueryList([param for param in paramlist])
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self.full, cutoff=25)
+        item = get_best_fuzzy(name, self.full, cutoff=75)
         if item:
             return self[self.full.index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self.full, cutoff=25)
+        item = get_best_fuzzy(name, self.full, cutoff=75)
         if item:
             return True
         else:
@@ -529,12 +572,12 @@ class QueryList(list):
         self._remote = [s.remote for s in self]
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=25)
+        item = get_best_fuzzy(name, self._full, cutoff=75)
         if item:
-            return item
+            return self[self._full.index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self, cutoff=25)
+        item = get_best_fuzzy(name, self._full, cutoff=75)
         if item:
             return True
         else:
@@ -559,7 +602,8 @@ class QueryParameter(object):
 
     Parameters:
         full (str):
-            The full naming syntax (table.name) used for all queries.  This name is recommended for full uniqueness.
+            The full naming syntax (table.name) used for all queries.
+            This name is recommended for full uniqueness.
         table (str):
             The name of the database table the parameter belongs to
         name (str):
@@ -623,7 +667,8 @@ class QueryParameter(object):
 # # Get the Common Parameters from the filelist
 
 def get_params():
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', 'query_params_best.cfg')
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data',
+                            'query_params_best.cfg')
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
@@ -631,8 +676,6 @@ def get_params():
     else:
         return None
 
+
 bestparams = get_params()
-query_params = ParameterGroupList(bestparams, best=True)
-
-
-
+query_params = ParameterGroupList(bestparams)
