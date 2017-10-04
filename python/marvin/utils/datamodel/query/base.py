@@ -9,18 +9,19 @@
 # @Last Modified time: 2017-09-29 14:15:18
 
 from __future__ import print_function, division, absolute_import
+
 from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.utils.datamodel import DataModelList
 from marvin.core.exceptions import MarvinError
+
 import copy as copy_mod
 import os
 import numpy as np
 import six
 import yaml
 import yamlordereddictloader
+
 from fuzzywuzzy import process
-from marvin.utils.datamodel.dap import datamodel
-from marvin import config
 
 
 __ALL__ = ('QueryDataModelList', 'QueryDataModel')
@@ -63,7 +64,9 @@ class QueryDataModel(object):
 
         # replace table names with shortcut names
         rev = {v: k for k, v in self._marvinform._param_form_lookup._tableShortcuts.items()}
-        newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
+        newkeys = [k.replace(k.split('.')[0],
+                             rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys()
+                   else k for k in mykeys]
 
         # exclude tables from list of keys
         if self._exclude:
@@ -187,8 +190,10 @@ def get_best_fuzzy(name, choices, cutoff=0, return_score=False):
             if exact:
                 best = exact[0]
             else:
-                options = [s[0].name if isinstance(s[0], QueryParameter) else s[0] for s in items if s[1] == np.max(scores)]
-                raise KeyError('{0} is too ambiguous.  Did you mean one of {1}?'.format(name, options))
+                options = [s[0].name if isinstance(s[0], QueryParameter)
+                           else s[0] for s in items if s[1] == np.max(scores)]
+                raise KeyError('{0} is too ambiguous.  '
+                               'Did you mean one of {1}?'.format(name, options))
         else:
             best = items[0]
 
@@ -213,7 +218,8 @@ class ParameterGroupList(list):
         if isinstance(items, list):
             paramgroups = [ParameterGroup(item, [], best=self.best) for item in items]
         elif isinstance(items, dict):
-            paramgroups = [ParameterGroup(key, vals, best=self.best) for key, vals in items.items()]
+            paramgroups = [ParameterGroup(key, vals, best=self.best)
+                           for key, vals in items.items()]
         elif isinstance(items, six.string_types):
             paramgroups = ParameterGroup(items, [], best=self.best)
         return paramgroups
@@ -277,7 +283,8 @@ class ParameterGroupList(list):
                 A string or list of strings representing the groups
                 of parameters you wish to return
             name_type (str):
-                The type of name to generate (full, name, short, remote, display).  Default is full.
+                The type of name to generate (full, name, short, remote, display).
+                Default is full.
 
         Returns:
             params (list):
@@ -371,7 +378,8 @@ class ParameterGroup(list):
             item.update({'group': self.name, 'best': self.best})
             this_param = QueryParameter(**item)
         elif isinstance(item, six.string_types):
-            is_best = [p for p in query_params.parameters if item in p.full and (item == p.name or item == p.full)]
+            is_best = [p for p in query_params.parameters
+                       if item in p.full and (item == p.name or item == p.full)]
             if is_best:
                 best_dict = is_best[0].__dict__
                 best_dict.update({'group': self.name, 'best': self.best})
@@ -559,7 +567,8 @@ class QueryParameter(object):
 
     Parameters:
         full (str):
-            The full naming syntax (table.name) used for all queries.  This name is recommended for full uniqueness.
+            The full naming syntax (table.name) used for all queries.
+            This name is recommended for full uniqueness.
         table (str):
             The name of the database table the parameter belongs to
         name (str):
@@ -623,7 +632,8 @@ class QueryParameter(object):
 # # Get the Common Parameters from the filelist
 
 def get_params():
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', 'query_params_best.cfg')
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data',
+                            'query_params_best.cfg')
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
@@ -631,8 +641,6 @@ def get_params():
     else:
         return None
 
+
 bestparams = get_params()
 query_params = ParameterGroupList(bestparams, best=True)
-
-
-
