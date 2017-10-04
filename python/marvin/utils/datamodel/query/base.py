@@ -210,18 +210,17 @@ class ParameterGroupList(list):
 
     def __init__(self, items, best=None):
         self.score = None
-        self.best = best
-        paramgroups = self._make_groups(items)
+        paramgroups = self._make_groups(items, best=best)
         list.__init__(self, paramgroups)
 
-    def _make_groups(self, items):
+    def _make_groups(self, items, best=None):
         if isinstance(items, list):
-            paramgroups = [ParameterGroup(item, [], best=self.best) for item in items]
+            paramgroups = [ParameterGroup(item, [], best=best) for item in items]
         elif isinstance(items, dict):
-            paramgroups = [ParameterGroup(key, vals, best=self.best)
+            paramgroups = [ParameterGroup(key, vals, best=best)
                            for key, vals in items.items()]
         elif isinstance(items, six.string_types):
-            paramgroups = ParameterGroup(items, [], best=self.best)
+            paramgroups = ParameterGroup(items, [], best=best)
         return paramgroups
 
     def set_parent(self, parent):
