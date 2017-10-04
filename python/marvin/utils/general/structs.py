@@ -74,6 +74,12 @@ class DotableCaseInsensitive(Dotable):
 def get_best_fuzzy(value, choices, min_score=75, scorer=fuzz_fuzz.WRatio, return_score=False):
     """Returns the best match in a list of choices using fuzzywuzzy."""
 
+    if not isinstance(value, six.string_types):
+        raise ValueError('invalid value. Must be a string.')
+
+    if len(value) < 3:
+        raise ValueError('your fuzzy search value must be at least three characters long.')
+
     bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
 
     if len(bests) == 0:
