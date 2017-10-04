@@ -20,7 +20,7 @@ import astropy.table as table
 from astropy import units as u
 
 from marvin.core.exceptions import MarvinError, MarvinNotImplemented
-from marvin.utils.general.structs import get_best_fuzzy
+from marvin.utils.general.structs import get_best_fuzzy, FuzzyList
 from marvin.utils.datamodel import DataModelList
 
 
@@ -34,8 +34,8 @@ spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_stri
 class DAPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
-    def __init__(self, release, bintypes=[], templates=[], properties=[], default_template=None,
-                 default_bintype=None, aliases=[]):
+    def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
+                 default_template=None, default_bintype=None, aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -43,8 +43,8 @@ class DAPDataModel(object):
 
         self.aliases = aliases
 
-        self._properties = []
-        self.add_properties(properties, copy=True)
+        self.properties = PropertyList(properties, parent=self)
+        self.models = ModelList(models, parent=self)
 
         self._default_bintype = None
         self.default_bintype = default_bintype
@@ -55,118 +55,61 @@ class DAPDataModel(object):
         assert len([bintype for bintype in self.bintypes if bintype.binned is False]) <= 1, \
             'a DAP datamodel can have only one unbinned bintype'
 
-    @property
-    def properties(self):
-        """Returns the properties for this datamodel. MultiChannelProperties are unpacked."""
-
-        full_list = []
-
-        for prop in self._properties:
-            if isinstance(prop, Property):
-                full_list.append(prop)
-            elif isinstance(prop, MultiChannelProperty):
-                for multi_prop in prop:
-                    full_list.append(multi_prop)
-            else:
-                raise ValueError('incorrect type of property {0!r}'.format(prop))
-
-        return full_list
-
-    @properties.setter
-    def properties(self, value):
-        """Raises an error if trying to set properties directly."""
-
-        raise MarvinError('cannot set properties directly. Use add_properties() instead.')
-
-    @property
-    def extensions(self):
-        """Returns a list of properties. MultiChannelProperties are not unpacked."""
-
-        return self._properties
-
     def __repr__(self):
 
         return ('<DAPDataModel release={0!r}, n_bintypes={1}, n_templates={2}, n_properties={3}>'
                 .format(self.release, len(self.bintypes), len(self.templates),
                         len(self.properties)))
 
-    def expand(self, **kwargs):
-        """Expands attributes."""
-
-        for kk in kwargs:
-            if kk == 'properties':
-                self.add_properties(kwargs[kk])
-            else:
-                setattr(kk, getattr(self, kk) + kwargs[kk])
-
-    def add_property(self, prop, copy=True):
-        """Adds a propety and sets its parent to this instance.
-
-        If ``copy=True``, copies the property before adding it.
-
-        """
-
-        new_prop = copy_mod.copy(prop) if copy else prop
-        new_prop.set_parent(self)
-
-        self._properties.append(new_prop)
-
-    def add_properties(self, properties, copy=True):
-        """Adds a list of properties and sets their parent to this instance.
-
-        If ``copy=True``, copies the properties before adding them.
-
-        """
-
-        for prop in properties:
-            self.add_property(prop, copy=copy)
-
     def copy(self):
         """Returns a copy of the datamodel."""
 
         return copy_mod.deepcopy(self)
 
-    def list_property_names(self):
-        """Returns a list of all property names+channel."""
-
-        return [prop.full() for prop in self.properties]
-
     def __eq__(self, value):
         """Uses fuzzywuzzy to return the closest property match."""
 
-        prop_names = [prop.name for prop in self.extensions]
+        prop_names = [prop.name for prop in self.properties.extensions]
+        model_names = [model.name for model in self.models]
 
-        # If the values matches exactly one of the property names, we return the property object.
+        # If the values matches exactly one of the property or model names,
+        # we return that one.
         if value in prop_names:
-            return self.extensions[prop_names.index(value)]
+            return self.properties.extensions[prop_names.index(value)]
+        elif value in model_names:
+            return self.models[model_names.index(value)]
 
-        # Finds the best property+channel
-        propety_channel_names = self.list_property_names()
+        # Gets the best match for properties and models. Only returns a value
+        # if only one of them gets a match.
 
         try:
-            best = get_best_fuzzy(value, propety_channel_names)
+            prop_best_match = self.properties[value]
         except ValueError:
-            # Second pass, removes _
-            best = get_best_fuzzy(value, [pcn.replace('_', ' ') for pcn in propety_channel_names])
-            best = best.replace(' ', '_')
+            prop_best_match = None
 
-        return self.properties[propety_channel_names.index(best)]
+        try:
+            model_best_match = self.models[value]
+        except ValueError:
+            model_best_match = None
+
+        if ((model_best_match is None and prop_best_match is None) or
+                (model_best_match is not None and prop_best_match is not None)):
+            raise ValueError('too ambiguous input {!r}'.format(value))
+        elif model_best_match is not None:
+            return model_best_match
+        elif prop_best_match is not None:
+            return prop_best_match
 
     def __contains__(self, value):
 
-        propety_channel_names = self.list_property_names()
         try:
-            best = get_best_fuzzy(value, propety_channel_names)
-        except ValueError as e:
-            # Second pass, removes
-            try:
-                best = get_best_fuzzy(value, [pcn.replace('_', ' ')
-                                              for pcn in propety_channel_names])
-            except ValueError as e:
-                best = None
+            match = self.__eq__(value)
+            if match is None:
+                return False
             else:
-                best = best.replace(' ', '_')
-        return True if best else False
+                return True
+        except ValueError:
+            return False
 
     def __getitem__(self, value):
         return self == value
@@ -262,6 +205,42 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
+
+class DAPDataModelList(DataModelList):
+    """A dictionary of DAP datamodels."""
+
+    base = {'DAPDataModel': DAPDataModel}
+
+
+class PropertyList(FuzzyList):
+    """Creates a list containing properties and their representation."""
+
+    def __init__(self, the_list, parent=None):
+
+        self.parent = parent
+        self.extensions = []
+
+        super(PropertyList, self).__init__([], mapper=lambda xx: xx.full())
+
+        for item in the_list:
+            self.append(item, copy=True)
+
+    def append(self, value, copy=True):
+        """Appends with copy, and unpacking properties."""
+
+        append_obj = value if copy is False else copy_mod.deepcopy(value)
+        append_obj.set_parent(self.parent)
+
+        self.extensions.append(append_obj)
+
+        if isinstance(append_obj, Property):
+            super(PropertyList, self).append(append_obj)
+        elif isinstance(append_obj, MultiChannelProperty):
+            for prop in append_obj:
+                super(PropertyList, self).append(prop)
+        else:
+            raise ValueError('invalid property of type {!r}'.format(type(append_obj)))
+
     def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the properties in this model.
 
@@ -292,35 +271,116 @@ class DAPDataModel(object):
         """
 
         if compact:
-            model_table = table.Table(
+            prop_table = table.Table(
                 None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description'],
                 dtype=['S20', 'S300', bool, bool, 'S20', 'S500'])
         else:
-            model_table = table.Table(
+            prop_table = table.Table(
                 None, names=['name', 'channel', 'ivar', 'mask', 'unit', 'description'],
                 dtype=['S20', 'S20', bool, bool, 'S20', 'S500'])
 
-        model_table.meta['release'] = self.release
-        model_table.meta['bintypes'] = self.bintypes
-        model_table.meta['templates'] = self.templates
-        model_table.meta['default_bintype'] = self.default_bintype
-        model_table.meta['default_template'] = self.default_template
+        if self.parent:
+            prop_table.meta['release'] = self.parent.release
+            prop_table.meta['bintypes'] = self.parent.bintypes
+            prop_table.meta['templates'] = self.parent.templates
+            prop_table.meta['default_bintype'] = self.parent.default_bintype
+            prop_table.meta['default_template'] = self.parent.default_template
 
         if compact:
             iterable = self.extensions
         else:
-            iterable = self.properties
+            iterable = self
 
         for prop in iterable:
             if isinstance(prop, MultiChannelProperty):
-                channel = ', '.join(prop.channels)
+                channel = ', '.join([str(channel) for channel in prop.channels])
                 units = [pp.unit.to_string() for pp in prop]
                 unit = units[0] if len(set(units)) == 1 else 'multiple'
             else:
                 channel = '' if not prop.channel else prop.channel
                 unit = prop.unit.to_string()
 
-            model_table.add_row((prop.name, channel, prop.ivar, prop.mask, unit, prop.description))
+            prop_table.add_row((prop.name, channel, prop.ivar, prop.mask, unit, prop.description))
+
+        if not description:
+            prop_table.remove_column('description')
+
+        if pprint:
+            prop_table.pprint(max_width=max_width, max_lines=1e6)
+            return
+
+        return prop_table
+
+
+class ModelList(FuzzyList):
+    """Creates a list containing models and their representation."""
+
+    def __init__(self, the_list, parent=None):
+
+        self.parent = parent
+
+        super(ModelList, self).__init__([], mapper=lambda xx: xx.full())
+
+        for item in the_list:
+            self.append(item, copy=True)
+
+    def append(self, value, copy=True):
+        """Appends with copy."""
+
+        append_obj = value if copy is False else copy_mod.deepcopy(value)
+        append_obj.parent = self.parent
+
+        if isinstance(append_obj, Model):
+            super(ModelList, self).append(append_obj)
+        else:
+            raise ValueError('invalid model of type {!r}'.format(type(append_obj)))
+
+    def to_table(self, pprint=False, description=False, max_width=1000):
+        """Returns an astropy table with all the models in this datamodel.
+
+        Parameters:
+            pprint (bool):
+                Whether the table should be printed to screen using astropy's
+                table pretty print.
+            description (bool):
+                If ``True``, an extra column with the description of the
+                property will be added.
+            max_width (int or None):
+                A keyword to pass to ``astropy.table.Table.pprint()`` with the
+                maximum width of the table, in characters.
+
+        Returns:
+            result (``astropy.table.Table``):
+                If ``pprint=False``, returns an astropy table containing
+                the name of the property, the channel (or channels, if
+                ``compact=True``), whether the property has ``ivar`` or
+                ``mask``, the units, and a description (if
+                ``description=True``). Additonal information such as the
+                bintypes, templates, release, etc. is included in
+                the metadata of the table (use ``.meta`` to access them).
+
+        """
+
+        model_table = table.Table(
+            None, names=['name', 'model', 'ivar', 'mask', 'unit', 'description'],
+            dtype=['S20', 'S20', bool, bool, 'S20', 'S500'])
+
+        if self.parent:
+            model_table.meta['release'] = self.parent.release
+            model_table.meta['bintypes'] = self.parent.bintypes
+            model_table.meta['templates'] = self.parent.templates
+            model_table.meta['default_bintype'] = self.parent.default_bintype
+            model_table.meta['default_template'] = self.parent.default_template
+
+        for model in self:
+            unit = model.unit.to_string()
+
+            model_table.add_row((model.name,
+                                 model.name,
+                                 model.extension_ivar is not None,
+                                 model.extension_mask is not None,
+                                 unit,
+                                 model.description))
 
         if not description:
             model_table.remove_column('description')
@@ -330,12 +390,6 @@ class DAPDataModel(object):
             return
 
         return model_table
-
-
-class DAPDataModelList(DataModelList):
-    """A dictionary of DAP datamodels."""
-
-    base = {'DAPDataModel': DAPDataModel}
 
 
 class Bintype(object):
@@ -475,11 +529,13 @@ class Property(object):
 
         if ext == 'ivar':
             assert self.ivar is True, 'no ivar for property {0!r}'.format(self.full())
-            return self.name + '_ivar' + ('_{0}'.format(self.channel.name) if self.channel else '')
+            return self.name + '_ivar' + \
+                ('_{0}'.format(self.channel.db_name) if self.channel else '')
 
         if ext == 'mask':
             assert self.mask is True, 'no mask for property {0!r}'.format(self.full())
-            return self.name + '_mask' + ('_{0}'.format(self.channel.name) if self.channel else '')
+            return self.name + '_mask' + \
+                ('_{0}'.format(self.channel.db_name) if self.channel else '')
 
     def __repr__(self):
 
@@ -612,19 +668,23 @@ class Channel(object):
             channel. Default ones are ``latex`` and ``string``.
         idx (int):
             The index of the channel in the MAPS file extension.
+        db_name (str or None):
+            The name of this channel in the database. If None, ``name`` will
+            be used.
         description (str):
             A description for the channel.
 
     """
 
-    def __init__(self, name, unit=u.dimensionless_unscaled, scale=1, formats={}, idx=None,
-                 description=''):
+    def __init__(self, name, unit=u.dimensionless_unscaled, scale=1, formats={},
+                 idx=None, db_name=None, description=''):
 
         self.name = name
         self.unit = unit
         self.scale = scale
         self.formats = formats
         self.idx = idx
+        self.db_name = db_name or self.name
         self.description = description
 
     def to_string(self, mode='string'):
@@ -649,3 +709,119 @@ class Channel(object):
     def __str__(self):
 
         return self.name
+
+
+class Model(object):
+    """Represents a extension in the DAP logcube file.
+
+    Parameters:
+        name (str):
+            The model name. This is the internal name that Marvin will use for
+            this model. It is different from the ``extension_name`` parameter,
+            which must be identical to the extension name of the model.
+        extension_name (str):
+            The FITS extension containing this model.
+        extension_wave (str):
+            The FITS extension containing the wavelength for this model.
+        extension_ivar (str or None):
+            The extension that contains the inverse variance associated with
+            this model, if any.
+        extension_mask (str or None):
+            The extension that contains the mask associated with this model,
+            if any.
+        channels (list):
+            The channels associated with this model (probably only used
+            for binid).
+        unit (astropy unit or None):
+            The unit for this model.
+        scale (float):
+            The scaling factor for the values of the model.
+        formats (dict):
+            A dictionary with formats that can be used to represent the
+            model. Default ones are ``latex`` and ``string``.
+        description (str):
+            A description for the model.
+
+    """
+
+    def __init__(self, name, extension_name, extension_wave=None,
+                 extension_ivar=None, extension_mask=None, channels=[],
+                 unit=u.dimensionless_unscaled, scale=1, formats={},
+                 description=''):
+
+        self.name = name
+        self.extension_name = extension_name
+        self.extension_wave = extension_wave
+        self.extension_ivar = extension_ivar
+        self.extension_mask = extension_mask
+        self.channels = channels
+        self.unit = unit
+        self.scale = scale
+        self.formats = formats
+        self.description = description
+
+    def set_parent(self, parent):
+        """Sets parent."""
+
+        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+
+        self.parent = parent
+
+    def full(self):
+        """Returns the name + channel string."""
+
+        return self.name
+
+    def db_column(self, ext=None, channel=None):
+        """Returns the name of the DB column containing this model."""
+
+        assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
+
+        channel_suffix = '_{0}'.format(channel.db_name) if channel is not None else ''
+
+        if ext is None:
+            return self.full() + channel_suffix
+
+        if ext == 'ivar':
+            assert self.extension_ivar is not None, 'no ivar for model {0!r}'.format(self.full())
+            return self.extension_ivar.lower() + channel_suffix
+
+        if ext == 'mask':
+            assert self.extension_mask is not None, 'no mask for model {0!r}'.format(self.full())
+            return self.extension_mask.lower() + channel_suffix
+
+    def __repr__(self):
+
+        return '<Model {!r}, release={!r}, unit={!r}>'.format(
+            self.name, self.parent.release if self.parent else None, self.unit.to_string())
+
+    def __str__(self):
+
+        return self.full()
+
+    def to_string(self, mode='string', include_channel=True):
+        """Return a string representation of the channel."""
+
+        if mode == 'latex':
+
+            if mode in self.formats:
+                latex = self.formats[mode]
+            else:
+                latex = self.to_string(include_channel=False)
+
+            if self.channel and include_channel:
+                latex = latex + ' ' + self.channel.to_string('latex')
+
+            return latex
+
+        else:
+
+            if mode in self.formats:
+                string = self.formats[mode]
+            else:
+                string = self.name
+
+            if self.channel is None or include_channel is False:
+                return string
+            else:
+                return string + ': ' + self.channel.to_string(mode=mode)
