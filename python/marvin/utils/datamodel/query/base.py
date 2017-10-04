@@ -145,7 +145,7 @@ class QueryDataModel(object):
 
     @property
     def best(self):
-        return [p for p in self.parameters if p.best is True]
+        return QueryList([p for p in self.parameters if p.best is True])
 
     def set_best(self, best):
         ''' sets a list of best query parameters '''
