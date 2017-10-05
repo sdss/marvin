@@ -718,10 +718,10 @@ class Maskbit(object):
         """
         assert (self.mask is not None) or (value is not None), 'Must provide a value.'
 
-        value = self.mask if value is None else np.array(value)
+        value = np.array(self.mask) if value is None else np.array(value)
         ndim = value.ndim
 
-        assert value.ndim <= 2, '`value` must be int, 1-D array, or 2-D array.'
+        assert ndim <= 2, '`value` must be int, 1-D array, or 2-D array.'
 
         # expand up to 2 dimensions
         while value.ndim < 2:

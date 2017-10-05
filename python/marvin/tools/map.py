@@ -179,6 +179,8 @@ class Map(Quantity):
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 
+        obj.quality_flag = maps.quality_flag
+
         obj._pixmask = obj._datamodel.bitmasks['DAPPIXMASK']
         obj._pixmask.mask = mask if mask is not None else None
 

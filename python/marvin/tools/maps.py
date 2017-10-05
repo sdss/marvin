@@ -404,6 +404,19 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         return self._cube
 
+    @property
+    def quality_flag(self):
+        """Return Maps DAPQUAL flag."""
+
+        try:
+            dapqual = self._datamodel.bitmasks['DAPQUAL']
+        except KeyError:
+            dapqual = None
+        else:
+            dapqual.mask = int(self.header['DAPQUAL'])
+
+        return dapqual
+
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   spectrum=True, modelcube=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.

@@ -198,19 +198,23 @@ MPL5_maps = [
 ]
 
 
-# dynamically read the DAPPIXMASK flag
 path_sdss_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-maskbits = yanny(path_sdss_maskbits, np=True)
-dappixmask = maskbits['MASKBITS'][maskbits['MASKBITS']['flag'] == 'MANGA_DAPPIXMASK']
-MPL5_dappixmask_bits = pd.DataFrame(dappixmask[['bit', 'label', 'description']])
+sdss_maskbits = yanny(path_sdss_maskbits, np=True)
+maskbits = sdss_maskbits['MASKBITS']
 
-
-MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_bits, name='DAPPIXMASK',
+dappixmask = maskbits[maskbits['flag'] == 'MANGA_DAPPIXMASK']
+MPL5_dappixmask_schema = pd.DataFrame(dappixmask[['bit', 'label', 'description']])
+MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_schema, name='DAPPIXMASK',
                           description='2d image bitmap used to describe the quality of individual '
                                       'pixel measurements in the DAP MAPS file.')
+
+dapqual = maskbits[maskbits['flag'] == 'MANGA_DAPQUAL']
+MPL5_dapqual_schema = pd.DataFrame(dapqual[['bit', 'label', 'description']])
+MPL5_dapqual = Maskbit(schema=MPL5_dapqual_schema, name='DAPQUAL',
+                       description='Describes the overall quality of the data.')
 
 
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps,
-                    bitmasks={'DAPPIXMASK': MPL5_dappixmask}, default_bintype='SPX',
-                    default_template='GAU-MILESHC')
+                    bitmasks={'DAPQUAL': MPL5_dapqual, 'DAPPIXMASK': MPL5_dappixmask},
+                    default_bintype='SPX', default_template='GAU-MILESHC')
