@@ -179,7 +179,8 @@ class Map(Quantity):
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 
-        obj.maskbit = obj._datamodel.bitmasks['DAPPIXMASK'] if mask is not None else None
+        obj._pixmask = obj._datamodel.bitmasks['DAPPIXMASK']
+        obj._pixmask.mask = mask if mask is not None else None
 
         return obj
 
@@ -512,43 +513,13 @@ class Map(Quantity):
 
         return (self**2 - map_corr**2)**0.5
 
-    @add_doc(marvin.utils.general.get_mask.__doc__)
-    def get_mask(self, *args, **kwargs):
-        bitnames = list(args).pop(0) if len(args) == 1 else kwargs.pop('bitnames', ())
-        dtype = list(args).pop(1) if len(args) == 2 else kwargs.pop('dtype', int)
+    @property
+    def pixmask(self):
+        return self._pixmask
 
-        # If no bitnames are given, then use the default bits according to the datamodel.
-        if len(bitnames) == 0:
-            __, dapver = marvin.config.lookUpVersions(self.release)
-            default_params = get_default_plot_params(dapver)
-            bitnames = default_params['default']['bitmasks']
-
-        return marvin.utils.general.get_mask(self.mask, self.maskbit.bits, bitnames, dtype)
-
-    @add_doc(marvin.utils.general.get_bits.__doc__)
-    def get_bits(self, value, *args, **kwargs):
-        return marvin.utils.general.get_bits(value, self.maskbit.bits, *args, **kwargs)
-
-    @add_doc(marvin.utils.general.get_bit_int.__doc__)
-    def get_bit_int(self, names):
-        return marvin.utils.general.get_bit_int(names, self.maskbit.bits)
-
-    def get_bits_all_spax(self, *args, **kwargs):
-        """Get the bits for all spaxels.
-
-        Parameters:
-            output (str):
-                Format of output. Allowed options are
-                    - ``'name'`` for bit names,
-                    - ``'value'`` for bit values, and
-                    - ``'object'`` for bit objects.
-                Default is ``'name'``.
-
-        Returns:
-            list:
-                Three level nested list of shape (Map.shape[0], Map.shape[1], number of bits set).
-        """
-        return [[self.get_bits(jj, *args, **kwargs) for jj in ii] for ii in self.mask]
+    @pixmask.setter
+    def pixmask(self):
+        self._pixmask.mask = self.mask if self.mask is not None else None
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):

@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-09-29 11:09:14
+# @Last modified time: 2017-10-05 15:10:81
 
 from copy import deepcopy
 
@@ -81,14 +81,6 @@ def map_(request, galaxy, data_origin):
     map_ = maps.getMap(property_name=request.param[0], channel=request.param[1])
     map_.data_origin = data_origin
     return map_
-
-
-# @pytest.fixture(scope='function')
-# def haflux(galaxy, data_origin):
-#     maps = Maps(**_get_maps_kwargs(galaxy, data_origin))
-#     ha = maps['emline_gflux_ha_6564']
-#     ha.data_origin = data_origin
-#     return ha
 
 
 class TestMap(object):
@@ -369,78 +361,32 @@ class TestMaskbit(object):
         assert pytest.approx(map_release_only.masked.data, map_release_only.value)
         assert (map_release_only.masked.mask == expected).all()
 
-    def test_get_mask_no_bitnames(self, map_release_only):
-
-        actual = map_release_only.get_mask()
-
-        __, dapver = config.lookUpVersions(map_release_only.release)
-        params = get_default_plot_params(dapver)
-        expected = map_release_only.get_mask(bitnames=params['default']['bitmasks'])
-
-        assert (actual == expected).all()
-
-    def test_get_mask_one_bitname_as_string(self, map_release_only):
-        actual = map_release_only.get_mask(bitnames='DONOTUSE')
-        expected = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
-        assert (actual == expected).all()
-
-    def test_get_mask_one_bitname_as_list(self, map_release_only):
-        actual = map_release_only.get_mask(bitnames=('DONOTUSE',))
-        expected = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
-        assert (actual == expected).all()
-    
-    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    def test_get_mask_multiple_bitnames(self, map_release_only):
-        actual = map_release_only.get_mask(bitnames=('NOCOV', 'DONOTUSE'))
-
-        mask0 = map_release_only.mask & 2**map_release_only.maskbit.bits['NOCOV'].value
-        mask1 = map_release_only.mask & 2**map_release_only.maskbit.bits['DONOTUSE'].value
-        expected = np.sum((mask0, mask1), axis=0, dtype=int)
-
-        assert (actual == expected).all()
-
     @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    @pytest.mark.parametrize('output, expected',
-                             [('name', ['DONOTUSE']),
-                              ('value', [0])])
-    def test_get_bits_mpl4(self, map_release_only, output, expected):
-        assert map_release_only.get_bits(1, output=output) == expected
+    def test_values_to_bits_mpl4(self, map_release_only):
+        assert map_release_only.pixmask.values_to_bits(1) == [0]
 
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    @pytest.mark.parametrize('output, expected',
-                             [('name', ['NOCOV', 'LOWCOV']),
-                              ('value', [0, 1])])
-    def test_get_bits(self, map_release_only, output, expected):
-        assert map_release_only.get_bits(3, output=output) == expected
+    def test_values_to_bits(self, map_release_only):
+        assert map_release_only.pixmask.values_to_bits(3) == [0, 1]
 
     @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    def test_get_bits_object_mpl4(self, map_release_only):
-        actual = map_release_only.get_bits(1, output='object')
-        expected = [map_release_only.maskbit.bits['DONOTUSE']]
-        assert actual == expected
+    def test_values_to_labels_mpl4(self, map_release_only):
+        assert map_release_only.pixmask.values_to_labels(1) == ['DONOTUSE']
 
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    def test_get_bits_object(self, map_release_only):
-        actual = map_release_only.get_bits(3, output='object')
-        expected = [map_release_only.maskbit.bits['NOCOV'],
-                    map_release_only.maskbit.bits['LOWCOV']]
-        assert actual == expected
+    def test_values_to_labels(self, map_release_only):
+        assert map_release_only.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
 
-    def test_get_bits_zero(self, map_release_only):
-        assert map_release_only.get_bits(0, output='object') == []
-    
     @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    @pytest.mark.parametrize('names, expected',
-                             [('DONOTUSE', 1)])
-    def test_get_bit_int_mpl4(self, map_release_only, names, expected):
-        assert map_release_only.get_bit_int(names) == expected
+    def test_labels_to_value_mpl4(self, map_release_only):
+        assert map_release_only.pixmask.labels_to_value('DONOTUSE') == 1
 
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
     @pytest.mark.parametrize('names, expected',
                              [(['NOCOV', 'LOWCOV'], 3),
                               ('DONOTUSE', 1073741824)])
-    def test_get_bit_int_mpl4(self, map_release_only, names, expected):
-        assert map_release_only.get_bit_int(names) == expected
+    def test_labels_to_value(self, map_release_only, names, expected):
+        assert map_release_only.pixmask.labels_to_value(names) == expected
 
 
 
