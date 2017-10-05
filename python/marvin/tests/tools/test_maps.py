@@ -164,4 +164,3 @@ class TestMaskbit(object):
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
     def test_quality_flag(self, map_release_only):
         assert map_release_only.quality_flag.mask == 0
-        

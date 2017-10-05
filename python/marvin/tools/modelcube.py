@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-02-10 17:54:00
+# @Last modified by:   andrews
+# @Last modified time: 2017-10-05 17:10:93
 
 from __future__ import print_function, division, absolute_import
 
@@ -304,6 +304,13 @@ class ModelCube(MarvinToolsClass):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
+
+    @property
+    def quality_flag(self):
+        """Return ModelCube DAPQUAL flag."""
+        dapqual = self._datamodel.bitmasks['DAPQUAL']
+        dapqual.mask = int(self.header['DAPQUAL'])
+        return dapqual
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   spectrum=True, properties=True, **kwargs):
