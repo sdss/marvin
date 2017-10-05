@@ -11,12 +11,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from collections import OrderedDict
-
 import pytest
-import astropy
+import pandas as pd
+import numpy as np
 
-from marvin.utils.dap.datamodel import Bit, Maskbit
+from marvin.utils.dap.datamodel import Maskbit
 # from marvin.utils.dap.datamodel import MapsProperty, MapsPropertyList, get_dap_datamodel
 # from marvin.tests import UseReleases
 # from marvin import config
@@ -53,46 +52,75 @@ from marvin.utils.dap.datamodel import Bit, Maskbit
 #         assert maps_prop.name == 'emline_gflux'
 #         assert channel == 'ha_6564'
 
-bits = OrderedDict([
-    ('BITZERO', Bit(0, 'BITZERO', 'The zeroth bit.')),
-    ('BITONE', Bit(1, 'BITONE', 'The first bit.'))
-])
+bits = [(0, 'BITZERO', 'The zeroth bit.'),
+        (1, 'BITONE', 'The first bit.'),
+        (2, 'BITTWO', 'The second bit.'),
+        (3, 'BITTHREE', 'The third bit')]
+schema = pd.DataFrame(bits, columns=['bit', 'label', 'description'])
 name = 'MYMASK'
 description = 'My first Maskbit.'
-
-class TestBit(object):
-
-    def test_bit_init(self):
-        value = 0
-        name = 'firstbit'
-        description = 'The first bit.'
-        firstbit = Bit(value=value, name=name, description=description)
-
-        assert firstbit.value == value
-        assert firstbit.name == name
-        assert firstbit.description == description
-        assert str(firstbit) == "<Bit  0 name='firstbit'>"
+mask = np.array([[0, 1], [2, 12]])
 
 
 class TestMaskbit(object):
-
-    def test_maskbit_init(self, bits=bits, name=name, description=description):
-
-        mb = Maskbit(bits=bits, name=name, description=description)
-
-        assert mb.bits == bits
+    
+    def test_maskbit_init(self, schema=schema, name=name, description=description):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        assert np.all(mb.schema == schema)
         assert mb.name == name
         assert mb.description == description
-        assert str(mb) == "<Maskbit name='MYMASK'>"
+        assert str(mb) == "<Maskbit 'MYMASK'\n\n{0!r}>".format(schema)
 
-    def test_maskbit_to_table(self, bits=bits, name=name, description=description):
+    def test_values_to_bits_no_value_error(self, schema=schema, name=name, description=description):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        with pytest.raises(AssertionError) as ee:
+            mb.values_to_bits(value=None)
 
-        mb = Maskbit(bits=bits, name=name, description=description)
-        table = mb.to_table(description=True)
+        assert 'Must provide a value.' in str(ee.value)
 
-        assert isinstance(table, astropy.table.table.Table)
-        assert table.colnames == ['bit', 'name', 'description']
-        assert table[0]['bit'] == 0
-        assert table[0]['name'].decode('utf-8') == 'BITZERO'
-        assert table[0]['description'].decode('utf-8') == 'The zeroth bit.'
+    @pytest.mark.parametrize('value, expected',
+                             [(None, [[[], [0]], [[1], [2, 3]]]),
+                              (0, []),
+                              (3, [0, 1]),
+                              (np.array([1, 3]), [[0], [0, 1]]),
+                              (np.array([[0, 2], [1, 5]]), [[[], [1]], [[0], [0, 2]]])])
+    def test_values_to_bits(self, value, expected):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        if value is None:
+            mb.mask = mask
+        actual = mb.values_to_bits(value=value)
+        assert actual == expected
 
+    @pytest.mark.parametrize('value, expected',
+                             [(None, [[[], ['BITZERO']], [['BITONE'], ['BITTWO', 'BITTHREE']]]),
+                              (0, []),
+                              (3, ['BITZERO', 'BITONE']),
+                              (np.array([1, 3]), [['BITZERO'], ['BITZERO', 'BITONE']]),
+                              (np.array([[0, 2], [1, 3]]), [[[], ['BITONE']], [['BITZERO'], ['BITZERO', 'BITONE']]])])
+    def test_values_to_labels(self, value, expected):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        if value is None:
+            mb.mask = mask
+        actual = mb.values_to_labels(value=value)
+        assert actual == expected
+
+    @pytest.mark.parametrize('bits_in, expected',
+                             [([], []),
+                              ([0], ['BITZERO']),
+                              ([1], ['BITONE']),
+                              ([[1]], [['BITONE']]),
+                              ([[0, 1], [2]], [['BITZERO', 'BITONE'], ['BITTWO']])])
+    def test_bits_to_labels(self, bits_in, expected):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        actual = mb._bits_to_labels(bits_in)
+        assert actual == expected
+
+    @pytest.mark.parametrize('labels, expected',
+                             [('BITONE', 2),
+                              (['BITONE'], 2),
+                              (['BITONE', 'BITTWO'], 6)])
+    def test_labels_to_value(self, labels, expected):
+        mb = Maskbit(schema=schema, name=name, description=description)
+        mb.mask = mask
+        actual = mb.labels_to_value(labels)
+        assert actual == expected

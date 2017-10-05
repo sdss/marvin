@@ -15,9 +15,9 @@ import copy as copy_mod
 import itertools
 import re
 import six
-
 from collections import OrderedDict
 
+import numpy as np
 import astropy.table as table
 from astropy import units as u
 
@@ -26,8 +26,7 @@ from marvin.utils.general.structs import get_best_fuzzy
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
-           'MultiChannelProperty', 'spaxel', 'datamodel', 'Channel', 'Bit'
-           'Maskbit')
+           'MultiChannelProperty', 'spaxel', 'datamodel', 'Channel', 'Maskbit')
 
 
 spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -672,82 +671,141 @@ class Channel(object):
 
         return self.name
 
-class Bit(object):
-    """A class representing a single bit of a maskbit.
-
-    Parameters:
-        value (int):
-            Value of .
-        name (str):
-            Name of bit.
-        description (str):
-            Description of bit.
-    """
-
-    def __init__(self, value, name, description):
-
-        self.value = value
-        self.name = name
-        self.description = description
-
-    def __repr__(self):
-
-        return '<Bit {0:>2} name={1!r}>'.format(self.value, self.name)
-
 
 class Maskbit(object):
     """A class representing a maskbit.
-    
+
     Parameters:
-        bits (OrderedDict):
-            Collection of ``marvin.utils.dap.datamodel.base.Bit`` objects.
+        schema (DataFrame):
+            Maskbit schema.
         name (str):
             Name of maskbit.
         description (str):
             Description of maskbit.
     """
 
-    def __init__(self, bits, name, description):
+    def __init__(self, schema, name, description):
 
-        self.bits = bits
+        self.schema = schema
         self.name = name
         self.description = description
+        self.mask = None
 
     def __repr__(self):
 
-        return '<Maskbit name={0!r}>'.format(self.name)
+        return '<Maskbit {0!r}\n\n{1!r}>'.format(self.name, self.schema)
 
-    def to_table(self, pprint=False, description=False, max_width=1000):
-        """Returns an astropy table with all of the bits.
+    def values_to_bits(self, value=None):
+        """Convert mask values to a list of bits set.
 
         Parameters:
-            pprint (bool):
-                Whether the table should be printed to screen using
-                astropy's table pretty print.
-            description (bool):
-                If ``True``, an extra column with the description of
-                the property will be added. Default is ``False``.
-            max_width (int or None):
-                A keyword to pass to ``astropy.table.Table.pprint()``
-                with the maximum width of the table, in characters.
+            value (int or array):
+                Mask values. If ``None``, apply to entire
+                ``Maskbit.mask`` array.  Default is ``None``.
 
         Returns:
-            result (``astropy.table.Table``):
-                If ``pprint=False``, returns an astropy table
-                containing the value and names of the bits.
+            list:
+                Bits that are set.
+
+        Example:
+            >>> maps = Maps(plateifu='8485-1901')
+            >>> ha = maps['emline_gflux_ha_6564']
+            >>> ha.pixmask.values_to_bits()
+            [[[0, 1, 4, 30],
+              [0, 1, 4, 30],
+              ...
+              [0, 1, 4, 30]]]
         """
-        # import ipdb; ipdb.set_trace()
-        model_table = table.Table(None, names=['bit', 'name', 'description'],
-                                  dtype=['i2', 'S30', 'S200'])
+        assert (self.mask is not None) or (value is not None), 'Must provide a value.'
 
-        for bit in self.bits.values():
-            model_table.add_row((bit.value, bit.name, bit.description))
+        value = self.mask if value is None else np.array(value)
+        ndim = value.ndim
 
-        if not description:
-            model_table.remove_column('description')
+        assert value.ndim <= 2, '`value` must be int, 1-D array, or 2-D array.'
 
-        if pprint:
-            model_table.pprint(max_width=max_width, max_lines=1e6)
-            return
+        # expand up to 2 dimensions
+        while value.ndim < 2:
+            value = np.array([value])
 
-        return model_table
+        # create list of list of lists of bits set
+        bits_set = []
+        for ii in range(value.shape[0]):
+            row = []
+            for jj in range(value.shape[1]):
+                row.append(self._value_to_bits(value[ii, jj], self.schema.bit.values))
+            bits_set.append(row)
+
+        # condense back down to initial dimensions
+        for __ in range(2 - ndim):
+            bits_set = bits_set[0]
+
+        return bits_set
+
+    def _value_to_bits(self, value, bits_all):
+        return [it for it in bits_all if int(value) & (1 << it)]
+
+    def values_to_labels(self, value=None):
+        """Convert mask values to a list of the labels of bits set.
+
+        Parameters:
+            value (int):
+                Mask value. If ``None``, apply to entire
+                ``Maskbit.mask`` array.  Default is ``None``.
+
+        Returns:
+            list:
+                Bits that are set.
+
+        Example:
+            >>> maps = Maps(plateifu='8485-1901')
+            >>> ha = maps['emline_gflux_ha_6564']
+            >>> ha.pixmask.values_to_labels()
+            [[['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE'],
+              ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE'],
+               ...
+              ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']]]
+        """
+        bits_set = self.values_to_bits(value=value)
+        labels_set = self._bits_to_labels(bits_set)
+        return labels_set
+
+    def _bits_to_labels(self, nested):
+        """Recursively convert a nested list of bits to labels.
+
+        Parameters:
+            nested (list):
+                Nested list of bits.
+
+        Returns:
+            list: Nested list of labels.
+        """
+        # Base condition
+        if isinstance(nested, (int, np.integer)):
+            return self.schema.label[self.schema.bit == nested].values[0]
+
+        return [self._bits_to_labels(it) for it in nested]
+
+    def labels_to_value(self, labels):
+        """Convert bit labels into a bit value.
+
+        Parameters:
+            labels (str or list):
+                Labels of bits to set.
+
+        Returns:
+            int: Integer bit value.
+
+        Example:
+            >>> maps = Maps(plateifu='8485-1901')
+            >>> ha = maps['emline_gflux_ha_6564']
+            >>> ha.pixmask.labels_to_value('DONOTUSE')
+            1073741824
+
+            >>> ha.pixmask.labels_to_value(['NOCOV', 'LOWCOV'])
+            3
+        """
+        if isinstance(labels, str):
+            labels = [labels]
+
+        bit_values = [self.schema.bit[self.schema.label == label].values[0] for label in labels]
+        return np.sum([2**value for value in bit_values])
