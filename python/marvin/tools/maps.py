@@ -405,6 +405,59 @@ class Maps(marvin.core.core.MarvinToolsClass):
         return self._cube
 
     @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+
+        manga_target1 = self._datamodel.bitmasks['MANGA_TARGET1']
+
+        try:
+            manga_target1.mask = int(self.header['MNGTRG1'])
+        except KeyError:
+            manga_target1.mask = int(self.header['MNGTARG1'])
+
+        manga_target1.bits = manga_target1.values_to_bits()
+        manga_target1.labels = manga_target1.values_to_labels()
+
+        return manga_target1
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+
+        manga_target2 = self._datamodel.bitmasks['MANGA_TARGET2']
+
+        try:
+            manga_target2.mask = int(self.header['MNGTRG2'])
+        except KeyError:
+            manga_target2.mask = int(self.header['MNGTARG2'])
+            
+        manga_target2.bits = manga_target2.values_to_bits()
+        manga_target2.labels = manga_target2.values_to_labels()
+
+        return manga_target2
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+
+        manga_target3 = self._datamodel.bitmasks['MANGA_TARGET3']
+
+        try:
+            manga_target3.mask = int(self.header['MNGTRG3'])
+        except KeyError:
+            manga_target3.mask = int(self.header['MNGTARG3'])
+
+        manga_target3.bits = manga_target3.values_to_bits()
+        manga_target3.labels = manga_target3.values_to_labels()
+
+        return manga_target3
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
+
+    @property
     def quality_flag(self):
         """Return Maps DAPQUAL flag."""
 
@@ -416,7 +469,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             dapqual.mask = int(self.header['DAPQUAL'])
 
         return dapqual
-
+    
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   spectrum=True, modelcube=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.

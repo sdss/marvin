@@ -179,6 +179,11 @@ class Map(Quantity):
         obj.ivar = (np.array(ivar) / (prop.scale ** 2)) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 
+        obj.manga_target1 = maps.manga_target1
+        obj.manga_target2 = maps.manga_target2
+        obj.manga_target3 = maps.manga_target3
+        obj.target_flags = maps.target_flags
+
         obj.quality_flag = maps.quality_flag
 
         return obj

@@ -202,19 +202,39 @@ path_sdss_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sds
 sdss_maskbits = yanny(path_sdss_maskbits, np=True)
 maskbits = sdss_maskbits['MASKBITS']
 
-dappixmask = maskbits[maskbits['flag'] == 'MANGA_DAPPIXMASK']
-MPL5_dappixmask_schema = pd.DataFrame(dappixmask[['bit', 'label', 'description']])
-MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_schema, name='DAPPIXMASK',
-                          description='2d image bitmap used to describe the quality of individual '
-                                      'pixel measurements in the DAP MAPS file.')
+manga_target1 = maskbits[maskbits['flag'] == 'MANGA_TARGET1']
+MPL5_manga_target1_schema = pd.DataFrame(manga_target1[['bit', 'label', 'description']])
+MPL5_manga_target1 = Maskbit(schema=MPL5_manga_target1_schema, name='MANGA_TARGET1',
+                             description='Targeting bits for all galaxy targets.')
+
+manga_target2 = maskbits[maskbits['flag'] == 'MANGA_TARGET2']
+MPL5_manga_target2_schema = pd.DataFrame(manga_target2[['bit', 'label', 'description']])
+MPL5_manga_target2 = Maskbit(schema=MPL5_manga_target2_schema, name='MANGA_TARGET2',
+                             description='Targeting bits for all non-galaxy targets.')
+
+manga_target3 = maskbits[maskbits['flag'] == 'MANGA_TARGET3']
+MPL5_manga_target3_schema = pd.DataFrame(manga_target3[['bit', 'label', 'description']])
+MPL5_manga_target3 = Maskbit(schema=MPL5_manga_target3_schema, name='MANGA_TARGET3',
+                             description='Targeting bits for ancillary targets.')
+
 
 dapqual = maskbits[maskbits['flag'] == 'MANGA_DAPQUAL']
 MPL5_dapqual_schema = pd.DataFrame(dapqual[['bit', 'label', 'description']])
 MPL5_dapqual = Maskbit(schema=MPL5_dapqual_schema, name='DAPQUAL',
                        description='Describes the overall quality of the data.')
 
+dappixmask = maskbits[maskbits['flag'] == 'MANGA_DAPPIXMASK']
+MPL5_dappixmask_schema = pd.DataFrame(dappixmask[['bit', 'label', 'description']])
+MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_schema, name='DAPPIXMASK',
+                          description='2d image bitmap used to describe the quality of individual '
+                                      'pixel measurements in the DAP MAPS file.')
+
 
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps,
-                    bitmasks={'DAPQUAL': MPL5_dapqual, 'DAPPIXMASK': MPL5_dappixmask},
+                    bitmasks={'MANGA_TARGET1': MPL5_manga_target1,
+                              'MANGA_TARGET2': MPL5_manga_target2,
+                              'MANGA_TARGET3': MPL5_manga_target3,
+                              'DAPQUAL': MPL5_dapqual,
+                              'DAPPIXMASK': MPL5_dappixmask},
                     default_bintype='SPX', default_template='GAU-MILESHC')

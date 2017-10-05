@@ -10,9 +10,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import os
+
 from astropy import units as u
 import pandas as pd
 
+import marvin
+from marvin.utils.general.yanny import yanny
 from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
                    Channel, Maskbit)
 
@@ -141,9 +145,27 @@ MPL4_maps = [
 ]
 
 
+path_sdss_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
+sdss_maskbits = yanny(path_sdss_maskbits, np=True)
+maskbits = sdss_maskbits['MASKBITS']
+
+manga_target1 = maskbits[maskbits['flag'] == 'MANGA_TARGET1']
+MPL4_manga_target1_schema = pd.DataFrame(manga_target1[['bit', 'label', 'description']])
+MPL4_manga_target1 = Maskbit(schema=MPL4_manga_target1_schema, name='MANGA_TARGET1',
+                             description='Targeting bits for all galaxy targets.')
+
+manga_target2 = maskbits[maskbits['flag'] == 'MANGA_TARGET2']
+MPL4_manga_target2_schema = pd.DataFrame(manga_target2[['bit', 'label', 'description']])
+MPL4_manga_target2 = Maskbit(schema=MPL4_manga_target2_schema, name='MANGA_TARGET2',
+                             description='Targeting bits for all non-galaxy targets.')
+
+manga_target3 = maskbits[maskbits['flag'] == 'MANGA_TARGET3']
+MPL4_manga_target3_schema = pd.DataFrame(manga_target3[['bit', 'label', 'description']])
+MPL4_manga_target3 = Maskbit(schema=MPL4_manga_target3_schema, name='MANGA_TARGET3',
+                             description='Targeting bits for ancillary targets.')
+
 MPL4_dappixmask_bits = pd.DataFrame([(0, 'DONOTUSE', 'Do not use this spaxel for science')],
                                     columns=['bit', 'label', 'description'])
-
 
 MPL4_dappixmask = Maskbit(schema=MPL4_dappixmask_bits, name='DAPPIXMASK',
                           description='2d image bitmap used to describe the quality of individual '
@@ -151,6 +173,9 @@ MPL4_dappixmask = Maskbit(schema=MPL4_dappixmask_bits, name='DAPPIXMASK',
 
 
 MPL4 = DAPDataModel('1.1.1', aliases=['MPL-4', 'MPL4'], bintypes=[NONE, RADIAL, STON],
-                    templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN],
-                    properties=MPL4_maps, bitmasks={'DAPPIXMASK': MPL4_dappixmask}, 
+                    templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN], properties=MPL4_maps,
+                    bitmasks={'MANGA_TARGET1': MPL4_manga_target1,
+                              'MANGA_TARGET2': MPL4_manga_target2,
+                              'MANGA_TARGET3': MPL4_manga_target3,
+                              'DAPPIXMASK': MPL4_dappixmask},
                     default_bintype='NONE', default_template='MIUSCAT-THIN')

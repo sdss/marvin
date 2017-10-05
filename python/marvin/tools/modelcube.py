@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-05 17:10:93
+# @Last modified time: 2017-10-05 19:10:35
 
 from __future__ import print_function, division, absolute_import
 
@@ -304,6 +304,59 @@ class ModelCube(MarvinToolsClass):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
+
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+
+        manga_target1 = self._datamodel.bitmasks['MANGA_TARGET1']
+
+        try:
+            manga_target1.mask = int(self.header['MNGTRG1'])
+        except KeyError:
+            manga_target1.mask = int(self.header['MNGTARG1'])
+
+        manga_target1.bits = manga_target1.values_to_bits()
+        manga_target1.labels = manga_target1.values_to_labels()
+
+        return manga_target1
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+
+        manga_target2 = self._datamodel.bitmasks['MANGA_TARGET2']
+
+        try:
+            manga_target2.mask = int(self.header['MNGTRG2'])
+        except KeyError:
+            manga_target2.mask = int(self.header['MNGTARG2'])
+            
+        manga_target2.bits = manga_target2.values_to_bits()
+        manga_target2.labels = manga_target2.values_to_labels()
+
+        return manga_target2
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+
+        manga_target3 = self._datamodel.bitmasks['MANGA_TARGET3']
+
+        try:
+            manga_target3.mask = int(self.header['MNGTRG3'])
+        except KeyError:
+            manga_target3.mask = int(self.header['MNGTARG3'])
+
+        manga_target3.bits = manga_target3.values_to_bits()
+        manga_target3.labels = manga_target3.values_to_labels()
+
+        return manga_target3
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
     @property
     def quality_flag(self):
