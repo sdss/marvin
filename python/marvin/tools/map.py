@@ -181,9 +181,6 @@ class Map(Quantity):
 
         obj.quality_flag = maps.quality_flag
 
-        obj._pixmask = obj._datamodel.bitmasks['DAPPIXMASK']
-        obj._pixmask.mask = mask if mask is not None else None
-
         return obj
 
     @classmethod
@@ -517,11 +514,15 @@ class Map(Quantity):
 
     @property
     def pixmask(self):
-        return self._pixmask
+        """Return the DAPPIXMASK flag."""
 
-    @pixmask.setter
-    def pixmask(self):
-        self._pixmask.mask = self.mask if self.mask is not None else None
+        pixmask = self._datamodel.bitmasks['DAPPIXMASK']
+
+        pixmask.mask = self.mask if self.mask is not None else None
+        pixmask.bits = pixmask.values_to_bits()
+        pixmask.labels = pixmask.values_to_labels()
+
+        return pixmask
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):

@@ -690,6 +690,8 @@ class Maskbit(object):
         self.name = name
         self.description = description
         self.mask = None
+        self.bits = None
+        self.labels = None
 
     def __repr__(self):
 
