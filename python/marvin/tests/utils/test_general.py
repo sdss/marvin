@@ -18,8 +18,6 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
-from collections import OrderedDict
-
 import pytest
 import numpy as np
 from astropy.io import fits
@@ -28,17 +26,8 @@ from astropy.wcs import WCS
 import marvin
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_mask, get_bits,
-                                  get_bit_int, get_plot_params)
-from marvin.utils.dap.datamodel.base import Bit
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params)
 
-
-mask = np.array([[0, 1], [2, 3]])
-bit_lookup = OrderedDict([
-    ('BITZERO', Bit(0, 'BITZERO', 'The zeroth bit.')),
-    ('BITONE', Bit(1, 'BITONE', 'The first bit.')),
-    ('BITTWO', Bit(2, 'BITTWO', 'The second bit.'))
-])
 
 @pytest.fixture(scope='function')
 def wcs(galaxy):
@@ -187,90 +176,6 @@ class TestPillowImage(object):
             with pytest.raises(ImportError) as cm:
                 err = 'No module named PIL'
                 assert err == str(e.args[0])
-
-
-# TODO Remove!!!!!!!!!!
-@pytest.fixture(scope='session')
-def bitmask(dapver):
-    data = {'1.1.1': {'badData': {'doNotUse': 0}},
-            '2.0.2': {'nocov': 0, 'badData': {'unreliable': 5, 'doNotUse': 30}}
-            }
-    return data[dapver]
-
-
-class TestMaskbit(object):
-
-    def test_get_mask_no_bitnames(self, mask=mask, bit_lookup=bit_lookup):
-        actual = get_mask(mask, bit_lookup, bitnames=())
-        expected = mask > 0
-        assert (actual == expected).all()
-
-    def test_get_mask_one_bitname_as_string(self, mask=mask, bit_lookup=bit_lookup):
-        actual = get_mask(mask, bit_lookup, bitnames='BITZERO')
-        expected = (mask & 2**0) > 0
-        assert (actual == expected).all()
-
-    def test_get_mask_one_bitname_as_string_lower(self, mask=mask, bit_lookup=bit_lookup):
-        actual = get_mask(mask, bit_lookup, bitnames='bitzero')
-        expected = (mask & 2**0) > 0
-        assert (actual == expected).all()
-
-    def test_get_mask_one_bitname_as_list(self, mask=mask, bit_lookup=bit_lookup):
-        actual = get_mask(mask, bit_lookup, bitnames=('BITZERO',))
-        expected = (mask & 2**0) > 0
-        assert (actual == expected).all()
-    
-    def test_get_mask_multiple_bitnames(self, mask=mask, bit_lookup=bit_lookup):
-        actual = get_mask(mask, bit_lookup, bitnames=('BITZERO', 'BITONE'))
-        mask0 = (mask & 2**0)
-        mask1 = (mask & 2**1)
-        expected = np.sum((mask0, mask1), axis=0, dtype=int)
-        assert (actual == expected).all()
-
-    def test_get_mask_invalid_bitnames(self, mask=mask, bit_lookup=bit_lookup):
-        with pytest.raises(MarvinError) as cm:
-            get_mask(mask, bit_lookup, bitnames=('NOT_A_BITNAME',))
-
-        assert 'Invalid mask bit name:' in str(cm)
-
-    @pytest.mark.parametrize('bitnames, dtype, expected',
-                             [('BITONE', bool, [[False, False], [True, True]]),
-                              (['BITZERO', 'BITONE'], bool, [[False, True], [True, True]]),
-                              ('BITONE', int, [[0, 0], [2, 2]]),
-                              (['BITZERO', 'BITONE'], int, [[0, 1], [2, 3]]),
-                              ])
-    def test_get_mask_dtype(self, bitnames, dtype, expected, mask=mask, bit_lookup=bit_lookup):
-        assert (get_mask(mask, bit_lookup, bitnames, dtype) == np.array(expected)).all()
-
-    def test_get_bits_name(self, bit_lookup=bit_lookup):
-        actual = get_bits(3, bit_lookup, output='name')
-        expected = ['BITZERO', 'BITONE']
-        assert actual == expected
-
-    def test_get_bits_value(self, bit_lookup=bit_lookup):
-        actual = get_bits(3, bit_lookup, output='value')
-        expected = [0, 1]
-        assert actual == expected
-
-    def test_get_bits_object(self, bit_lookup=bit_lookup):
-        actual = get_bits(3, bit_lookup, output='object')
-        expected = [bit_lookup['BITZERO'], bit_lookup['BITONE']]
-        assert actual == expected
-
-    def test_get_bits_zero(self, bit_lookup=bit_lookup):
-        actual = get_bits(0, bit_lookup, output='object')
-        expected = []
-        assert actual == expected
-
-    def test_get_bit_int_single_bit(self, bit_lookup=bit_lookup):
-        actual = get_bit_int('BITONE', bit_lookup)
-        expected = 2**1
-        assert actual == expected
-
-    def test_get_bit_int_multiple_bits(self, bit_lookup=bit_lookup):
-        actual = get_bit_int(['BITZERO', 'BITONE'], bit_lookup)
-        expected = 2**0 + 2**1
-        assert actual == expected
 
 
 class TestDataModelPlotParams(object):

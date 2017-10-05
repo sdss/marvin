@@ -54,7 +54,7 @@ from matplotlib.colors import LogNorm
 from marvin import config
 from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
-from marvin.utils.general import get_mask, get_plot_params
+from marvin.utils.general import get_plot_params
 
 
 def mask_nocov(mask, dapmap, ivar=None):
