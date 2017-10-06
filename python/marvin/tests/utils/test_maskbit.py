@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 16:10:26
+# @Last modified time: 2017-10-06 17:10:40
 
 
 from __future__ import division, print_function, absolute_import
@@ -30,15 +30,24 @@ mask = np.array([[0, 1], [2, 12]])
 
 class TestMaskbit(object):
 
-    def test_maskbit_init(self, schema=schema, name=name, description=description):
-        mb = Maskbit(schema=schema, name=name, description=description)
+    def test_maskbit_init_with_schema(self, name=name, schema=schema, description=description):
+        mb = Maskbit(name=name, schema=schema, description=description)
         assert np.all(mb.schema == schema)
         assert mb.name == name
         assert mb.description == description
         assert str(mb) == "<Maskbit 'MYMASK'\n\n{0!r}>".format(schema)
 
-    def test_values_to_bits_no_value_error(self, schema=schema, name=name, description=description):
-        mb = Maskbit(schema=schema, name=name, description=description)
+    @pytest.mark.parametrize('name',
+                             ['MANGA_TARGET1',
+                              'MANGA_DAPPIXMASK'])
+    def test_maskbit_init_from_name(self, name):
+        mb = Maskbit(name=name)
+        assert mb.name == name
+        assert isinstance(mb.schema, pd.DataFrame)
+        assert mb.description is None
+
+    def test_values_to_bits_no_value_error(self,  name=name, schema=schema, description=description):
+        mb = Maskbit(name=name, schema=schema, description=description)
         with pytest.raises(AssertionError) as ee:
             mb.values_to_bits(values=None)
 
@@ -51,7 +60,7 @@ class TestMaskbit(object):
                               (np.array([1, 3]), [[0], [0, 1]]),
                               (np.array([[0, 2], [1, 5]]), [[[], [1]], [[0], [0, 2]]])])
     def test_values_to_bits(self, values, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         if values is None:
             mb.mask = mask
 
@@ -62,7 +71,7 @@ class TestMaskbit(object):
                              [(0, []),
                               (3, [0, 1])])
     def test_value_to_bits(self, value, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         actual = mb._value_to_bits(value, schema.bit.values)
         assert actual == expected
 
@@ -73,7 +82,7 @@ class TestMaskbit(object):
                               (np.array([1, 3]), [['BITZERO'], ['BITZERO', 'BITONE']]),
                               (np.array([[0, 2], [1, 3]]), [[[], ['BITONE']], [['BITZERO'], ['BITZERO', 'BITONE']]])])
     def test_values_to_labels(self, values, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         if values is None:
             mb.mask = mask
 
@@ -87,7 +96,7 @@ class TestMaskbit(object):
                               ([[1]], [['BITONE']]),
                               ([[0, 1], [2]], [['BITZERO', 'BITONE'], ['BITTWO']])])
     def test_bits_to_labels(self, bits_in, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         actual = mb._bits_to_labels(bits_in)
         assert actual == expected
 
@@ -96,7 +105,7 @@ class TestMaskbit(object):
                               (['BITONE'], 2),
                               (['BITONE', 'BITTWO'], 6)])
     def test_labels_to_value(self, labels, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         actual = mb.labels_to_value(labels)
         assert actual == expected
 
@@ -105,7 +114,7 @@ class TestMaskbit(object):
                               (['BITONE'], [1]),
                               (['BITONE', 'BITTWO'], [1, 2])])
     def test_labels_to_bits(self, labels, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         actual = mb.labels_to_bits(labels)
         assert actual == expected
 
@@ -114,7 +123,7 @@ class TestMaskbit(object):
                               (['BITONE'], np.array([[0, 0], [2, 0]])),
                               (['BITTWO', 'BITTHREE'], np.array([[0, 0], [0, 12]]))])
     def test_get_mask_int(self, labels, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask
         actual = mb.get_mask(labels)
         assert (actual == expected).all()
@@ -124,7 +133,7 @@ class TestMaskbit(object):
                               (['BITONE'], np.array([[False, False], [True, False]])),
                               (['BITTWO', 'BITTHREE'], np.array([[False, False], [False, True]]))])
     def test_get_mask_bool(self, labels, expected):
-        mb = Maskbit(schema=schema, name=name, description=description)
+        mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask
         actual = mb.get_mask(labels, dtype=bool)
         assert (actual == expected).all()

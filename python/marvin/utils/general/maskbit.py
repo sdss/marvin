@@ -6,11 +6,17 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 15:10:34
+# @Last modified time: 2017-10-06 17:10:32
 
 from __future__ import division, print_function, absolute_import
 
+import os
+
 import numpy as np
+import pandas as pd
+
+import marvin
+from marvin.utils.general.yanny import yanny
 
 
 class Maskbit(object):
@@ -25,15 +31,34 @@ class Maskbit(object):
             Description of maskbit.
     """
 
-    def __init__(self, schema, name, description):
+    def __init__(self, name, schema=None, description=None):
 
-        self.schema = schema
         self.name = name
-        self.description = description
+        self.schema = schema if schema is not None else self._load_schema(name)
+        self.description = description if description is not None else None
         self.mask = None
 
     def __repr__(self):
         return '<Maskbit {0!r}\n\n{1!r}>'.format(self.name, self.schema)
+
+    def _load_schema(self, flag_name):
+        """Load SDSS Maskbit schema from yanny file.
+
+        Parameters:
+            flag_name (str):
+                Name of flag.
+
+        Returns:
+            DataFrame: Schema of flag.
+        """
+        path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
+        sdss_maskbits = yanny(path_maskbits, np=True)
+        maskbits = sdss_maskbits['MASKBITS']
+
+        flag = maskbits[maskbits['flag'] == flag_name]
+
+        return pd.DataFrame(flag[['bit', 'label', 'description']])
+
 
     @property
     def bits(self):

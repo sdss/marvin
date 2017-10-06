@@ -197,40 +197,23 @@ MPL5_maps = [
 ]
 
 
-path_sdss_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-sdss_maskbits = yanny(path_sdss_maskbits, np=True)
-maskbits = sdss_maskbits['MASKBITS']
-
-manga_target1 = maskbits[maskbits['flag'] == 'MANGA_TARGET1']
-MPL5_manga_target1_schema = pd.DataFrame(manga_target1[['bit', 'label', 'description']])
-MPL5_manga_target1 = Maskbit(schema=MPL5_manga_target1_schema, name='MANGA_TARGET1',
+MPL5_manga_target1 = Maskbit(name='MANGA_TARGET1',
                              description='Targeting bits for all galaxy targets.')
 
-manga_target2 = maskbits[maskbits['flag'] == 'MANGA_TARGET2']
-MPL5_manga_target2_schema = pd.DataFrame(manga_target2[['bit', 'label', 'description']])
-MPL5_manga_target2 = Maskbit(schema=MPL5_manga_target2_schema, name='MANGA_TARGET2',
+MPL5_manga_target2 = Maskbit(name='MANGA_TARGET2',
                              description='Targeting bits for all non-galaxy targets.')
 
-manga_target3 = maskbits[maskbits['flag'] == 'MANGA_TARGET3']
-MPL5_manga_target3_schema = pd.DataFrame(manga_target3[['bit', 'label', 'description']])
-MPL5_manga_target3 = Maskbit(schema=MPL5_manga_target3_schema, name='MANGA_TARGET3',
+MPL5_manga_target3 = Maskbit(name='MANGA_TARGET3',
                              description='Targeting bits for ancillary targets.')
 
-
-dapqual = maskbits[maskbits['flag'] == 'MANGA_DAPQUAL']
-MPL5_dapqual_schema = pd.DataFrame(dapqual[['bit', 'label', 'description']])
-MPL5_dapqual = Maskbit(schema=MPL5_dapqual_schema, name='DAPQUAL',
+MPL5_dapqual = Maskbit(name='MANGA_DAPQUAL',
                        description='Describes the overall quality of the data.')
 
-dappixmask = maskbits[maskbits['flag'] == 'MANGA_DAPPIXMASK']
-MPL5_dappixmask_schema = pd.DataFrame(dappixmask[['bit', 'label', 'description']])
-MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_schema, name='DAPPIXMASK',
+MPL5_dappixmask = Maskbit(name='MANGA_DAPPIXMASK',
                           description='2d image bitmap used to describe the quality of individual '
                                       'pixel measurements in the DAP MAPS file.')
 
-dapspecmask = maskbits[maskbits['flag'] == 'MANGA_DAPSPECMASK']
-MPL5_dapspecmask_schema = pd.DataFrame(dapspecmask[['bit', 'label', 'description']])
-MPL5_dapspecmask = Maskbit(schema=MPL5_dapspecmask_schema, name='DAPSPECMASK',
+MPL5_dapspecmask = Maskbit(name='MANGA_DAPSPECMASK',
                            description='3d cube bitmap used to describe the quality of individual'
                                        'spaxel fits in the DAP model data cube file.')
 
