@@ -228,6 +228,12 @@ MPL5_dappixmask = Maskbit(schema=MPL5_dappixmask_schema, name='DAPPIXMASK',
                           description='2d image bitmap used to describe the quality of individual '
                                       'pixel measurements in the DAP MAPS file.')
 
+dapspecmask = maskbits[maskbits['flag'] == 'MANGA_DAPSPECMASK']
+MPL5_dapspecmask_schema = pd.DataFrame(dapspecmask[['bit', 'label', 'description']])
+MPL5_dapspecmask = Maskbit(schema=MPL5_dapspecmask_schema, name='DAPSPECMASK',
+                           description='3d cube bitmap used to describe the quality of individual'
+                                       'spaxel fits in the DAP model data cube file.')
+
 
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps,
@@ -235,5 +241,6 @@ MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR1
                               'MANGA_TARGET2': MPL5_manga_target2,
                               'MANGA_TARGET3': MPL5_manga_target3,
                               'DAPQUAL': MPL5_dapqual,
-                              'DAPPIXMASK': MPL5_dappixmask},
+                              'DAPPIXMASK': MPL5_dappixmask,
+                              'DAPSPECMASK': MPL5_dapspecmask},
                     default_bintype='SPX', default_template='GAU-MILESHC')

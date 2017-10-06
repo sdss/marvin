@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-15 14:50:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 12:10:76
+# @Last modified time: 2017-10-06 16:10:98
 
 from __future__ import print_function, division, absolute_import
 
@@ -355,6 +355,13 @@ class ModelCube(MarvinToolsClass):
         dapqual = self._datamodel.bitmasks['DAPQUAL']
         dapqual.mask = int(self.header['DAPQUAL'])
         return dapqual
+
+    @property
+    def pixmask(self):
+        """Return the DAPSPECMASK flag."""
+        pixmask = self._datamodel.bitmasks['DAPSPECMASK']
+        pixmask.mask = self.mask if self.mask is not None else None
+        return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   spectrum=True, properties=True, **kwargs):
