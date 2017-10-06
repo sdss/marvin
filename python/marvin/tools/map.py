@@ -350,9 +350,9 @@ class Map(Quantity):
 
         __, dapver = marvin.config.lookUpVersions(self.release)
         default_params = get_default_plot_params(dapver)
-        bitnames = default_params['default']['bitmasks']
+        labels = default_params['default']['bitmasks']
 
-        return np.ma.array(self.value, mask=self.get_mask(bitnames=bitnames, dtype=bool))
+        return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
 
     @property
     def error(self):
@@ -520,13 +520,8 @@ class Map(Quantity):
     @property
     def pixmask(self):
         """Return the DAPPIXMASK flag."""
-
         pixmask = self._datamodel.bitmasks['DAPPIXMASK']
-
         pixmask.mask = self.mask if self.mask is not None else None
-        pixmask.bits = pixmask.values_to_bits()
-        pixmask.labels = pixmask.values_to_labels()
-
         return pixmask
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)

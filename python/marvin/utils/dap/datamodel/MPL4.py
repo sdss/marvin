@@ -17,8 +17,9 @@ import pandas as pd
 
 import marvin
 from marvin.utils.general.yanny import yanny
+from marvin.utils.general.maskbit import Maskbit
 from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
-                   Channel, Maskbit)
+                   Channel)
 
 
 M11_STELIB_ZSOL = Template('M11-STELIB-ZSOL', n=0,

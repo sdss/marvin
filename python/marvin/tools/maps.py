@@ -415,9 +415,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
         except KeyError:
             manga_target1.mask = int(self.header['MNGTARG1'])
 
-        manga_target1.bits = manga_target1.values_to_bits()
-        manga_target1.labels = manga_target1.values_to_labels()
-
         return manga_target1
 
     @property
@@ -430,9 +427,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
             manga_target2.mask = int(self.header['MNGTRG2'])
         except KeyError:
             manga_target2.mask = int(self.header['MNGTARG2'])
-            
-        manga_target2.bits = manga_target2.values_to_bits()
-        manga_target2.labels = manga_target2.values_to_labels()
 
         return manga_target2
 
@@ -446,9 +440,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
             manga_target3.mask = int(self.header['MNGTRG3'])
         except KeyError:
             manga_target3.mask = int(self.header['MNGTARG3'])
-
-        manga_target3.bits = manga_target3.values_to_bits()
-        manga_target3.labels = manga_target3.values_to_labels()
 
         return manga_target3
 

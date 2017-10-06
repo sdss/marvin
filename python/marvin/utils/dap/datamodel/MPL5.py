@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
-#
-# MPL5.py
+# encoding: utf
 #
 # Created by José Sánchez-Gallego on 8 Aug 2017.
 
@@ -17,8 +15,9 @@ import pandas as pd
 
 import marvin
 from marvin.utils.general.yanny import yanny
+from marvin.utils.general.maskbit import Maskbit
 from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
-                   Channel, Maskbit)
+                   Channel)
 from .MPL4 import MPL4_emline_channels
 
 
