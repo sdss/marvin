@@ -270,3 +270,20 @@ class TestPickling(object):
         assert modelcube_restored.data_origin == 'api'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is None
+
+
+class TestMaskbit(object):
+
+    def test_quality_flag(self, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+        assert modelcube.quality_flag is not None
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+        assert getattr(modelcube, flag, None) is not None

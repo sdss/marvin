@@ -520,7 +520,7 @@ class Map(Quantity):
     @property
     def pixmask(self):
         """Return the DAPPIXMASK flag."""
-        pixmask = self._datamodel.bitmasks['DAPPIXMASK']
+        pixmask = self._datamodel.bitmasks['MANGA_DAPPIXMASK']
         pixmask.mask = self.mask if self.mask is not None else None
         return pixmask
 

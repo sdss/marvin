@@ -8,14 +8,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import os
-
 from astropy import units as u
-import pandas as pd
 
-import marvin
-from marvin.utils.general.yanny import yanny
-from marvin.utils.general.maskbit import Maskbit
+from marvin.utils.datamodel.maskbit import get_maskbits
 from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
                    Channel)
 from .MPL4 import MPL4_emline_channels
@@ -197,33 +192,6 @@ MPL5_maps = [
 ]
 
 
-MPL5_manga_target1 = Maskbit(name='MANGA_TARGET1',
-                             description='Targeting bits for all galaxy targets.')
-
-MPL5_manga_target2 = Maskbit(name='MANGA_TARGET2',
-                             description='Targeting bits for all non-galaxy targets.')
-
-MPL5_manga_target3 = Maskbit(name='MANGA_TARGET3',
-                             description='Targeting bits for ancillary targets.')
-
-MPL5_dapqual = Maskbit(name='MANGA_DAPQUAL',
-                       description='Describes the overall quality of the data.')
-
-MPL5_dappixmask = Maskbit(name='MANGA_DAPPIXMASK',
-                          description='2d image bitmap used to describe the quality of individual '
-                                      'pixel measurements in the DAP MAPS file.')
-
-MPL5_dapspecmask = Maskbit(name='MANGA_DAPSPECMASK',
-                           description='3d cube bitmap used to describe the quality of individual'
-                                       'spaxel fits in the DAP model data cube file.')
-
-
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
-                    templates=[GAU_MILESHC], properties=MPL5_maps,
-                    bitmasks={'MANGA_TARGET1': MPL5_manga_target1,
-                              'MANGA_TARGET2': MPL5_manga_target2,
-                              'MANGA_TARGET3': MPL5_manga_target3,
-                              'DAPQUAL': MPL5_dapqual,
-                              'DAPPIXMASK': MPL5_dappixmask,
-                              'DAPSPECMASK': MPL5_dapspecmask},
+                    templates=[GAU_MILESHC], properties=MPL5_maps, bitmasks=get_maskbits('MPL-5'),
                     default_bintype='SPX', default_template='GAU-MILESHC')

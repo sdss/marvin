@@ -164,3 +164,11 @@ class TestMaskbit(object):
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
     def test_quality_flag(self, map_release_only):
         assert map_release_only.quality_flag.mask == 0
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags'])
+    def test_flag(self, flag, map_release_only):
+        assert getattr(map_release_only, flag, None) is not None

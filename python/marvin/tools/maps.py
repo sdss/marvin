@@ -453,7 +453,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         """Return Maps DAPQUAL flag."""
 
         try:
-            dapqual = self._datamodel.bitmasks['DAPQUAL']
+            dapqual = self._datamodel.bitmasks['MANGA_DAPQUAL']
         except KeyError:
             dapqual = None
         else:

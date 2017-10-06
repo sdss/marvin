@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 15:10:89
+# @Last modified time: 2017-10-06 18:10:52
 
 from copy import deepcopy
 
@@ -387,7 +387,19 @@ class TestMaskbit(object):
                               ('DONOTUSE', 1073741824)])
     def test_labels_to_value(self, map_release_only, names, expected):
         assert map_release_only.pixmask.labels_to_value(names) == expected
+    
+    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
+    def test_quality_flag(self, map_release_only):
+        assert map_release_only.quality_flag is not None
 
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, map_release_only):
+        assert getattr(map_release_only, flag, None) is not None
 
 
 class TestEnhancedMap(object):
