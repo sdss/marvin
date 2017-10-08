@@ -58,8 +58,6 @@ def kwargsGet(kwargs, key, replacement):
 breadcrumb = MarvinBreadCrumb()
 
 
-# TODO: probably MarvinToolsClass should be derived from an AbstractClass
-
 class MarvinToolsClass(object):
 
     def __init__(self, *args, **kwargs):
@@ -293,8 +291,40 @@ class MarvinToolsClass(object):
         return marvin_pickle.restore(path, delete=delete)
 
     @property
+    def release(self):
+        """Returns the release."""
+
+        return self._release
+
+    @release.setter
+    def release(self, value):
+        """Fails when trying to set the release after instatiation."""
+
+        raise MarvinError('the release cannot be changed once the object has been instantiated.')
+
+    def __del__(self):
+        """Destructor for closing FITS files."""
+
+        if self.data_origin == 'file' and isinstance(self.data, astropy.io.fits.HDUList):
+            try:
+                self.data.close()
+            except Exception as ee:
+                warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
+
+
+class NSAMixIn(object):
+
+    def __init__(self, *args, **kwargs):
+
+        self._nsa = None
+
+    @property
     def nsa(self):
         """Returns the contents of the NSA catalogue for this target."""
+
+        # In case we forgot to super __init__
+        if not hasattr(self, '_nsa'):
+            self._nsa = None
 
         if self._nsa is None:
 
@@ -316,24 +346,3 @@ class MarvinToolsClass(object):
                 return None
 
         return self._nsa
-
-    @property
-    def release(self):
-        """Returns the release."""
-
-        return self._release
-
-    @release.setter
-    def release(self, value):
-        """Fails when trying to set the release after instatiation."""
-
-        raise MarvinError('the release cannot be changed once the object has been instantiated.')
-
-    def __del__(self):
-        """Destructor for closing FITS files."""
-
-        if self.data_origin == 'file' and isinstance(self.data, astropy.io.fits.HDUList):
-            try:
-                self.data.close()
-            except Exception as ee:
-                warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
