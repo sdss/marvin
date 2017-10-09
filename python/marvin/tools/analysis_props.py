@@ -47,6 +47,13 @@ class AnalysisProperty(Quantity):
         mask (int or None):
             The mask value associated with ``value``, or ``None`` if not
             defined.
+        quality_flag (Maskbit object):
+        targeting_flags (list)
+        mngtarg1 (Maskbit object)
+        mngtarg2 (Maskbit object)
+        mngtarg3 (Maskbit object)
+        pixmask (Maskbit object)
+
 
     """
 
