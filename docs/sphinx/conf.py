@@ -139,6 +139,8 @@ modindex_common_prefix = ['marvin.']
 napoleon_use_rtype = False
 napoleon_use_ivar = True
 
+todo_include_todos = True
+
 rst_epilog = """
 .. |numpy_array| replace:: Numpy array
 .. _numpy_array: http://example.com/

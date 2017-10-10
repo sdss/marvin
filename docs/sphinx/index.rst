@@ -31,9 +31,10 @@ remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 Introduction
 ============
 
-* :ref:`What's New in Marvin 2.1.4 <whats-new>`
+* :doc:`What's New in Marvin <whats-new>`
 * `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
 * :ref:`Known issues <marvin-known-issues>`
+* :ref:`TODOs <marvin-todo>`
 
 |
 
