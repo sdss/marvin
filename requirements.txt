@@ -19,8 +19,6 @@ WTForms-Components>=0.10.0
 networkx>=1.11
 Flask>=0.11.1
 Flask-Classy>=0.6.10
-flask_restful>=0.3.6
-
 webargs>=1.5.2
 raven>=5.32.0
 dogpile.cache>=0.6.2
