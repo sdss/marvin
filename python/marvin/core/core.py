@@ -426,7 +426,7 @@ class NSAMixIn(object):
 
     """
 
-    def __init__(self, nsa_source='auto', **kwargs):
+    def __init__(self, nsa_source='auto'):
 
         self._nsa = None
         self.nsa_source = nsa_source
