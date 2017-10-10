@@ -54,7 +54,7 @@ notifications:
 branches:
   except:
     - new_datamodel
-    - mpl6_jose
+    - mpl6_clean_tools
 
 before_install:
 # Set up the .netrc file we need to download test data
