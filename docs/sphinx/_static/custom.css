@@ -20,7 +20,7 @@ div.body h1, div.body h2, div.body h3, div.body h4,
 
 pre, code                   { font-family: 'Ubuntu Mono', 'Consolas', 'Menlo',
                               'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono';
-                              font-size: 15px; background: transparent; }
+                              font-size: 15px;}
 
 pre, * pre                  { padding: 7px 0 7px 30px!important;
                               margin: 15px 0!important;
