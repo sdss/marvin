@@ -3,14 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. role:: header_no_toc
+  :class: class_header_no_toc
+
+.. title:: Marvin documentation
+
 :tocdepth: 2
-
-|
-
-.. image:: _static/marvin.png
-    :width: 150px
-    :align: left
-    :alt: Marvin
 
 .. image:: _static/logo5_lores.jpg
     :width: 600px
@@ -19,11 +17,8 @@
 
 |
 
-Marvin Docs
-===========
+.. rubric:: :header_no_toc:`Welcome to Marvin's documentation!`
 
-Welcome to Marvin's documentation!
-----------------------------------
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.  Check out the
 `Marvin Github <https://github.com/sdss/marvin>`_ page.
@@ -31,14 +26,16 @@ developed and maintained by the MaNGA team.  Check out the
 If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
-:doc:`whats-new`
-^^^^^^^^^^^^^^^^
+|
 
-`Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Introduction
+============
 
-:doc:`known-issues`
-^^^^^^^^^^^^^^^^^^^
+* :ref:`What's New in Marvin 2.1.4 <whats-new>`
+* `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
+* :ref:`Known issues <marvin-known-issues>`
+
+|
 
 Marvin at a Glance
 ==================
@@ -49,6 +46,8 @@ Marvin at a Glance
 * :doc:`getting-started`
 * :doc:`tutorials`
 * :doc:`exercises`
+
+|
 
 Components
 ==========
@@ -84,6 +83,8 @@ Components
 
 * :doc:`web`
 
+|
+
 General Reference
 =================
 
@@ -94,6 +95,8 @@ General Reference
    maps-properties-channels
    Available Query Parameters <query-params>
    tools/visual-guide
+
+|
 
 Documentation
 =============
