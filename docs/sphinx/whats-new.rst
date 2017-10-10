@@ -3,13 +3,13 @@
 What's New in Marvin 2.1.4 (August 2017)
 ========================================
 
-* Refactored the Query Page in Marvin Web: Adds more intuitice parameterm naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
+* Refactored the Query Page in Marvin Web: Adds more intuitive parameters naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
 
 * Adds Galaxy Postage Stamp view of the result set from a Marvin Query in the Web
 
 * Adds Rate Limiting for the Marvin API.  Adopts a limit of 200 requests/min on all routes and 60/min for queries.
 
-* Adds new query_params object in Marvin Tools for improved navigation and selection of available query parameters.  See updated documenation for :doc:`Queries <query>` and :doc:`Query Params <query-params>`
+* Adds new query_params object in Marvin Tools for improved navigation and selection of available query parameters.  See updated documentation for :doc:`Queries <query>` and :doc:`Query Params <query-params>`
 
 * Adds ability for creating custom maps (using custom values and masks) with Marvin Plotting framework.  See updated :doc:`Plotting Tutorial <tutorials/plotting>`
 
