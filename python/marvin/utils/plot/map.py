@@ -415,7 +415,7 @@ def plot(*args, **kwargs):
     bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
 
     nocov = mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
-    bad_data = get_mask(mask, dapmap.maskbit.bits, use_masks) if bad_data_conditions else all_true
+    bad_data = dapmap.pixmask.get_mask(use_masks) if bad_data_conditions else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if not use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true
 
