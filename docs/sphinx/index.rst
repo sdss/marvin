@@ -77,6 +77,7 @@ Components
 
     * :doc:`Image <utils/images>`
     * :doc:`Plotting <utils/plot-map>`
+    * :doc:`Maskbit <utils/maskbit>`
 
 
 * :doc:`api`
