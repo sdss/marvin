@@ -338,6 +338,10 @@ def plot(*args, **kwargs):
         >>> maps = Maps(plateifu='8485-1901')
         >>> ha = maps['emline_gflux_ha_6564']
         >>> fig, ax = mapplot.plot(dapmap=ha)
+
+        Please see the `Plotting Tutorial
+        <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting.html>`_
+        for additional examples.
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
