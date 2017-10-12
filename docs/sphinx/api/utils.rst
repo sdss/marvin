@@ -65,3 +65,11 @@ Colorbar Plotting Utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+Maskbit Utilities
+-----------------
+
+.. automodule:: marvin.utils.general.maskbit
+   :members:
+   :undoc-members:
+   :show-inheritance:
