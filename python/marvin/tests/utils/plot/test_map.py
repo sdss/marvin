@@ -6,16 +6,14 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-08-30 15:08:34
+# @Last modified time: 2017-10-12 15:10:78
 
 import numpy as np
 import matplotlib
 import pytest
 
 from marvin import config
-from marvin.core.exceptions import MarvinError
-from marvin.tests import marvin_test_if, use_releases
-from marvin.tools.maps import Maps
+from marvin.tests import marvin_test_if
 import marvin.utils.plot.map as mapplot
 from marvin.utils.general import get_plot_params
 
@@ -91,8 +89,8 @@ snr_min_3 = np.array([[1, 0, 0],
                       [0, 1, 0]])
 
 neg_val = np.array([[0, 1, 0],
-                        [1, 0, 0],
-                        [0, 0, 0]])
+                    [1, 0, 0],
+                    [0, 0, 0]])
 
 image_none_true = np.array([[0, 1, 1],
                             [1, 1, 1],
@@ -116,12 +114,13 @@ class TestMasks(object):
     @pytest.mark.parametrize('ivar, expected',
                              [(ivar_simple, nocov_simple)])
     def test_mask_nocov_ivar(self, ivar, expected):
-        actual = mapplot.mask_nocov(dapmap=None, ivar=ivar)
+        actual = mapplot.mask_nocov(mask=None, dapmap=None, ivar=ivar)
         assert np.all(actual == expected)
 
+    @marvin_test_if(mark='skip', map_release_only=dict(release='MPL-4'))
     def test_mask_nocov_dapmap(self, map_release_only):
         ha = map_release_only
-        actual = mapplot.mask_nocov(dapmap=ha, ivar=ha.ivar)
+        actual = mapplot.mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
         expected = (ha.mask & 2**0 > 0)
         assert np.all(actual == expected)
 
@@ -140,7 +139,7 @@ class TestMasks(object):
     def test_mask_neg_values(self, value, expected):
         actual = mapplot.mask_neg_values(value)
         assert np.all(actual == expected)
-    
+
     @pytest.mark.parametrize('use_masks, mask, expected',
                              [(False, mask_daplike, []),
                               (False, None, []),
@@ -270,4 +269,3 @@ class TestMapPlot(object):
         map_ = maps.getMap('emline_gflux', channel='ha_6564')
         fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)
         assert isinstance(cb, matplotlib.colorbar.Colorbar)
-

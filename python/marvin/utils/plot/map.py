@@ -74,7 +74,7 @@ def mask_nocov(mask, dapmap, ivar=None):
         'Must provide either (``mask`` and ``dapmap``) or ``ivar``.'
 
     try:
-        return get_mask(mask, dapmap.maskbit.bits, bitnames=('NOCOV'))
+        return dapmap.pixmask.get_mask('NOCOV')
     except (MarvinError, AttributeError):
         return ivar == 0
 
