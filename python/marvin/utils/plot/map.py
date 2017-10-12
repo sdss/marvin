@@ -57,7 +57,7 @@ import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-def mask_nocov(mask, dapmap, ivar=None):
+def _mask_nocov(mask, dapmap, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
@@ -414,7 +414,7 @@ def plot(*args, **kwargs):
     nocov_conditions = (('NOCOV' in use_masks) and (ivar is not None))
     bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
 
-    nocov = mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
+    nocov = _mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
     bad_data = dapmap.pixmask.get_mask(use_masks, mask=mask) if bad_data_conditions else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if not use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true

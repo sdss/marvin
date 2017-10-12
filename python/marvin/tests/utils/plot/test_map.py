@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-12 15:10:78
+# @Last modified time: 2017-10-12 16:10:18
 
 import numpy as np
 import matplotlib
@@ -114,13 +114,13 @@ class TestMasks(object):
     @pytest.mark.parametrize('ivar, expected',
                              [(ivar_simple, nocov_simple)])
     def test_mask_nocov_ivar(self, ivar, expected):
-        actual = mapplot.mask_nocov(mask=None, dapmap=None, ivar=ivar)
+        actual = mapplot._mask_nocov(mask=None, dapmap=None, ivar=ivar)
         assert np.all(actual == expected)
 
     @marvin_test_if(mark='skip', map_release_only=dict(release='MPL-4'))
     def test_mask_nocov_dapmap(self, map_release_only):
         ha = map_release_only
-        actual = mapplot.mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
+        actual = mapplot._mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
         expected = (ha.mask & 2**0 > 0)
         assert np.all(actual == expected)
 
