@@ -59,10 +59,10 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
     maps['gflux ha']        # == maps['emline_gflux_ha_6564']
     maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
     maps['stellar sig']     # == maps['stellar_sigma']
-    
+
     # There are several properties of the Halpha line (velocity, sigma, etc.).
     maps['ha']  # ValueError
-    
+
     # There are two [O III] lines.
     maps['gflux oiii']  # ValueError
 
@@ -75,7 +75,7 @@ The values, inverse variances, and bitmasks of the map can be accessed via the :
     ha.value  # (34, 34) array
     ha.ivar   # (34, 34) array
     ha.mask   # (34, 34) array
-    
+
     ha.value[17]  # get the middle row (i.e., "y")
     # array([  0.        ,   0.        ,   0.        ,   0.        ,
     #          0.        ,   0.        ,   0.03650022,   0.03789879,
@@ -104,7 +104,7 @@ The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <htt
     #                       False False False False False False False False False False False False
     #                       False False False False False  True  True  True  True  True],
     #              fill_value = 1e+20)
-    
+
     (ha.masked.data == ha.value).all()                # True
     (ha.masked.mask == (ha.mask).astype(bool)).all()  # True
 
@@ -176,10 +176,10 @@ Bit	 Name	       Description
 
     names[0][0]
     # ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
-    
+
     values[0][0]
     # [0, 1, 4, 30]
-    
+
     objects[0][0]
     # [<Bit  0 name='NOCOV'>,
     #  <Bit  1 name='LOWCOV'>,
@@ -198,7 +198,7 @@ Map Plotting
 ````````````
 
 * :doc:`../tutorials/plotting`
-  
+
   * :ref:`marvin-plotting-quick-map`
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
@@ -216,13 +216,13 @@ Map Arithmetic
 
     ha = maps['emline_gflux_ha_6564']
     nii = maps['emline_gflux_nii_6585']
-    
+
     sum_ = nii + ha
     diff = nii - ha
     prod = nii * ha
     quot = nii / ha
     pow_ = ha**0.5
-    
+
     prod
     # <Marvin EnhancedMap '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'>
     # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -268,10 +268,10 @@ One of the most useful features of Marvin is the tight integration of the Tools.
 .. code-block:: python
 
     ha.maps == maps  # True
-    
+
     ha.property
     # <Property 'emline_gflux', release='2.0.2', channel='ha_6564', unit='erg / (cm2 s spaxel)'>
-    
+
 
 Saving and Restoring a Map
 ``````````````````````````
@@ -283,6 +283,26 @@ Finally, we can :meth:`~marvin.tools.map.Map.save` our :mod:`~marvin.tools.map.M
     from marvin.tools.map import Map
     ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
     zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
+
+
+
+Common Masking
+``````````````
+
+.. code-block:: python
+
+    # Spaxels not covered by the IFU
+    nocov = ha.pixmask.get_mask('NOCOV')
+
+    # Spaxels flagged as bad data
+    bad_data = ha.pixmask.get_mask(['UNRELIABLE', 'DONOTUSE'])
+
+    # Custom mask (flag data as DONOTUSE to hide in plotting)
+    custom_mask = (ha.value < 1e-17) * ha.pixmask.labels_to_value('DONOTUSE')
+
+    # Combine masks
+    my_mask = nocov | custom_mask
+
 
 
 .. _marvin-map-reference:
