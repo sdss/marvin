@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 17:10:32
+# @Last modified time: 2017-10-12 16:10:37
 
 from __future__ import division, print_function, absolute_import
 
@@ -63,7 +63,7 @@ class Maskbit(object):
     @property
     def bits(self):
         return self.values_to_bits() if self.mask is not None else None
-        
+
     @property
     def labels(self):
         return self.values_to_labels() if self.mask is not None else None
@@ -216,12 +216,19 @@ class Maskbit(object):
         """
         return self.values_to_bits(self.labels_to_value(labels))
 
-    def get_mask(self, labels, dtype=int):
+    def get_mask(self, labels, mask=None, dtype=int):
         """Create mask from a list of labels.
+
+        If ``dtype`` is ``int``, then ``get_mask`` can effectively
+        perform an OR or AND operation.  However, if ``dtype`` is
+        ``bool``, then ``get_mask`` does an OR.
 
         Parameters:
             labels (str or list):
                 Labels of bits.
+            mask (int or array):
+                User-defined mask. If ``None``, use ``self.mask``.
+                Default is ``None``.
             dtype:
                 Output dtype, which must be either ``int`` or ``bool``.
                 Default is ``int``.
@@ -234,23 +241,16 @@ class Maskbit(object):
             >>> ha = maps['emline_gflux_ha_6564']
             >>> ha.pixmask.get_mask(['NOCOV', 'LOWCOV'])
             array([[3, 3, 3, ..., 3, 3, 3],
-                   [3, 3, 3, ..., 3, 3, 3],
-                   [3, 3, 3, ..., 3, 3, 3],
                    ...,
-                   [3, 3, 3, ..., 3, 3, 3],
-                   [3, 3, 3, ..., 3, 3, 3],
                    [3, 3, 3, ..., 3, 3, 3]])
 
             >>> ha.pixmask.get_mask(['NOCOV', 'LOWCOV'], dtype=bool)
             array([[ True,  True,  True, ...,  True,  True,  True],
-                   [ True,  True,  True, ...,  True,  True,  True],
-                   [ True,  True,  True, ...,  True,  True,  True],
                    ...,
-                   [ True,  True,  True, ...,  True,  True,  True],
-                   [ True,  True,  True, ...,  True,  True,  True],
                    [ True,  True,  True, ...,  True,  True,  True]], dtype=bool)
         """
         assert dtype in [int, bool], '``dtype`` must be either ``int`` or ``bool``.'
 
         bits = self.labels_to_bits(labels)
-        return np.sum([self.mask & 2**bit for bit in bits], axis=0).astype(dtype)
+        mask = mask if mask is not None else self.mask
+        return np.sum([mask & 2**bit for bit in bits], axis=0).astype(dtype)

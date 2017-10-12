@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 17:10:40
+# @Last modified time: 2017-10-12 16:10:35
 
 
 from __future__ import division, print_function, absolute_import
@@ -26,7 +26,7 @@ schema = pd.DataFrame(bits, columns=['bit', 'label', 'description'])
 name = 'MYMASK'
 description = 'My first Maskbit.'
 mask = np.array([[0, 1], [2, 12]])
-
+custom_mask = np.array([[1, 5], [7, 11]])
 
 class TestMaskbit(object):
 
@@ -136,4 +136,25 @@ class TestMaskbit(object):
         mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask
         actual = mb.get_mask(labels, dtype=bool)
+        assert (actual == expected).all()
+
+    @pytest.mark.parametrize('labels, expected',
+                             [('BITONE', np.array([[0, 0], [2, 2]])),
+                              (['BITONE'], np.array([[0, 0], [2, 2]])),
+                              (['BITONE', 'BITTHREE'], np.array([[0, 0], [2, 10]]))])
+    def test_get_mask_custom_mask_int(self, labels, expected):
+        mb = Maskbit(name=name, schema=schema, description=description)
+        mb.mask = mask
+        actual = mb.get_mask(labels, mask=custom_mask)
+        assert (actual == expected).all()
+
+
+    @pytest.mark.parametrize('labels, expected',
+                             [('BITONE', np.array([[False, False], [True, True]])),
+                              (['BITONE'], np.array([[False, False], [True, True]])),
+                              (['BITONE', 'BITTHREE'], np.array([[False, False], [True, True]]))])
+    def test_get_mask_custom_mask_bool(self, labels, expected):
+        mb = Maskbit(name=name, schema=schema, description=description)
+        mb.mask = mask
+        actual = mb.get_mask(labels, mask=custom_mask, dtype=bool)
         assert (actual == expected).all()

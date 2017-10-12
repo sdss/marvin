@@ -49,7 +49,7 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
 .. code-block:: python
 
     from marvin.tools.maps import Maps
-    masks, __ = maps.get_bpt(show_plot=False)
+    masks, __, __ = maps.get_bpt(show_plot=False)
 
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
