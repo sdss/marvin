@@ -53,8 +53,8 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
 
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
-    # and set bit 30 (DONOTUSE) for those spaxels.
-    mask_non_sf = ~masks['sf']['global'] * 2**30
+    # and mark those spaxels as "DONOTUSE".
+    mask_non_sf = ~masks['sf']['global'] * ha.pixmask.labels_to_value('DONOTUSE')
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
@@ -130,40 +130,6 @@ velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False   
 Masking
 ```````
 
-Spaxels Not Covered by the IFU
-::::::::::::::::::::::::::::::
-
-:meth:`~marvin.utils.plot.map.no_coverage_mask` creates a mask of a map where there is no coverage by the IFU.
-
-.. code-block:: python
-
-    from marvin.tools.maps import Maps
-    import marvin.utils.plot.map as mapplot
-    maps = Maps(plateifu='8485-1901')
-    ha = maps['emline_gflux_ha_6564']
-    nocov = mapplot.no_coverage_mask(mask=ha.mask, bit=0, ivar=ha.ivar)
-
-
-**Important**: In 2.1.3, the call signature is ``no_coverage_mask(value, ivar, mask, bit)``. In version 2.1.4, this changes to ``no_coverage_mask(mask, bit, ivar=None)``.
-
-
-Spaxels Flagged as Bad Data
-:::::::::::::::::::::::::::
-
-:meth:`~marvin.utils.plot.map.bad_data_mask` creates a mask of a map where the data has been flagged by the DAP as UNRELIABLE or DONOTUSE.
-
-.. code-block:: python
-
-    from marvin.tools.maps import Maps
-    import marvin.utils.plot.map as mapplot
-    maps = Maps(plateifu='8485-1901')
-    ha = maps['emline_gflux_ha_6564']
-    bad_data = mapplot.bad_data_mask(mask=ha.mask, bits={'doNotUse': 30, 'unreliable': 5})
-
-
-**Important**: In 2.1.3, the call signature is ``bad_data_mask(value, mask, bits)``. In version 2.1.4, this changes to ``bad_data_mask(mask, bits)``.
-
-
 Spaxels with Low Signal-to-Noise
 ::::::::::::::::::::::::::::::::
 
@@ -175,7 +141,9 @@ Spaxels with Low Signal-to-Noise
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    low_snr = mapplot.low_snr_mask(value=ha.value, ivar=ha.ivar, snr_min=1)
+    low_snr = mapplot.mask_low_snr(value=ha.value, ivar=ha.ivar, snr_min=1)
+
+**Important**: In 2.1.4, the call signature is ``low_snr_mask(value, ivar, snr_min)``. In version 2.2.0, this changes to ``mask_low_snr(value, ivar, snr_min)``.
 
 
 Spaxels with Negative Values
@@ -189,7 +157,9 @@ Spaxels with Negative Values
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    log_cb_mask = mapplot.log_colorbar_mask(value=ha.value, log_cb=True)
+    neg_val_mask = mapplot.mask_neg_values(value=ha.value)
+
+**Important**: In 2.1.4, the call signature is ``log_colorbar_mask(value, log_cb)``. In version 2.2.0, this changes to ``mask_neg_values(value)``.
 
 
 Combine Various Undesirable Masks
