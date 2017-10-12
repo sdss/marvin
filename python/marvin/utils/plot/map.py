@@ -268,6 +268,10 @@ def set_title(title=None, property_name=None, channel=None):
 def plot(*args, **kwargs):
     """Make single panel map or one panel of multi-panel map plot.
 
+    Please see the `Plotting Tutorial
+    <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting.html>`_
+    for examples.
+
     Parameters:
         dapmap (marvin.tools.map.Map):
             Marvin Map object. Default is ``None``.
@@ -339,9 +343,6 @@ def plot(*args, **kwargs):
         >>> ha = maps['emline_gflux_ha_6564']
         >>> fig, ax = mapplot.plot(dapmap=ha)
 
-        Please see the `Plotting Tutorial
-        <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting.html>`_
-        for additional examples.
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
