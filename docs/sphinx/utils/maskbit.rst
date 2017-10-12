@@ -8,7 +8,7 @@ Maskbit (:mod:`marvin.utils.general.maskbit.Maskbit`)
 
 Introduction
 ------------
-:mod:`~marvin.utils.general.maskbit.Maskbit` contains the schema for a MaNGA flag (e.g., ``DAPPIXMASK``) and provides convenience functions for translating amongst mask values, bits, and labels.
+:mod:`~marvin.utils.general.maskbit.Maskbit` contains the schema for a MaNGA flag (e.g., ``MANGA_DAPPIXMASK``) and provides convenience functions for translating amongst mask values, bits, and labels.
 
 
 .. _marvin-utils-maskbit-getting-started:
@@ -209,7 +209,7 @@ You might want to produce a mask (e.g., to produce a custom mask for plotting):
 .. .. image:: ../_static/custom_mask.png
 
 
-See :ref:`marvin-plotting-custom-map-axes` from the :doc:`../tutorials/plotting`
+See the :doc:`../tutorials/plotting` (e.g., :ref:`marvin-plotting-custom-map-axes`) for more about custom masks.
 
 
 Reference/API
