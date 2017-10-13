@@ -16,7 +16,7 @@ Introduction
 Getting Started
 ---------------
 
-:mod:`~marvin.utils.plot.map` makes plotting a publication-quality MaNGA map easy with its carefully chosen default parameters.
+:mod:`~marvin.utils.plot.map.plot` makes plotting a publication-quality MaNGA map easy with its carefully chosen default parameters.
 
 .. code-block:: python
 
@@ -36,7 +36,7 @@ However, you may want to do further processing of the map, so you can override t
     fig, ax = mapplot.plot(dapmap=ha, value=ha.value * 10.)
 
 
-A :attr:`~marvin.utils.plot.map.plot.dapmap` object is not even necessary for :mod:`~marvin.utils.plot.map`, though if you do not provide a :attr:`~marvin.utils.plot.map.plot.dapmap` object, then you will need to set a :attr:`~marvin.utils.plot.map.plot.value`. You will also need to provide other attributes, such as :attr:`~marvin.utils.plot.map.plot.title` and :attr:`~marvin.utils.plot.map.plot.cblabel`, that are by default set from attributes of the :attr:`~marvin.utils.plot.map.plot.dapmap` object.
+A :attr:`~marvin.utils.plot.map.plot.dapmap` object is not even necessary for :mod:`~marvin.utils.plot.map.plot`, though if you do not provide a :attr:`~marvin.utils.plot.map.plot.dapmap` object, then you will need to set a :attr:`~marvin.utils.plot.map.plot.value`. You will also need to provide other attributes, such as :attr:`~marvin.utils.plot.map.plot.title` and :attr:`~marvin.utils.plot.map.plot.cblabel`, that are by default set from attributes of the :attr:`~marvin.utils.plot.map.plot.dapmap` object.
 
 .. code-block:: python
 
@@ -63,7 +63,7 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
 .. image:: ../_static/map_bpt_mask.png
 
 
-:mod:`~marvin.utils.plot.map` lets you build multi-panel plots because it accepts pre-defined `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ and `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ objects.
+:mod:`~marvin.utils.plot.map.plot` lets you build multi-panel plots because it accepts pre-defined `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ and `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ objects.
 
 .. code-block:: python
 
@@ -102,9 +102,13 @@ Plotting Tutorial
   * :ref:`marvin-plotting-quick-map`
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
+  * :ref:`marvin-plotting-custom-map-cbrange`
+  * :ref:`marvin-plotting-custom-map-snr-min`
   * :ref:`marvin-plotting-custom-map-axes`
   * :ref:`Plot Halpha Map of Star-forming Spaxels <marvin-plotting-map-starforming>`
   * :ref:`Plot [NII]/Halpha Flux Ratio Map of Star-forming Spaxels <marvin-plotting-niiha-map-starforming>`
+  * :ref:`marvin-plotting-qualitative-colorbar`
+  * :ref:`marvin-plotting-custom-map-mask`
 
 
 .. _marvin-utils-plot-map-default-params:
@@ -113,7 +117,7 @@ Default Plotting Parameters
 ```````````````````````````
 
 ====================  ====================  =========  ===============  ==================  ===========
-MPL-5
+MPL-5+
 -------------------------------------------------------------------------------------------------------
 Property Type         Bad Data Bitmasks     Colormap   Percentile Clip  Symmetric Colorbar  Minimum SNR
 ====================  ====================  =========  ===============  ==================  ===========
@@ -124,7 +128,7 @@ velocity dispersions  UNRELIABLE, DONOTUSE  inferno    10, 90           False   
 
 :sup:`a` Velocities do not have a minimum SNR. This allows spaxels near the zero-velocity contour to be displayed, but users are cautioned that some spaxels could have arbitrarily low SNRs.
 
-**Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which use bit 1 (rough DONOTUSE) for all properties.
+**Note**: MPL-4 uses the same default plotting parameters as MPL-5, except the Bad Data Bitmasks, which use bit 1 (roughly DONOTUSE) for all properties.
 
 
 Masking
@@ -133,7 +137,7 @@ Masking
 Spaxels with Low Signal-to-Noise
 ::::::::::::::::::::::::::::::::
 
-:meth:`~marvin.utils.plot.map.low_snr_mask` creates a mask of a map where the data is below a minimum signal-to-noise ratio.
+:meth:`~marvin.utils.plot.map.mask_low_snr` creates a mask of a map where the data is below a minimum signal-to-noise ratio.
 
 .. code-block:: python
 
@@ -203,6 +207,7 @@ Set Title
 
     import marvin.utils.plot.map as mapplot
     title = mapplot.set_title(title=None, property_name=ha.property_name, channel=ha.channel)
+
 
 Reference/API
 -------------

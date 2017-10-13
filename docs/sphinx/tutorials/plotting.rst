@@ -163,7 +163,7 @@ Multi-panel Map Plot (Multiple Galaxies)
 .. image:: ../_static/multipanel_kinematics.png
 
 
-.. _marvin-plotting-custom-cbrange:
+.. _marvin-plotting-custom-map-cbrange:
 
 Custom Map Colorbar Range Options
 ---------------------------------
@@ -181,7 +181,7 @@ Custom Map Colorbar Range Options
     fig, ax = ha.plot(log_cb=True)
 
 
-.. _marvin-plotting-custom-snr-min:
+.. _marvin-plotting-custom-map-snr-min:
 
 Custom Minimum Signal-to-Noise Ratio
 ------------------------------------
@@ -330,7 +330,7 @@ Qualitative Colorbar (New in version 2.1.4)
 .. image:: ../_static/qualitative_cb.png
 
 
-.. _marvin-plotting-custom-mask:
+.. _marvin-plotting-custom-map-mask:
 
 Custom Values and Custom Mask
 -----------------------------
