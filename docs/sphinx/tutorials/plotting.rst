@@ -91,7 +91,7 @@ Quick Image Plot
     fig, ax = plt.subplots()
     ax.imshow(image)
     ax.axis('off')
-    
+
 .. image:: ../_static/image_8553-12702.png
 
 
@@ -163,6 +163,41 @@ Multi-panel Map Plot (Multiple Galaxies)
 .. image:: ../_static/multipanel_kinematics.png
 
 
+.. _marvin-plotting-custom-cbrange:
+
+Custom Map Colorbar Range Options
+---------------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    fig, ax = ha.plot(percentile_clip=(1, 99))
+    fig, ax = ha.plot(sigma_clip=2)
+    fig, ax = ha.plot(cbrange=[2, 10])
+    fig, ax = ha.plot(symmetric=True)
+    fig, ax = ha.plot(log_cb=True)
+
+
+.. _marvin-plotting-custom-snr-min:
+
+Custom Minimum Signal-to-Noise Ratio
+------------------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    # Default is 1 except for velocities, which default to 0.
+    fig, ax = ha.plot(snr_min=10)
+
+.. image:: ../_static/custom_snr_min.png
+
+
 .. _marvin-plotting-custom-map-axes:
 
 Custom Axis and Colorbar Locations for Map Plot
@@ -173,7 +208,7 @@ Custom Axis and Colorbar Locations for Map Plot
     import matplotlib.pyplot as plt
     from marvin.tools.maps import Maps
     plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
-    
+
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
 
@@ -259,7 +294,7 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = nii_ha.mask | mask_non_sf
-    
+
     nii_ha.plot(mask=mask, cblabel='[NII]6585 / Halpha flux ratio')
 
 .. image:: ../_static/niiha_bpt_mask.png
@@ -280,7 +315,7 @@ Qualitative Colorbar (New in version 2.1.4)
 
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    
+
     # divide data into classes
     ha_class = np.ones(ha.shape, dtype=int)
     ha_class[np.where(ha.value > 5)] = 2
@@ -314,7 +349,7 @@ Custom Values and Custom Mask
 
     # Mask spaxels with low Halpha flux
     low_ha = (ha.value < 6) * ha.get_bit_int('DONOTUSE')  # 2**30
-    
+
     # Combine masks using bitwise OR (`|`)
     mask = nocov | low_ha
 

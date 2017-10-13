@@ -202,10 +202,10 @@ You might want to produce a mask (e.g., to produce a custom mask for plotting):
     # Combine masks using bitwise OR (`|`)
     my_mask = nocov | low_ha
 
-    # import marvin.utils.plot.map as mapplot
-    # fig, ax = mapplot.plot(dapmap=ha, mask=my_mask)  # TODO BROKEN
+    fig, ax = ha.plot(mask=my_mask)
 
 
+.. TODO UNCOMMENT
 .. .. image:: ../_static/custom_mask.png
 
 

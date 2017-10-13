@@ -90,19 +90,4 @@ Download the maps using ``rsync`` via `sdss_access <https://github.com/sdss/sdss
     maps.download()
 
 
-Plotting Options
-````````````````
-
-Setting the Colorbar Range
-::::::::::::::::::::::::::
-
-:meth:`~marvin.tools.map.Map.plot` uses ``percentile_clip`` to select the best range of values to display. It defaults to clipping at ``(10, 90)`` for velocities and sigmas and ``(5, 95)`` for other properites. However, you can specify your own percentile clipping limits, sigma clipping limits (``sigma_clip``), or minimum and maximum values (``cbrange``).
-
-.. code-block:: python
-
-    fig, ax = haflux.plot(percentile_clip=(1, 99))
-    fig, ax = haflux.plot(sigma_clip=2)
-
-:meth:`~marvin.tools.map.Map.plot` adopts a minimum signal-to-noise ratio of ``1`` as its threshold for considering a value as valid. You can control this cutoff with the ``snr_min`` keyword.
-
 |

@@ -519,10 +519,10 @@ class Property(object):
             if mode in self.formats:
                 latex = self.formats[mode]
             else:
-                latex = self.to_string(include_channel=False).replace(' ', '\\ ')
+                latex = self.to_string(include_channel=False)
 
             if self.channel and include_channel:
-                latex = latex + ':\\ ' + self.channel.to_string('latex')
+                latex = latex + ' ' + self.channel.to_string('latex')
 
             return latex
 
