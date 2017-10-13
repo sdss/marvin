@@ -162,19 +162,6 @@ Spaxels with Negative Values
 **Important**: In 2.1.4, the call signature is ``log_colorbar_mask(value, log_cb)``. In version 2.2.0, this changes to ``mask_neg_values(value)``.
 
 
-Combine Various Undesirable Masks
-:::::::::::::::::::::::::::::::::
-
-:meth:`~marvin.utils.plot.map.select_good_spaxels` creates a `NumPy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.html>`_ that combines masks of undesirable spaxels (no IFU coverage, bad data, low signal-to-noise ratio, and negative values [if using a logarithmic colorbar]).
-
-.. code-block:: python
-
-    from marvin.tools.maps import Maps
-    import marvin.utils.plot.map as mapplot
-    maps = Maps(plateifu='8485-1901')
-    ha = maps['emline_gflux_ha_6564']
-    good_spax = mapplot.select_good_spaxels(value=ha.value, nocov=nocov, bad_data=bad_data, low_snr=low_snr, log_cb_mask=log_cb_mask)
-
 
 Set the Plotting Extent for `imshow <https://matplotlib.org/devdocs/api/_as_gen/matplotlib.axes.Axes.imshow.html>`_
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
