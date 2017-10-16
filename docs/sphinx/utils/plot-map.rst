@@ -153,7 +153,7 @@ Spaxels with Low Signal-to-Noise
 Spaxels with Negative Values
 ::::::::::::::::::::::::::::
 
-:meth:`~marvin.utils.plot.map.log_colorbar_mask` creates a mask of a map where the values are negative.  This is necessary to avoid erros when using a logarithmic colorbar.
+:meth:`~marvin.utils.plot.map.mask_neg_values` creates a mask of a map where the values are negative.  This is necessary to avoid erros when using a logarithmic colorbar.
 
 .. code-block:: python
 
@@ -161,7 +161,7 @@ Spaxels with Negative Values
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
-    neg_val_mask = mapplot.mask_neg_values(value=ha.value)
+    neg_values = mapplot.mask_neg_values(value=ha.value)
 
 **Important**: In 2.1.4, the call signature is ``log_colorbar_mask(value, log_cb)``. In version 2.2.0, this changes to ``mask_neg_values(value)``.
 
@@ -221,12 +221,9 @@ Reference/API
 .. autosummary::
 
     marvin.utils.plot.map.ax_setup
-    marvin.utils.plot.map.bad_data_mask
-    marvin.utils.plot.map.log_colorbar_mask
-    marvin.utils.plot.map.low_snr_mask
-    marvin.utils.plot.map.no_coverage_mask
+    marvin.utils.plot.map.mask_low_snr
+    marvin.utils.plot.map.mask_neg_values
     marvin.utils.plot.map.plot
-    marvin.utils.plot.map.select_good_spaxels
     marvin.utils.plot.map.set_extent
     marvin.utils.plot.map.set_patch_style
     marvin.utils.plot.map.set_title
