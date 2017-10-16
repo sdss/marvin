@@ -408,17 +408,6 @@ class Map(Quantity):
 
         return unit12
 
-    @staticmethod
-    def _create_history(map1, map2, op):
-        map1_history = getattr(map1, 'history', map1.property)
-        map2_history = getattr(map2, 'history', map2.property)
-        history = '({0} {1} {2})'.format(map1_history, op, map2_history)
-        return history
-
-    @staticmethod
-    def _create_parents(map1, map2):
-        return [getattr(map_, 'parents', map_) for map_ in [map1, map2]]
-
     def _arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
 
@@ -446,12 +435,10 @@ class Map(Quantity):
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
-        history = self._create_history(self, map2, op)
-        parents = self._create_parents(self, map2)
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
-                           scale=self.scale, release=self.release, history=history,
-                           parents=parents, copy=True)
+                           scale=self.scale, release=self.release, datamodel=self._datamodel,
+                           copy=True)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -487,11 +474,8 @@ class Map(Quantity):
         ivar = self._pow_ivar(self.ivar, self.value, power)
         unit = self.unit**power
 
-        history = '{0}^{1}'.format(getattr(self, 'history', '({})'.format(self.property)), power)
-        parents = getattr(self, 'parents', self)
-
         return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, scale=self.scale,
-                           release=self.release, history=history, parents=parents, copy=True)
+                           release=self.release, datamodel=self._datamodel, copy=True)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening.
@@ -537,26 +521,22 @@ class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
     def __new__(cls, value, unit, *args, **kwargs):
-        ignore = ['release', 'scale', 'history', 'parents']
+        ignore = ['release', 'scale', 'datamodel']
         [kwargs.pop(it) for it in ignore if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         self.release = kwargs.get('release', None)
         self.scale = kwargs.get('scale', None)
-        self.history = kwargs.get('history', None)  # TODO REMOVE
-        self.parents = kwargs.get('parents', None)  # TODO REMOVE
+        self._datamodel = kwargs.get('datamodel', None)
 
     def __repr__(self):
-        return ('<Marvin EnhancedMap {0.history!r}>'
-                '\n{0.value!r} {1!r}').format(self, self.unit.to_string())
+        return ('<Marvin EnhancedMap>\n{0!r} {1!r}').format(self.value, self.unit.to_string())
 
     def __deepcopy__(self, memo):
         return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
                            ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
                            scale=deepcopy(self.scale, memo), release=deepcopy(self.release, memo),
-                           history=deepcopy(self.history, memo),  # TODO REMOVE
-                           parents=deepcopy(self.parents, memo),  # TODO REMOVE
                            copy=True)
 
     def _init_map_from_maps(self):
@@ -574,3 +554,14 @@ class EnhancedMap(Map):
     def inst_sigma_correction(self):
         """Override Map.inst_sigma_correction with AttributeError."""
         raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
+
+    @property
+    def pixmask(self):
+        """Maskbit instance for the MANGA_DAPPIXMASK flag.
+
+        See :ref:`marvin-utils-maskbit` for documentation and
+        :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
+        """
+        pixmask = self._datamodel.bitmasks['MANGA_DAPPIXMASK']
+        pixmask.mask = self.mask if self.mask is not None else None
+        return pixmask
