@@ -66,7 +66,7 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
     # There are two [O III] lines.
     maps['gflux oiii']  # ValueError
 
-The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
+The values, inverse variances, and `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ (flag that indicates issues with the data) of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
 
 **Important**: These arrays are ordered as ``[row, column]`` with the origin in the lower left, which corresponds to ``[y, x]``.
 
@@ -74,7 +74,7 @@ The values, inverse variances, and bitmasks of the map can be accessed via the :
 
     ha.value  # (34, 34) array
     ha.ivar   # (34, 34) array
-    ha.mask   # (34, 34) array
+    ha.mask   # (34, 34) array --- same as ha.pixmask.mask
 
     ha.value[17]  # get the middle row (i.e., "y")
     # array([  0.        ,   0.        ,   0.        ,   0.        ,
@@ -105,86 +105,36 @@ The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <htt
     #                       False False False False False  True  True  True  True  True],
     #              fill_value = 1e+20)
 
-    (ha.masked.data == ha.value).all()                # True
-    (ha.masked.mask == (ha.mask).astype(bool)).all()  # True
 
+**New in 2.2.0**: For more fine-grained data quality control, you can select spaxels using :attr:`~marvin.tools.map.Map.pixmask`, which contains the :attr:`~marvin.tools.map.Map.mask` values, knows the ``MANGA_DAPPIXMASK`` schema, and has convenience methods for converting between mask values, bit values, and labels.
 
-For more fine-grained data quality control, you can select spaxels based on the :attr:`~marvin.tools.map.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
-
-===  ============  =============================================================
-Bit	 Name	       Description
-===  ============  =============================================================
-0    NOCOV	       No coverage in this spaxel
-1    LOWCOV	       Low coverage in this spaxel
-2    DEADFIBER     Major contributing fiber is dead
-3    FORESTAR      Foreground star
-4    NOVALUE       Spaxel was not fit because it did not meet selection criteria
-5    UNRELIABLE    Value is deemed unreliable; see TRM for definition
-6    MATHERROR     Mathematical error in computing value
-7    FITFAILED     Attempted fit for property failed
-8    NEARBOUND     Fitted value is too near an imposed boundary; see TRM
-9    NOCORRECTION  Appropriate correction not available
-10   MULTICOMP     Multi-component velocity features present
-30   DONOTUSE      Do not use this spaxel for science
-===  ============  =============================================================
-
-**Note**: For MPL-5, DONOTUSE is a consolidation of the flags NOCOV, LOWCOV, DEADFIBER, FORESTAR, NOVALUE, MATHERROR, FITFAILED, and NEARBOUND.
-
-
-**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_mask` creates a mask from a list of maskbit names by joining the individual masks (i.e., an element-by-element ``OR``).  If no maskbit names are provided, then :meth:`~marvin.tools.map.Map.get_mask` defaults to the recommended masks.
+See :ref:`marvin-utils-maskbit` for details.
 
 .. code-block:: python
 
-    ha.get_mask(['NOCOV', 'UNRELIABLE', 'DONOTUSE'])
+    ha.pixmask
+    # <Maskbit 'MANGA_DAPPIXMASK'
+    #
+    #     bit         label                                        description
+    # 0     0         NOCOV                         No coverage in this spaxel
+    # 1     1        LOWCOV                        Low coverage in this spaxel
+    # 2     2     DEADFIBER                   Major contributing fiber is dead
+    # 3     3      FORESTAR                                    Foreground star
+    # 4     4       NOVALUE  Spaxel was not fit because it did not meet sel...
+    # 5     5    UNRELIABLE  Value is deemed unreliable; see TRM for defini...
+    # 6     6     MATHERROR              Mathematical error in computing value
+    # 7     7     FITFAILED                  Attempted fit for property failed
+    # 8     8     NEARBOUND  Fitted value is too near an imposed boundary; ...
+    # 9     9  NOCORRECTION               Appropriate correction not available
+    # 10   10     MULTICOMP          Multi-component velocity features present
+    # 11   30      DONOTUSE                 Do not use this spaxel for science>
 
-    # get_mask() accepts a string if only one maskbit name is given.
-    ha.get_mask('NOCOV')  # == ha.get_mask(['NOCOV'])
-
-    # For MPL-5+, get_mask() defaults to 'NOCOV', 'UNRELIABLE', and 'DONOTUSE'.
-    ha.get_mask()
-
-
-**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_bits` converts an integer into its constituent bits and will output the bit names (default), bit values, or :class:`~marvin.utils.dap.datamodel.base.Bit` objects.
-
-.. code-block:: python
-
-    ha.get_bits(1073741843)  # == ha.get_bits(1073741843, output='name')
-    # ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
-
-    ha.get_bits(1073741843, output='value')
-    # [0, 1, 4, 30]
-    # 2**0 + 2**1 + 2**4 + 2**30 = 1073741843
-
-    ha.get_bits(1073741843, output='object')
-    # [<Bit  0 name='NOCOV'>,
-    #  <Bit  1 name='LOWCOV'>,
-    #  <Bit  4 name='NOVALUE'>,
-    #  <Bit 30 name='DONOTUSE'>]
+    ha.pixmask.mask    # == ha.mask
+    ha.pixmask.bits    # bits corresponding to mask array
+    ha.pixmask.labels  # labels corresponding to mask array
 
 
-**New in 2.2.0**: :meth:`~marvin.tools.map.Map.get_bits_all_spax` applies :meth:`~marvin.tools.map.Map.get_bits` to the whole :attr:`~marvin.tools.map.Map.mask` array.
-
-.. code-block:: python
-
-    names = ha.get_bits_all_spax()  # == ha.get_bits_all_spax(output='name')
-    values = ha.get_bits_all_spax(output='value')
-    objects = ha.get_bits_all_spax(output='object')
-
-    # ``names``, ``values``, and ``objects`` are nested lists of dimensions (34, 34, X).
-    # The first two dimensions are the size of the input ``mask`` array.
-    # The length of the last dimension (X) equals the number of bits set.
-
-    names[0][0]
-    # ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']
-
-    values[0][0]
-    # [0, 1, 4, 30]
-
-    objects[0][0]
-    # [<Bit  0 name='NOCOV'>,
-    #  <Bit  1 name='LOWCOV'>,
-    #  <Bit  4 name='NOVALUE'>,
-    #  <Bit 30 name='DONOTUSE'>]
+**Note**: For MPL-5+, DONOTUSE is a consolidation of the flags NOCOV, LOWCOV, DEADFIBER, FORESTAR, NOVALUE, MATHERROR, FITFAILED, and NEARBOUND.  For MPL-4, the ``MANGA_DAPPIXMASK`` flag is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
 
 
 .. _marvin-map-using:
@@ -319,11 +269,9 @@ Reference/API
 .. autosummary::
 
     marvin.tools.map.Map.error
-    marvin.tools.map.Map.get_mask
-    marvin.tools.map.Map.get_bits
-    marvin.tools.map.Map.get_bits_all_spax
     marvin.tools.map.Map.inst_sigma_correction
     marvin.tools.map.Map.masked
+    marvin.tools.map.Map.pixmask
     marvin.tools.map.Map.plot
     marvin.tools.map.Map.restore
     marvin.tools.map.Map.save

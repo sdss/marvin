@@ -519,7 +519,11 @@ class Map(Quantity):
 
     @property
     def pixmask(self):
-        """Return the DAPPIXMASK flag."""
+        """Maskbit instance for the MANGA_DAPPIXMASK flag.
+
+        See :ref:`marvin-utils-maskbit` for documentation and
+        :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
+        """
         pixmask = self._datamodel.bitmasks['MANGA_DAPPIXMASK']
         pixmask.mask = self.mask if self.mask is not None else None
         return pixmask
@@ -540,8 +544,8 @@ class EnhancedMap(Map):
     def __init__(self, *args, **kwargs):
         self.release = kwargs.get('release', None)
         self.scale = kwargs.get('scale', None)
-        self.history = kwargs.get('history', None)
-        self.parents = kwargs.get('parents', None)
+        self.history = kwargs.get('history', None)  # TODO REMOVE
+        self.parents = kwargs.get('parents', None)  # TODO REMOVE
 
     def __repr__(self):
         return ('<Marvin EnhancedMap {0.history!r}>'
@@ -551,8 +555,9 @@ class EnhancedMap(Map):
         return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
                            ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
                            scale=deepcopy(self.scale, memo), release=deepcopy(self.release, memo),
-                           history=deepcopy(self.history, memo),
-                           parents=deepcopy(self.parents, memo), copy=True)
+                           history=deepcopy(self.history, memo),  # TODO REMOVE
+                           parents=deepcopy(self.parents, memo),  # TODO REMOVE
+                           copy=True)
 
     def _init_map_from_maps(self):
         raise AttributeError("'EnhancedMap' has no attribute '_init_map_from_maps'.")
