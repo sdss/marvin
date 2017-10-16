@@ -122,7 +122,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig = haflux_map.maps.get_bpt()
+    masks, fig, axes = haflux_map.maps.get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 
@@ -138,11 +138,11 @@ Select the star-forming spaxels that are in the star-forming region of each diag
 
     sf = masks['sf']['global']
 
-Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and set bit 30 (DONOTUSE) for non-star-forming spaxels.
+Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and mark those spaxels as DONOTUSE since they are non-star-forming spaxels.
 
 .. code-block:: python
 
-    mask_non_sf = ~sf * 2**30
+    mask_non_sf = ~sf * haflux_map.pixmask.labels_to_value('DONOTUSE')
 
 
 Do a bitwise OR between the DAP mask and the non-star-forming mask:
