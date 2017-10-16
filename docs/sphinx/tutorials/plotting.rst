@@ -244,6 +244,9 @@ Custom Spectrum and Model Fit
     ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength.unit.to_string('latex')))
     ax.set_ylabel('flux [{}]'.format(spax.spectrum.unit.to_string('latex')))
 
+
+.. .. image:: ../_static/map_bpt_mask.png
+
 .. image:: ../_static/spec_8485-1901.png
 
 
