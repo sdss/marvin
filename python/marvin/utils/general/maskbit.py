@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-12 16:10:37
+# @Last modified time: 2017-10-16 11:10:73
 
 from __future__ import division, print_function, absolute_import
 
@@ -39,7 +39,7 @@ class Maskbit(object):
         self.mask = None
 
     def __repr__(self):
-        return '<Maskbit {0!r}\n\n{1!r}>'.format(self.name, self.schema)
+        return '<Maskbit {0!r}>\n{1!r}'.format(self.name, self.schema)
 
     def _load_schema(self, flag_name):
         """Load SDSS Maskbit schema from yanny file.
@@ -58,7 +58,6 @@ class Maskbit(object):
         flag = maskbits[maskbits['flag'] == flag_name]
 
         return pd.DataFrame(flag[['bit', 'label', 'description']])
-
 
     @property
     def bits(self):
