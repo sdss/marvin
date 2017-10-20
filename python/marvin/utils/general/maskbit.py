@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-16 11:10:73
+# @Last modified time: 2017-10-20 16:10:18
 
 from __future__ import division, print_function, absolute_import
 
@@ -17,6 +17,27 @@ import pandas as pd
 
 import marvin
 from marvin.utils.general.yanny import yanny
+
+
+def _read_maskbit_schemas():
+    """Read all available SDSS Maskbit schemas from yanny file.
+
+    Returns:
+        Record Array: all bits for all schemas.
+    """
+    path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
+    sdss_maskbits = yanny(path_maskbits, np=True)
+    return sdss_maskbits['MASKBITS']
+
+
+def get_available_maskbits():
+    """Get names of available Maskbit schemas from yanny file.
+
+    Returns:
+        list: Names of available Maskbits.
+    """
+    maskbits = _read_maskbit_schemas()
+    return sorted(set([it[0] for it in maskbits]))
 
 
 class Maskbit(object):
@@ -51,10 +72,7 @@ class Maskbit(object):
         Returns:
             DataFrame: Schema of flag.
         """
-        path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-        sdss_maskbits = yanny(path_maskbits, np=True)
-        maskbits = sdss_maskbits['MASKBITS']
-
+        maskbits = _read_maskbit_schemas()
         flag = maskbits[maskbits['flag'] == flag_name]
 
         return pd.DataFrame(flag[['bit', 'label', 'description']])
