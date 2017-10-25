@@ -178,8 +178,8 @@ class CubeView(BaseView):
             except (MarvinError, BrainError):
                 nsa_data = None
 
-            wavelength = (cube.wavelength.tolist() if isinstance(cube.wavelength, np.ndarray)
-                          else cube.wavelength)
+            wavelength = (cube._wavelength.tolist() if isinstance(cube._wavelength, np.ndarray)
+                          else cube._wavelength)
             self.results['data'] = {'plateifu': name,
                                     'mangaid': cube.mangaid,
                                     'ra': cube.ra,
@@ -247,5 +247,62 @@ class CubeView(BaseView):
         if cube:
             self.results['data'] = {'cube_extension':
                                     cube._getExtensionData(cube_extension.upper()).tolist()}
+
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/<name>/1d/<extension>/', methods=['GET', 'POST'],
+           endpoint='get1D')
+    @av.check_args()
+    def get1D(self, args, name, extension):
+        """Returns a 1D array.
+
+        .. :quickref: Gets a 1D array from the cube.
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param extension: The name of the cube extension.
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string cube_extension: the 3d data for the specified extension
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/8485-1901/1d/specres/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"array": [[0,0,..0]]
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist='name')
+        cube, res = _getCube(name, **args)
+        self.update_results(res)
+
+        if cube:
+            self.results['data'] = {'array': cube._get_1d(extension.upper()).tolist()}
 
         return Response(json.dumps(self.results), mimetype='application/json')
