@@ -55,7 +55,7 @@ class File(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<File (pk={0},name={1})'.format(self.pk, self.filename)
+        return '<File (pk={0},name={1},tag={2})'.format(self.pk, self.filename, self.pipelineinfo.version.version)
 
     @property
     def primary_header(self):

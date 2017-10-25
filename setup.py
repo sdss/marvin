@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-10-19 17:36:00
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-11 15:35:55
+# @Last Modified time: 2017-10-25 14:15:54
 #
 # This is the Marvin setup
 #
@@ -66,9 +66,34 @@ def get_data_files(with_web=True):
     return data_files
 
 
-requirements_file = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-install_requires = [line.strip().replace('==', '>=') for line in open(requirements_file)
-                    if not line.strip().startswith('#') and line.strip() != '']
+def get_requirements(opts):
+    ''' Get the proper requirements file based on the optional argument '''
+
+    if opts.dev:
+        name = 'requirements_dev.txt'
+    elif opts.web:
+        name = 'requirements_web.txt'
+    else:
+        name = 'requirements.txt'
+
+    requirements_file = os.path.join(os.path.dirname(__file__), name)
+    install_requires = [line.strip().replace('==', '>=') for line in open(requirements_file)
+                        if not line.strip().startswith('#') and line.strip() != '']
+    return install_requires
+
+
+def remove_args(parser):
+    ''' Remove custom arguments from the parser '''
+
+    arguments = []
+    for action in list(parser._get_optional_actions()):
+        if '--help' not in action.option_strings:
+            arguments += action.option_strings
+
+    for arg in arguments:
+        if arg in sys.argv:
+            sys.argv.remove(arg)
+
 
 NAME = 'sdss-marvin'
 # do not use x.x.x-dev.  things complain.  instead use x.x.xdev
@@ -77,7 +102,7 @@ RELEASE = 'dev' not in VERSION
 #generate_version_py(NAME, VERSION, RELEASE)
 
 
-def run(data_files, packages):
+def run(data_files, packages, install_requires):
 
     setup(name=NAME,
           version=VERSION,
@@ -123,8 +148,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]))
 
-    parser.add_argument('-w', '--noweb', dest='noweb', default=False,
-                        action='store_true', help='Does not build the web.')
+    parser.add_argument('-w', '--noweb', dest='noweb', default=False, action='store_true', help='Does not build the web.')
+    parser.add_argument('-d', '--dev', dest='dev', default=False, action='store_true', help='Install all packages for development')
+    parser.add_argument('-b', '--web', dest='web', default=False, action='store_true', help='Install only core + web packages')
 
     # We use parse_known_args because we want to leave the remaining args for distutils
     args = parser.parse_known_args()[0]
@@ -142,15 +168,11 @@ if __name__ == '__main__':
                                             'python/marvin/data/',
                                             'sdssMaskbits.par'))
 
-    # Now we remove all our custom arguments to make sure they don't interfere with distutils
-    arguments = []
-    for action in list(parser._get_optional_actions()):
-        if '--help' not in action.option_strings:
-            arguments += action.option_strings
+    # Get the proper requirements file
+    install_requires = get_requirements(args)
 
-    for arg in arguments:
-        if arg in sys.argv:
-            sys.argv.remove(arg)
+    # Now we remove all our custom arguments to make sure they don't interfere with distutils
+    remove_args(parser)
 
     # Runs distutils
-    run(data_files, packages)
+    run(data_files, packages, install_requires)
