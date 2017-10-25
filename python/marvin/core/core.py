@@ -197,7 +197,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                                              drpver=self._drpver)
 
     @staticmethod
-    def _parse_input(self, value):
+    def _parse_input(value):
         """Parses and input and determines plate, ifu, and mangaid."""
 
         # Number of IFUs per size
@@ -219,7 +219,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             # If the value matches a plateifu, checks that the ifu is a valid one.
             ifu_match = re.match(ifu_pattern, ifu)
             if ifu_match is not None:
-                ifu_size, ifu_id = map(int, ifu_match.gropus(0))
+                ifu_size, ifu_id = map(int, ifu_match.groups(0))
                 if ifu_id <= n_ifus[ifu_size]:
                     return_dict['plate'] = plate
                     return_dict['ifu'] = ifu
