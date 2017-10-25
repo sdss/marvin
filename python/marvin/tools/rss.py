@@ -23,7 +23,7 @@ import marvin
 from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
-from marvin.tools.spectrum import Spectrum
+from marvin.tools.quantities.spectrum import Spectrum
 
 
 class RSS(MarvinToolsClass, list):

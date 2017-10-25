@@ -145,7 +145,7 @@ class ModelCube(MarvinToolsClass):
             if 'template' not in kwargs:
                 kwargs['template'] = kwargs['template_kin']
 
-        self._datamodel = datamodel[self.release]
+        self._datamodel = datamodel[self.release].models
 
         # We set the bintype  and template_kin again, now using the DAP version
         self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))

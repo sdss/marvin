@@ -26,7 +26,7 @@ import marvin.api.api
 import marvin.core.core
 import marvin.core.exceptions
 import marvin.tools.cube
-import marvin.tools.map
+import marvin.tools.quantities.map
 import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.utils.dap.bpt
@@ -85,19 +85,6 @@ class Maps(marvin.core.core.MarvinToolsClass):
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
-        nsa_source ({'auto', 'drpall', 'nsa'}):
-            Defines how the NSA data for this object should loaded when
-            ``Maps.nsa`` is first called. If ``drpall``, the drpall file will
-            be used (note that this will only contain a subset of all the NSA
-            information); if ``nsa``, the full set of data from the DB will be
-            retrieved. If the drpall file or a database are not available, a
-            remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the ``Maps`` object has been
-            instantiated. If the cube has ``Maps.data_origin='file'``,
-            the drpall file will be used (as it is more likely that the user
-            has that file in their system). Otherwise, ``nsa_source='nsa'``
-            will be assumed. This behaviour can be modified during runtime by
-            modifying the ``Maps.nsa_mode`` with one of the valid values.
         release (str):
             The MPL/DR version of the data to use.
 
@@ -161,7 +148,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
             if 'template' not in kwargs:
                 kwargs['template'] = kwargs['template_kin']
 
-        self._datamodel = datamodel[self.release]
+        self._datamodel = datamodel[self.release].properties
 
         # We set the bintype  and template_kin again, now using the DAP version
         self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
