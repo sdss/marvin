@@ -58,6 +58,7 @@ Components
   * :doc:`core/config`
   * :doc:`core/data-access-modes`
   * :doc:`core/downloads`
+  * :doc:`api/quantities`
 
 * :doc:`tools`
 
