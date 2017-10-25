@@ -466,7 +466,7 @@ class Property(object):
                  scale=1, formats={}, parent=None, binid=None, description=''):
 
         self.name = name
-        self.channel = channel
+        self.channel = copy_mod.deepcopy(channel)
 
         self.ivar = ivar
         self.mask = mask
@@ -610,7 +610,6 @@ class MultiChannelProperty(list):
     def __init__(self, name, channels=[], unit=None, scale=None, **kwargs):
 
         self.name = name
-        self.channels = channels
 
         self.ivar = kwargs.get('ivar', False)
         self.mask = kwargs.get('mask', False)
@@ -635,6 +634,12 @@ class MultiChannelProperty(list):
 
         for prop in self:
             prop.parent = parent
+
+    @property
+    def channels(self):
+        """Returns a list of channels."""
+
+        return [item.channel for item in self]
 
     def __getitem__(self, value):
         """Uses fuzzywuzzy to get a channel."""
