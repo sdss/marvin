@@ -26,4 +26,4 @@ dogpile.cache>=0.6.2
 
 sphinx_bootstrap_theme>=0.4.12
 sphinxcontrib-httpdomain>=1.5.0
-m2r
+m2r>=0.1.12
