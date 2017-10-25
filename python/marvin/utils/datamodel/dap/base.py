@@ -344,7 +344,7 @@ class ModelList(FuzzyList):
                 table pretty print.
             description (bool):
                 If ``True``, an extra column with the description of the
-                property will be added.
+                model will be added.
             max_width (int or None):
                 A keyword to pass to ``astropy.table.Table.pprint()`` with the
                 maximum width of the table, in characters.
@@ -352,8 +352,7 @@ class ModelList(FuzzyList):
         Returns:
             result (``astropy.table.Table``):
                 If ``pprint=False``, returns an astropy table containing
-                the name of the property, the channel (or channels, if
-                ``compact=True``), whether the property has ``ivar`` or
+                the name of the model, whether the property has ``ivar`` or
                 ``mask``, the units, and a description (if
                 ``description=True``). Additonal information such as the
                 bintypes, templates, release, etc. is included in
@@ -362,8 +361,8 @@ class ModelList(FuzzyList):
         """
 
         model_table = table.Table(
-            None, names=['name', 'model', 'ivar', 'mask', 'unit', 'description'],
-            dtype=['S20', 'S20', bool, bool, 'S20', 'S500'])
+            None, names=['name', 'ivar', 'mask', 'unit', 'description'],
+            dtype=['S20', bool, bool, 'S20', 'S500'])
 
         if self.parent:
             model_table.meta['release'] = self.parent.release
@@ -376,7 +375,6 @@ class ModelList(FuzzyList):
             unit = model.unit.to_string()
 
             model_table.add_row((model.name,
-                                 model.name,
                                  model.extension_ivar is not None,
                                  model.extension_mask is not None,
                                  unit,
