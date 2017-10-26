@@ -183,6 +183,9 @@ class DataCube(object):
         extension_mask (str or None):
             The extension that contains the mask associated with this
             datacube, if any.
+        db_table (str):
+            The DB table in which the datacube is stored. Defaults to
+            ``spaxel``.
         unit (astropy unit or None):
             The unit for this datacube.
         scale (float):
@@ -196,7 +199,7 @@ class DataCube(object):
     """
 
     def __init__(self, name, extension_name, extension_wave=None,
-                 extension_ivar=None, extension_mask=None,
+                 extension_ivar=None, extension_mask=None, db_table='spaxel',
                  unit=u.dimensionless_unscaled, scale=1, formats={},
                  description=''):
 
@@ -205,6 +208,7 @@ class DataCube(object):
         self.extension_wave = extension_wave
         self.extension_ivar = extension_ivar
         self.extension_mask = extension_mask
+        self.db_table = db_table
         self.unit = unit
         self.scale = scale
         self.formats = formats
@@ -359,6 +363,9 @@ class Spectrum(object):
         extension_std (str):
             The FITS extension containing the standard deviation for this
             spectrum.
+        db_table (str):
+            The DB table in which the spectrum is stored. Defaults to
+            ``cube``.
         unit (astropy unit or None):
             The unit for this spectrum.
         scale (float):
@@ -372,13 +379,14 @@ class Spectrum(object):
     """
 
     def __init__(self, name, extension_name, extension_wave=None, extension_std=None,
-                 unit=u.dimensionless_unscaled, scale=1, formats={},
+                 db_table='cube', unit=u.dimensionless_unscaled, scale=1, formats={},
                  description=''):
 
         self.name = name
         self.extension_name = extension_name
         self.extension_wave = extension_wave
         self.extension_std = extension_std
+        self.db_table = db_table
         self.unit = unit
         self.scale = scale
         self.formats = formats
