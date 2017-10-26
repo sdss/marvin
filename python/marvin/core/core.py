@@ -124,9 +124,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         self.data = data
         self.data_origin = None
 
-        self.filename = None
-        self.mangaid = None
-        self.plateifu = None
+        self.filename = filename
+        self.mangaid = mangaid
+        self.plateifu = plateifu
 
         self.mode = mode
 
