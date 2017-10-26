@@ -1,31 +1,39 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import os
+
 import numpy as np
 
 from flask_classy import route
 from flask import jsonify, request, Response
 import json
 
+from marvin import config
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 from marvin.tools.cube import Cube
 
-from brain.utils.general import parseRoutePath
 from brain.core.exceptions import BrainError
 
 from . import db_off
+
+try:
+    from sdss_access.path import Path
+except ImportError:
+    Path = None
 
 
 ''' stuff that runs server-side '''
 
 
-def _getCube(name, **kwargs):
+def _getCube(name, use_file=False, **kwargs):
     ''' Retrieve a cube using marvin tools '''
 
     # Pop the release to remove a duplicate input to Maps
     release = kwargs.pop('release', None)
+    drpver, dapver = config.lookUpVersions(release)
 
     cube = None
     results = {}
@@ -37,17 +45,28 @@ def _getCube(name, **kwargs):
         results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
         return cube, results
 
-    try:
-        if idtype == 'plateifu':
-            plateifu = name
-            mangaid = None
-        elif idtype == 'mangaid':
-            mangaid = name
-            plateifu = None
-        else:
-            raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+    filename = None
+    plateifu = None
+    mangaid = None
 
-        cube = Cube(mangaid=mangaid, plateifu=plateifu, mode='local', release=release)
+    try:
+        if use_file:
+            if Path is not None:
+                plate, ifu = name.split('-')
+                filename = Path().full('mangacube', ifu=ifu, plate=plate, drpver=drpver)
+                assert os.path.exists(filename), 'file not found.'
+            else:
+                raise MarvinError('cannot create path for MaNGA cube.')
+        else:
+            if idtype == 'plateifu':
+                plateifu = name
+            elif idtype == 'mangaid':
+                mangaid = name
+            else:
+                raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+
+        cube = Cube(filename=filename, mangaid=mangaid, plateifu=plateifu,
+                    mode='local', release=release)
         results['status'] = 1
     except Exception as ee:
         results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
@@ -242,13 +261,18 @@ class CubeView(BaseView):
         # Pass the args in and get the cube
         args = self._pop_args(args, arglist='name')
 
-        with db_off():
-            cube, res = _getCube(name, **args)
-            self.update_results(res)
+        # We want the cube from file for this because retrieving datacubes is
+        # slow from the DB.
+        cube, res = _getCube(name, use_file=True, **args)
+        self.update_results(res)
 
         if cube:
-            self.results['data'] = {'cube_extension':
-                                    cube._get_extension_data(cube_extension.upper()).tolist()}
+            extension_data = cube._get_extension_data(cube_extension.upper())
+
+            if extension_data is None:
+                self.results['data'] = {'cube_extension': None}
+            else:
+                self.results['data'] = {'cube_extension': extension_data.tolist()}
 
         return Response(json.dumps(self.results), mimetype='application/json')
 
