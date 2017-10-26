@@ -15,6 +15,9 @@ from marvin.tools.cube import Cube
 from brain.utils.general import parseRoutePath
 from brain.core.exceptions import BrainError
 
+from . import db_off
+
+
 ''' stuff that runs server-side '''
 
 
@@ -124,7 +127,6 @@ class CubeView(BaseView):
         :json float dec: Dec of cube
         :json string header: the cube header as a string
         :json float redshift: the cube redshift
-        :json list shape: the cube shape [x, y]
         :json list wavelength: the cube wavelength array
         :json string wcs_header: the cube wcs_header as a string
         :resheader Content-Type: application/json
@@ -158,7 +160,6 @@ class CubeView(BaseView):
                     "header": "XTENSION= 'IMAGE', NAXIS=3, .... END",
                     "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
                     "redshift": 0.0407447,
-                    "shape": [34, 34],
                     "wavelength": [3621.6, 3622.43,...,10353.8]
               }
            }
@@ -186,7 +187,6 @@ class CubeView(BaseView):
                                     'dec': cube.dec,
                                     'header': cube.header.tostring(),
                                     'redshift': nsa_data.z if nsa_data else -9999,
-                                    'shape': cube.shape,
                                     'wavelength': wavelength,
                                     'wcs_header': cube.wcs.to_header_string()}
 
@@ -241,12 +241,14 @@ class CubeView(BaseView):
 
         # Pass the args in and get the cube
         args = self._pop_args(args, arglist='name')
-        cube, res = _getCube(name, **args)
-        self.update_results(res)
+
+        with db_off():
+            cube, res = _getCube(name, **args)
+            self.update_results(res)
 
         if cube:
             self.results['data'] = {'cube_extension':
-                                    cube._getExtensionData(cube_extension.upper()).tolist()}
+                                    cube._get_extension_data(cube_extension.upper()).tolist()}
 
         return Response(json.dumps(self.results), mimetype='application/json')
 
