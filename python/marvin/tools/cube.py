@@ -71,7 +71,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=marvin.config.mode, data=None, release=marvin.config.release,
-                 drpall=None, download=marvin.config.download):
+                 drpall=None, download=marvin.config.download, nsa_source='auto'):
 
         self.header = None
         self.wcs = None
@@ -81,9 +81,11 @@ class Cube(MarvinToolsClass, NSAMixIn):
         # don't need to be retrieved again.
         self._extension_data = {}
 
-        super(Cube, self).__init__(input=input, filename=filename, mangaid=mangaid,
-                                   plateifu=plateifu, mode=mode, data=data, release=release,
-                                   drpall=drpall, download=download)
+        MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
+                                  plateifu=plateifu, mode=mode, data=data, release=release,
+                                  drpall=drpall, download=download)
+
+        NSAMixIn.__init__(self, nsa_source=nsa_source)
 
         if self.data_origin == 'file':
             self._load_cube_from_file(data=self.data)
@@ -162,6 +164,11 @@ class Cube(MarvinToolsClass, NSAMixIn):
             def func(self):
 
                 if getattr(self, '_' + dm.name, None) is None:
+
+                    if self.data_origin == 'api':
+                        warnings.warn('retrieving datacubes over API is slow. '
+                                      'Consider downloading the cube.', MarvinUserWarning)
+
                     ivar = self._get_extension_data('IVAR') if dm.extension_ivar else None
                     mask = self._get_extension_data('MASK') if dm.extension_mask else None
 
@@ -301,7 +308,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         data = response.getData()
 
         self.header = fits.Header.fromstring(data['header'])
-        self.shape = data['shape']
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
         self._wavelength = data['wavelength']
 
@@ -370,22 +376,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
             ext_data = np.array(data['array'])
 
         return ext_data
-
-    # @property
-    # def flux(self):
-    #     """Provides access to the data in the form of a `.DataCube`."""
-    #
-    #     if self._flux is None:
-    #
-    #         self._flux = DataCube(
-    #             self._getExtensionData('FLUX'),
-    #             np.array(self._wavelength),
-    #             ivar=self._getExtensionData('IVAR'),
-    #             mask=self._getExtensionData('MASK'),
-    #             unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel,
-    #             scale=1e-17)
-    #
-    #     return self._flux
 
     @property
     def qualitybit(self):
