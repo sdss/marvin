@@ -393,6 +393,18 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         raise MarvinError('the release cannot be changed once the object has been instantiated.')
 
+    @property
+    def plate(self):
+        """Returns the plate id."""
+
+        return int(self.plateifu.split('-')[0])
+
+    @property
+    def ifu(self):
+        """Returns the IFU."""
+
+        return int(self.plateifu.split('-')[1])
+
     def __del__(self):
         """Destructor for closing FITS files."""
 

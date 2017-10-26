@@ -252,16 +252,15 @@ class CubeView(BaseView):
 
         return Response(json.dumps(self.results), mimetype='application/json')
 
-    @route('/<name>/1d/<extension>/', methods=['GET', 'POST'],
-           endpoint='get1D')
+    @route('/<name>/1d/<cube_extension>/', methods=['GET', 'POST'], endpoint='get1D')
     @av.check_args()
-    def get1D(self, args, name, extension):
+    def get1D(self, args, name, cube_extension):
         """Returns a 1D array.
 
         .. :quickref: Gets a 1D array from the cube.
 
         :param name: The name of the cube as plate-ifu or mangaid
-        :param extension: The name of the cube extension.
+        :param cube_extension: The name of the cube extension.
         :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -301,10 +300,12 @@ class CubeView(BaseView):
 
         # Pass the args in and get the cube
         args = self._pop_args(args, arglist='name')
-        cube, res = _getCube(name, **args)
-        self.update_results(res)
+
+        with db_off():
+            cube, res = _getCube(name, **args)
+            self.update_results(res)
 
         if cube:
-            self.results['data'] = {'array': cube._get_1d(extension.upper()).tolist()}
+            self.results['data'] = {'array': cube._get_1d(cube_extension).tolist()}
 
         return Response(json.dumps(self.results), mimetype='application/json')

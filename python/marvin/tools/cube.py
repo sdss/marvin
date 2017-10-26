@@ -148,10 +148,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.ra = float(self.header['OBJRA'])
         self.dec = float(self.header['OBJDEC'])
 
-        self.plate = int(self.header['PLATEID'])
-        self.ifu = int(self.header['IFUDSGN'])
-        self.mangaid = self.header['MANGAID']
-
         self._isbright = 'APOGEE' in self.header['SRVYMODE']
 
         self.dir3d = 'mastar' if self._isbright else 'stack'
@@ -194,7 +190,13 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
                 if getattr(self, '_' + dm.name, None) is None:
 
-                    datacube = Spectrum(self._get_1d(dm.extension_name),
+                    value = self._get_1d(dm.extension_name)
+
+                    if value is None:
+                        raise MarvinError('cannot get {} value for {}'.format(dm.extension_name,
+                                                                              self.plateifu))
+
+                    datacube = Spectrum(value,
                                         wavelength=np.array(self._wavelength),
                                         ivar=None,
                                         mask=None,
@@ -362,11 +364,11 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         elif self.data_origin == 'api':
 
-            url = marvin.config.urlmap['api']['getCube1D']['url']
+            url = marvin.config.urlmap['api']['get1D']['url']
 
             try:
                 response = self._toolInteraction(url.format(name=self.plateifu,
-                                                            extension=ext_name.lower()))
+                                                            cube_extension=ext_name.lower()))
             except Exception as ee:
                 raise MarvinError('found a problem when checking if remote cube '
                                   'exists: {0}'.format(str(ee)))

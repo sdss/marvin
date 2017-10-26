@@ -34,8 +34,10 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
             'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
             'cube_extension': fields.String(required=True, location='view_args',
-                                            validate=validate.OneOf(['flux', 'ivar', 'mask'])),
-            'colname': fields.String(required=True, location='view_args', allow_none=True)
+                                            validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                     'specres', 'specred', 'prespecres',
+                                                                     'prespecresd'])),
+            'colname': fields.String(required=True, location='view_args', allow_none=True),
             }
 
 # List of all form parameters that are needed in all the API routes
