@@ -1,4 +1,5 @@
 
+import contextlib
 import re
 import functools
 from copy import deepcopy
@@ -421,3 +422,12 @@ class ArgValidator(object):
             from werkzeug.datastructures import ImmutableMultiDict
             newargs = ImmutableMultiDict(newargs.copy())
         return newargs
+
+
+# Creates a context manager for executing code with DB off but then turning it on again after that.
+
+@contextlib.contextmanager
+def db_off():
+    config.forceDbOff()
+    yield
+    config.forceDbOn()
