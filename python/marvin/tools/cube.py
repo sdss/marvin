@@ -31,11 +31,6 @@ from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import get_nsa_data
 
-# try:
-#     import photutils.aperture_funcs
-# except ImportError:
-#     photutils = False
-
 
 class Cube(MarvinToolsClass, NSAMixIn):
     """A class to interface with MaNGA DRP data cubes.
@@ -81,6 +76,13 @@ class Cube(MarvinToolsClass, NSAMixIn):
         # don't need to be retrieved again.
         self._extension_data = {}
 
+        # Datacubes and spectra
+        self._flux = None
+        self._spectral_resolution = None
+        self._spectral_resolution_prepixel = None
+        self._dispersion = None
+        self._dispersion_prepixel = None
+
         MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
                                   plateifu=plateifu, mode=mode, data=data, release=release,
                                   drpall=drpall, download=download)
@@ -95,7 +97,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
             self._load_cube_from_api()
 
         self._init_attributes()
-        self._init_quantities()
 
         # Checks that the drpver set in MarvinToolsClass matches the header
         header_drpver = self.header['VERSDRP3'].strip()
@@ -151,69 +152,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self._isbright = 'APOGEE' in self.header['SRVYMODE']
 
         self.dir3d = 'mastar' if self._isbright else 'stack'
-
-    def _init_quantities(self):
-        """Initialises flux and other quantities from the datamodel."""
-
-        def datacube_property_maker(self, dm):
-
-            def func(self):
-
-                if getattr(self, '_' + dm.name, None) is None:
-
-                    if self.data_origin == 'api':
-                        warnings.warn('retrieving datacubes over API is slow. '
-                                      'Consider downloading the cube.', MarvinUserWarning)
-
-                    ivar = self._get_extension_data('IVAR') if dm.extension_ivar else None
-                    mask = self._get_extension_data('MASK') if dm.extension_mask else None
-
-                    datacube = DataCube(self._get_extension_data(dm.extension_name),
-                                        np.array(self._wavelength),
-                                        ivar=ivar,
-                                        mask=mask,
-                                        unit=dm.unit,
-                                        scale=dm.scale)
-
-                    setattr(self, '_' + dm.name, datacube)
-
-                return getattr(self, '_' + dm.name)
-
-            return func
-
-        def spectrum_property_maker(self, dm):
-
-            # TODO: add the standard deviation
-            # TODO: fix for cases when the data is not in the DB.
-
-            def func(self):
-
-                if getattr(self, '_' + dm.name, None) is None:
-
-                    value = self._get_1d(dm.extension_name)
-
-                    if value is None:
-                        raise MarvinError('cannot get {} value for {}'.format(dm.extension_name,
-                                                                              self.plateifu))
-
-                    datacube = Spectrum(value,
-                                        wavelength=np.array(self._wavelength),
-                                        ivar=None,
-                                        mask=None,
-                                        unit=dm.unit,
-                                        scale=dm.scale)
-
-                    setattr(self, '_' + dm.name, datacube)
-
-                return getattr(self, '_' + dm.name)
-
-            return func
-
-        for datacube_dm in self.datamodel.datacubes:
-            setattr(Cube, datacube_dm.name, property(datacube_property_maker(self, datacube_dm)))
-
-        for spec_dm in self.datamodel.spectra:
-            setattr(Cube, spec_dm.name, property(spectrum_property_maker(self, spec_dm)))
 
     def _load_cube_from_file(self, data=None):
         """Initialises a cube from a file."""
@@ -318,64 +256,152 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         return
 
-    def _get_extension_data(self, ext_name):
+    def _get_datacube(self, name):
+        """Returns a `.DataCube`."""
+
+        model = self.datamodel.datacubes[name]
+        cube_data = self._get_extension_data(name)
+
+        if cube_data is None:
+            raise MarvinError('cannot find data for this extension. '
+                              'Maybe it is not loaded into the DB.')
+
+        datacube = DataCube(cube_data,
+                            np.array(self._wavelength),
+                            ivar=self._get_extension_data(name, 'ivar'),
+                            mask=self._get_extension_data(name, 'mask'),
+                            unit=model.unit)
+
+        return datacube
+
+    def _get_spectrum(self, name):
+        """Returns an `.Spectrum`."""
+
+        model = self.datamodel.spectra[name]
+        spec_data = self._get_extension_data(name)
+
+        if spec_data is None:
+            raise MarvinError('cannot find data for this extension. '
+                              'Maybe it is not loaded into the DB.')
+
+        spectrum = Spectrum(spec_data,
+                            wavelength=np.array(self._wavelength),
+                            std=self._get_extension_data(name, 'std'),
+                            unit=model.unit)
+
+        return spectrum
+
+    @property
+    def flux(self):
+        """The flux datacube."""
+
+        assert 'flux' in self.datamodel.datacubes.list_names(), \
+            'flux is not present in his MPL version.'
+
+        assert hasattr(self, '_flux')
+
+        if self._flux is None:
+            self._flux = self._get_datacube('flux')
+
+        return self._flux
+
+    @property
+    def dispersion(self):
+        """The dispersion datacube."""
+
+        assert 'dispersion' in self.datamodel.datacubes.list_names(), \
+            'dispersion is not present in his MPL version.'
+
+        assert hasattr(self, '_dispersion')
+
+        if self._dispersion is None:
+            self._dispersion = self._get_datacube('dispersion')
+
+        return self._dispersion
+
+    @property
+    def dispersion_prepixel(self):
+        """The dispersion prepixel datacube."""
+
+        assert 'dispersion_prepixel' in self.datamodel.datacubes.list_names(), \
+            'dispersion_prepixel is not present in his MPL version.'
+
+        assert hasattr(self, '_dispersion_prepixel')
+
+        if self._dispersion_prepixel is None:
+            self._dispersion_prepixel = self._get_datacube('dispersion_prepixel')
+
+        return self._dispersion_prepixel
+
+    @property
+    def spectral_resolution(self):
+        """The spectral dispersion."""
+
+        assert 'spectral_resolution' in self.datamodel.spectra.list_names(), \
+            'spectral_resolution is not present in his MPL version.'
+
+        assert hasattr(self, '_spectral_resolution')
+
+        if self._spectral_resolution is None:
+            self._spectral_resolution = self._get_spectrum('spectral_resolution')
+
+        return self._spectral_resolution
+
+    @property
+    def spectral_resolution_prepixel(self):
+        """The spectral dispersion prepixel."""
+
+        assert 'spectral_resolution_prepixel' in self.datamodel.spectra.list_names(), \
+            'spectral_resolution_prepixel is not present in his MPL version.'
+
+        assert hasattr(self, '_spectral_resolution_prepixel')
+
+        if self._spectral_resolution_prepixel is None:
+            self._spectral_resolution_prepixel = self._get_spectrum('spectral_resolution_prepixel')
+
+        return self._spectral_resolution_prepixel
+
+    def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
+
+        model = self.datamodel[name]
+        ext_name = model.fits_extension(ext)
 
         if ext_name in self._extension_data:
             return self._extension_data[ext_name]
 
         if self.data_origin == 'file':
-            ext_data = self.data[ext_name.upper()].data
+            ext_data = self.data[model.fits_extension(ext)].data
 
         elif self.data_origin == 'db':
-            ext_data = self.data.get3DCube(ext_name.lower())
+            # If the table is "spaxel", this must be a 3D cube. If it is "cube",
+            # uses self.data, which is basically the DataModelClass.Cube instance.
+            if model.db_table == 'spaxel':
+                ext_data = self.data.get3DCube(model.db_column(ext))
+            elif model.db_table == 'cube':
+                ext_data = getattr(self.data, model.db_column(ext))
+            else:
+                raise NotImplementedError('invalid db_table={!r}'.format(model.db_table))
 
         elif self.data_origin == 'api':
 
-            url = marvin.config.urlmap['api']['getCubeExtension']['url']
+            params = {'release': self._release, 'use_file': True}
+            url = marvin.config.urlmap['api']['getExtension']['url']
 
             try:
-                response = self._toolInteraction(url.format(name=self.plateifu,
-                                                            cube_extension=ext_name.lower()))
+                response = self._toolInteraction(
+                    url.format(name=self.plateifu,
+                               cube_extension=model.fits_extension(ext).lower()),
+                    params=params)
             except Exception as ee:
                 raise MarvinError('found a problem when checking if remote cube '
                                   'exists: {0}'.format(str(ee)))
 
             data = response.getData()
-
-            ext_data = np.array(data['cube_extension'])
+            cube_ext_data = data['extension_data']
+            ext_data = np.array(cube_ext_data) if cube_ext_data is not None else None
 
         self._extension_data[ext_name] = ext_data
-
-        return ext_data
-
-    def _get_1d(self, ext_name):
-        """Returns an array from file, db, or API.
-
-        Used to retrieve dispersion and other 1D elements.
-
-        """
-
-        if self.data_origin == 'file':
-            ext_data = self.data[ext_name.upper()].data
-
-        elif self.data_origin == 'db':
-            ext_data = getattr(self.data, ext_name.lower())
-
-        elif self.data_origin == 'api':
-
-            url = marvin.config.urlmap['api']['get1D']['url']
-
-            try:
-                response = self._toolInteraction(url.format(name=self.plateifu,
-                                                            cube_extension=ext_name.lower()))
-            except Exception as ee:
-                raise MarvinError('found a problem when checking if remote cube '
-                                  'exists: {0}'.format(str(ee)))
-
-            data = response.getData()
-
-            ext_data = np.array(data['array'])
 
         return ext_data
 
@@ -498,71 +524,73 @@ class Cube(MarvinToolsClass, NSAMixIn):
         maps._cube = self
         return maps
 
-    # def getAperture(self, coords, radius, mode='pix', weight=True,
-    #                 return_type='mask'):
-    #     """Returns the spaxel in a circular or elliptical aperture.
-    #
-    #     Returns either a mask of the same shape as the cube with the spaxels
-    #     within an aperture, or the integrated spaxel from combining the spectra
-    #     for those spaxels.
-    #
-    #     The centre of the aperture is defined by ``coords``, which must be a
-    #     tuple of ``(x,y)`` (if ``mode='pix'``) or ``(ra,dec)`` coordinates
-    #     (if ``mode='sky'``). ``radius`` defines the radius of the circular
-    #     aperture, or the parameters of the aperture ellipse.
-    #
-    #     If ``weight=True``, the returned mask indicated the fraction of the
-    #     spaxel encompassed by the aperture, ranging from 0 for spaxels not
-    #     included to 1 for pixels totally included in the aperture. This
-    #     weighting is used to return the integrated spaxel.
-    #
-    #     Parameters:
-    #         coords (tuple):
-    #             Either the ``(x,y)`` or ``(ra,dec)`` coordinates of the centre
-    #             of the aperture.
-    #         radius (float or tuple):
-    #             If a float, the radius of the circular aperture. If
-    #             ``mode='pix'`` it must be the radius in pixels; if
-    #             ``mode='sky'``, ``radius`` is in arcsec. To define an
-    #             elliptical aperture, ``radius`` must be a 3-element tuple with
-    #             the first two elements defining the major and minor semi-axis
-    #             of the ellipse, and the third one the position angle in degrees
-    #             from North to East.
-    #         mode ({'pix', 'sky'}):
-    #             Defines whether the values in ``coords`` and ``radius`` refer
-    #             to pixels in the cube or angles on the sky.
-    #         weight (bool):
-    #             If ``True``, the returned mask or integrated spaxel will be
-    #             weighted by the fractional pixels in the aperture.
-    #         return_type ({'mask', 'mean', 'median', 'sum', 'spaxels'}):
-    #             The type of data to be returned.
-    #
-    #     Returns:
-    #         result:
-    #             If ``return_type='mask'``, this methods returns a 2D mask with
-    #             the shape of the cube indicating the spaxels included in the
-    #             aperture and, if appliable, their fractional contribution to
-    #             the aperture. If ``spaxels``, both the mask (flattened to a
-    #             1D array) and the :class:`~marvin.tools.spaxel.Spaxel`
-    #             included in the aperture are returned. ``mean``, ``median``,
-    #             or ``sum`` will allow arithmetic operations with the spaxels
-    #             in the aperture in the future.
-    #
-    #     Example:
-    #         To get the mask for a circular aperture centred in spaxel (5, 7)
-    #         and with radius 5 spaxels
-    #
-    #             >>> mask = cube.getAperture((5, 7), 5)
-    #             >>> mask.shape
-    #             (34, 34)
-    #
-    #         If you want to get the spaxels associated with that mask
-    #
-    #             >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
-    #             >>> len(spaxels)
-    #             15
-    #     """
-    #
+    def getAperture(self, coords, radius, mode='pix', weight=True,
+                    return_type='mask'):
+        """Returns the spaxel in a circular or elliptical aperture.
+
+        Returns either a mask of the same shape as the cube with the spaxels
+        within an aperture, or the integrated spaxel from combining the spectra
+        for those spaxels.
+
+        The centre of the aperture is defined by ``coords``, which must be a
+        tuple of ``(x,y)`` (if ``mode='pix'``) or ``(ra,dec)`` coordinates
+        (if ``mode='sky'``). ``radius`` defines the radius of the circular
+        aperture, or the parameters of the aperture ellipse.
+
+        If ``weight=True``, the returned mask indicated the fraction of the
+        spaxel encompassed by the aperture, ranging from 0 for spaxels not
+        included to 1 for pixels totally included in the aperture. This
+        weighting is used to return the integrated spaxel.
+
+        Parameters:
+            coords (tuple):
+                Either the ``(x,y)`` or ``(ra,dec)`` coordinates of the centre
+                of the aperture.
+            radius (float or tuple):
+                If a float, the radius of the circular aperture. If
+                ``mode='pix'`` it must be the radius in pixels; if
+                ``mode='sky'``, ``radius`` is in arcsec. To define an
+                elliptical aperture, ``radius`` must be a 3-element tuple with
+                the first two elements defining the major and minor semi-axis
+                of the ellipse, and the third one the position angle in degrees
+                from North to East.
+            mode ({'pix', 'sky'}):
+                Defines whether the values in ``coords`` and ``radius`` refer
+                to pixels in the cube or angles on the sky.
+            weight (bool):
+                If ``True``, the returned mask or integrated spaxel will be
+                weighted by the fractional pixels in the aperture.
+            return_type ({'mask', 'mean', 'median', 'sum', 'spaxels'}):
+                The type of data to be returned.
+
+        Returns:
+            result:
+                If ``return_type='mask'``, this methods returns a 2D mask with
+                the shape of the cube indicating the spaxels included in the
+                aperture and, if appliable, their fractional contribution to
+                the aperture. If ``spaxels``, both the mask (flattened to a
+                1D array) and the :class:`~marvin.tools.spaxel.Spaxel`
+                included in the aperture are returned. ``mean``, ``median``,
+                or ``sum`` will allow arithmetic operations with the spaxels
+                in the aperture in the future.
+
+        Example:
+            To get the mask for a circular aperture centred in spaxel (5, 7)
+            and with radius 5 spaxels
+
+                >>> mask = cube.getAperture((5, 7), 5)
+                >>> mask.shape
+                (34, 34)
+
+            If you want to get the spaxels associated with that mask
+
+                >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
+                >>> len(spaxels)
+                15
+        """
+
+        raise NotImplementedError('getAperture is not currently implemented.')
+
     #     assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
     #
     #     if return_type not in ['mask', 'spaxels']:
