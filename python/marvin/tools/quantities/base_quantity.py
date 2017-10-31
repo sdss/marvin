@@ -68,6 +68,7 @@ class QuantityMixIn(object):
             Unit("Angstrom cm2 s spaxel")
             >> dc[100, 15, 15]
             <DataCube 2.70078063011169e-18 erg / (Angstrom cm2 s spaxel)>
+
         """
 
         if self.unit.scale == 1:

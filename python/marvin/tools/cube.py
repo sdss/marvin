@@ -376,7 +376,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         elif self.data_origin == 'api':
 
-            params = {'release': self._release, 'use_file': True}
+            params = {'release': self._release}
             url = marvin.config.urlmap['api']['getExtension']['url']
 
             try:
