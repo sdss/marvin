@@ -12,12 +12,10 @@ import json
 from marvin import config
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import parseIdentifier
+from marvin.utils.general import parseIdentifier, mangaid2plateifu
 from marvin.tools.cube import Cube
 
 from brain.core.exceptions import BrainError
-
-from . import db_off
 
 try:
     from sdss_access.path import Path
@@ -28,12 +26,10 @@ except ImportError:
 ''' stuff that runs server-side '''
 
 
-def _getCube(name, use_file=False, **kwargs):
+def _getCube(name, use_file=False, release=None, **kwargs):
     ''' Retrieve a cube using marvin tools '''
 
-    # Pop the release to remove a duplicate input to Maps
-    release = kwargs.pop('release', None)
-    drpver, dapver = config.lookUpVersions(release)
+    drpver, __ = config.lookUpVersions(release)
 
     cube = None
     results = {}
@@ -51,13 +47,20 @@ def _getCube(name, use_file=False, **kwargs):
 
     try:
         if use_file:
-            if Path is not None:
+
+            if idtype == 'mangaid':
+                plate, ifu = mangaid2plateifu(mangaid, drpver=drpver)
+            elif idtype == 'plateifu':
                 plate, ifu = name.split('-')
+
+            if Path is not None:
                 filename = Path().full('mangacube', ifu=ifu, plate=plate, drpver=drpver)
                 assert os.path.exists(filename), 'file not found.'
             else:
                 raise MarvinError('cannot create path for MaNGA cube.')
+
         else:
+
             if idtype == 'plateifu':
                 plateifu = name
             elif idtype == 'mangaid':
@@ -67,8 +70,11 @@ def _getCube(name, use_file=False, **kwargs):
 
         cube = Cube(filename=filename, mangaid=mangaid, plateifu=plateifu,
                     mode='local', release=release)
+
         results['status'] = 1
+
     except Exception as ee:
+
         results['error'] = 'Failed to retrieve cube {0}: {1}'.format(name, str(ee))
 
     return cube, results
@@ -120,7 +126,7 @@ class CubeView(BaseView):
            }
 
         '''
-        args = av.manual_parse(self, request)
+        av.manual_parse(self, request)
         self.results['status'] = 1
         self.results['data'] = 'this is a cube!'
         return jsonify(self.results)
@@ -212,23 +218,24 @@ class CubeView(BaseView):
         return jsonify(self.results)
 
     @route('/<name>/extensions/<cube_extension>/', methods=['GET', 'POST'],
-           endpoint='getCubeExtension')
+           endpoint='getExtension')
     @av.check_args()
-    def getCubeExtension(self, args, name, cube_extension):
-        ''' Returns the 3d flux, ivar, or mask for a cube given a plateifu/mangaid.
+    def getExtension(self, args, name, cube_extension):
+        """Returns the extension for a cube given a plateifu/mangaid.
 
-        .. :quickref: Cube; Get the full cube 3d flux, ivar, or mask given a plate-ifu or mangaid
+        .. :quickref: Cube; Gets the  given a plate-ifu or mangaid
 
         :param name: The name of the cube as plate-ifu or mangaid
         :param cube_extension: The name of the cube extension.  Either flux, ivar, or mask.
         :form release: the release of MaNGA
+        :form use_file: if True, forces to load the cube from a file.
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
         :resjson json inconfig: json of incoming configuration
         :resjson json utahconfig: json of outcoming configuration
         :resjson string traceback: traceback of an error, null if None
         :resjson json data: dictionary of returned data
-        :json string cube_extension: the 3d data for the specified extension
+        :json string cube_extension: the data for the specified extension
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -253,83 +260,23 @@ class CubeView(BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"cube_extension": [[0,0,..0], [], ... [0, 0, 0,... 0]]
-              }
-           }
-        '''
-
-        # Pass the args in and get the cube
-        args = self._pop_args(args, arglist='name')
-
-        # We want the cube from file for this because retrieving datacubes is
-        # slow from the DB.
-        cube, res = _getCube(name, use_file=True, **args)
-        self.update_results(res)
-
-        if cube:
-            extension_data = cube._get_extension_data(cube_extension.upper())
-
-            if extension_data is None:
-                self.results['data'] = {'cube_extension': None}
-            else:
-                self.results['data'] = {'cube_extension': extension_data.tolist()}
-
-        return Response(json.dumps(self.results), mimetype='application/json')
-
-    @route('/<name>/1d/<cube_extension>/', methods=['GET', 'POST'], endpoint='get1D')
-    @av.check_args()
-    def get1D(self, args, name, cube_extension):
-        """Returns a 1D array.
-
-        .. :quickref: Gets a 1D array from the cube.
-
-        :param name: The name of the cube as plate-ifu or mangaid
-        :param cube_extension: The name of the cube extension.
-        :form release: the release of MaNGA
-        :resjson int status: status of response. 1 if good, -1 if bad.
-        :resjson string error: error message, null if None
-        :resjson json inconfig: json of incoming configuration
-        :resjson json utahconfig: json of outcoming configuration
-        :resjson string traceback: traceback of an error, null if None
-        :resjson json data: dictionary of returned data
-        :json string cube_extension: the 3d data for the specified extension
-        :resheader Content-Type: application/json
-        :statuscode 200: no error
-        :statuscode 422: invalid input parameters
-
-        **Example request**:
-
-        .. sourcecode:: http
-
-           GET /marvin2/api/cubes/8485-1901/1d/specres/ HTTP/1.1
-           Host: api.sdss.org
-           Accept: application/json, */*
-
-        **Example response**:
-
-        .. sourcecode:: http
-
-           HTTP/1.1 200 OK
-           Content-Type: application/json
-           {
-              "status": 1,
-              "error": null,
-              "inconfig": {"release": "MPL-5"},
-              "utahconfig": {"release": "MPL-5", "mode": "local"},
-              "traceback": null,
-              "data": {"array": [[0,0,..0]]
+              "data": {"extension_data": [[0,0,..0], [], ... [0, 0, 0,... 0]]
               }
            }
         """
 
         # Pass the args in and get the cube
-        args = self._pop_args(args, arglist='name')
-
-        with db_off():
-            cube, res = _getCube(name, **args)
-            self.update_results(res)
+        args = self._pop_args(args, arglist=['name', 'cube_extension'])
+        cube, res = _getCube(name, use_file=True, **args)
+        self.update_results(res)
 
         if cube:
-            self.results['data'] = {'array': cube._get_1d(cube_extension).tolist()}
+
+            extension_data = cube.data[cube_extension.upper()].data
+
+            if extension_data is None:
+                self.results['data'] = {'extension_data': None}
+            else:
+                self.results['data'] = {'extension_data': extension_data.tolist()}
 
         return Response(json.dumps(self.results), mimetype='application/json')
