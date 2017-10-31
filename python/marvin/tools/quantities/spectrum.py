@@ -149,123 +149,108 @@ class Spectrum(Quantity):
 
         return np.ma.array(self.value, mask=self.mask > 0)
 
-    def plot(self, array='flux', xlim=None, ylim=(0, None), mask_color=None,
-             xlabel=None, ylabel=None, figure=None, return_figure=False, **kwargs):
-        """Plots a spectrum using matplotlib.
+    def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
+             n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
+             figure=None, return_figure=False):
+        """Plots the spectrum.
 
-        Returns a |axes|_ object with a representation of this spectrum.
-        The returned ``axes`` object can then be showed, modified, or saved to
-        a file. If running Marvin from an iPython console and
-        `matplotlib.pyplot.ion()
-        <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ion>`_,
-        the plot will be displayed interactivelly.
+        Displays the spectrum showing, optionally, the :math:`n\\sigma` region,
+        and applying the mask.
 
         Parameters:
-            array ({'flux', 'ivar', 'mask'}):
-                The array to display, defaults to the internal spectrum with
-                which the object was initialised.
-            xlim,ylim (tuple-like or None):
+            xlim,ylim (tuple or None):
                 The range to display for the x- and y-axis, respectively,
                 defined as a tuple of two elements ``[xmin, xmax]``. If
-                the range is ``None``, the range for the axis will be set
-                automatically by matploltib. If ``Spectrum.wavelength`` is
-                defined, the range in the x-axis must be defined as a
-                wavelength range. Default for ylim is (0, None), which cuts
-                off negative values but lets the maximum float.
+                the range is ``None``, the range for the xaxis range will be
+                set automatically by matploltib while the yaxis limits will be
+                optimised to reject extreme data points.
+            show_std (bool):
+                If ``True``, the :math:`n\\sigma` range above and below the
+                spectrum values will be shown as a shadowed area. ``n_sigma``
+                determines how many sigmas will be plotted.
+            use_mask (bool):
+                If ``True``, the region in which the mask is non-zero will not
+                be shown in the plot.
+            show_units (bool):
+                If ``True``, the units will be added to the axis labels.
+            n_sigma (float):
+                The number of standard deviations that will be shown if
+                ``show_std=True``.
             xlabel,ylabel (str or None):
-                The axis labels to be passed to the plot. If ``xlabel=None``
-                and ``Spectrum.wavelength_unit`` is defined, those units will
-                be used, after being properly formatted for Latex display.
-                If ``ylabel=None``, the y-axis label will be automatically
-                defined base on the type of input array.
-            mask_color (matplotlib valid color or None):
-                If set and ``Spectrum.mask`` is defined, the elements of
-                ``array`` with ``mask`` will be coloured using that value.
-                More information about `matplotlib colours
-                <http://matplotlib.org/api/colors_api.html>`_.
-            figure (matplotlib Figure object or None):
-                The matplotlib figure object from which the axes must be
-                created. If ``figure=None``, a new figure will be created.
+                The axis labels to be passed to the plot. If not defined, the y
+                axis will be labelled as ``Flux`` and the x axis as
+                ``Wavelength``.
+            figure (`~matplotlib.figure.Figure` or None):
+                The matplotlib `~matplotlib.figure.Figure` object from which
+                the axes must be created. If ``figure=None``, a new figure will
+                be created.
             return_figure (bool):
-                If ``True``, the matplotlib Figure object used will be returned
-                along with the axes object.
-            kwargs (dict):
-                Any other keyword argument that will be passed to
-                `matplotlib.pyplot.plot
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot>`_.
+                If ``True``, the matplotlib `~matplotlib.figure.Figure` object
+                used will be returned along with the axes object.
 
         Returns:
-            ax:
-                The `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_
-                object containing the plot representing the spectrum. If
-                ``return_figure=True``, a tuple will be returned of the form
-                ``(ax, fig)``.
+            axes:
+                The `~matplotlib.axes.Axes` object containing the plot
+                representing the spectrum. If ``return_figure=True``, a tuple
+                will be returned of the form ``(ax, fig)``, where ``fig`` is
+                the associated `~matplotlib.figure.Figure`.
 
         Example:
 
-          >>> spectrum = Spectrum(np.arange(100), wavelength=np.arange(100)*0.1)
-          >>> ax = spectrum.plot(xrange=[5, 7])
+          >>> ax = spectrum.plot(n_sigma=3)
           >>> ax.show()
 
         We can change the range of the axes after the object has been created.
 
-          >>> ax.set_xlim(3, 8)
+          >>> ax.set_xlim(6500, 6600)
           >>> ax.show()
-
-        .. |axes| replace:: matplotlib.axes
-        .. _axes: http://matplotlib.org/api/axes_api.html
 
         """
 
-        array = array.lower()
-        validSpectrum = ['flux', 'ivar', 'mask']
-        assert array in validSpectrum, 'array must be one of {0!r}'.format(validSpectrum)
+        with sns.axes_style('darkgrid'):
+            fig = plt.figure() if figure is None else figure
+            ax = fig.add_subplot(111)
 
-        if array == 'flux':
-            data = self.value
-            unit = 'Flux [{0}]'.format(self.unit.to_string('latex_inline'))
-        elif array == 'ivar':
-            assert self.ivar is not None, 'ivar is None'
-            data = self.ivar
-            unit = 'Inverse variance [{0}]'.format(((1 / self.unit) ** 2).to_string('latex_inline'))
-        elif array == 'mask':
-            assert self.mask is not None, 'mask is None'
-            data = self.mask
-            unit = ''
+        if use_mask:
+            value = self.masked
+            wave = np.ma.array(self.wavelength, mask=(self.mask > 0))
+        else:
+            value = self.value
+            wave = self.wavelength.value
 
-        xaxis = self.wavelength if self.wavelength is not None else np.arange(len(self))
+        ax.plot(wave, value, color='0.3', lw=0.75)
 
-        fig = plt.figure() if figure is None else figure
-        ax = fig.add_subplot(111)
-
-        ax.plot(xaxis, data, **kwargs)
-
-        # This does not work very well for small ranges of masked elements.
-        # Probably requires some rethinking.
-        if mask_color is not None:
-            mask_indices = np.where(self.mask > 0)
-            kwargs['color'] = mask_color
-            ax.plot(xaxis[mask_indices], data[mask_indices], **kwargs)
-
-        if xlim is not None:
-            assert len(xlim) == 2
-            ax.set_xlim(*xlim)
-
-        if ylim is not None:
-            assert len(ylim) == 2
-            ax.set_ylim(*ylim)
-
-        if xlabel is None:
-            if self.wavelength is not None:
-                xlabel = 'Wavelength [{0}]'.format(self.wavelength.unit.to_string('latex_inline'))
+        if show_std and self.std is not None:
+            if use_mask is False:
+                std_masked = self.std.value
             else:
-                xlabel = ''
+                std_masked = np.ma.array(self.std.value, mask=(self.mask > 0))
+            assert n_sigma > 0, 'invalid n_sigma value.'
+            ax.fill_between(wave,
+                            value + n_sigma * std_masked,
+                            value - n_sigma * std_masked,
+                            facecolor=sns.xkcd_rgb['windows blue'], alpha=0.5)
 
-        if ylabel is None:
-            ylabel = unit
+        ax.set_xlim(xlim)
 
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        if ylim is None:
+            # Uses percentiles to get the optimal limits
+            ylim_0 = -np.percentile(-value[value < 0], 90)
+            ylim_1 = np.percentile(value[value > 0], 99.5)
+
+        ax.set_ylim(ylim_0, ylim_1)
+
+        if xlabel is not None:
+            if show_units and isinstance(self.wavelength, Quantity):
+                xlabel = '$\\mathrm{{{}}}$\\,[{}]'.format(xlabel,
+                                                          self.wavelength.unit.to_string('latex'))
+            ax.set_xlabel(xlabel)
+
+        if ylabel is not None:
+            if show_units:
+                ylabel = '$\\mathrm{{{}}}$\\,[{}]'.format(ylabel,
+                                                          self.unit.to_string('latex_inline'))
+            ax.set_ylabel(ylabel)
 
         if return_figure:
             return (ax, fig)
