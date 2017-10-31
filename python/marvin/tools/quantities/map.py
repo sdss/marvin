@@ -12,11 +12,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-from distutils import version
+import operator
 import os
 import warnings
+
 from copy import deepcopy
-import operator
+from distutils import version
 
 from astropy.io import fits
 from astropy.units import Quantity
@@ -27,12 +28,11 @@ import marvin
 import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
-import marvin.tools.maps
 import marvin.utils.plot.map
-from marvin.utils.general.general import add_doc, _sort_dir
 
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel.dap.base import Property
+from marvin.utils.general.general import add_doc, _sort_dir
 
 try:
     import sqlalchemy
@@ -139,6 +139,8 @@ class Map(Quantity):
     @classmethod
     def _init_map_from_maps(cls, maps, property_name, channel, dtype=None, copy=True):
         """Initialise a Map from a Maps."""
+
+        import marvin.tools.maps
 
         assert isinstance(maps, marvin.tools.maps.Maps)
 
