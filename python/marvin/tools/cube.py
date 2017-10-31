@@ -43,22 +43,12 @@ class Cube(MarvinToolsClass, NSAMixIn):
     defined
 
     Attributes:
-        flux (`~marvin.tools.quantities.datacube.DataCube`):
-            An object representing the flux data cube.
-        dispersion (`~marvin.tools.quantities.datacube.DataCube`):
-            Only in MPL-6 and following. The broadened dispersion solution.
-        dispersion_prepixel (`~marvin.tools.quantities.datacube.DataCube`):
-            As ``dispersion`` but for the pre-pixel solution.
         header (`astropy.io.fits.Header`):
             The header of the datacube.
         ifu (int):
             The id of the IFU.
         ra,dec (float):
             Coordinates of the target.
-        spectral_resolution (`~marvin.tools.quantities.Spectrum`):
-            The median spectral resolution.
-        spectral_resolution_prepixel (`~marvin.tools.quantities.datacube.DataCube`):
-            As ``spectral_resolution`` but for the pre-pixel solution.
         wcs (`astropy.wcs.WCS`):
             The WCS solution for this plate
 
@@ -237,6 +227,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     def _load_cube_from_api(self):
         """Calls the API and retrieves the necessary information to instantiate the cube."""
+
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
@@ -293,7 +284,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     @property
     def flux(self):
-        """The flux datacube."""
+        """Returns a `.DataCube` object with the flux."""
 
         assert 'flux' in self.datamodel.datacubes.list_names(), \
             'flux is not present in his MPL version.'
@@ -307,7 +298,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     @property
     def dispersion(self):
-        """The dispersion datacube."""
+        """Returns a `.DataCube` object with the dispersion."""
 
         assert 'dispersion' in self.datamodel.datacubes.list_names(), \
             'dispersion is not present in his MPL version.'
@@ -321,7 +312,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     @property
     def dispersion_prepixel(self):
-        """The dispersion prepixel datacube."""
+        """Returns a `.DataCube` object with the prepixel dispersion."""
 
         assert 'dispersion_prepixel' in self.datamodel.datacubes.list_names(), \
             'dispersion_prepixel is not present in his MPL version.'
@@ -335,7 +326,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     @property
     def spectral_resolution(self):
-        """The spectral dispersion."""
+        """Returns a `.Spectrum` with the spectral dispersion."""
 
         assert 'spectral_resolution' in self.datamodel.spectra.list_names(), \
             'spectral_resolution is not present in his MPL version.'
@@ -349,7 +340,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     @property
     def spectral_resolution_prepixel(self):
-        """The spectral dispersion prepixel."""
+        """Returns a `.Spectrum` with the prepixel spectral dispersion."""
 
         assert 'spectral_resolution_prepixel' in self.datamodel.spectra.list_names(), \
             'spectral_resolution_prepixel is not present in his MPL version.'
