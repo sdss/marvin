@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# datacube.py
-#
-# Created by José Sánchez-Gallego on 4 Oct 2017.
+# @Author: José Sánchez-Gallego
+# @Date: Oct 30, 2017
+# @Filename: datacube.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
 from __future__ import division
@@ -14,12 +16,11 @@ import numpy as np
 
 from astropy import units
 
-from marvin.utils.general.general import _sort_dir
-
+from .base_quantity import QuantityMixIn
 from .spectrum import Spectrum
 
 
-class DataCube(units.Quantity):
+class DataCube(units.Quantity, QuantityMixIn):
     """A `~astropy.units.Quantity`-powered representation of a 3D data cube.
 
     A `DataCube` represents a 3D array in which two of the dimensions
@@ -113,13 +114,6 @@ class DataCube(units.Quantity):
 
         return new_obj
 
-    def __dir__(self):
-
-        return_list = _sort_dir(self, DataCube)
-        return_list += ['value']
-
-        return return_list
-
     def __array_finalize__(self, obj):
 
         if obj is None:
@@ -128,28 +122,3 @@ class DataCube(units.Quantity):
         self.wave = getattr(obj, 'wave', None)
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
-
-    @property
-    def masked(self):
-        """Return a masked array."""
-
-        assert self.mask is not None, 'mask is None'
-
-        return np.ma.array(self.value, mask=self.mask > 0)
-
-    @property
-    def error(self):
-        """Compute the standard deviation of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
-    def snr(self):
-        """Return the signal-to-noise ratio for each spaxel in the map."""
-
-        return np.abs(self.value * np.sqrt(self.ivar))

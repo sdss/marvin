@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# spectrum.py
-#
-# Licensed under a 3-clause BSD license.
-
-# Revision history:
-#     13 Apr 2016 J. Sánchez-Gallego
-#       Initial version
+# @Author: José Sánchez-Gallego
+# @Date: Oct 30, 2017
+# @Filename: spectrum.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
 from __future__ import division
@@ -21,10 +19,10 @@ import matplotlib.pyplot as plt
 
 from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled, Angstrom
 
-from marvin.utils.general import _sort_dir
+from .base_quantity import QuantityMixIn
 
 
-class Spectrum(Quantity):
+class Spectrum(Quantity, QuantityMixIn):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
@@ -44,6 +42,9 @@ class Spectrum(Quantity):
             The standard deviation associated with ``value``.
         mask (array-like, optional):
             The mask array for ``value``.
+        kwargs (dict):
+            Keyword arguments to be passed to `~astropy.units.Quantity` when
+            it is initialised.
 
     Returns:
         spectrum:
@@ -109,11 +110,6 @@ class Spectrum(Quantity):
 
         return new_obj
 
-    def __dir__(self):
-        return_list = _sort_dir(self, Spectrum)
-        return_list += ['value']
-        return return_list
-
     @property
     def error(self):
         """The standard deviation of the measurement."""
@@ -133,21 +129,6 @@ class Spectrum(Quantity):
         """The standard deviation of the measurement."""
 
         return self.error
-
-    @property
-    def snr(self):
-        """The signal to noise of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        return np.abs(self.value * np.sqrt(self.ivar))
-
-    @property
-    def masked(self):
-        """Returns a masked array."""
-
-        return np.ma.array(self.value, mask=self.mask > 0)
 
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
