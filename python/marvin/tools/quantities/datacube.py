@@ -28,7 +28,7 @@ class DataCube(units.Quantity):
         value (`~numpy.ndarray`):
             A 3-D array with the value of the quantity measured. The first
             axis of the array must be the wavelength dimension.
-        wave (`~numpy.ndarray`):
+        wavelength (`~numpy.ndarray`):
             A 1-D array with the wavelenth of each spectral measurement. It
             must have the same length as the spectral dimesion of ``value``.
         unit (`~astropy.units.Unit`):
@@ -36,6 +36,8 @@ class DataCube(units.Quantity):
             ``value``.
         scale (float):
             The scale factor of the spectrum value.
+        wavelength_unit (astropy.unit.Unit, optional):
+            The units of the wavelength solution. Defaults to Angstrom.
         ivar (`~numpy.ndarray`):
             An array with the same shape as ``value`` contianing the associated
             inverse variance.
@@ -48,18 +50,21 @@ class DataCube(units.Quantity):
 
     """
 
-    def __new__(cls, value, wave, scale=None, unit=units.dimensionless_unscaled,
-                ivar=None, mask=None, dtype=None, copy=True, **kwargs):
+    def __new__(cls, value, wavelength, scale=None, unit=units.dimensionless_unscaled,
+                wavelength_unit=units.Angstrom, ivar=None, mask=None, dtype=None,
+                copy=True, **kwargs):
 
         # If the scale is defined, creates a new composite unit with the input scale.
         if scale is not None:
             unit = units.CompositeUnit(unit.scale * scale, unit.bases, unit.powers)
 
-        assert wave is not None, 'a valid wavelength array is required'
+        assert wavelength is not None, 'a valid wavelength array is required'
 
         assert isinstance(value, np.ndarray) and value.ndim == 3, 'value must be a 3D array.'
-        assert isinstance(wave, np.ndarray) and wave.ndim == 1, 'wavelength must be a 1D array.'
-        assert len(wave) == value.shape[0], 'wavelength and value spectral dimensions do not match'
+        assert isinstance(wavelength, np.ndarray) and wavelength.ndim == 1, \
+            'wavelength must be a 1D array.'
+        assert len(wavelength) == value.shape[0], \
+            'wavelength and value spectral dimensions do not match'
 
         if ivar is not None:
             assert isinstance(ivar, np.ndarray) and ivar.shape == value.shape, 'invalid ivar shape'
@@ -69,7 +74,13 @@ class DataCube(units.Quantity):
         obj = obj.view(cls)
         obj._set_unit(unit)
 
-        obj.wave = wave
+        assert wavelength is not None, 'invalid wavelength'
+
+        if isinstance(wavelength, units.Quantity):
+            obj.wavelength = wavelength
+        else:
+            obj.wavelength = np.array(wavelength) * wavelength_unit
+
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 

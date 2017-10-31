@@ -15,8 +15,11 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
+import seaborn as sns
+
 import matplotlib.pyplot as plt
-from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled
+
+from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled, Angstrom
 
 from marvin.utils.general import _sort_dir
 
@@ -27,20 +30,20 @@ class Spectrum(Quantity):
     Parameters:
         value (array-like):
             The 1-D array contianing the spectrum.
-        unit (astropy.unit.Unit, optional):
-            The unit of the spectrum.
+        wavelength (array-like, optional):
+            The wavelength solution for ``value``.
         scale (float, optional):
             The scale factor of the spectrum value.
+        unit (astropy.unit.Unit, optional):
+            The unit of the spectrum.
+        wavelength_unit (astropy.unit.Unit, optional):
+            The units of the wavelength solution. Defaults to Angstrom.
         ivar (array-like, optional):
             The inverse variance array for ``value``.
         std (array-like, optional):
             The standard deviation associated with ``value``.
         mask (array-like, optional):
             The mask array for ``value``.
-        wavelength (array-like, optional):
-            The wavelength solution for ``value``.
-        wavelength_unit (astropy.unit.Unit, optional):
-            The units of the wavelength solution.
 
     Returns:
         spectrum:
@@ -49,9 +52,9 @@ class Spectrum(Quantity):
 
     """
 
-    def __new__(cls, flux, scale=None, unit=dimensionless_unscaled,
+    def __new__(cls, flux, wavelength, scale=None, unit=Angstrom,
                 wavelength_unit=dimensionless_unscaled, ivar=None, std=None,
-                mask=None, wavelength=None, dtype=None, copy=True, **kwargs):
+                mask=None, dtype=None, copy=True, **kwargs):
 
         flux = np.array(flux)
 
@@ -70,13 +73,12 @@ class Spectrum(Quantity):
             assert ivar is None, 'std and ivar cannot be used at the same time.'
             obj._std = np.array(std)
 
-        if wavelength is None:
-            obj.wavelength = None
+        assert wavelength is not None, 'invalid wavelength'
+
+        if isinstance(wavelength, Quantity):
+            obj.wavelength = wavelength
         else:
-            if wavelength_unit:
-                obj.wavelength = Quantity(np.array(wavelength), unit=wavelength_unit)
-            else:
-                obj.wavelength = np.array(wavelength)
+            obj.wavelength = np.array(wavelength) * wavelength_unit
 
         return obj
 
