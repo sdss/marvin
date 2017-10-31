@@ -184,7 +184,6 @@ class MapsView(marvin.api.base.BaseView):
 
         header = maps.header.tostring()
         wcs_header = maps.wcs.to_header_string()
-        shape = maps.shape
         bintype = maps.bintype.name
         template = maps.template.name
 
@@ -196,7 +195,6 @@ class MapsView(marvin.api.base.BaseView):
                                 'plateifu': plateifu,
                                 'header': header,
                                 'wcs': wcs_header,
-                                'shape': shape,
                                 'bintype': bintype,
                                 'template': template}
 

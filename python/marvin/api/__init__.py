@@ -271,7 +271,7 @@ class ArgValidator(object):
         bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = [gr.name for gr in dm[self.dapver].extensions]
+        properties = [gr.name for gr in dm[self.dapver].properties.extensions]
         channels = list(set([i.channel.name for i in dm[self.dapver].properties
                              if i.channel is not None])) + ['None']
 
