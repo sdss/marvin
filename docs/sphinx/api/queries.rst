@@ -19,7 +19,7 @@ Query
 Query Utils
 -----------
 
-.. automodule:: marvin.tools.query_utils
+.. automodule:: marvin.utils.datamodel.query.base
    :members:
    :undoc-members:
    :show-inheritance:

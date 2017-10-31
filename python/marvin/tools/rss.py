@@ -240,7 +240,7 @@ class RSSFiber(Spectrum):
         rssfiber:
             An object representing the RSS fiber entity.
 
-    .. |spectrum| replace:: :class:`~marvin.tools.spectrum.Spectrum`
+    .. |spectrum| replace:: :class:`~marvin.tools.quantities.Spectrum`
 
     """
 

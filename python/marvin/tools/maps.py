@@ -460,7 +460,7 @@ class Maps(marvin.core.core.MarvinToolsClass):
         return best
 
     def getMap(self, property_name, channel=None, exact=False):
-        """Retrieves a :class:`~marvin.tools.map.Map` object.
+        """Retrieves a :class:`~marvin.tools.quantities.Map` object.
 
         Parameters:
             property_name (str):
@@ -480,12 +480,12 @@ class Maps(marvin.core.core.MarvinToolsClass):
 
         best = self._match_properties(property_name, channel=channel, exact=exact)
 
-        return marvin.tools.map.Map(self, best)
+        return marvin.tools.quantities.Map(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
-        """Returns a ratio :class:`~marvin.tools.map.Map`.
+        """Returns a ratio :class:`~marvin.tools.quantities.Map`.
 
-        For a given ``property_name``, returns a :class:`~marvin.tools.map.Map`
+        For a given ``property_name``, returns a :class:`~marvin.tools.quantities.Map`
         which is the ratio of ``channel_1/channel_2``.
 
         Parameters:

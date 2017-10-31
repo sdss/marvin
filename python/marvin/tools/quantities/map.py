@@ -476,7 +476,7 @@ class Map(Quantity):
                Power to raise the map values.
 
         Returns:
-            map (:class:`~marvin.tools.map.EnhancedMap` object)
+            map (:class:`~marvin.tools.quantities.EnhancedMap` object)
         """
         value = self.value**power
         ivar = self._pow_ivar(self.ivar, self.value, power)

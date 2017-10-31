@@ -41,7 +41,7 @@ Image Utilities
 DAP DataModel Utilities
 -----------------------
 
-.. automodule:: marvin.utils.dap.datamodel
+.. automodule:: marvin.utils.datamodel.dap
    :members:
    :undoc-members:
    :show-inheritance:
@@ -75,4 +75,3 @@ Scatter/Histogram Plotting Utilities
    :members:
    :undoc-members:
    :show-inheritance:
-
