@@ -99,7 +99,7 @@ class DataCubeList(FuzzyList):
 
         self.parent = parent
 
-        super(DataCubeList, self).__init__([], mapper=lambda xx: xx.full())
+        super(DataCubeList, self).__init__([], mapper=lambda xx: xx.name)
 
         for item in the_list:
             self.append(item, copy=True)
@@ -114,6 +114,11 @@ class DataCubeList(FuzzyList):
             super(DataCubeList, self).append(append_obj)
         else:
             raise ValueError('invalid datacube of type {!r}'.format(type(append_obj)))
+
+    def list_names(self):
+        """Returns a list with the names of the datacubes in this list."""
+
+        return [item.name for item in self]
 
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the datacubes in this datamodel.
@@ -149,10 +154,10 @@ class DataCubeList(FuzzyList):
             unit = datacube.unit.to_string()
 
             datacube_table.add_row((datacube.name,
-                                   datacube.extension_ivar is not None,
-                                   datacube.extension_mask is not None,
-                                   unit,
-                                   datacube.description))
+                                    datacube._extension_ivar is not None,
+                                    datacube._extension_mask is not None,
+                                    unit,
+                                    datacube.description))
 
         if not description:
             datacube_table.remove_column('description')
@@ -204,15 +209,19 @@ class DataCube(object):
                  description=''):
 
         self.name = name
-        self.extension_name = extension_name
-        self.extension_wave = extension_wave
-        self.extension_ivar = extension_ivar
-        self.extension_mask = extension_mask
+
+        self._extension_name = extension_name
+        self._extension_wave = extension_wave
+        self._extension_ivar = extension_ivar
+        self._extension_mask = extension_mask
+
         self.db_table = db_table
-        self.unit = unit
-        self.scale = scale
+
         self.formats = formats
+
         self.description = description
+
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
 
     def set_parent(self, parent):
         """Sets parent."""
@@ -224,25 +233,40 @@ class DataCube(object):
     def full(self):
         """Returns the name string."""
 
-        return self.extension_name.lower()
+        return self._extension_name.lower()
 
-    def db_column(self, ext=None):
-        """Returns the name of the DB column containing this datacube."""
+    def has_ivar(self):
+        """Returns True is the datacube has an ivar extension."""
+
+        return self._extension_ivar is not None
+
+    def has_mask(self):
+        """Returns True is the datacube has an mask extension."""
+
+        return self._extension_mask is not None
+
+    def fits_extension(self, ext=None):
+        """Returns the FITS extension name."""
 
         assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
 
         if ext is None:
-            return self.full()
+            return self._extension_name.upper()
 
-        if ext == 'ivar':
-            assert self.extension_ivar is not None, \
-                'no ivar for datacube {0!r}'.format(self.full())
-            return self.extension_ivar.lower()
+        elif ext == 'ivar':
+            if not self.has_ivar():
+                raise 'no ivar extension for datacube {0!r}'.format(self.full())
+            return self._extension_ivar.upper()
 
-        if ext == 'mask':
-            assert self.extension_mask is not None, \
-                'no mask for datacube {0!r}'.format(self.full())
-            return self.extension_mask.lower()
+        elif ext == 'mask':
+            if not self.has_mask():
+                raise 'no mask extension for datacube {0!r}'.format(self.full())
+            return self._extension_mask
+
+    def db_column(self, ext=None):
+        """Returns the name of the DB column containing this datacube."""
+
+        return self.fits_extension(ext=ext).lower()
 
     def __repr__(self):
 
@@ -282,7 +306,7 @@ class SpectrumList(FuzzyList):
 
         self.parent = parent
 
-        super(SpectrumList, self).__init__([], mapper=lambda xx: xx.full())
+        super(SpectrumList, self).__init__([], mapper=lambda xx: xx.name)
 
         for item in the_list:
             self.append(item, copy=True)
@@ -297,6 +321,11 @@ class SpectrumList(FuzzyList):
             super(SpectrumList, self).append(append_obj)
         else:
             raise ValueError('invalid spectrum of type {!r}'.format(type(append_obj)))
+
+    def list_names(self):
+        """Returns a list with the names of the spectra in this list."""
+
+        return [item.name for item in self]
 
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the spectra in this datamodel.
@@ -322,8 +351,8 @@ class SpectrumList(FuzzyList):
         """
 
         spectrum_table = table.Table(
-            None, names=['name', 'ivar', 'mask', 'unit', 'description'],
-            dtype=['S20', bool, bool, 'S20', 'S500'])
+            None, names=['name', 'std', 'unit', 'description'],
+            dtype=['S20', bool, 'S20', 'S500'])
 
         if self.parent:
             spectrum_table.meta['release'] = self.parent.release
@@ -332,8 +361,7 @@ class SpectrumList(FuzzyList):
             unit = spectrum.unit.to_string()
 
             spectrum_table.add_row((spectrum.name,
-                                    spectrum.extension_ivar is not None,
-                                    spectrum.extension_mask is not None,
+                                    spectrum._extension_std is not None,
                                     unit,
                                     spectrum.description))
 
@@ -383,14 +411,18 @@ class Spectrum(object):
                  description=''):
 
         self.name = name
-        self.extension_name = extension_name
-        self.extension_wave = extension_wave
-        self.extension_std = extension_std
+
+        self._extension_name = extension_name
+        self._extension_wave = extension_wave
+        self._extension_std = extension_std
+
         self.db_table = db_table
-        self.unit = unit
-        self.scale = scale
+
         self.formats = formats
+
         self.description = description
+
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
 
     def set_parent(self, parent):
         """Sets parent."""
@@ -402,17 +434,40 @@ class Spectrum(object):
     def full(self):
         """Returns the name string."""
 
-        return self.extension_name.lower()
+        return self._extension_name.lower()
+
+    def has_std(self):
+        """Returns True is the datacube has an std extension."""
+
+        return self._extension_std is not None
+
+    def has_mask(self):
+        """Returns True is the datacube has an mask extension."""
+
+        return self._extension_mask is not None
+
+    def fits_extension(self, ext=None):
+        """Returns the FITS extension name."""
+
+        assert ext is None or ext in ['std', 'mask'], 'invalid extension'
+
+        if ext is None:
+            return self._extension_name.upper()
+
+        elif ext == 'std':
+            if not self.has_std():
+                raise 'no std extension for spectrum {0!r}'.format(self.full())
+            return self._extension_std.upper()
+
+        elif ext == 'mask':
+            if not self.has_mask():
+                raise 'no mask extension for spectrum {0!r}'.format(self.full())
+            return self._extension_mask
 
     def db_column(self, ext=None):
         """Returns the name of the DB column containing this datacube."""
 
-        if ext is None:
-            return self.extension_name.lower()
-        elif ext == 'std':
-            return self.extension_std.lower()
-        else:
-            raise ValueError('invalid extension.')
+        return self.fits_extension(ext=ext).lower()
 
     def __repr__(self):
 
