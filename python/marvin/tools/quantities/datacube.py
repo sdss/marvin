@@ -32,8 +32,10 @@ class DataCube(units.Quantity):
             A 1-D array with the wavelenth of each spectral measurement. It
             must have the same length as the spectral dimesion of ``value``.
         unit (`~astropy.units.Unit`):
-            An `astropy unit <astropy.units.Unit>` with the units
-            for ``value``.
+            An `astropy unit <astropy.units.Unit>` with the units for
+            ``value``.
+        scale (float):
+            The scale factor of the spectrum value.
         ivar (`~numpy.ndarray`):
             An array with the same shape as ``value`` contianing the associated
             inverse variance.
@@ -46,12 +48,12 @@ class DataCube(units.Quantity):
 
     """
 
-    def __new__(cls, value, wave, scale=1, unit=units.dimensionless_unscaled,
+    def __new__(cls, value, wave, scale=None, unit=units.dimensionless_unscaled,
                 ivar=None, mask=None, dtype=None, copy=True, **kwargs):
 
-        # Creates a new, scaled unit, if needed.
-        if scale != 1:
-            unit = units.CompositeUnit(scale, unit.bases, unit.powers)
+        # If the scale is defined, creates a new composite unit with the input scale.
+        if scale is not None:
+            unit = units.CompositeUnit(unit.scale * scale, unit.bases, unit.powers)
 
         assert wave is not None, 'a valid wavelength array is required'
 
