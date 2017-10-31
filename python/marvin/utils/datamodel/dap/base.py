@@ -463,7 +463,7 @@ class Property(object):
 
     """
 
-    def __init__(self, name, channel=None, ivar=False, mask=False, unit=u.dimensionless_unscaled,
+    def __init__(self, name, channel=None, ivar=False, mask=False, unit=None,
                  scale=1, formats={}, parent=None, binid=None, description=''):
 
         self.name = name
@@ -475,16 +475,15 @@ class Property(object):
 
         self.formats = formats
 
-        if self.channel is None:
-            self.scale = scale
-            self.unit = unit
+        if unit is not None:
+            self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
+        elif unit is None and self.channel is None:
+            self.unit = u.dimensionless_unscaled
         else:
-            self.scale = scale if scale is not None else self.channel.scale
-            self.unit = unit if unit is not None else self.channel.unit
+            self.unit = self.channel.unit
 
         # Makes sure the channel shares the units and scale
         if self.channel:
-            self.channel.scale = self.scale
             self.channel.unit = self.unit
 
         self.description = description
@@ -548,6 +547,12 @@ class Property(object):
 
         return self.full()
 
+    @property
+    def db_table(self):
+        """The DB table to use to retrieve this property."""
+
+        return self.parent.property_table
+
     def to_string(self, mode='string', include_channel=True):
         """Return a string representation of the channel."""
 
@@ -608,7 +613,7 @@ class MultiChannelProperty(list):
 
     """
 
-    def __init__(self, name, channels=[], unit=None, scale=None, **kwargs):
+    def __init__(self, name, channels=[], unit=None, scale=1, **kwargs):
 
         self.name = name
 
@@ -621,8 +626,9 @@ class MultiChannelProperty(list):
         self_list = []
         for ii, channel in enumerate(channels):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
+            this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
             self_list.append(Property(self.name, channel=channel,
-                                      unit=this_unit, scale=scale, **kwargs))
+                                      unit=this_unit, scale=this_scale, **kwargs))
 
         list.__init__(self, self_list)
 
@@ -686,8 +692,7 @@ class Channel(object):
                  idx=None, db_name=None, description=''):
 
         self.name = name
-        self.unit = unit
-        self.scale = scale
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
         self.formats = formats
         self.idx = idx
         self.db_name = db_name or self.name
@@ -756,13 +761,16 @@ class Model(object):
                  description=''):
 
         self.name = name
-        self.extension_name = extension_name
-        self.extension_wave = extension_wave
-        self.extension_ivar = extension_ivar
-        self.extension_mask = extension_mask
+
+        self._extension_name = extension_name
+        self._extension_wave = extension_wave
+        self._extension_ivar = extension_ivar
+        self._extension_mask = extension_mask
+
         self.channels = channels
-        self.unit = unit
-        self.scale = scale
+
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
+
         self.formats = formats
         self.description = description
 
@@ -778,23 +786,28 @@ class Model(object):
 
         return self.name
 
-    def db_column(self, ext=None, channel=None):
-        """Returns the name of the DB column containing this model."""
+    def fits_extension(self, ext=None):
+        """Returns the FITS extension name."""
 
         assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
 
-        channel_suffix = '_{0}'.format(channel.db_name) if channel is not None else ''
-
         if ext is None:
-            return self.full() + channel_suffix
+            return self._extension_name.upper()
 
-        if ext == 'ivar':
-            assert self.extension_ivar is not None, 'no ivar for model {0!r}'.format(self.full())
-            return self.extension_ivar.lower() + channel_suffix
+        elif ext == 'ivar':
+            if not self.has_ivar():
+                raise 'no ivar extension for datacube {0!r}'.format(self.full())
+            return self._extension_ivar.upper()
 
-        if ext == 'mask':
-            assert self.extension_mask is not None, 'no mask for model {0!r}'.format(self.full())
-            return self.extension_mask.lower() + channel_suffix
+        elif ext == 'mask':
+            if not self.has_mask():
+                raise 'no mask extension for datacube {0!r}'.format(self.full())
+            return self._extension_mask
+
+    def db_column(self, ext=None):
+        """Returns the name of the DB column containing this datacube."""
+
+        return self.fits_extension(ext=ext).lower()
 
     def __repr__(self):
 
