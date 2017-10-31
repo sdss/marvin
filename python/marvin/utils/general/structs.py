@@ -149,6 +149,9 @@ class FuzzyList(list):
 
     def __contains__(self, value):
 
+        if not isinstance(value, six.string_types):
+            return super(FuzzyList, self).__contains__(value)
+
         try:
             self.__eq__(value)
             return True
