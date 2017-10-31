@@ -16,29 +16,29 @@ from __future__ import absolute_import
 
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy.units import Quantity, dimensionless_unscaled
+from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled
 
 from marvin.utils.general import _sort_dir
+
 
 class Spectrum(Quantity):
     """A class representing an spectrum with extra functionality.
 
     Parameters:
-        flux (array-like):
+        value (array-like):
             The 1-D array contianing the spectrum.
         unit (astropy.unit.Unit, optional):
-            The unit of the flux spectrum.
+            The unit of the spectrum.
         scale (float, optional):
-            The scale factor of the spectrum flux.
+            The scale factor of the spectrum value.
         ivar (array-like, optional):
-            The inverse variance array for ``spectrum``. Must have the same
-            number of elements.
+            The inverse variance array for ``value``.
+        std (array-like, optional):
+            The standard deviation associated with ``value``.
         mask (array-like, optional):
-            The mask array for ``spectrum``. Must have the same number of
-            elements.
+            The mask array for ``value``.
         wavelength (array-like, optional):
-            The wavelength solution for ``spectrum``. Must have the same number
-            of elements.
+            The wavelength solution for ``value``.
         wavelength_unit (astropy.unit.Unit, optional):
             The units of the wavelength solution.
 
@@ -49,18 +49,26 @@ class Spectrum(Quantity):
 
     """
 
-    def __new__(cls, flux, scale=1, unit=dimensionless_unscaled,
-                wavelength_unit=dimensionless_unscaled, ivar=None, mask=None,
-                wavelength=None, dtype=None, copy=True, **kwargs):
+    def __new__(cls, flux, scale=None, unit=dimensionless_unscaled,
+                wavelength_unit=dimensionless_unscaled, ivar=None, std=None,
+                mask=None, wavelength=None, dtype=None, copy=True, **kwargs):
 
-        flux = np.array(flux) * scale
+        flux = np.array(flux)
+
+        # If the scale is defined, creates a new composite unit with the input scale.
+        if scale is not None:
+            unit = CompositeUnit(unit.scale * scale, unit.bases, unit.powers)
 
         obj = Quantity(flux, unit=unit, dtype=dtype, copy=copy)
         obj = obj.view(cls)
         obj._set_unit(unit)
 
-        obj.ivar = (np.array(ivar) / (scale ** 2)) if ivar is not None else None
+        obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
+
+        if std is not None:
+            assert ivar is None, 'std and ivar cannot be used at the same time.'
+            obj._std = np.array(std)
 
         if wavelength is None:
             obj.wavelength = None
@@ -78,6 +86,7 @@ class Spectrum(Quantity):
             return
 
         self.ivar = getattr(obj, 'ivar', None)
+        self._std = getattr(obj, '_std', None)
         self.mask = getattr(obj, 'mask', None)
         self.wavelength = getattr(obj, 'wavelength', None)
 
@@ -91,6 +100,7 @@ class Spectrum(Quantity):
         new_obj._set_unit(self.unit)
 
         new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
+        new_obj._std = self._std.__getitem__(sl) if self._std is not None else self._std
         new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
         new_obj.wavelength = self.wavelength.__getitem__(sl) \
             if self.wavelength is not None else self.wavelength
@@ -106,12 +116,21 @@ class Spectrum(Quantity):
     def error(self):
         """The standard deviation of the measurement."""
 
+        if self._std is not None:
+            return self._std
+
         if self.ivar is None:
             return None
 
         np.seterr(divide='ignore')
 
         return np.sqrt(1. / self.ivar) * self.unit
+
+    @property
+    def std(self):
+        """The standard deviation of the measurement."""
+
+        return self.error
 
     @property
     def snr(self):
