@@ -40,7 +40,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
     See `~.MarvinToolsClass` for a list of parameters. In addition to the
     attributes defined `there <~.MarvinToolsClass>`, the following ones are
-    defined
+    also defined
 
     Attributes:
         header (`astropy.io.fits.Header`):
