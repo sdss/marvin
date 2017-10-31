@@ -317,4 +317,5 @@ MPL6 = DAPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
                     properties=MPL6_maps,
                     models=MPL6_models,
                     default_bintype='SPX',
-                    default_template='GAU-MILESHC')
+                    default_template='GAU-MILESHC',
+                    property_table='SpaxelProp6')

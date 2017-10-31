@@ -35,7 +35,8 @@ class DAPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
-                 default_template=None, default_bintype=None, aliases=[]):
+                 default_template=None, default_bintype=None, property_table=None,
+                 aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -45,6 +46,8 @@ class DAPDataModel(object):
 
         self.properties = PropertyList(properties, parent=self)
         self.models = ModelList(models, parent=self)
+
+        self.property_table = property_table
 
         self._default_bintype = None
         self.default_bintype = default_bintype
