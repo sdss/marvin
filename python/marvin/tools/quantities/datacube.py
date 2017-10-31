@@ -16,6 +16,8 @@ from astropy import units
 
 from marvin.utils.general.general import _sort_dir
 
+from .spectrum import Spectrum
+
 
 class DataCube(units.Quantity):
     """A `~astropy.units.Quantity`-powered representation of a 3D data cube.
@@ -88,6 +90,11 @@ class DataCube(units.Quantity):
 
     def __getitem__(self, sl):
 
+        if isinstance(sl, tuple):
+            sl_wave = sl[0]
+        else:
+            sl_wave = sl
+
         new_obj = super(DataCube, self).__getitem__(sl)
 
         if type(new_obj) is not type(self):
@@ -97,6 +104,12 @@ class DataCube(units.Quantity):
 
         new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
         new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+        new_obj.wavelength = self.wavelength.__getitem__(sl_wave) \
+            if self.wavelength is not None else self.wavelength
+
+        if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength):
+            return Spectrum(new_obj.value, unit=new_obj.unit, wavelength=new_obj.wavelength,
+                            ivar=new_obj.ivar, mask=new_obj.mask)
 
         return new_obj
 
