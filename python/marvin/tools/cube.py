@@ -474,7 +474,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
             properties (bool):
                 If ``True``, the spaxel will be initiated with the DAP
                 properties from the default Maps matching this cube.
-            modelcube (:class:`~marvin.tools.modelcube.ModelCube` or None or bool):
+            modelcube (`~marvin.tools.modelcube.ModelCube` or None or bool):
                 A :class:`~marvin.tools.modelcube.ModelCube` object
                 representing the DAP modelcube entity. If None, the |spaxel|
                 will be returned without model information. Default is False.
