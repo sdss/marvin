@@ -493,4 +493,48 @@ class DAPallMixIn(object):
     def dapall(self):
         """Returns the contents of the DAPall data for this target."""
 
-        raise NotImplementedError('dapall is not yet implemented.')
+        if hasattr(self, '_dapall') and self._dapall is not None:
+            return self._dapall
+
+        if self.data_origin == 'file':
+            try:
+                dapall_data = self._get_dapall_from_file()
+            except FileNotFoundError:
+                warnings.warn('cannot find DAPall file. Trying remote request.',
+                              MarvinUserWarning)
+                dapall_data = self._get_from_api()
+        elif self.data_origin == 'db':
+            dapall_data = self._get_dapall_from_db()
+        else:
+            dapall_data = self._get_dapall_from_api()
+
+        self._dapall = dapall_data
+
+        return self._dapall
+
+    def _get_dapall_from_db(self):
+        """Uses the DB to retrieve the DAPAll data."""
+
+        dapall_data = {}
+
+        daptype = self.bintype.name + '-' + self.template.name
+
+        mdb = marvin.marvindb
+
+        if not mdb.isdbconnected:
+            raise MarvinError('No DB connected')
+
+        datadb = mdb.datadb
+        dapdb = mdb.dapdb
+
+        dapall_row = mdb.session.query(dapdb.DapAll).join(
+            dapdb.File, datadb.PipelineInfo, datadb.PipelineVersion).filter(
+                mdb.datadb.PipelineVersion.version == self._dapver,
+                dapdb.DapAll.plateifu == self.plateifu,
+                dapdb.DapAll.daptype == daptype).one()
+
+        for col in dapall_row.__table__.columns.keys():
+            if col != 'pk' and '_pk' not in col:
+                dapall_data[col] = getattr(dapall_row, col)
+
+        return dapall_data
