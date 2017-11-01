@@ -420,8 +420,10 @@ class MapsView(marvin.api.base.BaseView):
         if maps is None:
             return jsonify(self.results)
 
-        dapall = maps.dapall
-
-        self.results['data'] = {'dapall_data': dapall}
+        try:
+            dapall = maps.dapall
+            self.results['data'] = {'dapall_data': dapall}
+        except marvin.core.exceptions.MarvinError as ee:
+            self.results['error'] = str(ee)
 
         return jsonify(self.results)

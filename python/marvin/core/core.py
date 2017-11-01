@@ -564,7 +564,10 @@ class DAPallMixIn(object):
             dapdb.File, datadb.PipelineInfo, datadb.PipelineVersion).filter(
                 mdb.datadb.PipelineVersion.version == self._dapver,
                 dapdb.DapAll.plateifu == self.plateifu,
-                dapdb.DapAll.daptype == daptype).one()
+                dapdb.DapAll.daptype == daptype).first()
+
+        if dapall_row is None:
+            raise MarvinError('cannot find a DAPall match for this target in the DB.')
 
         for col in dapall_row.__table__.columns.keys():
             if col != 'pk' and '_pk' not in col:
@@ -585,7 +588,11 @@ class DAPallMixIn(object):
             response = self._toolInteraction(url_full)
         except Exception as ee:
             raise marvin.core.exceptions.MarvinError(
-                'found a problem when checking if remote MAPS exists: {0}'.format(str(ee)))
+                'found a problem while getting DAPall: {0}'.format(str(ee)))
+
+        if response.results['error'] is not None:
+            raise MarvinError('found a problem while getting DAPall: {}'
+                              .format(str(response.results['error'])))
 
         data = response.getData()
 
