@@ -74,7 +74,12 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=marvin.config.mode, data=None, release=marvin.config.release,
                  drpall=None, download=marvin.config.download, nsa_source='auto',
-                 bintype=None, template=None):
+                 bintype=None, template=None, template_kin=None):
+
+        if template_kin is not None:
+            warnings.warn('template_kin is deprecated and will be removed in a future version.',
+                          DeprecationWarning)
+            template = template_kin if template is None else template
 
         # _set_datamodel will replace these strings with datamodel objects.
         self.bintype = bintype
