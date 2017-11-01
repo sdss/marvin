@@ -18,7 +18,6 @@ import warnings
 
 from copy import deepcopy
 
-from astropy.io import fits
 import astropy.units as units
 
 import numpy as np
@@ -29,7 +28,6 @@ import marvin.core.marvin_pickle
 import marvin.core.exceptions
 import marvin.utils.plot.map
 
-from marvin.core.exceptions import MarvinUserWarning
 from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general.general import add_doc
 
@@ -98,7 +96,8 @@ class Map(units.Quantity, QuantityMixIn):
         else:
             full = None
 
-        return ('<Marvin Map (property={0!r})>\n{1} {2!r}'.format(full, self.value, self.unit))
+        return ('<Marvin Map (property={0!r})>\n{1} {2}'.format(full, self.value,
+                                                                self.unit.to_string()))
 
     def __getitem__(self, sl):
 
