@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-29 14:15:18
+# @Last Modified time: 2017-10-25 14:55:48
 
 from __future__ import print_function, division, absolute_import
 
@@ -184,6 +184,10 @@ class QueryDataModel(object):
     def best(self):
         return QueryList([p for p in self.parameters if p.best is True])
 
+    @property
+    def best_groups(self):
+        return self.groups.best
+
     def set_best(self, best):
         ''' sets a list of best query parameters '''
         for b in best:
@@ -277,6 +281,11 @@ class ParameterGroupList(list):
     def groups(self):
         ''' List all the parameter groups '''
         return self.list_groups()
+
+    @property
+    def best(self):
+        ''' List the best parameters in each group '''
+        return query_params
 
     @groups.setter
     def groups(self, value):
