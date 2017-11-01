@@ -840,7 +840,6 @@ def _db_row_to_dict(row, remove_columns=False):
 
     from sqlalchemy.inspection import inspect as sa_inspect
     from sqlalchemy.ext.hybrid import hybrid_property
-    from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     row_dict = collections.OrderedDict()
 
