@@ -76,6 +76,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                  drpall=None, download=marvin.config.download, nsa_source='auto',
                  bintype=None, template=None):
 
+        # _set_datamodel will replace these strings with datamodel objects.
+        self.bintype = bintype
+        self.template = template
+
         MarvinToolsClass.__init__(self, input=input, filename=filename,
                                   mangaid=mangaid, plateifu=plateifu,
                                   mode=mode, data=data, release=release,
@@ -85,9 +89,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.header = None
         self.wcs = None
-
-        self.bintype = self.datamodel.get_bintype(bintype)
-        self.template = self.datamodel.get_template(template)
 
         self.properties = self.datamodel.properties
 
@@ -124,6 +125,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         """Sets the datamodel."""
 
         self.datamodel = datamodel[self.release]
+        self.bintype = self.datamodel.get_bintype(self.bintype)
+        self.template = self.datamodel.get_template(self.template)
 
     def __deepcopy__(self, memo):
         return Maps(plateifu=copy.deepcopy(self.plateifu, memo),
@@ -168,7 +171,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         params = self._getPathParams()
         path_type = params.pop('path_type')
 
-        return super(Maps, self)._getFullPath(path_type, **params)
+        return MarvinToolsClass._getFullPath(self, path_type, **params)
 
     def download(self):
         """Downloads the maps using sdss_access - Rsync"""
@@ -243,7 +246,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         # Checks the bintype and template from the header
         is_MPL4 = self.datamodel.release == 'MPL-4'
-        if is_MPL4:
+        if not is_MPL4:
             header_bintype = self.data[0].header['BINKEY'].strip().upper()
             header_bintype = 'SPX' if header_bintype == 'NONE' else header_bintype
         else:
