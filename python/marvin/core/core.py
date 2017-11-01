@@ -28,7 +28,7 @@ from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
 
 from marvin.utils.db import testDbConnection
-from marvin.utils.general import mangaid2plateifu, get_nsa_data
+from marvin.utils.general import mangaid2plateifu, get_nsa_data, get_dapall_file
 
 try:
     from sdss_access.path import Path
@@ -511,6 +511,32 @@ class DAPallMixIn(object):
         self._dapall = dapall_data
 
         return self._dapall
+
+    def _get_dapall_from_file(self):
+        """Uses DAPAll file to retrieve information."""
+
+        daptype = self.bintype.name + '-' + self.template.name
+
+        dapall_path = get_dapall_file(self._drpver, self._dapver)
+
+        assert dapall_path is not None, 'cannot build DAPall file.'
+
+        if not os.path.exists(dapall_path):
+            raise MarvinError('cannot find DAPall file in the system.')
+
+        dapall_table = astropy.io.fits.open(dapall_path)[-1].data
+
+        dapall_row = dapall_table[(dapall_table['PLATEIFU'] == self.plateifu) &
+                                  (dapall_table['DAPTYPE'] == daptype)]
+
+        assert len(dapall_row) == 1, 'cannot find matching row in DAPall.'
+
+        dapall_data = {}
+
+        for ii, colname in enumerate(dapall_row[0].array.dtype.names):
+            dapall_data[colname.lower()] = dapall_row[0][ii]
+
+        return dapall_data
 
     def _get_dapall_from_db(self):
         """Uses the DB to retrieve the DAPAll data."""
