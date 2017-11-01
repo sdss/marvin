@@ -25,6 +25,7 @@ import marvin
 import marvin.api.api
 import marvin.core.exceptions
 import marvin.tools.cube
+import marvin.tools.modelcube
 import marvin.tools.quantities.map
 import marvin.tools.spaxel
 import marvin.utils.general.general
@@ -357,14 +358,22 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def getCube(self):
         """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""
 
-        try:
-            cube = marvin.tools.cube.Cube(plateifu=self.plateifu,
-                                          release=self.release)
-        except Exception as err:
-            raise marvin.core.exceptions.MarvinError(
-                'cannot instantiate a cube for this Maps. Error: {0}'.format(err))
+        if self.data_origin == 'db':
+            cube_data = self.data.cube
+        else:
+            cube_data = None
 
-        return cube
+        return marvin.tools.cube.Cube(data=cube_data,
+                                      plateifu=self.plateifu,
+                                      release=self.release)
+
+    def getModelCube(self):
+        """Returns the `~marvin.tools.cube.ModelCube` for with this Maps."""
+
+        return marvin.tools.modelcube.ModelCube(plateifu=self.plateifu,
+                                                release=self.release,
+                                                bintype=self.bintype,
+                                                template=self.template)
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   spectrum=True, modelcube=False, **kwargs):
