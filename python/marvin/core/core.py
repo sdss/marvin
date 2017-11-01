@@ -11,6 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import abc
+import distutils
 import os
 import re
 import six
@@ -489,9 +490,15 @@ class DAPallMixIn(object):
 
     """
 
+    __min_dapall_version__ = distutils.version.StrictVersion('2.1.0')
+
     @property
     def dapall(self):
         """Returns the contents of the DAPall data for this target."""
+
+        if (not self._dapver or
+                distutils.version.StrictVersion(self._dapver) < self.__min_dapall_version__):
+            raise MarvinError('DAPall is not available for versions before MPL-6.')
 
         if hasattr(self, '_dapall') and self._dapall is not None:
             return self._dapall
@@ -564,3 +571,22 @@ class DAPallMixIn(object):
                 dapall_data[col] = getattr(dapall_row, col)
 
         return dapall_data
+
+    def _get_dapall_from_api(self):
+        """Uses the API to retrieve the DAPall data."""
+
+        url = marvin.config.urlmap['api']['dapall']['url']
+
+        url_full = url.format(name=self.plateifu,
+                              bintype=self.bintype.name,
+                              template=self.template.name)
+
+        try:
+            response = self._toolInteraction(url_full)
+        except Exception as ee:
+            raise marvin.core.exceptions.MarvinError(
+                'found a problem when checking if remote MAPS exists: {0}'.format(str(ee)))
+
+        data = response.getData()
+
+        return data['dapall_data']
