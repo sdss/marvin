@@ -311,7 +311,7 @@ MPL6_models = [
 
 
 # MPL-6 DapDataModel goes here
-MPL6 = DAPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
+MPL6 = DAPDataModel('2.1', aliases=['MPL-6', 'MPL6'],
                     bintypes=[ALL, NRE, VOR10, SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
