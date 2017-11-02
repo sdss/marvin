@@ -244,6 +244,12 @@ class PropertyList(FuzzyList):
         else:
             raise ValueError('invalid property of type {!r}'.format(type(append_obj)))
 
+    @property
+    def release(self):
+        """The release of the parent `.DAPDataModel`."""
+
+        return self.parent.release
+
     def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the properties in this model.
 
@@ -337,6 +343,12 @@ class ModelList(FuzzyList):
             super(ModelList, self).append(append_obj)
         else:
             raise ValueError('invalid model of type {!r}'.format(type(append_obj)))
+
+    @property
+    def release(self):
+        """The release of the parent `.DAPDataModel`."""
+
+        return self.parent.release
 
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the models in this datamodel.
@@ -785,6 +797,16 @@ class Model(object):
         """Returns the name + channel string."""
 
         return self.name
+
+    def has_ivar(self):
+        """Returns True is the datacube has an ivar extension."""
+
+        return self._extension_ivar is not None
+
+    def has_mask(self):
+        """Returns True is the datacube has an mask extension."""
+
+        return self._extension_mask is not None
 
     def fits_extension(self, ext=None):
         """Returns the FITS extension name."""
