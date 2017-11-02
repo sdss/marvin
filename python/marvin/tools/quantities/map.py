@@ -165,7 +165,7 @@ class Map(units.Quantity, QuantityMixIn):
         maps = maps
         datamodel = maps.datamodel
 
-        assert prop in datamodel.properties, 'failed sanity check. Property does not match.'
+        assert prop in datamodel, 'failed sanity check. Property does not match.'
 
         if maps.data_origin == 'file':
             value, ivar, mask = cls._get_map_from_file(maps, prop)
