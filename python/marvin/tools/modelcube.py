@@ -412,7 +412,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         np.array(self._wavelength),
                         ivar=None,
                         mask=model_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
                         unit=model.unit)
 
     @property
@@ -428,7 +428,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         np.array(self._wavelength),
                         ivar=None,
                         mask=emline_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
                         unit=model.unit)
 
     @property
@@ -447,7 +447,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         np.array(self._wavelength),
                         ivar=None,
                         mask=stellarcont_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
                         unit=model.unit)
 
     def getCube(self):
