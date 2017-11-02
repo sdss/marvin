@@ -96,8 +96,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.header = None
         self.wcs = None
 
-        self.properties = self.datamodel.properties
-
         if self.data_origin == 'file':
             self._load_maps_from_file(data=self.data)
         elif self.data_origin == 'db':
@@ -130,9 +128,9 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def _set_datamodel(self):
         """Sets the datamodel."""
 
-        self.datamodel = datamodel[self.release]
-        self.bintype = self.datamodel.get_bintype(self.bintype)
-        self.template = self.datamodel.get_template(self.template)
+        self.datamodel = datamodel[self.release].properties
+        self.bintype = self.datamodel.parent.get_bintype(self.bintype)
+        self.template = self.datamodel.parent.get_template(self.template)
 
     def __deepcopy__(self, memo):
         return Maps(plateifu=copy.deepcopy(self.plateifu, memo),
@@ -248,7 +246,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             self._release = file_ver
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
-        self.datamodel = datamodel[self._dapver]
+        self.datamodel = datamodel[self._dapver].properties
 
         # Checks the bintype and template from the header
         is_MPL4 = self.datamodel.release == 'MPL-4'
@@ -262,10 +260,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         header_template = self.data[0].header[header_template_key].strip().upper()
 
         if self.bintype.name != header_bintype:
-            self.bintype = self.datamodel.get_bintype(header_bintype)
+            self.bintype = self.datamodel.parent.get_bintype(header_bintype)
 
         if self.template.name != header_template:
-            self.template = self.datamodel.get_template(header_template)
+            self.template = self.datamodel.parent.get_template(header_template)
 
     def _load_maps_from_db(self, data=None):
         """Loads the ``mangadap.File`` object for this Maps."""
@@ -513,7 +511,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             return self
         else:
             return Maps(plateifu=self.plateifu, release=self.release,
-                        bintype=self.datamodel.get_unbinned(),
+                        bintype=self.datamodel.parent.get_unbinned(),
                         template=self.template, mode=self.mode)
 
     def get_bin_spaxels(self, binid, load=False, only_list=False):
