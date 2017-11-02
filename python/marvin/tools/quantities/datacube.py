@@ -136,8 +136,9 @@ class DataCube(units.Quantity, QuantityMixIn):
         """Returns the derreddened datacube."""
 
         new_value = (self.value.T * self.redcorr).T
+        new_ivar = (self.value.T / self.redcorr**2).T
 
         new_obj = DataCube(new_value, self.wavelength, unit=self.unit,
-                           redcorr=None, ivar=self, mask=self)
+                           redcorr=None, ivar=new_ivar, mask=self.mask)
 
         return new_obj
