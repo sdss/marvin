@@ -13,7 +13,7 @@ You can list the available group objects straight from **query_params**.  **quer
 
 ::
 
-    from marvin.tools.query_utils import query_params
+    from marvin.utils.datamodel.query.base import query_params
 
     query_params
     [<ParameterGroup name=Metadata, paramcount=7>,

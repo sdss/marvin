@@ -35,7 +35,8 @@ class DAPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
-                 default_template=None, default_bintype=None, aliases=[]):
+                 default_template=None, default_bintype=None, property_table=None,
+                 aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -45,6 +46,8 @@ class DAPDataModel(object):
 
         self.properties = PropertyList(properties, parent=self)
         self.models = ModelList(models, parent=self)
+
+        self.property_table = property_table
 
         self._default_bintype = None
         self.default_bintype = default_bintype
@@ -241,6 +244,12 @@ class PropertyList(FuzzyList):
         else:
             raise ValueError('invalid property of type {!r}'.format(type(append_obj)))
 
+    @property
+    def release(self):
+        """The release of the parent `.DAPDataModel`."""
+
+        return self.parent.release
+
     def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the properties in this model.
 
@@ -335,6 +344,12 @@ class ModelList(FuzzyList):
         else:
             raise ValueError('invalid model of type {!r}'.format(type(append_obj)))
 
+    @property
+    def release(self):
+        """The release of the parent `.DAPDataModel`."""
+
+        return self.parent.release
+
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the models in this datamodel.
 
@@ -344,7 +359,7 @@ class ModelList(FuzzyList):
                 table pretty print.
             description (bool):
                 If ``True``, an extra column with the description of the
-                property will be added.
+                model will be added.
             max_width (int or None):
                 A keyword to pass to ``astropy.table.Table.pprint()`` with the
                 maximum width of the table, in characters.
@@ -352,8 +367,7 @@ class ModelList(FuzzyList):
         Returns:
             result (``astropy.table.Table``):
                 If ``pprint=False``, returns an astropy table containing
-                the name of the property, the channel (or channels, if
-                ``compact=True``), whether the property has ``ivar`` or
+                the name of the model, whether the property has ``ivar`` or
                 ``mask``, the units, and a description (if
                 ``description=True``). Additonal information such as the
                 bintypes, templates, release, etc. is included in
@@ -362,8 +376,8 @@ class ModelList(FuzzyList):
         """
 
         model_table = table.Table(
-            None, names=['name', 'model', 'ivar', 'mask', 'unit', 'description'],
-            dtype=['S20', 'S20', bool, bool, 'S20', 'S500'])
+            None, names=['name', 'ivar', 'mask', 'unit', 'description'],
+            dtype=['S20', bool, bool, 'S20', 'S500'])
 
         if self.parent:
             model_table.meta['release'] = self.parent.release
@@ -376,7 +390,6 @@ class ModelList(FuzzyList):
             unit = model.unit.to_string()
 
             model_table.add_row((model.name,
-                                 model.name,
                                  model.extension_ivar is not None,
                                  model.extension_mask is not None,
                                  unit,
@@ -462,11 +475,11 @@ class Property(object):
 
     """
 
-    def __init__(self, name, channel=None, ivar=False, mask=False, unit=u.dimensionless_unscaled,
+    def __init__(self, name, channel=None, ivar=False, mask=False, unit=None,
                  scale=1, formats={}, parent=None, binid=None, description=''):
 
         self.name = name
-        self.channel = channel
+        self.channel = copy_mod.deepcopy(channel)
 
         self.ivar = ivar
         self.mask = mask
@@ -474,16 +487,15 @@ class Property(object):
 
         self.formats = formats
 
-        if self.channel is None:
-            self.scale = scale
-            self.unit = unit
+        if unit is not None:
+            self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
+        elif unit is None and self.channel is None:
+            self.unit = u.dimensionless_unscaled
         else:
-            self.scale = scale if scale is not None else self.channel.scale
-            self.unit = unit if unit is not None else self.channel.unit
+            self.unit = self.channel.unit
 
         # Makes sure the channel shares the units and scale
         if self.channel:
-            self.channel.scale = self.scale
             self.channel.unit = self.unit
 
         self.description = description
@@ -547,6 +559,12 @@ class Property(object):
 
         return self.full()
 
+    @property
+    def db_table(self):
+        """The DB table to use to retrieve this property."""
+
+        return self.parent.property_table
+
     def to_string(self, mode='string', include_channel=True):
         """Return a string representation of the channel."""
 
@@ -607,10 +625,9 @@ class MultiChannelProperty(list):
 
     """
 
-    def __init__(self, name, channels=[], unit=None, scale=None, **kwargs):
+    def __init__(self, name, channels=[], unit=None, scale=1, **kwargs):
 
         self.name = name
-        self.channels = channels
 
         self.ivar = kwargs.get('ivar', False)
         self.mask = kwargs.get('mask', False)
@@ -621,8 +638,9 @@ class MultiChannelProperty(list):
         self_list = []
         for ii, channel in enumerate(channels):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
+            this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
             self_list.append(Property(self.name, channel=channel,
-                                      unit=this_unit, scale=scale, **kwargs))
+                                      unit=this_unit, scale=this_scale, **kwargs))
 
         list.__init__(self, self_list)
 
@@ -635,6 +653,12 @@ class MultiChannelProperty(list):
 
         for prop in self:
             prop.parent = parent
+
+    @property
+    def channels(self):
+        """Returns a list of channels."""
+
+        return [item.channel for item in self]
 
     def __getitem__(self, value):
         """Uses fuzzywuzzy to get a channel."""
@@ -680,8 +704,7 @@ class Channel(object):
                  idx=None, db_name=None, description=''):
 
         self.name = name
-        self.unit = unit
-        self.scale = scale
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
         self.formats = formats
         self.idx = idx
         self.db_name = db_name or self.name
@@ -750,13 +773,16 @@ class Model(object):
                  description=''):
 
         self.name = name
-        self.extension_name = extension_name
-        self.extension_wave = extension_wave
-        self.extension_ivar = extension_ivar
-        self.extension_mask = extension_mask
+
+        self._extension_name = extension_name
+        self._extension_wave = extension_wave
+        self._extension_ivar = extension_ivar
+        self._extension_mask = extension_mask
+
         self.channels = channels
-        self.unit = unit
-        self.scale = scale
+
+        self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
+
         self.formats = formats
         self.description = description
 
@@ -772,23 +798,38 @@ class Model(object):
 
         return self.name
 
-    def db_column(self, ext=None, channel=None):
-        """Returns the name of the DB column containing this model."""
+    def has_ivar(self):
+        """Returns True is the datacube has an ivar extension."""
+
+        return self._extension_ivar is not None
+
+    def has_mask(self):
+        """Returns True is the datacube has an mask extension."""
+
+        return self._extension_mask is not None
+
+    def fits_extension(self, ext=None):
+        """Returns the FITS extension name."""
 
         assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
 
-        channel_suffix = '_{0}'.format(channel.db_name) if channel is not None else ''
-
         if ext is None:
-            return self.full() + channel_suffix
+            return self._extension_name.upper()
 
-        if ext == 'ivar':
-            assert self.extension_ivar is not None, 'no ivar for model {0!r}'.format(self.full())
-            return self.extension_ivar.lower() + channel_suffix
+        elif ext == 'ivar':
+            if not self.has_ivar():
+                raise 'no ivar extension for datacube {0!r}'.format(self.full())
+            return self._extension_ivar.upper()
 
-        if ext == 'mask':
-            assert self.extension_mask is not None, 'no mask for model {0!r}'.format(self.full())
-            return self.extension_mask.lower() + channel_suffix
+        elif ext == 'mask':
+            if not self.has_mask():
+                raise 'no mask extension for datacube {0!r}'.format(self.full())
+            return self._extension_mask
+
+    def db_column(self, ext=None):
+        """Returns the name of the DB column containing this datacube."""
+
+        return self.fits_extension(ext=ext).lower()
 
     def __repr__(self):
 

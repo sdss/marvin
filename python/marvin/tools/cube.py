@@ -1,7 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # encoding: utf-8
 #
-# cube.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
+# @Date: Oct 25, 2017
+# @Filename: base.py
+# @License: BSD 3-Clause
+# @Copyright: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
 
 
 from __future__ import division
@@ -12,6 +16,7 @@ import warnings
 
 from astropy.io import fits
 from astropy.wcs import WCS
+
 import numpy as np
 
 import marvin
@@ -19,79 +24,60 @@ import marvin.core.exceptions
 import marvin.tools.spaxel
 import marvin.tools.maps
 import marvin.utils.general.general
+
+from marvin.core.core import MarvinToolsClass, NSAMixIn
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.tools.quantities import DataCube, Spectrum
+from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import get_nsa_data
 
-from marvin.core.core import MarvinToolsClass
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
-try:
-    import photutils.aperture_funcs
-except ImportError:
-    photutils = False
-
-
-class Cube(MarvinToolsClass):
+class Cube(MarvinToolsClass, NSAMixIn):
     """A class to interface with MaNGA DRP data cubes.
 
     This class represents a fully reduced DRP data cube, initialised either
     from a file, a database, or remotely via the Marvin API.
 
-    Parameters:
-        data (``HDUList``, SQLAlchemy object, or None):
-            An astropy ``HDUList`` or a SQLAlchemy object of a cube, to
-            be used for initialisation. If ``None``, the normal mode will
-            be used (see :ref:`mode-decision-tree`).
-        filename (str):
-            The path of the file containing the data cube to load.
-        mangaid (str):
-            The mangaid of the data cube to load.
-        plateifu (str):
-            The plate-ifu of the data cube to load (either ``mangaid`` or
-            ``plateifu`` can be used, but not both).
-        nsa_source ({'auto', 'drpall', 'nsa'}):
-            Defines how the NSA data for this object should loaded when
-            ``Cube.nsa`` is first called. If ``drpall``, the drpall file will
-            be used (note that this will only contain a subset of all the NSA
-            information); if ``nsa``, the full set of data from the DB will be
-            retrieved. If the drpall file or a database are not available, a
-            remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the ``Cube`` object has been
-            instantiated. If the cube has ``Cube.data_origin='file'``,
-            the drpall file will be used (as it is more likely that the user
-            has that file in their system). Otherwise, ``nsa_source='nsa'``
-            will be assumed. This behaviour can be modified during runtime by
-            modifying the ``Cube.nsa_mode`` with one of the valid values.
-        mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See :ref:`mode-decision-tree`.
-        release (str):
-            The MPL/DR version of the data to use.
+    See `~.MarvinToolsClass` for a list of parameters. In addition to the
+    attributes defined `there <~.MarvinToolsClass>`, the following ones are
+    also defined
 
-    Return:
-        cube:
-            An object representing the data cube.
+    Attributes:
+        header (`astropy.io.fits.Header`):
+            The header of the datacube.
+        ifu (int):
+            The id of the IFU.
+        ra,dec (float):
+            Coordinates of the target.
+        wcs (`astropy.wcs.WCS`):
+            The WCS solution for this plate
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
+                 mode=marvin.config.mode, data=None, release=marvin.config.release,
+                 drpall=None, download=marvin.config.download, nsa_source='auto'):
 
-        valid_kwargs = [
-            'data', 'filename', 'mangaid', 'plateifu', 'mode', 'release',
-            'drpall', 'nsa_source']
-
-        assert len(args) == 0, 'Cube does not accept arguments, only keywords.'
-        for kw in kwargs:
-            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
-
-        self.shape = None
+        self.header = None
         self.wcs = None
-        self.wavelength = None
-        self._drpall_data = None
+        self._wavelength = None
 
+        # Stores data from extensions that have already been accessed, so that they
+        # don't need to be retrieved again.
+        self._extension_data = {}
+
+        # Datacubes and spectra
         self._flux = None
-        self._ivar = None
-        self._mask = None
+        self._spectral_resolution = None
+        self._spectral_resolution_prepixel = None
+        self._dispersion = None
+        self._dispersion_prepixel = None
 
-        super(Cube, self).__init__(*args, **kwargs)
+        MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
+                                  plateifu=plateifu, mode=mode, data=data, release=release,
+                                  drpall=drpall, download=download)
+
+        NSAMixIn.__init__(self, nsa_source=nsa_source)
 
         if self.data_origin == 'file':
             self._load_cube_from_file(data=self.data)
@@ -108,6 +94,11 @@ class Cube(MarvinToolsClass):
         assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
+
+    def _set_datamodel(self):
+        """Sets the datamodel for DRP."""
+
+        self.datamodel = datamodel[self.release.upper()]
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -135,8 +126,7 @@ class Cube(MarvinToolsClass):
         """Representation for Cube."""
 
         return ('<Marvin Cube (plateifu={0}, mode={1}, data_origin={2})>'
-                .format(repr(self.plateifu), repr(self.mode),
-                        repr(self.data_origin)))
+                .format(repr(self.plateifu), repr(self.mode), repr(self.data_origin)))
 
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
@@ -149,16 +139,13 @@ class Cube(MarvinToolsClass):
         self.ra = float(self.header['OBJRA'])
         self.dec = float(self.header['OBJDEC'])
 
-        self.plate = int(self.header['PLATEID'])
-        self.ifu = int(self.header['IFUDSGN'])
-        self.mangaid = self.header['MANGAID']
-
         self._isbright = 'APOGEE' in self.header['SRVYMODE']
 
         self.dir3d = 'mastar' if self._isbright else 'stack'
 
     def _load_cube_from_file(self, data=None):
         """Initialises a cube from a file."""
+
         if data is not None:
             assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
         else:
@@ -168,9 +155,10 @@ class Cube(MarvinToolsClass):
                 raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[1].header
-        self.shape = self.data['FLUX'].data.shape[1:]
         self.wcs = WCS(self.header)
-        self.wavelength = self.data['WAVE'].data
+
+        self._wavelength = self.data['WAVE'].data
+
         self.plateifu = self.header['PLATEIFU']
 
         # Checks and populates the release.
@@ -201,11 +189,12 @@ class Cube(MarvinToolsClass):
 
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
+
         mdb = marvin.marvindb
         plate, ifu = self.plateifu.split('-')
 
         if not mdb.isdbconnected:
-            raise MarvinError('No db connected')
+            raise MarvinError('No DB connected')
         else:
             import sqlalchemy
             datadb = mdb.datadb
@@ -216,11 +205,10 @@ class Cube(MarvinToolsClass):
             else:
                 try:
                     self.data = mdb.session.query(datadb.Cube).join(
-                        datadb.PipelineInfo,
-                        datadb.PipelineVersion,
-                        datadb.IFUDesign).filter(
+                        datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(
                             mdb.datadb.PipelineVersion.version == self._drpver,
-                            datadb.Cube.plate == int(plate), datadb.IFUDesign.name == ifu).one()
+                            datadb.Cube.plate == int(plate),
+                            datadb.IFUDesign.name == ifu).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as ee:
                     raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
                                       'Multiple Results Found: {1}'.format(self.plateifu, ee))
@@ -234,11 +222,12 @@ class Cube(MarvinToolsClass):
             self.header = self.data.header
             self.wcs = WCS(self.data.wcs.makeHeader())
             self.data = self.data
-            self.shape = self.data.shape.shape
-            self.wavelength = self.data.wavelength.wavelength
+
+            self._wavelength = np.array(self.data.wavelength.wavelength)
 
     def _load_cube_from_api(self):
         """Calls the API and retrieves the necessary information to instantiate the cube."""
+
         url = marvin.config.urlmap['api']['getCube']['url']
 
         try:
@@ -250,59 +239,162 @@ class Cube(MarvinToolsClass):
         data = response.getData()
 
         self.header = fits.Header.fromstring(data['header'])
-        self.shape = data['shape']
-        self.wavelength = np.array(data['wavelength'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
+        self._wavelength = data['wavelength']
 
         if self.plateifu != data['plateifu']:
             raise MarvinError('remote cube has a different plateifu!')
 
         return
 
-    def _getExtensionData(self, extName):
+    def _get_datacube(self, name):
+        """Returns a `.DataCube`."""
+
+        model = self.datamodel.datacubes[name]
+        cube_data = self._get_extension_data(name)
+
+        if cube_data is None:
+            raise MarvinError('cannot find data for this extension. '
+                              'Maybe it is not loaded into the DB.')
+
+        datacube = DataCube(cube_data,
+                            np.array(self._wavelength),
+                            ivar=self._get_extension_data(name, 'ivar'),
+                            mask=self._get_extension_data(name, 'mask'),
+                            unit=model.unit)
+
+        return datacube
+
+    def _get_spectrum(self, name):
+        """Returns an `.Spectrum`."""
+
+        model = self.datamodel.spectra[name]
+        spec_data = self._get_extension_data(name)
+
+        if spec_data is None:
+            raise MarvinError('cannot find data for this extension. '
+                              'Maybe it is not loaded into the DB.')
+
+        spectrum = Spectrum(spec_data,
+                            wavelength=np.array(self._wavelength),
+                            std=self._get_extension_data(name, 'std'),
+                            unit=model.unit)
+
+        return spectrum
+
+    @property
+    def flux(self):
+        """Returns a `.DataCube` object with the flux."""
+
+        assert 'flux' in self.datamodel.datacubes.list_names(), \
+            'flux is not present in his MPL version.'
+
+        assert hasattr(self, '_flux')
+
+        if self._flux is None:
+            self._flux = self._get_datacube('flux')
+
+        return self._flux
+
+    @property
+    def dispersion(self):
+        """Returns a `.DataCube` object with the dispersion."""
+
+        assert 'dispersion' in self.datamodel.datacubes.list_names(), \
+            'dispersion is not present in his MPL version.'
+
+        assert hasattr(self, '_dispersion')
+
+        if self._dispersion is None:
+            self._dispersion = self._get_datacube('dispersion')
+
+        return self._dispersion
+
+    @property
+    def dispersion_prepixel(self):
+        """Returns a `.DataCube` object with the prepixel dispersion."""
+
+        assert 'dispersion_prepixel' in self.datamodel.datacubes.list_names(), \
+            'dispersion_prepixel is not present in his MPL version.'
+
+        assert hasattr(self, '_dispersion_prepixel')
+
+        if self._dispersion_prepixel is None:
+            self._dispersion_prepixel = self._get_datacube('dispersion_prepixel')
+
+        return self._dispersion_prepixel
+
+    @property
+    def spectral_resolution(self):
+        """Returns a `.Spectrum` with the spectral dispersion."""
+
+        assert 'spectral_resolution' in self.datamodel.spectra.list_names(), \
+            'spectral_resolution is not present in his MPL version.'
+
+        assert hasattr(self, '_spectral_resolution')
+
+        if self._spectral_resolution is None:
+            self._spectral_resolution = self._get_spectrum('spectral_resolution')
+
+        return self._spectral_resolution
+
+    @property
+    def spectral_resolution_prepixel(self):
+        """Returns a `.Spectrum` with the prepixel spectral dispersion."""
+
+        assert 'spectral_resolution_prepixel' in self.datamodel.spectra.list_names(), \
+            'spectral_resolution_prepixel is not present in his MPL version.'
+
+        assert hasattr(self, '_spectral_resolution_prepixel')
+
+        if self._spectral_resolution_prepixel is None:
+            self._spectral_resolution_prepixel = self._get_spectrum('spectral_resolution_prepixel')
+
+        return self._spectral_resolution_prepixel
+
+    def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
 
+        model = self.datamodel[name]
+        ext_name = model.fits_extension(ext)
+
+        if ext_name in self._extension_data:
+            return self._extension_data[ext_name]
+
         if self.data_origin == 'file':
-            return self.data[extName.upper()].data
+            ext_data = self.data[model.fits_extension(ext)].data
 
         elif self.data_origin == 'db':
-            return self.data.get3DCube(extName.lower())
+            # If the table is "spaxel", this must be a 3D cube. If it is "cube",
+            # uses self.data, which is basically the DataModelClass.Cube instance.
+            if model.db_table == 'spaxel':
+                ext_data = self.data.get3DCube(model.db_column(ext))
+            elif model.db_table == 'cube':
+                ext_data = getattr(self.data, model.db_column(ext))
+            else:
+                raise NotImplementedError('invalid db_table={!r}'.format(model.db_table))
 
         elif self.data_origin == 'api':
 
-            url = marvin.config.urlmap['api']['getCubeExtension']['url']
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getExtension']['url']
 
             try:
-                response = self._toolInteraction(url.format(name=self.plateifu,
-                                                            cube_extension=extName.lower()))
+                response = self._toolInteraction(
+                    url.format(name=self.plateifu,
+                               cube_extension=model.fits_extension(ext).lower()),
+                    params=params)
             except Exception as ee:
                 raise MarvinError('found a problem when checking if remote cube '
                                   'exists: {0}'.format(str(ee)))
 
             data = response.getData()
+            cube_ext_data = data['extension_data']
+            ext_data = np.array(cube_ext_data) if cube_ext_data is not None else None
 
-            return np.array(data['cube_extension'])
+        self._extension_data[ext_name] = ext_data
 
-    @property
-    def flux(self):
-        """Gets the ``FLUX`` data extension."""
-        if self._flux is None:
-            self._flux = self._getExtensionData('FLUX')
-        return self._flux
-
-    @property
-    def ivar(self):
-        """Gets the ``IVAR`` data extension."""
-        if self._ivar is None:
-            self._ivar = self._getExtensionData('IVAR')
-        return self._ivar
-
-    @property
-    def mask(self):
-        """Gets the ``MASK`` data extension."""
-        if self._mask is None:
-            self._mask = self._getExtensionData('MASK')
-        return self._mask
+        return ext_data
 
     @property
     def qualitybit(self):
@@ -382,7 +474,7 @@ class Cube(MarvinToolsClass):
             properties (bool):
                 If ``True``, the spaxel will be initiated with the DAP
                 properties from the default Maps matching this cube.
-            modelcube (:class:`~marvin.tools.modelcube.ModelCube` or None or bool):
+            modelcube (`~marvin.tools.modelcube.ModelCube` or None or bool):
                 A :class:`~marvin.tools.modelcube.ModelCube` object
                 representing the DAP modelcube entity. If None, the |spaxel|
                 will be returned without model information. Default is False.
@@ -488,43 +580,45 @@ class Cube(MarvinToolsClass):
                 15
         """
 
-        assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
+        raise NotImplementedError('getAperture is not currently implemented.')
 
-        if return_type not in ['mask', 'spaxels']:
-            raise marvin.core.exceptions.MarvinNotImplemented(
-                'return_type={0} is not yet implemented'.format(return_type))
-
-        if not photutils:
-            raise MarvinError('getAperture currently requires photutils.')
-
-        if mode != 'pix':
-            raise marvin.core.exceptions.MarvinNotImplemented(
-                'mode={0} is not yet implemented'.format(mode))
-
-        if not np.isscalar(radius):
-            raise marvin.core.exceptions.MarvinNotImplemented(
-                'elliptical apertures are not yet implemented')
-
-        data_mask = np.zeros(self.shape)
-
-        if weight:
-            phot_mode = ''
-        else:
-            phot_mode = 'center'
-
-        coords = np.atleast_2d(coords) + 0.5
-
-        mask = photutils.aperture_funcs.get_circular_fractions(
-            data_mask, coords, radius, phot_mode, 0)
-
-        if return_type == 'mask':
-            return mask
-
-        if return_type == 'spaxels':
-            mask_idx = np.where(mask)
-            spaxels = self.getSpaxel(x=mask_idx[0], y=mask_idx[1],
-                                     xyorig='lower')
-
-            fractions = mask[mask_idx]
-
-            return (fractions, spaxels)
+    #     assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
+    #
+    #     if return_type not in ['mask', 'spaxels']:
+    #         raise marvin.core.exceptions.MarvinNotImplemented(
+    #             'return_type={0} is not yet implemented'.format(return_type))
+    #
+    #     if not photutils:
+    #         raise MarvinError('getAperture currently requires photutils.')
+    #
+    #     if mode != 'pix':
+    #         raise marvin.core.exceptions.MarvinNotImplemented(
+    #             'mode={0} is not yet implemented'.format(mode))
+    #
+    #     if not np.isscalar(radius):
+    #         raise marvin.core.exceptions.MarvinNotImplemented(
+    #             'elliptical apertures are not yet implemented')
+    #
+    #     data_mask = np.zeros(self.shape)
+    #
+    #     if weight:
+    #         phot_mode = ''
+    #     else:
+    #         phot_mode = 'center'
+    #
+    #     coords = np.atleast_2d(coords) + 0.5
+    #
+    #     mask = photutils.aperture_funcs.get_circular_fractions(
+    #         data_mask, coords, radius, phot_mode, 0)
+    #
+    #     if return_type == 'mask':
+    #         return mask
+    #
+    #     if return_type == 'spaxels':
+    #         mask_idx = np.where(mask)
+    #         spaxels = self.getSpaxel(x=mask_idx[0], y=mask_idx[1],
+    #                                  xyorig='lower')
+    #
+    #         fractions = mask[mask_idx]
+    #
+    #         return (fractions, spaxels)

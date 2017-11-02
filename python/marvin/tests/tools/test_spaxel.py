@@ -18,9 +18,9 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.core.exceptions import MarvinError
-from marvin.tools.analysis_props import DictOfProperties
+from marvin.tools.quantities import DictOfProperties
 from marvin.tools.spaxel import Spaxel
-from marvin.tools.spectrum import Spectrum
+from marvin.tools.quantities import Spectrum
 
 
 class TestSpaxelInit(object):
