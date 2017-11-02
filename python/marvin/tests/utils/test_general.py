@@ -25,9 +25,9 @@ from astropy.wcs import WCS
 
 import marvin
 from marvin.tools.maps import Maps
-from marvin.tools.map import Map
+from marvin.tools.quantities import Map
 from marvin.tools.cube import Cube
-from marvin.tools.spectrum import Spectrum
+from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,

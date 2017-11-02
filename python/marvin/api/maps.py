@@ -184,7 +184,6 @@ class MapsView(marvin.api.base.BaseView):
 
         header = maps.header.tostring()
         wcs_header = maps.wcs.to_header_string()
-        shape = maps.shape
         bintype = maps.bintype.name
         template = maps.template.name
 
@@ -196,7 +195,6 @@ class MapsView(marvin.api.base.BaseView):
                                 'plateifu': plateifu,
                                 'header': header,
                                 'wcs': wcs_header,
-                                'shape': shape,
                                 'bintype': bintype,
                                 'template': template}
 
@@ -355,5 +353,77 @@ class MapsView(marvin.api.base.BaseView):
         except Exception as ee:
             self.results['error'] = ('Failed to get spaxels for binid={0}: {1}'
                                      .format(binid, str(ee)))
+
+        return jsonify(self.results)
+
+    @flask_classy.route('/<name>/dapall', defaults={'bintype': None, 'template': None},
+                        methods=['GET', 'POST'], endpoint='dapall')
+    @flask_classy.route('/<name>/<bintype>/dapall', defaults={'template': None},
+                        methods=['GET', 'POST'], endpoint='dapall')
+    @flask_classy.route('/<name>/<bintype>/<template>/dapall',
+                        methods=['GET', 'POST'], endpoint='dapall')
+    @marvin.api.base.arg_validate.check_args()
+    def get_dapall_data(self, args, name, bintype, template):
+        """Returns the DAPall data for a given mangaid or plateifu.
+
+        .. :quickref: General; Returns the DAPall data for a given mangaid or plateifu.
+
+        :param name: The name of the observation as mangaid or plateifu
+        :param bintype: The bintype associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json dict dapall_data: dict of the DAPall parameters
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/dapall HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"dapall_data": {"plate": 7443,
+                                       "ifudesign": 12701,
+                                       ... }
+                      }
+           }
+
+        """
+
+        # Pop any args we don't want going into Maps
+        args = self._pop_args(args, arglist='name')
+
+        maps, results = _getMaps(name, **args)
+        self.update_results(results)
+
+        if maps is None:
+            return jsonify(self.results)
+
+        try:
+            dapall = maps.dapall
+            self.results['data'] = {'dapall_data': dapall}
+        except marvin.core.exceptions.MarvinError as ee:
+            self.results['error'] = str(ee)
 
         return jsonify(self.results)

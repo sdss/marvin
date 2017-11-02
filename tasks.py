@@ -33,6 +33,14 @@ def build_docs(ctx):
 
 
 @task
+def show_docs(ctx):
+    """Shows the Sphinx docs"""
+    print('Showing the docs')
+    os.chdir('docs/sphinx/_build/html')
+    ctx.run('open ./index.html')
+
+
+@task
 def clean(ctx):
     ''' Cleans up the crap '''
     print('Cleaning')
@@ -48,8 +56,8 @@ def deploy(ctx):
     print('Deploying to Pypi!')
     ctx.run("python setup.py sdist bdist_wheel --universal")
     # pre-registration is deprecated for new pypi releases [~July 2017]
-    #ctx.run("twine register dist/sdss-marvin-*.tar.gz")
-    #ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
+    # ctx.run("twine register dist/sdss-marvin-*.tar.gz")
+    # ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
     ctx.run("twine upload dist/*")
 
 
@@ -83,7 +91,8 @@ def update_module(ctx, path=None, wrap=None, version=None):
     ctx.run('cp {0} {1}'.format(oldfile, newfile))
     f = open('{0}'.format(newfile), 'r+')
     data = f.readlines()
-    index, line = [(i, line) for i, line in enumerate(data) if 'set {0}'.format(searchline) in line][0]
+    index, line = [(i, line) for i, line in enumerate(data)
+                   if 'set {0}'.format(searchline) in line][0]
     data[index] = 'set {0} {1}\n'.format(searchline, version)
     f.seek(0, 0)
     f.writelines(data)
@@ -105,7 +114,8 @@ def update_git(ctx, version=None):
     os.chdir(verpath)
     ctx.run('git checkout {0}'.format(version))
     ctx.run('git submodule update --init --recursive')
-    ctx.run('''python -c "from get_version import generate_version_py; generate_version_py('sdss-marvin', {0}, False)"'''.format(version))
+    ctx.run('python -c "from get_version import generate_version_py; '
+            'generate_version_py(\'sdss-marvin\', {0}, False)'.format(version))
 
 
 @task
@@ -148,13 +158,15 @@ def setup_utah(ctx, version=None):
     # restart the new marvin
     # switch_module(ctx, version=version)
     print('Marvin version {0} is set up!\n'.format(version))
-    print('Please run ...\n stopmarvin \n module switch wrapmarvin wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
+    print('Please run ...\n stopmarvin \n module switch wrapmarvin '
+          'wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
 
 
 ns = Collection(clean, deploy, setup_utah)
 docs = Collection('docs')
 docs.add_task(build_docs, 'build')
 docs.add_task(clean_docs, 'clean')
+docs.add_task(show_docs, 'show')
 ns.add_collection(docs)
 updates = Collection('update')
 updates.add_task(update_git, 'git')
@@ -162,4 +174,3 @@ updates.add_task(update_current, 'current')
 updates.add_task(update_module, 'module')
 updates.add_task(update_default, 'default')
 ns.add_collection(updates)
-

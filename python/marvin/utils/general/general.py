@@ -36,7 +36,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
-           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir')
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
+           'get_dapall_file')
 
 drpTable = {}
 
@@ -839,7 +840,6 @@ def _db_row_to_dict(row, remove_columns=False):
 
     from sqlalchemy.inspection import inspect as sa_inspect
     from sqlalchemy.ext.hybrid import hybrid_property
-    from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     row_dict = collections.OrderedDict()
 
@@ -1245,3 +1245,13 @@ def _sort_dir(instance, class_):
     return_list += vars(instance).keys()
     return_list += ['value']
     return return_list
+
+
+def get_dapall_file(drpver, dapver):
+    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
+
+    assert Path is not None, 'sdss_access.path.Path is not available.'
+
+    dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
+
+    return dapall_path

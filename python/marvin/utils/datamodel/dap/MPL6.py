@@ -284,10 +284,6 @@ MPL6_models = [
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Binned flux'},
           description='Flux of the binned spectra'),
-    Model('binned_redcorr', 'REDCORR', 'WAVE', extension_ivar=None,
-          extension_mask=None, unit=u.dimensionless_unscaled,
-          scale=1, formats={'string': 'Binned reddening correction'},
-          description='Reddening correction applied during the fitting procedures'),
     Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Best fitting model'},
@@ -311,10 +307,11 @@ MPL6_models = [
 
 
 # MPL-6 DapDataModel goes here
-MPL6 = DAPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
+MPL6 = DAPDataModel('2.1', aliases=['MPL-6', 'MPL6'],
                     bintypes=[ALL, NRE, VOR10, SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
                     models=MPL6_models,
                     default_bintype='SPX',
-                    default_template='GAU-MILESHC')
+                    default_template='GAU-MILESHC',
+                    property_table='SpaxelProp6')

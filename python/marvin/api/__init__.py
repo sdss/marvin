@@ -1,4 +1,5 @@
 
+import contextlib
 import re
 import functools
 from copy import deepcopy
@@ -33,8 +34,16 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
             'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
             'cube_extension': fields.String(required=True, location='view_args',
-                                            validate=validate.OneOf(['flux', 'ivar', 'mask'])),
-            'colname': fields.String(required=True, location='view_args', allow_none=True)
+                                            validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                     'specres', 'specred',
+                                                                     'prespecres',
+                                                                     'prespecresd'])),
+            'modelcube_extension': fields.String(required=True, location='view_args',
+                                                 validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                          'model', 'emline',
+                                                                          'emline_base',
+                                                                          'emline_mask'])),
+            'colname': fields.String(required=True, location='view_args', allow_none=True),
             }
 
 # List of all form parameters that are needed in all the API routes
@@ -267,7 +276,7 @@ class ArgValidator(object):
         bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = [gr.name for gr in dm[self.dapver].extensions]
+        properties = [gr.name for gr in dm[self.dapver].properties.extensions]
         channels = list(set([i.channel.name for i in dm[self.dapver].properties
                              if i.channel is not None])) + ['None']
 
@@ -421,3 +430,12 @@ class ArgValidator(object):
             from werkzeug.datastructures import ImmutableMultiDict
             newargs = ImmutableMultiDict(newargs.copy())
         return newargs
+
+
+# Creates a context manager for executing code with DB off but then turning it on again after that.
+
+@contextlib.contextmanager
+def db_off():
+    config.forceDbOff()
+    yield
+    config.forceDbOn()

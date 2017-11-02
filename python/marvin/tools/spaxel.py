@@ -30,8 +30,8 @@ import marvin.tools.modelcube
 
 from marvin.api import api
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
-from marvin.tools.analysis_props import AnalysisProperty, DictOfProperties
-from marvin.tools.spectrum import Spectrum
+from marvin.tools.quantities.analysis_props import AnalysisProperty, DictOfProperties
+from marvin.tools.quantities.spectrum import Spectrum
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import spaxel as spaxel_unit
 
@@ -106,7 +106,7 @@ class Spaxel(object):
             of Maps and ModelCube.
 
     Attributes:
-        spectrum (:class:`~marvin.tools.spectrum.Spectrum` object):
+        spectrum (:class:`~marvin.tools.quantities.Spectrum` object):
             A `Spectrum` object with the DRP spectrum and associated ivar and
             mask for this spaxel.
         specres (Numpy array):
@@ -115,13 +115,13 @@ class Spaxel(object):
         specresd (Numpy array):
             Standard deviation of spectral resolution as a function of
             wavelength for the fibers in this IFU.
-        properties (:class:`~marvin.tools.analysis_props.DictOfProperties`):
+        properties (:class:`~marvin.tools.quantities.DictOfProperties`):
             A dotable, case-insensitive dictionary of
-            :class:`~marvin.tools.analysis_props.AnalysisProperty` objects
+            :class:`~marvin.tools.quantities.AnalysisProperty` objects
             from the DAP maps extensions. The keys are a combination of
             category and channel, when applicable, e.g.,
             ``emline_sflux_siii_9533``.
-        model_flux (:class:`~marvin.tools.spectrum.Spectrum` object):
+        model_flux (:class:`~marvin.tools.quantities.Spectrum` object):
             A `Spectrum` object with the flux of the binned spectrum. Includes
             ``ivar`` and ``mask``.
         wavelength (Numpy array):
@@ -129,12 +129,12 @@ class Spaxel(object):
         redcorr (Numpy array):
             Reddening correction applied during the fitting procedures;
             ``dereddened_flux = model_flux.flux * redcorr``.
-        model (:class:`~marvin.tools.spectrum.Spectrum` object):
+        model (:class:`~marvin.tools.quantities.Spectrum` object):
             The best fitting model spectra (sum of the fitted continuum and
             emission-line models). Includes ``mask``.
-        emline (:class:`~marvin.tools.spectrum.Spectrum` object):
+        emline (:class:`~marvin.tools.quantities.Spectrum` object):
             The model spectrum with only the emission lines. Includes ``mask``.
-        emline_base (:class:`~marvin.tools.spectrum.Spectrum` object):
+        emline_base (:class:`~marvin.tools.quantities.Spectrum` object):
             The bitmask that only applies to the emission-line modeling.
             Includes ``mask``.
 

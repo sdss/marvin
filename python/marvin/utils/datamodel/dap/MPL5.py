@@ -195,4 +195,5 @@ MPL5_maps = [
 
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps,
-                    default_bintype='SPX', default_template='GAU-MILESHC')
+                    default_bintype='SPX', default_template='GAU-MILESHC',
+                    property_table='SpaxelProp5')

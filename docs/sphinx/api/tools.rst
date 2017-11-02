@@ -52,7 +52,7 @@ Spaxel
 Spectrum
 --------
 
-.. automodule:: marvin.tools.spectrum
+.. automodule:: marvin.tools.quantities
    :members:
    :undoc-members:
    :show-inheritance:
@@ -62,7 +62,7 @@ Spectrum
 AnalysisProperty
 ----------------
 
-.. automodule:: marvin.tools.analysis_props
+.. automodule:: marvin.tools.quantities
    :members:
    :undoc-members:
    :show-inheritance:
@@ -90,10 +90,10 @@ Maps
 
 .. _marvin-tools-mapsprop:
 
-MapsProperty
+Property
 ------------
 
-.. autoclass:: marvin.utils.dap.datamodel.MapsProperty
+.. autoclass:: marvin.utils.datamodel.dap.Property
    :members:
    :undoc-members:
    :show-inheritance:
@@ -103,7 +103,7 @@ MapsProperty
 Map
 ---
 
-.. automodule:: marvin.tools.map
+.. automodule:: marvin.tools.quantities
    :members:
    :undoc-members:
    :show-inheritance:
