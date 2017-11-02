@@ -1716,6 +1716,7 @@ CREATE INDEX CONCURRENTLY fibers_pk_idx ON mangadatadb.rssfiber using BTREE(fibe
 CREATE INDEX CONCURRENTLY spaxel_cube_pk_idx ON mangadatadb.spaxel using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY spaxel_x_idx ON mangadatadb.spaxel using BTREE(x);
 CREATE INDEX CONCURRENTLY spaxel_y_idx ON mangadatadb.spaxel using BTREE(y);
+CREATE INDEX CONCURRENTLY spaxel_x_y_idx ON mangadatadb.spaxel using BTREE(x, y);
 CREATE INDEX CONCURRENTLY wcs_cube_pk_idx ON mangadatadb.wcs using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY obsinfo_cube_pk_idx ON mangadatadb.obsinfo using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY fitshead_cube_pk_idx ON mangadatadb.fits_header_value using BTREE(cube_pk);

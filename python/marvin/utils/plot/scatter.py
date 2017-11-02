@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-29 15:49:24
+# @Last Modified time: 2017-11-02 14:36:57
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -17,9 +17,12 @@ from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general import invalidArgs, isCallableWithArgs
 from matplotlib.gridspec import GridSpec
 from collections import defaultdict, OrderedDict
+from astropy.visualization import hist as ahist
 import matplotlib.pyplot as plt
 import numpy as np
 import six
+import seaborn as sns
+import pandas as pd
 
 
 def compute_stats(data):
@@ -183,9 +186,8 @@ def plot(x, y, **kwargs):
             A number or tuple specifying the number of bins to use in the histogram.  Default is 50.  An integer
             number is adopted for both x and y bins.  A tuple is used to customize per axis.
         kwargs (dict):
-            Any other keyword arguments to be passed to `matplotlib.pyplot.scatter
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_ or
-            `matplotlib.pyplot.hist<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`.
+            Any other keyword arguments to be passed to `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
+            or `matplotlib.pyplot.hist<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>_`.
 
     Returns:
         A tuple of the matplotlib figure, axes, and histogram data (if returned)
@@ -199,9 +201,10 @@ def plot(x, y, **kwargs):
         >>> plot(x, y)
     '''
 
-    assert np.all([x, y]), 'Must provide both an x and y column'
-    assert isinstance(x, (list, np.ndarray)), 'x data must be a list or Numpy array '
-    assert isinstance(y, (list, np.ndarray)), 'y data must be a list or Numpy array '
+    assert x is not None, 'Must provide an x column'
+    assert y is not None, 'Must provide an y column'
+    assert isinstance(x, (list, np.ndarray, pd.core.series.Series)), 'x data must be a list, Pandas Series, or Numpy array '
+    assert isinstance(y, (list, np.ndarray, pd.core.series.Series)), 'y data must be a list, Pandas Series or Numpy array '
 
     # general keyword arguments
     use_datamodel = kwargs.pop('usemodel', None)
@@ -220,7 +223,7 @@ def plot(x, y, **kwargs):
 
     # histogram keywords
     with_hist = kwargs.pop('with_hist', True)
-    bins = kwargs.pop('bins', [50, 50])
+    bins = kwargs.pop('bins', ['knuth', 'knuth'])
     hist_axes_visible = kwargs.pop('hist_axes_visible', False)
 
     # convert to numpy masked arrays
@@ -228,7 +231,8 @@ def plot(x, y, **kwargs):
     y = _make_masked(y, mask=ymask)
 
     # create figure and axes objects
-    fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, hist_axes_visible=hist_axes_visible)
+    with sns.axes_style('darkgrid'):
+        fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, hist_axes_visible=hist_axes_visible)
 
     # set limits
     if xlim is not None:
@@ -245,9 +249,18 @@ def plot(x, y, **kwargs):
     ax_scat.set_xlabel(xlabel)
     ax_scat.set_ylabel(ylabel)
 
-    # create the scatter plot
-    scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
-    ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
+    # create the hexbin or scatter plot
+    kind = kwargs.get('kind', None)
+    if kind == 'hex':
+        scat_kwargs = _prep_func_kwargs(plt.hexbin, kwargs)
+        hb = ax_scat.hexbin(x, y, gridsize=50, mincnt=1, cmap='viridis', **scat_kwargs)
+        fig.colorbar(hb, ax=ax_scat)
+        ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
+    else:
+        # create the scatter plot
+        scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
+        ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
+        ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
 
     # set axes object
     axes = [ax_scat]
@@ -281,16 +294,9 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
 
     Plots a histogram of an input column of data.  Input can be a list or a Numpy
     array.  Converts the input into a Numpy MaskedArray, applying the optional mask.  If no
-    mask is supplied, it masks any NaN values.  Accepts all the same keyword arguments as
-    matplotlib hist method.
-
-    Also computes and returns a dictionary of histogram data.  The dictionary includes the following
-    keys:
-        bins - The number of bins used
-        counts - A list of the count of objects within each bin
-        binedges - A list of the left binedge used in defining each bin
-        binids - An array of the same shape as input data, containing the binid of each element
-        indices - A dictionary of a list of array indices within each bin
+    mask is supplied, it masks any NaN values.  This uses
+    `Astropy's enhanced hist <http://docs.astropy.org/en/stable/api/astropy.visualization.hist.html#astropy.visualization.hist>`_
+    function under the hood. Accepts all the same keyword arguments as matplotlib hist method.
 
     Parameters:
         data (list|ndarray):
@@ -302,7 +308,7 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         ax (plt.ax):
             An optional matplotlib axis object
         bins (int):
-            The number of bins to use.  Default is 50 bins.
+            The number of bins to use.  Default is a `knuth <http://docs.astropy.org/en/stable/visualization/histogram.html>`_ binning scheme.
         xlabel (str|Marvin Column):
             The x axis label or a Marvin DataModel Property or QueryParameter to use for display
         ylabel (str):
@@ -314,11 +320,20 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         return_fig (bool):
             If True, return the figure and axis object.  Default is True.
         kwargs (dict):
-            Any other keyword arguments to be passed to `matplotlib.pyplot.hist
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
+            Any other keyword arguments to be passed to `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
 
     Returns:
-        Tuple of histogram data, the matplotlib figure and axis objects
+        tuple: histogram data, matplotlib figure, and axis objects.
+
+        The histogram data returned is a dictionary containing::
+
+            {
+                'bins': The number of bins used,
+                'counts': A list of the count of objects within each bin,
+                'binedges': A list of the left binedge used in defining each bin,
+                'binids': An array of the same shape as input data, containing the binid of each element,
+                'indices': A dictionary of a list of array indices within each bin
+            }
 
     Example:
         >>> # histogram some random data
@@ -328,7 +343,7 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         >>> hist_data, fig, ax = hist(x)
     '''
 
-    assert isinstance(data, (list, np.ndarray)), 'data must be a list or Numpy array '
+    assert isinstance(data, (list, np.ndarray, pd.core.series.Series)), 'data must be a list, Pandas Series, or Numpy array '
     data = _make_masked(data, mask=mask)
 
     # general keywords
@@ -339,17 +354,18 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
     return_fig = kwargs.pop('return_fig', True)
 
     # histogram keywords
-    bins = bins if bins else 50
+    bins = bins if bins else 'knuth'
     color = kwargs.pop('color', 'lightblue')
     edgecolor = kwargs.pop('edgecolor', 'black')
     hrange = kwargs.pop('range', None)
     orientation = kwargs.pop('orientation', 'vertical')
 
     # create a figure and axis if they don't exist
-    if fig is None and ax is None:
-        fig, ax = plt.subplots()
-    elif fig is None:
-        fig = plt.figure()
+    with sns.axes_style('darkgrid'):
+        if fig is None and ax is None:
+            fig, ax = plt.subplots()
+        elif fig is None:
+            fig = plt.figure()
 
     # set labels
     xlabel = _get_axis_label(xlabel, axis='x')
@@ -371,10 +387,10 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         ax.set_ylabel(title, rotation=270, verticalalignment='bottom')
 
     # create histogram
-    hist_kwargs = _prep_func_kwargs(plt.hist, kwargs)
-    counts, binedges, patches = ax.hist(data[~data.mask], bins=bins, color=color,
-                                        orientation=orientation, edgecolor=edgecolor,
-                                        range=hrange, **hist_kwargs)
+    hist_kwargs = _prep_func_kwargs(ahist, kwargs)
+    counts, binedges, patches = ahist(data[~data.mask], bins=bins, color=color,
+                                      orientation=orientation, edgecolor=edgecolor,
+                                      range=hrange, ax=ax, **hist_kwargs)
 
     # compute a dictionary of the binids containing a list of the array indices in each bin
     binids = np.digitize(data, binedges)
@@ -390,4 +406,88 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
     return output
 
 
+def hex(x, y, fig=None, ax=None, **kwargs):
+    ''' Create a Matplotlib hexbin plot '''
+
+    assert x is not None, 'Must provide an x column'
+    assert y is not None, 'Must provide an y column'
+    assert isinstance(x, (list, np.ndarray, pd.core.series.Series)), 'x data must be a list, Pandas Series, or Numpy array '
+    assert isinstance(y, (list, np.ndarray, pd.core.series.Series)), 'y data must be a list, Pandas Series or Numpy array '
+
+    # general keyword arguments
+    use_datamodel = kwargs.pop('usemodel', None)
+    xmask = kwargs.pop('xmask', None)
+    ymask = kwargs.pop('ymask', None)
+    xlabel = kwargs.pop('xlabel', None)
+    ylabel = kwargs.pop('ylabel', None)
+
+    # convert to numpy masked arrays
+    x = _make_masked(x, mask=xmask)
+    y = _make_masked(y, mask=ymask)
+
+    xlabel = _get_axis_label(xlabel, axis='x')
+    ylabel = _get_axis_label(ylabel, axis='y')
+
+    output = sns.jointplot(x, y, **kwargs)
+    output.set_axis_labels(xlabel, ylabel)
+    return output
+
+
+def joint(x, y, **kwargs):
+    ''' Create a Seaborn joint + marginal distribution plot
+
+    Creates a Seaborn joint distribution plot using two input arrays of data.  Accepts all the same keyword
+    arguments as seaborn jointplot.
+
+    Parameters:
+        x (list|ndarray):
+            The x array of data
+        y (list|ndarray):
+            The y array of data
+        xmask (ndarray):
+            A mask to apply to the x-array of data
+        ymask (ndarray):
+            A mask to apply to the y-array of data
+        xlabel (str|Marvin column):
+            The x axis label or a Marvin DataModel Property or QueryParameter to use for display
+        ylabel (str|Marvin column):
+            The y axis label or a Marvin DataModel Property or QueryParameter to use for display
+        kwargs (dict):
+            Any other keyword arguments to be passed to `seaborn.jointplot <http://seaborn.pydata.org/generated/seaborn.jointplot.html#seaborn.jointplot>`_.
+
+    Returns:
+        A seaborn JointGrid object
+
+    Example:
+        >>> # create a scatter plot
+        >>> import numpy as np
+        >>> from marvin.utils.scatter import joint
+        >>> x = np.random.random(100)
+        >>> y = np.random.random(100)
+        >>> joint(x, y)
+
+    '''
+
+    assert x is not None, 'Must provide an x column'
+    assert y is not None, 'Must provide an y column'
+    assert isinstance(x, (list, np.ndarray, pd.core.series.Series)), 'x data must be a list, Pandas Series, or Numpy array '
+    assert isinstance(y, (list, np.ndarray, pd.core.series.Series)), 'y data must be a list, Pandas Series or Numpy array '
+
+    # general keyword arguments
+    use_datamodel = kwargs.pop('usemodel', None)
+    xmask = kwargs.pop('xmask', None)
+    ymask = kwargs.pop('ymask', None)
+    xlabel = kwargs.pop('xlabel', None)
+    ylabel = kwargs.pop('ylabel', None)
+
+    # convert to numpy masked arrays
+    x = _make_masked(x, mask=xmask)
+    y = _make_masked(y, mask=ymask)
+
+    xlabel = _get_axis_label(xlabel, axis='x')
+    ylabel = _get_axis_label(ylabel, axis='y')
+
+    output = sns.jointplot(x, y, **kwargs)
+    output.set_axis_labels(xlabel, ylabel)
+    return output
 
