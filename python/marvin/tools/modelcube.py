@@ -1,14 +1,16 @@
-# !usr/bin/env python2
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# encoding: utf-8
 #
-# Licensed under a 3-clause BSD license.
-#
-# @Author: Brian Cherinka
-# @Date:   2016-09-15 14:50:00
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-13 15:54:38
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: modelcube.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
-from __future__ import print_function, division, absolute_import
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import distutils
 import warnings
@@ -23,92 +25,80 @@ import marvin.tools.spaxel
 import marvin.utils.general.general
 import marvin.tools.maps
 
-from marvin.core.core import MarvinToolsClass
+from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
+from marvin.tools.quantities import DataCube
 from marvin.utils.datamodel.dap import datamodel
 
 
-class ModelCube(MarvinToolsClass):
+class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     """A class to interface with MaNGA DAP model cubes.
 
     This class represents a DAP model cube, initialised either from a file,
-    a database, or remotely via the Marvin API.
+    a database, or remotely via the Marvin API. In addition to
+    the parameters and variables defined for `~.MarvinToolsClass`, the
+    following parameters and attributes are specific to `.Maps`.
 
     Parameters:
-        data (``HDUList``, SQLAlchemy object, or None):
-            An astropy ``HDUList`` or a SQLAlchemy object of a model cube, to
-            be used for initialisation. If ``None``, the normal mode will
-            be used (see :ref:`mode-decision-tree`).
-        cube (:class:`~marvin.tools.cube.Cube` object)
-            The DRP cube object associated with this model cube.
-        maps (:class:`~marvin.tools.maps.Maps` object)
-            The DAP maps object associated with this model cube. Must match
-            the ``bintype`` and ``template``.
-        filename (str):
-            The path of the file containing the model cube to load.
-        mangaid (str):
-            The mangaid of the model cube to load.
-        plateifu (str):
-            The plate-ifu of the model cube to load (either ``mangaid`` or
-            ``plateifu`` can be used, but not both).
-        mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See :ref:`mode-decision-tree`.
         bintype (str or None):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
-            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
-            (defaults to ``'ALL'``).
+            For MPL-5, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
+            (defaults to ``'SPX'``). MPL-6 also accepts the ``'HYB10'`` binning
+            schema.
         template (str or None):
-            The template use for kinematics. For MPL-4, one of
+            The stellar template used. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
             defaults to ``'MIUSCAT-THIN'``). For MPL-5 and successive, the only
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
-        nsa_source ({'auto', 'drpall', 'nsa'}):
-            Defines how the NSA data for this object should loaded when
-            ``ModelCube.nsa`` is first called. If ``drpall``, the drpall file
-            will be used (note that this will only contain a subset of all the
-            NSA information); if ``nsa``, the full set of data from the DB will
-            be retrieved. If the drpall file or a database are not available, a
-            remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the ``ModelCube`` object has been
-            instantiated. If the cube has ``ModelCube.data_origin='file'``,
-            the drpall file will be used (as it is more likely that the user
-            has that file in their system). Otherwise, ``nsa_source='nsa'``
-            will be assumed. This behaviour can be modified during runtime by
-            modifying the ``ModelCube.nsa_mode`` with one of the valid values.
-        release (str):
-            The MPL/DR version of the data to use.
 
-    Return:
-        modelcube:
-            An object representing the model cube.
+    Attributes:
+        header (`astropy.io.fits.Header`):
+            The header of the datacube.
+        wcs (`astropy.wcs.WCS`):
+            The WCS solution for this plate
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
+                 mode=marvin.config.mode, data=None, release=marvin.config.release,
+                 drpall=None, download=marvin.config.download, nsa_source='auto',
+                 bintype=None, template=None, template_kin=None):
 
-        valid_kwargs = [
-            'data', 'cube', 'maps', 'filename', 'mangaid', 'plateifu', 'mode',
-            'release', 'bintype', 'template_kin', 'template', 'nsa_source']
+        if template_kin is not None:
+            warnings.warn('template_kin is deprecated and will be removed in a future version.',
+                          DeprecationWarning)
+            template = template_kin if template is None else template
 
-        assert len(args) == 0, 'Maps does not accept arguments, only keywords.'
-        for kw in kwargs:
-            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+        # _set_datamodel will replace these strings with datamodel objects.
+        self.bintype = bintype
+        self.template = template
+        self.datamodel = None
 
-        super(ModelCube, self).__init__(*args, **kwargs)
+        MarvinToolsClass.__init__(self, input=input, filename=filename,
+                                  mangaid=mangaid, plateifu=plateifu,
+                                  mode=mode, data=data, release=release,
+                                  drpall=drpall, download=download)
+
+        NSAMixIn.__init__(self, nsa_source=nsa_source)
 
         # Checks that DAP is at least MPL-5
         MPL5 = distutils.version.StrictVersion('2.0.2')
         if self.filename is None and distutils.version.StrictVersion(self._dapver) < MPL5:
             raise MarvinError('ModelCube requires at least dapver=\'2.0.2\'')
 
-        self._cube = kwargs.pop('cube', None)
-        self._maps = kwargs.pop('maps', None)
-
         self.header = None
         self.wcs = None
-        self.shape = None
-        self.wavelength = None
+        self._wavelength = None
+        self._redcorr = None
+
+        # Model extensions
+        self._extension_data = {}
+        self._binned_flux = None
+        self._redcorr = None
+        self._full_fit = None
+        self._emline_fit = None
+        self._stellarcont_fit = None
 
         if self.data_origin == 'file':
             self._load_modelcube_from_file()
@@ -117,7 +107,8 @@ class ModelCube(MarvinToolsClass):
         elif self.data_origin == 'api':
             self._load_modelcube_from_api()
         else:
-            raise MarvinError('data_origin={0} is not valid'.format(self.data_origin))
+            raise marvin.core.exceptions.MarvinError(
+                'data_origin={0} is not valid'.format(self.data_origin))
 
         # Confirm that drpver and dapver match the ones from the header.
         marvin.tools.maps.Maps._check_versions(self)
@@ -125,31 +116,24 @@ class ModelCube(MarvinToolsClass):
     def __repr__(self):
         """Representation for ModelCube."""
 
-        return ('<Marvin ModelCube (plateifu={0}, mode={1}, data_origin={2}, bintype={3}, '
-                'template={4})>'
-                .format(repr(self.plateifu), repr(self.mode),
-                        repr(self.data_origin), repr(self.bintype), repr(self.template)))
+        return ('<Marvin ModelCube (plateifu={0!r}, mode={1!r}, data_origin={2!r}, '
+                'bintype={3!r}, template={4!r})>'.format(self.plateifu,
+                                                         self.mode,
+                                                         self.data_origin,
+                                                         str(self.bintype),
+                                                         str(self.template)))
 
     def __getitem__(self, xy):
         """Returns the spaxel for ``(x, y)``"""
 
         return self.getSpaxel(x=xy[1], y=xy[0], xyorig='lower')
 
-    def _set_datamodel(self, **kwargs):
+    def _set_datamodel(self):
         """Sets the datamodel, template, and bintype."""
 
-        if 'template_kin' in kwargs:
-            warnings.warn('template_kin has been deprecated and will be removed '
-                          'in a future version. Use template.',
-                          marvin.core.exceptions.MarvinDeprecationWarning)
-            if 'template' not in kwargs:
-                kwargs['template'] = kwargs['template_kin']
-
-        self._datamodel = datamodel[self.release].models
-
-        # We set the bintype  and template_kin again, now using the DAP version
-        self.bintype = self._datamodel.get_bintype(kwargs.pop('bintype', None))
-        self.template = self._datamodel.get_template(kwargs.pop('template', None))
+        self.datamodel = datamodel[self.release].models
+        self.bintype = self.datamodel.parent.get_bintype(self.bintype)
+        self.template = self.datamodel.parent.get_template(self.template)
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -193,10 +177,9 @@ class ModelCube(MarvinToolsClass):
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[0].header
-        self.shape = self.data['FLUX'].data.shape[1:]
         self.wcs = WCS(self.data['FLUX'].header)
-        self.wavelength = self.data['WAVE'].data
-        self.redcorr = self.data['REDCORR'].data
+        self._wavelength = self.data['WAVE'].data
+        self._redcorr = self.data['REDCORR'].data
 
         self.plateifu = self.header['PLATEIFU']
         self.mangaid = self.header['MANGAID']
@@ -216,9 +199,10 @@ class ModelCube(MarvinToolsClass):
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
 
-        self._datamodel = datamodel[self._dapver]
-        self.bintype = self._datamodel.get_bintype(self.header['BINKEY'].strip().upper())
-        self.template = self._datamodel.get_template(self.header['SCKEY'].strip().upper())
+        # Updates datamodel, bintype, and template with the versions from the header.
+        self.datamodel = datamodel[self._dapver].models
+        self.bintype = self.datamodel.parent.get_bintype(self.header['BINKEY'].strip().upper())
+        self.template = self.datamodel.parent.get_template(self.header['SCKEY'].strip().upper())
 
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
@@ -270,10 +254,9 @@ class ModelCube(MarvinToolsClass):
                 self.data = db_modelcube[0]
 
             self.header = self.data.file.primary_header
-            self.shape = self.data.file.cube.shape.shape
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
-            self.wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
-            self.redcorr = np.array(self.data.redcorr[0].value, dtype=np.float)
+            self._wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
+            self._redcorr = np.array(self.data.redcorr[0].value, dtype=np.float)
 
             self.plateifu = str(self.header['PLATEIFU'].strip())
             self.mangaid = str(self.header['MANGAID'].strip())
@@ -294,13 +277,9 @@ class ModelCube(MarvinToolsClass):
         data = response.getData()
 
         self.header = fits.Header.fromstring(data['header'])
-        self.shape = tuple(data['shape'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
-        self.wavelength = np.array(data['wavelength'])
-        self.redcorr = np.array(data['redcorr'])
-
-        self.bintype = self._datamodel.get_bintype(data['bintype'])
-        self.template = self._datamodel.get_template(data['template'])
+        self._wavelength = np.array(data['wavelength'])
+        self._redcorr = np.array(data['redcorr'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
@@ -359,93 +338,133 @@ class ModelCube(MarvinToolsClass):
 
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
 
-    def _return_extension(self, extension):
+    def _get_extension_data(self, name, ext=None):
+        """Returns the data from an extension."""
+
+        model = self.datamodel[name]
+        ext_name = model.fits_extension(ext)
+
+        if ext_name in self._extension_data:
+            return self._extension_data[ext_name]
 
         if self.data_origin == 'file':
-            return self.data[extension.upper()].data
+            ext_data = self.data[model.fits_extension(ext)].data
+
         elif self.data_origin == 'db':
-            return self.data.get3DCube(extension.lower())
+            # If the table is "spaxel", this must be a 3D cube. If it is "cube",
+            # uses self.data, which is basically the DataModelClass.Cube instance.
+            ext_data = self.data.get3DCube(model.db_column(ext))
+
         elif self.data_origin == 'api':
-            raise MarvinError('cannot return a full cube in remote mode. '
-                              'Please use getSpaxel.')
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getModelCubeExtension']['url']
+
+            try:
+                response = self._toolInteraction(
+                    url.format(name=self.plateifu,
+                               modelcube_extension=model.fits_extension(ext).lower(),
+                               bintype=self.bintype.name, template=self.template.name),
+                    params=params)
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote cube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+            cube_ext_data = data['extension_data']
+            ext_data = np.array(cube_ext_data) if cube_ext_data is not None else None
+
+        self._extension_data[ext_name] = ext_data
+
+        return ext_data
 
     @property
-    def flux(self):
-        """Returns the flux extension."""
+    def binned_flux(self):
+        """Returns the binned flux datacube."""
 
-        return self._return_extension('flux')
+        model = self.datamodel['binned_flux']
 
-    @property
-    def ivar(self):
-        """Returns the ivar extension."""
+        binned_flux_array = self._get_extension_data('flux')
+        binned_flux_ivar = self._get_extension_data('flux', 'ivar')
+        binned_flux_mask = self._get_extension_data('flux', 'mask')
 
-        return self._return_extension('ivar')
-
-    @property
-    def mask(self):
-        """Returns the mask extension."""
-
-        return self._return_extension('mask')
-
-    @property
-    def model(self):
-        """Returns the model extension."""
-
-        return self._return_extension('model')
+        return DataCube(binned_flux_array,
+                        np.array(self._wavelength),
+                        ivar=binned_flux_ivar,
+                        mask=binned_flux_mask,
+                        redcorr=self._redcorr,
+                        unit=model.unit)
 
     @property
-    def emline(self):
-        """Returns the emline extension."""
+    def full_fit(self):
+        """Returns the full fit datacube."""
 
-        return self._return_extension('emline')
+        model = self.datamodel['full_fit']
 
-    @property
-    def emline_base(self):
-        """Returns the emline_base extension."""
+        model_array = self._get_extension_data('full_fit')
+        model_mask = self._get_extension_data('flux', 'mask')
 
-        return self._return_extension('emline_base')
-
-    @property
-    def emline_mask(self):
-        """Returns the emline_mask extension."""
-
-        return self._return_extension('emline_mask')
+        return DataCube(model_array,
+                        np.array(self._wavelength),
+                        ivar=None,
+                        mask=model_mask,
+                        redcorr=None,
+                        unit=model.unit)
 
     @property
-    def stellar_continuum(self):
-        """Returns the stellar continuum cube."""
+    def emline_fit(self):
+        """Returns the emission line fit."""
 
-        return (self._return_extension('model') -
-                self._return_extension('emline') -
-                self._return_extension('emline_base'))
+        model = self.datamodel['emline_fit']
 
-    @property
-    def cube(self):
-        """Returns the :class:`~marvin.tools.cube.Cube` associated with this ModelCube."""
+        emline_array = self._get_extension_data('emline_fit')
+        emline_mask = self._get_extension_data('emline_fit', 'mask')
 
-        if not self._cube:
-            if self.data_origin == 'db':
-                cube_data = self.data.file.cube
-            else:
-                cube_data = None
-
-            self._cube = marvin.tools.cube.Cube(data=cube_data,
-                                                plateifu=self.plateifu,
-                                                release=self._release)
-
-        return self._cube
+        return DataCube(emline_array,
+                        np.array(self._wavelength),
+                        ivar=None,
+                        mask=emline_mask,
+                        redcorr=None,
+                        unit=model.unit)
 
     @property
-    def maps(self):
-        """Returns the :class:`~marvin.tools.mas.Maps` associated with this ModelCube."""
+    def stellarcont_fit(self):
+        """Returns the stellar continuum fit."""
 
-        if not self._maps:
-            self._maps = marvin.tools.maps.Maps(plateifu=self.plateifu,
-                                                bintype=self.bintype,
-                                                template=self.template,
-                                                release=self._release)
+        array = (self._get_extension_data('full_fit') -
+                 self._get_extension_data('emline_fit') -
+                 self._get_extension_data('emline_base_fit'))
 
-        return self._maps
+        model = self.datamodel['full_fit']
+
+        stellarcont_mask = self._get_extension_data('emline_fit', 'mask')
+
+        return DataCube(array,
+                        np.array(self._wavelength),
+                        ivar=None,
+                        mask=stellarcont_mask,
+                        redcorr=None,
+                        unit=model.unit)
+
+    def getCube(self):
+        """Returns the associated `~marvin.tools.cube.Cube`."""
+
+        if self.data_origin == 'db':
+            cube_data = self.data.file.cube
+        else:
+            cube_data = None
+
+        return marvin.tools.cube.Cube(data=cube_data,
+                                      plateifu=self.plateifu,
+                                      release=self.release)
+
+    def getMaps(self):
+        """Returns the associated`~marvin.tools.maps.Maps`."""
+
+        return marvin.tools.maps.Maps(plateifu=self.plateifu,
+                                      bintype=self.bintype,
+                                      template=self.template,
+                                      release=self.release)
 
     def is_binned(self):
         """Returns True if the ModelCube is not unbinned."""
@@ -458,7 +477,7 @@ class ModelCube(MarvinToolsClass):
         if not self.is_binned:
             return self
         else:
-            return ModelCube(plateifu=self.plateifu, release=self._release,
-                             bintype=self._datamodel.get_unbinned(),
+            return ModelCube(plateifu=self.plateifu, release=self.release,
+                             bintype=self.datamodel.parent.get_unbinned(),
                              template=self.template,
                              mode=self.mode)
