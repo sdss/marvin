@@ -38,6 +38,11 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
                                                                      'specres', 'specred',
                                                                      'prespecres',
                                                                      'prespecresd'])),
+            'modelcube_extension': fields.String(required=True, location='view_args',
+                                                 validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                          'model', 'emline',
+                                                                          'emline_base',
+                                                                          'emline_mask'])),
             'colname': fields.String(required=True, location='view_args', allow_none=True),
             }
 
