@@ -441,7 +441,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         model = self.datamodel['full_fit']
 
-        stellarcont_mask = self._get_extension_data('emline_fit', 'mask')
+        stellarcont_mask = self._get_extension_data('flux', 'mask')
 
         return DataCube(array,
                         np.array(self._wavelength),
