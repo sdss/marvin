@@ -49,7 +49,7 @@ def _getCube(name, use_file=False, release=None, **kwargs):
         if use_file:
 
             if idtype == 'mangaid':
-                plate, ifu = mangaid2plateifu(mangaid, drpver=drpver)
+                plate, ifu = mangaid2plateifu(name, drpver=drpver)
             elif idtype == 'plateifu':
                 plate, ifu = name.split('-')
 
