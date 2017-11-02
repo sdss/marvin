@@ -55,12 +55,15 @@ class Cube(MarvinToolsClass, NSAMixIn):
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=marvin.config.mode, data=None, release=marvin.config.release,
-                 drpall=None, download=marvin.config.download, nsa_source='auto'):
+                 mode=None, data=None, release=None,
+                 drpall=None, download=None, nsa_source='auto'):
 
         self.header = None
         self.wcs = None
         self._wavelength = None
+        release = release if release else marvin.config.release
+        mode = mode if mode else marvin.config.mode
+        download = download if download else marvin.config.download
 
         # Stores data from extensions that have already been accessed, so that they
         # don't need to be retrieved again.

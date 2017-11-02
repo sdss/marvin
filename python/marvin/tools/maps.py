@@ -73,9 +73,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=marvin.config.mode, data=None, release=marvin.config.release,
-                 drpall=None, download=marvin.config.download, nsa_source='auto',
+                 mode=None, data=None, release=None,
+                 drpall=None, download=None, nsa_source='auto',
                  bintype=None, template=None, template_kin=None):
+
+        release = release if release else marvin.config.release
+        mode = mode if mode else marvin.config.mode
+        download = download if download else marvin.config.download
 
         if template_kin is not None:
             warnings.warn('template_kin is deprecated and will be removed in a future version.',
