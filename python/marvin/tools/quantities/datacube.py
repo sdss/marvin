@@ -32,15 +32,17 @@ class DataCube(units.Quantity, QuantityMixIn):
             A 3-D array with the value of the quantity measured. The first
             axis of the array must be the wavelength dimension.
         wavelength (`~numpy.ndarray`):
-            A 1-D array with the wavelenth of each spectral measurement. It
+            A 1-D array with the wavelength of each spectral measurement. It
             must have the same length as the spectral dimesion of ``value``.
         unit (`~astropy.units.Unit`):
             An `astropy unit <astropy.units.Unit>` with the units for
             ``value``.
         scale (float):
             The scale factor of the spectrum value.
-        wavelength_unit (astropy.unit.Unit, optional):
+        wavelength_unit (astropy.unit.Unit):
             The units of the wavelength solution. Defaults to Angstrom.
+        redcorr (`~numpy.ndarray`):
+            The reddenning correction, used by `.ModelCube.deredden`.
         ivar (`~numpy.ndarray`):
             An array with the same shape as ``value`` contianing the associated
             inverse variance.
@@ -54,7 +56,7 @@ class DataCube(units.Quantity, QuantityMixIn):
     """
 
     def __new__(cls, value, wavelength, scale=None, unit=units.dimensionless_unscaled,
-                wavelength_unit=units.Angstrom, ivar=None, mask=None, dtype=None,
+                wavelength_unit=units.Angstrom, redcorr=None, ivar=None, mask=None, dtype=None,
                 copy=True, **kwargs):
 
         # If the scale is defined, creates a new composite unit with the input scale.
@@ -87,6 +89,10 @@ class DataCube(units.Quantity, QuantityMixIn):
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
 
+        if redcorr is not None:
+            assert len(redcorr) == len(obj.wavelength), 'invalid length for redcorr.'
+            obj.redcorr = np.array(redcorr)
+
         return obj
 
     def __getitem__(self, sl):
@@ -107,6 +113,8 @@ class DataCube(units.Quantity, QuantityMixIn):
         new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
         new_obj.wavelength = self.wavelength.__getitem__(sl_wave) \
             if self.wavelength is not None else self.wavelength
+        new_obj.redcorr = self.redcorr.__getitem__(sl_wave) \
+            if self.redcorr is not None else self.redcorr
 
         if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength):
             return Spectrum(new_obj.value, unit=new_obj.unit, wavelength=new_obj.wavelength,
@@ -119,6 +127,17 @@ class DataCube(units.Quantity, QuantityMixIn):
         if obj is None:
             return
 
-        self.wave = getattr(obj, 'wave', None)
+        self.wavelength = getattr(obj, 'wavelength', None)
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
+        self.redcorr = getattr(obj, 'redcorr', None)
+
+    def derredden(self):
+        """Returns the derreddened datacube."""
+
+        new_value = (self.value.T * self.redcorr).T
+
+        new_obj = DataCube(new_value, self.wavelength, unit=self.unit,
+                           redcorr=None, ivar=self, mask=self)
+
+        return new_obj
