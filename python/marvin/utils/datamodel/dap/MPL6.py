@@ -139,8 +139,12 @@ MPL6_binid_channels = [
     Channel('emline_models', formats={'string': 'Emission line models'},
             unit=u.dimensionless_unscaled, idx=3),
     Channel('spec_index', formats={'string': 'Spectral indices'},
-            unit=u.dimensionless_unscaled, idx=4),
-]
+            unit=u.dimensionless_unscaled, idx=4)]
+
+
+binid_properties = MultiChannelProperty('binid', ivar=False, mask=False,
+                                        channels=MPL6_binid_channels,
+                                        description='Numerical ID for spatial bins.')
 
 
 MPL6_maps = [
@@ -167,9 +171,7 @@ MPL6_maps = [
     Property('spx_snr', ivar=False, mask=False,
              formats={'string': 'r-band SNR'},
              description='r-band signal-to-noise ratio per pixel.'),
-    MultiChannelProperty('binid', ivar=False, mask=False,
-                         channels=MPL6_binid_channels,
-                         description='Numerical ID for spatial bins.'),
+    binid_properties,
     MultiChannelProperty('bin_lwskycoo', ivar=False, mask=False,
                          channels=[Channel('lum_weighted_on_sky_x',
                                            formats={'string': 'Light-weighted offset X'},
@@ -235,33 +237,33 @@ MPL6_maps = [
                          channels=MPL6_emline_channels,
                          formats={'string': 'Emission line summed flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Non-parametric summed flux for emission lines.'),
     MultiChannelProperty('emline_sew', ivar=True, mask=True,
                          channels=MPL6_emline_channels,
                          formats={'string': 'Emission line EW'},
                          unit=u.Angstrom,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Emission line non-parametric equivalent '
                                      'widths measurements.'),
     MultiChannelProperty('emline_gflux', ivar=True, mask=True,
                          channels=MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Gaussian profile integrated flux for emission lines.'),
     MultiChannelProperty('emline_gvel', ivar=True, mask=True,
                          channels=MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian velocity'},
                          unit=u.km / u.s,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Gaussian profile velocity for emission lines.'),
     MultiChannelProperty('emline_gsigma', ivar=True, mask=True,
                          channels=MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian sigma',
                                   'latex': r'Emission line Gaussian $\sigma$'},
                          unit=u.km / u.s,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Gaussian profile velocity dispersion for emission lines; '
                                      'must be corrected using EMLINE_INSTSIGMA'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
@@ -269,7 +271,7 @@ MPL6_maps = [
                          formats={'string': 'Emission line instrumental sigma',
                                   'latex': r'Emission line instrumental $\sigma$'},
                          unit=u.km / u.s,
-                         binid=MPL6_binid_channels[3],
+                         binid=binid_properties[3],
                          description='Instrumental dispersion at the fitted line center.'),
     MultiChannelProperty('specindex', ivar=True, mask=True,
                          channels=MPL6_specindex_channels,
@@ -290,30 +292,29 @@ MPL6_models = [
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Binned flux'},
           description='Flux of the binned spectra',
-          binid=MPL6_binid_channels[0]),
+          binid=binid_properties[0]),
     Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Best fitting model'},
           description='The best fitting model spectra (sum of the fitted '
                       'continuum and emission-line models)',
-          binid=MPL6_binid_channels[0]),
+          binid=binid_properties[0]),
     Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
           unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line model spectrum'},
           description='The model spectrum with only the emission lines.',
-          binid=MPL6_binid_channels[3]),
+          binid=binid_properties[3]),
     Model('emline_base_fit', 'EMLINE_BASE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
           unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line baseline fit'},
           description='The model of the constant baseline fitted beneath the '
                       'emission lines.',
-          binid=MPL6_binid_channels[3]),
+          binid=binid_properties[3]),
     Model('binid', 'BINID', extension_wave=None, unit=u.dimensionless_unscaled,
           scale=1, formats={'string': 'Bin ID'}, channels=MPL6_binid_channels,
-          description='Numerical ID for spatial bins.',
-          binid=MPL6_binid_channels[0])
+          description='Numerical ID for spatial bins.', binid=None)
 ]
 
 
