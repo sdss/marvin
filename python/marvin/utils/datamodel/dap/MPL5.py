@@ -27,6 +27,12 @@ VOR10 = Bintype('VOR10', description='Spectra binned to S/N~10 using the Voronoi
                                      'binning algorithm (Cappellari & Copin 2003).')
 
 
+binid_property = Property('binid', ivar=False, mask=False,
+                          formats={'string': 'Bin ID'},
+                          description='ID number for the bin for which the pixel value was '
+                                      'calculated; bins are sorted by S/N.')
+
+
 last_idx = len(MPL4_emline_channels)
 MPL5_emline_channels = MPL4_emline_channels + [
     Channel('oii_3727', formats={'string': 'OII 3727',
@@ -81,9 +87,7 @@ MPL5_maps = [
     Property('spx_snr', ivar=False, mask=False,
              formats={'string': 'r-band SNR'},
              description='r-band signal-to-noise ratio per pixel.'),
-    Property('binid', ivar=False, mask=False,
-             formats={'string': 'Bin ID'},
-             description='Numerical ID for spatial bins.'),
+    binid_property,
     MultiChannelProperty('bin_lwskycoo', ivar=False, mask=False,
                          channels=[Channel('lum_weighted_on_sky_x',
                                            formats={'string': 'Light-weighted offset X'},
@@ -196,4 +200,4 @@ MPL5_maps = [
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps,
                     default_bintype='SPX', default_template='GAU-MILESHC',
-                    property_table='SpaxelProp5')
+                    property_table='SpaxelProp5', default_binid=binid_property)

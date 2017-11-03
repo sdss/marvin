@@ -19,7 +19,7 @@ import six
 import astropy.table as table
 from astropy import units as u
 
-from marvin.core.exceptions import MarvinError, MarvinNotImplemented
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general.structs import get_best_fuzzy, FuzzyList
 from marvin.utils.datamodel import DataModelList
 
@@ -36,7 +36,7 @@ class DAPDataModel(object):
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 aliases=[]):
+                 default_binid=None, aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -54,6 +54,8 @@ class DAPDataModel(object):
 
         self._default_template = None
         self.default_template = default_template
+
+        self.default_binid = default_binid
 
         assert len([bintype for bintype in self.bintypes if bintype.binned is False]) <= 1, \
             'a DAP datamodel can have only one unbinned bintype'
@@ -469,7 +471,7 @@ class Property(object):
             ``DAPDataModel`` object.
         binid (:class:`Property` object or None):
             The ``binid`` :class:`Property` object associated with this
-            propety. Useful in case of hybrid binning.
+            propety. If not set, assumes the `.DAPDataModel` ``default_binid``.
         description (str):
             A description of the property.
 
@@ -483,7 +485,7 @@ class Property(object):
 
         self.ivar = ivar
         self.mask = mask
-        self.binid = binid
+        self._binid = binid
 
         self.formats = formats
 
@@ -523,13 +525,12 @@ class Property(object):
         if self.name == 'binid':
             raise MarvinError('binid has not associated binid (?!)')
 
-        if self.parent is None:
-            raise MarvinError('a parent needs to be defined to get an associated binid.')
+        assert self.parent is not None, 'a parent needs to be defined to get an associated binid.'
 
-        if self.binid is None:
-            return self.parent['binid']
-        else:
-            raise MarvinNotImplemented('hybrid binning has not yet been implemented.')
+        if self._binid is None:
+            return self.parent.default_binid
+
+        return self._binid
 
     def db_column(self, ext=None):
         """Returns the name of the DB column containing this property."""
@@ -551,7 +552,7 @@ class Property(object):
 
     def __repr__(self):
 
-        return '<Property {0!r}, release={1!r}, channel={2!r}, unit={3!r}>'.format(
+        return '<Property {0!r}, channel={2!r}, release={1!r}, unit={3!r}>'.format(
             self.name, self.parent.release if self.parent else None,
             self.channel.name if self.channel else 'None', self.unit.to_string())
 
@@ -618,6 +619,9 @@ class MultiChannelProperty(list):
             The associated :class:`DAPDataModel` object. Usually it is set to
             ``None`` and populated when the property is added to the
             ``DAPDataModel`` object.
+        binid (:class:`Property` object or None):
+            The ``binid`` `.Property` object to be associated to all the
+            propeties in this `.MultiChannelProperty`.
         description (str):
             A description of the property.
         kwargs (dict):
@@ -625,7 +629,7 @@ class MultiChannelProperty(list):
 
     """
 
-    def __init__(self, name, channels=[], unit=None, scale=1, **kwargs):
+    def __init__(self, name, channels=[], unit=None, scale=1, binid=None, **kwargs):
 
         self.name = name
 
@@ -640,7 +644,8 @@ class MultiChannelProperty(list):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
             this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
             self_list.append(Property(self.name, channel=channel,
-                                      unit=this_unit, scale=this_scale, **kwargs))
+                                      unit=this_unit, scale=this_scale,
+                                      binid=binid, **kwargs))
 
         list.__init__(self, self_list)
 
@@ -762,6 +767,9 @@ class Model(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             model. Default ones are ``latex`` and ``string``.
+        binid (:class:`Property` object or None):
+            The ``binid`` :class:`Property` object associated with this
+            model. If not set, assumes the `.DAPDataModel` ``default_binid``.
         description (str):
             A description for the model.
 
@@ -770,7 +778,7 @@ class Model(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, channels=[],
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 binid=None, description=''):
 
         self.name = name
 
@@ -778,6 +786,8 @@ class Model(object):
         self._extension_wave = extension_wave
         self._extension_ivar = extension_ivar
         self._extension_mask = extension_mask
+
+        self._binid = binid
 
         self.channels = channels
 
@@ -807,6 +817,19 @@ class Model(object):
         """Returns True is the datacube has an mask extension."""
 
         return self._extension_mask is not None
+
+    def get_binid(self):
+        """Returns the binid property associated with this property."""
+
+        if self.name == 'binid':
+            raise MarvinError('binid has not associated binid (?!)')
+
+        assert self.parent is not None, 'a parent needs to be defined to get an associated binid.'
+
+        if self._binid is None:
+            return self.parent.default_binid
+
+        return self._binid
 
     def fits_extension(self, ext=None):
         """Returns the FITS extension name."""
