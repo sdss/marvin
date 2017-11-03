@@ -165,6 +165,19 @@ class FuzzyList(list):
         else:
             return list.__getitem__(self, value)
 
+    def __getattr__(self, value):
+
+        self_values = [self.mapper(item) for item in self]
+
+        if value in self_values:
+            return self[value]
+
+        list.__getattr__(self, value)
+
+    def __dir__(self):
+
+        return [self.mapper(item) for item in self]
+
 
 class OrderedDefaultDict(OrderedDict):
 
