@@ -357,6 +357,22 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         return
 
+    def get_binid(self, binid=None):
+        """Returns a 2D array containing the binid map.
+
+        In ``MPL-6``, ``binid`` can be used to specify the binid property
+        to return. If ``binid=None``, the default binid is returned.
+
+        """
+
+        assert binid is None or isinstance(binid, Property), 'binid must be None or a Property.'
+
+        if binid is None:
+            assert self.datamodel.parent.default_binid is not None
+            binid = self.datamodel.parent.default_binid
+
+        return self.getMap(binid).value
+
     def getCube(self):
         """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""
 
@@ -464,7 +480,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        best = self._match_properties(property_name, channel=channel, exact=exact)
+        if isinstance(property_name, Property):
+            best = property_name
+        else:
+            best = self._match_properties(property_name, channel=channel, exact=exact)
 
         return marvin.tools.quantities.Map.from_maps(self, best)
 
