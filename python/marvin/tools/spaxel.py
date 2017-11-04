@@ -13,6 +13,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import itertools
 import warnings
 
 import numpy as np
@@ -135,14 +136,14 @@ class Spaxel(object):
         self.maps = maps
         self.modelcube = modelcube
 
-        self.plateifu = plateifu
-        self.mangaid = mangaid
-
-        self._parent_shape = None
-
         if not self.cube and not self.maps and not self.modelcube:
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
+
+        self.plateifu = self._check_versions('plateifu', plateifu)
+        self.mangaid = self._check_versions('mangaid', mangaid)
+
+        self._parent_shape = None
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
@@ -150,10 +151,8 @@ class Spaxel(object):
 
         # Checks versions
         input_release = release if release is not None else marvin.config.release
-        self.release = self._check_version(input_release)
+        self.release = self._check_versions('release', input_release, check_input=False)
         assert self.release in marvin.config._mpldict, 'invalid release version.'
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self.release)
 
         self.x = int(x)
         self.y = int(y)
@@ -161,6 +160,9 @@ class Spaxel(object):
 
         self.loaded = False
         self.datamodel = DataModel(self.release)
+
+        self.bintype = self.datamodel.dap.get_bintype(self._check_versions('bintype', None))
+        self.template = self.datamodel.dap.get_template(self._check_versions('template', template))
 
         self.cube_quantities = FuzzyDict({})
         self.maps_quantities = FuzzyDict({})
@@ -170,64 +172,37 @@ class Spaxel(object):
         self.__input_params = dict(cube_filename=cube_filename,
                                    maps_filename=maps_filename,
                                    modelcube_filename=modelcube_filename,
-                                   template=template,
-                                   bintype=None,
                                    kwargs=kwargs)
 
         if lazy is False:
             self.load()
 
-    def _check_version(self, input_release):
-        """Checks that all input object have the same release."""
+    def _check_versions(self, attr, input_value, check_input=True):
+        """Checks that all input object have the same versions."""
 
-        has_cube = isinstance(self.cube, marvin.tools.cube.Cube)
-        has_maps = isinstance(self.maps, marvin.tools.maps.Maps)
-        has_modelcube = isinstance(self.modelcube, marvin.tools.modelcube.ModelCube)
+        inputs = []
+        for obj in [self.cube, self.maps, self.modelcube]:
+            if obj is not None and not isinstance(obj, bool):
+                inputs.append(obj)
 
-        if has_cube:
-            if not self.plateifu:
-                self.plateifu = self.cube.plateifu
-            if not self.mangaid:
-                self.mangaid = self.cube.mangaid
-        elif has_maps:
-            if not self.plateifu:
-                self.plateifu = self.maps.plateifu
-            if not self.mangaid:
-                self.mangaid = self.maps.mangaid
-        elif has_modelcube:
-            if not self.plateifu:
-                self.plateifu = self.modelcube.plateifu
-            if not self.mangaid:
-                self.mangaid = self.modelcube.mangaid
+        if len(inputs) == 1:
+            if input_value is not None:
+                if input_value is not None and check_input:
+                    assert input_value == getattr(inputs[0], attr), \
+                        'input {!r} does not match {!r}'.format(attr, inputs[0])
+            return getattr(inputs[0], attr)
 
-        if not has_cube and not has_maps and not has_modelcube:
-            return input_release
+        output_value = input_value
 
-        if has_cube and has_maps:
+        for obj_a, obj_b in itertools.combinations(inputs, 2):
+            if hasattr(obj_a, attr) and hasattr(obj_b, attr):
+                assert getattr(obj_a, attr) == getattr(obj_b, attr)
+                if input_value is not None and check_input:
+                    assert input_value == getattr(obj_a, attr), \
+                        'input {!r} does not match {!r}'.format(attr, obj_a)
+                output_value = getattr(obj_a, attr)
 
-            assert self.cube._release == self.maps._release
-
-            if has_modelcube:
-                assert self.cube._release == self.modelcube._release
-
-            return self.cube._release
-
-        if has_cube and has_modelcube:
-            assert self.cube._release == self.modelcube._release
-            return self.cube._release
-
-        if has_maps and has_modelcube:
-            assert self.maps._release == self.modelcube._release
-            return self.maps._release
-
-        if has_cube:
-            return self.cube._release
-
-        if has_maps:
-            return self.maps._release
-
-        if has_modelcube:
-            return self.modelcube._release
+        return output_value
 
     def _set_radec(self):
         """Calculates ra and dec for this spaxel."""
