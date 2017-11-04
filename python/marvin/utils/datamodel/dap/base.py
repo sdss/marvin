@@ -56,6 +56,8 @@ class DAPDataModel(object):
         self.default_template = default_template
 
         self.default_binid = default_binid
+        if self.default_binid is not None:
+            self.default_binid.set_parent(self)
 
         assert len([bintype for bintype in self.bintypes if bintype.binned is False]) <= 1, \
             'a DAP datamodel can have only one unbinned bintype'
