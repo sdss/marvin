@@ -11,6 +11,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import copy
+import inspect
 import itertools
 import six
 import warnings
@@ -128,6 +129,18 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             return self.getMap(value)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
+
+    def __getattr__(self, value):
+
+        if isinstance(value, six.string_types) and value in self.datamodel:
+            return self.getMap(value)
+
+        return super(Maps, self).__getattr__(value)
+
+    def __dir__(self):
+
+        return ([member[0] for member in inspect.getmembers(Maps)] +
+                [prop.full() for prop in self.datamodel])
 
     def _set_datamodel(self):
         """Sets the datamodel."""
