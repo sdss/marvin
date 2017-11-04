@@ -28,7 +28,7 @@ import marvin.tools.maps
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube
-from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel, Model
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
@@ -371,8 +371,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                bintype=self.bintype.name, template=self.template.name),
                     params=params)
             except Exception as ee:
-                raise MarvinError('found a problem when checking if remote cube '
-                                  'exists: {0}'.format(str(ee)))
+                raise MarvinError('found a problem when checking if remote '
+                                  'modelcube exists: {0}'.format(str(ee)))
 
             data = response.getData()
             cube_ext_data = data['extension_data']
@@ -381,6 +381,57 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self._extension_data[ext_name] = ext_data
 
         return ext_data
+
+    def _get_binid(self, model):
+        """Returns the 2D array for the binid map associated with ``model``."""
+
+        assert isinstance(model, Model), 'invalid model type.'
+
+        if self.data_origin == 'file':
+
+            # Before MPL-6, the modelcube does not include the binid extension,
+            # so we need to get the binid map from the associated MAPS.
+            if (distutils.version.StrictVersion(self._dapver) <
+                    distutils.version.StrictVersion('2.1')):
+                return self.getMaps()._get_binid()
+            else:
+                return self.data['BINID'].data[model.binid.channel.idx, :, :]
+
+        elif self.data_origin == 'db':
+
+            mdb = marvin.marvindb
+
+            table = mdb.dapdb.ModelSpaxel
+            column = getattr(table, model.binid.db_column())
+
+            binid_list = mdb.session.query(column).filter(
+                table.modelcube_pk == self.data.pk).order_by(table.x, table.y).all()
+
+            nx = ny = int(np.sqrt(len(binid_list)))
+            binid_array = np.array(binid_list)
+
+            return binid_array.transpose().reshape((ny, nx)).transpose(1, 0)
+
+        elif self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getModelCubeBinid']['url']
+
+            try:
+                response = self._toolInteraction(
+                    url.format(name=self.plateifu,
+                               modelcube_extension=model.fits_extension().lower(),
+                               bintype=self.bintype.name,
+                               template=self.template.name), params=params)
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote '
+                                  'modelcube exists: {0}'.format(str(ee)))
+
+            if response.results['error'] is not None:
+                raise MarvinError('found a problem while getting the binid from API: {}'
+                                  .format(str(response.results['error'])))
+
+            return np.array(response.getData()['binid'])
 
     @property
     def binned_flux(self):
@@ -397,6 +448,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=binned_flux_ivar,
                         mask=binned_flux_mask,
                         redcorr=self._redcorr,
+                        binid=self._get_binid(model),
                         unit=model.unit)
 
     @property
@@ -413,6 +465,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=model_mask,
                         redcorr=self._redcorr,
+                        binid=self._get_binid(model),
                         unit=model.unit)
 
     @property
@@ -429,6 +482,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=emline_mask,
                         redcorr=self._redcorr,
+                        binid=self._get_binid(model),
                         unit=model.unit)
 
     @property
@@ -448,6 +502,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=stellarcont_mask,
                         redcorr=self._redcorr,
+                        binid=self._get_binid(model),
                         unit=model.unit)
 
     def getCube(self):
