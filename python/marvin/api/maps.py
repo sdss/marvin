@@ -429,3 +429,78 @@ class MapsView(marvin.api.base.BaseView):
             self.results['error'] = str(ee)
 
         return jsonify(self.results)
+
+    @flask_classy.route('/<name>/<bintype>/<template>/quantities/<x>/<y>/',
+                        methods=['GET', 'POST'],
+                        endpoint='getMapsQuantitiesSpaxel')
+    @marvin.api.base.arg_validate.check_args()
+    def getMapsQuantitiesSpaxel(self, args, name, bintype, template, x, y):
+        """Returns a dictionary with all the quantities.
+
+        .. :quickref: Maps; Returns a dictionary with all the quantities
+
+        :param name: The name of the maps as plate-ifu or mangaid
+        :param x: The x coordinate of the spaxel (origin is ``lower``)
+        :param y: The y coordinate of the spaxel (origin is ``lower``)
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/maps/8485-1901/quantities/10/12/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"emline_gflux_ha6564": {"value": 2.3, "ivar": ...},
+                       "binid": ...}
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist=['name', 'bintype', 'template',
+                                             'x', 'y'])
+        maps, res = _getMaps(name, **args)
+        self.update_results(res)
+
+        if maps:
+
+            self.results['data'] = {}
+
+            spaxel_quantities = maps._get_spaxel_quantities(x, y)
+
+            for quant in spaxel_quantities:
+
+                aprop = spaxel_quantities[quant]
+
+                value = aprop.value
+                ivar = aprop.ivar if aprop.ivar is not None else None
+                mask = aprop.mask if aprop.mask is not None else None
+
+                self.results['data'][quant] = {'value': value,
+                                               'ivar': ivar,
+                                               'mask': mask}
+
+        return jsonify(self.results)
