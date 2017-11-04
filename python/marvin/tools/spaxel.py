@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# spaxel.py
-#
-# Licensed under a 3-clause BSD license.
-#
-# Revision history:
-#     11 Apr 2016 J. Sánchez-Gallego
-#       Initial version
+# @Author: José Sánchez-Gallego
+# @Date: Nov 3, 2017
+# @Filename: spaxel.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import absolute_import
 
 import itertools
 import warnings
