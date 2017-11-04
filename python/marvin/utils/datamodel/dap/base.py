@@ -248,6 +248,19 @@ class PropertyList(FuzzyList):
         else:
             raise ValueError('invalid property of type {!r}'.format(type(append_obj)))
 
+    def from_fits_extension(self, ext):
+        """Returns the `.Property` whose FITS extension matches ``ext``."""
+
+        matches = []
+
+        for model in self:
+            if model.fits_extension().lower() == ext.lower():
+                matches.append(model)
+
+        assert len(matches) == 1, 'more than one matches found. That should never happen.'
+
+        return matches[0]
+
     @property
     def release(self):
         """The release of the parent `.DAPDataModel`."""
@@ -353,6 +366,19 @@ class ModelList(FuzzyList):
         """The release of the parent `.DAPDataModel`."""
 
         return self.parent.release
+
+    def from_fits_extension(self, extension):
+        """Returns the `.Model` whose FITS extension matches ``extension``."""
+
+        matches = []
+
+        for model in self:
+            if model.fits_extension().lower() == extension.lower():
+                matches.append(model)
+
+        assert len(matches) == 1, 'more than one matches found. That should never happen.'
+
+        return matches[0]
 
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the models in this datamodel.
