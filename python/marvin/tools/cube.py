@@ -29,7 +29,7 @@ from marvin.core.core import MarvinToolsClass, NSAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
-from marvin.utils.general import get_nsa_data
+from marvin.utils.general import get_nsa_data, FuzzyDict
 
 
 class Cube(MarvinToolsClass, NSAMixIn):
@@ -401,6 +401,111 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         return ext_data
 
+    def _get_spaxel_quantities(self, x, y):
+        """Returns a dictionary of spaxel quantities."""
+
+        cube_quantities = FuzzyDict({})
+
+        if self.data_origin == 'db':
+
+            session = marvin.marvindb.session
+            datadb = marvin.marvindb.datadb
+
+        if self.data_origin == 'file' or self.data_origin == 'db':
+
+            for dm in self.datamodel.datacubes + self.datamodel.spectra:
+
+                data = {'value': None, 'ivar': None, 'mask': None, 'std': None}
+
+                for key in data:
+
+                    if key == 'ivar':
+                        if dm in self.datamodel.spectra or not dm.has_ivar():
+                            continue
+                    if key == 'mask':
+                        if dm in self.datamodel.spectra or not dm.has_mask():
+                            continue
+                    if key == 'std':
+                        if dm in self.datamodel.datacubes or not dm.has_std():
+                            continue
+
+                    if self.data_origin == 'file':
+
+                        extname = dm.fits_extension(None if key == 'value' else key)
+
+                        if dm in self.datamodel.datacubes:
+                            data[key] = self.data[extname].data[:, y, x]
+                        else:
+                            data[key] = self.data[extname].data
+
+                    elif self.data_origin == 'db':
+
+                        colname = dm.db_column(None if key == 'value' else key)
+
+                        if dm in self.datamodel.datacubes:
+
+                            db_column = getattr(datadb.Spaxel, colname)
+
+                            spaxel_data = session.query(db_column).filter(
+                                datadb.Spaxel.cube == self.data,
+                                datadb.Spaxel.x == x, datadb.Spaxel.y == y).one()
+
+                        else:
+
+                            db_column = getattr(datadb.Cube, colname)
+
+                            spaxel_data = session.query(db_column).filter(
+                                datadb.Cube.pk == self.data.pk).one()
+
+                        # In case the column was empty in the DB. At some point
+                        # this can be removed.
+                        if spaxel_data is None:
+                            warnings.warn('cannot find {!r} data for {!r}. '
+                                          'Maybe the data is not in the DB.'.format(
+                                              colname, self.plateifu), MarvinUserWarning)
+                            cube_quantities[dm.name] = None
+                            continue
+
+                        data[key] = np.array(spaxel_data)
+
+                cube_quantities[dm.name] = Spectrum(data['value'],
+                                                    ivar=data['ivar'],
+                                                    mask=data['mask'],
+                                                    std=data['std'],
+                                                    wavelength=self._wavelength,
+                                                    unit=dm.unit)
+
+        if self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getCubeQuantitiesSpaxel']['url']
+
+            try:
+                response = self._toolInteraction(url.format(name=self.plateifu,
+                                                            x=x, y=y, params=params))
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote cube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            for dm in self.datamodel.datacubes + self.datamodel.spectra:
+
+                if data[dm.name]['value'] is None:
+                    warnings.warn('cannot find {!r} data for {!r}. '
+                                  'Maybe the data is not in the DB.'.format(
+                                      dm.name, self.plateifu), MarvinUserWarning)
+                    cube_quantities[dm.name] = None
+                    continue
+
+                cube_quantities[dm.name] = Spectrum(data[dm.name]['value'],
+                                                    ivar=data[dm.name]['ivar'],
+                                                    mask=data[dm.name]['mask'],
+                                                    wavelength=data['wavelength'],
+                                                    unit=dm.unit)
+
+        return cube_quantities
+
     @property
     def qualitybit(self):
         """The Cube DRP3QUAL bits."""
@@ -453,7 +558,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         return finaltargs
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  properties=True, modelcube=False, **kwargs):
+                  properties=True, models=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -479,7 +584,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
             properties (bool):
                 If ``True``, the spaxel will be initiated with the DAP
                 properties from the default Maps matching this cube.
-            modelcube (`~marvin.tools.modelcube.ModelCube` or None or bool):
+            models (`~marvin.tools.modelcube.ModelCube` or None or bool):
                 A :class:`~marvin.tools.modelcube.ModelCube` object
                 representing the DAP modelcube entity. If None, the |spaxel|
                 will be returned without model information. Default is False.
@@ -494,14 +599,10 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         """
 
-        # TODO: do we want to use x/y, ra/dec, or a single coords parameter (as
-        # an array of coordinates) and a mode keyword.
-
-        kwargs['cube'] = self
-        kwargs['maps'] = properties
-        kwargs['modelcube'] = modelcube
-
-        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
+        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec,
+                                                      cube=self,
+                                                      maps=properties,
+                                                      modelcube=models)
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
