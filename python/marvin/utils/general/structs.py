@@ -18,7 +18,8 @@ from fuzzywuzzy import fuzz as fuzz_fuzz
 from fuzzywuzzy import process as fuzz_proc
 
 
-__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy']
+__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy',
+           'FuzzyList']
 
 
 class Dotable(dict):
