@@ -189,7 +189,8 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 self.filename = input
 
         if self.filename:
-            assert self.plateifu is None and self.mangaid is None, 'invalid set of inputs.'
+            self.mangaid = None
+            self.plateifu = None
             assert os.path.exists(self.filename), 'filename does not exist.'
         elif self.plateifu:
             assert self.filename is None and self.mangaid is None, 'invalid set of inputs.'
