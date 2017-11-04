@@ -57,7 +57,7 @@ class DAPDataModel(object):
 
         self.default_binid = default_binid
         if self.default_binid is not None:
-            self.default_binid.set_parent(self)
+            self.default_binid.parent = self
 
         assert len([bintype for bintype in self.bintypes if bintype.binned is False]) <= 1, \
             'a DAP datamodel can have only one unbinned bintype'
@@ -236,7 +236,7 @@ class PropertyList(FuzzyList):
         """Appends with copy, and unpacking properties."""
 
         append_obj = value if copy is False else copy_mod.deepcopy(value)
-        append_obj.set_parent(self.parent)
+        append_obj.parent = self.parent
 
         self.extensions.append(append_obj)
 
@@ -497,27 +497,37 @@ class Property(object):
         else:
             self.unit = self.channel.unit
 
+        self._binid = binid
+
         # Makes sure the channel shares the units and scale
         if self.channel:
             self.channel.unit = self.unit
 
         self.description = description
 
+        self._parent = None
         self.parent = parent
 
         self._binid = copy_mod.deepcopy(binid)
         if self._binid is not None:
             self._binid.parent = self.parent
 
-    def set_parent(self, parent):
-        """Sets parent."""
+    @property
+    def parent(self):
+        """Returns the parent for this property."""
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+        return self._parent
 
-        self.parent = parent
+    @parent.setter
+    def parent(self, value):
+        """Sets the parent."""
+
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
+
+        self._parent = value
 
         if self._binid is not None:
-            self._binid.parent = self.parent
+            self._binid.parent = value
 
     def full(self):
         """Returns the name + channel string."""
@@ -648,6 +658,7 @@ class MultiChannelProperty(list):
         self.mask = kwargs.get('mask', False)
         self.description = kwargs.get('description', '')
 
+        self._parent = None
         self.parent = kwargs.get('parent', None)
 
         self_list = []
@@ -660,15 +671,22 @@ class MultiChannelProperty(list):
 
         list.__init__(self, self_list)
 
-    def set_parent(self, parent):
+    @property
+    def parent(self):
+        """Returns the parent for this MultiChannelProperty."""
+
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
         """Sets parent for the instance and all listed Property objects."""
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
 
-        self.parent = parent
+        self._parent = value
 
         for prop in self:
-            prop.set_parent(parent)
+            prop.parent = value
 
     @property
     def channels(self):
@@ -809,21 +827,31 @@ class Model(object):
         self.formats = formats
         self.description = description
 
+        self._binid = binid
+
+        self._parent = None
         self.parent = parent
 
         self._binid = copy_mod.deepcopy(binid)
         if self._binid is not None:
             self._binid.parent = self.parent
 
-    def set_parent(self, parent):
+    @property
+    def parent(self):
+        """Returns the parent for this model."""
+
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
         """Sets parent."""
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
 
-        self.parent = parent
+        self._parent = value
 
         if self._binid is not None:
-            self._binid.parent = self.parent
+            self._binid.parent = value
 
     def full(self):
         """Returns the name + channel string."""
