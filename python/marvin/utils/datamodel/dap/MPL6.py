@@ -130,15 +130,15 @@ MPL6_specindex_channels = [
 
 
 MPL6_binid_channels = [
-    Channel('binned_spec', formats={'string': 'Binned spectra'},
+    Channel('binned_spectra', formats={'string': 'Binned spectra'},
             unit=u.dimensionless_unscaled, idx=0),
-    Channel('stellar_cont', formats={'string': 'Stellar continua'},
+    Channel('stellar_continua', formats={'string': 'Stellar continua'},
             unit=u.dimensionless_unscaled, idx=1),
-    Channel('emline_moments', formats={'string': 'Emission line moments'},
+    Channel('em_line_moments', formats={'string': 'Emission line moments'},
             unit=u.dimensionless_unscaled, idx=2),
-    Channel('emline_models', formats={'string': 'Emission line models'},
+    Channel('em_line_models', formats={'string': 'Emission line models'},
             unit=u.dimensionless_unscaled, idx=3),
-    Channel('spec_index', formats={'string': 'Spectral indices'},
+    Channel('spectral_indices', formats={'string': 'Spectral indices'},
             unit=u.dimensionless_unscaled, idx=4)]
 
 
