@@ -77,7 +77,7 @@ class DAPDataModel(object):
         """Uses fuzzywuzzy to return the closest property match."""
 
         prop_names = [prop.name for prop in self.properties.extensions]
-        model_names = [model.name for model in self.models]
+        model_names = [model.full() for model in self.models]
 
         # If the values matches exactly one of the property or model names,
         # we return that one.
