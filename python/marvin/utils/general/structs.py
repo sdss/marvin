@@ -172,7 +172,7 @@ class FuzzyList(list):
         if value in self_values:
             return self[value]
 
-        list.__getattr__(self, value)
+        return super(FuzzyList, self).__getattribute__(value)
 
     def __dir__(self):
 
