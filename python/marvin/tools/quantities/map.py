@@ -84,7 +84,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj._set_unit(unit)
 
         obj._maps = None
-        obj._property = None
+        obj._datamodel = None
 
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
@@ -94,8 +94,8 @@ class Map(units.Quantity, QuantityMixIn):
 
     def __repr__(self):
 
-        if self.property is not None:
-            full = self.property.full()
+        if self.datamodel is not None:
+            full = self.datamodel.full()
         else:
             full = None
 
@@ -126,7 +126,7 @@ class Map(units.Quantity, QuantityMixIn):
                       binid=deepcopy(self.binid, memo))
 
         new_map._maps = deepcopy(self._maps, memo)
-        new_map._property = deepcopy(self._property, memo)
+        new_map._datamodel = deepcopy(self._datamodel, memo)
 
         return new_map
 
@@ -135,7 +135,7 @@ class Map(units.Quantity, QuantityMixIn):
         if obj is None:
             return
 
-        self._property = getattr(obj, '_property', None)
+        self._datamodel = getattr(obj, '_datamodel', None)
         self._maps = getattr(obj, '_maps', None)
 
         self.ivar = getattr(obj, 'ivar', None)
@@ -151,13 +151,13 @@ class Map(units.Quantity, QuantityMixIn):
         return self._maps
 
     @property
-    def property(self):
+    def datamodel(self):
         """Returns the associated `~marvin.utils.datamodel.dap.Property`."""
 
-        if not self._property:
+        if not self._datamodel:
             raise ValueError('this Map does not have an associated Property.')
 
-        return self._property
+        return self._datamodel
 
     @classmethod
     def from_maps(cls, maps, prop, dtype=None, copy=True):
@@ -191,7 +191,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj = cls(value, unit=unit, ivar=ivar, mask=mask, binid=binid,
                   dtype=dtype, copy=copy)
 
-        obj._property = prop
+        obj._datamodel = prop
         obj._maps = maps
 
         return obj
