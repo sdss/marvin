@@ -119,8 +119,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=marvin.config.mode, data=None, release=marvin.config.release,
-                 drpall=None, download=marvin.config.download):
+                 mode=None, data=None, release=None, drpall=None, download=None):
 
         self.data = data
         self.data_origin = None
@@ -129,14 +128,14 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         self.mangaid = mangaid
         self.plateifu = plateifu
 
-        self.mode = mode
+        self.mode = mode if mode is not None else marvin.config.mode
 
-        self._release = release
+        self._release = release if release is not None else marvin.config.release
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
         self._drpall = marvin.config._getDrpAllPath(self._drpver) if drpall is None else drpall
 
-        self._forcedownload = download
+        self._forcedownload = download if download is not None else marvin.config.download
 
         # Sets filename, plateifu, and mangaid depending on the values the input parameters.
         self._determine_inputs(input)
