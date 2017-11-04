@@ -10,6 +10,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import inspect
+
 from collections import OrderedDict
 
 import six
@@ -116,6 +118,10 @@ class FuzzyDict(OrderedDict):
         best = get_best_fuzzy(value, self.keys())
 
         return dict.__getitem__(self, best)
+
+    def __dir__(self):
+
+        return list(self.keys())
 
 
 class FuzzyList(list):
