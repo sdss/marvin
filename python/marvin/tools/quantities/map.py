@@ -68,11 +68,13 @@ class Map(units.Quantity, QuantityMixIn):
             The inverse variance array for ``value``.
         mask (array-like, optional):
             The mask array for ``value``.
+        binid (array-like, optional):
+            The associated binid map.
 
     """
 
     def __new__(cls, array, unit=None, scale=1, ivar=None, mask=None,
-                dtype=None, copy=True):
+                binid=None, dtype=None, copy=True):
 
         if scale is not None:
             unit = units.CompositeUnit(unit.scale * scale, unit.bases, unit.powers)
@@ -86,6 +88,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
+        obj.binid = np.array(binid) if binid is not None else None
 
         return obj
 
@@ -110,6 +113,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
         new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
+        new_obj.binid = self.binid.__getitem__(sl) if self.binid is not None else self.binid
 
         return new_obj
 
@@ -118,7 +122,8 @@ class Map(units.Quantity, QuantityMixIn):
         new_map = Map(array=deepcopy(self.value, memo),
                       unit=deepcopy(self.unit, memo),
                       ivar=deepcopy(self.ivar, memo),
-                      mask=deepcopy(self.mask, memo))
+                      mask=deepcopy(self.mask, memo),
+                      binid=deepcopy(self.binid, memo))
 
         new_map._maps = deepcopy(self._maps, memo)
         new_map._property = deepcopy(self._property, memo)
@@ -135,6 +140,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
+        self.binid = getattr(obj, 'binid', None)
 
     def getMaps(self):
         """Returns the associated `~marvin.tools.maps.Maps`."""
@@ -176,7 +182,14 @@ class Map(units.Quantity, QuantityMixIn):
 
         unit = prop.unit
 
-        obj = cls(value, unit=unit, ivar=ivar, mask=mask, dtype=dtype, copy=copy)
+        # Gets the binid array for this property.
+        if prop.name != 'binid':
+            binid = maps.get_binid(prop.binid)
+        else:
+            binid = None
+
+        obj = cls(value, unit=unit, ivar=ivar, mask=mask, binid=binid,
+                  dtype=dtype, copy=copy)
 
         obj._property = prop
         obj._maps = maps
