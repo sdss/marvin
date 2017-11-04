@@ -49,7 +49,7 @@ class Spectrum(Quantity, QuantityMixIn):
     Returns:
         spectrum:
             An astropy Quantity-like object that contains the spectrum, as well
-            as inverse variance, mask, and wavelengh (itself a Quantity array).
+            as inverse variance, mask, and wavelength (itself a Quantity array).
 
     """
 
