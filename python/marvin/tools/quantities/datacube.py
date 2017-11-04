@@ -49,6 +49,9 @@ class DataCube(units.Quantity, QuantityMixIn):
         mask (`~numpy.ndarray`):
             Same as ``ivar`` but for the associated
             :ref:`bitmask <marvin-bitmasks>`.
+        binid (`~numpy.ndarray`):
+            The associated binid map for this datacube. Only set for DAP
+            `~marvin.tools.modelcube.ModelCube` datacubes.
         kwargs (dict):
             Keyword arguments to be passed to `~astropy.units.Quantity` when
             it is initialised.
@@ -56,8 +59,8 @@ class DataCube(units.Quantity, QuantityMixIn):
     """
 
     def __new__(cls, value, wavelength, scale=None, unit=units.dimensionless_unscaled,
-                wavelength_unit=units.Angstrom, redcorr=None, ivar=None, mask=None, dtype=None,
-                copy=True, **kwargs):
+                wavelength_unit=units.Angstrom, redcorr=None, ivar=None, mask=None,
+                binid=None, dtype=None, copy=True, **kwargs):
 
         # If the scale is defined, creates a new composite unit with the input scale.
         if scale is not None:
@@ -73,7 +76,11 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         if ivar is not None:
             assert isinstance(ivar, np.ndarray) and ivar.shape == value.shape, 'invalid ivar shape'
+        if mask is not None:
             assert isinstance(mask, np.ndarray) and mask.shape == value.shape, 'invalid mask shape'
+        if binid is not None:
+            assert (isinstance(binid, np.ndarray) and
+                    binid.shape == value.shape[1:]), 'invalid binid shape'
 
         obj = units.Quantity(value, unit=unit, **kwargs)
         obj = obj.view(cls)
@@ -88,6 +95,7 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
+        obj.binid = np.array(binid) if binid is not None else None
 
         if redcorr is not None:
             assert len(redcorr) == len(obj.wavelength), 'invalid length for redcorr.'
@@ -99,8 +107,10 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         if isinstance(sl, tuple):
             sl_wave = sl[0]
+            sl_spatial = sl[1:]
         else:
             sl_wave = sl
+            sl_spatial = None
 
         new_obj = super(DataCube, self).__getitem__(sl)
 
@@ -109,12 +119,30 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         new_obj._set_unit(self.unit)
 
-        new_obj.ivar = self.ivar.__getitem__(sl) if self.ivar is not None else self.ivar
-        new_obj.mask = self.mask.__getitem__(sl) if self.mask is not None else self.mask
-        new_obj.wavelength = self.wavelength.__getitem__(sl_wave) \
-            if self.wavelength is not None else self.wavelength
-        new_obj.redcorr = self.redcorr.__getitem__(sl_wave) \
-            if self.redcorr is not None else self.redcorr
+        if self.ivar is not None:
+            new_obj.ivar = self.ivar.__getitem__(sl)
+        else:
+            new_obj.ivar = self.ivar
+
+        if self.mask is not None:
+            new_obj.mask = self.mask.__getitem__(sl)
+        else:
+            new_obj.mask = self.mask
+
+        if self.wavelength is not None:
+            new_obj.wavelength = self.wavelength.__getitem__(sl_wave)
+        else:
+            new_obj.wavelength = self.wavelength
+
+        if self.redcorr is not None:
+            new_obj.redcorr = self.redcorr.__getitem__(sl_wave)
+        else:
+            new_obj.redcorr = self.redcorr
+
+        if self.binid is not None:
+            new_obj.binid = self.binid.__getitem__(sl_spatial)
+        else:
+            new_obj.binid = self.binid
 
         if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength):
             return Spectrum(new_obj.value, unit=new_obj.unit, wavelength=new_obj.wavelength,
@@ -131,6 +159,7 @@ class DataCube(units.Quantity, QuantityMixIn):
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
         self.redcorr = getattr(obj, 'redcorr', None)
+        self.binid = getattr(obj, 'binid', None)
 
     def derredden(self):
         """Returns the derreddened datacube."""
@@ -139,6 +168,7 @@ class DataCube(units.Quantity, QuantityMixIn):
         new_ivar = (self.value.T / self.redcorr**2).T
 
         new_obj = DataCube(new_value, self.wavelength, unit=self.unit,
-                           redcorr=None, ivar=new_ivar, mask=self.mask)
+                           redcorr=None, ivar=new_ivar, mask=self.mask,
+                           binid=self.binid)
 
         return new_obj
