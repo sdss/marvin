@@ -21,8 +21,15 @@ from .MPL5 import GAU_MILESHC, ALL, NRE, SPX, VOR10
 HYB10 = Bintype('HYB10', description='Binning and stellar continuum fitting as VOR10, '
                                      'but emission lines are fitted per spaxel.')
 
-# Channel('oiid_3728', formats={'string': 'OIId 3728',
-#                               'latex': r'$\forb{O\,IId}\;\lambda\lambda 3728$'}, idx=0),
+# The two lines in the OII doublet is fitted independently for gaussian
+# measurements. In that case oii_3727 and oii_3729 are populated. For summed
+# flux measurements, the lines cannot be separated so oiid_3728 contains
+# the summed flux. In that case, oii_3729 is null and only kept to maintain
+# the number of channels constant.
+oiid_channel = Channel('oiid_3728', formats={'string': 'OIId 3728',
+                       'latex': r'$\forb{O\,IId}\;\lambda\lambda 3728$'}, idx=0)
+oii_channel = Channel('oii_3727', formats={'string': 'OII 3727',
+                      'latex': r'$\forb{O\,II}\;\lambda 3727$'}, idx=0)
 
 MPL6_emline_channels = [
     Channel('oii_3729', formats={'string': 'OII 3729',
@@ -245,32 +252,32 @@ MPL6_maps = [
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
              description='Reduced chi-square of the stellar continuum fit.'),
     MultiChannelProperty('emline_sflux', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oiid_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line summed flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
                          binid=binid_properties[3],
                          description='Non-parametric summed flux for emission lines.'),
     MultiChannelProperty('emline_sew', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oiid_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line EW'},
                          unit=u.Angstrom,
                          binid=binid_properties[3],
                          description='Emission line non-parametric equivalent '
                                      'widths measurements.'),
     MultiChannelProperty('emline_gflux', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
                          binid=binid_properties[3],
                          description='Gaussian profile integrated flux for emission lines.'),
     MultiChannelProperty('emline_gvel', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian velocity'},
                          unit=u.km / u.s,
                          binid=binid_properties[3],
                          description='Gaussian profile velocity for emission lines.'),
     MultiChannelProperty('emline_gsigma', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian sigma',
                                   'latex': r'Emission line Gaussian $\sigma$'},
                          unit=u.km / u.s,
@@ -278,7 +285,7 @@ MPL6_maps = [
                          description='Gaussian profile velocity dispersion for emission lines; '
                                      'must be corrected using EMLINE_INSTSIGMA'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line instrumental sigma',
                                   'latex': r'Emission line instrumental $\sigma$'},
                          unit=u.km / u.s,
