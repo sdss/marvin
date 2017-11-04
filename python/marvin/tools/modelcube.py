@@ -27,8 +27,9 @@ import marvin.tools.maps
 
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
-from marvin.tools.quantities import DataCube
+from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.dap import datamodel, Model
+from marvin.utils.general import FuzzyDict
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
@@ -284,13 +285,13 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
         self._wavelength = np.array(data['wavelength'])
         self._redcorr = np.array(data['redcorr'])
-        self._shape = np.array(data['shape'])
+        self._shape = tuple(data['shape'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  spectrum=True, properties=True, **kwargs):
+                  drp=True, properties=True, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -317,15 +318,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            spectrum (bool):
+            drpa (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DRP spectrum.
+                corresponding DRP data.
             properties (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DAP properties for this spaxel.
-            modelcube (bool):
-                If ``True``, the |spaxel| will be initialised with the
-                corresponding ModelCube data.
 
         Returns:
             spaxels (list):
@@ -337,11 +335,9 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        kwargs['cube'] = self.cube if spectrum else False
-        kwargs['maps'] = self.maps.get_unbinned() if properties else False
-        kwargs['modelcube'] = self.get_unbinned()
-
-        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
+        return marvin.utils.general.general.getSpaxel(
+            x=x, y=y, ra=ra, dec=dec,
+            cube=drp, maps=properties, modelcube=self, **kwargs)
 
     def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
@@ -382,6 +378,78 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self._extension_data[ext_name] = ext_data
 
         return ext_data
+
+    def _get_spaxel_quantities(self, x, y):
+        """Returns a dictionary of spaxel quantities."""
+
+        modelcube_quantities = FuzzyDict({})
+
+        if self.data_origin == 'db':
+
+            session = marvin.marvindb.session
+            dapdb = marvin.marvindb.dapdb
+
+        if self.data_origin == 'file' or self.data_origin == 'db':
+
+            for dm in self.datamodel:
+
+                data = {'value': None, 'ivar': None, 'mask': None}
+
+                for key in data:
+
+                    if key == 'ivar' and not dm.has_ivar():
+                        continue
+                    if key == 'mask' and not dm.has_mask():
+                        continue
+
+                    if self.data_origin == 'file':
+
+                        extname = dm.fits_extension(None if key == 'value' else key)
+                        data[key] = self.data[extname].data[:, y, x]
+
+                    elif self.data_origin == 'db':
+
+                        colname = dm.db_column(None if key == 'value' else key)
+                        db_column = getattr(dapdb.ModelSpaxel, colname)
+
+                        spaxel_data = session.query(db_column).filter(
+                            dapdb.ModelSpaxel.modelcube_pk == self.data.pk,
+                            dapdb.ModelSpaxel.x == x, dapdb.ModelSpaxel.y == y).one()
+
+                        data[key] = np.array(spaxel_data)
+
+                modelcube_quantities[dm.name] = Spectrum(data['value'],
+                                                         ivar=data['ivar'],
+                                                         mask=data['mask'],
+                                                         wavelength=self._wavelength,
+                                                         unit=dm.unit)
+
+        if self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getModelCubeQuantitiesSpaxel']['url']
+
+            try:
+                response = self._toolInteraction(url.format(name=self.plateifu,
+                                                            x=x, y=y,
+                                                            bintype=self.bintype.name,
+                                                            template=self.template.name,
+                                                            params=params))
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote modelcube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            for dm in self.datamodel:
+
+                modelcube_quantities[dm.name] = Spectrum(data[dm.name]['value'],
+                                                         ivar=data[dm.name]['ivar'],
+                                                         mask=data[dm.name]['mask'],
+                                                         wavelength=data['wavelength'],
+                                                         unit=dm.unit)
+
+        return modelcube_quantities
 
     def _get_binid(self, model):
         """Returns the 2D array for the binid map associated with ``model``."""
