@@ -78,10 +78,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                  drpall=None, download=None, nsa_source='auto',
                  bintype=None, template=None, template_kin=None):
 
-        release = release if release else marvin.config.release
-        mode = mode if mode else marvin.config.mode
-        download = download if download else marvin.config.download
-
         if template_kin is not None:
             warnings.warn('template_kin is deprecated and will be removed in a future version.',
                           DeprecationWarning)

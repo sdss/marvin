@@ -61,9 +61,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.header = None
         self.wcs = None
         self._wavelength = None
-        release = release if release else marvin.config.release
-        mode = mode if mode else marvin.config.mode
-        download = download if download else marvin.config.download
 
         # Stores data from extensions that have already been accessed, so that they
         # don't need to be retrieved again.
