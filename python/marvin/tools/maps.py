@@ -132,7 +132,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         if isinstance(value, six.string_types) and value in self.datamodel:
             return self.getMap(value)
 
-        return super(Maps, self).__getattr__(value)
+        return super(Maps, self).__getattribute__(value)
 
     def __dir__(self):
 
