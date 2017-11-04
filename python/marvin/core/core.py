@@ -148,6 +148,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
 
+        assert self.mode in ['auto', 'local', 'remote']
+        assert self.filename is not None or self.plateifu is not None, 'no inputs set.'
+
         if self.mode == 'local':
             self._doLocal()
         elif self.mode == 'remote':
