@@ -136,8 +136,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     def __dir__(self):
 
-        return ([member[0] for member in inspect.getmembers(Maps)] +
-                [prop.full() for prop in self.datamodel])
+        return super(Maps, self).__dir__() + [prop.full() for prop in self.datamodel]
 
     def _set_datamodel(self):
         """Sets the datamodel."""
