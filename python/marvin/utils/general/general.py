@@ -144,15 +144,12 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
         cube_shape = maps._shape
-        plateifu = maps.plateifu
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
         cube_shape = cube._shape
-        plateifu = cube.plateifu
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
         cube_shape = modelcube._shape
-        plateifu = modelcube.plateifu
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -225,7 +222,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         x = coords[:, 0]
         y = coords[:, 1]
 
-        assert shape, 'if mode==pix, shape must be defined.'
+        assert shape is not None, 'if mode==pix, shape must be defined.'
         shape = np.atleast_1d(shape)
 
         if xyorig == 'center':
