@@ -199,12 +199,11 @@ class ModelCubeView(BaseView):
     def getModelCubeExtension(self, args, name, bintype, template, modelcube_extension):
         """Returns the extension for a modelcube given a plateifu/mangaid.
 
-        .. :quickref: Cube; Gets the  given a plate-ifu or mangaid
+        .. :quickref: Cube; Gets the extension given a plate-ifu or mangaid
 
         :param name: The name of the cube as plate-ifu or mangaid
         :param modelcube_extension: The name of the cube extension.  Either flux, ivar, or mask.
         :form release: the release of MaNGA
-        :form use_file: if True, forces to load the cube from a file.
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
         :resjson json inconfig: json of incoming configuration
@@ -254,5 +253,73 @@ class ModelCubeView(BaseView):
                 self.results['data'] = {'extension_data': None}
             else:
                 self.results['data'] = {'extension_data': extension_data.tolist()}
+
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/<name>/binids/<modelcube_extension>/',
+           defaults={'bintype': None, 'template': None},
+           methods=['GET', 'POST'], endpoint='getModelCubeBinid')
+    @route('/<name>/<bintype>/binids/<modelcube_extension>/',
+           defaults={'template': None},
+           methods=['GET', 'POST'], endpoint='getModelCubeBinid')
+    @route('/<name>/<bintype>/<template>/binids/<modelcube_extension>/',
+           methods=['GET', 'POST'], endpoint='getModelCubeBinid')
+    @av.check_args()
+    def getModelCubeBinid(self, args, name, bintype, template, modelcube_extension):
+        """Returns the binid array for a modelcube given a plateifu/mangaid.
+
+        .. :quickref: Cube; Gets the binid array given a plate-ifu or mangaid
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param modelcube_extension: The name of the cube extension.  Either flux, ivar, or mask.
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :json string binid: the binid data
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/modelcubes/8485-1901/binids/flux/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"binid": [[0,0,..0], [], ... [0, 0, 0,... 0]]
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist=['name', 'modelcube_extension'])
+        modelcube, res = _get_model_cube(name, use_file=False, **args)
+        self.update_results(res)
+
+        if modelcube:
+            try:
+                model = modelcube.datamodel.from_fits_extension(modelcube_extension)
+                binid_data = modelcube._get_binid(model)
+                self.results['data'] = {'binid': binid_data.tolist()}
+            except Exception as ee:
+                self.results['error'] = str(ee)
 
         return Response(json.dumps(self.results), mimetype='application/json')
