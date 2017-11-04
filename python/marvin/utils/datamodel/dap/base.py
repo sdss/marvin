@@ -577,6 +577,16 @@ class Property(object):
 
         return self._binid
 
+    def has_ivar(self):
+        """Returns True if the property has an ivar extension."""
+
+        return self.ivar is not False
+
+    def has_mask(self):
+        """Returns True if the property has an mask extension."""
+
+        return self.mask is not False
+
     def db_column(self, ext=None):
         """Returns the name of the DB column containing this property."""
 
@@ -885,12 +895,12 @@ class Model(object):
         return self.name
 
     def has_ivar(self):
-        """Returns True is the datacube has an ivar extension."""
+        """Returns True if the datacube has an ivar extension."""
 
         return self._extension_ivar is not None
 
     def has_mask(self):
-        """Returns True is the datacube has an mask extension."""
+        """Returns True if the datacube has an mask extension."""
 
         return self._extension_mask is not None
 
