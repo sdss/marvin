@@ -91,6 +91,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = None
         self._wavelength = None
         self._redcorr = None
+        self._shape = None
 
         # Model extensions
         self._extension_data = {}
@@ -180,6 +181,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = WCS(self.data['FLUX'].header)
         self._wavelength = self.data['WAVE'].data
         self._redcorr = self.data['REDCORR'].data
+        self._shape = (self.data['FLUX'].header['NAXIS2'],
+                       self.data['FLUX'].header['NAXIS1'])
 
         self.plateifu = self.header['PLATEIFU']
         self.mangaid = self.header['MANGAID']
@@ -257,6 +260,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
             self._wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
             self._redcorr = np.array(self.data.redcorr[0].value, dtype=np.float)
+            self._shape = self.data.file.cube.shape.shape
 
             self.plateifu = str(self.header['PLATEIFU'].strip())
             self.mangaid = str(self.header['MANGAID'].strip())
@@ -280,6 +284,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
         self._wavelength = np.array(data['wavelength'])
         self._redcorr = np.array(data['redcorr'])
+        self._shape = np.array(data['shape'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())

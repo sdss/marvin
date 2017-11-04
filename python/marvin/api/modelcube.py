@@ -178,7 +178,7 @@ class ModelCubeView(BaseView):
                 'plateifu': model_cube.plateifu,
                 'mangaid': model_cube.mangaid,
                 'header': model_cube.header.tostring(),
-                # 'shape': model_cube.shape,
+                'shape': model_cube._shape,
                 'wavelength': model_cube._wavelength.tolist(),
                 'redcorr': model_cube._redcorr.tolist(),
                 'wcs_header': model_cube.wcs.to_header_string(),

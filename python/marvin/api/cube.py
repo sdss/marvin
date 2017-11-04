@@ -213,7 +213,8 @@ class CubeView(BaseView):
                                     'header': cube.header.tostring(),
                                     'redshift': nsa_data.z if nsa_data else -9999,
                                     'wavelength': wavelength,
-                                    'wcs_header': cube.wcs.to_header_string()}
+                                    'wcs_header': cube.wcs.to_header_string(),
+                                    'shape': cube._shape}
 
         return jsonify(self.results)
 

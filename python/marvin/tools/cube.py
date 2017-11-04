@@ -61,6 +61,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.header = None
         self.wcs = None
         self._wavelength = None
+        self._shape = None
 
         # Stores data from extensions that have already been accessed, so that they
         # don't need to be retrieved again.
@@ -158,6 +159,8 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.wcs = WCS(self.header)
 
         self._wavelength = self.data['WAVE'].data
+        self._shape = (self.data['FLUX'].header['NAXIS2'],
+                       self.data['FLUX'].header['NAXIS1'])
 
         self.plateifu = self.header['PLATEIFU']
 
@@ -224,6 +227,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
             self.data = self.data
 
             self._wavelength = np.array(self.data.wavelength.wavelength)
+            self._shape = self.data.shape.shape
 
     def _load_cube_from_api(self):
         """Calls the API and retrieves the necessary information to instantiate the cube."""
@@ -241,6 +245,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.header = fits.Header.fromstring(data['header'])
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
         self._wavelength = data['wavelength']
+        self._shape = data['shape']
 
         if self.plateifu != data['plateifu']:
             raise MarvinError('remote cube has a different plateifu!')

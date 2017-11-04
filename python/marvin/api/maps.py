@@ -186,6 +186,7 @@ class MapsView(marvin.api.base.BaseView):
         wcs_header = maps.wcs.to_header_string()
         bintype = maps.bintype.name
         template = maps.template.name
+        shape = maps._shape
 
         # Redefines plateifu and mangaid from the Maps
         mangaid = maps.mangaid
@@ -196,7 +197,8 @@ class MapsView(marvin.api.base.BaseView):
                                 'header': header,
                                 'wcs': wcs_header,
                                 'bintype': bintype,
-                                'template': template}
+                                'template': template,
+                                'shape': shape}
 
         return jsonify(self.results)
 

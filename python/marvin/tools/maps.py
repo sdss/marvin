@@ -96,6 +96,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.header = None
         self.wcs = None
+        self._shape = None
 
         if self.data_origin == 'file':
             self._load_maps_from_file(data=self.data)
@@ -245,6 +246,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Takes only the first two axis.
         self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
 
+        self._shape = (header['NAXIS2'], header['NAXIS1'])
+
         # Checks and populates release.
         file_drpver = self.header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
@@ -336,6 +339,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Creates the WCS from the cube's WCS header
         self.wcs = astropy.wcs.WCS(self.data.cube.wcs.makeHeader())
 
+        self._shape = self.data.cube.shape.shape
+
     def _load_maps_from_api(self):
         """Loads a Maps object from remote."""
 
@@ -363,6 +368,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         # Sets the WCS
         self.wcs = astropy.wcs.WCS(astropy.io.fits.Header.fromstring(data['wcs']))
+
+        self._shape = data['shape']
 
         return
 
