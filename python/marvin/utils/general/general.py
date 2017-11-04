@@ -143,15 +143,15 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
-        cube_shape = maps.shape
+        cube_shape = maps._shape
         plateifu = maps.plateifu
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
-        cube_shape = cube.shape
+        cube_shape = cube._shape
         plateifu = cube.plateifu
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
-        cube_shape = modelcube.shape
+        cube_shape = modelcube._shape
         plateifu = modelcube.plateifu
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
