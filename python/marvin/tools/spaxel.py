@@ -226,8 +226,9 @@ class Spaxel(object):
 
         self._load_cube()
         self._load_maps()
-        # self._check_modelcube()
+        self._load_modelcube()
 
+        self._set_radec()
         self.loaded = True
 
     def save(self, path, overwrite=False):
@@ -270,28 +271,22 @@ class Spaxel(object):
 
         # Checks that the cube is correct or load ones if cube == True.
         if not isinstance(self.cube, bool):
+
             assert isinstance(self.cube, marvin.tools.cube.Cube), \
                 'cube is not an instance of marvin.tools.cube.Cube or a boolean.'
+
         elif self.cube is True:
+
             self.cube = marvin.tools.cube.Cube(filename=self.__input_params['cube_filename'],
                                                plateifu=self.plateifu,
                                                mangaid=self.mangaid,
-                                               release=self.release)
+                                               release=self.release,
+                                               **self.__input_params['kwargs'])
+
         else:
+
             self.cube = None
             return
-
-        if self.plateifu is not None:
-            assert self.plateifu == self.cube.plateifu, \
-                'input plateifu does not match the cube plateifu. '
-        else:
-            self.plateifu = self.cube.plateifu
-
-        if self.mangaid is not None:
-            assert self.mangaid == self.cube.mangaid, \
-                'input mangaid does not match the cube mangaid. '
-        else:
-            self.mangaid = self.cube.mangaid
 
         self._parent_shape = self.cube._shape
 
@@ -301,87 +296,61 @@ class Spaxel(object):
         """Loads the cube and the properties."""
 
         if not isinstance(self.maps, bool):
+
             assert isinstance(self.maps, marvin.tools.maps.Maps), \
                 'maps is not an instance of marvin.tools.maps.Maps or a boolean.'
+
         elif self.maps is True:
-            self.maps = marvin.tools.maps.Maps(filename=self.__input_params['cube_filename'],
+
+            self.maps = marvin.tools.maps.Maps(filename=self.__input_params['maps_filename'],
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
-                                               bintype=self.__input_params['bintype'],
-                                               template=self.__input_params['template'],
-                                               release=self.release)
+                                               bintype=self.bintype,
+                                               template=self.template,
+                                               release=self.release,
+                                               **self.__input_params['kwargs'])
+
         else:
+
             self.maps = None
             return
 
-        # Checks the bintype. The maps should always be unbinned unless this is
-        # an instance of Bin.
-        if self.maps.is_binned() and isinstance(self, Spaxel):
-            raise MarvinError('cannot instantiate a Spaxel from a binned Maps.')
-
-        if self.plateifu is not None:
-            assert self.plateifu == self.maps.plateifu, \
-                'input plateifu does not match the maps plateifu. '
-        else:
-            self.plateifu = self.maps.plateifu
-
-        if self.mangaid is not None:
-            assert self.mangaid == self.maps.mangaid, \
-                'input mangaid does not match the maps mangaid. '
-        else:
-            self.mangaid = self.maps.mangaid
-
         self._parent_shape = self.maps._shape
-
-        self.template = self.maps.template
 
         self.maps_quantities = self.maps._get_spaxel_quantities(self.x, self.y)
 
-    # def _check_modelcube(self):
-    #     """Loads the modelcube and associated arrays."""
-    #
-    #     if not isinstance(self.modelcube, bool):
-    #         assert isinstance(self.modelcube, marvin.tools.modelcube.ModelCube), \
-    #             'modelcube is not an instance of marvin.tools.modelcube.ModelCube or a boolean.'
-    #     elif self.modelcube is True:
-    #
-    #         if self._is_MPL4():
-    #             warnings.warn('ModelCube cannot be instantiated for MPL-4.',
-    #                           MarvinUserWarning)
-    #             self.modelcube = None
-    #             return
-    #
-    #         self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
-    #                                                           mangaid=self.mangaid,
-    #                                                           plateifu=self.plateifu,
-    #                                                           template=self.template,
-    #                                                           release=self._release)
-    #     else:
-    #         self.modelcube = None
-    #         return
-    #
-    #     # Checks the bintype
-    #     if self.modelcube.is_binned() and self.__allow_binned is False:
-    #         raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
-    #
-    #     self.bintype = self.modelcube.bintype
-    #     self.template = self.modelcube.template
-    #
-    #     if self.plateifu is not None:
-    #         assert self.plateifu == self.modelcube.plateifu, \
-    #             'input plateifu does not match the modelcube plateifu. '
-    #     else:
-    #         self.plateifu = self.modelcube.plateifu
-    #
-    #     if self.mangaid is not None:
-    #         assert self.mangaid == self.modelcube.mangaid, \
-    #             'input mangaid does not match the modelcube mangaid. '
-    #     else:
-    #         self.mangaid = self.modelcube.mangaid
-    #
-    #     self._parent_shape = self.modelcube.shape
-    #
-    #     self._load_models()
+    def _load_modelcube(self):
+        """Loads the modelcube and associated arrays."""
+
+        if not isinstance(self.modelcube, bool):
+
+            assert isinstance(self.modelcube, marvin.tools.modelcube.ModelCube), \
+                'modelcube is not an instance of marvin.tools.modelcube.ModelCube or a boolean.'
+
+        elif self.modelcube is True:
+
+            if self.release == 'MPL-4':
+                warnings.warn('ModelCube cannot be instantiated for MPL-4.', MarvinUserWarning)
+                self.modelcube = None
+                return
+
+            self.modelcube = marvin.tools.modelcube.ModelCube(
+                filename=self.__input_params['modelcube_filename'],
+                mangaid=self.mangaid,
+                plateifu=self.plateifu,
+                bintype=self.bintype,
+                template=self.template,
+                release=self.release,
+                **self.__input_params['kwargs'])
+
+        else:
+
+            self.modelcube = None
+            return
+
+        self._parent_shape = self.modelcube._shape
+
+        self.modelcube_quantities = self.modelcube._get_spaxel_quantities(self.x, self.y)
 
     def __repr__(self):
         """Spaxel representation."""
@@ -396,111 +365,3 @@ class Spaxel(object):
 
         return ('<Marvin Spaxel (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
                 'x_cen={1:d}, y_cen={2:d})>'.format(self, x_centre, y_centre))
-
-    # def _load_models(self):
-    #
-    #     assert self.modelcube, 'a ModelCube is needed to initialise models.'
-    #
-    #     if self.modelcube.data_origin == 'file':
-    #
-    #         hdus = self.modelcube.data
-    #         flux_array = hdus['FLUX'].data[:, self.y, self.x]
-    #         flux_ivar = hdus['IVAR'].data[:, self.y, self.x]
-    #         mask = hdus['MASK'].data[:, self.y, self.x]
-    #         model_array = hdus['MODEL'].data[:, self.y, self.x]
-    #         model_emline = hdus['EMLINE'].data[:, self.y, self.x]
-    #         model_emline_base = hdus['EMLINE_BASE'].data[:, self.y, self.x]
-    #         model_emline_mask = hdus['EMLINE_MASK'].data[:, self.y, self.x]
-    #
-    #     elif self.modelcube.data_origin == 'db':
-    #
-    #         if marvin.marvindb is None:
-    #             raise MarvinError('there is not a valid DB connection.')
-    #
-    #         session = marvin.marvindb.session
-    #         dapdb = marvin.marvindb.dapdb
-    #
-    #         modelcube_db_spaxel = session.query(dapdb.ModelSpaxel).filter(
-    #             dapdb.ModelSpaxel.modelcube == self.modelcube.data,
-    #             dapdb.ModelSpaxel.x == self.x, dapdb.ModelSpaxel.y == self.y).one()
-    #
-    #         if modelcube_db_spaxel is None:
-    #             raise MarvinError('cannot find a modelcube spaxel for '
-    #                               'x={0.x}, y={0.y}'.format(self))
-    #
-    #         flux_array = modelcube_db_spaxel.flux
-    #         flux_ivar = modelcube_db_spaxel.ivar
-    #         mask = modelcube_db_spaxel.mask
-    #         model_array = modelcube_db_spaxel.model
-    #         model_emline = modelcube_db_spaxel.emline
-    #         model_emline_base = modelcube_db_spaxel.emline_base
-    #         model_emline_mask = modelcube_db_spaxel.emline_mask
-    #
-    #     elif self.modelcube.data_origin == 'api':
-    #
-    #         # Calls /modelcubes/<name>/models/<path:path> to retrieve a
-    #         # dictionary with all the models for this spaxel.
-    #         url = marvin.config.urlmap['api']['getModels']['url']
-    #         url_full = url.format(name=self.plateifu,
-    #                               bintype=self.bintype.name,
-    #                               template=self.template.name,
-    #                               x=self.x, y=self.y)
-    #
-    #         try:
-    #             response = api.Interaction(url_full, params={'release': self._release})
-    #         except Exception as ee:
-    #             raise MarvinError('found a problem when checking if remote model cube '
-    #                               'exists: {0}'.format(str(ee)))
-    #
-    #         data = response.getData()
-    #
-    #         flux_array = np.array(data['flux_array'])
-    #         flux_ivar = np.array(data['flux_ivar'])
-    #         mask = np.array(data['flux_mask'])
-    #         model_array = np.array(data['model_array'])
-    #         model_emline = np.array(data['model_emline'])
-    #         model_emline_base = np.array(data['model_emline_base'])
-    #         model_emline_mask = np.array(data['model_emline_mask'])
-    #
-    #     # Instantiates the model attributes.
-    #
-    #     self.redcorr = Spectrum(self.modelcube.redcorr,
-    #                             wavelength=self.modelcube.wavelength,
-    #                             wavelength_unit=u.Angstrom)
-    #
-    #     self.model_flux = Spectrum(flux_array,
-    #                                unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-    #                                scale=1e-17,
-    #                                wavelength=self.modelcube.wavelength,
-    #                                wavelength_unit=u.Angstrom,
-    #                                ivar=flux_ivar,
-    #                                mask=mask)
-    #
-    #     self.model = Spectrum(model_array,
-    #                           unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-    #                           scale=1e-17,
-    #                           wavelength=self.modelcube.wavelength,
-    #                           wavelength_unit=u.Angstrom,
-    #                           mask=mask)
-    #
-    #     self.emline = Spectrum(model_emline,
-    #                            unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-    #                            scale=1e-17,
-    #                            wavelength=self.modelcube.wavelength,
-    #                            wavelength_unit=u.Angstrom,
-    #                            mask=model_emline_mask)
-    #
-    #     self.emline_base = Spectrum(model_emline_base,
-    #                                 unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-    #                                 scale=1e-17,
-    #                                 wavelength=self.modelcube.wavelength,
-    #                                 wavelength_unit=u.Angstrom,
-    #                                 mask=model_emline_mask)
-    #
-    #     self.stellar_continuum = Spectrum(
-    #         self.model.value - self.emline.value - self.emline_base.value,
-    #         unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-    #         scale=1e-17,
-    #         wavelength=self.modelcube.wavelength,
-    #         wavelength_unit=u.Angstrom,
-    #         mask=model_emline_mask)
