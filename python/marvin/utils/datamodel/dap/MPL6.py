@@ -322,10 +322,7 @@ MPL6_models = [
           scale=1e-17, formats={'string': 'Emission line baseline fit'},
           description='The model of the constant baseline fitted beneath the '
                       'emission lines.',
-          binid=binid_properties[3]),
-    Model('binid', 'BINID', extension_wave=None, unit=u.dimensionless_unscaled,
-          scale=1, formats={'string': 'Bin ID'}, channels=MPL6_binid_channels,
-          description='Numerical ID for spatial bins.', binid=None)
+          binid=binid_properties[3])
 ]
 
 
