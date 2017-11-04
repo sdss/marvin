@@ -521,7 +521,8 @@ class Property(object):
 
         return self.name
 
-    def get_binid(self):
+    @property
+    def binid(self):
         """Returns the binid property associated with this property."""
 
         if self.name == 'binid':
@@ -820,7 +821,8 @@ class Model(object):
 
         return self._extension_mask is not None
 
-    def get_binid(self):
+    @property
+    def binid(self):
         """Returns the binid property associated with this property."""
 
         if self.name == 'binid':
