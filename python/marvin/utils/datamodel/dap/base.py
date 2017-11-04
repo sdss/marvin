@@ -487,7 +487,6 @@ class Property(object):
 
         self.ivar = ivar
         self.mask = mask
-        self._binid = binid
 
         self.formats = formats
 
@@ -506,12 +505,19 @@ class Property(object):
 
         self.parent = parent
 
+        self._binid = copy_mod.deepcopy(binid)
+        if self._binid is not None:
+            self._binid.parent = self.parent
+
     def set_parent(self, parent):
         """Sets parent."""
 
         assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
 
         self.parent = parent
+
+        if self._binid is not None:
+            self._binid.parent = self.parent
 
     def full(self):
         """Returns the name + channel string."""
@@ -566,6 +572,8 @@ class Property(object):
     @property
     def db_table(self):
         """The DB table to use to retrieve this property."""
+
+        assert self.parent is not None, 'parent DAPDataModel is not set for this property.'
 
         return self.parent.property_table
 
@@ -660,7 +668,7 @@ class MultiChannelProperty(list):
         self.parent = parent
 
         for prop in self:
-            prop.parent = parent
+            prop.set_parent(parent)
 
     @property
     def channels(self):
@@ -770,6 +778,10 @@ class Model(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             model. Default ones are ``latex`` and ``string``.
+        parent (:class:`DAPDataModel` object or None):
+            The associated :class:`DAPDataModel` object. Usually it is set to
+            ``None`` and populated when the model is added to the
+            ``DAPDataModel`` object.
         binid (:class:`Property` object or None):
             The ``binid`` :class:`Property` object associated with this
             model. If not set, assumes the `.DAPDataModel` ``default_binid``.
@@ -781,7 +793,7 @@ class Model(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, channels=[],
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 binid=None, description=''):
+                 parent=None, binid=None, description=''):
 
         self.name = name
 
@@ -790,8 +802,6 @@ class Model(object):
         self._extension_ivar = extension_ivar
         self._extension_mask = extension_mask
 
-        self._binid = binid
-
         self.channels = channels
 
         self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
@@ -799,12 +809,21 @@ class Model(object):
         self.formats = formats
         self.description = description
 
+        self.parent = parent
+
+        self._binid = copy_mod.deepcopy(binid)
+        if self._binid is not None:
+            self._binid.parent = self.parent
+
     def set_parent(self, parent):
         """Sets parent."""
 
         assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
 
         self.parent = parent
+
+        if self._binid is not None:
+            self._binid.parent = self.parent
 
     def full(self):
         """Returns the name + channel string."""
