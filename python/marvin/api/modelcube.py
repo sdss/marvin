@@ -111,9 +111,11 @@ class ModelCubeView(BaseView):
 
         .. :quickref: ModelCube; Get a modelcube given a name, bintype, and template
 
-        :param name: The name of the maps as plate-ifu or mangaid
-        :param bintype: The bintype associated with this maps. If not defined, the default is used
-        :param template: The template associated with this maps. If not defined, the default is used
+        :param name: The name of the modelcube as plate-ifu or mangaid
+        :param bintype: The bintype associated with this modelcube.
+                        If not defined, the default is used
+        :param template: The template associated with this modelcube.
+                         If not defined, the default is used
         :form release: the release of MaNGA data
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -199,9 +201,11 @@ class ModelCubeView(BaseView):
     def getModelCubeExtension(self, args, name, bintype, template, modelcube_extension):
         """Returns the extension for a modelcube given a plateifu/mangaid.
 
-        .. :quickref: Cube; Gets the extension given a plate-ifu or mangaid
+        .. :quickref: ModelCube; Gets the extension given a plate-ifu or mangaid
 
         :param name: The name of the cube as plate-ifu or mangaid
+        :param bintype: The bintype associated with this modelcube.
+        :param template: The template associated with this modelcube.
         :param modelcube_extension: The name of the cube extension.  Either flux, ivar, or mask.
         :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
@@ -268,10 +272,12 @@ class ModelCubeView(BaseView):
     def getModelCubeBinid(self, args, name, bintype, template, modelcube_extension):
         """Returns the binid array for a modelcube given a plateifu/mangaid.
 
-        .. :quickref: Cube; Gets the binid array given a plate-ifu or mangaid
+        .. :quickref: ModelCube; Gets the binid array given a plate-ifu or mangaid
 
-        :param name: The name of the cube as plate-ifu or mangaid
-        :param modelcube_extension: The name of the cube extension.  Either flux, ivar, or mask.
+        :param name: The name of the modelcube as plate-ifu or mangaid
+        :param bintype: The bintype associated with this modelcube.
+        :param template: The template associated with this modelcube.
+        :param modelcube_extension: The name of the cube extension.
         :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -321,5 +327,86 @@ class ModelCubeView(BaseView):
                 self.results['data'] = {'binid': binid_data.tolist()}
             except Exception as ee:
                 self.results['error'] = str(ee)
+
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/<name>/<bintype>/<template>/quantities/<x>/<y>/',
+           methods=['GET', 'POST'], endpoint='getModelCubeQuantitiesSpaxel')
+    @av.check_args()
+    def getModelCubeQuantitiesSpaxel(self, args, name, bintype, template, x, y):
+        """Returns a dictionary with all the quantities.
+
+        .. :quickref: ModelCube; Returns a dictionary with all the quantities
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param bintype: The bintype associated with this modelcube.
+        :param template: The template associated with this modelcube.
+        :param x: The x coordinate of the spaxel (origin is ``lower``)
+        :param y: The y coordinate of the spaxel (origin is ``lower``)
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/modelcubes/8485-1901/SPX/GAU_MILESHC/quantities/10/12/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"binned_flux": {"value": [0,0,..0], "ivar": ...},
+                       "emline_fit": ...}
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+        modelcube, res = _get_model_cube(name, **args)
+        self.update_results(res)
+
+        if modelcube:
+
+            self.results['data'] = {}
+
+            spaxel_quantities = modelcube._get_spaxel_quantities(x, y)
+
+            for quant in spaxel_quantities:
+
+                spectrum = spaxel_quantities[quant]
+
+                if spectrum is None:
+                    self.data[quant] = {'value': None}
+                    continue
+
+                value = spectrum.value.tolist()
+                ivar = spectrum.ivar.tolist() if spectrum.ivar is not None else None
+                mask = spectrum.mask.tolist() if spectrum.mask is not None else None
+
+                self.results['data'][quant] = {'value': value,
+                                               'ivar': ivar,
+                                               'mask': mask}
+
+            self.results['data']['wavelength'] = modelcube._wavelength.tolist()
 
         return Response(json.dumps(self.results), mimetype='application/json')
