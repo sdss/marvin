@@ -178,7 +178,17 @@ class Spaxel(object):
             self.load()
 
     def _check_versions(self, attr, input_value, check_input=True):
-        """Checks that all input object have the same versions."""
+        """Checks that all input object have the same versions.
+
+        Runs sanity checks to make sure that ``attr`` has the same value
+        in the input `.Cube`, `.Maps`, and `.ModelCube`. If
+        ``check_input=True``, also checks that the ``input_value`` for the
+        attribute matches the ones in the Marvin objects.
+
+        Returns the value for the attribute based on the input value and the
+        Marvin objects, or raises an error if there is an inconsistency.
+
+        """
 
         inputs = []
         for obj in [self.cube, self.maps, self.modelcube]:
