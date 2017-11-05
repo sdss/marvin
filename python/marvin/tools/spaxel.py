@@ -176,6 +176,26 @@ class Spaxel(object):
         if lazy is False:
             self.load()
 
+    def __dir__(self):
+
+        items = self.cube_quantities.__dir__()
+        items += self.maps_quantities.__dir__()
+        items += self.modelcube_quantities.__dir__()
+        items += super(Spaxel, self).__dir__()
+
+        return sorted(items)
+
+    def __getattr__(self, value):
+
+        if value in self.cube_quantities:
+            return self.cube_quantities[value]
+        if value in self.maps_quantities:
+            return self.maps_quantities[value]
+        if value in self.modelcube_quantities:
+            return self.modelcube_quantities[value]
+
+        return super(Spaxel, self).__getattribute__(value)
+
     def _check_versions(self, attr, input_value, check_input=True):
         """Checks that all input object have the same versions.
 
