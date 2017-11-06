@@ -461,14 +461,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         else:
             binid_prop = self.datamodel.parent.default_binid
 
+        # Before MPL-6, the modelcube does not include the binid extension,
+        # so we need to get the binid map from the associated MAPS.
+        if (distutils.version.StrictVersion(self._dapver) <
+                distutils.version.StrictVersion('2.1')):
+            return self.getMaps().get_binid()
+
         if self.data_origin == 'file':
 
-            # Before MPL-6, the modelcube does not include the binid extension,
-            # so we need to get the binid map from the associated MAPS.
-            if (distutils.version.StrictVersion(self._dapver) <
-                    distutils.version.StrictVersion('2.1')):
-                return self.getMaps().get_binid()
-            elif binid_prop.channel is None:
+            if binid_prop.channel is None:
                 return self.data[binid_prop.name].data[:, :]
             else:
                 return self.data[binid_prop.name].data[binid_prop.channel.idx, :, :]
