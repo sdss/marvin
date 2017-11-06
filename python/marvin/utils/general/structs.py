@@ -10,8 +10,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import inspect
-
 from collections import OrderedDict
 
 import six
@@ -174,7 +172,8 @@ class FuzzyList(list):
 
     def __getattr__(self, value):
 
-        self_values = [self.mapper(item) for item in self]
+        self_values = [super(FuzzyList, self).__getattribute__('mapper')(item)
+                       for item in self]
 
         if value in self_values:
             return self[value]
