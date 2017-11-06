@@ -227,10 +227,15 @@ class PropertyList(FuzzyList):
         self.parent = parent
         self.extensions = []
 
-        super(PropertyList, self).__init__([], mapper=lambda xx: xx.full())
+        super(PropertyList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """A helper for the FuzzyList to determine the query value."""
+
+        return value.full()
 
     def append(self, value, copy=True):
         """Appends with copy, and unpacking properties."""
@@ -345,10 +350,15 @@ class ModelList(FuzzyList):
 
         self.parent = parent
 
-        super(ModelList, self).__init__([], mapper=lambda xx: xx.full())
+        super(ModelList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """A helper for the FuzzyList to determine the query value."""
+
+        return value.full()
 
     def append(self, value, copy=True):
         """Appends with copy."""
