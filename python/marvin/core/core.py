@@ -191,9 +191,16 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         if self.filename:
             self.mangaid = None
             self.plateifu = None
-            assert os.path.exists(self.filename), 'filename does not exist.'
+
+            if self.mode == 'remote':
+                raise MarvinError('filename not allowed in remote mode.')
+
+            assert os.path.exists(self.filename), \
+                'filename {} does not exist.'.format(str(self.filename))
+
         elif self.plateifu:
             assert self.filename is None, 'invalid set of inputs.'
+
         elif self.mangaid:
             assert self.filename is None, 'invalid set of inputs.'
             self.plateifu = mangaid2plateifu(self.mangaid,
