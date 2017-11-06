@@ -323,7 +323,7 @@ class ModelCubeView(BaseView):
         if modelcube:
             try:
                 model = modelcube.datamodel.from_fits_extension(modelcube_extension)
-                binid_data = modelcube._get_binid(model)
+                binid_data = modelcube.get_binid(model)
                 self.results['data'] = {'binid': binid_data.tolist()}
             except Exception as ee:
                 self.results['error'] = str(ee)
