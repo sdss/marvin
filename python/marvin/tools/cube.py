@@ -466,7 +466,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
                             cube_quantities[dm.name] = None
                             continue
 
-                        data[key] = np.array(spaxel_data)
+                        data[key] = np.array(spaxel_data[0])
 
                 cube_quantities[dm.name] = Spectrum(data['value'],
                                                     ivar=data['ivar'],

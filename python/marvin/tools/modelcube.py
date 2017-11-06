@@ -416,7 +416,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                             dapdb.ModelSpaxel.modelcube_pk == self.data.pk,
                             dapdb.ModelSpaxel.x == x, dapdb.ModelSpaxel.y == y).one()
 
-                        data[key] = np.array(spaxel_data)
+                        data[key] = np.array(spaxel_data[0])
 
                 modelcube_quantities[dm.name] = Spectrum(data['value'],
                                                          ivar=data['ivar'],
