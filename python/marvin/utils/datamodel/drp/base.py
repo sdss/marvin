@@ -99,10 +99,15 @@ class DataCubeList(FuzzyList):
 
         self.parent = parent
 
-        super(DataCubeList, self).__init__([], mapper=lambda xx: xx.name)
+        super(DataCubeList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """Helper method for the fuzzy list to match on the datacube name."""
+
+        return value.name
 
     def append(self, value, copy=True):
         """Appends with copy."""
@@ -306,10 +311,15 @@ class SpectrumList(FuzzyList):
 
         self.parent = parent
 
-        super(SpectrumList, self).__init__([], mapper=lambda xx: xx.name)
+        super(SpectrumList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """Helper method for the fuzzy list to match on the spectrum name."""
+
+        return value.name
 
     def append(self, value, copy=True):
         """Appends with copy."""
