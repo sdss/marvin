@@ -140,6 +140,8 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.ra = float(self.header['OBJRA'])
         self.dec = float(self.header['OBJDEC'])
 
+        self.mangaid = self.header['MANGAID']
+
         self._isbright = 'APOGEE' in self.header['SRVYMODE']
 
         self.dir3d = 'mastar' if self._isbright else 'stack'
