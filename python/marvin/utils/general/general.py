@@ -1,23 +1,39 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: general.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
+
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import collections
-import os
-import warnings
-import sys
-import numpy as np
-import PIL
 import inspect
-from scipy.interpolate import griddata
+import sys
+import warnings
+
 from collections import OrderedDict
 
-from astropy import wcs
+import numpy as np
+
+from scipy.interpolate import griddata
+
+import PIL
+
 from astropy import table
+from astropy import wcs
 from astropy.units.quantity import Quantity
 
 import marvin
+
 from marvin import log
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from brain.core.exceptions import BrainError
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -157,8 +173,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps, modelcube=modelcube))
+            marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
+                                           cube=cube, maps=maps, modelcube=modelcube))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]

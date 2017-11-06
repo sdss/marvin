@@ -25,58 +25,16 @@ Plate
    :show-inheritance:
 
 
-.. _marvin-tools-bin:
-
-Bin
----
-
-.. automodule:: marvin.tools.bin
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-.. _marvin-tools-spaxel:
-
-Spaxel
--------
-
-.. automodule:: marvin.tools.spaxel
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-.. _marvin-tools-spectrum:
-
-Spectrum
---------
-
-.. automodule:: marvin.tools.quantities
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. _marvin-tools-analprop:
-
-AnalysisProperty
-----------------
-
-.. automodule:: marvin.tools.quantities
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. _marvin-tools-rss:
 
 RSS
--------
+---
 
 .. automodule:: marvin.tools.rss
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 .. _marvin-tools-maps:
 
@@ -88,25 +46,6 @@ Maps
    :undoc-members:
    :show-inheritance:
 
-.. _marvin-tools-mapsprop:
-
-Property
-------------
-
-.. autoclass:: marvin.utils.datamodel.dap.Property
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. _marvin-tools-map:
-
-Map
----
-
-.. automodule:: marvin.tools.quantities
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 .. _marvin-tools-modelcube:
 
@@ -114,6 +53,28 @@ Model Cube
 ----------
 
 .. automodule:: marvin.tools.modelcube
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. _marvin-tools-spaxel:
+
+Spaxel
+-------
+
+.. automodule:: marvin.tools.spaxel
+   :members: SpaxelBase, Spaxel
+   :undoc-members:
+   :show-inheritance:
+
+
+.. _marvin-tools-bin:
+
+Bin
+---
+
+.. automodule:: marvin.tools.bin
    :members:
    :undoc-members:
    :show-inheritance:

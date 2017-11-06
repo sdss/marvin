@@ -451,10 +451,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         return modelcube_quantities
 
-    def _get_binid(self, model):
+    def get_binid(self, model=None):
         """Returns the 2D array for the binid map associated with ``model``."""
 
-        assert isinstance(model, Model), 'invalid model type.'
+        assert model is None or isinstance(model, Model), 'invalid model type.'
+
+        if model is not None:
+            binid_prop = model.binid
+        else:
+            binid_prop = self.datamodel.parent.default_binid
 
         if self.data_origin == 'file':
 
@@ -462,16 +467,18 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             # so we need to get the binid map from the associated MAPS.
             if (distutils.version.StrictVersion(self._dapver) <
                     distutils.version.StrictVersion('2.1')):
-                return self.getMaps()._get_binid()
+                return self.getMaps().get_binid()
+            elif binid_prop.channel is None:
+                return self.data[binid_prop.name].data[:, :]
             else:
-                return self.data['BINID'].data[model.binid.channel.idx, :, :]
+                return self.data[binid_prop.name].data[binid_prop.channel.idx, :, :]
 
         elif self.data_origin == 'db':
 
             mdb = marvin.marvindb
 
             table = mdb.dapdb.ModelSpaxel
-            column = getattr(table, model.binid.db_column())
+            column = getattr(table, binid_prop.db_column())
 
             binid_list = mdb.session.query(column).filter(
                 table.modelcube_pk == self.data.pk).order_by(table.x, table.y).all()
@@ -486,10 +493,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             params = {'release': self._release}
             url = marvin.config.urlmap['api']['getModelCubeBinid']['url']
 
+            extension = model.fits_extension().lower() if model is not None else 'flux'
+
             try:
                 response = self._toolInteraction(
                     url.format(name=self.plateifu,
-                               modelcube_extension=model.fits_extension().lower(),
+                               modelcube_extension=extension,
                                bintype=self.bintype.name,
                                template=self.template.name), params=params)
             except Exception as ee:
@@ -517,7 +526,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=binned_flux_ivar,
                         mask=binned_flux_mask,
                         redcorr=self._redcorr,
-                        binid=self._get_binid(model),
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -534,7 +543,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=model_mask,
                         redcorr=self._redcorr,
-                        binid=self._get_binid(model),
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -551,7 +560,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=emline_mask,
                         redcorr=self._redcorr,
-                        binid=self._get_binid(model),
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -571,7 +580,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=None,
                         mask=stellarcont_mask,
                         redcorr=self._redcorr,
-                        binid=self._get_binid(model),
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     def getCube(self):
