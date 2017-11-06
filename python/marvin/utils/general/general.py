@@ -59,7 +59,7 @@ drpTable = {}
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,
-              x=None, y=None, ra=None, dec=None, xyorig=None):
+              x=None, y=None, ra=None, dec=None, xyorig=None, **kwargs):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -99,6 +99,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
             lower-left corner. This keyword is ignored if ``ra`` and
             ``dec`` are defined. ``xyorig`` defaults to
             ``marvin.config.xyorig.``
+        kwargs (dict):
+            Arguments to be passed to `~marvin.tools.spaxel.SpaxelBase`.
 
     Returns:
         spaxels (list):
@@ -174,7 +176,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     for ii in range(len(iCube[0])):
         _spaxels.append(
             marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
-                                           cube=cube, maps=maps, modelcube=modelcube))
+                                           cube=cube, maps=maps, modelcube=modelcube,
+                                           **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]

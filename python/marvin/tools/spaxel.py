@@ -559,7 +559,13 @@ class Bin(SpaxelBase):
             'a Bin must have a Maps or a ModelCube.'
 
         self.binid = None
-        self.spaxels = self._create_spaxels()
+        self.spaxels = None
+
+    def load(self):
+        """Loads quantities and spaxels."""
+
+        super(Bin, self).load()
+        self._create_spaxels()
 
     def __repr__(self):
         """Spaxel representation."""
@@ -595,15 +601,13 @@ class Bin(SpaxelBase):
                               .format(self.x, self.y))
 
         spaxel_coords = zip(*np.where(binid_map == self.binid))
-        spaxels = []
+        self.spaxels = []
 
         for jj, ii in spaxel_coords:
-            spaxels.append(Spaxel(x=jj, y=ii, plateifu=self.plateifu, release=self.release,
-                                  cube=self.cube, maps=True if self.maps else False,
-                                  modelcube=True if self.modelcube else False,
-                                  bintype=None, template=self.template, lazy=True))
-
-        return spaxels
+            self.spaxels.append(Spaxel(x=jj, y=ii, plateifu=self.plateifu, release=self.release,
+                                       cube=self.cube, maps=True if self.maps else False,
+                                       modelcube=True if self.modelcube else False,
+                                       bintype=None, template=self.template, lazy=True))
 
     def load_all(self):
         """Loads all the spaxels."""

@@ -602,7 +602,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec,
                                                       cube=self,
                                                       maps=properties,
-                                                      modelcube=models)
+                                                      modelcube=models, **kwargs)
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
