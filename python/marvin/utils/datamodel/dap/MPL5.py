@@ -33,7 +33,7 @@ binid_property = Property('binid', ivar=False, mask=False,
                                       'calculated; bins are sorted by S/N.')
 
 
-last_idx = len(MPL4_emline_channels)
+last_idx = len(MPL4_emline_channels) - 1
 MPL5_emline_channels = MPL4_emline_channels + [
     Channel('oii_3727', formats={'string': 'OII 3727',
                                  'latex': r'$\forb{O\,II}\;\lambda 3727$'}, idx=last_idx + 1),
