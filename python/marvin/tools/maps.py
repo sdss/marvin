@@ -266,7 +266,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.datamodel = datamodel[self._dapver].properties
 
         # Checks the bintype and template from the header
-        is_MPL4 = self.datamodel.release == 'MPL-4'
+        is_MPL4 = 'MPL-4' in self.datamodel.parent.aliases
         if not is_MPL4:
             header_bintype = self.data[0].header['BINKEY'].strip().upper()
             header_bintype = 'SPX' if header_bintype == 'NONE' else header_bintype
