@@ -4,7 +4,7 @@ Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
-|Build Status| |Coverage Status| |PyPI| |PyPI download| |DOI| |astropy|
+|Build Status| |Coverage Status| |PyPI| |DOI| |astropy|
 |BrowserStack Status| |readthedocs|
 
 Installation
@@ -95,8 +95,6 @@ Marvin is licensed under a 3-clause BSD style license - see the
 .. |Coverage Status| image:: https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master
    :target: https://coveralls.io/github/sdss/marvin?branch=master
 .. |PyPI| image:: https://img.shields.io/pypi/v/sdss-marvin.svg
-   :target: https://pypi.python.org/pypi/sdss-marvin
-.. |PyPI download| image:: https://img.shields.io/pypi/dm/sdss-marvin.svg
    :target: https://pypi.python.org/pypi/sdss-marvin
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.292632.svg
    :target: https://doi.org/10.5281/zenodo.292632
