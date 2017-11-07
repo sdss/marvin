@@ -14,8 +14,6 @@
 from setuptools import setup, find_packages
 
 import os
-import warnings
-from get_version import generate_version_py
 
 from astropy.utils.data import download_file
 
@@ -26,16 +24,6 @@ import sys
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-def convert_md_to_rst(fp):
-    try:
-        import pypandoc
-        output = pypandoc.convert_file(fp, 'rst')
-        return output
-    except ImportError:
-        warnings.warn('cannot import pypandoc.', UserWarning)
-        return open(fp).read()
 
 
 def add_data_file(directory, data_files):
@@ -99,7 +87,6 @@ NAME = 'sdss-marvin'
 # do not use x.x.x-dev.  things complain.  instead use x.x.xdev
 VERSION = '2.1.5dev'
 RELEASE = 'dev' not in VERSION
-#generate_version_py(NAME, VERSION, RELEASE)
 
 
 def run(data_files, packages, install_requires):
@@ -108,7 +95,7 @@ def run(data_files, packages, install_requires):
           version=VERSION,
           license='BSD3',
           description='Toolsuite for dealing with the MaNGA dataset',
-          long_description=convert_md_to_rst('README.md'),
+          long_description=open('README.rst').read(),
           author='The Marvin Developers',
           author_email='havok2063@hotmail.com',
           keywords='marvin manga astronomy MaNGA',
@@ -148,9 +135,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]))
 
-    parser.add_argument('-w', '--noweb', dest='noweb', default=False, action='store_true', help='Does not build the web.')
-    parser.add_argument('-d', '--dev', dest='dev', default=False, action='store_true', help='Install all packages for development')
-    parser.add_argument('-b', '--web', dest='web', default=False, action='store_true', help='Install only core + web packages')
+    parser.add_argument('-w', '--noweb', dest='noweb', default=False, action='store_true',
+                        help='Does not build the web.')
+    parser.add_argument('-d', '--dev', dest='dev', default=False, action='store_true',
+                        help='Install all packages for development')
+    parser.add_argument('-b', '--web', dest='web', default=False, action='store_true',
+                        help='Install only core + web packages')
 
     # We use parse_known_args because we want to leave the remaining args for distutils
     args = parser.parse_known_args()[0]
