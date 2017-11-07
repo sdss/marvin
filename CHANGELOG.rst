@@ -4,16 +4,16 @@ Marvin's Change Log
 [2.1.5] - unreleased
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Better BPT documentation, in particular in the ``Modifying the plot``
    section.
 -  A hack function ``marvin.utils.plot.utils.bind_to_figure()`` that
    replicate the contents of a matplotlib axes in another figure.
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  Issue `#190 <https://github.com/sdss/marvin/issues/190>`_: ``Maps.get_bpt()`` and
    ``marvin.utils.dap.bpt.bpt_kewley06()`` now also return a list of
@@ -21,15 +21,15 @@ Changed:
    ``marvin.utils.plot.utils.bind_to_figure()`` function, for easily
    transfer the axes to a new figure.
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 
 [2.1.4] - 2017/08/02
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Added new query_params object, for easier navigation of available
    query parameters. Added new tests.
@@ -40,8 +40,8 @@ Added:
 -  Added Route Rate Limiting. Adopts a limit of 200/min for all api
    routes and 60/minute for query api calls and web searches
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  Changed call signature for
    :meth:``marvin.utils.plot.map.no_coverage_mask`` (removed ``value``
@@ -60,8 +60,8 @@ Changed:
 -  Issue `#282 <https://github.com/sdss/marvin/issues/282>`_: Improvements to "Go to CAS" link. Changed to Go To
    SkyServer and updated link to public up-to-date link
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Issue `#102 <https://github.com/sdss/marvin/issues/102>`_: problem with urllib package when attempting to retrieve
    the Marvin URLMap
@@ -100,8 +100,8 @@ Fixed:
 [2.1.3] - 2017/05/18
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Issue `#204 <https://github.com/sdss/marvin/issues/204>`_: added elpetro_absmag colours to mangaSampleDB models.
 -  Issue `#253 <https://github.com/sdss/marvin/issues/253>`_: Plotting tutorial.
@@ -117,8 +117,8 @@ Added:
 -  Added ``utils.plot.map`` doc page.
 -  Added ``tools.map`` doc page.
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  Issue `#243 <https://github.com/sdss/marvin/issues/243>`_: inverted ``__getitem__`` behaviour for
    Cube/Maps/ModelCube and fixed tests.
@@ -142,8 +142,8 @@ Changed:
 -  Decreased map plot title font size in web so that it does not run
    onto second line and overlap plot.
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Interactive prompt for username in sdss_access now works for Python
    3.
@@ -162,8 +162,8 @@ Fixed:
    directive, so they now use the python directive.
 -  Highcharts draggable legend cdn.
 
-Removed:
-~~~~~~~~
+Removed
+~~~~~~~
 
 -  Issue #232 and Issue `#251 <https://github.com/sdss/marvin/issues/251>`_: Automatic setting of matplotlib style
    sheets via seaborn import or ``plt.style.use()``.
@@ -172,14 +172,14 @@ Removed:
 [2.1.2] - 2017/03/17
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  API and Web argument validation using webargs and marshmallow. If
    parameters invalid, returns 422 status.
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  Per Issue `#186 <https://github.com/sdss/marvin/issues/186>`_: Switched to using the elpetro version of stellar
    mass, absolute magnitude i-band, and i-band mass-to-light ratio for
@@ -192,8 +192,8 @@ Changed:
 -  Moved our documentation to readthedocs for version control. Updated
    all Marvin web documenation links to point to readthedocs.
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  A bug in the calculation of the composite mask for BPT.
 -  Issue `#179 <https://github.com/sdss/marvin/issues/179>`_: Fixed a python 2/3 exception error compatibility with the
@@ -203,22 +203,22 @@ Fixed:
 [2.1.1] - 2017/02/18
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Added query runtime output in search page html. And a warning if
    query is larger than 20 seconds.
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  Removed the python 3 raise Exception in the check_marvin bin
 -  Reverted the api/query return output from jsonify back to json.dumps
 
    -  This is an issue with python 2.7.3 namedtuple vs 2.7.11+
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Issue `#181 <https://github.com/sdss/marvin/issues/181>`_: web display of maps were inverted; changed to xyz[jj, ii,
    val] in heatmap.js
@@ -228,8 +228,8 @@ Fixed:
 [2.1.0] - 2017/02/16
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Restructured documentation index page.
 -  Improved installation documentation:
@@ -277,8 +277,8 @@ Added:
 -  Added quick access to the NSA information for a Cube/Maps either from
    mangaSampleDB or drpall.
 
-Changed:
-~~~~~~~~
+Changed
+~~~~~~~
 
 -  When marvin is running from source (not dist), ``marvin.__version__``
    is ``dev``.
@@ -332,8 +332,8 @@ Changed:
 -  updated the limit-as parameter in the uwsgi ini file to 4096 mb from
    1024 mb for production environment
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Issue `#115 <https://github.com/sdss/marvin/issues/115>`_: drpall does not get updated when a tool sets a custom
    release.
@@ -355,13 +355,13 @@ Fixed:
 [2.0.9] - 2016/11/19
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Docs now use ``marvin.__version__``.
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Fixed #100, `#103 <https://github.com/sdss/marvin/issues/103>`_: problem with getMap for properties without ivar.
 -  Fixed `#101 <https://github.com/sdss/marvin/issues/101>`_: problem with marvin query.
@@ -370,8 +370,8 @@ Fixed:
 [2.0.8] - 2016/11/18
 --------------------
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Now really fixing #98
 
@@ -381,8 +381,8 @@ Fixed:
 [2.0.7] - 2016/11/18
 --------------------
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Fixed issue #98
 
@@ -390,8 +390,8 @@ Fixed:
 [2.0.6] - 2016/11/17
 --------------------
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Bug in Queries with dap query check running in remote mode. Param
    form is empty.
@@ -400,14 +400,14 @@ Fixed:
 [2.0.5] - 2016/11/17
 --------------------
 
-Added:
-~~~~~~
+Added
+~~~~~
 
 -  Added netrc configuration to installation documentation.
 -  Added netrc check on init.
 
-Fixed:
-~~~~~~
+Fixed
+~~~~~
 
 -  Added mask to model spaxel.
 -  Bug in Cube tool when a galaxy loaded from db does not have NSA info;
