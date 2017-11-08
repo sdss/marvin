@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 11:24:09
+# @Last Modified time: 2017-11-08 11:34:28
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -184,7 +184,19 @@ def _set_limits(column, lim=None, sigma_cutoff=50, percent_clip=1):
 
 
 def _check_input_data(coldim, col, data=None):
-    ''' Check the input data '''
+    ''' Check the input data
+
+    Parameters:
+        coldim (str):
+            Name of the dimension
+        col (str|array):
+            The list or array of values.  If data keyword is specified, col is a string name
+        data (Pandas.DataFrame)
+            A Pandas dataframe
+
+    Returns:
+        The column of data
+    '''
 
     # check data
     assert col is not None, 'Must provide an {0} column'.format(coldim)
@@ -215,7 +227,21 @@ def _format_hist_kwargs(axis, **kwargs):
 
 
 def _prep_func_kwargs(func, kwargs):
-    ''' Prepare the keyword arguments for the proper function input '''
+    ''' Prepare the keyword arguments for the proper function input
+
+    Checks an input dictionary against allowed keyword arguments
+    for a given function.  Returns only those usable in that function.
+
+    Parameters:
+        func:
+            The name of the function to check keywords against
+        kwargs (dict):
+            A dictionary of keyword arguments to test
+
+    Returns:
+        A new dictionary of usable keyword arguments
+
+    '''
     invalid = invalidArgs(func, kwargs)
     new_kwargs = kwargs.copy()
     for key in invalid:
