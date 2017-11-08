@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 10:52:16
+# @Last Modified time: 2017-11-08 11:24:09
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -141,15 +141,43 @@ def _set_options():
     mpl.rcParams['grid.alpha'] = 0.8
 
 
-def _set_limits(column, lim=None):
-    ''' Set an axis limit '''
+def _set_limits(column, lim=None, sigma_cutoff=50, percent_clip=1):
+    ''' Set an axis limit
+
+    Determines whether to apply percentile clipping or not if any data
+    has a zscore value above the sigma_cutoff value.  Applies percentile clipping
+    centered around the mean.
+
+    Parameters:
+        column:
+            The array of data to get limits of
+        lim (list|tuple):
+            A user provided range
+        sigma_cutoff (int):
+            The number of sigma away from the mean to cutoff
+        percent_clip (int|tuple):
+            The percent to clip off the data array.  Input values are taken as percentages.
+            Can either be integer value (halved for lo,hi) or a tuple specifying lo,hi values.
+            Default is 1%.
+
+    Returns:
+        A list of axis range values to use
+
+    '''
     if lim is not None:
         assert len(lim) == 2, 'range must be a list or tuple of 2'
     else:
+        # get percent clips
+        if isinstance(percent_clip, (list, tuple)):
+            lo, hi = percent_clip
+        else:
+            lo = percent_clip / 2.
+            hi = 100 - lo
+
         zscore = stats.zscore(column)
-        # use percentile limits if the max zscore is > 50 sigma away from median
-        if np.max(zscore) > 50.0:
-            lim = [np.percentile(column, 0.5), np.percentile(column, 99.5)]
+        # use percentile limits if the max zscore is > 50 sigma away from mean/stdev
+        if np.max(zscore) > sigma_cutoff:
+            lim = [np.percentile(column, lo), np.percentile(column, hi)]
         else:
             pass
     return lim
