@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# maps.py
-#
-# Created by José Sánchez-Gallego on 20 Jun 2016.
+# @Author: José Sánchez-Gallego
+# @Date: Nov 8, 2017
+# @Filename: maps.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
 from __future__ import division
@@ -11,6 +13,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import copy
+import inspect
 import itertools
 import six
 import warnings
@@ -138,7 +141,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     def __dir__(self):
 
-        return super(Maps, self).__dir__() + [prop.full() for prop in self.datamodel]
+        class_members = list(list(zip(*inspect.getmembers(self.__class__)))[0])
+        instance_attr = list(self.__dict__.keys())
+
+        return sorted(class_members + instance_attr) + [prop.full() for prop in self.datamodel]
 
     def _set_datamodel(self):
         """Sets the datamodel."""
