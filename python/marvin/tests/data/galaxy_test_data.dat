@@ -21,11 +21,11 @@
             elpetro_absmag_u_r: 1.7617149353
             sersic_n: 3.29617
         drpall:
-            z: 0.0407447
-            elpetro_th50_r: 1.33067
-            elpetro_ba: 0.87454
-            elpetro_phi: 154.873
+            z: [0.0407447, 'redshift']
+            elpetro_th50_r: [1.33067, 'petro_th50_el']
+            elpetro_ba: [0.87454, 'ba']
             sersic_n: 3.29617
+            sersic_phi: 163.295
     releasedata:
         MPL-4:
             spaxel:
@@ -172,11 +172,11 @@
             elpetro_absmag_u_r: 1.95657157898
             sersic_n: 4.43097
         drpall:
-            z: 0.020478
-            elpetro_th50_r: 4.26193
-            elpetro_ba: 0.743017
-            elpetro_phi: 149.48
+            z: [0.020478, 'redshift']
+            elpetro_th50_r: [4.26193, 'petro_th50_el']
+            elpetro_ba: [0.743017, 'ba']
             sersic_n: 4.43097
+            sersic_phi: 150.192
     releasedata:
         MPL-4:
             spaxel:

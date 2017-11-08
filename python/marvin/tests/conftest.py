@@ -9,7 +9,7 @@
 from collections import OrderedDict
 import itertools
 import os
-
+import copy
 import pytest
 
 from marvin import config, marvindb
@@ -407,7 +407,7 @@ class Galaxy(object):
         if self.plateifu not in galaxy_data:
             return
 
-        data = galaxy_data[self.plateifu]
+        data = copy.deepcopy(galaxy_data[self.plateifu])
 
         for key in data.keys():
             setattr(self, key, data[key])
@@ -416,6 +416,15 @@ class Galaxy(object):
         releasedata = self.releasedata[self.release]
         for key in releasedata.keys():
             setattr(self, key, releasedata[key])
+
+        # remap NSA drpall names for MPL-4 vs 5+
+        for key, val in self.nsa_data['drpall'].items():
+            if isinstance(val, list):
+                newval, newkey = self.nsa_data['drpall'].pop(key)
+                if self.release == 'MPL-4':
+                    self.nsa_data['drpall'][newkey] = newval
+                else:
+                    self.nsa_data['drpall'][key] = newval
 
     def set_params(self, bintype=None, template=None, release=None):
         """Set bintype, template, etc."""

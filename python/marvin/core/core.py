@@ -516,7 +516,7 @@ class DAPallMixIn(object):
         if self.data_origin == 'file':
             try:
                 dapall_data = self._get_dapall_from_file()
-            except FileNotFoundError:
+            except IOError:
                 warnings.warn('cannot find DAPall file. Trying remote request.',
                               MarvinUserWarning)
                 dapall_data = self._get_from_api()

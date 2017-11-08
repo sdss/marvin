@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 11:34:28
+# @Last Modified time: 2017-11-08 11:43:39
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -255,10 +255,19 @@ def _prep_func_kwargs(func, kwargs):
 def plot(x, y, **kwargs):
     ''' Create a scatter plot given two columns of data
 
-    Creates a Matplotlib scatter plot using two input arrays of data.  By default, will also
-    create and dispay histograms for the x and y data.  This can be disabled setting the "with_hist"
-    keyword to False, or "x", or "y" for displaying only that column. Accepts all the same keyword
-    arguments as matplotlib scatter and hist methods.
+    Creates a Matplotlib plot using two input arrays of data.  Creates either a Matplotlib scatter
+    plot, hexbin plot, or scatter density plot depending on the size of the input data.
+    For data with < 1000 values, creates a scatter plot.  For data with values between
+    1000 and 500,000, creates a hexbin plot.  For data with > 500,000 values, creates
+    a scatter density plot.
+
+    By default, will also create and display histograms for the x and y data.  This can be disabled
+    setting the "with_hist" keyword to False, or "x", or "y" for displaying only that column.
+    Accepts all the same keyword arguments as matplotlib scatter, hexbin, and hist methods.
+
+    See `scatter-density <https://github.com/astrofrog/mpl-scatter-density>_`.
+    See `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
+    See `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
 
     Parameters:
         x (str|list|ndarray):
@@ -289,7 +298,8 @@ def plot(x, y, **kwargs):
             number is adopted for both x and y bins.  A tuple is used to customize per axis.
         kwargs (dict):
             Any other keyword arguments to be passed to `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
-            or `matplotlib.pyplot.hist<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>_`.
+            or `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>_` or
+            `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
 
     Returns:
         A tuple of the matplotlib figure, axes, and histogram data (if returned)
