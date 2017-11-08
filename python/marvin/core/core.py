@@ -182,6 +182,8 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
             if input_dict['plate'] is not None and input_dict['ifu'] is not None:
                 self.plateifu = input
+            elif input_dict['plate'] is not None and input_dict['ifu'] is None:
+                self._plate = input
             elif input_dict['mangaid'] is not None:
                 self.mangaid = input
             else:
@@ -207,6 +209,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
+        elif self._plate:
+            assert self.filename is None, 'invalid set of inputs.'
+
     @staticmethod
     def _parse_input(value):
         """Parses and input and determines plate, ifu, and mangaid."""
@@ -219,7 +224,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         plateifu_pattern = re.compile('([0-9]{4,5})\-([0-9]{4,9})')
         ifu_pattern = re.compile('(7|127|[0-9]{2})([0-9]{2})')
         mangaid_pattern = re.compile('[0-9]{1,3}\-[0-9]+')
+        plateid_pattern = re.compile('([0-9]{4,})(?!-)(?<!-)')
 
+        plateid_match = re.match(plateid_pattern, value)
         plateifu_match = re.match(plateifu_pattern, value)
         mangaid_match = re.match(mangaid_pattern, value)
 
@@ -238,6 +245,10 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         # Check whether this is a mangaid
         elif mangaid_match is not None:
             return_dict['mangaid'] = value
+
+        # Check whether this is a plate
+        elif plateid_match is not None:
+            return_dict['plate'] = value
 
         return return_dict
 

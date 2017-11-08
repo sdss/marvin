@@ -127,7 +127,7 @@ class FuzzyList(list):
 
     Parameters:
         the_list (list):
-            The list on which we will fo fuzzy searching.
+            The list on which we will do fuzzy searching.
         mapper (function):
             A function that will be used to format the items in the list
             before searching them. By default it does a string casting.
