@@ -1139,7 +1139,7 @@ class Results(object):
         self.count = len(self.results)
 
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 
@@ -1217,7 +1217,7 @@ class Results(object):
         self.count = len(self.results)
 
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 
@@ -1284,7 +1284,7 @@ class Results(object):
 
         self.count = len(self.results)
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 

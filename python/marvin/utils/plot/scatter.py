@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 02:29:30
+# @Last Modified time: 2017-11-08 10:52:16
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -463,8 +463,9 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
 
     # compute a dictionary of the binids containing a list of the array indices in each bin
     binids = np.digitize(arr, binedges)
-    g = itertools.groupby(sorted(binids))
-    indices = {k: list(b) for k, b in g}
+    inds = np.where(binids)[0]
+    indices = defaultdict(list)
+    tmp = map(lambda i, x: indices[x].append(i), inds, binids)
 
     hist_data = {'counts': counts, 'binedges': binedges, 'bins': bins,
                  'binids': binids, 'indices': indices}
