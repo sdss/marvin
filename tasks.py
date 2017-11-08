@@ -24,7 +24,7 @@ def clean_docs(ctx):
     ctx.run("rm -rf docs/sphinx/_build")
 
 
-@task(clean_docs)
+@task
 def build_docs(ctx):
     ''' Builds the Sphinx docs '''
     print('Building the docs')

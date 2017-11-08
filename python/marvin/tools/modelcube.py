@@ -27,8 +27,9 @@ import marvin.tools.maps
 
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
-from marvin.tools.quantities import DataCube
-from marvin.utils.datamodel.dap import datamodel
+from marvin.tools.quantities import DataCube, Spectrum
+from marvin.utils.datamodel.dap import datamodel, Model
+from marvin.utils.general import FuzzyDict
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
@@ -65,10 +66,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                  drpall=None, download=None, nsa_source='auto',
                  bintype=None, template=None, template_kin=None):
 
-        release = release if release else marvin.config.release
-        mode = mode if mode else marvin.config.mode
-        download = download if download else marvin.config.download
-
         if template_kin is not None:
             warnings.warn('template_kin is deprecated and will be removed in a future version.',
                           DeprecationWarning)
@@ -95,6 +92,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = None
         self._wavelength = None
         self._redcorr = None
+        self._shape = None
 
         # Model extensions
         self._extension_data = {}
@@ -184,6 +182,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = WCS(self.data['FLUX'].header)
         self._wavelength = self.data['WAVE'].data
         self._redcorr = self.data['REDCORR'].data
+        self._shape = (self.data['FLUX'].header['NAXIS2'],
+                       self.data['FLUX'].header['NAXIS1'])
 
         self.plateifu = self.header['PLATEIFU']
         self.mangaid = self.header['MANGAID']
@@ -261,6 +261,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
             self._wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
             self._redcorr = np.array(self.data.redcorr[0].value, dtype=np.float)
+            self._shape = self.data.file.cube.shape.shape
 
             self.plateifu = str(self.header['PLATEIFU'].strip())
             self.mangaid = str(self.header['MANGAID'].strip())
@@ -284,12 +285,13 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.wcs = WCS(fits.Header.fromstring(data['wcs_header']))
         self._wavelength = np.array(data['wavelength'])
         self._redcorr = np.array(data['redcorr'])
+        self._shape = tuple(data['shape'])
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  spectrum=True, properties=True, **kwargs):
+                  drp=True, properties=True, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -316,15 +318,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            spectrum (bool):
+            drpa (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DRP spectrum.
+                corresponding DRP data.
             properties (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DAP properties for this spaxel.
-            modelcube (bool):
-                If ``True``, the |spaxel| will be initialised with the
-                corresponding ModelCube data.
 
         Returns:
             spaxels (list):
@@ -336,11 +335,9 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        kwargs['cube'] = self.cube if spectrum else False
-        kwargs['maps'] = self.maps.get_unbinned() if properties else False
-        kwargs['modelcube'] = self.get_unbinned()
-
-        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
+        return marvin.utils.general.general.getSpaxel(
+            x=x, y=y, ra=ra, dec=dec,
+            cube=drp, maps=properties, modelcube=self, **kwargs)
 
     def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
@@ -371,8 +368,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                bintype=self.bintype.name, template=self.template.name),
                     params=params)
             except Exception as ee:
-                raise MarvinError('found a problem when checking if remote cube '
-                                  'exists: {0}'.format(str(ee)))
+                raise MarvinError('found a problem when checking if remote '
+                                  'modelcube exists: {0}'.format(str(ee)))
 
             data = response.getData()
             cube_ext_data = data['extension_data']
@@ -381,6 +378,139 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self._extension_data[ext_name] = ext_data
 
         return ext_data
+
+    def _get_spaxel_quantities(self, x, y):
+        """Returns a dictionary of spaxel quantities."""
+
+        modelcube_quantities = FuzzyDict({})
+
+        if self.data_origin == 'db':
+
+            session = marvin.marvindb.session
+            dapdb = marvin.marvindb.dapdb
+
+        if self.data_origin == 'file' or self.data_origin == 'db':
+
+            for dm in self.datamodel:
+
+                data = {'value': None, 'ivar': None, 'mask': None}
+
+                for key in data:
+
+                    if key == 'ivar' and not dm.has_ivar():
+                        continue
+                    if key == 'mask' and not dm.has_mask():
+                        continue
+
+                    if self.data_origin == 'file':
+
+                        extname = dm.fits_extension(None if key == 'value' else key)
+                        data[key] = self.data[extname].data[:, y, x]
+
+                    elif self.data_origin == 'db':
+
+                        colname = dm.db_column(None if key == 'value' else key)
+                        db_column = getattr(dapdb.ModelSpaxel, colname)
+
+                        spaxel_data = session.query(db_column).filter(
+                            dapdb.ModelSpaxel.modelcube_pk == self.data.pk,
+                            dapdb.ModelSpaxel.x == x, dapdb.ModelSpaxel.y == y).one()
+
+                        data[key] = np.array(spaxel_data[0])
+
+                modelcube_quantities[dm.name] = Spectrum(data['value'],
+                                                         ivar=data['ivar'],
+                                                         mask=data['mask'],
+                                                         wavelength=self._wavelength,
+                                                         unit=dm.unit)
+
+        if self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getModelCubeQuantitiesSpaxel']['url']
+
+            try:
+                response = self._toolInteraction(url.format(name=self.plateifu,
+                                                            x=x, y=y,
+                                                            bintype=self.bintype.name,
+                                                            template=self.template.name,
+                                                            params=params))
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote modelcube '
+                                  'exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            for dm in self.datamodel:
+
+                modelcube_quantities[dm.name] = Spectrum(data[dm.name]['value'],
+                                                         ivar=data[dm.name]['ivar'],
+                                                         mask=data[dm.name]['mask'],
+                                                         wavelength=data['wavelength'],
+                                                         unit=dm.unit)
+
+        return modelcube_quantities
+
+    def get_binid(self, model=None):
+        """Returns the 2D array for the binid map associated with ``model``."""
+
+        assert model is None or isinstance(model, Model), 'invalid model type.'
+
+        if model is not None:
+            binid_prop = model.binid
+        else:
+            binid_prop = self.datamodel.parent.default_binid
+
+        # Before MPL-6, the modelcube does not include the binid extension,
+        # so we need to get the binid map from the associated MAPS.
+        if (distutils.version.StrictVersion(self._dapver) <
+                distutils.version.StrictVersion('2.1')):
+            return self.getMaps().get_binid()
+
+        if self.data_origin == 'file':
+
+            if binid_prop.channel is None:
+                return self.data[binid_prop.name].data[:, :]
+            else:
+                return self.data[binid_prop.name].data[binid_prop.channel.idx, :, :]
+
+        elif self.data_origin == 'db':
+
+            mdb = marvin.marvindb
+
+            table = mdb.dapdb.ModelSpaxel
+            column = getattr(table, binid_prop.db_column())
+
+            binid_list = mdb.session.query(column).filter(
+                table.modelcube_pk == self.data.pk).order_by(table.x, table.y).all()
+
+            nx = ny = int(np.sqrt(len(binid_list)))
+            binid_array = np.array(binid_list)
+
+            return binid_array.transpose().reshape((ny, nx)).transpose(1, 0)
+
+        elif self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getModelCubeBinid']['url']
+
+            extension = model.fits_extension().lower() if model is not None else 'flux'
+
+            try:
+                response = self._toolInteraction(
+                    url.format(name=self.plateifu,
+                               modelcube_extension=extension,
+                               bintype=self.bintype.name,
+                               template=self.template.name), params=params)
+            except Exception as ee:
+                raise MarvinError('found a problem when checking if remote '
+                                  'modelcube exists: {0}'.format(str(ee)))
+
+            if response.results['error'] is not None:
+                raise MarvinError('found a problem while getting the binid from API: {}'
+                                  .format(str(response.results['error'])))
+
+            return np.array(response.getData()['binid'])
 
     @property
     def binned_flux(self):
@@ -397,6 +527,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         ivar=binned_flux_ivar,
                         mask=binned_flux_mask,
                         redcorr=self._redcorr,
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -412,7 +543,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         np.array(self._wavelength),
                         ivar=None,
                         mask=model_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -428,7 +560,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         np.array(self._wavelength),
                         ivar=None,
                         mask=emline_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     @property
@@ -441,13 +574,14 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         model = self.datamodel['full_fit']
 
-        stellarcont_mask = self._get_extension_data('emline_fit', 'mask')
+        stellarcont_mask = self._get_extension_data('flux', 'mask')
 
         return DataCube(array,
                         np.array(self._wavelength),
                         ivar=None,
                         mask=stellarcont_mask,
-                        redcorr=None,
+                        redcorr=self._redcorr,
+                        binid=self.get_binid(model),
                         unit=model.unit)
 
     def getCube(self):

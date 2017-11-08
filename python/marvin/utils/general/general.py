@@ -1,23 +1,39 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: general.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
+
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import collections
-import os
-import warnings
-import sys
-import numpy as np
-import PIL
 import inspect
-from scipy.interpolate import griddata
+import sys
+import warnings
+
 from collections import OrderedDict
 
-from astropy import wcs
+import numpy as np
+
+from scipy.interpolate import griddata
+
+import PIL
+
 from astropy import table
+from astropy import wcs
 from astropy.units.quantity import Quantity
 
 import marvin
+
 from marvin import log
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from brain.core.exceptions import BrainError
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -43,7 +59,7 @@ drpTable = {}
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,
-              x=None, y=None, ra=None, dec=None, xyorig=None):
+              x=None, y=None, ra=None, dec=None, xyorig=None, **kwargs):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -83,6 +99,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
             lower-left corner. This keyword is ignored if ``ra`` and
             ``dec`` are defined. ``xyorig`` defaults to
             ``marvin.config.xyorig.``
+        kwargs (dict):
+            Arguments to be passed to `~marvin.tools.spaxel.SpaxelBase`.
 
     Returns:
         spaxels (list):
@@ -143,16 +161,13 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
-        cube_shape = maps.shape
-        plateifu = maps.plateifu
+        cube_shape = maps._shape
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
-        cube_shape = cube.shape
-        plateifu = cube.plateifu
+        cube_shape = cube._shape
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
-        cube_shape = modelcube.shape
-        plateifu = modelcube.plateifu
+        cube_shape = modelcube._shape
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -160,8 +175,9 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps, modelcube=modelcube))
+            marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
+                                           cube=cube, maps=maps, modelcube=modelcube,
+                                           **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -225,7 +241,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         x = coords[:, 0]
         y = coords[:, 1]
 
-        assert shape, 'if mode==pix, shape must be defined.'
+        assert shape is not None, 'if mode==pix, shape must be defined.'
         shape = np.atleast_1d(shape)
 
         if xyorig == 'center':

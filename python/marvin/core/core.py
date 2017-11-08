@@ -119,8 +119,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=marvin.config.mode, data=None, release=marvin.config.release,
-                 drpall=None, download=marvin.config.download):
+                 mode=None, data=None, release=None, drpall=None, download=None):
 
         self.data = data
         self.data_origin = None
@@ -129,14 +128,14 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         self.mangaid = mangaid
         self.plateifu = plateifu
 
-        self.mode = mode
+        self.mode = mode if mode is not None else marvin.config.mode
 
-        self._release = release
+        self._release = release if release is not None else marvin.config.release
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
         self._drpall = marvin.config._getDrpAllPath(self._drpver) if drpall is None else drpall
 
-        self._forcedownload = download
+        self._forcedownload = download if download is not None else marvin.config.download
 
         # Sets filename, plateifu, and mangaid depending on the values the input parameters.
         self._determine_inputs(input)
@@ -147,6 +146,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
+
+        assert self.mode in ['auto', 'local', 'remote']
+        assert self.filename is not None or self.plateifu is not None, 'no inputs set.'
 
         if self.mode == 'local':
             self._doLocal()
@@ -187,12 +189,20 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 self.filename = input
 
         if self.filename:
-            assert self.plateifu is None and self.mangaid is None, 'invalid set of inputs.'
-            assert os.path.exists(self.filename), 'filename does not exist.'
+            self.mangaid = None
+            self.plateifu = None
+
+            if self.mode == 'remote':
+                raise MarvinError('filename not allowed in remote mode.')
+
+            assert os.path.exists(self.filename), \
+                'filename {} does not exist.'.format(str(self.filename))
+
         elif self.plateifu:
-            assert self.filename is None and self.mangaid is None, 'invalid set of inputs.'
+            assert self.filename is None, 'invalid set of inputs.'
+
         elif self.mangaid:
-            assert self.filename is None and self.plateifu is None, 'invalid set of inputs.'
+            assert self.filename is None, 'invalid set of inputs.'
             self.plateifu = mangaid2plateifu(self.mangaid,
                                              drpall=self._drpall,
                                              drpver=self._drpver)

@@ -12,7 +12,8 @@ from __future__ import absolute_import
 
 from astropy import units as u
 
-from .base import Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel, Channel
+from .base import Bintype, Template, DAPDataModel, Property, Model
+from .base import MultiChannelProperty, spaxel, Channel
 from .MPL4 import MPL4_emline_channels
 
 
@@ -27,7 +28,13 @@ VOR10 = Bintype('VOR10', description='Spectra binned to S/N~10 using the Voronoi
                                      'binning algorithm (Cappellari & Copin 2003).')
 
 
-last_idx = len(MPL4_emline_channels)
+binid_property = Property('binid', ivar=False, mask=False,
+                          formats={'string': 'Bin ID'},
+                          description='ID number for the bin for which the pixel value was '
+                                      'calculated; bins are sorted by S/N.')
+
+
+last_idx = len(MPL4_emline_channels) - 1
 MPL5_emline_channels = MPL4_emline_channels + [
     Channel('oii_3727', formats={'string': 'OII 3727',
                                  'latex': r'$\forb{O\,II}\;\lambda 3727$'}, idx=last_idx + 1),
@@ -81,9 +88,7 @@ MPL5_maps = [
     Property('spx_snr', ivar=False, mask=False,
              formats={'string': 'r-band SNR'},
              description='r-band signal-to-noise ratio per pixel.'),
-    Property('binid', ivar=False, mask=False,
-             formats={'string': 'Bin ID'},
-             description='Numerical ID for spatial bins.'),
+    binid_property,
     MultiChannelProperty('bin_lwskycoo', ivar=False, mask=False,
                          channels=[Channel('lum_weighted_on_sky_x',
                                            formats={'string': 'Light-weighted offset X'},
@@ -193,7 +198,34 @@ MPL5_maps = [
 ]
 
 
+MPL5_models = [
+    Model('binned_flux', 'FLUX', 'WAVE', extension_ivar='IVAR',
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel,
+          scale=1e-17, formats={'string': 'Binned flux'},
+          description='Flux of the binned spectra',
+          binid=binid_property),
+    Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel,
+          scale=1e-17, formats={'string': 'Best fitting model'},
+          description='The best fitting model spectra (sum of the fitted '
+                      'continuum and emission-line models)',
+          binid=binid_property),
+    Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
+          extension_mask='EMLINE_MASK',
+          unit=u.erg / u.s / (u.cm ** 2) / spaxel,
+          scale=1e-17, formats={'string': 'Emission line model spectrum'},
+          description='The model spectrum with only the emission lines.',
+          binid=binid_property),
+    Model('emline_base_fit', 'EMLINE_BASE', 'WAVE', extension_ivar=None,
+          extension_mask='EMLINE_MASK',
+          unit=u.erg / u.s / (u.cm ** 2) / spaxel,
+          scale=1e-17, formats={'string': 'Emission line baseline fit'},
+          description='The model of the constant baseline fitted beneath the '
+                      'emission lines.',
+          binid=binid_property)
+]
+
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
-                    templates=[GAU_MILESHC], properties=MPL5_maps,
+                    templates=[GAU_MILESHC], properties=MPL5_maps, models=MPL5_models,
                     default_bintype='SPX', default_template='GAU-MILESHC',
-                    property_table='SpaxelProp5')
+                    property_table='SpaxelProp5', default_binid=binid_property)

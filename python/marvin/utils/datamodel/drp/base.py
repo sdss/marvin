@@ -99,10 +99,15 @@ class DataCubeList(FuzzyList):
 
         self.parent = parent
 
-        super(DataCubeList, self).__init__([], mapper=lambda xx: xx.name)
+        super(DataCubeList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """Helper method for the fuzzy list to match on the datacube name."""
+
+        return value.name
 
     def append(self, value, copy=True):
         """Appends with copy."""
@@ -217,18 +222,27 @@ class DataCube(object):
 
         self.db_table = db_table
 
+        self._parent = None
+
         self.formats = formats
 
         self.description = description
 
         self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
 
-    def set_parent(self, parent):
-        """Sets parent."""
+    @property
+    def parent(self):
+        """Retrieves the parent."""
 
-        assert isinstance(parent, DataCube), 'parent must be a DataCube'
+        return self._parent
 
-        self.parent = parent
+    @parent.setter
+    def parent(self, value):
+        """Sets the parent."""
+
+        assert isinstance(value, DRPDataModel), 'parent must be a DRPDataModel'
+
+        self._parent = value
 
     def full(self):
         """Returns the name string."""
@@ -306,10 +320,15 @@ class SpectrumList(FuzzyList):
 
         self.parent = parent
 
-        super(SpectrumList, self).__init__([], mapper=lambda xx: xx.name)
+        super(SpectrumList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """Helper method for the fuzzy list to match on the spectrum name."""
+
+        return value.name
 
     def append(self, value, copy=True):
         """Appends with copy."""
@@ -422,14 +441,23 @@ class Spectrum(object):
 
         self.description = description
 
+        self._parent = None
+
         self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
 
-    def set_parent(self, parent):
-        """Sets parent."""
+    @property
+    def parent(self):
+        """Retrieves the parent."""
 
-        assert isinstance(parent, Spectrum), 'parent must be a Spectrum'
+        return self._parent
 
-        self.parent = parent
+    @parent.setter
+    def parent(self, value):
+        """Sets the parent."""
+
+        assert isinstance(value, DRPDataModel), 'parent must be a DRPDataModel'
+
+        self._parent = value
 
     def full(self):
         """Returns the name string."""

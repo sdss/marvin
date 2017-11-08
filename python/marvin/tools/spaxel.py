@@ -1,55 +1,169 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# spaxel.py
-#
-# Licensed under a 3-clause BSD license.
-#
-# Revision history:
-#     11 Apr 2016 J. Sánchez-Gallego
-#       Initial version
+# @Author: José Sánchez-Gallego
+# @Date: Nov 3, 2017
+# @Filename: spaxel.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import absolute_import
 
+import abc
+import itertools
+import six
 import warnings
 
 import numpy as np
-
-from astropy import units as u
 
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
 import marvin.core.marvin_pickle
 import marvin.utils.general.general
+
 import marvin.tools.cube
 import marvin.tools.maps
 import marvin.tools.modelcube
 
-from marvin.api import api
+from marvin.utils.general.structs import FuzzyDict
+
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
-from marvin.tools.quantities.analysis_props import AnalysisProperty, DictOfProperties
-from marvin.tools.quantities.spectrum import Spectrum
-from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.base import spaxel as spaxel_unit
+
+from marvin.utils.datamodel.dap import datamodel as dap_datamodel
+from marvin.utils.datamodel.drp import datamodel as drp_datamodel
 
 
 breadcrumb = MarvinBreadCrumb()
 
 
-class Spaxel(object):
-    """A class to interface with a spaxel in a cube.
+def spaxel_factory(cls, *args, **kwargs):
+    """A factory that returns the right type of spaxel depending on input.
+
+    Based on the input values, determines if the resulting spaxels should be
+    binned or unbinned, returning a `.Spaxel` or a `.Bin` respectively.
+    This function is intended for overrding the ``__call__`` method in the
+    `abc.ABCMeta` metacalass. The reason is that we want `.SpaxelBase` to have
+    `abstract methods <abc.abstractmethod>` while also being a factory.
+    See `this stack overflow <https://stackoverflow.com/a/5961102>`_ for
+    details in the implementation of the ``__call__`` factory pattern.
+
+    It can be used as::
+
+        SpaxelABC = abc.ABCMeta
+        SpaxelABC.__call__ = region_factory
+
+
+        class SpaxelBase(object, metaclass=RegionABC):
+            ...
+
+    Note that this will override ``__call__`` everywhere else where
+    `abc.ABCMeta` is used, but since it only overrides the default behaviour
+    when the input class is `.SpaxelBase`, that should not be a problem.
+
+    """
+
+    if cls is not SpaxelBase:
+
+        return type.__call__(cls, *args, **kwargs)
+
+    bintype = kwargs.get('bintype', None)
+
+    release = kwargs.get('release', marvin.config.release)
+    mode = kwargs.get('mode', marvin.config.mode)
+    download = kwargs.get('download', marvin.config.download)
+
+    maps_filename = kwargs.get('maps_filename', None)
+    modelcube_filename = kwargs.get('modelcube_filename', None)
+
+    maps = kwargs.get('maps', None)
+    modelcube = kwargs.get('modelcube', None)
+
+    # If we are not going to load maps or modelcube information, returns a Spaxel.
+    if (maps_filename is None and modelcube_filename is None and
+            (maps is False or maps is None) and (modelcube is False or modelcube is None)):
+        return Spaxel(*args, **kwargs)
+
+    # If one of maps or modelcube is an object, uses it to determine the bin type.
+    # If there is any inconsistency with the filenames or between each other, it will
+    # cause an error when initialising the Spaxel/Bin.
+    if isinstance(maps, marvin.tools.maps.Maps):
+        if maps.is_binned() is False:
+            return Spaxel(*args, **kwargs)
+        else:
+            return Bin(*args, **kwargs)
+    elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
+        if modelcube.is_binned() is False:
+            return Spaxel(*args, **kwargs)
+        else:
+            return Bin(*args, **kwargs)
+
+    # First we check the case in which filename are not set. That means that
+    # we will be using the bintype keyword. We use the datamodel to determine
+    # whether it is binned or not.
+    if maps_filename is None and modelcube_filename is None:
+        datamodel = dap_datamodel[release]
+        bintype_dm = datamodel.get_bintype(bintype)
+        if bintype_dm.binned is False:
+            return Spaxel(*args, **kwargs)
+        else:
+            return Bin(*args, **kwargs)
+
+    # Last chance is that one of the filename are not null. We instantiate the
+    # file to determine the bintype
+    if maps_filename is not None:
+        maps = marvin.tools.maps.Maps(filename=maps_filename,
+                                      release=release, mode=mode, download=download)
+        kwargs.update(maps=maps, maps_filename=None)
+        if maps.is_binned() is False:
+            return Spaxel(*args, **kwargs)
+        else:
+            return Bin(*args, **kwargs)
+
+    if modelcube_filename is not None:
+        modelcube = marvin.tools.modelcube.Maps(filename=modelcube_filename,
+                                                release=release, mode=mode, download=download)
+        kwargs.update(modelcube=modelcube, modelcube_filename=None)
+        if modelcube.is_binned() is False:
+            return Spaxel(*args, **kwargs)
+        else:
+            return Bin(*args, **kwargs)
+
+    raise MarvinError('you have reached the end of the SpaxelBase logic. '
+                      'This should never happen!')
+
+
+# Overrides the __call__ method in abc.ABC.
+SpaxelABC = abc.ABCMeta
+SpaxelABC.__call__ = spaxel_factory
+
+
+class DataModel(object):
+    """A single ibject that holds the DRP and DAP datamodel."""
+
+    def __init__(self, release):
+
+        self.drp = drp_datamodel[release]
+        self.dap = dap_datamodel[release]
+
+
+class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
+    """A base class that contains information about a spaxel.
 
     This class represents an spaxel with information from the reduced DRP
     spectrum, the DAP maps properties, and the model spectrum from the DAP
-    logcube. A ``Spaxel`` can be initialised with all or only part of that
+    logcube. A `.SpaxelBase` can be initialised with all or only part of that
     information, and either from a file, a database, or remotely via the
-    Marvin API. By definition a Marvin Spaxel is expected to be unbinned, i.e.,
-    derived from a Maps and ModelCube that are unbinned themselves. For binned
-    properties use ``Bin``. This behaviour can be overridden by using the
-    ``allow_binned`` keyword.
+    Marvin API.
+
+    The `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps` , and
+    `~marvin.tools.modelcube.ModelCube` quantities for the spaxel are available
+    in ``cube_quantities``, ``maps_quantities``, and ``modelcube_quantities``,
+    respectively. For convenience, the quantities can also be accessed directly
+    from the `.SpaxelBase` itself (e.g., ``spaxel.emline_gflux_ha_6465``).
 
     Parameters:
         x,y (int):
@@ -57,7 +171,7 @@ class Spaxel(object):
         cube_filename (str):
             The path of the data cube file containing the spaxel to load.
         maps_filename (str):
-            The path of the DAP Maps file containing the spaxel to load.
+            The path of the DAP MAPS file containing the spaxel to load.
         modelcube_filename (str):
             The path of the DAP model cube file containing the spaxel to load.
         mangaid (str):
@@ -65,31 +179,27 @@ class Spaxel(object):
         plateifu (str):
             The plate-ifu of the cube/maps of the spaxel to load (either
             ``mangaid`` or ``plateifu`` can be used, but not both).
-        cube (:class:`~marvin.tools.cube.Cube` object or bool):
-            If ``cube`` is a :class:`~marvin.tools.cube.Cube` object, that
-            cube will be used for the ``Spaxel`` initilisitation. This mode
-            is mostly intended for
-            :class:`~marvin.utils.general.general.getSpaxel` as it
-            significantly improves loading time. Otherwise, ``cube`` can be
-            ``True`` (default), in which case a cube will be instantiated using
-            the input ``filename``, ``mangaid``, or ``plateifu``. If
-            ``cube=False``, no cube will be used and ``Spaxel.spectrum`` will
-            not be populated.
-        maps (:class:`~marvin.tools.maps.Maps` object or bool)
-            As ``cube`` but populates ``Spaxel.properties`` with a dictionary
-            of DAP measurements corresponding to the spaxel in the maps that
-            matches ``bintype`` and ``template``.
-        modelcube (:class:`marvin.tools.modelcube.ModelCube` object or bool)
-            As ``cube`` but populates ``Spaxel.model_flux``, ``Spaxel.model``,
-            ``Spaxel.redcorr``, ``Spaxel.emline``, ``Spaxel.emline_base``, and
-            ``Spaxel.stellar_continuum`` from the corresponding
-            spaxel of the DAP modelcube that matches ``bintype`` and
-            ``template``.
+        cube (`~marvin.tools.cube.Cube` object or bool):
+            If ``cube`` is a `~marvin.tools.cube.Cube` object, that
+            cube will be used for the `.SpaxelBase` instantiation. This mode
+            is mostly intended for `~marvin.utils.general.general.getSpaxel`
+            as it significantly improves loading time. Otherwise, ``cube`` can
+            be ``True`` (default), in which case a cube will be instantiated
+            using the input ``filename``, ``mangaid``, or ``plateifu``. If
+            ``cube=False``, no cube will be used and the cube associated
+            quantities will not be available..
+        maps (`~marvin.tools.maps.Maps` object or bool)
+            As ``cube`` but for the DAP measurements corresponding to the
+            spaxel in the `.Maps`.
+        modelcube (`marvin.tools.modelcube.ModelCube` object or bool)
+            As ``maps`` but for the DAP measurements corresponding to the
+            spaxel in the `.ModelCube`.
         bintype (str or None):
             The binning type. For MPL-4, one of the following: ``'NONE',
             'RADIAL', 'STON'`` (if ``None`` defaults to ``'NONE'``).
-            For MPL-5 and successive, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
-            (defaults to ``'ALL'``). Only allowed if ``allow_binned=True.```
+            For MPL-5, one of, ``'ALL', 'NRE', 'SPX', 'VOR10'``
+            (defaults to ``'SPX'``). MPL-6 also accepts the ``'HYB10'`` binning
+            schema.
         template (str or None):
             The template use for kinematics. For MPL-4, one of
             ``'M11-STELIB-ZSOL', 'MILES-THIN', 'MIUSCAT-THIN'`` (if ``None``,
@@ -97,171 +207,152 @@ class Spaxel(object):
             option in ``'GAU-MILESHC'`` (``None`` defaults to it).
         release (str):
             The MPL/DR version of the data to use.
-        load (bool):
-            If ``True``, the spaxel data is loaded on initialisation. Otherwise,
-            only the metadata is created. The spectra and properties can be then
-            loaded by calling ``Spaxel.load()``.
-        allow_binned (bool):
-            If True, allows the spaxel to be instantiated from a binned combination
-            of Maps and ModelCube.
+        lazy (bool):
+            If ``False``, the spaxel data is loaded on instantiation.
+            Otherwise, only the metadata is created. The associated quantities
+            can be then loaded by calling `.SpaxelBase.load()`.
+        kwargs (dict):
+            Arguments to be passed to `.Cube`, `.Maps`, and `.ModelCube`
+            when (and if) they are initialised.
 
     Attributes:
-        spectrum (:class:`~marvin.tools.quantities.Spectrum` object):
-            A `Spectrum` object with the DRP spectrum and associated ivar and
-            mask for this spaxel.
-        specres (Numpy array):
-            Median spectral resolution as a function of wavelength for the
-            fibers in this IFU.
-        specresd (Numpy array):
-            Standard deviation of spectral resolution as a function of
-            wavelength for the fibers in this IFU.
-        properties (:class:`~marvin.tools.quantities.DictOfProperties`):
-            A dotable, case-insensitive dictionary of
-            :class:`~marvin.tools.quantities.AnalysisProperty` objects
-            from the DAP maps extensions. The keys are a combination of
-            category and channel, when applicable, e.g.,
-            ``emline_sflux_siii_9533``.
-        model_flux (:class:`~marvin.tools.quantities.Spectrum` object):
-            A `Spectrum` object with the flux of the binned spectrum. Includes
-            ``ivar`` and ``mask``.
-        wavelength (Numpy array):
-            Wavelength vector, in Angstrom.
-        redcorr (Numpy array):
-            Reddening correction applied during the fitting procedures;
-            ``dereddened_flux = model_flux.flux * redcorr``.
-        model (:class:`~marvin.tools.quantities.Spectrum` object):
-            The best fitting model spectra (sum of the fitted continuum and
-            emission-line models). Includes ``mask``.
-        emline (:class:`~marvin.tools.quantities.Spectrum` object):
-            The model spectrum with only the emission lines. Includes ``mask``.
-        emline_base (:class:`~marvin.tools.quantities.Spectrum` object):
-            The bitmask that only applies to the emission-line modeling.
-            Includes ``mask``.
+        cube_quantities (`~marvin.utils.general.structs.FuzzyDict`):
+            A querable dictionary with the `.Spectrum` quantities
+            derived from `.Cube` and matching ``x, y``.
+        datamodel (object):
+            An object contianing the DRP and DAP datamodels.
+        maps_quantities (`~marvin.utils.general.structs.FuzzyDict`):
+            A querable dictionary with the `.AnalysisProperty` quantities
+            derived from `.Maps` and matching ``x, y``.
+        model_quantities (`~marvin.utils.general.structs.FuzzyDict`):
+            A querable dictionary with the `.Spectrum` quantities
+            derived from `.ModelCube` and matching ``x, y``.
+        ra,dec (float):
+            Right ascension and declination of the spaxel. Not available until
+            the spaxel has been `loaded <.SpaxelBase.load>`.
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, x, y, cube_filename=None, maps_filename=None,
+                 modelcube_filename=None, mangaid=None, plateifu=None,
+                 cube=True, maps=True, modelcube=True, bintype=None,
+                 template=None, template_kin=None, release=None, lazy=False,
+                 **kwargs):
 
-        valid_kwargs = [
-            'x', 'y', 'cube_filename', 'maps_filename', 'modelcube_filename',
-            'mangaid', 'plateifu', 'cube', 'maps', 'modelcube', 'bintype',
-            'template_kin', 'template', 'release', 'load', 'allow_binned']
+        if template_kin is not None:
+            warnings.warn('template_kin has been deprecated and will be removed '
+                          'in a future version. Use template.',
+                          marvin.core.exceptions.MarvinDeprecationWarning)
+            template = template_kin
 
-        assert len(args) == 0, 'Spaxel does not accept arguments, only keywords.'
-        for kw in kwargs:
-            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
-
-        self.__allow_binned = kwargs.pop('allow_binned', False)
-
-        self.cube = kwargs.pop('cube', True) or False
-        self.maps = kwargs.pop('maps', True) or False
-        self.modelcube = kwargs.pop('modelcube', True) or False
+        self.cube = cube
+        self.maps = maps
+        self.modelcube = modelcube
 
         if not self.cube and not self.maps and not self.modelcube:
             raise MarvinError('either cube, maps, or modelcube must be True or '
                               'a Marvin Cube, Maps, or ModelCube object must be specified.')
+
+        self.plateifu = self._check_versions('plateifu', plateifu)
+        self.mangaid = self._check_versions('mangaid', mangaid)
+
+        self._parent_shape = None
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinSpaxel {0}'.format(self.__class__),
                         category=self.__class__)
 
         # Checks versions
-        input_release = kwargs.pop('release', marvin.config.release)
-        self._release = self._check_version(input_release)
+        input_release = release if release is not None else marvin.config.release
+        self.release = self._check_versions('release', input_release, check_input=False)
+        assert self.release in marvin.config._mpldict, 'invalid release version.'
 
-        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
-
-        self.plateifu = None
-        self.mangaid = None
-
-        if len(args) > 0:
-            self.x = int(args[0])
-            self.y = int(args[1])
-        else:
-            self.x = int(kwargs.pop('x', None))
-            self.y = int(kwargs.pop('y', None))
-
+        self.x = int(x)
+        self.y = int(y)
         assert self.x is not None and self.y is not None, 'Spaxel requires x and y to initialise.'
 
         self.loaded = False
+        self.datamodel = DataModel(self.release)
 
-        self.specres = None
-        self.specresd = None
-        self.spectrum = None
-        self.properties = {}
+        self.bintype = self.datamodel.dap.get_bintype(self._check_versions('bintype', bintype))
+        self.template = self.datamodel.dap.get_template(self._check_versions('template', template))
 
-        self.model_flux = None
-        self.redcorr = None
-        self.model = None
-        self.emline = None
-        self.emline_base = None
-        self.stellar_continuum = None
-        self._parent_shape = None
+        self.cube_quantities = FuzzyDict({})
+        self.maps_quantities = FuzzyDict({})
+        self.modelcube_quantities = FuzzyDict({})
 
-        self.plateifu = kwargs.pop('plateifu', None)
-        self.mangaid = kwargs.pop('mangaid', None)
+        # Stores the remaining input values to be used with load()
+        self.__input_params = dict(cube_filename=cube_filename,
+                                   maps_filename=maps_filename,
+                                   modelcube_filename=modelcube_filename,
+                                   kwargs=kwargs)
 
-        self.bintype = None
-        self.template = None
-
-        if self.maps or self.modelcube:
-
-            if 'template_kin' in kwargs:
-                warnings.warn('template_kin has been deprecated and will be removed '
-                              'in a future version. Use template.',
-                              marvin.core.exceptions.MarvinDeprecationWarning)
-                if 'template' not in kwargs:
-                    kwargs['template'] = kwargs['template_kin']
-
-            # Some versions, like DR13, don't have an associated DAP, so we check.
-            assert self._dapver, 'this MPL/DR version does not have an associated dapver.'
-
-            self.bintype = datamodel[self._dapver].get_bintype(kwargs.get('bintype', None))
-            self.template = datamodel[self._dapver].get_template(kwargs.get('template', None))
-
-        self.__cube_filename = kwargs.pop('cube_filename', None)
-        self.__maps_filename = kwargs.pop('maps_filename', None)
-        self.__modelcube_filename = kwargs.pop('modelcube_filename', None)
-
-        self._set_radec()
-
-        if kwargs.pop('load', True):
+        if lazy is False:
             self.load()
 
-    def _check_version(self, input_release):
+    def __dir__(self):
 
-        has_cube = isinstance(self.cube, marvin.tools.cube.Cube)
-        has_maps = isinstance(self.maps, marvin.tools.maps.Maps)
-        has_modelcube = isinstance(self.modelcube, marvin.tools.modelcube.ModelCube)
+        items = self.cube_quantities.__dir__()
+        items += self.maps_quantities.__dir__()
+        items += self.modelcube_quantities.__dir__()
+        items += super(SpaxelBase, self).__dir__()
 
-        if not has_cube and not has_maps and not has_modelcube:
-            return input_release
+        return sorted(items)
 
-        if has_cube and has_maps:
+    def __getattr__(self, value):
 
-            assert self.cube._release == self.maps._release
+        if value in self.cube_quantities:
+            return self.cube_quantities[value]
+        if value in self.maps_quantities:
+            return self.maps_quantities[value]
+        if value in self.modelcube_quantities:
+            return self.modelcube_quantities[value]
 
-            if has_modelcube:
-                assert self.cube._release == self.modelcube._release
+        return super(SpaxelBase, self).__getattribute__(value)
 
-            return self.cube._release
+    @abc.abstractmethod
+    def __repr__(self):
 
-        if has_cube and has_modelcube:
-            assert self.cube._release == self.modelcube._release
-            return self.cube._release
+        return '<SpaxelBase>'
 
-        if has_maps and has_modelcube:
-            assert self.maps._release == self.modelcube._release
-            return self.maps._release
+    def _check_versions(self, attr, input_value, check_input=True):
+        """Checks that all input object have the same versions.
 
-        if has_cube:
-            return self.cube._release
+        Runs sanity checks to make sure that ``attr`` has the same value
+        in the input `.Cube`, `.Maps`, and `.ModelCube`. If
+        ``check_input=True``, also checks that the ``input_value`` for the
+        attribute matches the ones in the Marvin objects.
 
-        if has_maps:
-            return self.maps._release
+        Returns the value for the attribute based on the input value and the
+        Marvin objects, or raises an error if there is an inconsistency.
 
-        if has_modelcube:
-            return self.modelcube._release
+        """
+
+        inputs = []
+        for obj in [self.cube, self.maps, self.modelcube]:
+            if obj is not None and not isinstance(obj, bool):
+                inputs.append(obj)
+
+        if len(inputs) == 1:
+            if not hasattr(inputs[0], attr):
+                return input_value
+            if input_value is not None:
+                if input_value is not None and check_input:
+                    assert input_value == getattr(inputs[0], attr), \
+                        'input {!r} does not match {!r}'.format(attr, inputs[0])
+            return getattr(inputs[0], attr)
+
+        output_value = input_value
+
+        for obj_a, obj_b in itertools.combinations(inputs, 2):
+            if hasattr(obj_a, attr) and hasattr(obj_b, attr):
+                assert getattr(obj_a, attr) == getattr(obj_b, attr)
+                if input_value is not None and check_input:
+                    assert input_value == getattr(obj_a, attr), \
+                        'input {!r} does not match {!r}'.format(attr, obj_a)
+                output_value = getattr(obj_a, attr)
+
+        return output_value
 
     def _set_radec(self):
         """Calculates ra and dec for this spaxel."""
@@ -280,27 +371,26 @@ class Spaxel(object):
         """Loads the spaxel data."""
 
         if self.loaded:
+            warnings.warn('already loaded', MarvinUserWarning)
             return
 
-        self._check_cube()
-        self._check_maps()
-        self._check_modelcube()
+        self._load_cube()
+        self._load_maps()
+        self._load_modelcube()
 
+        self._set_radec()
         self.loaded = True
 
     def save(self, path, overwrite=False):
         """Pickles the spaxel to a file.
 
-        This method will fail if any of ``cube``, ``maps``, or ``modelcube``
-        has ``data_origin='db'``.
-
         Parameters:
             path (str):
-                The path of the file to which the ``Spaxel`` will be saved.
+                The path of the file to which the `.Spaxel` will be saved.
                 Unlike for other Marvin Tools that derive from
-                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
-                mandatory for ``Spaxel`` given that the there is no default
-                path for a given spaxel.
+                `~marvin.core.core.MarvinToolsClass`, ``path`` is
+                mandatory for `.Spaxel.save` as there is no default path for a
+                given spaxel.
             overwrite (bool):
                 If True, and the ``path`` already exists, overwrites it.
                 Otherwise it will fail.
@@ -326,124 +416,115 @@ class Spaxel(object):
 
         return marvin.core.marvin_pickle.restore(path, delete=delete)
 
-    def _check_cube(self):
-        """Loads the cube and the spectrum."""
+    def _load_cube(self):
+        """Loads the cube and the associated quantities."""
 
         # Checks that the cube is correct or load ones if cube == True.
         if not isinstance(self.cube, bool):
+
             assert isinstance(self.cube, marvin.tools.cube.Cube), \
                 'cube is not an instance of marvin.tools.cube.Cube or a boolean.'
+
         elif self.cube is True:
-            self.cube = marvin.tools.cube.Cube(filename=self.__cube_filename,
+
+            self.cube = marvin.tools.cube.Cube(filename=self.__input_params['cube_filename'],
                                                plateifu=self.plateifu,
                                                mangaid=self.mangaid,
-                                               release=self._release)
+                                               release=self.release,
+                                               **self.__input_params['kwargs'])
+
         else:
+
             self.cube = None
             return
 
-        if self.plateifu is not None:
-            assert self.plateifu == self.cube.plateifu, \
-                'input plateifu does not match the cube plateifu. '
-        else:
-            self.plateifu = self.cube.plateifu
+        self._parent_shape = self.cube._shape
 
-        if self.mangaid is not None:
-            assert self.mangaid == self.cube.mangaid, \
-                'input mangaid does not match the cube mangaid. '
-        else:
-            self.mangaid = self.cube.mangaid
+        self.cube_quantities = self.cube._get_spaxel_quantities(self.x, self.y)
 
-        self._parent_shape = self.cube.shape
-
-        # Loads the spectrum
-        self._load_spectrum()
-
-    def _check_maps(self):
+    def _load_maps(self):
         """Loads the cube and the properties."""
 
         if not isinstance(self.maps, bool):
+
             assert isinstance(self.maps, marvin.tools.maps.Maps), \
                 'maps is not an instance of marvin.tools.maps.Maps or a boolean.'
+
         elif self.maps is True:
-            self.maps = marvin.tools.maps.Maps(filename=self.__maps_filename,
+
+            self.maps = marvin.tools.maps.Maps(filename=self.__input_params['maps_filename'],
                                                mangaid=self.mangaid,
                                                plateifu=self.plateifu,
+                                               bintype=self.bintype,
                                                template=self.template,
-                                               release=self._release)
+                                               release=self.release,
+                                               **self.__input_params['kwargs'])
+
         else:
+
             self.maps = None
             return
 
-        # Checks the bintype
-        if self.maps.is_binned() and self.__allow_binned is False:
-            raise MarvinError('cannot instantiate a Spaxel from a binned Maps.')
+        self._parent_shape = self.maps._shape
 
-        if self.plateifu is not None:
-            assert self.plateifu == self.maps.plateifu, \
-                'input plateifu does not match the maps plateifu. '
-        else:
-            self.plateifu = self.maps.plateifu
+        self.maps_quantities = self.maps._get_spaxel_quantities(self.x, self.y)
 
-        if self.mangaid is not None:
-            assert self.mangaid == self.maps.mangaid, \
-                'input mangaid does not match the maps mangaid. '
-        else:
-            self.mangaid = self.maps.mangaid
-
-        self._parent_shape = self.maps.shape
-
-        self.bintype = self.maps.bintype
-        self.template = self.maps.template
-
-        # Loads the properties
-        self._load_properties()
-
-    def _check_modelcube(self):
+    def _load_modelcube(self):
         """Loads the modelcube and associated arrays."""
 
         if not isinstance(self.modelcube, bool):
+
             assert isinstance(self.modelcube, marvin.tools.modelcube.ModelCube), \
                 'modelcube is not an instance of marvin.tools.modelcube.ModelCube or a boolean.'
+
         elif self.modelcube is True:
 
-            if self._is_MPL4():
-                warnings.warn('ModelCube cannot be instantiated for MPL-4.',
-                              MarvinUserWarning)
+            if self.release == 'MPL-4':
+                warnings.warn('ModelCube cannot be instantiated for MPL-4.', MarvinUserWarning)
                 self.modelcube = None
                 return
 
-            self.modelcube = marvin.tools.modelcube.ModelCube(filename=self.__modelcube_filename,
-                                                              mangaid=self.mangaid,
-                                                              plateifu=self.plateifu,
-                                                              template=self.template,
-                                                              release=self._release)
+            self.modelcube = marvin.tools.modelcube.ModelCube(
+                filename=self.__input_params['modelcube_filename'],
+                mangaid=self.mangaid,
+                plateifu=self.plateifu,
+                bintype=self.bintype,
+                template=self.template,
+                release=self.release,
+                **self.__input_params['kwargs'])
+
         else:
+
             self.modelcube = None
             return
 
-        # Checks the bintype
-        if self.modelcube.is_binned() and self.__allow_binned is False:
-            raise MarvinError('cannot instantiate a Spaxel from a binned ModelCube.')
+        self._parent_shape = self.modelcube._shape
 
-        self.bintype = self.modelcube.bintype
-        self.template = self.modelcube.template
+        self.modelcube_quantities = self.modelcube._get_spaxel_quantities(self.x, self.y)
 
-        if self.plateifu is not None:
-            assert self.plateifu == self.modelcube.plateifu, \
-                'input plateifu does not match the modelcube plateifu. '
-        else:
-            self.plateifu = self.modelcube.plateifu
 
-        if self.mangaid is not None:
-            assert self.mangaid == self.modelcube.mangaid, \
-                'input mangaid does not match the modelcube mangaid. '
-        else:
-            self.mangaid = self.modelcube.mangaid
+class Spaxel(SpaxelBase):
+    """A class representing an unbinned spaxel.
 
-        self._parent_shape = self.modelcube.shape
+    This subclass of `.SpaxelBase` represents an spaxel belonging to an
+    unbinned `~marvin.tools.maps.Maps` and `~marvin.tools.modelcube.ModelCube`.
+    If initialised directly, a `.Spaxel` will fail if the input data correspond
+    to a binned maps or modelcube object.
 
-        self._load_models()
+    Refer to the documentation of `.SpaxelBase` for information about the valid
+    parameters and methods.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+
+        super(Spaxel, self).__init__(*args, **kwargs)
+
+        if isinstance(self.maps, marvin.tools.maps.Maps):
+            assert self.maps.is_binned() is False, 'a Spaxel cannot be binned.'
+
+        if isinstance(self.modelcube, marvin.tools.modelcube.ModelCube):
+            assert self.modelcube.is_binned() is False, 'a Spaxel cannot be binned.'
 
     def __repr__(self):
         """Spaxel representation."""
@@ -452,304 +533,84 @@ class Spaxel(object):
             return '<Marvin Spaxel (x={0.x:d}, y={0.y:d}, loaded=False)'.format(self)
 
         # Gets the coordinates relative to the centre of the cube/maps.
-        yMid, xMid = np.array(self._parent_shape) / 2.
-        xCentre = int(self.x - xMid)
-        yCentre = int(self.y - yMid)
+        y_mid, x_mid = np.array(self._parent_shape) / 2.
+        x_centre = int(self.x - x_mid)
+        y_centre = int(self.y - y_mid)
 
         return ('<Marvin Spaxel (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
-                'x_cen={1:d}, y_cen={2:d})>'.format(self, xCentre, yCentre))
+                'x_cen={1:d}, y_cen={2:d})>'.format(self, x_centre, y_centre))
 
-    def _is_MPL4(self):
-        """Returns True if the dapver correspond to MPL-4."""
 
-        if self._dapver == '1.1.1':
-            return True
-        return False
+class Bin(SpaxelBase):
+    """A class that represents a bin."""
 
-    def _load_spectrum(self):
-        """Initialises Spaxel.spectrum."""
+    def __init__(self, *args, **kwargs):
 
-        assert self.cube, 'a valid cube is needed to initialise the spectrum.'
+        super(Bin, self).__init__(*args, **kwargs)
 
-        if self.cube.data_origin == 'file':
+        if isinstance(self.maps, marvin.tools.maps.Maps):
+            assert self.maps.is_binned() is True, 'a Spaxel cannot be unbinned.'
 
-            cube_hdu = self.cube.data
+        if isinstance(self.modelcube, marvin.tools.modelcube.ModelCube):
+            assert self.modelcube.is_binned() is True, 'a Spaxel cannot be unbinned.'
 
-            flux = cube_hdu['FLUX'].data[:, self.y, self.x]
-            ivar = cube_hdu['IVAR'].data[:, self.y, self.x]
-            mask = cube_hdu['MASK'].data[:, self.y, self.x]
+        assert (isinstance(self.maps, marvin.tools.maps.Maps) or
+                isinstance(self.modelcube, marvin.tools.modelcube.ModelCube)), \
+            'a Bin must have a Maps or a ModelCube.'
 
-            wavelength = cube_hdu['WAVE'].data
+        self.binid = None
+        self.spaxels = None
 
-            self.specres = cube_hdu['SPECRES'].data
-            self.specresd = cube_hdu['SPECRESD'].data
+    def load(self):
+        """Loads quantities and spaxels."""
 
-        elif self.cube.data_origin == 'db':
+        super(Bin, self).load()
+        self._create_spaxels()
 
-            if marvin.marvindb is None:
-                raise MarvinError('there is not a valid DB connection.')
+    def __repr__(self):
+        """Spaxel representation."""
 
-            session = marvin.marvindb.session
-            datadb = marvin.marvindb.datadb
+        if not self.loaded:
+            return '<Marvin Bin (x={0.x:d}, y={0.y:d}, loaded=False)'.format(self)
 
-            cube_db = self.cube.data
+        # Gets the coordinates relative to the centre of the cube/maps.
+        y_mid, x_mid = np.array(self._parent_shape) / 2.
+        x_centre = int(self.x - x_mid)
+        y_centre = int(self.y - y_mid)
 
-            spaxel = session.query(datadb.Spaxel).filter(
-                datadb.Spaxel.cube == cube_db,
-                datadb.Spaxel.x == self.x, datadb.Spaxel.y == self.y).one()
+        return ('<Marvin Bin (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
+                'x_cen={1:d}, y_cen={2:d})>'.format(self, x_centre, y_centre))
 
-            if spaxel is None:
-                raise MarvinError('cannot find an spaxel for x={0.x}, y={0.y}'.format(self))
+    def _create_spaxels(self):
+        """Returns a list of the unbinned spaxels associated with this bin."""
 
-            flux = spaxel.flux
-            ivar = spaxel.ivar
-            mask = spaxel.mask
+        if self.maps:
+            binid_map = self.maps.get_binid()
+        elif self.modelcube:
+            binid_map = self.modelcube.get_binid()
 
-            wavelength = cube_db.wavelength.wavelength
+        # TODO: this may be an overkill and an extra API call. Remove it?
+        if self.maps and self.modelcube:
+            assert np.all(self.maps.get_binid() == self.modelcube.get_binid()), \
+                'inconsistent binid arrays between Maps and ModelCube.'
 
-            self.specres = np.array(cube_db.specres)
-            self.specresd = None
+        self.binid = binid_map[self.y, self.x]
 
-        elif self.cube.data_origin == 'api':
+        if self.binid < 0:
+            raise MarvinError('coordinates ({}, {}) do not correspond to a valid binid.'
+                              .format(self.x, self.y))
 
-            # Calls the API to retrieve the DRP spectrum information for this spaxel.
+        spaxel_coords = zip(*np.where(binid_map == self.binid))
+        self.spaxels = []
 
-            routeparams = {'name': self.plateifu, 'x': self.x, 'y': self.y}
+        for jj, ii in spaxel_coords:
+            self.spaxels.append(Spaxel(x=jj, y=ii, plateifu=self.plateifu, release=self.release,
+                                       cube=self.cube, maps=True if self.maps else False,
+                                       modelcube=True if self.modelcube else False,
+                                       bintype=None, template=self.template, lazy=True))
 
-            url = marvin.config.urlmap['api']['getSpectrum']['url'].format(**routeparams)
+    def load_all(self):
+        """Loads all the spaxels."""
 
-            # Make the API call
-            response = api.Interaction(url, params={'release': self._release})
-
-            # Temporarily stores the arrays prior to subclassing from np.array
-            data = response.getData()
-
-            flux = data['flux']
-            ivar = data['ivar']
-            mask = data['mask']
-
-            wavelength = data['wavelength']
-
-            self.specres = np.array(data['specres'])
-            self.specresd = None
-
-        self.spectrum = Spectrum(flux,
-                                 unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                 scale=1e-17,
-                                 wavelength=wavelength,
-                                 wavelength_unit=u.Angstrom,
-                                 ivar=ivar,
-                                 mask=mask)
-
-    def _load_properties(self):
-        """Initialises Spaxel.properties."""
-
-        assert self.maps, 'a valid maps is needed to initialise the properties.'
-
-        maps_properties = self.maps.properties
-
-        if self.maps.data_origin == 'file':
-
-            maps_hdu = self.maps.data
-
-            properties = {}
-            for prop in maps_properties:
-
-                prop_hdu = maps_hdu[prop.name]
-                prop_hdu_ivar = None if not prop.ivar else maps_hdu[prop.name + '_ivar']
-                prop_hdu_mask = None if not prop.mask else maps_hdu[prop.name + '_mask']
-
-                if prop.channel:
-
-                    ii = self.maps._datamodel[prop.name].channels.index(prop.channel)
-
-                    properties[prop.full()] = AnalysisProperty(
-                        prop,
-                        value=prop_hdu.data[ii, self.y, self.x],
-                        ivar=prop_hdu_ivar.data[ii, self.y, self.x] if prop_hdu_ivar else None,
-                        mask=prop_hdu_mask.data[ii, self.y, self.x] if prop_hdu_mask else None)
-
-                else:
-
-                    properties[prop.full()] = AnalysisProperty(
-                        prop,
-                        value=prop_hdu.data[self.y, self.x],
-                        ivar=prop_hdu_ivar.data[self.y, self.x] if prop_hdu_ivar else None,
-                        mask=prop_hdu_mask.data[self.y, self.x] if prop_hdu_mask else None)
-
-        elif self.maps.data_origin == 'db':
-
-            if marvin.marvindb is None:
-                raise MarvinError('there is not a valid DB connection.')
-
-            session = marvin.marvindb.session
-            dapdb = marvin.marvindb.dapdb
-
-            # Gets the spaxel_index for this spaxel.
-            spaxel_index = self.x * self.maps.shape[0] + self.y
-
-            spaxelprops_table = dapdb.SpaxelProp if self._is_MPL4() else dapdb.SpaxelProp5
-            spaxelprops = session.query(spaxelprops_table).filter(
-                spaxelprops_table.file == self.maps.data,
-                spaxelprops_table.spaxel_index == spaxel_index).one()
-
-            if spaxelprops is None:
-                raise MarvinError('cannot find a spaxelprops for x={0.x}, y={0.y}'.format(self))
-
-            properties = {}
-            for prop in maps_properties:
-
-                properties[prop.full()] = AnalysisProperty(
-                    prop,
-                    getattr(spaxelprops, prop.full()),
-                    ivar=(getattr(spaxelprops, prop.db_column(ext='ivar')) if prop.ivar else None),
-                    mask=(getattr(spaxelprops, prop.db_column(ext='mask')) if prop.mask else None))
-
-        elif self.maps.data_origin == 'api':
-
-            # Calls /api/<name>/properties/<path:path> to retrieve a
-            # dictionary with all the properties for this spaxel.
-            routeparams = {'name': self.plateifu,
-                           'x': self.x, 'y': self.y,
-                           'bintype': self.bintype.name,
-                           'template': self.template.name}
-
-            url = marvin.config.urlmap['api']['getProperties']['url'].format(**routeparams)
-
-            # Make the API call
-            response = api.Interaction(url, params={'release': self._release})
-
-            # Temporarily stores the arrays prior to subclassing from np.array
-            data = response.getData()
-
-            properties = {}
-            for prop_fullname in data['properties']:
-                maps_prop = self.maps._datamodel[prop_fullname]
-                prop = data['properties'][prop_fullname]
-                properties[prop_fullname] = AnalysisProperty(
-                    maps_prop,
-                    value=prop['value'],
-                    ivar=prop['ivar'],
-                    mask=prop['mask'])
-
-        self.properties = DictOfProperties(properties)
-
-    def _load_models(self):
-
-        assert self.modelcube, 'a ModelCube is needed to initialise models.'
-
-        if self.modelcube.data_origin == 'file':
-
-            hdus = self.modelcube.data
-            flux_array = hdus['FLUX'].data[:, self.y, self.x]
-            flux_ivar = hdus['IVAR'].data[:, self.y, self.x]
-            mask = hdus['MASK'].data[:, self.y, self.x]
-            model_array = hdus['MODEL'].data[:, self.y, self.x]
-            model_emline = hdus['EMLINE'].data[:, self.y, self.x]
-            model_emline_base = hdus['EMLINE_BASE'].data[:, self.y, self.x]
-            model_emline_mask = hdus['EMLINE_MASK'].data[:, self.y, self.x]
-
-        elif self.modelcube.data_origin == 'db':
-
-            if marvin.marvindb is None:
-                raise MarvinError('there is not a valid DB connection.')
-
-            session = marvin.marvindb.session
-            dapdb = marvin.marvindb.dapdb
-
-            modelcube_db_spaxel = session.query(dapdb.ModelSpaxel).filter(
-                dapdb.ModelSpaxel.modelcube == self.modelcube.data,
-                dapdb.ModelSpaxel.x == self.x, dapdb.ModelSpaxel.y == self.y).one()
-
-            if modelcube_db_spaxel is None:
-                raise MarvinError('cannot find a modelcube spaxel for '
-                                  'x={0.x}, y={0.y}'.format(self))
-
-            flux_array = modelcube_db_spaxel.flux
-            flux_ivar = modelcube_db_spaxel.ivar
-            mask = modelcube_db_spaxel.mask
-            model_array = modelcube_db_spaxel.model
-            model_emline = modelcube_db_spaxel.emline
-            model_emline_base = modelcube_db_spaxel.emline_base
-            model_emline_mask = modelcube_db_spaxel.emline_mask
-
-        elif self.modelcube.data_origin == 'api':
-
-            # Calls /modelcubes/<name>/models/<path:path> to retrieve a
-            # dictionary with all the models for this spaxel.
-            url = marvin.config.urlmap['api']['getModels']['url']
-            url_full = url.format(name=self.plateifu,
-                                  bintype=self.bintype.name,
-                                  template=self.template.name,
-                                  x=self.x, y=self.y)
-
-            try:
-                response = api.Interaction(url_full, params={'release': self._release})
-            except Exception as ee:
-                raise MarvinError('found a problem when checking if remote model cube '
-                                  'exists: {0}'.format(str(ee)))
-
-            data = response.getData()
-
-            flux_array = np.array(data['flux_array'])
-            flux_ivar = np.array(data['flux_ivar'])
-            mask = np.array(data['flux_mask'])
-            model_array = np.array(data['model_array'])
-            model_emline = np.array(data['model_emline'])
-            model_emline_base = np.array(data['model_emline_base'])
-            model_emline_mask = np.array(data['model_emline_mask'])
-
-        # Instantiates the model attributes.
-
-        self.redcorr = Spectrum(self.modelcube.redcorr,
-                                wavelength=self.modelcube.wavelength,
-                                wavelength_unit=u.Angstrom)
-
-        self.model_flux = Spectrum(flux_array,
-                                   unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                   scale=1e-17,
-                                   wavelength=self.modelcube.wavelength,
-                                   wavelength_unit=u.Angstrom,
-                                   ivar=flux_ivar,
-                                   mask=mask)
-
-        self.model = Spectrum(model_array,
-                              unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                              scale=1e-17,
-                              wavelength=self.modelcube.wavelength,
-                              wavelength_unit=u.Angstrom,
-                              mask=mask)
-
-        self.emline = Spectrum(model_emline,
-                               unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                               scale=1e-17,
-                               wavelength=self.modelcube.wavelength,
-                               wavelength_unit=u.Angstrom,
-                               mask=model_emline_mask)
-
-        self.emline_base = Spectrum(model_emline_base,
-                                    unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-                                    scale=1e-17,
-                                    wavelength=self.modelcube.wavelength,
-                                    wavelength_unit=u.Angstrom,
-                                    mask=model_emline_mask)
-
-        self.stellar_continuum = Spectrum(
-            self.model.value - self.emline.value - self.emline_base.value,
-            unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
-            scale=1e-17,
-            wavelength=self.modelcube.wavelength,
-            wavelength_unit=u.Angstrom,
-            mask=model_emline_mask)
-
-    @property
-    def release(self):
-        """Returns the release."""
-
-        return self._release
-
-    @release.setter
-    def release(self, value):
-        """Fails when trying to set the release after instatiation."""
-
-        raise MarvinError('the release cannot be changed once the object has been instantiated.')
+        for spaxel in self.spaxels:
+            spaxel.load()

@@ -63,7 +63,7 @@ MPL5 = DRPDataModel('MPL-5', aliases=['MPL5'],
                     datacubes=MPL4_datacubes,
                     spectra=MPL4_spectra)
 
-MPL6 = DRPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
+MPL6 = DRPDataModel('MPL-6', aliases=['MPL6'],
                     datacubes=MPL4_datacubes + MPL6_datacubes,
                     spectra=MPL4_spectra + MPL6_spectra)
 

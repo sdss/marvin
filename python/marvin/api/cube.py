@@ -213,7 +213,8 @@ class CubeView(BaseView):
                                     'header': cube.header.tostring(),
                                     'redshift': nsa_data.z if nsa_data else -9999,
                                     'wavelength': wavelength,
-                                    'wcs_header': cube.wcs.to_header_string()}
+                                    'wcs_header': cube.wcs.to_header_string(),
+                                    'shape': cube._shape}
 
         return jsonify(self.results)
 
@@ -278,5 +279,84 @@ class CubeView(BaseView):
                 self.results['data'] = {'extension_data': None}
             else:
                 self.results['data'] = {'extension_data': extension_data.tolist()}
+
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/<name>/quantities/<x>/<y>/', methods=['GET', 'POST'],
+           endpoint='getCubeQuantitiesSpaxel')
+    @av.check_args()
+    def getCubeQuantitiesSpaxel(self, args, name, x, y):
+        """Returns a dictionary with all the quantities.
+
+        .. :quickref: Cube; Returns a dictionary with all the quantities
+
+        :param name: The name of the cube as plate-ifu or mangaid
+        :param x: The x coordinate of the spaxel (origin is ``lower``)
+        :param y: The y coordinate of the spaxel (origin is ``lower``)
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/cubes/8485-1901/quantities/10/12/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"flux": {"value": [0,0,..0], "ivar": ...},
+                       "specres": ...}
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+        cube, res = _getCube(name, **args)
+        self.update_results(res)
+
+        if cube:
+
+            self.results['data'] = {}
+
+            spaxel_quantities = cube._get_spaxel_quantities(x, y)
+
+            for quant in spaxel_quantities:
+
+                spectrum = spaxel_quantities[quant]
+
+                if spectrum is None:
+                    self.data[quant] = {'value': None}
+                    continue
+
+                value = spectrum.value.tolist()
+                ivar = spectrum.ivar.tolist() if spectrum.ivar is not None else None
+                mask = spectrum.mask.tolist() if spectrum.mask is not None else None
+
+                self.results['data'][quant] = {'value': value,
+                                               'ivar': ivar,
+                                               'mask': mask}
+
+            self.results['data']['wavelength'] = cube._wavelength.tolist()
 
         return Response(json.dumps(self.results), mimetype='application/json')

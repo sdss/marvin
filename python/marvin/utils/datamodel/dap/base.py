@@ -19,7 +19,7 @@ import six
 import astropy.table as table
 from astropy import units as u
 
-from marvin.core.exceptions import MarvinError, MarvinNotImplemented
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general.structs import get_best_fuzzy, FuzzyList
 from marvin.utils.datamodel import DataModelList
 
@@ -36,7 +36,7 @@ class DAPDataModel(object):
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 aliases=[]):
+                 default_binid=None, aliases=[]):
 
         self.release = release
         self.bintypes = bintypes
@@ -54,6 +54,10 @@ class DAPDataModel(object):
 
         self._default_template = None
         self.default_template = default_template
+
+        self.default_binid = default_binid
+        if self.default_binid is not None:
+            self.default_binid.parent = self
 
         assert len([bintype for bintype in self.bintypes if bintype.binned is False]) <= 1, \
             'a DAP datamodel can have only one unbinned bintype'
@@ -73,7 +77,7 @@ class DAPDataModel(object):
         """Uses fuzzywuzzy to return the closest property match."""
 
         prop_names = [prop.name for prop in self.properties.extensions]
-        model_names = [model.name for model in self.models]
+        model_names = [model.full() for model in self.models]
 
         # If the values matches exactly one of the property or model names,
         # we return that one.
@@ -223,16 +227,21 @@ class PropertyList(FuzzyList):
         self.parent = parent
         self.extensions = []
 
-        super(PropertyList, self).__init__([], mapper=lambda xx: xx.full())
+        super(PropertyList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """A helper for the FuzzyList to determine the query value."""
+
+        return value.full()
 
     def append(self, value, copy=True):
         """Appends with copy, and unpacking properties."""
 
         append_obj = value if copy is False else copy_mod.deepcopy(value)
-        append_obj.set_parent(self.parent)
+        append_obj.parent = self.parent
 
         self.extensions.append(append_obj)
 
@@ -243,6 +252,19 @@ class PropertyList(FuzzyList):
                 super(PropertyList, self).append(prop)
         else:
             raise ValueError('invalid property of type {!r}'.format(type(append_obj)))
+
+    def from_fits_extension(self, ext):
+        """Returns the `.Property` whose FITS extension matches ``ext``."""
+
+        matches = []
+
+        for model in self:
+            if model.fits_extension().lower() == ext.lower():
+                matches.append(model)
+
+        assert len(matches) == 1, 'more than one matches found. That should never happen.'
+
+        return matches[0]
 
     @property
     def release(self):
@@ -328,10 +350,15 @@ class ModelList(FuzzyList):
 
         self.parent = parent
 
-        super(ModelList, self).__init__([], mapper=lambda xx: xx.full())
+        super(ModelList, self).__init__([], mapper=self._fuzzy_mapper)
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def _fuzzy_mapper(self, value):
+        """A helper for the FuzzyList to determine the query value."""
+
+        return value.full()
 
     def append(self, value, copy=True):
         """Appends with copy."""
@@ -349,6 +376,19 @@ class ModelList(FuzzyList):
         """The release of the parent `.DAPDataModel`."""
 
         return self.parent.release
+
+    def from_fits_extension(self, extension):
+        """Returns the `.Model` whose FITS extension matches ``extension``."""
+
+        matches = []
+
+        for model in self:
+            if model.fits_extension().lower() == extension.lower():
+                matches.append(model)
+
+        assert len(matches) == 1, 'more than one matches found. That should never happen.'
+
+        return matches[0]
 
     def to_table(self, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the models in this datamodel.
@@ -469,7 +509,7 @@ class Property(object):
             ``DAPDataModel`` object.
         binid (:class:`Property` object or None):
             The ``binid`` :class:`Property` object associated with this
-            propety. Useful in case of hybrid binning.
+            propety. If not set, assumes the `.DAPDataModel` ``default_binid``.
         description (str):
             A description of the property.
 
@@ -483,7 +523,6 @@ class Property(object):
 
         self.ivar = ivar
         self.mask = mask
-        self.binid = binid
 
         self.formats = formats
 
@@ -494,20 +533,37 @@ class Property(object):
         else:
             self.unit = self.channel.unit
 
+        self._binid = binid
+
         # Makes sure the channel shares the units and scale
         if self.channel:
             self.channel.unit = self.unit
 
         self.description = description
 
+        self._parent = None
         self.parent = parent
 
-    def set_parent(self, parent):
-        """Sets parent."""
+        self._binid = copy_mod.deepcopy(binid)
+        if self._binid is not None:
+            self._binid.parent = self.parent
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+    @property
+    def parent(self):
+        """Returns the parent for this property."""
 
-        self.parent = parent
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        """Sets the parent."""
+
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
+
+        self._parent = value
+
+        if self._binid is not None:
+            self._binid.parent = value
 
     def full(self):
         """Returns the name + channel string."""
@@ -517,19 +573,29 @@ class Property(object):
 
         return self.name
 
-    def get_binid(self):
+    @property
+    def binid(self):
         """Returns the binid property associated with this property."""
 
         if self.name == 'binid':
             raise MarvinError('binid has not associated binid (?!)')
 
-        if self.parent is None:
-            raise MarvinError('a parent needs to be defined to get an associated binid.')
+        assert self.parent is not None, 'a parent needs to be defined to get an associated binid.'
 
-        if self.binid is None:
-            return self.parent['binid']
-        else:
-            raise MarvinNotImplemented('hybrid binning has not yet been implemented.')
+        if self._binid is None:
+            return self.parent.default_binid
+
+        return self._binid
+
+    def has_ivar(self):
+        """Returns True if the property has an ivar extension."""
+
+        return self.ivar is not False
+
+    def has_mask(self):
+        """Returns True if the property has an mask extension."""
+
+        return self.mask is not False
 
     def db_column(self, ext=None):
         """Returns the name of the DB column containing this property."""
@@ -551,7 +617,7 @@ class Property(object):
 
     def __repr__(self):
 
-        return '<Property {0!r}, release={1!r}, channel={2!r}, unit={3!r}>'.format(
+        return '<Property {0!r}, channel={2!r}, release={1!r}, unit={3!r}>'.format(
             self.name, self.parent.release if self.parent else None,
             self.channel.name if self.channel else 'None', self.unit.to_string())
 
@@ -562,6 +628,8 @@ class Property(object):
     @property
     def db_table(self):
         """The DB table to use to retrieve this property."""
+
+        assert self.parent is not None, 'parent DAPDataModel is not set for this property.'
 
         return self.parent.property_table
 
@@ -618,6 +686,9 @@ class MultiChannelProperty(list):
             The associated :class:`DAPDataModel` object. Usually it is set to
             ``None`` and populated when the property is added to the
             ``DAPDataModel`` object.
+        binid (:class:`Property` object or None):
+            The ``binid`` `.Property` object to be associated to all the
+            propeties in this `.MultiChannelProperty`.
         description (str):
             A description of the property.
         kwargs (dict):
@@ -625,7 +696,7 @@ class MultiChannelProperty(list):
 
     """
 
-    def __init__(self, name, channels=[], unit=None, scale=1, **kwargs):
+    def __init__(self, name, channels=[], unit=None, scale=1, binid=None, **kwargs):
 
         self.name = name
 
@@ -633,6 +704,7 @@ class MultiChannelProperty(list):
         self.mask = kwargs.get('mask', False)
         self.description = kwargs.get('description', '')
 
+        self._parent = None
         self.parent = kwargs.get('parent', None)
 
         self_list = []
@@ -640,19 +712,27 @@ class MultiChannelProperty(list):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
             this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
             self_list.append(Property(self.name, channel=channel,
-                                      unit=this_unit, scale=this_scale, **kwargs))
+                                      unit=this_unit, scale=this_scale,
+                                      binid=binid, **kwargs))
 
         list.__init__(self, self_list)
 
-    def set_parent(self, parent):
+    @property
+    def parent(self):
+        """Returns the parent for this MultiChannelProperty."""
+
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
         """Sets parent for the instance and all listed Property objects."""
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
 
-        self.parent = parent
+        self._parent = value
 
         for prop in self:
-            prop.parent = parent
+            prop.parent = value
 
     @property
     def channels(self):
@@ -762,6 +842,13 @@ class Model(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             model. Default ones are ``latex`` and ``string``.
+        parent (:class:`DAPDataModel` object or None):
+            The associated :class:`DAPDataModel` object. Usually it is set to
+            ``None`` and populated when the model is added to the
+            ``DAPDataModel`` object.
+        binid (:class:`Property` object or None):
+            The ``binid`` :class:`Property` object associated with this
+            model. If not set, assumes the `.DAPDataModel` ``default_binid``.
         description (str):
             A description for the model.
 
@@ -770,7 +857,7 @@ class Model(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, channels=[],
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 parent=None, binid=None, description=''):
 
         self.name = name
 
@@ -786,12 +873,31 @@ class Model(object):
         self.formats = formats
         self.description = description
 
-    def set_parent(self, parent):
+        self._binid = binid
+
+        self._parent = None
+        self.parent = parent
+
+        self._binid = copy_mod.deepcopy(binid)
+        if self._binid is not None:
+            self._binid.parent = self.parent
+
+    @property
+    def parent(self):
+        """Returns the parent for this model."""
+
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
         """Sets parent."""
 
-        assert isinstance(parent, DAPDataModel), 'parent must be a DAPDataModel'
+        assert value is None or isinstance(value, DAPDataModel), 'value must be a DAPDataModel'
 
-        self.parent = parent
+        self._parent = value
+
+        if self._binid is not None:
+            self._binid.parent = value
 
     def full(self):
         """Returns the name + channel string."""
@@ -799,14 +905,28 @@ class Model(object):
         return self.name
 
     def has_ivar(self):
-        """Returns True is the datacube has an ivar extension."""
+        """Returns True if the datacube has an ivar extension."""
 
         return self._extension_ivar is not None
 
     def has_mask(self):
-        """Returns True is the datacube has an mask extension."""
+        """Returns True if the datacube has an mask extension."""
 
         return self._extension_mask is not None
+
+    @property
+    def binid(self):
+        """Returns the binid property associated with this property."""
+
+        if self.name == 'binid':
+            raise MarvinError('binid has not associated binid (?!)')
+
+        assert self.parent is not None, 'a parent needs to be defined to get an associated binid.'
+
+        if self._binid is None:
+            return self.parent.default_binid
+
+        return self._binid
 
     def fits_extension(self, ext=None):
         """Returns the FITS extension name."""

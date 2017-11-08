@@ -32,7 +32,7 @@ Introduction
 ============
 
 * :doc:`What's New in Marvin <whats-new>`
-* `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
+* :doc:`Changelog <changelog>`
 * :ref:`Known issues <marvin-known-issues>`
 * :ref:`TODOs <marvin-todo>`
 

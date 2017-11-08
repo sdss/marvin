@@ -46,28 +46,28 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     webspec = None
     try:
         if byradec:
-            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, modelcube=True, properties=False)
+            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, models=True, properties=False)
         else:
-            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, modelcube=True, properties=False)
+            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, models=True, properties=False)
     except Exception as e:
         specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
         # get error and wavelength
-        error = convertIvarToErr(spaxel.spectrum.ivar)
-        wave = spaxel.spectrum.wavelength
+        error = convertIvarToErr(spaxel.flux.ivar)
+        wave = spaxel.flux.wavelength
 
         # try to get the model flux
         try:
-            modelfit = spaxel.model.flux
+            modelfit = spaxel.full_fit
         except Exception as e:
             modelfit = None
 
         # make input array for Dygraph
         if not isinstance(modelfit, type(None)):
-            webspec = [[wave[i].value, [s.value, error[i]], [modelfit[i], 0.0]] for i, s in enumerate(spaxel.spectrum)]
+            webspec = [[wave.value[i], [s, error[i]], [modelfit.value[i], 0.0]] for i, s in enumerate(spaxel.flux.value)]
         else:
-            webspec = [[wave[i].value, [s.value, error[i]]] for i, s in enumerate(spaxel.spectrum)]
-
+            webspec = [[wave.value[i], [s, error[i]]] for i, s in enumerate(spaxel.flux.value)]
+        print(webspec)
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg

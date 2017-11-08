@@ -18,7 +18,8 @@ from fuzzywuzzy import fuzz as fuzz_fuzz
 from fuzzywuzzy import process as fuzz_proc
 
 
-__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy']
+__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy',
+           'FuzzyList']
 
 
 class Dotable(dict):
@@ -116,6 +117,10 @@ class FuzzyDict(OrderedDict):
 
         return dict.__getitem__(self, best)
 
+    def __dir__(self):
+
+        return list(self.keys())
+
 
 class FuzzyList(list):
     """A list that uses fuzzywuzzy to select the item.
@@ -164,6 +169,20 @@ class FuzzyList(list):
             return self == value
         else:
             return list.__getitem__(self, value)
+
+    def __getattr__(self, value):
+
+        self_values = [super(FuzzyList, self).__getattribute__('mapper')(item)
+                       for item in self]
+
+        if value in self_values:
+            return self[value]
+
+        return super(FuzzyList, self).__getattribute__(value)
+
+    def __dir__(self):
+
+        return [self.mapper(item) for item in self]
 
 
 class OrderedDefaultDict(OrderedDict):

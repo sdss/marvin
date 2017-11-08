@@ -34,6 +34,9 @@ import marvin.utils.dap.bpt
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Property, Channel
+from marvin.utils.general import FuzzyDict
+
+from .quantities import AnalysisProperty
 
 try:
     import sqlalchemy
@@ -77,10 +80,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                  drpall=None, download=None, nsa_source='auto',
                  bintype=None, template=None, template_kin=None):
 
-        release = release if release else marvin.config.release
-        mode = mode if mode else marvin.config.mode
-        download = download if download else marvin.config.download
-
         if template_kin is not None:
             warnings.warn('template_kin is deprecated and will be removed in a future version.',
                           DeprecationWarning)
@@ -99,6 +98,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.header = None
         self.wcs = None
+        self._shape = None
 
         if self.data_origin == 'file':
             self._load_maps_from_file(data=self.data)
@@ -128,6 +128,17 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             return self.getMap(value)
         else:
             raise marvin.core.exceptions.MarvinError('invalid type for getitem.')
+
+    def __getattr__(self, value):
+
+        if isinstance(value, six.string_types) and value in self.datamodel:
+            return self.getMap(value)
+
+        return super(Maps, self).__getattribute__(value)
+
+    def __dir__(self):
+
+        return super(Maps, self).__dir__() + [prop.full() for prop in self.datamodel]
 
     def _set_datamodel(self):
         """Sets the datamodel."""
@@ -236,6 +247,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Takes only the first two axis.
         self.wcs = wcs_pre.sub(2) if naxis > 2 else naxis
 
+        self._shape = (header['NAXIS2'], header['NAXIS1'])
+
         # Checks and populates release.
         file_drpver = self.header['VERSDRP3']
         file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
@@ -253,7 +266,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.datamodel = datamodel[self._dapver].properties
 
         # Checks the bintype and template from the header
-        is_MPL4 = self.datamodel.release == 'MPL-4'
+        is_MPL4 = 'MPL-4' in self.datamodel.parent.aliases
         if not is_MPL4:
             header_bintype = self.data[0].header['BINKEY'].strip().upper()
             header_bintype = 'SPX' if header_bintype == 'NONE' else header_bintype
@@ -327,6 +340,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Creates the WCS from the cube's WCS header
         self.wcs = astropy.wcs.WCS(self.data.cube.wcs.makeHeader())
 
+        self._shape = self.data.cube.shape.shape
+
     def _load_maps_from_api(self):
         """Loads a Maps object from remote."""
 
@@ -355,7 +370,95 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Sets the WCS
         self.wcs = astropy.wcs.WCS(astropy.io.fits.Header.fromstring(data['wcs']))
 
+        self._shape = data['shape']
+
         return
+
+    def _get_spaxel_quantities(self, x, y):
+        """Returns a dictionary of spaxel quantities."""
+
+        mdb = marvin.marvindb
+
+        maps_quantities = FuzzyDict({})
+
+        if self.data_origin == 'file' or self.data_origin == 'db':
+
+            for dm in self.datamodel:
+
+                data = {'value': None, 'ivar': None, 'mask': None}
+
+                for key in data:
+
+                    if key == 'ivar' and not dm.has_ivar():
+                        continue
+                    if key == 'mask' and not dm.has_mask():
+                        continue
+
+                    if self.data_origin == 'file':
+
+                        extname = dm.name + '' if key == 'value' else dm.name + '_' + key
+
+                        if dm.channel:
+                            data[key] = self.data[extname].data[dm.channel.idx, y, x]
+                        else:
+                            data[key] = self.data[extname].data[y, x]
+
+                    elif self.data_origin == 'db':
+
+                        table = getattr(mdb.dapdb, dm.db_table)
+                        colname = dm.db_column(ext=None if key == 'value' else key)
+
+                        value = mdb.session.query(getattr(table, colname)).filter(
+                            table.file_pk == self.data.pk, table.x == x, table.y == y).one()
+
+                        data[key] = value[0]
+
+                maps_quantities[dm.full()] = AnalysisProperty(data['value'],
+                                                              unit=dm.unit,
+                                                              ivar=data['ivar'],
+                                                              mask=data['mask'])
+
+        if self.data_origin == 'api':
+
+            params = {'release': self._release}
+            url = marvin.config.urlmap['api']['getMapsQuantitiesSpaxel']['url']
+
+            try:
+                response = self._toolInteraction(url.format(name=self.plateifu,
+                                                            x=x, y=y,
+                                                            bintype=self.bintype.name,
+                                                            template=self.template.name,
+                                                            params=params))
+            except Exception as ee:
+                raise marvin.core.exceptions.MarvinError(
+                    'found a problem when checking if remote cube exists: {0}'.format(str(ee)))
+
+            data = response.getData()
+
+            for dm in self.datamodel:
+
+                maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
+                                                              ivar=data[dm.full()]['ivar'],
+                                                              mask=data[dm.full()]['mask'],
+                                                              unit=dm.unit)
+
+        return maps_quantities
+
+    def get_binid(self, binid=None):
+        """Returns a 2D array containing the binid map.
+
+        In ``MPL-6``, ``binid`` can be used to specify the binid property
+        to return. If ``binid=None``, the default binid is returned.
+
+        """
+
+        assert binid is None or isinstance(binid, Property), 'binid must be None or a Property.'
+
+        if binid is None:
+            assert self.datamodel.parent.default_binid is not None
+            binid = self.datamodel.parent.default_binid
+
+        return self.getMap(binid).value
 
     def getCube(self):
         """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""
@@ -378,7 +481,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                 template=self.template)
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  spectrum=True, modelcube=False, **kwargs):
+                  drp=True, model=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -403,12 +506,12 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            spectrum (bool):
+            drp (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DRP spectrum.
-            modelcube (bool):
+                corresponding DRP data.
+            model (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding ModelCube data.
+                corresponding `.ModelCube` data.
 
 
         Returns:
@@ -421,11 +524,9 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        kwargs['cube'] = self.cube if spectrum else False
-        kwargs['maps'] = self.get_unbinned()
-        kwargs['modelcube'] = modelcube if self.datamodel.release == 'MPL-4' else False
-
-        return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec, **kwargs)
+        return marvin.utils.general.general.getSpaxel(
+            x=x, y=y, ra=ra, dec=dec,
+            cube=drp, maps=self, modelcube=model, **kwargs)
 
     def _match_properties(self, property_name, channel=None, exact=False):
         """Returns the best match for a property_name+channel."""
@@ -464,7 +565,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        best = self._match_properties(property_name, channel=channel, exact=exact)
+        if isinstance(property_name, Property):
+            best = property_name
+        else:
+            best = self._match_properties(property_name, channel=channel, exact=exact)
 
         return marvin.tools.quantities.Map.from_maps(self, best)
 
