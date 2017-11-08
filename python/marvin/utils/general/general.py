@@ -1216,7 +1216,7 @@ def map_bins_to_column(column, indices):
 
     '''
     assert isinstance(indices, dict) is True, 'indices must be a dictionary of binids'
-    assert len(column) == len(sum(indices.values(), [])), 'input column and indices values must have same len'
+    assert len(column) == sum(map(len, indices.values())), 'input column and indices values must have same len'
     coldict = OrderedDict()
     colarr = np.array(column)
     for key, val in indices.items():

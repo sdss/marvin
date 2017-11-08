@@ -1288,7 +1288,7 @@ class Results(object):
 
         return self.results
 
-    def getAll(self):
+    def getAll(self, force=False):
         ''' Retrieve all of the results of a query
 
         Attempts to return all the results of a query.  The efficiency of this
@@ -1297,18 +1297,22 @@ class Results(object):
         A cutoff limit is applied for results with more than 500,000 rows or
         results with more than 25 columns.
 
+        Parameters
+            force (bool):
+                If True, force attempt to download everything
+
         Returns:
             The full list of query results.
 
         See Also:
-            getNext, getPrevious, getSubset
+            getNext, getPrevious, getSubset, loop
 
         '''
 
-        if self.totalcount > 500000 or len(self.columns) > 25:
+        if (self.totalcount > 500000 or len(self.columns) > 25) and not force:
             raise MarvinUserWarning("Cannot retrieve all results. The total number of requested "
                                     "rows or columns is too high. Please use the getNext, getPrevious, "
-                                    "or getSubset methods to retrieve pages.")
+                                    "getSubset, or loop methods to retrieve pages.")
 
         if self.mode == 'local':
             self.results = self.query.from_self().all()
