@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-10-25 14:55:48
+# @Last Modified time: 2017-11-09 12:51:36
 
 from __future__ import print_function, division, absolute_import
 
@@ -213,7 +213,7 @@ def get_best_fuzzy(name, choices, cutoff=50, return_score=False):
     items = process.extractBests(name, choices, score_cutoff=cutoff, scorer=fuzz.WRatio)
 
     if not items:
-        return None
+        best = None
     elif len(items) == 1:
         best = items[0]
     else:
@@ -237,6 +237,9 @@ def get_best_fuzzy(name, choices, cutoff=50, return_score=False):
                                'Did you mean one of {1}?'.format(name, options))
         else:
             best = items[0]
+
+    if best is None:
+        raise ValueError('Could not find a match for {0}.  Please refine your text.'.format(name))
 
     return best if return_score else best[0]
 
@@ -285,7 +288,10 @@ class ParameterGroupList(list):
     @property
     def best(self):
         ''' List the best parameters in each group '''
-        return query_params
+        grp_copy = copy_mod.deepcopy(self)
+        grp_copy.__init__(bestparams)
+        grp_copy.parent._check_datamodels()
+        return grp_copy
 
     @groups.setter
     def groups(self, value):
@@ -347,12 +353,12 @@ class ParameterGroupList(list):
             return [param.__getattribute__(name_type) for group in self for param in group]
 
     def __eq__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=80)
+        item = get_best_fuzzy(name, self.groups, cutoff=75)
         if item:
             return self[self.groups.index(item)]
 
     def __contains__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=80)
+        item = get_best_fuzzy(name, self.groups, cutoff=75)
         if item:
             return True
         else:

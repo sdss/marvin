@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 17:16:51
+# @Last Modified time: 2017-11-09 13:04:00
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.base import query_params, QueryParameter
@@ -22,7 +22,7 @@ def data():
     nsaparams = ['nsa.iauname', 'nsa.ra', 'nsa.dec', 'nsa.z', 'nsa.elpetro_ba', 'nsa.elpetro_mag_g_r',
                  'nsa.elpetro_absmag_g_r', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r', 'nsa.sersic_logmass',
                  'nsa.sersic_ba']
-    data = {'groups': groups, 'spaxelmeta': spaxelparams, 'nsa': nsaparams, 'specind': specindparams}
+    data = {'groups': groups, 'spaxelmeta': spaxelparams, 'nsa': nsaparams, 'spectral': specindparams}
 
     return data
 
@@ -53,12 +53,12 @@ class TestGroupList(object):
         group = query_params[name]
         assert group.name == 'NSA Catalog'
 
-    @pytest.mark.parametrize('groups', [(None), (['nsa']), (['specind', 'nsa']),
-                                        (['spaxelmeta', 'specind'])])
+    @pytest.mark.parametrize('groups', [(None), (['nsa']), (['spectral', 'nsa']),
+                                        (['spaxelmeta', 'spectral'])])
     def test_list_params(self, data, groups):
         params = query_params.list_params(groups=groups)
         if not groups:
-            myparams = data['spaxelmeta'] + data['nsa'] + data['specind']
+            myparams = data['spaxelmeta'] + data['nsa'] + data['spectral']
         else:
             paramlist = [data[g] for g in groups]
             myparams = list(itertools.chain.from_iterable(paramlist))
@@ -72,16 +72,18 @@ class TestGroupList(object):
         assert errmsg in str(cm.value)
 
     @pytest.mark.parametrize('name, result',
-                             [('coord', None),
-                              pytest.mark.xfail(raises=KeyError)(('meta', None))])
-    def test_failure(self, name, result):
-        res = query_params[name]
-        assert result == res, 'result should be the same as res'
+                             [('coord', None)])
+    def test_raises_valueerror(self, name, result):
+        errmsg = "Could not find a match for coord."
+        with pytest.raises(ValueError) as cm:
+            group = query_params[name]
+        assert cm.type == ValueError
+        assert errmsg in str(cm.value)
 
 
 class TestParamList(object):
 
-    @pytest.mark.parametrize('group, name, count', [('specind', 'Spectral Indices', 1),
+    @pytest.mark.parametrize('group, name, count', [('spectral', 'Spectral Indices', 1),
                                                     ('kin', 'Kinematics', 6)])
     def test_get_paramgroup(self, group, name, count):
         assert group in query_params
@@ -92,7 +94,7 @@ class TestParamList(object):
         assert mygroup.name == name
         assert len(mygroup) == count
 
-    @pytest.mark.parametrize('group, param, name', [('specind', 'd4000', 'specindex_d4000')])
+    @pytest.mark.parametrize('group, param, name', [('spectral', 'd4000', 'specindex_d4000')])
     def test_get_param(self, group, param, name):
         assert group in query_params
         assert param in query_params[group]
@@ -171,7 +173,7 @@ class TestQueryParams(object):
     def test_datamodel(self, grp, name):
         emgrp = query_params[grp]
         param = emgrp[name]
-        assert param.property is not None
+        assert param.property is None
 
     @pytest.mark.parametrize('group, name, full',
                              [('metadata', 'cube.plate', 'cube.plate'),
