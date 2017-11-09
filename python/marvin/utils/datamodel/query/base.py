@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-09 12:51:36
+# @Last Modified time: 2017-11-09 17:07:22
 
 from __future__ import print_function, division, absolute_import
 
@@ -244,7 +244,64 @@ def get_best_fuzzy(name, choices, cutoff=50, return_score=False):
     return best if return_score else best[0]
 
 
-class ParameterGroupList(list):
+def query_fuzzy(name, first, second=None, third=None, cutoff=None):
+    ''' Custom get_best_fuzzy for query parameters '''
+
+    try:
+        item = get_best_fuzzy(name, first, cutoff=cutoff)
+    except (ValueError, KeyError) as e:
+        if second:
+            try:
+                item = get_best_fuzzy(name, second, cutoff=cutoff)
+            except (ValueError, KeyError) as e:
+                if third:
+                    try:
+                        item = get_best_fuzzy(name, second, cutoff=cutoff)
+                    except (ValueError, KeyError) as e:
+                        item = None
+                else:
+                    raise e
+        else:
+            raise e
+
+    return item
+
+from marvin.utils.general.structs import FuzzyList
+import inspect
+
+
+class QueryFuzzyList(FuzzyList):
+    ''' '''
+
+    def __dir__(self):
+        class_members = list(list(zip(*inspect.getmembers(self.__class__)))[0])
+        return class_members + [self.mapper(item) for item in self]
+
+    def index(self, value):
+        param = self == value
+        index = [i for i, item in enumerate(self) if item is param]
+
+        if index:
+            return index[0]
+        else:
+            raise ValueError('{0} is not in the list'.format(value))
+
+    def pop(self, value=None):
+        if isinstance(value, int):
+            return super(QueryFuzzyList, self).pop(value)
+        elif not value:
+            return super(QueryFuzzyList, self).pop()
+        else:
+            idx = self.index(value)
+            return super(QueryFuzzyList, self).pop(idx)
+
+    def remove(self, value):
+        param = value == self
+        tmp = [n for n in self if n != param]
+        QueryFuzzyList.__init__(self, tmp, use_fuzzy=get_best_fuzzy, mapper=self.mapper)
+
+
+class ParameterGroupList(QueryFuzzyList):
     ''' ParameterGroup Object
 
     This object inherits from the Python list object. This
@@ -255,7 +312,8 @@ class ParameterGroupList(list):
     def __init__(self, items):
         self.score = None
         paramgroups = self._make_groups(items)
-        list.__init__(self, paramgroups)
+        QueryFuzzyList.__init__(self, paramgroups, use_fuzzy=get_best_fuzzy,
+                                mapper=lambda x: x.name.lower().replace(' ', '_').replace('.', '_'))
 
     def _make_groups(self, items, best=None):
         if isinstance(items, list):
@@ -281,7 +339,7 @@ class ParameterGroupList(list):
         return QueryList([param for group in self for param in group])
 
     @property
-    def groups(self):
+    def names(self):
         ''' List all the parameter groups '''
         return self.list_groups()
 
@@ -293,11 +351,11 @@ class ParameterGroupList(list):
         grp_copy.parent._check_datamodels()
         return grp_copy
 
-    @groups.setter
-    def groups(self, value):
+    @names.setter
+    def names(self, value):
         """Raises an error if trying to set groups directly."""
 
-        raise MarvinError('cannot set groups directly. Use add_groups() instead.')
+        raise MarvinError('cannot set names directly. Use add_groups() instead.')
 
     def list_groups(self):
         '''Returns a list of query groups.
@@ -352,44 +410,8 @@ class ParameterGroupList(list):
         else:
             return [param.__getattribute__(name_type) for group in self for param in group]
 
-    def __eq__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=75)
-        if item:
-            return self[self.groups.index(item)]
 
-    def __contains__(self, name):
-        item = get_best_fuzzy(name, self.groups, cutoff=75)
-        if item:
-            return True
-        else:
-            return False
-
-    def __getitem__(self, name):
-        if isinstance(name, str):
-            return self == name
-        else:
-            return list.__getitem__(self, name)
-
-    def index(self, value):
-        param = self == value
-        return self.groups.index(param.name)
-
-    def pop(self, value=None):
-        if isinstance(value, int):
-            return super(ParameterGroupList, self).pop(value)
-        elif not value:
-            return super(ParameterGroupList, self).pop()
-        else:
-            idx = self.index(value)
-            return super(ParameterGroupList, self).pop(idx)
-
-    def remove(self, value):
-        param = value == self
-        tmp = [n for n in self if n != param]
-        list.__init__(self, tmp)
-
-
-class ParameterGroup(list):
+class ParameterGroup(QueryFuzzyList):
     ''' A Query Parameter Group Object
 
     Query parameters are grouped into specific categories
@@ -414,13 +436,17 @@ class ParameterGroup(list):
             this_param = self._make_query_parameter(item)
             queryparams.append(this_param)
 
-        list.__init__(self, queryparams)
+        QueryFuzzyList.__init__(self, queryparams, use_fuzzy=get_best_fuzzy,
+                                mapper=lambda x: x.full.split('.', 1)[1])
         self._check_names()
         if self.parent:
             self._check_datamodels()
 
     def __repr__(self):
         return '<ParameterGroup name={0.name}, n_parameters={1}>'.format(self, len(self))
+
+    def __str__(self):
+        return self.name
 
     def _make_query_parameter(self, item):
         ''' Create and return a QueryParameter '''
@@ -451,19 +477,19 @@ class ParameterGroup(list):
 
     @property
     def full(self):
-        return self.list_params(full=True)
+        return self.list_params('full')
 
     @property
     def remote(self):
-        return self.list_params(remote=True)
+        return self.list_params('remote')
 
     @property
     def short(self):
-        return self.list_params(short=True)
+        return self.list_params('short')
 
     @property
     def display(self):
-        return self.list_params(display=True)
+        return self.list_params('display')
 
     @property
     def parameters(self):
@@ -490,7 +516,7 @@ class ParameterGroup(list):
         for value in values:
             self.add_parameter(value, copy=copy)
 
-    def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
+    def list_params(self, name_type=None, subset=None):
         ''' List the parameter names for a given group
 
         Lists the Query Parameters of the given group
@@ -498,19 +524,16 @@ class ParameterGroup(list):
         Parameters:
             subset (str|list):
                 String list of a subset of parameters to return
-            display (bool):
-                Set to return the display names
-            short (bool)
-                Set to return the short names
-            full (bool):
-                Set to return the full names
-            remote (bool):
-                Set to return the remote query names
+            name_type (str):
+                The type of name to generate (full, short, name, remote, display).
 
         Returns:
             param (list):
                 The list of parameter
         '''
+
+        assert name_type in ['full', 'short', 'name', 'remote', 'display', None], \
+            'name_type must be (full, short, name, remote, display)'
 
         if subset:
             params = subset if isinstance(subset, list) else [subset]
@@ -518,54 +541,13 @@ class ParameterGroup(list):
         else:
             paramlist = self
 
-        if short:
-            return [param.short for param in paramlist]
-        elif display:
-            return [param.display for param in paramlist]
-        elif full:
-            return [param.full for param in paramlist]
-        elif remote:
-            return [param.remote for param in paramlist]
+        if name_type:
+            return [param.__getattribute__(name_type) for param in paramlist]
         else:
             return QueryList([param for param in paramlist])
 
-    def __eq__(self, name):
-        item = get_best_fuzzy(name, self.full, cutoff=75)
-        if item:
-            return self[self.full.index(item)]
-
-    def __contains__(self, name):
-        item = get_best_fuzzy(name, self.full, cutoff=75)
-        if item:
-            return True
-        else:
-            return False
-
-    def __getitem__(self, name):
-        if isinstance(name, str):
-            return self == name
-        else:
-            return list.__getitem__(self, name)
-
-    def index(self, value):
-        param = self == value
-        return super(ParameterGroup, self).index(param)
-
-    def pop(self, value=None):
-        if isinstance(value, int):
-            return super(ParameterGroup, self).pop(value)
-        elif not value:
-            return super(ParameterGroup, self).pop()
-        else:
-            idx = self.index(value)
-            return super(ParameterGroup, self).pop(idx)
-
-    def remove(self, value):
-        param = value == self
-        super(ParameterGroup, self).remove(param)
-
     def _check_names(self):
-        names = self.list_params(remote=True)
+        names = self.list_params('remote')
         for i, name in enumerate(names):
             if names.count(name) > 1:
                 self[i].remote = self[i]._under
@@ -578,35 +560,392 @@ class ParameterGroup(list):
                     item.property = self.parent.dap_datamodel[item.full]
 
 
-class QueryList(list):
+class QueryList(QueryFuzzyList):
     ''' A class for a list of Query Parameters '''
 
     def __init__(self, items):
-        list.__init__(self, items)
+        QueryFuzzyList.__init__(self, items, use_fuzzy=get_best_fuzzy,
+                                mapper=lambda x: x.full.split('.', 1)[1])
         self._full = [s.full for s in self]
         self._remote = [s.remote for s in self]
-
-    def __eq__(self, name):
-        item = get_best_fuzzy(name, self._full, cutoff=75)
-        if item:
-            return self[self._full.index(item)]
-
-    def __contains__(self, name):
-        item = get_best_fuzzy(name, self._full, cutoff=75)
-        if item:
-            return True
-        else:
-            return False
-
-    def __getitem__(self, name):
-        if isinstance(name, str):
-            return self == name
-        else:
-            return list.__getitem__(self, name)
+        self._short = [s.short for s in self]
 
     def get_full_from_remote(self, value):
         ''' Get the full name from the remote name '''
         return self._full[self._remote.index(value)]
+
+
+# -----------------
+# OLD CODE
+# ------------------
+
+# class ParameterGroupList(list):
+#     ''' ParameterGroup Object
+
+#     This object inherits from the Python list object. This
+#     represents a list of query ParameterGroups.
+
+#     '''
+
+#     def __init__(self, items):
+#         self.score = None
+#         paramgroups = self._make_groups(items)
+#         list.__init__(self, paramgroups)
+
+#     def _make_groups(self, items, best=None):
+#         if isinstance(items, list):
+#             paramgroups = [ParameterGroup(item, []) for item in items]
+#         elif isinstance(items, dict):
+#             paramgroups = [ParameterGroup(key, vals)
+#                            for key, vals in items.items()]
+#         elif isinstance(items, six.string_types):
+#             paramgroups = ParameterGroup(items, [])
+#         return paramgroups
+
+#     def set_parent(self, parent):
+#         """Sets parent."""
+
+#         assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
+#         self.parent = parent
+#         for item in self:
+#             item.set_parent(parent)
+
+#     @property
+#     def parameters(self):
+#         ''' List all the queryable parameters '''
+#         return QueryList([param for group in self for param in group])
+
+#     @property
+#     def groups(self):
+#         ''' List all the parameter groups '''
+#         return self.list_groups()
+
+#     @property
+#     def best(self):
+#         ''' List the best parameters in each group '''
+#         grp_copy = copy_mod.deepcopy(self)
+#         grp_copy.__init__(bestparams)
+#         grp_copy.parent._check_datamodels()
+#         return grp_copy
+
+#     @groups.setter
+#     def groups(self, value):
+#         """Raises an error if trying to set groups directly."""
+
+#         raise MarvinError('cannot set groups directly. Use add_groups() instead.')
+
+#     def list_groups(self):
+#         '''Returns a list of query groups.
+
+#         Returns:
+#             names (list):
+#                 A string list of all the Query Group names
+#         '''
+#         return [group.name for group in self]
+
+#     def add_group(self, group, copy=True):
+#         ''' '''
+
+#         new_grp = copy_mod.copy(group) if copy else group
+#         if isinstance(new_grp, ParameterGroup):
+#             self.append(new_grp)
+#         else:
+#             new_grp = self._make_groups(new_grp)
+#             self.append(new_grp)
+
+#     def add_groups(self, groups, copy=True):
+#         ''' '''
+#         for group in groups:
+#             self.add_group(group, copy=copy)
+
+#     def list_params(self, name_type='full', groups=None):
+#         '''Returns a list of parameters from all groups.
+
+#         Return a string list of the full parameter names.
+#         Default is all parameters across all groups.
+
+#         Parameters:
+#             groups (str|list):
+#                 A string or list of strings representing the groups
+#                 of parameters you wish to return
+#             name_type (str):
+#                 The type of name to generate (full, name, short, remote, display).
+#                 Default is full.
+
+#         Returns:
+#             params (list):
+#                 A list of full parameter names
+#         '''
+
+#         assert name_type in ['full', 'short', 'name', 'remote', 'display'], \
+#             'name_type must be (full, short, name, remote, display)'
+
+#         if groups:
+#             groups = groups if isinstance(groups, list) else [groups]
+#             grouplist = [self[g] for g in groups]
+#             return [param.__getattribute__(name_type) for group in grouplist for param in group]
+#         else:
+#             return [param.__getattribute__(name_type) for group in self for param in group]
+
+#     def __eq__(self, name):
+#         item = get_best_fuzzy(name, self.groups, cutoff=75)
+#         if item:
+#             return self[self.groups.index(item)]
+
+#     def __contains__(self, name):
+#         item = get_best_fuzzy(name, self.groups, cutoff=75)
+#         if item:
+#             return True
+#         else:
+#             return False
+
+#     def __getitem__(self, name):
+#         if isinstance(name, str):
+#             return self == name
+#         else:
+#             return list.__getitem__(self, name)
+
+#     def index(self, value):
+#         param = self == value
+#         return self.groups.index(param.name)
+
+#     def pop(self, value=None):
+#         if isinstance(value, int):
+#             return super(ParameterGroupList, self).pop(value)
+#         elif not value:
+#             return super(ParameterGroupList, self).pop()
+#         else:
+#             idx = self.index(value)
+#             return super(ParameterGroupList, self).pop(idx)
+
+#     def remove(self, value):
+#         param = value == self
+#         tmp = [n for n in self if n != param]
+#         list.__init__(self, tmp)
+
+
+# class ParameterGroup(list):
+#     ''' A Query Parameter Group Object
+
+#     Query parameters are grouped into specific categories
+#     for ease of use and navigation.  This object subclasses
+#     from the Python list object.
+
+#     Parameters:
+#         name (str):
+#             The name of the group
+#         items (list|dict):
+#             A list or dictionary of parameters.  If a list of names is input,
+#             each name will be used as the full name.
+
+#     '''
+#     def __init__(self, name, items, parent=None):
+#         self.name = name
+#         self.score = None
+#         self.parent = parent
+
+#         queryparams = []
+#         for item in items:
+#             this_param = self._make_query_parameter(item)
+#             queryparams.append(this_param)
+
+#         list.__init__(self, queryparams)
+#         self._check_names()
+#         if self.parent:
+#             self._check_datamodels()
+
+#     def __repr__(self):
+#         return '<ParameterGroup name={0.name}, n_parameters={1}>'.format(self, len(self))
+
+#     def __str__(self):
+#         return self.name
+
+#     def _make_query_parameter(self, item):
+#         ''' Create and return a QueryParameter '''
+#         if isinstance(item, dict):
+#             item.update({'group': self.name, 'best': True})
+#             this_param = QueryParameter(**item)
+#         elif isinstance(item, six.string_types):
+#             is_best = [p for p in query_params.parameters
+#                        if item in p.full and (item == p.name or item == p.full)]
+#             if is_best:
+#                 best_dict = is_best[0].__dict__
+#                 best_dict.update({'group': self.name, 'best': True})
+#                 this_param = QueryParameter(**best_dict)
+#             else:
+#                 this_param = QueryParameter(item, group=self.name, best=False)
+#         if self.parent:
+#             this_param.set_parent(self.parent)
+
+#         return this_param
+
+#     def set_parent(self, parent):
+#         """Sets datamodel parent."""
+
+#         assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
+#         self.parent = parent
+#         for item in self:
+#             item.set_parent(parent)
+
+#     @property
+#     def full(self):
+#         return self.list_params(full=True)
+
+#     @property
+#     def remote(self):
+#         return self.list_params(remote=True)
+
+#     @property
+#     def short(self):
+#         return self.list_params(short=True)
+
+#     @property
+#     def display(self):
+#         return self.list_params(display=True)
+
+#     @property
+#     def parameters(self):
+#         return self.list_params()
+
+#     @parameters.setter
+#     def parameters(self, value):
+#         """Raises an error if trying to set groups directly."""
+
+#         raise MarvinError('cannot set groups directly. Use add_parameters() instead.')
+
+#     def add_parameter(self, value, copy=True):
+#         ''' '''
+
+#         new_par = copy_mod.copy(value) if copy else value
+#         if isinstance(value, QueryParameter):
+#             self.append(new_par)
+#         else:
+#             new_qp = self._make_query_parameter(new_par)
+#             self.append(new_qp)
+
+#     def add_parameters(self, values, copy=True):
+#         ''' '''
+#         for value in values:
+#             self.add_parameter(value, copy=copy)
+
+#     def list_params(self, subset=None, display=None, short=None, full=None, remote=None):
+#         ''' List the parameter names for a given group
+
+#         Lists the Query Parameters of the given group
+
+#         Parameters:
+#             subset (str|list):
+#                 String list of a subset of parameters to return
+#             display (bool):
+#                 Set to return the display names
+#             short (bool)
+#                 Set to return the short names
+#             full (bool):
+#                 Set to return the full names
+#             remote (bool):
+#                 Set to return the remote query names
+
+#         Returns:
+#             param (list):
+#                 The list of parameter
+#         '''
+
+#         if subset:
+#             params = subset if isinstance(subset, list) else [subset]
+#             paramlist = [self[g] for g in params]
+#         else:
+#             paramlist = self
+
+#         if short:
+#             return [param.short for param in paramlist]
+#         elif display:
+#             return [param.display for param in paramlist]
+#         elif full:
+#             return [param.full for param in paramlist]
+#         elif remote:
+#             return [param.remote for param in paramlist]
+#         else:
+#             return QueryList([param for param in paramlist])
+
+#     def __eq__(self, name):
+#         item = get_best_fuzzy(name, self.full, cutoff=75)
+#         if item:
+#             return self[self.full.index(item)]
+
+#     def __contains__(self, name):
+#         item = get_best_fuzzy(name, self.full, cutoff=75)
+#         if item:
+#             return True
+#         else:
+#             return False
+
+#     def __getitem__(self, name):
+#         if isinstance(name, str):
+#             return self == name
+#         else:
+#             return list.__getitem__(self, name)
+
+#     def index(self, value):
+#         param = self == value
+#         return super(ParameterGroup, self).index(param)
+
+#     def pop(self, value=None):
+#         if isinstance(value, int):
+#             return super(ParameterGroup, self).pop(value)
+#         elif not value:
+#             return super(ParameterGroup, self).pop()
+#         else:
+#             idx = self.index(value)
+#             return super(ParameterGroup, self).pop(idx)
+
+#     def remove(self, value):
+#         param = value == self
+#         super(ParameterGroup, self).remove(param)
+
+#     def _check_names(self):
+#         names = self.list_params(remote=True)
+#         for i, name in enumerate(names):
+#             if names.count(name) > 1:
+#                 self[i].remote = self[i]._under
+#                 self[i].display = '{0} {1}'.format(self[i].table.title(), self[i].display)
+
+#     def _check_datamodels(self):
+#         for item in self:
+#             if not item.property:
+#                 if item.full in self.parent.dap_datamodel:
+#                     item.property = self.parent.dap_datamodel[item.full]
+
+
+# class QueryList(list):
+#     ''' A class for a list of Query Parameters '''
+
+#     def __init__(self, items):
+#         list.__init__(self, items)
+#         self._full = [s.full for s in self]
+#         self._remote = [s.remote for s in self]
+#         self._short = [s.short for s in self]
+
+#     def __eq__(self, name):
+#         item = get_best_fuzzy(name, self._full, cutoff=75)
+#         if item:
+#             return self[self._full.index(item)]
+
+#     def __contains__(self, name):
+#         item = get_best_fuzzy(name, self._full, cutoff=75)
+#         if item:
+#             return True
+#         else:
+#             return False
+
+#     def __getitem__(self, name):
+#         if isinstance(name, str):
+#             return self == name
+#         else:
+#             return list.__getitem__(self, name)
+
+#     def get_full_from_remote(self, value):
+#         ''' Get the full name from the remote name '''
+#         return self._full[self._remote.index(value)]
 
 
 class QueryParameter(object):
@@ -629,6 +968,10 @@ class QueryParameter(object):
             A display name used for web and plotting purposes.
         dtype (str):
             The type of the parameter (e.g. string, integer, float)
+
+    Attributes:
+        property:
+            The DAP Datamodel Property corresponding to this Query Parameter
     '''
 
     def __init__(self, full, table=None, name=None, short=None, display=None,
@@ -651,6 +994,9 @@ class QueryParameter(object):
     def __repr__(self):
         return ('<QueryParameter full={0.full}, name={0.name}, short={0.short}, '
                 'remote={0.remote}, display={0.display}>'.format(self))
+
+    def __str__(self):
+        return self.full
 
     def _set_names(self):
         ''' Sets alternate names if it can '''

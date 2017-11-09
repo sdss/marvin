@@ -131,12 +131,14 @@ class FuzzyList(list):
         mapper (function):
             A function that will be used to format the items in the list
             before searching them. By default it does a string casting.
-
+        use_fuzzy (function):
+            A function that will be used to perform the fuzzy selection
     """
 
-    def __init__(self, the_list, mapper=str):
+    def __init__(self, the_list, mapper=str, use_fuzzy=None):
 
         self.mapper = mapper
+        self.use_fuzzy = use_fuzzy if use_fuzzy else get_best_fuzzy
 
         list.__init__(self, the_list)
 
@@ -145,10 +147,10 @@ class FuzzyList(list):
         self_values = [self.mapper(item) for item in self]
 
         try:
-            best = get_best_fuzzy(value, self_values)
+            best = self.use_fuzzy(value, self_values)
         except ValueError:
             # Second pass, using underscores.
-            best = get_best_fuzzy(value.replace(' ', '_'), self_values)
+            best = self.use_fuzzy(value.replace(' ', '_'), self_values)
 
         return self[self_values.index(best)]
 
@@ -185,7 +187,7 @@ class FuzzyList(list):
         return [self.mapper(item) for item in self]
 
 
-class OrderedDefaultDict(OrderedDict):
+class OrderedDefaultDict(FuzzyDict):
 
     def __init__(self, default_factory=None, *args, **kwargs):
         OrderedDict.__init__(self, *args, **kwargs)
