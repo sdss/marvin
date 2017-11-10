@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-09 13:04:00
+# @Last Modified time: 2017-11-09 20:55:57
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.datamodel.query.base import query_params, QueryParameter
@@ -107,7 +107,7 @@ class TestParamList(object):
                               ('kin', 'havel', 'short', 'havel'),
                               ('kin', 'havel', 'display', 'Halpha Velocity')])
     def test_list_params(self, group, param, ltype, expname):
-        kwargs = {ltype: True} if ltype else {}
+        kwargs = {'name_type': ltype} if ltype else {}
         params = query_params[group].list_params(**kwargs)
         if not ltype:
             assert isinstance(params[0], QueryParameter)
@@ -117,7 +117,7 @@ class TestParamList(object):
     @pytest.mark.parametrize('group, params, expset',
                              [('metadata', ['ra', 'dec'], ['cube.ra', 'cube.dec'])])
     def test_list_subset(self, group, params, expset):
-        subset = query_params[group].list_params(params, full=True)
+        subset = query_params[group].list_params('full', subset=params)
         assert set(expset) == set(subset)
 
     @pytest.mark.parametrize('groups, params1, params2, expset',
@@ -127,7 +127,7 @@ class TestParamList(object):
         group1, group2 = groups
         g1 = query_params[group1]
         g2 = query_params[group2]
-        mylist = g1.list_params(params1, full=True) + g2.list_params(params2, full=True)
+        mylist = g1.list_params('full', subset=params1) + g2.list_params('full', subset=params2)
         assert set(expset) == set(mylist)
 
     def test_raises_keyerror(self):

@@ -248,7 +248,7 @@ class ResultSet(list):
         ''' Populate some parameters from the results '''
         if self._results:
             self.columns = self._results.columns if not self.columns else self.columns
-            self.choices = self.columns.list_params(remote=True)
+            self.choices = self.columns.list_params('remote')
             self.count = self._results.count if not self.count else self.count
             self.total = self._results.totalcount if not self.total else self.total
         else:
@@ -272,7 +272,7 @@ class ResultSet(list):
             The output converted into dictionary format.
         '''
 
-        keys = self.columns.list_params(remote=True)
+        keys = self.columns.list_params('remote')
 
         if format_type == 'listdict':
             if name:
@@ -693,7 +693,7 @@ class Results(object):
 
         # grab the columns from the results
         self.columns = self.getColumns()
-        ntnames = self.columns.list_params(remote=True)
+        ntnames = self.columns.list_params('remote')
         # dynamically create a new ResultRow Class
         rows = rows if rows else self.results
         row_is_dict = isinstance(rows[0], dict)
