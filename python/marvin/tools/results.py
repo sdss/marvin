@@ -14,7 +14,7 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 import marvin.utils.plot.scatter
@@ -526,6 +526,7 @@ class Results(object):
             url = config.urlmap['api']['querycubes']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'sort': remotename, 'order': order, 'limit': self.limit}
+
             self._interaction(url, params, create_set=True, calltype='Sort')
 
         return self.results
@@ -724,12 +725,7 @@ class Results(object):
 
         '''
 
-        # set Marvin query object to None, in theory this could be pickled as well
-        self._queryobj = None
-        isnotstr = not isinstance(self.query, six.string_types)
-        if isnotstr:
-            self.query = None
-
+        # set the filename and path
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
         if not path:
@@ -753,10 +749,20 @@ class Results(object):
             os.makedirs(dirname)
 
         # convert results into a dict
-        self.results = self.results.to_dict()
+        dict_results = self.results.to_dict()
 
+        # set bad pickled attributes to None
+        attrs = ['results', 'datamodel', 'columns', '_queryobj']
+        vals = [dict_results, None, None, None]
+        isnotstr = not isinstance(self.query, six.string_types)
+        if isnotstr:
+            attrs += ['query']
+            vals += [None]
+
+        # pickle the results
         try:
-            pickle.dump(self, open(path, 'wb'), protocol=-1)
+            with temp_setattr(self, attrs, vals):
+                pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -781,6 +787,8 @@ class Results(object):
         '''
         obj = marvin_pickle.restore(path, delete=delete)
         obj._create_result_set()
+        obj.getColumns()
+        obj.datamodel = datamodel[obj._release]
         return obj
 
     def toJson(self):
@@ -856,8 +864,8 @@ class Results(object):
 
         # check if the returnparams parameter is in the proper format
         if 'params' in params:
-            return_params = params.get('params')
-            if isinstance(return_params, list):
+            return_params = params.get('params', None)
+            if return_params and isinstance(return_params, list):
                 params['params'] = ','.join(return_params)
 
         # send the request

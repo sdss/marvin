@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-09 20:57:08
+# @Last Modified time: 2017-11-10 09:54:08
 
 from __future__ import print_function, division, absolute_import
 
@@ -211,7 +211,7 @@ class QueryDataModelList(DataModelList):
     base = {'QueryDataModel': QueryDataModel}
 
 
-def get_best_fuzzy(name, choices, cutoff=50, return_score=False):
+def get_best_fuzzy(name, choices, cutoff=60, return_score=False):
     items = process.extractBests(name, choices, score_cutoff=cutoff, scorer=fuzz.WRatio)
 
     if not items:
@@ -270,7 +270,7 @@ def strip_mapped(self):
         mapped_item = self.mapper(item)
         if '.' in mapped_item:
             parta, name = mapped_item.split('.')
-            if 'name' == name:
+            if name == 'name':
                 name = mapped_item.replace('.', '_')
             params.append(name)
         else:
@@ -279,7 +279,7 @@ def strip_mapped(self):
 
 
 class QueryFuzzyList(FuzzyList):
-    ''' '''
+    ''' Fuzzy List for Query Parameters '''
 
     def __dir__(self):
         class_members = list(list(zip(*inspect.getmembers(self.__class__)))[0])
@@ -429,9 +429,6 @@ class ParameterGroupList(QueryFuzzyList):
             return [param.__getattribute__(name_type) for group in grouplist for param in group]
         else:
             return [param.__getattribute__(name_type) for group in self for param in group]
-
-
-# def query_mapper(x):
 
 
 class ParameterGroup(QueryFuzzyList):

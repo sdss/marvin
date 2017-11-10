@@ -16,6 +16,7 @@ import collections
 import inspect
 import sys
 import warnings
+import contextlib
 
 from collections import OrderedDict
 
@@ -53,7 +54,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file')
+           'get_dapall_file', 'temp_setattr')
 
 drpTable = {}
 
@@ -1271,3 +1272,78 @@ def get_dapall_file(drpver, dapver):
     dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
 
     return dapall_path
+
+
+@contextlib.contextmanager
+def temp_setattr(ob, attrs, new_values):
+    """ Temporarily set attributed on an object
+
+    Temporarily set an attribute on an object for the duration of the
+    context manager.
+
+    Parameters:
+        ob (object):
+            A class instance to set attributes on
+        attrs (str|list):
+            A list of attribute names to replace
+        new_values (list):
+            A list of new values to set as new attribute.  If new_values is
+            None, all attributes in attrs will be set to None.
+
+    Example:
+        >>> c = Cube(plateifu='8485-1901')
+        >>> print('before', c.mangaid)
+        >>> with temp_setattr(c, 'mangaid', None):
+        >>>     # do stuff
+        >>>     print('new', c.mangaid)
+        >>> print('after' c.mangaid)
+        >>>
+        >>> # Output
+        >>> before '1-209232'
+        >>> new None
+        >>> after '1-209232'
+        >>>
+
+    """
+
+    # set up intial inputs
+    attrs = attrs if isinstance(attrs, list) else [attrs]
+    if new_values:
+        new_values = new_values if isinstance(new_values, list) else [new_values]
+    else:
+        new_values = [new_values] * len(attrs)
+
+    assert len(attrs) == len(new_values), 'attrs and new_values must have the same length'
+
+    replaced = []
+    old_values = []
+
+    # grab the old values
+    for i, attr in enumerate(attrs):
+        new_value = new_values[i]
+
+        replace = False
+        old_value = None
+        if hasattr(ob, attr):
+            try:
+                if attr in ob.__dict__:
+                    replace = True
+            except AttributeError:
+                if attr in ob.__slots__:
+                    replace = True
+            if replace:
+                old_value = getattr(ob, attr)
+        replaced.append(replace)
+        old_values.append(old_value)
+        setattr(ob, attr, new_value)
+
+    # yield
+    yield replaced, old_values
+
+    # replace the old values
+    for i, attr in enumerate(attrs):
+        if not replaced[i]:
+            delattr(ob, attr)
+        else:
+            setattr(ob, attr, old_values[i])
+
