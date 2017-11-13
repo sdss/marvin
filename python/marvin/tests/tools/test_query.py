@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-22 18:07:17
+# @Last Modified time: 2017-11-10 16:49:55
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -91,6 +91,7 @@ class TestQuerySearches(object):
                               ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and haflux > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
+        print('test', query, sfilter)
         res = query.run()
         count = query.expdata['queries'][sfilter]
         assert count['count'] == res.totalcount

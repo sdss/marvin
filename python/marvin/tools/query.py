@@ -762,6 +762,7 @@ class Query(object):
             # get the runtime
             end = datetime.datetime.now()
             self.runtime = (end - start)
+
             # close the session and engine
             #self.session.close()
             #marvindb.db.engine.dispose()
