@@ -463,6 +463,10 @@ class Bintype(object):
 
         return self.name
 
+    def __eq__(self, other):
+
+        return self.name == other or object.__eq__(self, other)
+
 
 class Template(object):
     """A class representing a template."""
@@ -480,6 +484,10 @@ class Template(object):
     def __str__(self):
 
         return self.name
+
+    def __eq__(self, other):
+
+        return self.name == other or object.__eq__(self, other)
 
 
 class Property(object):
