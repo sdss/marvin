@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 11:10:52
+# @Last Modified time: 2017-11-13 14:44:51
 
 from __future__ import print_function, division, absolute_import
 
@@ -204,6 +204,9 @@ class QueryDataModel(object):
         ''' Sets the datamodel to use all the spaxels '''
         self._marvinform = MarvinForm(release=self.release, allspaxels=True)
         self._cleanup_keys()
+
+    def _reset_marvinform(self):
+        self._marvinform = MarvinForm(release=self.release)
 
 
 class QueryDataModelList(DataModelList):
