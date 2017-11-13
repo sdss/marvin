@@ -561,6 +561,7 @@ def query(request, release, mode, db):
     print('stuff', db, config.db, mode)
     q = Query(searchfilter=searchfilter, mode=mode, release=release)
     q.expdata = data
+    print('dm+marvinform', q.datamodel, q.marvinform)
     yield q
     config.forceDbOn()
     q = None
