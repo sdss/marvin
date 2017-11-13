@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-29 15:49:24
+# @Last Modified time: 2017-11-08 11:43:39
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -17,9 +17,16 @@ from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general import invalidArgs, isCallableWithArgs
 from matplotlib.gridspec import GridSpec
 from collections import defaultdict, OrderedDict
+from astropy.visualization import hist as ahist
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import mpl_scatter_density
 import numpy as np
+import scipy.stats as stats
 import six
+import seaborn as sns
+import pandas as pd
+import itertools
 
 
 def compute_stats(data):
@@ -38,8 +45,8 @@ def compute_stats(data):
 
     '''
     stats = {'mean': np.nanmean(data), 'std': np.nanstd(data), 'median': np.nanmedian(data),
-             'per10': np.nanpercentile(data, 10), 'per25': np.nanpercentile(data, 10),
-             'per75': np.nanpercentile(data, 10), 'per90': np.nanpercentile(data, 10)}
+             'per10': np.nanpercentile(data, 10), 'per25': np.nanpercentile(data, 25),
+             'per75': np.nanpercentile(data, 75), 'per90': np.nanpercentile(data, 90)}
 
     return stats
 
@@ -57,31 +64,34 @@ def _make_masked(data, mask=None):
     return arr_data
 
 
-def _create_figure(hist=None, hist_axes_visible=None):
+def _create_figure(hist=None, hist_axes_visible=None, use_density=None):
     ''' Create a generic figure and axis '''
-    # create the figure and axes
-    if hist:
-        fig = plt.figure()
-    else:
-        fig, ax_scat = plt.subplots()
+
+    # use a scatter density projection or not
+    projection = 'scatter_density' if use_density else None
+
+    # create the figure
+    fig = plt.figure()
     ax_hist_x = None
     ax_hist_y = None
 
-    # create histogram axes
+    # create axes with or without histogram
     if hist:
         if hist is True:
             gs = GridSpec(4, 4)
-            ax_scat = fig.add_subplot(gs[1:4, 0:3])
+            ax_scat = fig.add_subplot(gs[1:4, 0:3], projection=projection)
             ax_hist_x = fig.add_subplot(gs[0, 0:3])
             ax_hist_y = fig.add_subplot(gs[1:4, 3])
         elif hist == 'x':
             gs = GridSpec(2, 1, height_ratios=[1, 2])
-            ax_scat = fig.add_subplot(gs[1])
+            ax_scat = fig.add_subplot(gs[1], projection=projection)
             ax_hist_x = fig.add_subplot(gs[0])
         elif hist == 'y':
             gs = GridSpec(1, 2, width_ratios=[2, 1])
-            ax_scat = fig.add_subplot(gs[0])
+            ax_scat = fig.add_subplot(gs[0], projection=projection)
             ax_hist_y = fig.add_subplot(gs[1])
+    else:
+        ax_scat = fig.add_subplot(1, 1, 1, projection=projection)
 
     # turn off histogram axes
     if ax_hist_x:
@@ -123,6 +133,85 @@ def _get_axis_label(column, axis=''):
     return label
 
 
+def _set_options():
+    ''' Set some default Matplotlib options '''
+    mpl.rcParams['axes.axisbelow'] = True
+    mpl.rcParams['grid.color'] = 'gray'
+    mpl.rcParams['grid.linestyle'] = 'dashed'
+    mpl.rcParams['grid.alpha'] = 0.8
+
+
+def _set_limits(column, lim=None, sigma_cutoff=50, percent_clip=1):
+    ''' Set an axis limit
+
+    Determines whether to apply percentile clipping or not if any data
+    has a zscore value above the sigma_cutoff value.  Applies percentile clipping
+    centered around the mean.
+
+    Parameters:
+        column:
+            The array of data to get limits of
+        lim (list|tuple):
+            A user provided range
+        sigma_cutoff (int):
+            The number of sigma away from the mean to cutoff
+        percent_clip (int|tuple):
+            The percent to clip off the data array.  Input values are taken as percentages.
+            Can either be integer value (halved for lo,hi) or a tuple specifying lo,hi values.
+            Default is 1%.
+
+    Returns:
+        A list of axis range values to use
+
+    '''
+    if lim is not None:
+        assert len(lim) == 2, 'range must be a list or tuple of 2'
+    else:
+        # get percent clips
+        if isinstance(percent_clip, (list, tuple)):
+            lo, hi = percent_clip
+        else:
+            lo = percent_clip / 2.
+            hi = 100 - lo
+
+        zscore = stats.zscore(column)
+        # use percentile limits if the max zscore is > 50 sigma away from mean/stdev
+        if np.max(zscore) > sigma_cutoff:
+            lim = [np.percentile(column, lo), np.percentile(column, hi)]
+        else:
+            pass
+    return lim
+
+
+def _check_input_data(coldim, col, data=None):
+    ''' Check the input data
+
+    Parameters:
+        coldim (str):
+            Name of the dimension
+        col (str|array):
+            The list or array of values.  If data keyword is specified, col is a string name
+        data (Pandas.DataFrame)
+            A Pandas dataframe
+
+    Returns:
+        The column of data
+    '''
+
+    # check data
+    assert col is not None, 'Must provide an {0} column'.format(coldim)
+
+    if data is not None:
+        assert isinstance(col, str), '{0} must be a string name if Dataframe provided'.format(coldim)
+        assert isinstance(data, pd.core.frame.DataFrame), 'data must be Pandas dataframe'
+        assert col in data.columns, '{0} must be a specified column name in Pandas dataframe'.format(coldim)
+        col = data[col]
+    else:
+        assert isinstance(col, (list, np.ndarray, pd.core.series.Series)), '{0} data must be a list, Pandas Series, or Numpy array'.format(coldim)
+
+    return col
+
+
 def _format_hist_kwargs(axis, **kwargs):
     ''' Format the histogram kwargs from plot '''
     kwargs['color'] = kwargs.get('hist_color', 'lightblue')
@@ -133,12 +222,26 @@ def _format_hist_kwargs(axis, **kwargs):
         kwargs['ylabel'] = kwargs.get('yhist_label', 'Counts')
         kwargs['title'] = kwargs.get('yhist_title', None)
     kwargs['color'] = kwargs.get('hist_color', 'lightblue')
-    kwargs['edgecolor'] = kwargs.get('edgecolors', 'black')
+    kwargs['edgecolor'] = kwargs.get('edgecolors', None)
     return kwargs
 
 
 def _prep_func_kwargs(func, kwargs):
-    ''' Prepare the keyword arguments for the proper function input '''
+    ''' Prepare the keyword arguments for the proper function input
+
+    Checks an input dictionary against allowed keyword arguments
+    for a given function.  Returns only those usable in that function.
+
+    Parameters:
+        func:
+            The name of the function to check keywords against
+        kwargs (dict):
+            A dictionary of keyword arguments to test
+
+    Returns:
+        A new dictionary of usable keyword arguments
+
+    '''
     invalid = invalidArgs(func, kwargs)
     new_kwargs = kwargs.copy()
     for key in invalid:
@@ -152,16 +255,27 @@ def _prep_func_kwargs(func, kwargs):
 def plot(x, y, **kwargs):
     ''' Create a scatter plot given two columns of data
 
-    Creates a Matplotlib scatter plot using two input arrays of data.  By default, will also
-    create and dispay histograms for the x and y data.  This can be disabled setting the "with_hist"
-    keyword to False, or "x", or "y" for displaying only that column. Accepts all the same keyword
-    arguments as matplotlib scatter and hist methods.
+    Creates a Matplotlib plot using two input arrays of data.  Creates either a Matplotlib scatter
+    plot, hexbin plot, or scatter density plot depending on the size of the input data.
+    For data with < 1000 values, creates a scatter plot.  For data with values between
+    1000 and 500,000, creates a hexbin plot.  For data with > 500,000 values, creates
+    a scatter density plot.
+
+    By default, will also create and display histograms for the x and y data.  This can be disabled
+    setting the "with_hist" keyword to False, or "x", or "y" for displaying only that column.
+    Accepts all the same keyword arguments as matplotlib scatter, hexbin, and hist methods.
+
+    See `scatter-density <https://github.com/astrofrog/mpl-scatter-density>_`.
+    See `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
+    See `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
 
     Parameters:
-        x (list|ndarray):
+        x (str|list|ndarray):
             The x array of data
-        y (list|ndarray):
+        y (str|list|ndarray):
             The y array of data
+        data (Pandas dataframe):
+            Optional Pandas Dataframe.  x, y specify string column names in the dataframe
         xmask (ndarray):
             A mask to apply to the x-array of data
         ymask (ndarray):
@@ -183,9 +297,9 @@ def plot(x, y, **kwargs):
             A number or tuple specifying the number of bins to use in the histogram.  Default is 50.  An integer
             number is adopted for both x and y bins.  A tuple is used to customize per axis.
         kwargs (dict):
-            Any other keyword arguments to be passed to `matplotlib.pyplot.scatter
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_ or
-            `matplotlib.pyplot.hist<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`.
+            Any other keyword arguments to be passed to `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
+            or `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>_` or
+            `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
 
     Returns:
         A tuple of the matplotlib figure, axes, and histogram data (if returned)
@@ -199,9 +313,10 @@ def plot(x, y, **kwargs):
         >>> plot(x, y)
     '''
 
-    assert np.all([x, y]), 'Must provide both an x and y column'
-    assert isinstance(x, (list, np.ndarray)), 'x data must be a list or Numpy array '
-    assert isinstance(y, (list, np.ndarray)), 'y data must be a list or Numpy array '
+    # check the input data
+    data = kwargs.pop('data', None)
+    x = _check_input_data('x', x, data=data)
+    y = _check_input_data('y', y, data=data)
 
     # general keyword arguments
     use_datamodel = kwargs.pop('usemodel', None)
@@ -213,41 +328,63 @@ def plot(x, y, **kwargs):
     ylim = kwargs.pop('ylim', None)
     xlabel = kwargs.pop('xlabel', None)
     ylabel = kwargs.pop('ylabel', None)
-    color = kwargs.pop('color', 'r')
+    color = kwargs.pop('color', None)
     size = kwargs.pop('size', 20)
     marker = kwargs.pop('marker', 'o')
     edgecolors = kwargs.pop('edgecolors', 'black')
 
+    # hexbin keywords
+    gridsize = kwargs.pop('gridsize', 50)
+
     # histogram keywords
     with_hist = kwargs.pop('with_hist', True)
-    bins = kwargs.pop('bins', [50, 50])
+    bins = kwargs.pop('bins', ['scott', 'scott'])
     hist_axes_visible = kwargs.pop('hist_axes_visible', False)
 
     # convert to numpy masked arrays
     x = _make_masked(x, mask=xmask)
     y = _make_masked(y, mask=ymask)
+    count = len(x)
+    use_density = True if count > 500000 else False
 
     # create figure and axes objects
-    fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, hist_axes_visible=hist_axes_visible)
+    with sns.axes_style('darkgrid'):
+        fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, use_density=use_density,
+                                                            hist_axes_visible=hist_axes_visible)
+
+    # create the hexbin or scatter plot
+    kind = kwargs.get('kind', None)
+    assert kind in ['hex', 'scatter', 'density', 'joint', None], 'plot kind must be either scatter, hex, density, or joint'
+    if count > 1000 and count <= 500000:
+        scat_kwargs = _prep_func_kwargs(plt.hexbin, kwargs)
+        main = ax_scat.hexbin(x, y, gridsize=gridsize, mincnt=1, cmap='inferno', **scat_kwargs)
+        cb = fig.colorbar(main, ax=ax_scat, label='Counts')
+        #ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
+    elif count > 500000:
+        scat_kwargs = _prep_func_kwargs(plt.imshow, kwargs)
+        main = ax_scat.scatter_density(x, y, cmap='inferno', **scat_kwargs)
+        cb = fig.colorbar(main, ax=ax_scat, label='Number of points per pixel')
+        ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
+    else:
+        # create the scatter plot
+        scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
+        main = ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
+        cb = None
+        #ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
 
     # set limits
-    if xlim is not None:
-        assert len(xlim) == 2, 'x-range must be a list or tuple of 2'
-        ax_scat.set_xlim(*xlim)
-
-    if ylim is not None:
-        assert len(ylim) == 2, 'y-range must be a list or tuple of 2'
-        ax_scat.set_ylim(*ylim)
+    xlim = _set_limits(x, lim=xlim)
+    ylim = _set_limits(y, lim=ylim)
+    if xlim:
+        ax_scat.set_xlim(xlim)
+    if ylim:
+        ax_scat.set_ylim(ylim)
 
     # set display names
     xlabel = _get_axis_label(xlabel, axis='x')
     ylabel = _get_axis_label(ylabel, axis='y')
     ax_scat.set_xlabel(xlabel)
     ax_scat.set_ylabel(ylabel)
-
-    # create the scatter plot
-    scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
-    ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
 
     # set axes object
     axes = [ax_scat]
@@ -260,9 +397,13 @@ def plot(x, y, **kwargs):
     # set x-histogram
     if ax_hist_x:
         xhist_kwargs = _format_hist_kwargs('x', **kwargs)
+        #xrange = ax_scat.get_xlim()
         xhist, fig, ax_hist_x = hist(x, bins=xbin, fig=fig, ax=ax_hist_x, **xhist_kwargs)
         axes.append(ax_hist_x)
         hist_data['xhist'] = xhist
+        if cb is not None:
+            ocb = fig.colorbar(main, ax=ax_hist_x)
+            ocb.remove()
 
     # set y-histogram
     if ax_hist_y:
@@ -276,25 +417,18 @@ def plot(x, y, **kwargs):
     return output
 
 
-def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
+def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
     ''' Create a histogram of an array
 
     Plots a histogram of an input column of data.  Input can be a list or a Numpy
     array.  Converts the input into a Numpy MaskedArray, applying the optional mask.  If no
-    mask is supplied, it masks any NaN values.  Accepts all the same keyword arguments as
-    matplotlib hist method.
-
-    Also computes and returns a dictionary of histogram data.  The dictionary includes the following
-    keys:
-        bins - The number of bins used
-        counts - A list of the count of objects within each bin
-        binedges - A list of the left binedge used in defining each bin
-        binids - An array of the same shape as input data, containing the binid of each element
-        indices - A dictionary of a list of array indices within each bin
+    mask is supplied, it masks any NaN values.  This uses
+    `Astropy's enhanced hist <http://docs.astropy.org/en/stable/api/astropy.visualization.hist.html#astropy.visualization.hist>`_
+    function under the hood. Accepts all the same keyword arguments as matplotlib hist method.
 
     Parameters:
-        data (list|ndarray):
-            A column of data to plot with.  Required.
+        arr (list|ndarray):
+            An array of data to plot with.  Required.
         mask (ndarray):
             A mask to use on the data, applied to the data in a Numpy Masked Array.
         fig (plt.fig):
@@ -302,7 +436,7 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         ax (plt.ax):
             An optional matplotlib axis object
         bins (int):
-            The number of bins to use.  Default is 50 bins.
+            The number of bins to use.  Default is a `scott <http://docs.astropy.org/en/stable/visualization/histogram.html>`_ binning scheme.
         xlabel (str|Marvin Column):
             The x axis label or a Marvin DataModel Property or QueryParameter to use for display
         ylabel (str):
@@ -314,11 +448,20 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         return_fig (bool):
             If True, return the figure and axis object.  Default is True.
         kwargs (dict):
-            Any other keyword arguments to be passed to `matplotlib.pyplot.hist
-                <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
+            Any other keyword arguments to be passed to `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
 
     Returns:
-        Tuple of histogram data, the matplotlib figure and axis objects
+        tuple: histogram data, matplotlib figure, and axis objects.
+
+        The histogram data returned is a dictionary containing::
+
+            {
+                'bins': The number of bins used,
+                'counts': A list of the count of objects within each bin,
+                'binedges': A list of the left binedge used in defining each bin,
+                'binids': An array of the same shape as input data, containing the binid of each element,
+                'indices': A dictionary of a list of array indices within each bin
+            }
 
     Example:
         >>> # histogram some random data
@@ -328,8 +471,10 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         >>> hist_data, fig, ax = hist(x)
     '''
 
-    assert isinstance(data, (list, np.ndarray)), 'data must be a list or Numpy array '
-    data = _make_masked(data, mask=mask)
+    # check the input data
+    data = kwargs.pop('data', None)
+    arr = _check_input_data('column', arr, data=data)
+    arr = _make_masked(arr, mask=mask)
 
     # general keywords
     xlabel = kwargs.pop('xlabel', None)
@@ -339,17 +484,18 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
     return_fig = kwargs.pop('return_fig', True)
 
     # histogram keywords
-    bins = bins if bins else 50
-    color = kwargs.pop('color', 'lightblue')
-    edgecolor = kwargs.pop('edgecolor', 'black')
+    bins = bins if bins else 'scott'
+    color = kwargs.pop('color', None)
+    edgecolor = kwargs.pop('edgecolor', None)
     hrange = kwargs.pop('range', None)
     orientation = kwargs.pop('orientation', 'vertical')
 
     # create a figure and axis if they don't exist
-    if fig is None and ax is None:
-        fig, ax = plt.subplots()
-    elif fig is None:
-        fig = plt.figure()
+    with sns.axes_style('darkgrid'):
+        if fig is None and ax is None:
+            fig, ax = plt.subplots()
+        elif fig is None:
+            fig = plt.figure()
 
     # set labels
     xlabel = _get_axis_label(xlabel, axis='x')
@@ -360,8 +506,11 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
     ax.yaxis.set_label_position('left')
     ax.xaxis.set_label_position('bottom')
 
+    # set limits
+    hrange = _set_limits(arr, lim=hrange)
+
     # set title
-    title = title if title else _create_hist_title(data)
+    title = title if title else _create_hist_title(arr)
     ax.set_title(title)
 
     if rotate_title:
@@ -371,23 +520,23 @@ def hist(data, mask=None, fig=None, ax=None, bins=None, **kwargs):
         ax.set_ylabel(title, rotation=270, verticalalignment='bottom')
 
     # create histogram
-    hist_kwargs = _prep_func_kwargs(plt.hist, kwargs)
-    counts, binedges, patches = ax.hist(data[~data.mask], bins=bins, color=color,
-                                        orientation=orientation, edgecolor=edgecolor,
-                                        range=hrange, **hist_kwargs)
+    hist_kwargs = _prep_func_kwargs(ahist, kwargs)
+    counts, binedges, patches = ahist(arr[~arr.mask], bins=bins, color=color,
+                                      orientation=orientation, edgecolor=edgecolor,
+                                      range=hrange, ax=ax, **hist_kwargs)
 
     # compute a dictionary of the binids containing a list of the array indices in each bin
-    binids = np.digitize(data, binedges)
-    dd = defaultdict(list)
-    for i, binid in enumerate(binids):
-        dd[binid].append(i)
-    indices = OrderedDict(dd)
+    binids = np.digitize(arr, binedges)
+    inds = np.where(binids)[0]
+    indices = defaultdict(list)
+    tmp = map(lambda i, x: indices[x].append(i), inds, binids)
 
     hist_data = {'counts': counts, 'binedges': binedges, 'bins': bins,
                  'binids': binids, 'indices': indices}
 
     output = (hist_data, fig, ax) if return_fig else hist_data
     return output
+
 
 
 

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 17:00:39
+# @Last Modified time: 2017-10-26 11:14:51
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -49,7 +49,13 @@ class Config(object):
         'endpointRoot': '{0}/profiler'.format(APP_BASE),
         "basicAuth": {
             "enabled": False
-        }
+        },
+        "ignore": [
+            "/marvin2/jsglue.js",
+            "/marvin2/static/.*",
+            "/marvin2/lib/.*",
+            "/marvin2/getgalidlist/"
+        ]
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
     RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'

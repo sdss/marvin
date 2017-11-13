@@ -14,7 +14,7 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 import marvin.utils.plot.scatter
@@ -248,7 +248,7 @@ class ResultSet(list):
         ''' Populate some parameters from the results '''
         if self._results:
             self.columns = self._results.columns if not self.columns else self.columns
-            self.choices = self.columns.list_params(remote=True)
+            self.choices = self.columns.list_params('remote')
             self.count = self._results.count if not self.count else self.count
             self.total = self._results.totalcount if not self.total else self.total
         else:
@@ -272,7 +272,7 @@ class ResultSet(list):
             The output converted into dictionary format.
         '''
 
-        keys = self.columns.list_params(remote=True)
+        keys = self.columns.list_params('remote')
 
         if format_type == 'listdict':
             if name:
@@ -526,6 +526,7 @@ class Results(object):
             url = config.urlmap['api']['querycubes']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
                       'sort': remotename, 'order': order, 'limit': self.limit}
+
             self._interaction(url, params, create_set=True, calltype='Sort')
 
         return self.results
@@ -693,7 +694,7 @@ class Results(object):
 
         # grab the columns from the results
         self.columns = self.getColumns()
-        ntnames = self.columns.list_params(remote=True)
+        ntnames = self.columns.list_params('remote')
         # dynamically create a new ResultRow Class
         rows = rows if rows else self.results
         row_is_dict = isinstance(rows[0], dict)
@@ -724,12 +725,7 @@ class Results(object):
 
         '''
 
-        # set Marvin query object to None, in theory this could be pickled as well
-        self._queryobj = None
-        isnotstr = not isinstance(self.query, six.string_types)
-        if isnotstr:
-            self.query = None
-
+        # set the filename and path
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
         if not path:
@@ -753,10 +749,20 @@ class Results(object):
             os.makedirs(dirname)
 
         # convert results into a dict
-        self.results = self.results.to_dict()
+        dict_results = self.results.to_dict()
 
+        # set bad pickled attributes to None
+        attrs = ['results', 'datamodel', 'columns', '_queryobj']
+        vals = [dict_results, None, None, None]
+        isnotstr = not isinstance(self.query, six.string_types)
+        if isnotstr:
+            attrs += ['query']
+            vals += [None]
+
+        # pickle the results
         try:
-            pickle.dump(self, open(path, 'wb'), protocol=-1)
+            with temp_setattr(self, attrs, vals):
+                pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -781,6 +787,8 @@ class Results(object):
         '''
         obj = marvin_pickle.restore(path, delete=delete)
         obj._create_result_set()
+        obj.getColumns()
+        obj.datamodel = datamodel[obj._release]
         return obj
 
     def toJson(self):
@@ -856,8 +864,8 @@ class Results(object):
 
         # check if the returnparams parameter is in the proper format
         if 'params' in params:
-            return_params = params.get('params')
-            if isinstance(return_params, list):
+            return_params = params.get('params', None)
+            if return_params and isinstance(return_params, list):
                 params['params'] = ','.join(return_params)
 
         # send the request
@@ -1139,7 +1147,7 @@ class Results(object):
         self.count = len(self.results)
 
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 
@@ -1217,7 +1225,7 @@ class Results(object):
         self.count = len(self.results)
 
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 
@@ -1284,11 +1292,11 @@ class Results(object):
 
         self.count = len(self.results)
         if self.returntype:
-            self.convertToTool()
+            self.convertToTool(self.returntype)
 
         return self.results
 
-    def getAll(self):
+    def getAll(self, force=False):
         ''' Retrieve all of the results of a query
 
         Attempts to return all the results of a query.  The efficiency of this
@@ -1297,18 +1305,22 @@ class Results(object):
         A cutoff limit is applied for results with more than 500,000 rows or
         results with more than 25 columns.
 
+        Parameters
+            force (bool):
+                If True, force attempt to download everything
+
         Returns:
             The full list of query results.
 
         See Also:
-            getNext, getPrevious, getSubset
+            getNext, getPrevious, getSubset, loop
 
         '''
 
-        if self.totalcount > 500000 or len(self.columns) > 25:
+        if (self.totalcount > 500000 or len(self.columns) > 25) and not force:
             raise MarvinUserWarning("Cannot retrieve all results. The total number of requested "
                                     "rows or columns is too high. Please use the getNext, getPrevious, "
-                                    "or getSubset methods to retrieve pages.")
+                                    "getSubset, or loop methods to retrieve pages.")
 
         if self.mode == 'local':
             self.results = self.query.from_self().all()

@@ -1,14 +1,14 @@
 .. _marvin-map:
 
 =================================
-Map (:mod:`marvin.tools.map.Map`)
+Map (:mod:`marvin.tools.quantities.Map`)
 =================================
 
 .. _marvin-map-intro:
 
 Introduction
 ------------
-:mod:`~marvin.tools.map.Map` is a single map for a single galaxy. The main data that it contains are the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` arrays of the map. It also has some meta data and convenience functions, such as :meth:`~marvin.tools.map.Map.plot`, which wraps the :meth:`marvin.utils.plot.map.plot` method.
+:mod:`~marvin.tools.quantities.Map` is a single map for a single galaxy. The main data that it contains are the :attr:`~marvin.tools.quantities.Map.value`, :attr:`~marvin.tools.quantities.Map.ivar`, and :attr:`~marvin.tools.quantities.Map.mask` arrays of the map. It also has some meta data and convenience functions, such as :meth:`~marvin.tools.quantities.Map.plot`, which wraps the :meth:`marvin.utils.plot.map.plot` method.
 
 .. _marvin-map-getting-started:
 
@@ -59,14 +59,14 @@ Here ``maps['emline_gflux_ha_6564']`` is shorthand for ``maps.getMap('emline_gfl
     maps['gflux ha']        # == maps['emline_gflux_ha_6564']
     maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
     maps['stellar sig']     # == maps['stellar_sigma']
-    
+
     # There are several properties of the Halpha line (velocity, sigma, etc.).
     maps['ha']  # ValueError
-    
+
     # There are two [O III] lines.
     maps['gflux oiii']  # ValueError
 
-The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.map.Map.value`, :attr:`~marvin.tools.map.Map.ivar`, and :attr:`~marvin.tools.map.Map.mask` attributes, respectively.
+The values, inverse variances, and bitmasks of the map can be accessed via the :attr:`~marvin.tools.quantities.Map.value`, :attr:`~marvin.tools.quantities.Map.ivar`, and :attr:`~marvin.tools.quantities.Map.mask` attributes, respectively.
 
 **Important**: These arrays are ordered as ``[row, column]`` with the origin in the lower left, which corresponds to ``[y, x]``.
 
@@ -75,7 +75,7 @@ The values, inverse variances, and bitmasks of the map can be accessed via the :
     ha.value  # (34, 34) array
     ha.ivar   # (34, 34) array
     ha.mask   # (34, 34) array
-    
+
     ha.value[17]  # get the middle row (i.e., "y")
     # array([  0.        ,   0.        ,   0.        ,   0.        ,
     #          0.        ,   0.        ,   0.03650022,   0.03789879,
@@ -88,7 +88,7 @@ The values, inverse variances, and bitmasks of the map can be accessed via the :
     #          0.        ,   0.        ])
 
 
-The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :attr:`~marvin.tools.map.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
+The :attr:`~marvin.tools.quantities.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_ where the ``data`` is the :attr:`~marvin.tools.quantities.Map.value` array and the ``mask`` is a boolean array that is ``True`` for a given spaxel if any of the flags are set (i.e., where ``ha.mask > 0``).
 
 .. code-block:: python
 
@@ -104,12 +104,12 @@ The :attr:`~marvin.tools.map.Map.masked` attribute is a `numpy masked array <htt
     #                       False False False False False False False False False False False False
     #                       False False False False False  True  True  True  True  True],
     #              fill_value = 1e+20)
-    
+
     (ha.masked.data == ha.value).all()                # True
     (ha.masked.mask == (ha.mask).astype(bool)).all()  # True
 
 
-For more fine-grained data quality control, you can select spaxels based on the :attr:`~marvin.tools.map.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
+For more fine-grained data quality control, you can select spaxels based on the :attr:`~marvin.tools.quantities.Map.mask` attribute, which is an array of DAP spaxel `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ that indicate issues with the data. The following table (lifted from the `MPL-5 Techincal Reference Manual <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/DAPMetaData#MANGA_DAPPIXMASK>`_) gives the meaning of each bit. For MPL-4, the bitmask is simply 0 = good and 1 = bad (which roughly corresponds to DONOTUSE).
 
 ===  ============  =============================================================
 Bit	 Name	       Description
@@ -143,24 +143,24 @@ Bit	 Name	       Description
     nearbound = (ha.mask & 2**8) > 0
 
     bad_data = np.logical_or.reduce((nocov, lowcov, deadfiber, forestar, novalue, matherror, fitfailed, nearbound))
-    
+
     donotuse  = (ha.mask & 2**30) > 0
-    
+
     (bad_data == donotuse).all()  # True
 
 
 .. _marvin-map-using:
 
-Using :mod:`~marvin.tools.map.Map`
+Using :mod:`~marvin.tools.quantities.Map`
 ----------------------------------
 
-For more in-depth discussion of using :mod:`~marvin.tools.map.Map`, please see the following sections:
+For more in-depth discussion of using :mod:`~marvin.tools.quantities.Map`, please see the following sections:
 
 Map Plotting
 ````````````
 
 * :doc:`../tutorials/plotting`
-  
+
   * :ref:`marvin-plotting-quick-map`
   * :ref:`marvin-plotting-multipanel-single`
   * :ref:`marvin-plotting-multipanel-multiple`
@@ -178,19 +178,19 @@ Applying Bitmasks to a Map
 Map Arithmetic
 ``````````````
 
-**New in 2.2.0** :mod:`~marvin.tools.map.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
+**New in 2.2.0** :mod:`~marvin.tools.quantities.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.
 
 .. code-block:: python
 
     ha = maps['emline_gflux_ha_6564']
     nii = maps['emline_gflux_nii_6585']
-    
+
     sum_ = nii + ha
     diff = nii - ha
     prod = nii * ha
     quot = nii / ha
     pow_ = ha**0.5
-    
+
     prod
     # <Marvin EnhancedMap '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'>
     # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -201,7 +201,7 @@ Map Arithmetic
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'erg2 / (cm4 s2 spaxel2)'
 
-In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.map.EnhancedMap` has correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.map.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.map.Map` object(s).
+In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.quantities.EnhancedMap` has correctly propagated ``ivar``, ``mask``, ``unit``, and ``scale``.  Instead of ``property`` and ``channel`` attributes, :mod:`~marvin.tools.quantities.EnhancedMap` objects have ``history`` and ``parent`` attributes about their creation operation(s) and parent :mod:`~marvin.tools.quantities.Map` object(s).
 
 .. code-block:: python
 
@@ -227,14 +227,14 @@ In addition to performing the arithmetic operation on the ``value``, the resulti
 
 
 Correcting Velocity Dispersion for Instrumental Broadening ``````````````````````````````````````````````````````````
-The DAP reports the measured stellar and emission line velocity dispersions (``sigma``) that have NOT been corrected for the effect of instrumental broadening. The instrumental broadening is reported separately as ``stellar_sigmacorr`` or ``emline_instsigma``.  To get the physical velocity dispersion the instrumental broadening must be subtracted in quadrature from the measured dispersion.  The :meth:`~marvin.tools.map.Map.inst_sigma_correction` method does this while properly handling all of the other :mod:`~marvin.tools.map.Map` attributes and returns an :mod:`~marvin.tools.map.EnhancedMap`.
+The DAP reports the measured stellar and emission line velocity dispersions (``sigma``) that have NOT been corrected for the effect of instrumental broadening. The instrumental broadening is reported separately as ``stellar_sigmacorr`` or ``emline_instsigma``.  To get the physical velocity dispersion the instrumental broadening must be subtracted in quadrature from the measured dispersion.  The :meth:`~marvin.tools.quantities.Map.inst_sigma_correction` method does this while properly handling all of the other :mod:`~marvin.tools.quantities.Map` attributes and returns an :mod:`~marvin.tools.quantities.EnhancedMap`.
 
 
 .. code-block:: python
 
     stsig_uncorrected = maps['stellar_sigma']
     stsig = stsig_uncorrected.inst_sigma_correction()
-    
+
     stsig
     # <Marvin EnhancedMap '((stellar_sigma)^2 - (stellar_sigmacorr)^2)^0.5'>
     # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -244,10 +244,10 @@ The DAP reports the measured stellar and emission line velocity dispersions (``s
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.],
     #        [ 0.,  0.,  0., ...,  0.,  0.,  0.]]) 'km / s'
-    
+
     hasig_uncorrected = maps['emline_gsigma_ha_6564']
     hasig = hasig_uncorrected.inst_sigma_correction()
-    
+
     hasig
     # <Marvin EnhancedMap '((emline_gsigma_ha_6564)^2 - (emline_instsigma_ha_6564)^2)^0.5'>
     # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -263,24 +263,24 @@ The DAP reports the measured stellar and emission line velocity dispersions (``s
 Accessing the Parent Maps Object
 ````````````````````````````````
 
-One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.map.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.map.Map.maps` attribute and meta data about the :class:`~marvin.utils.dap.datamodel.base.Property` via the :attr:`~marvin.tools.map.Map.property` attribute.
+One of the most useful features of Marvin is the tight integration of the Tools. From a :mod:`~marvin.tools.quantities.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.quantities.Map.maps` attribute and meta data about the :class:`~marvin.utils.datamodel.dap.base.Property` via the :attr:`~marvin.tools.quantities.Map.property` attribute.
 
 .. code-block:: python
 
     ha.maps == maps  # True
-    
+
     ha.property
     # <Property 'emline_gflux', release='2.0.2', channel='ha_6564', unit='erg / (cm2 s spaxel)'>
-    
+
 
 Saving and Restoring a Map
 ``````````````````````````
 
-Finally, we can :meth:`~marvin.tools.map.Map.save` our :mod:`~marvin.tools.map.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.map.Map.restore` it.
+Finally, we can :meth:`~marvin.tools.quantities.Map.save` our :mod:`~marvin.tools.quantities.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.quantities.Map.restore` it.
 
 .. code-block:: python
 
-    from marvin.tools.map import Map
+    from marvin.tools.quantities import Map
     ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
     zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
 
@@ -292,19 +292,19 @@ Reference/API
 
 .. rubric:: Class
 
-.. autosummary:: marvin.tools.map.Map
+.. autosummary:: marvin.tools.quantities.Map
 
 .. rubric:: Methods
 
 .. autosummary::
 
-    marvin.tools.map.Map.save
-    marvin.tools.map.Map.restore
-    marvin.tools.map.Map.masked
-    marvin.tools.map.Map.error
-    marvin.tools.map.Map.snr
-    marvin.tools.map.Map.plot
-    marvin.tools.map.Map.inst_sigma_correction
+    marvin.tools.quantities.Map.save
+    marvin.tools.quantities.Map.restore
+    marvin.tools.quantities.Map.masked
+    marvin.tools.quantities.Map.error
+    marvin.tools.quantities.Map.snr
+    marvin.tools.quantities.Map.plot
+    marvin.tools.quantities.Map.inst_sigma_correction
 
 
 |

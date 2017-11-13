@@ -1,23 +1,40 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: general.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
+
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import collections
-import os
-import warnings
-import sys
-import numpy as np
-import PIL
 import inspect
-from scipy.interpolate import griddata
+import sys
+import warnings
+import contextlib
+
 from collections import OrderedDict
 
-from astropy import wcs
+import numpy as np
+
+from scipy.interpolate import griddata
+
+import PIL
+
 from astropy import table
+from astropy import wcs
 from astropy.units.quantity import Quantity
 
 import marvin
+
 from marvin import log
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from brain.core.exceptions import BrainError
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -36,13 +53,14 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
-           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir')
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
+           'get_dapall_file', 'temp_setattr')
 
 drpTable = {}
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,
-              x=None, y=None, ra=None, dec=None, xyorig=None):
+              x=None, y=None, ra=None, dec=None, xyorig=None, **kwargs):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -82,6 +100,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
             lower-left corner. This keyword is ignored if ``ra`` and
             ``dec`` are defined. ``xyorig`` defaults to
             ``marvin.config.xyorig.``
+        kwargs (dict):
+            Arguments to be passed to `~marvin.tools.spaxel.SpaxelBase`.
 
     Returns:
         spaxels (list):
@@ -142,16 +162,13 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
-        cube_shape = maps.shape
-        plateifu = maps.plateifu
+        cube_shape = maps._shape
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
-        cube_shape = cube.shape
-        plateifu = cube.plateifu
+        cube_shape = cube._shape
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
-        cube_shape = modelcube.shape
-        plateifu = modelcube.plateifu
+        cube_shape = modelcube._shape
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -159,8 +176,9 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps, modelcube=modelcube))
+            marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
+                                           cube=cube, maps=maps, modelcube=modelcube,
+                                           **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -224,7 +242,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         x = coords[:, 0]
         y = coords[:, 1]
 
-        assert shape, 'if mode==pix, shape must be defined.'
+        assert shape is not None, 'if mode==pix, shape must be defined.'
         shape = np.atleast_1d(shape)
 
         if xyorig == 'center':
@@ -839,7 +857,6 @@ def _db_row_to_dict(row, remove_columns=False):
 
     from sqlalchemy.inspection import inspect as sa_inspect
     from sqlalchemy.ext.hybrid import hybrid_property
-    from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     row_dict = collections.OrderedDict()
 
@@ -1216,7 +1233,7 @@ def map_bins_to_column(column, indices):
 
     '''
     assert isinstance(indices, dict) is True, 'indices must be a dictionary of binids'
-    assert len(column) == len(sum(indices.values(), [])), 'input column and indices values must have same len'
+    assert len(column) == sum(map(len, indices.values())), 'input column and indices values must have same len'
     coldict = OrderedDict()
     colarr = np.array(column)
     for key, val in indices.items():
@@ -1245,3 +1262,88 @@ def _sort_dir(instance, class_):
     return_list += vars(instance).keys()
     return_list += ['value']
     return return_list
+
+
+def get_dapall_file(drpver, dapver):
+    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
+
+    assert Path is not None, 'sdss_access.path.Path is not available.'
+
+    dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
+
+    return dapall_path
+
+
+@contextlib.contextmanager
+def temp_setattr(ob, attrs, new_values):
+    """ Temporarily set attributed on an object
+
+    Temporarily set an attribute on an object for the duration of the
+    context manager.
+
+    Parameters:
+        ob (object):
+            A class instance to set attributes on
+        attrs (str|list):
+            A list of attribute names to replace
+        new_values (list):
+            A list of new values to set as new attribute.  If new_values is
+            None, all attributes in attrs will be set to None.
+
+    Example:
+        >>> c = Cube(plateifu='8485-1901')
+        >>> print('before', c.mangaid)
+        >>> with temp_setattr(c, 'mangaid', None):
+        >>>     # do stuff
+        >>>     print('new', c.mangaid)
+        >>> print('after' c.mangaid)
+        >>>
+        >>> # Output
+        >>> before '1-209232'
+        >>> new None
+        >>> after '1-209232'
+        >>>
+
+    """
+
+    # set up intial inputs
+    attrs = attrs if isinstance(attrs, list) else [attrs]
+    if new_values:
+        new_values = new_values if isinstance(new_values, list) else [new_values]
+    else:
+        new_values = [new_values] * len(attrs)
+
+    assert len(attrs) == len(new_values), 'attrs and new_values must have the same length'
+
+    replaced = []
+    old_values = []
+
+    # grab the old values
+    for i, attr in enumerate(attrs):
+        new_value = new_values[i]
+
+        replace = False
+        old_value = None
+        if hasattr(ob, attr):
+            try:
+                if attr in ob.__dict__:
+                    replace = True
+            except AttributeError:
+                if attr in ob.__slots__:
+                    replace = True
+            if replace:
+                old_value = getattr(ob, attr)
+        replaced.append(replace)
+        old_values.append(old_value)
+        setattr(ob, attr, new_value)
+
+    # yield
+    yield replaced, old_values
+
+    # replace the old values
+    for i, attr in enumerate(attrs):
+        if not replaced[i]:
+            delattr(ob, attr)
+        else:
+            setattr(ob, attr, old_values[i])
+

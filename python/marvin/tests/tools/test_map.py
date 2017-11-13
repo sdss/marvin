@@ -16,7 +16,7 @@ import pytest
 from marvin.core.exceptions import MarvinError
 from marvin.utils.datamodel.dap import datamodel
 from marvin.tools.maps import Maps
-from marvin.tools.map import Map, EnhancedMap
+from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 
 value1 = np.array([[16.35, 0.8],

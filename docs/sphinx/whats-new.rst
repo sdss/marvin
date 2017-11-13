@@ -1,13 +1,38 @@
+.. _whats-new:
+
+What's New in Marvin 2.2 (November 2017)
+========================================
+
+Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data. In particular, it introduces the concept of :ref:`quantities <marvin-quantity>` as a way of encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance).
+
+This version is fully compatible with the just-released MPL-6 ... blah.
+
+Enter the quantities
+--------------------
+
+Describe what are quantities and provide a snippets about how to use them. Links to relevant sections.
+
+
+.. todo::
+
+  - Complete summary
+  - Complete section
+  - Add section about query changes
+  - Add section about maskbit class
+  - Add section about fuzzy search
+
+|
+
 What's New in Marvin 2.1.4 (August 2017)
 ========================================
 
-* Refactored the Query Page in Marvin Web: Adds more intuitice parameterm naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
+* Refactored the Query Page in Marvin Web: Adds more intuitive parameters naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
 
 * Adds Galaxy Postage Stamp view of the result set from a Marvin Query in the Web
 
 * Adds Rate Limiting for the Marvin API.  Adopts a limit of 200 requests/min on all routes and 60/min for queries.
 
-* Adds new query_params object in Marvin Tools for improved navigation and selection of available query parameters.  See updated documenation for :doc:`Queries <query>` and :doc:`Query Params <query-params>`
+* Adds new query_params object in Marvin Tools for improved navigation and selection of available query parameters.  See updated documentation for :doc:`Queries <query>` and :doc:`Query Params <query-params>`
 
 * Adds ability for creating custom maps (using custom values and masks) with Marvin Plotting framework.  See updated :doc:`Plotting Tutorial <tutorials/plotting>`
 
@@ -18,6 +43,8 @@ What's New in Marvin 2.1.4 (August 2017)
 * New Marvin :doc:`Exercises <exercises>` for showcasing utilization of Marvin in science workflows
 
 * Numerous bug fixes.  See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for full account of all Github Issues closed.
+
+|
 
 What's New in Marvin 2.1.3 (May 2017)
 =====================================
@@ -45,6 +72,7 @@ What's New in Marvin 2.1.3 (May 2017)
 
 * New tutorials: :doc:`tutorials/plotting` and :doc:`tutorials/lean-tutorial`.
 
+|
 
 What's New in Marvin 2.1 (February 2017)
 ========================================
@@ -79,6 +107,7 @@ What's New in Marvin 2.1 (February 2017)
 
 * See `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for more.
 
+|
 
 What's New in Marvin 2.0 Beta (November 2016)
 =============================================
@@ -99,6 +128,7 @@ What's New in Marvin 2.0 Beta (November 2016)
 
 * API :ref:`marvin-authentication`
 
+|
 
 What's New in Marvin 2.0 Alpha (June 2016)
 ==========================================

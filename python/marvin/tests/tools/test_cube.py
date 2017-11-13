@@ -26,7 +26,7 @@ class TestCube(object):
     def test_cube_loadfail(self):
         with pytest.raises(AssertionError) as cm:
             Cube()
-        assert 'Enter filename, plateifu, or mangaid!' in str(cm.value)
+        assert 'no inputs set' in str(cm.value)
 
     def test_cube_load_from_local_file_by_filename_success(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
@@ -34,7 +34,7 @@ class TestCube(object):
         assert os.path.realpath(galaxy.cubepath) == cube.filename
 
     def test_cube_load_from_local_file_by_filename_fail(self):
-        with pytest.raises(MarvinError):
+        with pytest.raises(AssertionError):
             Cube(filename='not_a_filename.fits')
 
     def test_cube_load_from_local_database_success(self, galaxy):
@@ -89,10 +89,10 @@ class TestCube(object):
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(AssertionError) as ee:
             Cube(filename='hola.fits', mode='auto')
 
-        assert re.match(r'input file .+hola.fits not found', str(ee.value)) is not None
+        assert re.match(r'filename .*hola.fits does not exist', str(ee.value)) is not None
 
     def test_load_filename_remote(self):
         """Tries to load a filename in remote mode and fails."""
@@ -146,7 +146,7 @@ class TestCube(object):
         with pytest.raises(MarvinError) as ee:
             Cube(plateifu=galaxy.plateifu)
 
-        assert 'No db connected' in str(ee.value)
+        assert 'No DB connected' in str(ee.value)
 
     def test_load_cube_from_db_data(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -211,7 +211,7 @@ class TestGetSpaxel(object):
             params = {'ra': ra, 'dec': dec}
 
         spaxel = cube.getSpaxel(**params)
-        flux = spaxel.spectrum.value
+        flux = spaxel.flux.value
         assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
@@ -232,7 +232,7 @@ class TestGetSpaxel(object):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
         expected = galaxy.spaxel['flux']
 
-        spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).spectrum
+        spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).flux
         assert pytest.approx(spectrum.value[galaxy.spaxel['specidx']], expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
@@ -256,17 +256,17 @@ class TestGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        assert pytest.approx(spaxel_slice_file.spectrum.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.spectrum.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_file.flux.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_db.flux.value[spec_idx], flux)
+        assert pytest.approx(spaxel_slice_api.flux.value[spec_idx], flux)
 
-        assert pytest.approx(spaxel_slice_file.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_db.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_api.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_slice_file.flux.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_slice_db.flux.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_slice_api.flux.ivar[spec_idx], ivar)
 
-        assert pytest.approx(spaxel_slice_file.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_db.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_api.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_slice_file.flux.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_slice_db.flux.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_slice_api.flux.mask[spec_idx], mask)
 
         xx_cen = galaxy.spaxel['x_cen']
         yy_cen = galaxy.spaxel['y_cen']
@@ -275,17 +275,17 @@ class TestGetSpaxel(object):
         spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
         spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
 
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_file.flux.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_db.flux.value[spec_idx], flux)
+        assert pytest.approx(spaxel_getspaxel_api.flux.value[spec_idx], flux)
 
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_file.flux.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_db.flux.ivar[spec_idx], ivar)
+        assert pytest.approx(spaxel_getspaxel_api.flux.ivar[spec_idx], ivar)
 
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_getspaxel_file.flux.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_getspaxel_db.flux.mask[spec_idx], mask)
+        assert pytest.approx(spaxel_getspaxel_api.flux.mask[spec_idx], mask)
 
 
 class TestWCS(object):

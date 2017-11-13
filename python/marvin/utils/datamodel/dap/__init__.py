@@ -1,8 +1,4 @@
 
-# TODO: add description to bintype and template
-# TODO: add string and latex representation to properties.
-
-
 from .base import *
 
 from .MPL4 import MPL4

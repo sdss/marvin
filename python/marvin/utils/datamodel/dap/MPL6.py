@@ -21,21 +21,29 @@ from .MPL5 import GAU_MILESHC, ALL, NRE, SPX, VOR10
 HYB10 = Bintype('HYB10', description='Binning and stellar continuum fitting as VOR10, '
                                      'but emission lines are fitted per spaxel.')
 
+# The two lines in the OII doublet is fitted independently for gaussian
+# measurements. In that case oii_3727 and oii_3729 are populated. For summed
+# flux measurements, the lines cannot be separated so oiid_3728 contains
+# the summed flux. In that case, oii_3729 is null and only kept to maintain
+# the number of channels constant.
+oiid_channel = Channel('oiid_3728', formats={'string': 'OIId 3728',
+                       'latex': r'$\forb{O\,IId}\;\lambda\lambda 3728$'}, idx=0)
+oii_channel = Channel('oii_3727', formats={'string': 'OII 3727',
+                      'latex': r'$\forb{O\,II}\;\lambda 3727$'}, idx=0)
+
 MPL6_emline_channels = [
-    Channel('oii_3727', formats={'string': 'OII 3727',
-                                 'latex': r'$\forb{O\,II}\;\lambda 3727$'}, idx=0),
     Channel('oii_3729', formats={'string': 'OII 3729',
                                  'latex': r'$\forb{O\,II}\;\lambda 3729$'}, idx=1),
     Channel('hthe_3798', formats={'string': 'H-theta 3798',
                                   'latex': r'H$\theta\;\lambda 3798$'}, idx=2),
     Channel('heta_3836', formats={'string': 'H-eta 3836',
                                   'latex': r'H$\eta\;\lambda 3836$'}, idx=3),
-    Channel('niii_3869', formats={'string': 'NIII 3869',
-                                  'latex': r'$\forb{N\,III}\;\lambda 3869$'}, idx=4),
+    Channel('neiii_3869', formats={'string': 'NeIII 3869',
+                                   'latex': r'$\forb{Ne\,III}\;\lambda 3869$'}, idx=4),
     Channel('hzet_3890', formats={'string': 'H-zeta 3890',
                                   'latex': r'H$\zeta\;\lambda 3890$'}, idx=5),
-    Channel('niii_3968', formats={'string': 'NIII 3968',
-                                  'latex': r'$\forb{N\,III}\;\lambda 3968$'}, idx=6),
+    Channel('neiii_3968', formats={'string': 'NeIII 3968',
+                                   'latex': r'$\forb{Ne\,III}\;\lambda 3968$'}, idx=6),
     Channel('heps_3971', formats={'string': 'H-epsilon 3971',
                                   'latex': r'H$\epsilon\;\lambda 3971$'}, idx=7),
     Channel('hdel_4102', formats={'string': 'H-delta 4102',
@@ -113,34 +121,45 @@ MPL6_specindex_channels = [
     Channel('hgammaf', formats={'string': 'HGammaF',
                                 'latex': r'H\gamma\,F'}, unit=u.Angstrom, idx=24),
     Channel('cahk', formats={'string': 'CaHK'}, unit=u.Angstrom, idx=25),
-    Channel('mgicvd', formats={'string': 'MgICvD'}, unit=u.Angstrom, idx=26),
-    Channel('naicvd', formats={'string': 'NaICvD'}, unit=u.Angstrom, idx=27),
-    Channel('caiit', formats={'string': 'CaIIT'}, unit=u.Angstrom, idx=28),
-    Channel('mgiir', formats={'string': 'MgIIR'}, unit=u.Angstrom, idx=31),
-    Channel('fehcvd', formats={'string': 'FeHCvD'}, unit=u.Angstrom, idx=32),
-    Channel('nai', formats={'string': 'NaI'}, unit=u.Angstrom, idx=33),
-    Channel('btio', formats={'string': 'bTiO'}, unit=u.mag, idx=34),
-    Channel('atio', formats={'string': 'aTiO'}, unit=u.mag, idx=35),
-    Channel('cah1', formats={'string': 'CaH1'}, unit=u.mag, idx=36),
-    Channel('cah2', formats={'string': 'CaH2'}, unit=u.mag, idx=37),
-    Channel('d4000', formats={'string': 'D4000'}, unit=u.dimensionless_unscaled, idx=38),
-    Channel('dn4000', formats={'string': 'Dn4000'}, unit=u.dimensionless_unscaled, idx=39),
-    Channel('tiocvd', formats={'string': 'TiOCvD'}, unit=u.dimensionless_unscaled, idx=40)
+    Channel('caii1', formats={'string': 'CaII1'}, unit=u.Angstrom, idx=26),
+    Channel('caii2', formats={'string': 'CaII2'}, unit=u.Angstrom, idx=27),
+    Channel('caii3', formats={'string': 'CaII3'}, unit=u.Angstrom, idx=28),
+    Channel('pa17', formats={'string': 'Pa17'}, unit=u.Angstrom, idx=29),
+    Channel('pa14', formats={'string': 'Pa14'}, unit=u.Angstrom, idx=30),
+    Channel('pa12', formats={'string': 'Pa12'}, unit=u.Angstrom, idx=31),
+    Channel('mgicvd', formats={'string': 'MgICvD'}, unit=u.Angstrom, idx=32),
+    Channel('naicvd', formats={'string': 'NaICvD'}, unit=u.Angstrom, idx=33),
+    Channel('mgiir', formats={'string': 'MgIIR'}, unit=u.Angstrom, idx=34),
+    Channel('fehcvd', formats={'string': 'FeHCvD'}, unit=u.Angstrom, idx=35),
+    Channel('nai', formats={'string': 'NaI'}, unit=u.Angstrom, idx=36),
+    Channel('btio', formats={'string': 'bTiO'}, unit=u.mag, idx=37),
+    Channel('atio', formats={'string': 'aTiO'}, unit=u.mag, idx=38),
+    Channel('cah1', formats={'string': 'CaH1'}, unit=u.mag, idx=39),
+    Channel('cah2', formats={'string': 'CaH2'}, unit=u.mag, idx=40),
+    Channel('naisdss', formats={'string': 'NaISDSS'}, unit=u.Angstrom, idx=41),
+    Channel('tio2sdss', formats={'string': 'TiO2SDSS'}, unit=u.Angstrom, idx=42),
+    Channel('d4000', formats={'string': 'D4000'}, unit=u.dimensionless_unscaled, idx=43),
+    Channel('dn4000', formats={'string': 'Dn4000'}, unit=u.dimensionless_unscaled, idx=44),
+    Channel('tiocvd', formats={'string': 'TiOCvD'}, unit=u.dimensionless_unscaled, idx=45)
 ]
 
 
 MPL6_binid_channels = [
-    Channel('binned_spec', formats={'string': 'Binned spectra'},
+    Channel('binned_spectra', formats={'string': 'Binned spectra'},
             unit=u.dimensionless_unscaled, idx=0),
-    Channel('stellar_cont', formats={'string': 'Stellar continua'},
+    Channel('stellar_continua', formats={'string': 'Stellar continua'},
             unit=u.dimensionless_unscaled, idx=1),
-    Channel('emline_moments', formats={'string': 'Emission line moments'},
+    Channel('em_line_moments', formats={'string': 'Emission line moments'},
             unit=u.dimensionless_unscaled, idx=2),
-    Channel('emline_models', formats={'string': 'Emission line models'},
+    Channel('em_line_models', formats={'string': 'Emission line models'},
             unit=u.dimensionless_unscaled, idx=3),
-    Channel('spec_index', formats={'string': 'Spectral indices'},
-            unit=u.dimensionless_unscaled, idx=4),
-]
+    Channel('spectral_indices', formats={'string': 'Spectral indices'},
+            unit=u.dimensionless_unscaled, idx=4)]
+
+
+binid_properties = MultiChannelProperty('binid', ivar=False, mask=False,
+                                        channels=MPL6_binid_channels,
+                                        description='Numerical ID for spatial bins.')
 
 
 MPL6_maps = [
@@ -167,9 +186,7 @@ MPL6_maps = [
     Property('spx_snr', ivar=False, mask=False,
              formats={'string': 'r-band SNR'},
              description='r-band signal-to-noise ratio per pixel.'),
-    MultiChannelProperty('binid', ivar=False, mask=False,
-                         channels=MPL6_binid_channels,
-                         description='Numerical ID for spatial bins.'),
+    binid_properties,
     MultiChannelProperty('bin_lwskycoo', ivar=False, mask=False,
                          channels=[Channel('lum_weighted_on_sky_x',
                                            formats={'string': 'Light-weighted offset X'},
@@ -211,12 +228,15 @@ MPL6_maps = [
              formats={'string': 'Stellar velocity dispersion', 'latex': r'Stellar $\sigma$'},
              description='Stellar velocity dispersion (must be corrected using '
                          'STELLAR_SIGMACORR)'),
-    Property('stellar_sigmacorr', ivar=False, mask=False,
-             unit=u.km / u.s,
-             formats={'string': 'Stellar sigma correction',
-                      'latex': r'Stellar $\sigma$ correction'},
-             description='Quadrature correction for STELLAR_SIGMA to obtain the '
-                         'astrophysical velocity dispersion.)'),
+    MultiChannelProperty('stellar_sigmacorr', ivar=False, mask=False,
+                         unit=u.km / u.s,
+                         channels=[Channel('resolution_difference',
+                                           formats={'string': 'Resolution difference'}, idx=0),
+                                   Channel('fit', formats={'string': 'Fit'}, idx=1)],
+                         formats={'string': 'Stellar sigma correction',
+                                  'latex': r'Stellar $\sigma$ correction'},
+                         description='Quadrature correction for STELLAR_SIGMA to obtain the '
+                                     'astrophysical velocity dispersion.)'),
     MultiChannelProperty('stellar_cont_fresid', ivar=False, mask=False,
                          channels=[Channel('68th_percentile',
                                            formats={'string': '68th percentile',
@@ -232,38 +252,44 @@ MPL6_maps = [
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
              description='Reduced chi-square of the stellar continuum fit.'),
     MultiChannelProperty('emline_sflux', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oiid_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line summed flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+                         binid=binid_properties[3],
                          description='Non-parametric summed flux for emission lines.'),
     MultiChannelProperty('emline_sew', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oiid_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line EW'},
                          unit=u.Angstrom,
+                         binid=binid_properties[3],
                          description='Emission line non-parametric equivalent '
                                      'widths measurements.'),
     MultiChannelProperty('emline_gflux', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian flux'},
                          unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+                         binid=binid_properties[3],
                          description='Gaussian profile integrated flux for emission lines.'),
     MultiChannelProperty('emline_gvel', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian velocity'},
                          unit=u.km / u.s,
+                         binid=binid_properties[3],
                          description='Gaussian profile velocity for emission lines.'),
     MultiChannelProperty('emline_gsigma', ivar=True, mask=True,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian sigma',
                                   'latex': r'Emission line Gaussian $\sigma$'},
                          unit=u.km / u.s,
+                         binid=binid_properties[3],
                          description='Gaussian profile velocity dispersion for emission lines; '
                                      'must be corrected using EMLINE_INSTSIGMA'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
-                         channels=MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line instrumental sigma',
                                   'latex': r'Emission line instrumental $\sigma$'},
                          unit=u.km / u.s,
+                         binid=binid_properties[3],
                          description='Instrumental dispersion at the fitted line center.'),
     MultiChannelProperty('specindex', ivar=True, mask=True,
                          channels=MPL6_specindex_channels,
@@ -283,38 +309,37 @@ MPL6_models = [
     Model('binned_flux', 'FLUX', 'WAVE', extension_ivar='IVAR',
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Binned flux'},
-          description='Flux of the binned spectra'),
-    Model('binned_redcorr', 'REDCORR', 'WAVE', extension_ivar=None,
-          extension_mask=None, unit=u.dimensionless_unscaled,
-          scale=1, formats={'string': 'Binned reddening correction'},
-          description='Reddening correction applied during the fitting procedures'),
+          description='Flux of the binned spectra',
+          binid=binid_properties[0]),
     Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
           extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Best fitting model'},
           description='The best fitting model spectra (sum of the fitted '
-                      'continuum and emission-line models)'),
+                      'continuum and emission-line models)',
+          binid=binid_properties[0]),
     Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
           unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line model spectrum'},
-          description='The model spectrum with only the emission lines.'),
+          description='The model spectrum with only the emission lines.',
+          binid=binid_properties[3]),
     Model('emline_base_fit', 'EMLINE_BASE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
           unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line baseline fit'},
           description='The model of the constant baseline fitted beneath the '
-                      'emission lines.'),
-    Model('binid', 'BINID', extension_wave=None, unit=u.dimensionless_unscaled,
-          scale=1, formats={'string': 'Bin ID'}, channels=MPL6_binid_channels,
-          description='Numerical ID for spatial bins.')
+                      'emission lines.',
+          binid=binid_properties[3])
 ]
 
 
 # MPL-6 DapDataModel goes here
-MPL6 = DAPDataModel('trunk', aliases=['MPL-6', 'MPL6'],
+MPL6 = DAPDataModel('2.1', aliases=['MPL-6', 'MPL6'],
                     bintypes=[ALL, NRE, VOR10, SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
                     models=MPL6_models,
                     default_bintype='SPX',
-                    default_template='GAU-MILESHC')
+                    default_template='GAU-MILESHC',
+                    property_table='SpaxelProp6',
+                    default_binid=binid_properties[0])

@@ -25,7 +25,7 @@ To save the plot:
 
     fig.savefig('haflux.pdf')
 
-Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
+Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.quantities.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
 
 * Clip at 5th and 95th percentiles (10th and 90th percentiles for velocity and sigma plots).
 * Velocity plots are symmetric about 0.
@@ -96,14 +96,14 @@ Plotting Options
 Setting the Colorbar Range
 ::::::::::::::::::::::::::
 
-:meth:`~marvin.tools.map.Map.plot` uses ``percentile_clip`` to select the best range of values to display. It defaults to clipping at ``(10, 90)`` for velocities and sigmas and ``(5, 95)`` for other properites. However, you can specify your own percentile clipping limits, sigma clipping limits (``sigma_clip``), or minimum and maximum values (``cbrange``).
+:meth:`~marvin.tools.quantities.Map.plot` uses ``percentile_clip`` to select the best range of values to display. It defaults to clipping at ``(10, 90)`` for velocities and sigmas and ``(5, 95)`` for other properites. However, you can specify your own percentile clipping limits, sigma clipping limits (``sigma_clip``), or minimum and maximum values (``cbrange``).
 
 ::
 
     fig, ax = haflux.plot(percentile_clip=(1, 99))
     fig, ax = haflux.plot(sigma_clip=2)
 
-:meth:`~marvin.tools.map.Map.plot` adopts a minimum signal-to-noise ratio of ``1`` as its threshold for considering a value as valid. You can control this cutoff with the ``snr_min`` keyword.
+:meth:`~marvin.tools.quantities.Map.plot` adopts a minimum signal-to-noise ratio of ``1`` as its threshold for considering a value as valid. You can control this cutoff with the ``snr_min`` keyword.
 
 
 |
