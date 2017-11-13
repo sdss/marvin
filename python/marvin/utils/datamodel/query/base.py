@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-10 09:54:08
+# @Last Modified time: 2017-11-13 10:42:13
 
 from __future__ import print_function, division, absolute_import
 
@@ -333,7 +333,10 @@ class ParameterGroupList(QueryFuzzyList):
         self.score = None
         paramgroups = self._make_groups(items)
         QueryFuzzyList.__init__(self, paramgroups, use_fuzzy=get_best_fuzzy,
-                                mapper=lambda x: x.name.lower().replace(' ', '_').replace('.', '_'))
+                                mapper=self._fuzzy_mapper)
+
+    def _fuzzy_mapper(self, value):
+        return value.lower().replace(' ', '_').replace('.', '_')
 
     def _make_groups(self, items, best=None):
         if isinstance(items, list):
@@ -457,7 +460,7 @@ class ParameterGroup(QueryFuzzyList):
             queryparams.append(this_param)
 
         QueryFuzzyList.__init__(self, queryparams, use_fuzzy=get_best_fuzzy,
-                                mapper=lambda x: x.full)
+                                mapper=self._fuzzy_mapper)
         self._check_names()
         if self.parent:
             self._check_datamodels()
@@ -467,6 +470,9 @@ class ParameterGroup(QueryFuzzyList):
 
     def __str__(self):
         return self.name
+
+    def _fuzzy_mapper(self, value):
+        return value.full
 
     def _make_query_parameter(self, item):
         ''' Create and return a QueryParameter '''
@@ -587,10 +593,13 @@ class QueryList(QueryFuzzyList):
 
     def __init__(self, items):
         QueryFuzzyList.__init__(self, items, use_fuzzy=get_best_fuzzy,
-                                mapper=lambda x: x.full)
+                                mapper=self._fuzzy_mapper)
         self._full = [s.full for s in self]
         self._remote = [s.remote for s in self]
         self._short = [s.short for s in self]
+
+    def _fuzzy_mapper(self, value):
+        return value.full
 
     def get_full_from_remote(self, value):
         ''' Get the full name from the remote name '''
