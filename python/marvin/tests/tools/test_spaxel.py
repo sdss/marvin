@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# test_spaxels.py
-#
-# Created by José Sánchez-Gallego on Sep 9, 2016.
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: test_spaxel.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division, print_function, absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 
@@ -14,13 +18,14 @@ import pytest
 import astropy.io.fits
 
 from marvin import config
+
+from marvin.core.exceptions import MarvinError
+
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
-from marvin.core.exceptions import MarvinError
-from marvin.tools.quantities import DictOfProperties
-from marvin.tools.spaxel import Spaxel
 from marvin.tools.quantities import Spectrum
+from marvin.tools.spaxel import Spaxel
 
 
 class TestSpaxelInit(object):
@@ -38,7 +43,6 @@ class TestSpaxelInit(object):
 
         if maps:
             assert len(spaxel.properties) > 0
-            assert isinstance(spaxel.properties, DictOfProperties)
         else:
             assert len(spaxel.properties) == 0
 
@@ -172,7 +176,7 @@ class TestPickling(object):
         cube = Cube(filename=galaxy.cubepath)
         maps = Maps(filename=galaxy.mapspath)
 
-        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, modelcube=False)
+        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, models=False)
 
         file = temp_scratch.join('test_spaxel.mpf')
 
@@ -202,7 +206,7 @@ class TestPickling(object):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         maps = Maps(plateifu=galaxy.plateifu, mode='remote')
         modelcube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
-        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, modelcube=modelcube)
+        spaxel = cube.getSpaxel(x=1, y=3, properties=maps, models=modelcube)
 
         assert spaxel.cube.data_origin == 'api'
         assert spaxel.maps.data_origin == 'api'
