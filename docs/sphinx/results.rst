@@ -4,6 +4,11 @@
 Results
 =======
 
+.. _marvin-results_getstart:
+
+Getting Started
+^^^^^^^^^^^^^^^
+
 When you perform a :ref:`marvin-query` in Marvin, you get a Results object.  This page describes some basic manipulation of query Results.  See the :ref:`marvin-results-ref` Reference for a full description of all the methods available.
 
 To perform a simple Query
@@ -401,5 +406,55 @@ To CSV
 
     r.toCSV(filename='myresults.csv')
     Writing new FITS file myresults.csv
+
+
+.. _marvin_results_using
+
+Using Results
+^^^^^^^^^^^^^
+.. toctree::
+   :maxdepth: 2
+
+   Handling Results <tools/query/query_using>
+
+.. toctree::
+   :maxdepth: 2
+
+   Using the ResultSet <tools/query/query_using>
+
+.. toctree::
+   :maxdepth: 2
+
+   Converting the Results <tools/query/query_returntype>
+
+.. toctree::
+   :maxdepth: 2
+
+   Saving Results <tools/query/query_saving>
+
+
+.. _marvin_results_api
+
+Reference/API
+^^^^^^^^^^^^^
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.results.Results
+.. autosummary:: marvin.tools.results.ResultSet
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.results.Results.extendSet
+    marvin.tools.results.Results.loop
+    marvin.tools.results.Results.getNext
+    marvin.tools.results.Results.getPrevious
+    marvin.tools.results.Results.getSubset
+    marvin.tools.results.Results.getAll
+    marvin.tools.results.Results.plot
+    marvin.tools.results.Results.save
+    marvin.tools.results.Results.restore
 
 |

@@ -28,6 +28,11 @@ Installation
 
     If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
+.. admonition:: Attention
+    :class: attention
+
+    Marvin is, at this time, not supported in Windows installations. Please, use Linux or Mac instead. In the future, for education purposes, we may consider making marvin Windows-compatible.
+
 **or to upgrade an existing Marvin installation**::
 
     pip install --upgrade sdss-marvin

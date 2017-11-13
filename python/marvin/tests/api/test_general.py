@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-19 16:34:31
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-30 19:32:03
+# @Last Modified time: 2017-11-08 12:03:55
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
@@ -47,12 +47,6 @@ class TestGeneralNSAFull(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_getnsa_success(self, galaxy, page, params, reqtype):
-        data = {'elpetro_absmag_i': -19.1125469207764, 'elpetro_mag_g_r': 0.64608402745868077, 'z': 0.0407447,
-                'elpetro_th50_r': 1.33067, 'elpetro_logmass': 9.565475912843823,
-                'elpetro_ba': 0.87454, 'elpetro_mag_i_z': 0.2311751372102151,
-                'elpetro_phi': 154.873, 'elpetro_mtol_i': 1.30610692501068,
-                'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
-                'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
         page.assert_success(galaxy.nsa_data['nsa'])
 
@@ -71,12 +65,6 @@ class TestGeneralNSADrpall(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_getnsa_success(self, galaxy, page, params, reqtype):
-        data = {'elpetro_absmag_i': -19.1125469207764, 'elpetro_mag_g_r': 0.64608402745868077, 'z': 0.0407447,
-                'elpetro_th50_r': 1.33067, 'elpetro_logmass': 9.565475912843823,
-                'elpetro_ba': 0.87454, 'elpetro_mag_i_z': 0.2311751372102151,
-                'elpetro_phi': 154.873, 'elpetro_mtol_i': 1.30610692501068,
-                'elpetro_th90_r': 3.6882, 'elpetro_mag_u_r': 1.8892372699482216,
-                'sersic_n': 3.29617}
         page.load_page(reqtype, page.url.format(mangaid=galaxy.mangaid), params=params)
         page.assert_success(galaxy.nsa_data['drpall'])
 

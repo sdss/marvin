@@ -18,7 +18,8 @@ from fuzzywuzzy import fuzz as fuzz_fuzz
 from fuzzywuzzy import process as fuzz_proc
 
 
-__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy']
+__ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy',
+           'FuzzyList']
 
 
 class Dotable(dict):
@@ -74,6 +75,12 @@ class DotableCaseInsensitive(Dotable):
 def get_best_fuzzy(value, choices, min_score=75, scorer=fuzz_fuzz.WRatio, return_score=False):
     """Returns the best match in a list of choices using fuzzywuzzy."""
 
+    if not isinstance(value, six.string_types):
+        raise ValueError('invalid value. Must be a string.')
+
+    if len(value) < 3:
+        raise ValueError('your fuzzy search value must be at least three characters long.')
+
     bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
 
     if len(bests) == 0:
@@ -110,20 +117,77 @@ class FuzzyDict(OrderedDict):
 
         return dict.__getitem__(self, best)
 
+    def __dir__(self):
+
+        return list(self.keys())
+
 
 class FuzzyList(list):
-    """A list that uses fuzzywuzzy to select the item."""
+    """A list that uses fuzzywuzzy to select the item.
 
-    def __getitem__(self, value):
+    Parameters:
+        the_list (list):
+            The list on which we will do fuzzy searching.
+        mapper (function):
+            A function that will be used to format the items in the list
+            before searching them. By default it does a string casting.
+        use_fuzzy (function):
+            A function that will be used to perform the fuzzy selection
+    """
 
-        self_values = [str(item) for item in self]
+    def __init__(self, the_list, mapper=str, use_fuzzy=None):
 
-        best = get_best_fuzzy(value, self_values)
+        self.mapper = mapper
+        self.use_fuzzy = use_fuzzy if use_fuzzy else get_best_fuzzy
+
+        list.__init__(self, the_list)
+
+    def __eq__(self, value):
+
+        self_values = [self.mapper(item) for item in self]
+
+        try:
+            best = self.use_fuzzy(value, self_values)
+        except ValueError:
+            # Second pass, using underscores.
+            best = self.use_fuzzy(value.replace(' ', '_'), self_values)
 
         return self[self_values.index(best)]
 
+    def __contains__(self, value):
 
-class OrderedDefaultDict(OrderedDict):
+        if not isinstance(value, six.string_types):
+            return super(FuzzyList, self).__contains__(value)
+
+        try:
+            self.__eq__(value)
+            return True
+        except ValueError:
+            return False
+
+    def __getitem__(self, value):
+
+        if isinstance(value, six.string_types):
+            return self == value
+        else:
+            return list.__getitem__(self, value)
+
+    def __getattr__(self, value):
+
+        self_values = [super(FuzzyList, self).__getattribute__('mapper')(item)
+                       for item in self]
+
+        if value in self_values:
+            return self[value]
+
+        return super(FuzzyList, self).__getattribute__(value)
+
+    def __dir__(self):
+
+        return [self.mapper(item) for item in self]
+
+
+class OrderedDefaultDict(FuzzyDict):
 
     def __init__(self, default_factory=None, *args, **kwargs):
         OrderedDict.__init__(self, *args, **kwargs)

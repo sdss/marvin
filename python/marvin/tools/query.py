@@ -15,9 +15,12 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCr
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
-from marvin.tools.query.results import Results
-from marvin.tools.query.forms import MarvinForm
+from marvin.tools.results import Results
+from marvin.utils.datamodel.query import datamodel
+from marvin.utils.datamodel.query.base import query_params
 from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
+from marvin.tools.results import remote_mode_only
 from sqlalchemy import bindparam
 from sqlalchemy.orm import aliased
 from sqlalchemy.dialects import postgresql
@@ -29,10 +32,8 @@ import numpy as np
 import warnings
 import os
 import re
-from marvin.core import marvin_pickle
+import six
 from functools import wraps
-from marvin.tools.query.results import remote_mode_only
-from marvin.tools.query.query_utils import query_params
 
 try:
     import cPickle as pickle
@@ -54,14 +55,14 @@ def doQuery(*args, **kwargs):
 
     Parameters:
         N/A:
-            See the :class:`~marvin.tools.query.query.Query` class for a list
+            See the :class:`~marvin.tools.query.Query` class for a list
             of inputs.
 
     Returns:
         query, results:
             A tuple containing the built
-            :class:`~marvin.tools.query.query.Query` instance, and the
-            :class:`~marvin.tools.query.results.Results` instance.
+            :class:`~marvin.tools.query.Query` instance, and the
+            :class:`~marvin.tools.results.Results` instance.
     """
     q = Query(*args, **kwargs)
     try:
@@ -168,11 +169,11 @@ class Query(object):
         self.filter = None
         self.joins = []
         self.myforms = defaultdict(str)
-        self.quiet = None
+        self.quiet = kwargs.get('quiet', None)
         self._errors = []
         self._basetable = None
         self._modelgraph = marvindb.modelgraph
-        self._returnparams = None
+        self._returnparams = []
         self._caching = kwargs.get('caching', True)
         self.verbose = kwargs.get('verbose', None)
         self.allspaxels = kwargs.get('allspaxels', None)
@@ -180,7 +181,11 @@ class Query(object):
         self.limit = int(kwargs.get('limit', 100))
         self.sort = kwargs.get('sort', None)
         self.order = kwargs.get('order', 'asc')
-        self.marvinform = MarvinForm(allspaxels=self.allspaxels, release=self._release)
+        self.return_all = kwargs.get('return_all', False)
+        self.datamodel = datamodel[self._release]
+        if self.allspaxels:
+            self.datamodel.use_all_spaxels()
+        self.marvinform = self.datamodel._marvinform
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinQuery {0}'.format(self.__class__),
@@ -208,7 +213,7 @@ class Query(object):
         self.set_defaultparams()
 
         # get user-defined input parameters
-        returnparams = kwargs.get('returnparams', None)
+        returnparams = kwargs.get('returnparams', [])
         if returnparams:
             self.set_returnparams(returnparams)
 
@@ -225,7 +230,7 @@ class Query(object):
             self._create_query_modelclasses()
             # this adds spaxel x, y into default for query 1 dap zonal query
             self._adjust_defaults()
-            print('my params', self.params)
+            # print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -242,8 +247,8 @@ class Query(object):
                 self._buildDapQuery()
 
     def __repr__(self):
-        return ('Marvin Query(mode={0}, limit={1}, sort={2}, order={3})'
-                .format(repr(self.mode), self.limit, self.sort, repr(self.order)))
+        return ('Marvin Query(filter={4}, mode={0}, limit={1}, sort={2}, order={3})'
+                .format(repr(self.mode), self.limit, self.sort, repr(self.order), self.searchfilter))
 
     def _doLocal(self):
         ''' Tests if it is possible to perform queries locally. '''
@@ -267,7 +272,7 @@ class Query(object):
 
         if self.mode == 'local':
             fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
-            fparams = [fparams] if type(fparams) != list else fparams
+            fparams = [fparams] if not isinstance(fparams, list) else fparams
             inschema = [name in c.class_.__table__.schema for c in fparams]
         elif self.mode == 'remote':
             inschema = []
@@ -330,8 +335,14 @@ class Query(object):
         '''
         if returnparams:
             returnparams = [returnparams] if not isinstance(returnparams, list) else returnparams
-            self._returnparams = returnparams
-        self.params.extend(returnparams)
+
+            # look up shortcut names for the return parameters
+            full_returnparams = [self.marvinform._param_form_lookup._nameShortcuts[rp]
+                                 if rp in self.marvinform._param_form_lookup._nameShortcuts else rp
+                                 for rp in returnparams]
+
+            self._returnparams = full_returnparams
+        self.params.extend(full_returnparams)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type
@@ -442,6 +453,7 @@ class Query(object):
 
         '''
         self.session = None
+        self.datamodel = None
         self.marvinform = None
         self.myforms = None
         self._modelgraph = None
@@ -495,7 +507,10 @@ class Query(object):
         obj = marvin_pickle.restore(path, delete=delete)
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
-        obj.marvinform = MarvinForm(allspaxels=obj.allspaxels, release=obj._release)
+        obj.datamodel = datamodel[obj._release]
+        if obj.allspaxels:
+            obj.datamodel.use_all_spaxels()
+        obj.marvinform = obj.datamodel._marvinform
         return obj
 
     def set_filter(self, searchfilter=None):
@@ -559,7 +574,7 @@ class Query(object):
 
         if searchfilter:
             # if params is a string, then parse and filter
-            if type(searchfilter) == str or type(searchfilter) == unicode:
+            if isinstance(searchfilter, six.string_types):
                 searchfilter = self._check_shortcuts_in_filter(searchfilter)
                 try:
                     parsed = parse_boolean_search(searchfilter)
@@ -727,11 +742,12 @@ class Query(object):
             count = self.query.count()
 
             self.totalcount = count
-            if count > 1000:
+            if count > 1000 and self.return_all is False:
                 query = self.query.slice(0, self.limit)
                 count = query.count()
-                warnings.warn('Results contain more than 150 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
+                warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
                 query = self.query
 
             if qmode == 'all':
@@ -746,6 +762,7 @@ class Query(object):
             # get the runtime
             end = datetime.datetime.now()
             self.runtime = (end - start)
+
             # close the session and engine
             #self.session.close()
             #marvindb.db.engine.dispose()
@@ -758,15 +775,19 @@ class Query(object):
             if not config.urlmap:
                 raise MarvinError('No URL Map found.  Cannot make remote call')
 
+            if self.return_all:
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
+
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.searchfilter,
-                      'params': self._returnparams,
+                      'params': ','.join(self._returnparams) if self._returnparams else None,
                       'returntype': self.returntype,
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
-                      'release': self._release}
+                      'release': self._release,
+                      'return_all': self.return_all}
             try:
                 ii = Interaction(route=url, params=params)
             except Exception as e:
@@ -781,13 +802,21 @@ class Query(object):
                 count = ii.results['count']
                 chunk = int(ii.results['chunk'])
                 totalcount = ii.results['totalcount']
-                runtime = ii.results['runtime']
+                query_runtime = ii.results['runtime']
+                resp_runtime = ii.response_time
                 # close the session and engine
                 #self.session.close()
                 #marvindb.db.engine.dispose()
-            print('Results contain of a total of {0}, only returning the first {1} results'.format(totalcount, count))
+
+            if self.return_all:
+                msg = 'Returning all {0} results'.format(totalcount)
+            else:
+                msg = 'Only returning the first {0} results.'.format(count)
+
+            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount, chunk=chunk, runtime=runtime)
+                           returntype=self.returntype, totalcount=totalcount, chunk=chunk,
+                           runtime=query_runtime, response_time=resp_runtime)
 
     def _cleanUpQueries(self):
         ''' Attempt to clean up idle queries on the server
@@ -872,7 +901,11 @@ class Query(object):
 
         if not isinstance(self.sort, type(None)):
             # set the sort variable ModelClass parameter
-            sortparam = self.marvinform._param_form_lookup.mapToColumn(self.sort)
+            if '.' in self.sort:
+                param = self.datamodel.parameters[str(self.sort)].full
+            else:
+                param = self.datamodel.parameters.get_full_from_remote(self.sort)
+            sortparam = self.marvinform._param_form_lookup.mapToColumn(param)
 
             # If order is specified, then do the sort
             if self.order:
@@ -939,6 +972,12 @@ class Query(object):
         labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
         self.query = self.session.query(*labeledqps)
 
+    def _query_column(self, column_name):
+        ''' query and return a specific column from the current query '''
+        qp = self.marvinform._param_form_lookup.mapToColumn(column_name)
+        qp = qp.label(column_name)
+        return self.query.from_self(qp).all()
+
     def _getPipeInfo(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
 
@@ -997,7 +1036,7 @@ class Query(object):
         except IndexError as e:
             isin = False
         except AttributeError as e:
-            if type(self.query) == str:
+            if isinstance(self.query, six.string_types):
                 isin = name in self.query
             else:
                 isin = False
@@ -1049,8 +1088,7 @@ class Query(object):
         bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
                                       func.count(self._junkclass.pk).label('goodcount')).\
             filter(self._junkclass.binid != -1).\
-            group_by(self._junkclass.file_pk).subquery('bingood',
-                                                           with_labels=True)
+            group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
         return bincount
 
     def getCountOf(self, expression):
@@ -1110,7 +1148,7 @@ class Query(object):
 
         # parse the function into name, condition, operator, and value
         name, condition, ops, value = self._parseFxn(fxn)
-        percent = float(value)/100.
+        percent = float(value) / 100.
         op = opdict[ops]
 
         # Retrieve the necessary subqueries
@@ -1120,7 +1158,7 @@ class Query(object):
         # Join to the main query
         self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
             join(valcount, valcount.c.valfile == self._junkclass.file_pk).\
-            filter(op(valcount.c.valcount, percent*bincount.c.goodcount))
+            filter(op(valcount.c.valcount, percent * bincount.c.goodcount))
 
         # Group the results by main defaultdatadb parameters,
         # so as not to include all spaxels

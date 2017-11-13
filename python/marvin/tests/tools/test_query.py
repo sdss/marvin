@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-14 17:13:58
+# @Last Modified time: 2017-11-10 16:49:55
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -68,8 +68,6 @@ class TestQuerySearches(object):
             res = query.run()
         assert cm.type == MarvinError
         assert errmsg in str(cm.value)
-        if expmode != 'local':
-            assert config._traceback is not None
 
     @pytest.mark.parametrize('query, allspax, table',
                              [('haflux > 25', False, 'cleanspaxelprop'),
@@ -87,12 +85,13 @@ class TestQuerySearches(object):
 
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
-                              ('abs_g_r > -1', 'abs_g_r > -1'),
+                              ('absmag_g_r > -1', 'absmag_g_r > -1'),
                               ('haflux > 25', 'haflux > 25'),
                               ('npergood(emline_gflux_ha_6564 > 5) > 20', 'npergood(emline_gflux_ha_6564 > 5) > 20'),
                               ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and haflux > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
+        print('test', query, sfilter)
         res = query.run()
         count = query.expdata['queries'][sfilter]
         assert count['count'] == res.totalcount
@@ -105,7 +104,11 @@ class TestQueryReturnParams(object):
     def test_success(self, query, rps):
         query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
         assert 'nsa.z' in query.params
-        assert set(rps).issubset(set(query.params))
+        #assert set(rps).issubset(set(query.params))
+        res = query.run()
+        assert all([p in res.columns for p in rps]) is True
+        #assert set(rps).issubset(set(query.params))
+        #assert set(rps).issubset(set(res.paramtocol.keys()))
 
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('rps, errmsg',

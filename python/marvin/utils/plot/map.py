@@ -273,7 +273,7 @@ def plot(*args, **kwargs):
     for examples.
 
     Parameters:
-        dapmap (marvin.tools.map.Map):
+        dapmap (marvin.tools.quantities.Map):
             Marvin Map object. Default is ``None``.
         value (array):
             Data array. Default is ``None``.
@@ -305,7 +305,7 @@ def plot(*args, **kwargs):
         title_mode (str):
             The mode to generate a title automatically, if ``title`` is not
             set. Usually ``'string'`` or ``'latex'``.
-            See :func:`~marvin.utils.dap.datamodel.base.Property.to_string`
+            See :func:`~marvin.utils.datamodel.dap.base.Property.to_string`
             for details.
         cblabel (str):
             If ``None``, set automatically from unit. For no colorbar label,

@@ -6,12 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 16:40:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 16:45:23
+# @Last Modified time: 2017-09-28 17:17:58
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 from marvin.tools.query import Query
-from marvin.tools.query.query_utils import bestparams
+from marvin.utils.datamodel.query.base import bestparams
 import pytest
 import yaml
 import os

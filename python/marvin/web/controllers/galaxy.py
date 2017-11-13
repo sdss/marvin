@@ -21,10 +21,11 @@ from marvin.utils.general.general import (convertImgCoords, parseIdentifier, get
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin.utils.dap import datamodel
-from marvin.utils.dap.datamodel import get_dap_maplist, get_default_mapset
+from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
+from marvin.web.extensions import cache
 from marvin.api.base import arg_validate as av
 from marvin.core.caching_query import FromCache
 from marvin.core import marvin_pickle
@@ -45,28 +46,28 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     webspec = None
     try:
         if byradec:
-            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, modelcube=True, properties=False)
+            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, models=True, properties=False)
         else:
-            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, modelcube=True, properties=False)
+            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, models=True, properties=False)
     except Exception as e:
         specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
         # get error and wavelength
-        error = convertIvarToErr(spaxel.spectrum.ivar)
-        wave = spaxel.spectrum.wavelength
+        error = convertIvarToErr(spaxel.flux.ivar)
+        wave = spaxel.flux.wavelength
 
         # try to get the model flux
         try:
-            modelfit = spaxel.model.flux
+            modelfit = spaxel.full_fit
         except Exception as e:
             modelfit = None
 
         # make input array for Dygraph
         if not isinstance(modelfit, type(None)):
-            webspec = [[wave[i], [s, error[i]], [modelfit[i], 0.0]] for i, s in enumerate(spaxel.spectrum.flux)]
+            webspec = [[wave.value[i], [s, error[i]], [modelfit.value[i], 0.0]] for i, s in enumerate(spaxel.flux.value)]
         else:
-            webspec = [[wave[i], [s, error[i]]] for i, s in enumerate(spaxel.spectrum.flux)]
-
+            webspec = [[wave.value[i], [s, error[i]]] for i, s in enumerate(spaxel.flux.value)]
+        print(webspec)
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg
@@ -299,7 +300,7 @@ class Galaxy(BaseWebView):
 
                 self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>spec = \
-                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum.flux<br>ivar = \
+                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum<br>ivar = \
                     spectrum.ivar<br>mask = spectrum.mask<br>spec.plot()<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.maps import Maps<br>maps = \
@@ -363,7 +364,13 @@ class Galaxy(BaseWebView):
         output['dapbintemps'] = dm.get_bintemps()
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
-        return jsonify(result=output)
+        # try to jsonify the result
+        try:
+            jsonout = jsonify(result=output)
+        except Exception as e:
+            jsonout = jsonify(result={'specstatus': -1, 'mapstatus': -1, 'error': '{0}'.format(e)})
+
+        return jsonout
 
     @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
@@ -451,11 +458,11 @@ class Galaxy(BaseWebView):
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
+    @cache.cached(timeout=300, key_prefix='init_nsa')
     @route('/initnsaplot/', methods=['POST'], endpoint='initnsaplot')
     def init_nsaplot(self):
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         #self._drpver, self._dapver, self._release = parseSession()
-        print('args', args)
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
 
         # get the default nsa choices

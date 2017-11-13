@@ -8,7 +8,7 @@ Map (:mod:`marvin.utils.plot.map`)
 
 Introduction
 ------------
-:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.map.Map.plot` method in the :class:`~marvin.tools.map.Map` class for convenience.
+:mod:`marvin.utils.plot.map` contains utility functions for plotting Marvin maps.  The main function in this module is :func:`~marvin.utils.plot.map.plot`, which is thinly wrapped by the :meth:`~marvin.tools.quantities.Map.plot` method in the :class:`~marvin.tools.quantities.Map` class for convenience.
 
 
 .. _marvin-utils-plot-map-getting-started:

@@ -32,7 +32,7 @@ def _getPlate(plateid, nocubes=None, **kwargs):
         return plate, results
 
     try:
-        plate = Plate(plateid=plateid, nocubes=nocubes, mode='local', release=release)
+        plate = Plate(plate=plateid, nocubes=nocubes, mode='local', release=release)
     except Exception as e:
         results['error'] = 'Failed to retrieve Plate for id {0}: {1}'.format(plateid, str(e))
     else:

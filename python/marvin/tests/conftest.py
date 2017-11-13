@@ -9,7 +9,7 @@
 from collections import OrderedDict
 import itertools
 import os
-
+import copy
 import pytest
 
 from marvin import config, marvindb
@@ -18,7 +18,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
 from marvin.tools.query import Query
-from marvin.utils.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel
 
 from sdss_access.path import Path
 
@@ -57,7 +57,7 @@ travis = None
 class TravisSubset(object):
     def __init__(self):
         self.new_gals = ['8485-1901']
-        self.new_releases = ['MPL-5']
+        self.new_releases = ['MPL-6']
         self.new_bintypes = ['SPX']  # ['SPX', 'VOR10', 'NONE', 'STON']
         self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
         self.new_dbs = ['nodb']
@@ -407,7 +407,7 @@ class Galaxy(object):
         if self.plateifu not in galaxy_data:
             return
 
-        data = galaxy_data[self.plateifu]
+        data = copy.deepcopy(galaxy_data[self.plateifu])
 
         for key in data.keys():
             setattr(self, key, data[key])
@@ -416,6 +416,15 @@ class Galaxy(object):
         releasedata = self.releasedata[self.release]
         for key in releasedata.keys():
             setattr(self, key, releasedata[key])
+
+        # remap NSA drpall names for MPL-4 vs 5+
+        for key, val in self.nsa_data['drpall'].items():
+            if isinstance(val, list):
+                newval, newkey = self.nsa_data['drpall'].pop(key)
+                if self.release == 'MPL-4':
+                    self.nsa_data['drpall'][newkey] = newval
+                else:
+                    self.nsa_data['drpall'][key] = newval
 
     def set_params(self, bintype=None, template=None, release=None):
         """Set bintype, template, etc."""
@@ -559,6 +568,7 @@ def query(request, release, mode, db):
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
+    print('stuff', db, config.db, mode)
     q = Query(searchfilter=searchfilter, mode=mode, release=release)
     q.expdata = data
     yield q

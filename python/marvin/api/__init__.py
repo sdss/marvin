@@ -1,4 +1,5 @@
 
+import contextlib
 import re
 import functools
 from copy import deepcopy
@@ -6,7 +7,7 @@ from flask import request
 from brain.api.base import processRequest
 from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap.datamodel import datamodel as dm
+from marvin.utils.datamodel.dap import datamodel as dm
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 
@@ -33,7 +34,16 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
             'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
             'cube_extension': fields.String(required=True, location='view_args',
-                                            validate=validate.OneOf(['flux', 'ivar', 'mask']))
+                                            validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                     'specres', 'specred',
+                                                                     'prespecres',
+                                                                     'prespecresd'])),
+            'modelcube_extension': fields.String(required=True, location='view_args',
+                                                 validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                          'model', 'emline',
+                                                                          'emline_base',
+                                                                          'emline_mask'])),
+            'colname': fields.String(required=True, location='view_args', allow_none=True),
             }
 
 # List of all form parameters that are needed in all the API routes
@@ -50,7 +60,9 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'sort': fields.String(allow_none=True),
                     'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
-                    'params': fields.DelimitedList(fields.String(), allow_none=True)
+                    'params': fields.DelimitedList(fields.String(), allow_none=True),
+                    'return_all': fields.Boolean(allow_none=True),
+                    'format_type': fields.String(allow_none=True, validate=validate.OneOf(['list', 'listdict', 'dictlist']))
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
@@ -82,7 +94,45 @@ def parse_session(req, name, field):
 
 
 class ArgValidator(object):
-    ''' Web/API Argument validator '''
+    ''' Web/API Argument validator
+
+    This class controls the parameter / argument validation for all API and Web route
+    parameters, both in the views (url names), and in the request body (get/post parameters).
+    This uses the Python package webargs and marshmallow to define and control all
+    validation of parameters. See `webargs <https://webargs.readthedocs.io/en/latest/>`_ and
+    `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_.
+
+    There are two global dictionaries defining the argument validations.  `view_args` defines the
+    list of all named arguments in the api/web Flask routes, e.g. `/marvin2/api/cubes/<name>/` or
+    `/marvin2/api/maps/<name>/<bintype>/<template>/`.   `params` defines the list of all parameters
+    used in routes as form arguments in GET or POST requests, in both the web and api Flask routes.
+    Each entry is a dictionary of {page: dict of parameter validators}.  For example, the `query` key contains
+    parameters related to sending requests to the API or Web Query views.
+
+    You can use the validator in two ways, as a decorator, or manually inside a function.
+    To use the validator as a decorator, decorate your route with the `check_args` method.  Your
+    route function must contain an args input variable which is a dictionary of the validated
+    parameters as checked by the decorator. See :meth:`marvin.api.ArgValidator.check_args` for more info.
+
+    To use the validator manually, call the `manual_parse` method inside the function. See
+    :meth:`marvin.api.ArgValidator.manual_parse` for more info.
+
+    Example:
+        >>> # use as a decorator (checks any view url arguments)
+        >>> from marvin.api.base import arg_validate as av
+        >>> @route('/myroute/')
+        >>> @av.check_args()
+        >>> def do_stuff(args):
+        >>>     return stuff
+        >>>
+        >>> # use manually inside a Flask view function (checks the galaxy request parameters
+        >>> # and required plateifu is set)
+        >>> from flask import request
+        >>> def do_stuff(self):
+        >>>     args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
+        >>>     return stuff
+
+    '''
 
     def __init__(self, urlmap={}):
         self.release = None
@@ -145,7 +195,6 @@ class ArgValidator(object):
                     newparams = self.update_param_validation(local_param)
                 else:
                     newparams = deepcopy(params)
-
                 # add to params final args
                 self.final_args.update(newparams[local_param])
 
@@ -227,7 +276,7 @@ class ArgValidator(object):
         bintemps = self._get_bin_temps()
         bintypes = list(set([b.split('-', 1)[0] for b in bintemps]))
         temps = list(set([b.split('-', 1)[1] for b in bintemps]))
-        properties = [gr.name for gr in dm[self.dapver].extensions]
+        properties = [gr.name for gr in dm[self.dapver].properties.extensions]
         channels = list(set([i.channel.name for i in dm[self.dapver].properties
                              if i.channel is not None])) + ['None']
 
@@ -276,20 +325,36 @@ class ArgValidator(object):
     def check_args(self, **mainkwargs):
         ''' Checks the input view and parameter arguments for validation using webargs
 
-        This is a decorator and modifies the standard webargs.flaskparser use_args decorator
+        This is a decorator and modifies the standard webargs.flaskparser.use_args decorator.
+        check_args by default will check and validation all View parameter arguments.  It will
+        optionally check Request parameter arguments when the `use_params` keyword is set.
+
+        Parameters:
+            use_params (str|list):
+                one (or list) of the param keys defining which sets of parameters to consider
+                for validation
+            required (str|list):
+                string or list of string parameter names that are required as input
+
+        Returns:
+            A dictionary of arguments if all passed validation or an error dictionary specifying
+            any missing parameters, or parameters that failed validation.  There errors are already
+            caught properly in the Marvin system.
+
+        Example:
+            >>> # to validate all input view args
+            >>> @av.check_args()
+            >>>
+            >>> # to validate input query request parameters
+            >>> @av.check_args(use_params='query', required='searchfilter')
 
         '''
-
-        # self note:  nothing can go out here since the decorator is called a lot of overwrites shit
-
         # decorator used to grab the release and endpoint of the route
         def decorator(func):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 # args and kwargs here are the view function args and kwargs
                 self._get_release_endpoint(args[0])
-                # self.release = args[0]._release
-                # self.endpoint = args[0]._endpoint
                 # check the kwargs for any parameters
                 self._check_mainkwargs(**mainkwargs)
                 # create the arguments dictionary
@@ -324,8 +389,34 @@ class ArgValidator(object):
             return total
 
     def manual_parse(self, view, req, **mainkwargs):
-        ''' Manually parse the args '''
-        # args = parser.parse(user_args, request)
+        ''' Manually parse the args
+
+        Manually parses and validates the input arguements of a Flask route
+
+        Parameters:
+            view:
+                The instance of the Flask View
+            req:
+                The Flask request object
+            use_params (str|list):
+                one (or list) of the param keys defining which sets of parameters to consider
+                for validation
+            required (str|list):
+                string or list of string parameter names that are required as input
+            makemulti (bool):
+                If True, converts the arguments dictionary into an ImmutableMultiDict object
+
+        Returns:
+            A dictionary of arguments if all passed validation or an error dictionary specifying
+            any missing parameters, or parameters that failed validation.  There errors are already
+            caught properly in the Marvin system.
+
+        Example:
+            >>> # to validate on the Galaxy View page, and check the galaxy request parameters
+            >>> # and require that the plateifu parameter is set
+            >>> args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
+
+        '''
         self._get_release_endpoint(view)
         url = self._get_url()
         self._check_mainkwargs(**mainkwargs)
@@ -339,3 +430,12 @@ class ArgValidator(object):
             from werkzeug.datastructures import ImmutableMultiDict
             newargs = ImmutableMultiDict(newargs.copy())
         return newargs
+
+
+# Creates a context manager for executing code with DB off but then turning it on again after that.
+
+@contextlib.contextmanager
+def db_off():
+    config.forceDbOff()
+    yield
+    config.forceDbOn()

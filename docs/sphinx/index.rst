@@ -3,14 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. role:: header_no_toc
+  :class: class_header_no_toc
+
+.. title:: Marvin documentation
+
 :tocdepth: 2
-
-|
-
-.. image:: _static/marvin.png
-    :width: 150px
-    :align: left
-    :alt: Marvin
 
 .. image:: _static/logo5_lores.jpg
     :width: 600px
@@ -19,11 +17,8 @@
 
 |
 
-Marvin Docs
-===========
+.. rubric:: :header_no_toc:`Welcome to Marvin's documentation!`
 
-Welcome to Marvin's documentation!
-----------------------------------
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.  Check out the
 `Marvin Github <https://github.com/sdss/marvin>`_ page.
@@ -31,14 +26,17 @@ developed and maintained by the MaNGA team.  Check out the
 If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
-:doc:`whats-new`
-^^^^^^^^^^^^^^^^
+|
 
-`Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Introduction
+============
 
-:doc:`known-issues`
-^^^^^^^^^^^^^^^^^^^
+* :doc:`What's New in Marvin <whats-new>`
+* :doc:`Changelog <changelog>`
+* :ref:`Known issues <marvin-known-issues>`
+* :ref:`TODOs <marvin-todo>`
+
+|
 
 Marvin at a Glance
 ==================
@@ -50,6 +48,8 @@ Marvin at a Glance
 * :doc:`tutorials`
 * :doc:`exercises`
 
+|
+
 Components
 ==========
 
@@ -58,6 +58,7 @@ Components
   * :doc:`core/config`
   * :doc:`core/data-access-modes`
   * :doc:`core/downloads`
+  * :doc:`api/quantities`
 
 * :doc:`tools`
 
@@ -73,16 +74,19 @@ Components
 
     * :doc:`tools/enhanced-map`
 
-  * :doc:`Utilities <utils>`
+  * :doc:`utils`
 
     * :doc:`Image <utils/images>`
-    * :doc:`Plotting <utils/plot-map>`
+    * :doc:`Map Plotting <utils/plot-map>`
+    * :doc:`Scatter Plotting <utils/plot-scatter>`
+    * :doc:`Histogram Plotting <utils/plot-hist>`
     * :doc:`Maskbit <utils/maskbit>`
-
 
 * :doc:`api`
 
 * :doc:`web`
+
+|
 
 General Reference
 =================
@@ -94,6 +98,8 @@ General Reference
    maps-properties-channels
    Available Query Parameters <query-params>
    tools/visual-guide
+
+|
 
 Documentation
 =============

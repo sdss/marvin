@@ -25,7 +25,7 @@ To save the plot:
 
     fig.savefig('haflux.pdf')
 
-Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.map.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
+Version 2.1 introduces a completely refactoring of the :meth:`~marvin.tools.quantities.Map.plot` method. Please see the `Changelog <https://github.com/sdss/marvin/blob/master/CHANGELOG.md>`_ for a complete list of changes and new options available, but here a few critical default settings that are now used:
 
 * Clip at 5th and 95th percentiles (10th and 90th percentiles for velocity and sigma plots).
 * Velocity plots are symmetric about 0.

@@ -34,9 +34,9 @@ def _assert_maps(maps, galaxy):
     assert maps.wcs is not None
     assert maps.bintype == galaxy.bintype
 
-    assert len(maps.shape) == len(galaxy.shape)
-    for ii in range(len(maps.shape)):
-        assert maps.shape[ii] == galaxy.shape[ii]
+    assert len(maps._shape) == len(galaxy.shape)
+    for ii in range(len(maps._shape)):
+        assert maps._shape[ii] == galaxy.shape[ii]
 
 
 class TestMaps(object):
@@ -65,9 +65,11 @@ class TestMaps(object):
         elif exporigin == 'db':
             assert isinstance(maps.data, marvin.marvindb.dapdb.File)
 
-        assert maps.cube is not None
-        assert maps.cube.plateifu == galaxy.plateifu
-        assert maps.cube.mangaid == galaxy.mangaid
+        cube = maps.getCube()
+
+        assert cube is not None
+        assert cube.plateifu == galaxy.plateifu
+        assert cube.mangaid == galaxy.mangaid
 
     @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
@@ -75,42 +77,51 @@ class TestMaps(object):
         assert marvin.config.release == 'MPL-5'
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
-        assert maps._release == galaxy.release
+        assert maps.release == galaxy.release
         assert maps._drpver == galaxy.drpver
         assert maps._dapver == galaxy.dapver
 
-    def test_get_spaxel(self, galaxy, data_origin):
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
-
-        expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template.name]
-        assert spaxel.properties['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
-
-    def test_get_spaxel_test2(self, galaxy, data_origin):
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=5, y=5)
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
-
-    def test_get_spaxel_no_db(self, galaxy, exporigin):
-        """Tests getting an spaxel if there is no DB."""
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
-        spaxel = maps.getSpaxel(x=5, y=5)
-
-        assert spaxel.maps.data_origin == exporigin
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
+    # def test_get_spaxel(self, galaxy, data_origin):
+    #
+    #     maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+    #     spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+    #
+    #     if maps.is_binned():
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
+    #     else:
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
+    #
+    #     assert len(spaxel.maps_quantities.keys()) > 0
+    #
+    #     expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template.name]
+    #     assert spaxel.maps_quantities['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
+    #
+    # def test_get_spaxel_test2(self, galaxy, data_origin):
+    #
+    #     maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
+    #     spaxel = maps.getSpaxel(x=5, y=5)
+    #
+    #     if maps.is_binned():
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
+    #     else:
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
+    #
+    #     assert len(spaxel.maps_quantities.keys()) > 0
+    #
+    # def test_get_spaxel_no_db(self, galaxy, exporigin):
+    #     """Tests getting an spaxel if there is no DB."""
+    #
+    #     maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
+    #     spaxel = maps.getSpaxel(x=5, y=5)
+    #
+    #     assert spaxel.maps.data_origin == exporigin
+    #
+    #     if maps.is_binned():
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
+    #     else:
+    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
+    #
+    #     assert len(spaxel.maps_quantities.keys()) > 0
 
     def test_maps_redshift(self, maps, galaxy):
         redshift = maps.nsa.redshift \

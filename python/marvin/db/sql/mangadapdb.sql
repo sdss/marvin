@@ -19,52 +19,54 @@ create schema mangadapdb;
 
 set search_path to mangadapdb;
 
-create table file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, structure_pk integer, cube_pk integer, pipeline_info_pk integer);
+create table mangadapdb.file (pk serial primary key not null, filename text, filepath text, num_ext integer, filetype_pk integer, structure_pk integer, cube_pk integer, pipeline_info_pk integer);
 
-create table filetype (pk serial primary key not null, value text);
+create table mangadapdb.filetype (pk serial primary key not null, value text);
 
-create table current_default (pk serial primary key not null, filename text, filepath text, file_pk integer);
+create table mangadapdb.current_default (pk serial primary key not null, filename text, filepath text, file_pk integer);
 
-create table hdu (pk serial primary key not null, extname_pk integer, exttype_pk integer, extno integer, file_pk integer);
+create table mangadapdb.hdu (pk serial primary key not null, extname_pk integer, exttype_pk integer, extno integer, file_pk integer);
 
-create table hdu_to_header_value (pk serial primary key not null, hdu_pk integer, header_value_pk integer);
+create table mangadapdb.hdu_to_header_value (pk serial primary key not null, hdu_pk integer, header_value_pk integer);
 
-create table header_value (pk serial primary key not null, value text, index integer, comment text, header_keyword_pk integer);
+create table mangadapdb.header_value (pk serial primary key not null, value text, index integer, comment text, header_keyword_pk integer);
 
-create table header_keyword (pk serial primary key not null, name text);
+create table mangadapdb.header_keyword (pk serial primary key not null, name text);
 
-create table exttype (pk serial primary key not null, name text);
+create table mangadapdb.exttype (pk serial primary key not null, name text);
 
-create table extname (pk serial primary key not null, name text);
+create table mangadapdb.extname (pk serial primary key not null, name text);
 
-create table hdu_to_extcol (pk serial primary key not null, hdu_pk integer, extcol_pk integer);
+create table mangadapdb.hdu_to_extcol (pk serial primary key not null, hdu_pk integer, extcol_pk integer);
 
-create table extcol (pk serial primary key not null, name text);
+create table mangadapdb.extcol (pk serial primary key not null, name text);
 
-create table structure (pk serial primary key not null, binmode_pk integer, bintype_pk integer, template_kin_pk integer, template_pop_pk integer, executionplan_pk integer);
+create table mangadapdb.structure (pk serial primary key not null, binmode_pk integer, bintype_pk integer, template_kin_pk integer, template_pop_pk integer, executionplan_pk integer);
 
-create table binid (pk integer primary key not null, id integer);
+create table mangadapdb.binid (pk integer primary key not null, id integer);
 
-create table executionplan (pk serial primary key not null, id integer, comments text);
+create table mangadapdb.executionplan (pk serial primary key not null, id integer, comments text);
 
-create table template (pk serial primary key not null, name text, id integer);
+create table mangadapdb.template (pk serial primary key not null, name text, id integer);
 
-create table binmode (pk serial primary key not null, name text);
+create table mangadapdb.binmode (pk serial primary key not null, name text);
 
-create table bintype (pk serial primary key not null, name text);
+create table mangadapdb.bintype (pk serial primary key not null, name text);
 
-create table spaxelprop (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
+create table mangadapdb.spaxelprop (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
 
-create table spaxelprop5 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
+create table mangadapdb.spaxelprop5 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
 
-create table spaxelprop6 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
+create table mangadapdb.spaxelprop6 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
 
-create table modelcube (pk serial primary key not null, file_pk integer);
+create table mangadapdb.modelcube (pk serial primary key not null, file_pk integer);
 
-create table modelspaxel (pk serial primary key not null, flux real[], ivar real[], mask integer[], model real[],
+create table mangadapdb.modelspaxel (pk serial primary key not null, flux real[], ivar real[], mask integer[], model real[],
     emline double precision[], emline_base real[], emline_mask integer[], x integer, y integer, modelcube_pk integer);
 
-create table redcorr (pk serial primary key not null, value double precision[], modelcube_pk integer);
+create table mangadapdb.redcorr (pk serial primary key not null, value double precision[], modelcube_pk integer);
+
+create table mangadapdb.dapall (pk serial primary key not null, file_pk integer);
 
 ALTER TABLE ONLY mangadapdb.file
     ADD CONSTRAINT cube_fk
@@ -199,6 +201,11 @@ ALTER TABLE ONLY mangadapdb.spaxelprop6
 ALTER TABLE ONLY mangadapdb.spaxelprop6
     ADD CONSTRAINT binid_fk
     FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.dapall
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);

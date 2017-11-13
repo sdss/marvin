@@ -88,7 +88,7 @@ However, we can also plot the spectrum and model fits in Python. First, we can f
 Get Spectrum and Model Fit
 --------------------------
 
-Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing the parent :class:`~marvin.tools.maps.Maps` object from the :class:`~marvin.tools.map.Map` object (``haflux_map.maps``) and retrieve the model fit.
+Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing the parent :class:`~marvin.tools.maps.Maps` object from the :class:`~marvin.tools.quantities.Map` object (``haflux_map.maps``) and retrieve the model fit.
 
 .. code-block:: python
 

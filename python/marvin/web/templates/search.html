@@ -96,6 +96,7 @@
                 {# Table #}
                 <div class='table-responsive' id='searchtablediv'>
                     <div id='toolbar'><a class='btn btn-sm btn-default' type='button' target='_blank' href="{{url_for('search_page.postage', page=1)}}">View Galaxies</a></div>
+                    <div id='errdiv'><p class='alert alert-danger' id='tableerror' style="display:none;">hello</p></div>
                     <table id='searchtable'></table>
                 </div>
             {% else %}

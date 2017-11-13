@@ -1,16 +1,38 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: general.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
+
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+
 import collections
+import inspect
+import sys
 import warnings
+import contextlib
+
+from collections import OrderedDict
 
 import numpy as np
-import PIL
+
 from scipy.interpolate import griddata
 
-from astropy import wcs
+import PIL
+
 from astropy import table
+from astropy import wcs
+from astropy.units.quantity import Quantity
 
 import marvin
+
 from marvin import log
-from marvin.utils.dap.datamodel.plotting import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 try:
@@ -28,15 +50,17 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters',
-           'get_plot_params', 'add_doc')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
+           'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
+           'get_dapall_file', 'temp_setattr')
 
 drpTable = {}
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,
-              x=None, y=None, ra=None, dec=None, xyorig=None):
-    """Return the |spaxel| matching certain coordinates.
+              x=None, y=None, ra=None, dec=None, xyorig=None, **kwargs):
+    """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
     relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
@@ -75,6 +99,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
             lower-left corner. This keyword is ignored if ``ra`` and
             ``dec`` are defined. ``xyorig`` defaults to
             ``marvin.config.xyorig.``
+        kwargs (dict):
+            Arguments to be passed to `~marvin.tools.spaxel.SpaxelBase`.
 
     Returns:
         spaxels (list):
@@ -135,16 +161,13 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
-        cube_shape = maps.shape
-        plateifu = maps.plateifu
+        cube_shape = maps._shape
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
-        cube_shape = cube.shape
-        plateifu = cube.plateifu
+        cube_shape = cube._shape
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
-        cube_shape = modelcube.shape
-        plateifu = modelcube.plateifu
+        cube_shape = modelcube._shape
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -152,8 +175,9 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps, modelcube=modelcube))
+            marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
+                                           cube=cube, maps=maps, modelcube=modelcube,
+                                           **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -217,7 +241,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         x = coords[:, 0]
         y = coords[:, 1]
 
-        assert shape, 'if mode==pix, shape must be defined.'
+        assert shape is not None, 'if mode==pix, shape must be defined.'
         shape = np.atleast_1d(shape)
 
         if xyorig == 'center':
@@ -833,7 +857,6 @@ def _db_row_to_dict(row, remove_columns=False):
 
     from sqlalchemy.inspection import inspect as sa_inspect
     from sqlalchemy.ext.hybrid import hybrid_property
-    from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     row_dict = collections.OrderedDict()
 
@@ -1003,3 +1026,323 @@ def add_doc(value):
         func.__doc__ = value
         return func
     return _doc
+
+
+def use_inspect(func):
+    ''' Inspect a function of arguments and keywords.
+
+    Inspects a function or class method.  Uses a different inspect for Python 2 vs 3
+    Only tested to work with args and defaults.  varargs (variable arguments)
+    and varkw (keyword arguments) seem to always be empty.
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A tuple of arguments, variable arguments, keywords, and default values
+
+    '''
+    pyver = sys.version_info.major
+    if pyver == 2:
+        args, varargs, varkw, defaults = inspect.getargspec(func)
+    elif pyver == 3:
+        sig = inspect.signature(func)
+        args = []
+        defaults = []
+        varargs = varkw = None
+        for par in sig.parameters.values():
+            # most parameters seem to be of this kind
+            if par.kind == par.POSITIONAL_OR_KEYWORD:
+                args.append(par.name)
+                # parameters with default of inspect empty are required
+                if par.default != inspect._empty:
+                    defaults.append(par.default)
+
+    return args, varargs, varkw, defaults
+
+
+def getRequiredArgs(func):
+    ''' Gets the required arguments from a function or method
+
+    Uses this difference between arguments and defaults to indicate
+    required versus optional arguments
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of required arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getRequiredArgs(plt.scatter)
+        >>> ['x', 'y']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    if defaults:
+        args = args[:-len(defaults)]
+    return args
+
+
+def getKeywordArgs(func):
+    ''' Gets the keyword arguments from a function or method
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of keyword arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getKeywordArgs(plt.scatter)
+        >>> ['edgecolors', 'c', 'vmin', 'linewidths', 'marker', 's', 'cmap',
+        >>>  'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    req_args = getRequiredArgs(func)
+    opt_args = list(set(args) - set(req_args))
+    return opt_args
+
+
+def missingArgs(func, argdict, arg_type='args'):
+    ''' Return missing arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+
+    Returns:
+        A list of missing arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for missing required args
+        >>> missginArgs(plt.scatter, testdict)
+        >>> {'x', 'y'}
+        >>> # test for missing optional args
+        >>> missingArgs(plt.scatter, testdict, arg_type='opt')
+        >>> ['vmin', 'linewidths', 'marker', 's', 'cmap', 'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    assert arg_type in ['args', 'req', 'kwargs', 'opt'], 'arg_type must be one of (args|req|kwargs|opt)'
+    if arg_type in ['args', 'req']:
+        return set(getRequiredArgs(func)).difference(argdict)
+    elif arg_type in ['kwargs', 'opt']:
+        return set(getKeywordArgs(func)).difference(argdict)
+
+
+def invalidArgs(func, argdict):
+    ''' Return invalid arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+
+    Returns:
+        A list of invalid arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> invalidArgs(plt.scatter, testdict)
+        >>>  {'xlabel', 'xlim', 'ylabel', 'ylim'}
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    return set(argdict) - set(args)
+
+
+def isCallableWithArgs(func, argdict, arg_type='opt', strict=False):
+    ''' Test if the function is callable with the an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+        strict (bool):
+            If True, validates input dictionary against both missing and invalid keyword arguments. Default is False
+
+    Returns:
+        Boolean indicating whether the function is callable
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> isCallableWithArgs(plt.scatter, testdict)
+        >>> False
+
+    '''
+    if strict:
+        return not missingArgs(func, argdict, arg_type=arg_type) and not invalidArgs(func, argdict)
+    else:
+        return not invalidArgs(func, argdict)
+
+
+def map_bins_to_column(column, indices):
+    ''' Maps a dictionary of array indices to column data
+
+    Takes a given data column and a dictionary of indices (see the indices key
+    from output of the histgram data in :meth:`marvin.utils.plot.scatter.hist`),
+    and produces a dictionary with the data values from column mapped in
+    individual bins.
+
+    Parameters:
+        column (list):
+            A column of data
+        indices (dict):
+            A dictionary of providing a list of array indices belonging to each
+            bin in a histogram.
+
+    Returns:
+        A dictionary containing, for each binid, a list of column data in that bin.
+
+    Example:
+        >>>
+        >>> # provide a list of data in each bin of an output histogram
+        >>> x = np.random.random(10)*10
+        >>> hdata = hist(x, bins=3, return_fig=False)
+        >>> inds = hdata['indices']
+        >>> pmap = map_bins_to_column(x, inds)
+        >>> OrderedDict([(1,
+        >>>   [2.5092488009906235,
+        >>>    1.7494530589363955,
+        >>>    2.5070840461208754,
+        >>>    2.188355400587354,
+        >>>    2.6987990403658992,
+        >>>    1.6023553861428441]),
+        >>>  (3, [7.9214280403215875, 7.488908995456573, 7.190598204420587]),
+        >>>  (4, [8.533028236560906])])
+
+    '''
+    assert isinstance(indices, dict) is True, 'indices must be a dictionary of binids'
+    assert len(column) == sum(map(len, indices.values())), 'input column and indices values must have same len'
+    coldict = OrderedDict()
+    colarr = np.array(column)
+    for key, val in indices.items():
+        coldict[key] = colarr[val].tolist()
+    return coldict
+
+
+def _sort_dir(instance, class_):
+    """Sort `dir()` to return child class attributes and members first.
+
+    Return the attributes and members of the child class, so that
+    ipython tab completion lists those first.
+
+    Parameters:
+        instance: Instance of `class_` (usually self).
+        class_: Class of `instance`.
+
+    Returns:
+        list: Child class attributes and members.
+    """
+    members_array = list(zip(*inspect.getmembers(np.ndarray)))[0]
+    members_quantity = list(zip(*inspect.getmembers(Quantity)))[0]
+    members_parents = members_array + members_quantity
+
+    return_list = [it[0] for it in inspect.getmembers(class_) if it[0] not in members_parents]
+    return_list += vars(instance).keys()
+    return_list += ['value']
+    return return_list
+
+
+def get_dapall_file(drpver, dapver):
+    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
+
+    assert Path is not None, 'sdss_access.path.Path is not available.'
+
+    dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
+
+    return dapall_path
+
+
+@contextlib.contextmanager
+def temp_setattr(ob, attrs, new_values):
+    """ Temporarily set attributed on an object
+
+    Temporarily set an attribute on an object for the duration of the
+    context manager.
+
+    Parameters:
+        ob (object):
+            A class instance to set attributes on
+        attrs (str|list):
+            A list of attribute names to replace
+        new_values (list):
+            A list of new values to set as new attribute.  If new_values is
+            None, all attributes in attrs will be set to None.
+
+    Example:
+        >>> c = Cube(plateifu='8485-1901')
+        >>> print('before', c.mangaid)
+        >>> with temp_setattr(c, 'mangaid', None):
+        >>>     # do stuff
+        >>>     print('new', c.mangaid)
+        >>> print('after' c.mangaid)
+        >>>
+        >>> # Output
+        >>> before '1-209232'
+        >>> new None
+        >>> after '1-209232'
+        >>>
+
+    """
+
+    # set up intial inputs
+    attrs = attrs if isinstance(attrs, list) else [attrs]
+    if new_values:
+        new_values = new_values if isinstance(new_values, list) else [new_values]
+    else:
+        new_values = [new_values] * len(attrs)
+
+    assert len(attrs) == len(new_values), 'attrs and new_values must have the same length'
+
+    replaced = []
+    old_values = []
+
+    # grab the old values
+    for i, attr in enumerate(attrs):
+        new_value = new_values[i]
+
+        replace = False
+        old_value = None
+        if hasattr(ob, attr):
+            try:
+                if attr in ob.__dict__:
+                    replace = True
+            except AttributeError:
+                if attr in ob.__slots__:
+                    replace = True
+            if replace:
+                old_value = getattr(ob, attr)
+        replaced.append(replace)
+        old_values.append(old_value)
+        setattr(ob, attr, new_value)
+
+    # yield
+    yield replaced, old_values
+
+    # replace the old values
+    for i, attr in enumerate(attrs):
+        if not replaced[i]:
+            delattr(ob, attr)
+        else:
+            setattr(ob, attr, old_values[i])

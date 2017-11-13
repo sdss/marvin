@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-25 13:56:19
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-06-04 02:03:56
+* @Last Modified time: 2017-09-28 13:25:11
 */
 
 //jshint esversion: 6
@@ -19,6 +19,10 @@ var Table = function () {
         _classCallCheck(this, Table);
 
         this.setTable(tablediv);
+
+        // Event Handlers
+        this.table.on('load-success.bs.table', this, this.setSuccessMsg);
+        this.table.on('load-error.bs.table', this, this.setErrMsg);
     }
 
     // Print
@@ -38,6 +42,9 @@ var Table = function () {
             if (tablediv !== undefined) {
                 console.log('setting the table');
                 this.table = tablediv;
+                this.errdiv = this.table.siblings('#errdiv');
+                this.tableerr = this.errdiv.find('#tableerror');
+                this.tableerr.hide();
             }
         }
 
@@ -54,6 +61,8 @@ var Table = function () {
                 cols = this.makeColumns(data.columns);
             }
 
+            console.log(data);
+            console.log('cols', cols);
             // init the Bootstrap table
             this.table.bootstrapTable({
                 classes: 'table table-bordered table-condensed table-hover',
@@ -71,7 +80,7 @@ var Table = function () {
                 url: url,
                 showColumns: true,
                 showToggle: true,
-                sortName: 'cube.mangaid',
+                sortName: 'mangaid',
                 sortOrder: 'asc',
                 formatNoMatches: function formatNoMatches() {
                     return "This table is empty...";
@@ -79,12 +88,48 @@ var Table = function () {
             });
         }
 
+        // update the error div with a message
+
+    }, {
+        key: 'updateMsg',
+        value: function updateMsg(msg) {
+            var errmsg = '<strong>' + msg + '</strong>';
+            this.tableerr.html(errmsg);
+            this.tableerr.show();
+        }
+
+        // set a table error message
+
+    }, {
+        key: 'setErrMsg',
+        value: function setErrMsg(event, status, res) {
+            var _this = event.data;
+            var extra = '';
+            if (status === 502) {
+                extra = 'bad server response retrieving web table.  likely uncaught error on server side.  check logs.';
+            }
+            var msg = 'Status ' + status + ' - ' + res.statusText + ': ' + extra;
+            _this.updateMsg(msg);
+        }
+
+        // set a table error message
+
+    }, {
+        key: 'setSuccessMsg',
+        value: function setSuccessMsg(event, data) {
+            var _this = event.data;
+            _this.tableerr.hide();
+            if (data.status === -1) {
+                _this.updateMsg(data.errmsg);
+            }
+        }
+
         // make the Table Columns
 
     }, {
         key: 'makeColumns',
         value: function makeColumns(columns) {
-            var _this = this;
+            var _this2 = this;
 
             var cols = [];
             columns.forEach(function (name, index) {
@@ -92,8 +137,8 @@ var Table = function () {
                 colmap.field = name;
                 colmap.title = name;
                 colmap.sortable = true;
-                if (name.match('cube.plateifu|cube.mangaid')) {
-                    colmap.formatter = _this.linkformatter;
+                if (name.match('plateifu|mangaid')) {
+                    colmap.formatter = _this2.linkformatter;
                 }
                 cols.push(colmap);
             });

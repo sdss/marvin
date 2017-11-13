@@ -18,9 +18,9 @@ import pytest
 
 from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.dap import datamodel
+from marvin.utils.datamodel.dap import datamodel
 from marvin.tools.maps import Maps
-from marvin.tools.map import Map, EnhancedMap
+from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 from marvin.utils.dap.datamodel.plotting import get_default_plot_params
 

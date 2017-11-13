@@ -18,7 +18,7 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -122,6 +122,7 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
+    cache.init_app(app, config=app.config)
 
     limiter.init_app(app)
     for handler in app.logger.handlers:

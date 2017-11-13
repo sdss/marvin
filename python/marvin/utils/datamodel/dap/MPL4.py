@@ -28,6 +28,12 @@ STON = Bintype('STON', n=1, description='Bin to S/N=30; only include S/N>5 spect
                                         'fit V, sigma, h3, h4 for stellar kinematics.')
 
 
+binid_property = Property('binid', ivar=False, mask=False, channel=None,
+                          formats={'string': 'Bin ID'},
+                          description='ID number for the bin for which the pixel value was '
+                                      'calculated; bins are sorted by S/N.')
+
+
 MPL4_emline_channels = [
     Channel('oiid_3728', formats={'string': 'OIId 3728',
                                   'latex': r'$\forb{O\,II}\;\lambda\lambda 3726,3728$'}, idx=0,
@@ -55,7 +61,7 @@ MPL4_emline_channels = [
 ]
 
 MPL4_specindex_channels = [
-    Channel('d4000', formats={'string': 'D4000'}, unit=u.Angstrom, idx=0),
+    Channel('d4000', formats={'string': 'D4000'}, unit=u.dimensionless_unscaled, idx=0),
     Channel('caii0p39', formats={'string': 'CaII 0p39'}, unit=u.Angstrom, idx=1),
     Channel('hdeltaa', formats={'string': 'HDeltaA',
                                 'latex': r'H\delta\,A'}, unit=u.Angstrom, idx=2),
@@ -134,14 +140,12 @@ MPL4_maps = [
                          formats={'string': 'Spectral index'},
                          channels=MPL4_specindex_channels,
                          description='Measurements of spectral indices.'),
-    Property('binid', ivar=False, mask=False, channel=None,
-             formats={'string': 'Bin ID'},
-             description='ID number for the bin for which the pixel value was '
-                         'calculated; bins are sorted by S/N.')
+    binid_property
 ]
 
 
 MPL4 = DAPDataModel('1.1.1', aliases=['MPL-4', 'MPL4'], bintypes=[NONE, RADIAL, STON],
-                    templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN], properties=MPL4_maps,
-                    bitmasks=get_maskbits('MPL-4'), default_bintype='NONE',
-                    default_template='MIUSCAT-THIN')
+                    templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN],
+                    properties=MPL4_maps,
+                    default_bintype='NONE', default_template='MIUSCAT-THIN',
+                    property_table='SpaxelProp', default_binid=binid_property)

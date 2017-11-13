@@ -16,10 +16,10 @@ from flask_classy import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query
-from marvin.tools.query.forms import MarvinForm
+from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
-from marvin.tools.query.query_utils import query_params, bestparams
+from marvin.utils.datamodel.query.base import query_params, bestparams
 from wtforms import validators, ValidationError
 from marvin.utils.general import getImagesByList
 from marvin.web.web_utils import buildImageDict
@@ -105,9 +105,9 @@ class Search(BaseWebView):
                 else:
                     self.search['filter'] = q.strfilter
                     self.search['count'] = res.totalcount
-                    self.search['runtime'] = res.query_runtime.total_seconds()
+                    self.search['runtime'] = res.query_time.total_seconds()
                     if res.count > 0:
-                        cols = res.mapColumnsToParams()
+                        cols = res.columns.remote
                         rows = res.getDictOf(format_type='listdict')
                         output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
                     else:
@@ -155,10 +155,6 @@ class Search(BaseWebView):
         form = processRequest(request=request)
         args = av.manual_parse(self, request, use_params='query')
 
-        #{'sort': u'cube.mangaid', 'task': None, 'end': None, 'searchfilter': None,
-        #'paramdisplay': None, 'start': None, 'rettype': None, 'limit': 10, 'offset': 30,
-        #'release': u'MPL-4', 'params': None, 'order': u'asc'}
-
         # remove args
         __tmp__ = args.pop('release', None)
         __tmp__ = args.pop('searchfilter', None)
@@ -170,30 +166,38 @@ class Search(BaseWebView):
         # set parameters
         searchvalue = current_session.get('searchvalue', None)
         returnparams = current_session.get('returnparams', None)
-        # limit = form.get('limit', 10, type=int)
-        # offset = form.get('offset', None, type=int)
-        # order = form.get('order', None, type=str)
-        # sort = form.get('sort', None, type=str)
-        # search = form.get('search', None, type=str)
 
         # exit if no searchvalue is found
         if not searchvalue:
-            output = jsonify({'webtable_error': 'No searchvalue found', 'status': -1})
+            output = jsonify({'errmsg': 'No searchvalue found', 'status': -1})
             return output
 
+        # this is to fix the brokeness with sorting on a table column using remote names
+        print('rp', returnparams, args)
+
         # do query
-        q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
-        # q, res = doQuery(searchfilter=searchvalue, release=self._release,
-        #                  limit=limit, order=order, sort=sort, returnparams=returnparams)
+        try:
+            q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
+        except Exception as e:
+            errmsg = 'Error generating webtable: {0}'.format(e)
+            output = jsonify({'status': -1, 'errmsg': errmsg})
+            return output
+
         # get subset on a given page
-        __results__ = res.getSubset(offset, limit=limit)
-        # get keys
-        cols = res.mapColumnsToParams()
-        # create output
-        rows = res.getDictOf(format_type='listdict')
-        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
-        output = jsonify(output)
-        return output
+        try:
+            __results__ = res.getSubset(offset, limit=limit)
+        except Exception as e:
+            errmsg = 'Error getting table page: {0}'.format(e)
+            output = jsonify({'status': -1, 'errmsg': errmsg})
+            return output
+        else:
+            # get keys
+            cols = res.columns.remote
+            # create output
+            rows = res.getDictOf(format_type='listdict')
+            output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
+            output = jsonify(output)
+            return output
 
     @route('/postage/', methods=['GET', 'POST'], defaults={'page': 1}, endpoint='postage')
     @route('/postage/<page>/', methods=['GET', 'POST'], endpoint='postage')
@@ -221,8 +225,6 @@ class Search(BaseWebView):
 
         # only grab subset if more than 16 galaxies
         if len(plateifus) > pagesize:
-            # __results__ = res.getSubset(offset, limit=pagesize)
-            # plateifus = res.getListOf('plateifu')
             plateifus = plateifus[offset:offset + pagesize]
 
         # get images
