@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 10:42:13
+# @Last Modified time: 2017-11-13 11:10:52
 
 from __future__ import print_function, division, absolute_import
 
@@ -336,7 +336,7 @@ class ParameterGroupList(QueryFuzzyList):
                                 mapper=self._fuzzy_mapper)
 
     def _fuzzy_mapper(self, value):
-        return value.lower().replace(' ', '_').replace('.', '_')
+        return value.name.lower().replace(' ', '_').replace('.', '_')
 
     def _make_groups(self, items, best=None):
         if isinstance(items, list):
