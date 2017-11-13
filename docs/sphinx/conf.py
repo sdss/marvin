@@ -51,8 +51,7 @@ extensions = [
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'm2r'
-]
+    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -209,7 +208,7 @@ html_theme_options = {
     #
     # Options are nothing (default) or the name of a valid theme
     # such as "amelia" or "cosmo".
-    'bootswatch_theme': "flatly",
+    'bootswatch_theme': "journal",
 
     # Choose Bootstrap version.
     # Values: "3" (default) or "2" (in quotes)
