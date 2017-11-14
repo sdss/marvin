@@ -31,7 +31,7 @@ from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 import marvin.utils.plot.map
 import marvin.utils.general
-from marvin.utils.general.test_general import add_doc
+from marvin.utils.general.general import add_doc
 
 from .base_quantity import QuantityMixIn
 
