@@ -16,7 +16,7 @@ Introduction
 Getting Started
 ---------------
 
-:mod:`~marvin.utils.general.maskbit.Maskbit` is most frequently encountered as an attribute on a :ref:`marvin-tools` object (e.g., :attr:`marvin.tools.map.Map.pixmask` is an instance of :mod:`~marvin.utils.general.maskbit.Maskbit`).
+:mod:`~marvin.utils.general.maskbit.Maskbit` is most frequently encountered as an attribute on a :ref:`marvin-tools` object (e.g., :attr:`marvin.tools.quantities.Map.pixmask` is an instance of :mod:`~marvin.utils.general.maskbit.Maskbit`).
 
 .. code-block:: python
 
