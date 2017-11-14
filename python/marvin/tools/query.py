@@ -506,8 +506,8 @@ class Query(object):
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
         obj.datamodel = datamodel[obj._release]
-        if obj.allspaxels:
-            obj.datamodel.use_all_spaxels()
+        # if obj.allspaxels:
+        #     obj.datamodel.use_all_spaxels()
         obj.marvinform = obj.datamodel._marvinform
         return obj
 
@@ -706,16 +706,17 @@ class Query(object):
     @makeBaseQuery
     @checkCondition
     @updateConfig
-    def run(self, qmode='all'):
+    def run(self, start=None, end=None):
         ''' Runs a Marvin Query
 
             Runs the query and return an instance of Marvin Results class
-            to deal with results.  Input qmode allows to perform
-            different sqlalchemy queries
+            to deal with results.
 
             Parameters:
-                qmode ({'all', 'one', 'first', 'count'}):
-                    String indicating
+                start (int):
+                    Starting value of a subset.  Default is None
+                end (int):
+                    Ending value of a subset.  Default is None
 
             Returns:
                 results (object):
@@ -735,35 +736,24 @@ class Query(object):
                 self.query = self.query.options(FromCache("default")).\
                     options(*marvindb.cache_bits)
 
-            # get total count, and if more than 150 results, paginate and only return the first 10
-            start = datetime.datetime.now()
-            count = self.query.count()
+            # get total count, and if more than 150 results, paginate and only return the first 100
+            starttime = datetime.datetime.now()
 
+            # run the query
+            res = self.query.slice(start, end).all()
+            count = len(res)
             self.totalcount = count
+
             if count > 1000 and self.return_all is False:
-                query = self.query.slice(0, self.limit)
-                count = query.count()
+                res = res[0:self.limit]
+                count = self.limit
                 warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
             else:
                 warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
-                query = self.query
-
-            if qmode == 'all':
-                res = query.all()
-            elif qmode == 'one':
-                res = query.one()
-            elif qmode == 'first':
-                res = query.first()
-            elif qmode == 'count':
-                res = query.count()
 
             # get the runtime
-            end = datetime.datetime.now()
-            self.runtime = (end - start)
-
-            # close the session and engine
-            #self.session.close()
-            #marvindb.db.engine.dispose()
+            endtime = datetime.datetime.now()
+            self.runtime = (endtime - starttime)
 
             return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
                            queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)

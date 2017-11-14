@@ -6,10 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 14:58:52
+# @Last Modified time: 2017-11-13 18:04:23
 
 from __future__ import print_function, division, absolute_import
-from marvin.tools.query import Query
+from marvin.tools.query import Query, doQuery
 from marvin.core.exceptions import MarvinError
 from marvin import config
 from marvin.tools.cube import Cube
@@ -17,6 +17,14 @@ from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
 import pytest
+
+
+class TestDoQuery(object):
+
+    def test_success(self, release, mode):
+        q, r = doQuery(searchfilter='nsa.z < 0.1', release=release, mode=mode)
+        assert q is not None
+        assert r is not None
 
 
 class TestQueryVersions(object):
@@ -96,6 +104,19 @@ class TestQuerySearches(object):
         res = query.run()
         count = query.expdata['queries'][sfilter]
         assert count['count'] == res.totalcount
+
+    # @pytest.mark.parametrize('query, qmode',
+    #                          [('nsa.z < 0.1', 'count'),
+    #                           ('nsa.z < 0.1', 'first')],
+    #                          indirect=['query'])
+    # def test_qmodes(self, query, qmode):
+    #     mycount = query.expdata['queries']['nsa.z < 0.1']['count']
+    #     r = query.run(qmode)
+    #     if qmode == 'count':
+    #         assert r == mycount
+    #     elif qmode == 'first':
+    #         assert len(r.results) == 1
+    #         assert r.count == 1
 
 
 class TestQueryReturnParams(object):
