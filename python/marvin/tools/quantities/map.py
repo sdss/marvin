@@ -182,26 +182,26 @@ class Map(units.Quantity, QuantityMixIn):
         elif maps.data_origin == 'api':
             value, ivar, mask = cls._get_map_from_api(maps, prop)
 
-        obj.manga_target1 = maps.manga_target1
-        obj.manga_target2 = maps.manga_target2
-        obj.manga_target3 = maps.manga_target3
-        obj.target_flags = maps.target_flags
-
-        obj.quality_flag = maps.quality_flag
-
-        unit = prop.unit
-
         # Gets the binid array for this property.
         if prop.name != 'binid':
             binid = maps.get_binid(prop.binid)
         else:
             binid = None
 
+        unit = prop.unit
+
         obj = cls(value, unit=unit, ivar=ivar, mask=mask, binid=binid,
                   dtype=dtype, copy=copy)
 
         obj._datamodel = prop
         obj._maps = maps
+
+        obj.manga_target1 = maps.manga_target1
+        obj.manga_target2 = maps.manga_target2
+        obj.manga_target3 = maps.manga_target3
+        obj.target_flags = maps.target_flags
+
+        obj.quality_flag = maps.quality_flag
 
         return obj
 
@@ -422,7 +422,6 @@ class Map(units.Quantity, QuantityMixIn):
         # TODO test this!
         if self.release != map2.release:
             warnings.warn('Releases do not match in map arithmetic.')
-
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
                            scale=self.scale, release=self.release, datamodel=self._datamodel,
