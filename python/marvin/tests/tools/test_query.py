@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-10 16:49:55
+# @Last Modified time: 2017-11-13 14:58:52
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
@@ -69,19 +69,21 @@ class TestQuerySearches(object):
         assert cm.type == MarvinError
         assert errmsg in str(cm.value)
 
-    @pytest.mark.parametrize('query, allspax, table',
-                             [('haflux > 25', False, 'cleanspaxelprop'),
-                              ('haflux > 25', True, 'spaxelprop')],
-                             ids=['allspax', 'cleanspax'],
-                             indirect=['query'])
-    def test_spaxel_tables(self, query, expmode, allspax, table):
-        table = table + config.release.split('-')[1] if '4' not in config.release else table
-        query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode, release=query._release)
-        if expmode == 'local':
-            assert table in set(query.joins)
-        else:
-            res = query.run()
-            assert table in res.query
+    # Keeping this test for posterity
+    # @pytest.mark.parametrize('query, allspax, table',
+    #                          [('haflux > 25', False, 'cleanspaxelprop'),
+    #                           ('haflux > 25', True, 'spaxelprop')],
+    #                          ids=['allspax', 'cleanspax'],
+    #                          indirect=['query'])
+    # def test_spaxel_tables(self, query, expmode, allspax, table):
+    #     table = table + config.release.split('-')[1] if '4' not in config.release else table
+    #     print('creating new query')
+    #     query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode, release=query._release)
+    #     if expmode == 'local':
+    #         assert table in set(query.joins)
+    #     else:
+    #         res = query.run()
+    #         assert table in res.query
 
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
@@ -91,7 +93,6 @@ class TestQuerySearches(object):
                               ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and haflux > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
-        print('test', query, sfilter)
         res = query.run()
         count = query.expdata['queries'][sfilter]
         assert count['count'] == res.totalcount
