@@ -183,8 +183,6 @@ class Query(object):
         self.order = kwargs.get('order', 'asc')
         self.return_all = kwargs.get('return_all', False)
         self.datamodel = datamodel[self._release]
-        if self.allspaxels:
-            self.datamodel.use_all_spaxels()
         self.marvinform = self.datamodel._marvinform
 
         # drop breadcrumb
