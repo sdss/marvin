@@ -356,7 +356,7 @@ Custom Values and Custom Mask
     # Combine masks using bitwise OR (`|`)
     mask = nocov | low_ha
 
-    fig, ax = mapplot.plot(dapmap=ha, value=ha.value, mask=mask) # TODO mask_nocov requires dapmap or ivar
+    fig, ax = mapplot.plot(dapmap=ha, value=ha.value, mask=mask)
 
 .. image:: ../_static/custom_mask.png
 
