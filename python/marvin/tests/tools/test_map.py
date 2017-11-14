@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-06 18:10:52
+# @Last modified time: 2017-11-14 11:11:81
 
 from copy import deepcopy
 
@@ -22,7 +22,7 @@ from marvin.utils.datamodel.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
-from marvin.utils.dap.datamodel.plotting import get_default_plot_params
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -352,7 +352,7 @@ class TestMapArith(object):
 
 
 class TestMaskbit(object):
-    
+
     def test_masked(self, map_release_only):
         __, dapver = config.lookUpVersions(map_release_only.release)
         params = get_default_plot_params(dapver)
@@ -387,7 +387,7 @@ class TestMaskbit(object):
                               ('DONOTUSE', 1073741824)])
     def test_labels_to_value(self, map_release_only, names, expected):
         assert map_release_only.pixmask.labels_to_value(names) == expected
-    
+
     @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
     def test_quality_flag(self, map_release_only):
         assert map_release_only.quality_flag is not None
