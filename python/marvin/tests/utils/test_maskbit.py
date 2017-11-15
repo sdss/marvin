@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-12 16:10:35
+# @Last modified time: 2017-11-14 21:11:01
 
 
 from __future__ import division, print_function, absolute_import
@@ -28,6 +28,7 @@ description = 'My first Maskbit.'
 mask = np.array([[0, 1], [2, 12]])
 custom_mask = np.array([[1, 5], [7, 11]])
 
+
 class TestMaskbit(object):
 
     def test_maskbit_init_with_schema(self, name=name, schema=schema, description=description):
@@ -35,7 +36,7 @@ class TestMaskbit(object):
         assert np.all(mb.schema == schema)
         assert mb.name == name
         assert mb.description == description
-        assert str(mb) == "<Maskbit 'MYMASK'\n\n{0!r}>".format(schema)
+        assert str(mb) == "<Maskbit 'MYMASK'>\n{0!r}".format(schema)
 
     @pytest.mark.parametrize('name',
                              ['MANGA_TARGET1',
