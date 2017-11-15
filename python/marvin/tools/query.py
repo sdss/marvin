@@ -64,9 +64,11 @@ def doQuery(*args, **kwargs):
             :class:`~marvin.tools.query.Query` instance, and the
             :class:`~marvin.tools.results.Results` instance.
     """
+    start = kwargs.pop('start', None)
+    end = kwargs.pop('end', None)
     q = Query(*args, **kwargs)
     try:
-        res = q.run()
+        res = q.run(start=start, end=end)
     except TypeError as e:
         warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
         res = None
@@ -739,10 +741,19 @@ class Query(object):
             # get total count, and if more than 150 results, paginate and only return the first 100
             starttime = datetime.datetime.now()
 
+            # check for query and get count
+            if marvindb.isdbconnected:
+                qm = self._check_history(check_only=True)
+                self.totalcount = qm.count if qm else None
+
             # run the query
             res = self.query.slice(start, end).all()
             count = len(res)
-            self.totalcount = count
+            self.totalcount = count if not self.totalcount else self.totalcount
+
+            # check history
+            if marvindb.isdbconnected:
+                query_meta = self._check_history()
 
             if count > 1000 and self.return_all is False:
                 res = res[0:self.limit]
@@ -805,6 +816,25 @@ class Query(object):
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime)
+
+    def _check_history(self, check_only=None):
+        ''' Check the query against the query history schema '''
+
+        sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
+        stringfilter = self.searchfilter.strip().replace(' ', '')
+        qm = self.session.query(sf.class_).filter(sf == stringfilter, sf.class_.release == self._release).one_or_none()
+
+        if check_only:
+            return qm
+
+        with self.session.begin():
+            if not qm:
+                qm = sf.class_(searchfilter=stringfilter, n_run=1, release=self._release, count=self.totalcount)
+                self.session.add(qm)
+            else:
+                qm.n_run += 1
+
+        return qm
 
     def _cleanUpQueries(self):
         ''' Attempt to clean up idle queries on the server

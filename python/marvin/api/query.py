@@ -55,6 +55,7 @@ def _getCubes(searchfilter, **kwargs):
     #     r.getAll()
     results = r.results
 
+    print('res', results)
     # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
