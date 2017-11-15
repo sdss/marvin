@@ -17,6 +17,7 @@ import inspect
 import sys
 import warnings
 import contextlib
+import re
 
 from collections import OrderedDict
 
@@ -54,7 +55,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr')
+           'get_dapall_file', 'temp_setattr', 'map_dapall')
 
 drpTable = {}
 
@@ -1346,4 +1347,64 @@ def temp_setattr(ob, attrs, new_values):
             delattr(ob, attr)
         else:
             setattr(ob, attr, old_values[i])
+
+
+def map_dapall(header, row):
+    ''' Retrieves a dictionary of DAPall db column names
+
+    For a given row in the DAPall file, returns a dictionary
+    of corresponding DAPall database columns names with the
+    appropriate values.
+
+    Parameters:
+        header (Astropy header):
+            The primary header of the DAPall file
+        row (recarray):
+            A row of the DAPall binary table data
+
+    Returns:
+        A dictionary with db column names as keys and row data as values
+
+    Example:
+        >>> hdu = fits.open('dapall-v2_3_1-2.1.1.fits')
+        >>> header = hdu[0].header
+        >>> row = hdu[1].data[0]
+        >>> dbdict = map_dapall(header, row)
+
+    '''
+
+    # get names from header
+    emline_schannels = []
+    emline_gchannels = []
+    specindex_channels = []
+    for key, val in header.items():
+        if 'ELS' in key:
+            emline_schannels.append(val.lower().replace('-', '_').replace('.', '_'))
+        elif 'ELG' in key:
+            emline_gchannels.append(val.lower().replace('-', '_').replace('.', '_'))
+        elif re.search('SPI([0-9])', key):
+            specindex_channels.append(val.lower().replace('-', '_').replace('.', '_'))
+
+    # File column names
+    names = row.array.names
+
+    dbdict = {}
+    for col in names:
+        name = col.lower()
+        shape = row[col].shape if hasattr(row[col], 'shape') else ()
+        array = ''
+        values = row[col]
+
+        if len(shape) > 0:
+            channels = shape[0]
+            for i in xrange(channels):
+                channame = emline_schannels[i] if 'emline_s' in name else \
+                    emline_gchannels[i] if 'emline_g' in name else \
+                    specindex_channels[i] if 'specindex' in name else i + 1
+                colname = '{0}_{1}'.format(name, channame)
+                dbdict[colname] = values[i]
+        else:
+            dbdict[name] = values
+
+    return dbdict
 
