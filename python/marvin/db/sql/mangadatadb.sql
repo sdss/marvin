@@ -86,6 +86,10 @@ CREATE TABLE mangadatadb.obsinfo (pk serial PRIMARY KEY NOT NULL, cube_pk intege
 	mngtarg1 integer, mngtarg2 integer, mngtarg3 integer, bluesn2 real, redsn2 real, bluepstat real, redpstat real,
 	drp2qual integer, thisbadifu integer, pf_fwhm_g real, pf_fwhm_r real, pf_fwhm_i real, pf_fwhm_z real);
 
+create table history.query (pk serial primary key not null, searchfilter text, n_run integer, count integer,
+	release varchar(8), created timestamp, updated timestamp);
+create index concurrently filter_idx on history.query using btree(searchfilter);
+
 # DEPRECATED TABLE for mangasampledb.nsa
 -- CREATE TABLE mangadatadb.sample (pk serial PRIMARY KEY NOT NULL, manga_tileid INTEGER, ifu_ra double precision, ifu_dec double precision,
 -- 	target_ra double precision, target_dec double precision, iauname TEXT, ifudesignsize INTEGER, ifutargetsize INTEGER,
