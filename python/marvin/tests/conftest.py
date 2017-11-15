@@ -126,10 +126,10 @@ def get_params(request):
         pytest.skip('Skipping non-requested release')
 
     if travis and bintype not in travis.new_bintypes:
-        pytest.skip('Skipping non-requested release')
+        pytest.skip('Skipping non-requested bintype')
 
     if travis and template not in travis.new_templates:
-        pytest.skip('Skipping non-requested release')
+        pytest.skip('Skipping non-requested template')
 
     return request.param
 
