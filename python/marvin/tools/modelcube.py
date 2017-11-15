@@ -347,7 +347,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def pixmask(self):
         """Return the DAPSPECMASK flag."""
         pixmask = self._bitmasks['MANGA_DAPSPECMASK']
-        pixmask.mask = getattr(self, 'mask', None)  # self.mask if self.mask is not None else None
+        pixmask.mask = getattr(self, 'mask', None)
         return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
