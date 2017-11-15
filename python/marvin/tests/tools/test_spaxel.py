@@ -12,6 +12,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import itertools
 import os
 
 import pytest
@@ -24,136 +25,77 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
-from marvin.tools.quantities import Spectrum
-from marvin.tools.spaxel import Spaxel
+from marvin.tools.spaxel import SpaxelBase
 
 
-class TestSpaxelInit(object):
+spaxel_modes = [True, False, 'object']
 
-    def _spaxel_init(self, spaxel, cube, maps, spectrum):
 
-        args = {'cube': cube, 'maps': maps, 'spectrum': spectrum}
-        objs = {'cube': Cube, 'maps': Maps, 'spectrum': Spectrum}
+@pytest.fixture(params=itertools.product(spaxel_modes, spaxel_modes, spaxel_modes))
+def cube_maps_modelcube_modes(request):
+    return request.param
 
-        for key in objs:
-            if args[key]:
-                assert isinstance(getattr(spaxel, key), objs[key])
-            else:
-                assert getattr(spaxel, key) is None
 
-        if maps:
-            assert len(spaxel.properties) > 0
-        else:
-            assert len(spaxel.properties) == 0
+@pytest.fixture
+def galaxy_spaxel(galaxy):
+    """Returns only some instances of the galaxy fixture."""
 
-    def test_no_cube_no_maps_db(self, galaxy):
-        spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu)
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
+    if galaxy.release == 'MPL-4':
+        if galaxy.template in ['M11-STELIB-ZSOL', 'MILES-THIN']:
+            pytest.skip()
+        if galaxy.bintype == 'RADIAL':
+            pytest.skip()
 
-    def test_cube_false_no_maps_db(self, galaxy):
-        spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu, cube=False)
-        self._spaxel_init(spaxel, cube=False, maps=True, spectrum=False)
+    if galaxy.release == 'MPL-4':
+        if galaxy.bintype in ['NRE', 'ALL']:
+            pytest.skip()
 
-    def test_no_cube_maps_false_db(self, galaxy):
-        spaxel = Spaxel(x=15, y=16, plateifu=galaxy.plateifu, maps=False)
-        self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
+    return galaxy
 
-    def test_cube_object_db(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
-        spaxel = Spaxel(x=15, y=16, cube=cube)
 
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
+class TestSpaxel(object):
 
-    def test_cube_object_maps_false_db(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
-        spaxel = Spaxel(x=15, y=16, cube=cube, maps=False)
+    def test_SpaxelBase(self, galaxy_spaxel, cube_maps_modelcube_modes):
 
-        self._spaxel_init(spaxel, cube=True, maps=False, spectrum=True)
+        plateifu = galaxy_spaxel.plateifu
+        bintype = galaxy_spaxel.bintype.name
+        template = galaxy_spaxel.template.name
+        release = galaxy_spaxel.release
 
-    def test_cube_maps_object_filename(self, galaxy):
-        if galaxy.bintype.name not in ['SPX', 'NONE']:
-            pytest.skip("Can't instantiate a Spaxel from a binned Maps.")
+        cube, maps, modelcube = cube_maps_modelcube_modes
+        cube_filename = maps_filename = modelcube_filename = None
 
-        cube = Cube(filename=galaxy.cubepath)
-        maps = Maps(filename=galaxy.mapspath, bintype=galaxy.bintype, release=galaxy.release)
-        spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
+        if cube == 'object':
+            cube = Cube(plateifu=plateifu, release=release)
 
-        assert cube._drpver == galaxy.drpver
-        assert spaxel._drpver == galaxy.drpver
-        assert maps._drpver == galaxy.drpver
-        assert maps._dapver == galaxy.dapver
-        assert spaxel._dapver == galaxy.dapver
+        if maps == 'object':
+            maps = Maps(plateifu=plateifu, bintype=bintype,
+                        template=template, release=release)
 
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
+        if release == 'MPL-4':
+            modelcube = False
+        elif modelcube == 'object':
+            modelcube = ModelCube(plateifu=plateifu, bintype=bintype,
+                                  template=template, release=release)
 
-    def test_cube_object_api(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
-        spaxel = Spaxel(x=15, y=16, cube=cube)
+        if cube is False and maps is False and modelcube is False:
+            pytest.skip()
 
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
+        spaxel = SpaxelBase(x=15, y=15, plateifu=plateifu,
+                            cube=cube, maps=maps, modelcube=modelcube,
+                            cube_filename=cube_filename,
+                            maps_filename=maps_filename,
+                            modelcube_filename=modelcube_filename,
+                            template=template, bintype=bintype)
 
-    def test_cube_maps_object_api(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote')
-        maps = Maps(plateifu=galaxy.plateifu, mode='remote')
-        spaxel = Spaxel(x=15, y=16, cube=cube, maps=maps)
+        assert isinstance(spaxel, SpaxelBase)
 
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
+    def test_no_inputs(self):
 
-    def test_db_maps_template(self, galaxy):
-        spaxel = Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True,
-                        plateifu=galaxy.plateifu, template=galaxy.template)
-        assert spaxel.maps.template == galaxy.template
+        with pytest.raises(MarvinError) as ee:
+            SpaxelBase(x=0, y=0, cube=None, maps=None, modelcube=None)
 
-    def test_api_maps_invalid_template(self, galaxy):
-        with pytest.raises(MarvinError) as cm:
-            Spaxel(x=15, y=16, cube=False, modelcube=False, maps=True, plateifu=galaxy.plateifu,
-                   template='invalid-template')
-        assert 'invalid template' in str(cm.value)
-
-    def test_load_false(self, galaxy):
-        spaxel = Spaxel(plateifu=galaxy.plateifu, x=15, y=16, load=False)
-
-        assert not spaxel.loaded
-        assert spaxel.cube
-        assert spaxel.maps
-        assert spaxel.modelcube
-        assert len(spaxel.properties) == 0
-        assert spaxel.spectrum is None
-
-        spaxel.load()
-
-        self._spaxel_init(spaxel, cube=True, maps=True, spectrum=True)
-
-    def test_fails_unbinned_maps(self, galaxy):
-        if galaxy.bintype.name in ['SPX', 'NONE']:
-            pytest.skip("Can instantiate a Spaxel from a binned Maps.")
-
-        maps = Maps(plateifu=galaxy.plateifu, bintype=galaxy.bintype, release=galaxy.release)
-
-        with pytest.raises(MarvinError) as cm:
-            Spaxel(x=15, y=16, plateifu=galaxy.plateifu, maps=maps)
-
-        assert 'cannot instantiate a Spaxel from a binned Maps.' in str(cm.value)
-
-    def test_spaxel_ra_dec(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
-        spaxel = Spaxel(x=15, y=16, cube=cube)
-
-        assert pytest.approx(spaxel.ra, 232.54512)
-        assert pytest.approx(spaxel.dec, 48.690062)
-
-    @pytest.mark.parametrize('mpl', ['MPL-4', 'MPL-5'])
-    def test_release(self, monkeypatch, galaxy, mpl):
-        monkeypatch.setattr(config, 'release', mpl)
-
-        cube = Cube(plateifu=galaxy.plateifu)
-        spaxel = Spaxel(x=15, y=16, cube=cube)
-
-        assert spaxel.release == mpl
-
-        with pytest.raises(MarvinError) as cm:
-            spaxel.release = 'a'
-            assert 'the release cannot be changed' in str(cm.value)
+        assert 'either cube, maps, or modelcube must be' in str(ee)
 
 
 class TestPickling(object):
@@ -186,9 +128,9 @@ class TestPickling(object):
 
         del spaxel
 
-        spaxel_restored = Spaxel.restore(str(file))
+        spaxel_restored = SpaxelBase.restore(str(file))
         assert spaxel_restored is not None
-        assert isinstance(spaxel_restored, Spaxel)
+        assert isinstance(spaxel_restored, SpaxelBase)
 
         assert spaxel_restored.cube is not None
         assert spaxel_restored.cube.data_origin == 'file'
@@ -220,9 +162,9 @@ class TestPickling(object):
 
         del spaxel
 
-        spaxel_restored = Spaxel.restore(str(file))
+        spaxel_restored = SpaxelBase.restore(str(file))
         assert spaxel_restored is not None
-        assert isinstance(spaxel_restored, Spaxel)
+        assert isinstance(spaxel_restored, SpaxelBase)
 
         assert spaxel_restored.cube is not None
         assert isinstance(spaxel_restored.cube, Cube)
