@@ -495,7 +495,7 @@ class Map(units.Quantity, QuantityMixIn):
         :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
         """
         pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
-        pixmask.mask = self.mask if self.mask is not None else None
+        pixmask.mask = getattr(self, 'mask', None)
         return pixmask
 
     @add_doc(marvin.utils.plot.map.plot.__doc__)
