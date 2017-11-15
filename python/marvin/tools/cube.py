@@ -568,57 +568,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         pixmask.mask = getattr(self, 'mask', None)
         return pixmask
 
-    @property
-    def qualitybit(self):
-        """The Cube DRP3QUAL bits."""
-
-        # Python 2-3 compatibility
-        try:
-            bit = long(self.header['DRP3QUAL'])
-        except NameError:
-            bit = int(self.header['DRP3QUAL'])
-
-        labels = None
-
-        # get labels
-        if self.data_origin == 'db':
-            labels = self.data.getQualFlags()
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return 'DRP3QUAL', bit, labels
-
-    @property
-    def targetbit(self):
-        """The Cube MNGTRG bits."""
-
-        try:
-            names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
-                     int(self.header[names[2]])]
-        except KeyError:
-            names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
-                     int(self.header[names[2]])]
-
-        ind = np.nonzero(targs)[0]
-
-        finaltargs = {}
-        finaltargs['names'] = [names[i] for i in ind]
-        finaltargs['bits'] = [targs[i] for i in ind]
-
-        # get labels
-        if self.data_origin == 'db':
-            finaltargs['labels'] = [self.data.getTargFlags(type=i + 1) for i in ind]
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return finaltargs
-
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   properties=True, models=False, **kwargs):
         """Returns the |spaxel| matching certain coordinates.
