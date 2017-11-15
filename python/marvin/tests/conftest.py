@@ -50,6 +50,7 @@ def pytest_configure(config):
     if option:
         travis = TravisSubset()
 
+
 # specific release instance
 travis = None
 
@@ -553,6 +554,7 @@ def maps(galaxy, exporigin, mode):
 modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
 dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
+
 
 @pytest.fixture(scope='class', params=releases)
 def maps_release_only(request):
