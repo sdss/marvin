@@ -91,6 +91,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # _set_datamodel will replace these strings with datamodel objects.
         self.bintype = bintype
         self.template = template
+        self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
                                   mangaid=mangaid, plateifu=plateifu,
@@ -150,6 +151,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         """Sets the datamodel."""
 
         self.datamodel = datamodel[self.release].properties
+        self._bitmasks = datamodel[self.release].bitmasks  # REMOVE?..................................................................
         self.bintype = self.datamodel.parent.get_bintype(self.bintype)
         self.template = self.datamodel.parent.get_template(self.template)
 
@@ -490,7 +492,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def manga_target1(self):
         """Return MANGA_TARGET1 flag."""
 
-        manga_target1 = self._datamodel.bitmasks['MANGA_TARGET1']
+        manga_target1 = self._bitmasks['MANGA_TARGET1']
 
         try:
             manga_target1.mask = int(self.header['MNGTRG1'])
@@ -503,7 +505,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def manga_target2(self):
         """Return MANGA_TARGET2 flag."""
 
-        manga_target2 = self._datamodel.bitmasks['MANGA_TARGET2']
+        manga_target2 = self._bitmasks['MANGA_TARGET2']
 
         try:
             manga_target2.mask = int(self.header['MNGTRG2'])
@@ -516,7 +518,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def manga_target3(self):
         """Return MANGA_TARGET3 flag."""
 
-        manga_target3 = self._datamodel.bitmasks['MANGA_TARGET3']
+        manga_target3 = self._bitmasks['MANGA_TARGET3']
 
         try:
             manga_target3.mask = int(self.header['MNGTRG3'])
@@ -535,7 +537,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         """Return Maps DAPQUAL flag."""
 
         try:
-            dapqual = self._datamodel.bitmasks['MANGA_DAPQUAL']
+            dapqual = self._bitmasks['MANGA_DAPQUAL']
         except KeyError:
             dapqual = None
         else:

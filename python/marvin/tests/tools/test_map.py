@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-14 11:11:81
+# @Last modified time: 2017-11-14 16:11:67
 
 from copy import deepcopy
 
@@ -354,8 +354,7 @@ class TestMapArith(object):
 class TestMaskbit(object):
 
     def test_masked(self, map_release_only):
-        __, dapver = config.lookUpVersions(map_release_only.release)
-        params = get_default_plot_params(dapver)
+        params = get_default_plot_params(map_release_only._datamodel.parent.release)
         expected = map_release_only.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 
         assert pytest.approx(map_release_only.masked.data, map_release_only.value)
