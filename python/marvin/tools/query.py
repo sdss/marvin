@@ -817,6 +817,10 @@ class Query(object):
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime)
 
+    def _compute_page(self):
+        ''' Compute the page of the query '''
+        pass
+
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''
 

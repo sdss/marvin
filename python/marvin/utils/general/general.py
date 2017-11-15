@@ -20,6 +20,7 @@ import contextlib
 import re
 
 from collections import OrderedDict
+from builtins import range
 
 import numpy as np
 
@@ -1397,7 +1398,7 @@ def map_dapall(header, row):
 
         if len(shape) > 0:
             channels = shape[0]
-            for i in xrange(channels):
+            for i in range(channels):
                 channame = emline_schannels[i] if 'emline_s' in name else \
                     emline_gchannels[i] if 'emline_g' in name else \
                     specindex_channels[i] if 'specindex' in name else i + 1
