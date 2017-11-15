@@ -151,7 +151,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         """Sets the datamodel."""
 
         self.datamodel = datamodel[self.release].properties
-        self._bitmasks = datamodel[self.release].bitmasks  # REMOVE?..................................................................
+        self._bitmasks = datamodel[self.release].bitmasks
         self.bintype = self.datamodel.parent.get_bintype(self.bintype)
         self.template = self.datamodel.parent.get_template(self.template)
 
