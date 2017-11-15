@@ -38,6 +38,7 @@ from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Property, Channel
 from marvin.utils.general import FuzzyDict
+from marvin.utils.general.maskbit import get_manga_target
 
 from .quantities import AnalysisProperty
 
@@ -491,41 +492,17 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     @property
     def manga_target1(self):
         """Return MANGA_TARGET1 flag."""
-
-        manga_target1 = self._bitmasks['MANGA_TARGET1']
-
-        try:
-            manga_target1.mask = int(self.header['MNGTRG1'])
-        except KeyError:
-            manga_target1.mask = int(self.header['MNGTARG1'])
-
-        return manga_target1
+        return get_manga_target('1', self._bitmasks, self.header)
 
     @property
     def manga_target2(self):
         """Return MANGA_TARGET2 flag."""
-
-        manga_target2 = self._bitmasks['MANGA_TARGET2']
-
-        try:
-            manga_target2.mask = int(self.header['MNGTRG2'])
-        except KeyError:
-            manga_target2.mask = int(self.header['MNGTARG2'])
-
-        return manga_target2
+        return get_manga_target('2', self._bitmasks, self.header)
 
     @property
     def manga_target3(self):
         """Return MANGA_TARGET3 flag."""
-
-        manga_target3 = self._bitmasks['MANGA_TARGET3']
-
-        try:
-            manga_target3.mask = int(self.header['MNGTRG3'])
-        except KeyError:
-            manga_target3.mask = int(self.header['MNGTARG3'])
-
-        return manga_target3
+        return get_manga_target('3', self._bitmasks, self.header)
 
     @property
     def target_flags(self):

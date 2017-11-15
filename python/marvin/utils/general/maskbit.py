@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-20 16:10:18
+# @Last modified time: 2017-11-15 12:11:13
 
 from __future__ import division, print_function, absolute_import
 
@@ -38,6 +38,26 @@ def get_available_maskbits():
     """
     maskbits = _read_maskbit_schemas()
     return sorted(set([it[0] for it in maskbits]))
+
+def get_manga_target(flag_id, bitmasks, header):
+    """Get MANGA_TARGET[``flag_id``] flag.
+
+    Parameters:
+        flag_id (str)
+
+
+    Returns:
+
+    """
+    flag_id = str(int(flag_id))
+    manga_target = bitmasks['MANGA_TARGET{}'.format(flag_id)]
+
+    try:
+        manga_target.mask = int(header['MNGTRG{}'.format(flag_id)])
+    except KeyError:
+        manga_target.mask = int(header['MNGTARG{}'.format(flag_id)])
+
+    return manga_target
 
 
 class Maskbit(object):
