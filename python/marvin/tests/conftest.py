@@ -67,7 +67,7 @@ class TravisSubset(object):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-6', 'MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
 
 
 def populate_bintypes_templates(releases):
@@ -555,9 +555,8 @@ dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
 
 @pytest.fixture(scope='class', params=releases)
-def map_release_only(request):
-    maps = Maps(plateifu='8485-1901', release=request.param)
-    return maps['emline_gflux_ha_6564']
+def maps_release_only(request):
+    return Maps(plateifu='8485-1901', release=request.param)
 
 
 @pytest.fixture(scope='function')

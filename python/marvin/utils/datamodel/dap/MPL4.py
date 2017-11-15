@@ -146,6 +146,6 @@ MPL4_maps = [
 
 MPL4 = DAPDataModel('1.1.1', aliases=['MPL-4', 'MPL4'], bintypes=[NONE, RADIAL, STON],
                     templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN],
-                    properties=MPL4_maps,
+                    properties=MPL4_maps, bitmasks=get_maskbits('MPL-4'),
                     default_bintype='NONE', default_template='MIUSCAT-THIN',
                     property_table='SpaxelProp', default_binid=binid_property)

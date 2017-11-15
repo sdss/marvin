@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-10-12 16:10:18
+# @Last modified time: 2017-11-14 20:11:84
 
 import numpy as np
 import matplotlib
@@ -117,9 +117,9 @@ class TestMasks(object):
         actual = mapplot._mask_nocov(mask=None, dapmap=None, ivar=ivar)
         assert np.all(actual == expected)
 
-    @marvin_test_if(mark='skip', map_release_only=dict(release='MPL-4'))
-    def test_mask_nocov_dapmap(self, map_release_only):
-        ha = map_release_only
+    @marvin_test_if(mark='skip', maps_release_only=dict(release='MPL-4'))
+    def test_mask_nocov_dapmap(self, maps_release_only):
+        ha = maps_release_only['emline_gvel_ha_6564']
         actual = mapplot._mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
         expected = (ha.mask & 2**0 > 0)
         assert np.all(actual == expected)

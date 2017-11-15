@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-14 16:11:67
+# @Last modified time: 2017-11-14 20:11:88
 
 from copy import deepcopy
 
@@ -353,43 +353,52 @@ class TestMapArith(object):
 
 class TestMaskbit(object):
 
-    def test_masked(self, map_release_only):
-        params = get_default_plot_params(map_release_only._datamodel.parent.release)
-        expected = map_release_only.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
+    def test_masked(self, maps_release_only):
+        __, dapver = config.lookUpVersions(maps_release_only.release)
+        params = get_default_plot_params(dapver)
+        ha = maps_release_only['emline_gflux_ha_6564']
+        expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 
-        assert pytest.approx(map_release_only.masked.data, map_release_only.value)
-        assert (map_release_only.masked.mask == expected).all()
+        assert pytest.approx(ha.masked.data, ha.value)
+        assert (ha.masked.mask == expected).all()
 
-    @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    def test_values_to_bits_mpl4(self, map_release_only):
-        assert map_release_only.pixmask.values_to_bits(1) == [0]
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_bits_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_bits(1) == [0]
 
-    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    def test_values_to_bits(self, map_release_only):
-        assert map_release_only.pixmask.values_to_bits(3) == [0, 1]
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_bits(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_bits(3) == [0, 1]
 
-    @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    def test_values_to_labels_mpl4(self, map_release_only):
-        assert map_release_only.pixmask.values_to_labels(1) == ['DONOTUSE']
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_labels_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_labels(1) == ['DONOTUSE']
 
-    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    def test_values_to_labels(self, map_release_only):
-        assert map_release_only.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_labels(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
 
-    @marvin_test_if(mark='include', map_release_only=dict(release=['MPL-4']))
-    def test_labels_to_value_mpl4(self, map_release_only):
-        assert map_release_only.pixmask.labels_to_value('DONOTUSE') == 1
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_labels_to_value_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.labels_to_value('DONOTUSE') == 1
 
-    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
     @pytest.mark.parametrize('names, expected',
                              [(['NOCOV', 'LOWCOV'], 3),
                               ('DONOTUSE', 1073741824)])
-    def test_labels_to_value(self, map_release_only, names, expected):
-        assert map_release_only.pixmask.labels_to_value(names) == expected
+    def test_labels_to_value(self, maps_release_only, names, expected):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.labels_to_value(names) == expected
 
-    @marvin_test_if(mark='skip', map_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, map_release_only):
-        assert map_release_only.quality_flag is not None
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',
@@ -397,8 +406,9 @@ class TestMaskbit(object):
                               'manga_target3',
                               'target_flags',
                               'pixmask'])
-    def test_flag(self, flag, map_release_only):
-        assert getattr(map_release_only, flag, None) is not None
+    def test_flag(self, flag, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert getattr(ha, flag, None) is not None
 
 
 class TestEnhancedMap(object):
