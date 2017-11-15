@@ -301,12 +301,14 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
 
     def __getattr__(self, value):
 
-        if value in self.cube_quantities:
-            return self.cube_quantities[value]
-        if value in self.maps_quantities:
-            return self.maps_quantities[value]
-        if value in self.modelcube_quantities:
-            return self.modelcube_quantities[value]
+        _getattr = super(SpaxelBase, self).__getattribute__
+
+        if value in _getattr('cube_quantities'):
+            return _getattr('cube_quantities')[value]
+        if value in _getattr('maps_quantities'):
+            return _getattr('maps_quantities')[value]
+        if value in _getattr('modelcube_quantities'):
+            return _getattr('modelcube_quantities')[value]
 
         return super(SpaxelBase, self).__getattribute__(value)
 
