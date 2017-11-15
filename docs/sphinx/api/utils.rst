@@ -66,10 +66,15 @@ Colorbar Plotting Utilities
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-utils-maskbit:
+
 Maskbit Utilities
 -----------------
 
 .. automodule:: marvin.utils.general.maskbit
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. _marvin-utils-scatter-plot:
 
