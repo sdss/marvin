@@ -465,7 +465,7 @@ class Bintype(object):
 
     def __eq__(self, other):
 
-        return self.name == other or object.__eq__(self, other)
+        return self.name == other or super(Bintype, self) == other
 
 
 class Template(object):
@@ -487,7 +487,7 @@ class Template(object):
 
     def __eq__(self, other):
 
-        return self.name == other or object.__eq__(self, other)
+        return self.name == other or super(Template, self) == other
 
 
 class Property(object):
