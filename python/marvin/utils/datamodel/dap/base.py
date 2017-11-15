@@ -36,7 +36,7 @@ class DAPDataModel(object):
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 default_binid=None, aliases=[], bitmasks={}):
+                 default_binid=None, aliases=[], bitmasks=None):
 
         self.release = release
         self.bintypes = bintypes
@@ -47,7 +47,7 @@ class DAPDataModel(object):
         self.properties = PropertyList(properties, parent=self)
         self.models = ModelList(models, parent=self)
 
-        self.bitmasks = bitmasks
+        self.bitmasks = bitmasks if bitmasks is not None else {}
 
         self.property_table = property_table
 

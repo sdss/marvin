@@ -276,7 +276,9 @@ class Galaxy(BaseWebView):
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = cube.qualitybit
-                self.galaxy['mngtarget'] = cube.targetbit
+                self.galaxy['mngtarget'] = {'bits': [it.mask for it in cube.target_flags if it.mask != 0],
+                                            'labels': [it.labels for it in cube.target_flags if len(it.labels) > 0],
+                                            'names': [''.join(('MNGTARG', it.name[-1])) for it in cube.target_flags if it.mask != 0]}
 
                 # make the nsa dictionary
                 hasnsa = cube.nsa is not None

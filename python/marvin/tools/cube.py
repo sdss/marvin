@@ -73,6 +73,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self._spectral_resolution_prepixel = None
         self._dispersion = None
         self._dispersion_prepixel = None
+        self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
                                   plateifu=plateifu, mode=mode, data=data, release=release,
@@ -100,6 +101,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         """Sets the datamodel for DRP."""
 
         self.datamodel = datamodel[self.release.upper()]
+        self._bitmasks = datamodel[self.release.upper()].bitmasks
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -507,6 +509,64 @@ class Cube(MarvinToolsClass, NSAMixIn):
                                                     unit=dm.unit)
 
         return cube_quantities
+
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+
+        manga_target1 = self._bitmasks['MANGA_TARGET1']
+
+        try:
+            manga_target1.mask = int(self.header['MNGTRG1'])
+        except KeyError:
+            manga_target1.mask = int(self.header['MNGTARG1'])
+
+        return manga_target1
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+
+        manga_target2 = self._bitmasks['MANGA_TARGET2']
+
+        try:
+            manga_target2.mask = int(self.header['MNGTRG2'])
+        except KeyError:
+            manga_target2.mask = int(self.header['MNGTARG2'])
+
+        return manga_target2
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+
+        manga_target3 = self._bitmasks['MANGA_TARGET3']
+
+        try:
+            manga_target3.mask = int(self.header['MNGTRG3'])
+        except KeyError:
+            manga_target3.mask = int(self.header['MNGTARG3'])
+
+        return manga_target3
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
+
+    @property
+    def quality_flag(self):
+        """Return ModelCube DAPQUAL flag."""
+        drp3qual = self._bitmasks['MANGA_DRP3QUAL']
+        drp3qual.mask = int(self.header['DRP3QUAL'])
+        return drp3qual
+
+    @property
+    def pixmask(self):
+        """Return the DRP3PIXMASK flag."""
+        pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
+        pixmask.mask = getattr(self, 'mask', None)
+        return pixmask
 
     @property
     def qualitybit(self):

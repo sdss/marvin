@@ -14,6 +14,7 @@ from __future__ import absolute_import
 
 from astropy import units as u
 
+from marvin.utils.datamodel.maskbit import get_maskbits
 from .base import DRPDataModel, DataCube, Spectrum, DRPDataModelList
 
 
@@ -57,15 +58,18 @@ MPL6_spectra = [
 
 MPL4 = DRPDataModel('MPL-4', aliases=['MPL4'],
                     datacubes=MPL4_datacubes,
-                    spectra=MPL4_spectra)
+                    spectra=MPL4_spectra,
+                    bitmasks=get_maskbits('MPL-4'))
 
 MPL5 = DRPDataModel('MPL-5', aliases=['MPL5'],
                     datacubes=MPL4_datacubes,
-                    spectra=MPL4_spectra)
+                    spectra=MPL4_spectra,
+                    bitmasks=get_maskbits('MPL-5'))
 
 MPL6 = DRPDataModel('MPL-6', aliases=['MPL6'],
                     datacubes=MPL4_datacubes + MPL6_datacubes,
-                    spectra=MPL4_spectra + MPL6_spectra)
+                    spectra=MPL4_spectra + MPL6_spectra,
+                    bitmasks=get_maskbits('MPL-6'))
 
 
 datamodel = DRPDataModelList([MPL4, MPL5, MPL6])

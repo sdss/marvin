@@ -24,13 +24,15 @@ from ...general.structs import FuzzyList
 class DRPDataModel(object):
     """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
 
-    def __init__(self, release, datacubes=[], spectra=[], aliases=[]):
+    def __init__(self, release, datacubes=[], spectra=[], aliases=[], bitmasks=None):
 
         self.release = release
         self.aliases = aliases
 
         self.datacubes = DataCubeList(datacubes, parent=self)
         self.spectra = SpectrumList(spectra, parent=self)
+
+        self.bitmasks = bitmasks if bitmasks is not None else {}
 
     def __repr__(self):
 
