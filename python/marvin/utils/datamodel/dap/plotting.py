@@ -59,7 +59,6 @@ def get_default_plot_params(dapver=None):
                 '2.1': ['NOCOV', 'UNRELIABLE', 'DONOTUSE']  # TODO update to 2.1.0
                 }
 
-
     mpl5 = {'default': {'bitmasks': bitmasks['2.0.2'],
                         'cmap': 'linearlab',
                         'percentile_clip': [5, 95],
@@ -93,7 +92,7 @@ def get_default_plot_params(dapver=None):
                             'symmetric': False,
                             'snr_min': 1}},
         '2.0.2': mpl5,
-        '2.1': mpl5
+        '2.1': mpl5  # TODO Update to 2.1.0
     }
 
     return plot_defaults[dapver] if dapver in plot_defaults else {}

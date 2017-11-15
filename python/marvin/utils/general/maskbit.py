@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-15 12:11:13
+# @Last modified time: 2017-11-15 13:11:08
 
 from __future__ import division, print_function, absolute_import
 
@@ -20,7 +20,7 @@ from marvin.utils.general.yanny import yanny
 
 
 def _read_maskbit_schemas():
-    """Read all available SDSS Maskbit schemas from yanny file.
+    """Read all available SDSS maskbit schemas from yanny file.
 
     Returns:
         Record Array: all bits for all schemas.
@@ -31,23 +31,28 @@ def _read_maskbit_schemas():
 
 
 def get_available_maskbits():
-    """Get names of available Maskbit schemas from yanny file.
+    """Get names of available maskbit schemas from yanny file.
 
     Returns:
-        list: Names of available Maskbits.
+        list: Names of available maskbits.
     """
     maskbits = _read_maskbit_schemas()
     return sorted(set([it[0] for it in maskbits]))
+
 
 def get_manga_target(flag_id, bitmasks, header):
     """Get MANGA_TARGET[``flag_id``] flag.
 
     Parameters:
-        flag_id (str)
-
+        flag_id (str):
+            Flag ID number (e.g., "1" for MANGA_TARGET1).
+        bitmasks (dict):
+            `Maskbit` objects.
+        header (`astropy.io.fits.header.Header`):
+            File header.
 
     Returns:
-
+        `Maskbit`
     """
     flag_id = str(int(flag_id))
     manga_target = bitmasks['MANGA_TARGET{}'.format(flag_id)]
@@ -233,14 +238,14 @@ class Maskbit(object):
         return np.sum([2**value for value in bit_values])
 
     def labels_to_bits(self, labels):
-        """Convert bit labels into a bits.
+        """Convert bit labels into bits.
 
         Parameters:
             labels (str or list):
                 Labels of bits.
 
         Returns:
-            list: Bits that corresponds to the lables.
+            list: Bits that correspond to the labels.
 
         Example:
             >>> maps = Maps(plateifu='8485-1901')

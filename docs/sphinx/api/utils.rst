@@ -82,7 +82,6 @@ Scatter/Histogram Plotting Utilities
 ------------------------------------
 
 .. automodule:: marvin.utils.plot.scatter
-
    :members:
    :undoc-members:
    :show-inheritance:
