@@ -125,10 +125,11 @@ class TestResultSet(object):
         reslist = results.results.to_list()
         assert isinstance(reslist, list)
 
+    @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results):
         redshift = results.expdata['queries']['nsa.z < 0.1']['sorted']['1'][-1]
         results.results.sort('z')
-        assert results.results['z'][0] == 0.0185246  # redshift
+        assert results.results['z'][0] == redshift
 
     def test_add(self, results):
         res = results.results
@@ -185,6 +186,8 @@ class TestResultsGetParams(object):
         obj = results.getListOf(col)
         assert obj is not None
         assert isinstance(obj, list) is True
+        json_obj = results.getListOf(col, to_json=True)
+        assert isinstance(json_obj, six.string_types)
 
     @pytest.mark.parametrize('results',
                              [('nsa.z < 0.1 and haflux > 25'),
@@ -219,13 +222,18 @@ class TestResultsGetParams(object):
             else:
                 assert set(remotecols) == set(output)
 
+        json_obj = results.getDictOf(name, format_type=ftype, to_json=True)
+        assert isinstance(json_obj, six.string_types)
+
+    def test_get_dict_all(self, results):
+        output = results.getDictOf('mangaid', return_all=True)
+        assert len(output) == results.totalcount
+
 
 class TestResultsSort(object):
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results, limits):
-        #if results.mode == 'local':
-        #    pytest.skip('skipping now due to weird issue with local results not same as remote results')
         results.sort('z')
         limit, count = limits
         data = results.expdata['queries'][results.searchfilter]['sorted']
@@ -315,6 +323,23 @@ class TestResultsPaging(object):
             if rows:
                 for row in rows:
                     assert results.results[row[0]] == tuple(data[str(row[1])])
+
+    @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
+    def test_extend_set(self, results):
+        res = results.getSubset(0, limit=1)
+        assert results.count == 1
+        assert len(results.results) == 1
+        results.extendSet(start=1, chunk=2)
+        assert results.count == 3
+        assert len(results.results) == 3
+
+    @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
+    def test_loop(self, results):
+        res = results.getSubset(0, limit=1)
+        assert results.count == 1
+        results.loop()
+        assert results.count == results.expdata['queries'][results.searchfilter]['count']
+        assert results.count == results.totalcount
 
 
 class TestResultsPickling(object):

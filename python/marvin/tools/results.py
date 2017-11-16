@@ -203,8 +203,15 @@ class ResultSet(list):
                 return rows[0] if len(rows) == 1 else rows
             else:
                 raise ValueError('{0} not found in the list'.format(value))
-        else:
+        elif isinstance(value, int):
             return list.__getitem__(self, value)
+        elif isinstance(value, slice):
+            newset = list.__getitem__(self, value)
+            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns)
+
+    def __getslice__(self, start, stop):
+        newset = list.__getslice__(self, start, stop)
+        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns)
 
     def __add__(self, other):
         newresults = self._results
@@ -517,7 +524,9 @@ class Results(object):
 
         if self.mode == 'local':
             reverse = True if order == 'desc' else False
+            self.getAll()
             self.results.sort(remotename, reverse=reverse)
+            self.results = self.results[0:self.limit]
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
