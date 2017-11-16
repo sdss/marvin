@@ -26,6 +26,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.spaxel import SpaxelBase
+from marvin.tests import marvin_test_if
 
 
 spaxel_modes = [True, False, 'object']
@@ -181,3 +182,28 @@ class TestPickling(object):
         assert isinstance(spaxel_restored.modelcube, ModelCube)
         assert spaxel_restored.modelcube.data_origin == 'api'
         assert spaxel_restored.modelcube.data is None
+
+
+class TestMaskbit(object):
+
+    @marvin_test_if(mark='include', galaxy_spaxel=dict(release=['MPL-4']))
+    def test_quality_flags_mpl4(self, galaxy_spaxel):
+        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+        sp = maps.getSpaxel(0, 0, model=True)
+        assert len(sp.quality_flags) == 1
+
+    @marvin_test_if(mark='skip', galaxy_spaxel=dict(release=['MPL-4']))
+    def test_quality_flags(self, galaxy_spaxel):
+        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+        sp = maps.getSpaxel(0, 0, model=True)
+        assert len(sp.quality_flags) == 2
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags'])
+    def test_flag(self, flag, galaxy_spaxel):
+        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+        sp = maps[0, 0]
+        assert getattr(sp, flag, None) is not None
