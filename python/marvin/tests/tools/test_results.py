@@ -21,6 +21,9 @@ from marvin.core.exceptions import MarvinError
 from collections import OrderedDict, namedtuple
 import pytest
 import copy
+import six
+import pandas as pd
+import json
 
 
 myplateifu = '8485-1901'
@@ -116,6 +119,56 @@ class TestMarvinTuple(object):
         assert row.__dict__ <= new_row.__dict__
 
 
+class TestResultSet(object):
+
+    def test_list(self, results):
+        reslist = results.results.to_list()
+        assert isinstance(reslist, list)
+
+    def test_sort(self, results):
+        redshift = results.expdata['queries']['nsa.z < 0.1']['sorted']['1'][-1]
+        results.results.sort('z')
+        assert results.results['z'][0] == 0.0185246  # redshift
+
+    def test_add(self, results):
+        res = results.results
+        res1 = res
+        newres = res + res1
+        newres1 = res1 + res
+        assert res.columns.full == newres.columns.full
+        assert newres == newres1
+
+
+class TestResultsMisc(object):
+
+    def test_showQuery(self, results):
+        x = results.showQuery()
+        assert isinstance(x, six.string_types)
+
+
+class TestResultsOutput(object):
+
+    def test_tofits(self, results, temp_scratch):
+        file = temp_scratch.join('test_results.fits')
+        results.toFits(filename=str(file), overwrite=True)
+        assert file.check(file=1, exists=1) is True
+
+    def test_tocsv(self, results, temp_scratch):
+        file = temp_scratch.join('test_results.csv')
+        results.toCSV(filename=str(file), overwrite=True)
+        assert file.check(file=1, exists=1) is True
+
+    def test_topandas(self, results):
+        df = results.toDF()
+        assert isinstance(df, pd.core.frame.DataFrame)
+
+    def test_tojson(self, results):
+        res = results.toJson()
+        assert isinstance(res, six.string_types)
+        json_res = json.loads(res)
+        assert isinstance(json_res, list)
+
+
 class TestResultsGetParams(object):
 
     def test_get_attribute(self, results, columns):
@@ -132,6 +185,19 @@ class TestResultsGetParams(object):
         obj = results.getListOf(col)
         assert obj is not None
         assert isinstance(obj, list) is True
+
+    @pytest.mark.parametrize('results',
+                             [('nsa.z < 0.1 and haflux > 25'),
+                              ('nsa.z < 0.1'),
+                              ('haflux > 25')], indirect=True)
+    def test_get_list_all(self, results):
+        q = Query(searchfilter=results.searchfilter, mode=results.mode, limit=1,
+                  release=results._release, returnparams=results.returnparams)
+        r = q.run(start=0, end=1)
+        assert r.count == 1
+        mangaids = r.getListOf('mangaid', return_all=True)
+        assert len(mangaids) == r.totalcount
+        assert len(mangaids) == results.expdata['queries'][r.searchfilter]['count']
 
     @pytest.mark.parametrize('ftype', [('dictlist'), ('listdict')])
     @pytest.mark.parametrize('name', [(None), ('mangaid'), ('z')], ids=['noname', 'mangaid', 'z'])
@@ -158,8 +224,8 @@ class TestResultsSort(object):
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results, limits):
-        if results.mode == 'local':
-            pytest.skip('skipping now due to weird issue with local results not same as remote results')
+        #if results.mode == 'local':
+        #    pytest.skip('skipping now due to weird issue with local results not same as remote results')
         results.sort('z')
         limit, count = limits
         data = results.expdata['queries'][results.searchfilter]['sorted']

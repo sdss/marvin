@@ -18,6 +18,7 @@ from marvin import config, marvindb
 from marvin.tools.results import Results
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import query_params
+from marvin.utils.general import temp_setattr
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 from marvin.tools.results import remote_mode_only
@@ -178,6 +179,7 @@ class Query(object):
         self._returnparams = []
         self._caching = kwargs.get('caching', True)
         self.verbose = kwargs.get('verbose', None)
+        self.count_threshold = kwargs.get('count_threshold', 1000)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 100))
@@ -452,11 +454,6 @@ class Query(object):
                 The filepath and name of the pickled object
 
         '''
-        self.session = None
-        self.datamodel = None
-        self.marvinform = None
-        self.myforms = None
-        self._modelgraph = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
@@ -480,8 +477,13 @@ class Query(object):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
+        # set bad pickled attributes to None
+        attrs = ['session', 'datamodel', 'marvinform', 'myform', '_modelgraph']
+
+        # pickle the query
         try:
-            pickle.dump(self, open(path, 'wb'), protocol=-1)
+            with temp_setattr(self, attrs, None):
+                pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -755,14 +757,15 @@ class Query(object):
             if marvindb.isdbconnected:
                 query_meta = self._check_history()
 
-            if count > 1000 and self.return_all is False:
+            if count > self.count_threshold and self.return_all is False:
                 res = res[0:self.limit]
                 count = self.limit
-                warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
+                warnings.warn('Results contain more than {0} entries.  '
+                              'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
             elif self.return_all is True:
-                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
             elif start and end:
-                warnings.warn('Getting subset of data {0} to {1}'.format(start, end))
+                warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
             # get the runtime
             endtime = datetime.datetime.now()

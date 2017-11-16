@@ -610,7 +610,7 @@ class Results(object):
         elif stackdir == 'horizontal':
             return hstack(tables, **kwargs)
 
-    def toFits(self, filename='myresults.fits'):
+    def toFits(self, filename='myresults.fits', overwrite=False):
         ''' Output the results as a FITS file
 
         Writes a new FITS file from search results using
@@ -619,16 +619,18 @@ class Results(object):
         Parameters:
             filename (str):
                 Name of FITS file to output
+            overwrite (bool):
+                Set to True to overwrite an existing file
 
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
             filename = filename + '.fits'
         table = self.toTable()
-        table.write(filename, format='fits')
+        table.write(filename, format='fits', overwrite=overwrite)
         print('Writing new FITS file {0}'.format(filename))
 
-    def toCSV(self, filename='myresults.csv'):
+    def toCSV(self, filename='myresults.csv', overwrite=False):
         ''' Output the results as a CSV file
 
         Writes a new CSV file from search results using
@@ -637,13 +639,15 @@ class Results(object):
         Parameters:
             filename (str):
                 Name of CSV file to output
+            overwrite (bool):
+                Set to True to overwrite an existing file
 
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
             filename = filename + '.csv'
         table = self.toTable()
-        table.write(filename, format='csv')
+        table.write(filename, format='csv', overwrite=overwrite)
         print('Writing new CSV file {0}'.format(filename))
 
     def toDF(self):
@@ -951,7 +955,7 @@ class Results(object):
             output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
-            output = self.results[name]
+            output = self.results[name] if self.results.count > 1 else [self.results[name]]
 
         if to_json:
             output = json.dumps(output) if output else None
