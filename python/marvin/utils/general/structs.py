@@ -128,19 +128,20 @@ class FuzzyList(list):
     Parameters:
         the_list (list):
             The list on which we will do fuzzy searching.
-        mapper (function):
-            A function that will be used to format the items in the list
-            before searching them. By default it does a string casting.
         use_fuzzy (function):
             A function that will be used to perform the fuzzy selection
     """
 
-    def __init__(self, the_list, mapper=str, use_fuzzy=None):
+    def __init__(self, the_list, use_fuzzy=None):
 
-        self.mapper = mapper
         self.use_fuzzy = use_fuzzy if use_fuzzy else get_best_fuzzy
 
         list.__init__(self, the_list)
+
+    def mapper(self, item):
+        """The function that maps each item to the querable string."""
+
+        return str(item)
 
     def __eq__(self, value):
 
