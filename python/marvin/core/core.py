@@ -190,6 +190,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 # Assumes the input must be a filename
                 self.filename = input
 
+        if self.filename is None and self.mangaid is None and self.plateifu is None:
+            raise MarvinError('no inputs defined.')
+
         if self.filename:
             self.mangaid = None
             self.plateifu = None
@@ -201,16 +204,16 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 'filename {} does not exist.'.format(str(self.filename))
 
         elif self.plateifu:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
 
         elif self.mangaid:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
             self.plateifu = mangaid2plateifu(self.mangaid,
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
         elif self._plate:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
 
     @staticmethod
     def _parse_input(value):
