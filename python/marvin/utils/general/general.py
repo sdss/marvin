@@ -178,7 +178,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.SpaxelBase(x=jCube[0][ii], y=iCube[0][ii],
+            marvin.tools.spaxel.SpaxelBase(jCube[0][ii], iCube[0][ii],
                                            cube=cube, maps=maps, modelcube=modelcube,
                                            **kwargs))
 
@@ -1408,4 +1408,3 @@ def map_dapall(header, row):
             dbdict[name] = values
 
     return dbdict
-
