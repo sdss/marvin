@@ -46,16 +46,12 @@ def _getCubes(searchfilter, **kwargs):
     chunk = None
     if start:
         chunk = int(end) - int(start)
-        results = r.getSubset(int(start), limit=chunk)
+        # results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
 
     # get results
-    #return_all = kwargs.get('return_all', None)
-    # if return_all:
-    #     r.getAll()
     results = r.results
 
-    print('res', results)
     # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),

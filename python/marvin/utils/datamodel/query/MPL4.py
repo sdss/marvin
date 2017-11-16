@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 18:03:19
+# @Last Modified time: 2017-11-15 21:41:36
 
 from __future__ import print_function, division, absolute_import
 
@@ -20,7 +20,7 @@ DAPDM = datamodel['MPL-4']
 GROUPS = copy_mod.deepcopy(query_params)
 
 # list of tables to exclude
-BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu',
+BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query',
                 'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops']
 
 EXCLUDE = ['modelcube', 'modelspaxel', 'redcorr', 'obsinfo', 'dapall'] + BASE_EXCLUDE

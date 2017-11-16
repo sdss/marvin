@@ -432,7 +432,7 @@ class Query(object):
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
         if paramdisplay == 'all':
-            qparams = self._get_all_params()
+            qparams = self.datamodel.groups.list_params('full')
         elif paramdisplay == 'best':
             qparams = query_params
         return qparams
@@ -759,15 +759,18 @@ class Query(object):
                 res = res[0:self.limit]
                 count = self.limit
                 warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
-            else:
+            elif self.return_all is True:
                 warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
+            elif start and end:
+                warnings.warn('Getting subset of data {0} to {1}'.format(start, end))
 
             # get the runtime
             endtime = datetime.datetime.now()
             self.runtime = (endtime - starttime)
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
+            return Results(results=res, query=self.query, count=count, mode=self.mode,
+                           returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
+                           chunk=self.limit, runtime=self.runtime, start=start, end=end)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -786,7 +789,9 @@ class Query(object):
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
                       'release': self._release,
-                      'return_all': self.return_all}
+                      'return_all': self.return_all,
+                      'start': start,
+                      'end': end}
             try:
                 ii = Interaction(route=url, params=params)
             except Exception as e:
@@ -815,7 +820,7 @@ class Query(object):
             print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
-                           runtime=query_runtime, response_time=resp_runtime)
+                           runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
 
     def _compute_page(self):
         ''' Compute the page of the query '''

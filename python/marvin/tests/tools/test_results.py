@@ -104,11 +104,11 @@ class TestMarvinTuple(object):
 
     def test_add(self, results):
         data = results.results[0].__dict__
-        mt = marvintuple('ResultRow', ['mangaid', 'plate'])
-        mt1 = marvintuple('ResultRow', ['plateifu', 'z'])
+        mt = marvintuple('ResultRow', 'mangaid, plate, plateifu, ifu_name')
+        mt1 = marvintuple('ResultRow', 'z')
 
-        row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plate']})
-        row1 = mt(**{k: v for k, v in data.items() if k in ['plateifu', 'z']})
+        row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plate', 'plateifu', 'ifu_name']})
+        row1 = mt1(**{k: v for k, v in data.items()})
         new_row = row + row1
         assert new_row is not None
         cols = ['mangaid', 'plate', 'plateifu', 'z']

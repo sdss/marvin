@@ -370,9 +370,9 @@ class Results(object):
         self.query_time = self._getRunTime() if self._runtime is not None else None
         self.response_time = kwargs.get('response_time', None)
         self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = self.limit if self.limit else kwargs.get('chunk', 100)
-        self.start = kwargs.get('start', 0)
-        self.end = kwargs.get('end', self.start + self.chunk)
+        self.chunk = kwargs.get('chunk', None)
+        self.start = kwargs.get('start', None)
+        self.end = kwargs.get('end', None)
         self.datamodel = datamodel[self._release]
         self.objects = None
         self.sortcol = None
@@ -382,9 +382,10 @@ class Results(object):
         breadcrumb.drop(message='Initializing MarvinResults {0}'.format(self.__class__),
                         category=self.__class__)
 
-        # Convert results to NamedTuple
+        # Convert results to MarvinTuple
         if self.count > 0:
-            self._create_result_set()
+            self._set_page()
+            self._create_result_set(index=self.start)
 
         # Auto convert to Marvin Object
         if self.returntype:
@@ -709,6 +710,19 @@ class Results(object):
         self.count = len(results)
         # Build the ResultSet
         self.results = ResultSet(results, count=self.count, total=self.totalcount, index=index, results=self)
+
+    def _set_page(self):
+        ''' Set the page of the data '''
+        if self.start and self.end:
+            self.chunk = (self.end - self.start)
+        else:
+            self.chunk = self.chunk if self.chunk else self.limit if self.limit else 100
+            self.start = 0
+            self.end = self.start + self.chunk
+
+        self.pages = int(np.ceil(self.totalcount / float(self.count))) if self.count else 0
+        self.index = self.start
+        self.current_page = (int(self.index) + self.count) / self.count
 
     def save(self, path=None, overwrite=False):
         ''' Save the results as a pickle object

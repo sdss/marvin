@@ -2,8 +2,8 @@
 MPL-4:
     params:
         all:
-            count: 1319
-            subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.specindex_nad']
+            count: 583
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.crpix1', 'spaxelprop.x', 'spaxelprop.specindex_nad']
         best:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
@@ -38,8 +38,8 @@ MPL-4:
 MPL-5:
     params:
         all:
-            count: 1439
-            subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.spx_snr', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.emline_sew_ha_6564']
+            count: 716
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
