@@ -58,16 +58,16 @@ class TravisSubset(object):
     def __init__(self):
         self.new_gals = ['8485-1901']
         self.new_releases = ['MPL-6']
-        self.new_bintypes = ['SPX']  # ['SPX', 'VOR10', 'NONE', 'STON']
-        self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
+        self.new_bintypes = ['SPX', 'HYB10']  # ['SPX', 'VOR10', 'NONE', 'STON']
+        self.new_templates = ['GAU-MILESHC']
         self.new_dbs = ['nodb']
         self.new_origins = ['file', 'api']
-        self.new_modes = ['local', 'remote']
+        self.new_modes = ['local', 'remote', 'auto']
 
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-6', 'MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
 
 
 def populate_bintypes_templates(releases):
