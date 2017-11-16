@@ -197,7 +197,7 @@ class TestResultsGetParams(object):
         assert r.count == 1
         mangaids = r.getListOf('mangaid', return_all=True)
         assert len(mangaids) == r.totalcount
-        assert len(mangaids) == results.expdata['queries'][r.searchfilter]['count']
+        assert len(mangaids) == results.expdata['queries'][results.searchfilter]['count']
 
     @pytest.mark.parametrize('ftype', [('dictlist'), ('listdict')])
     @pytest.mark.parametrize('name', [(None), ('mangaid'), ('z')], ids=['noname', 'mangaid', 'z'])

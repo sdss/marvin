@@ -1115,10 +1115,18 @@ class Query(object):
             bincount (subquery):
                 An SQLalchemy subquery to be joined into the main query object
         '''
+
+        spaxelname = self._junkclass.__name__
         bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
-                                      func.count(self._junkclass.pk).label('goodcount')).\
-            filter(self._junkclass.binid != -1).\
-            group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
+                                      func.count(self._junkclass.pk).label('goodcount'))
+
+        # optionally add the filter if the table is SpaxelProp
+        if 'CleanSpaxelProp' not in spaxelname:
+            bincount = bincount.filter(self._junkclass.binid != -1)
+
+        # group the results by file_pk
+        bincount = bincount.group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
+
         return bincount
 
     def getCountOf(self, expression):
