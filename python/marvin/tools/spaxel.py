@@ -13,6 +13,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import abc
+import inspect
 import itertools
 import six
 import warnings
@@ -239,10 +240,13 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
 
     def __dir__(self):
 
+        class_members = list(list(zip(*inspect.getmembers(self.__class__)))[0])
+        instance_attr = list(self.__dict__.keys())
+
         items = self.cube_quantities.__dir__()
         items += self.maps_quantities.__dir__()
         items += self.modelcube_quantities.__dir__()
-        items += super(SpaxelBase, self).__dir__()
+        items += class_members + instance_attr
 
         return sorted(items)
 
