@@ -321,7 +321,7 @@ class QueryFuzzyList(FuzzyList):
     def remove(self, value):
         param = value == self
         tmp = [n for n in self if n != param]
-        QueryFuzzyList.__init__(self, tmp, use_fuzzy=get_best_fuzzy, mapper=self.mapper)
+        QueryFuzzyList.__init__(self, tmp, use_fuzzy=get_best_fuzzy)
 
 
 class ParameterGroupList(QueryFuzzyList):
@@ -335,10 +335,9 @@ class ParameterGroupList(QueryFuzzyList):
     def __init__(self, items):
         self.score = None
         paramgroups = self._make_groups(items)
-        QueryFuzzyList.__init__(self, paramgroups, use_fuzzy=get_best_fuzzy,
-                                mapper=self._fuzzy_mapper)
+        QueryFuzzyList.__init__(self, paramgroups, use_fuzzy=get_best_fuzzy)
 
-    def _fuzzy_mapper(self, value):
+    def mapper(self, value):
         return value.name.lower().replace(' ', '_').replace('.', '_')
 
     def _make_groups(self, items, best=None):
@@ -462,8 +461,7 @@ class ParameterGroup(QueryFuzzyList):
             this_param = self._make_query_parameter(item)
             queryparams.append(this_param)
 
-        QueryFuzzyList.__init__(self, queryparams, use_fuzzy=get_best_fuzzy,
-                                mapper=self._fuzzy_mapper)
+        QueryFuzzyList.__init__(self, queryparams, use_fuzzy=get_best_fuzzy)
         self._check_names()
         if self.parent:
             self._check_datamodels()
@@ -474,7 +472,7 @@ class ParameterGroup(QueryFuzzyList):
     def __str__(self):
         return self.name
 
-    def _fuzzy_mapper(self, value):
+    def mapper(self, value):
         return value.full
 
     def _make_query_parameter(self, item):
@@ -595,13 +593,12 @@ class QueryList(QueryFuzzyList):
     ''' A class for a list of Query Parameters '''
 
     def __init__(self, items):
-        QueryFuzzyList.__init__(self, items, use_fuzzy=get_best_fuzzy,
-                                mapper=self._fuzzy_mapper)
+        QueryFuzzyList.__init__(self, items, use_fuzzy=get_best_fuzzy)
         self._full = [s.full for s in self]
         self._remote = [s.remote for s in self]
         self._short = [s.short for s in self]
 
-    def _fuzzy_mapper(self, value):
+    def mapper(self, value):
         return value.full
 
     def get_full_from_remote(self, value):

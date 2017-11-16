@@ -29,7 +29,7 @@ from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
 
 from marvin.utils.db import testDbConnection
-from marvin.utils.general import mangaid2plateifu, get_nsa_data, get_dapall_file
+from marvin.utils.general import mangaid2plateifu, get_nsa_data, get_dapall_file, map_dapall
 
 try:
     from sdss_access.path import Path
@@ -190,6 +190,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 # Assumes the input must be a filename
                 self.filename = input
 
+        if self.filename is None and self.mangaid is None and self.plateifu is None:
+            raise MarvinError('no inputs defined.')
+
         if self.filename:
             self.mangaid = None
             self.plateifu = None
@@ -201,16 +204,16 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 'filename {} does not exist.'.format(str(self.filename))
 
         elif self.plateifu:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
 
         elif self.mangaid:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
             self.plateifu = mangaid2plateifu(self.mangaid,
                                              drpall=self._drpall,
                                              drpver=self._drpver)
 
         elif self._plate:
-            assert self.filename is None, 'invalid set of inputs.'
+            assert not self.filename, 'invalid set of inputs.'
 
     @staticmethod
     def _parse_input(value):
@@ -552,19 +555,17 @@ class DAPallMixIn(object):
         if not os.path.exists(dapall_path):
             raise MarvinError('cannot find DAPall file in the system.')
 
-        dapall_table = astropy.io.fits.open(dapall_path)[-1].data
+        dapall_hdu = astropy.io.fits.open(dapall_path)
+
+        header = dapall_hdu[0].header
+        dapall_table = dapall_hdu[-1].data
 
         dapall_row = dapall_table[(dapall_table['PLATEIFU'] == self.plateifu) &
                                   (dapall_table['DAPTYPE'] == daptype)]
 
         assert len(dapall_row) == 1, 'cannot find matching row in DAPall.'
 
-        dapall_data = {}
-
-        for ii, colname in enumerate(dapall_row[0].array.dtype.names):
-            dapall_data[colname.lower()] = dapall_row[0][ii]
-
-        return dapall_data
+        return map_dapall(header, dapall_row[0])
 
     def _get_dapall_from_db(self):
         """Uses the DB to retrieve the DAPAll data."""

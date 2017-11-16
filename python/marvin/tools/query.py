@@ -64,9 +64,11 @@ def doQuery(*args, **kwargs):
             :class:`~marvin.tools.query.Query` instance, and the
             :class:`~marvin.tools.results.Results` instance.
     """
+    start = kwargs.pop('start', None)
+    end = kwargs.pop('end', None)
     q = Query(*args, **kwargs)
     try:
-        res = q.run()
+        res = q.run(start=start, end=end)
     except TypeError as e:
         warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
         res = None
@@ -430,7 +432,7 @@ class Query(object):
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
         if paramdisplay == 'all':
-            qparams = self._get_all_params()
+            qparams = self.datamodel.groups.list_params('full')
         elif paramdisplay == 'best':
             qparams = query_params
         return qparams
@@ -506,8 +508,8 @@ class Query(object):
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
         obj.datamodel = datamodel[obj._release]
-        if obj.allspaxels:
-            obj.datamodel.use_all_spaxels()
+        # if obj.allspaxels:
+        #     obj.datamodel.use_all_spaxels()
         obj.marvinform = obj.datamodel._marvinform
         return obj
 
@@ -706,16 +708,17 @@ class Query(object):
     @makeBaseQuery
     @checkCondition
     @updateConfig
-    def run(self, qmode='all'):
+    def run(self, start=None, end=None):
         ''' Runs a Marvin Query
 
             Runs the query and return an instance of Marvin Results class
-            to deal with results.  Input qmode allows to perform
-            different sqlalchemy queries
+            to deal with results.
 
             Parameters:
-                qmode ({'all', 'one', 'first', 'count'}):
-                    String indicating
+                start (int):
+                    Starting value of a subset.  Default is None
+                end (int):
+                    Ending value of a subset.  Default is None
 
             Returns:
                 results (object):
@@ -735,38 +738,39 @@ class Query(object):
                 self.query = self.query.options(FromCache("default")).\
                     options(*marvindb.cache_bits)
 
-            # get total count, and if more than 150 results, paginate and only return the first 10
-            start = datetime.datetime.now()
-            count = self.query.count()
+            # get total count, and if more than 150 results, paginate and only return the first 100
+            starttime = datetime.datetime.now()
 
-            self.totalcount = count
+            # check for query and get count
+            if marvindb.isdbconnected:
+                qm = self._check_history(check_only=True)
+                self.totalcount = qm.count if qm else None
+
+            # run the query
+            res = self.query.slice(start, end).all()
+            count = len(res)
+            self.totalcount = count if not self.totalcount else self.totalcount
+
+            # check history
+            if marvindb.isdbconnected:
+                query_meta = self._check_history()
+
             if count > 1000 and self.return_all is False:
-                query = self.query.slice(0, self.limit)
-                count = query.count()
+                res = res[0:self.limit]
+                count = self.limit
                 warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
-            else:
+            elif self.return_all is True:
                 warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
-                query = self.query
-
-            if qmode == 'all':
-                res = query.all()
-            elif qmode == 'one':
-                res = query.one()
-            elif qmode == 'first':
-                res = query.first()
-            elif qmode == 'count':
-                res = query.count()
+            elif start and end:
+                warnings.warn('Getting subset of data {0} to {1}'.format(start, end))
 
             # get the runtime
-            end = datetime.datetime.now()
-            self.runtime = (end - start)
+            endtime = datetime.datetime.now()
+            self.runtime = (endtime - starttime)
 
-            # close the session and engine
-            #self.session.close()
-            #marvindb.db.engine.dispose()
-
-            return Results(results=res, query=self.query, count=count, mode=self.mode, returntype=self.returntype,
-                           queryobj=self, totalcount=self.totalcount, chunk=self.limit, runtime=self.runtime)
+            return Results(results=res, query=self.query, count=count, mode=self.mode,
+                           returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
+                           chunk=self.limit, runtime=self.runtime, start=start, end=end)
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -785,7 +789,9 @@ class Query(object):
                       'limit': self.limit,
                       'sort': self.sort, 'order': self.order,
                       'release': self._release,
-                      'return_all': self.return_all}
+                      'return_all': self.return_all,
+                      'start': start,
+                      'end': end}
             try:
                 ii = Interaction(route=url, params=params)
             except Exception as e:
@@ -814,7 +820,30 @@ class Query(object):
             print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
-                           runtime=query_runtime, response_time=resp_runtime)
+                           runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
+
+    def _compute_page(self):
+        ''' Compute the page of the query '''
+        pass
+
+    def _check_history(self, check_only=None):
+        ''' Check the query against the query history schema '''
+
+        sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
+        stringfilter = self.searchfilter.strip().replace(' ', '')
+        qm = self.session.query(sf.class_).filter(sf == stringfilter, sf.class_.release == self._release).one_or_none()
+
+        if check_only:
+            return qm
+
+        with self.session.begin():
+            if not qm:
+                qm = sf.class_(searchfilter=stringfilter, n_run=1, release=self._release, count=self.totalcount)
+                self.session.add(qm)
+            else:
+                qm.n_run += 1
+
+        return qm
 
     def _cleanUpQueries(self):
         ''' Attempt to clean up idle queries on the server

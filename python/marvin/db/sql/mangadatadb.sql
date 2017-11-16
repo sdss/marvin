@@ -121,6 +121,11 @@ CREATE TABLE mangadatadb.wcs (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, c
 
 CREATE TABLE mangadatadb.cube_shape (pk serial PRIMARY KEY NOT NULL, size INTEGER, total INTEGER, indices integer[][]);
 
+create schema history;
+create table history.query (pk serial primary key not null, searchfilter text, n_run integer, count integer,
+	release varchar(8), created timestamp, updated timestamp);
+create index concurrently filter_idx on history.query using btree(searchfilter);
+
 INSERT INTO mangadatadb.fiber_type VALUES (0, 'IFU'),(1,'SKY');
 INSERT INTO mangadatadb.target_type VALUES (0, 'science'),(1,'sky'),(2,'standard');
 INSERT INTO mangadatadb.cart VALUES (0, '1'),(1, '2'),(2, '3'),(3, '4'),(4, '5'),(5,'6');

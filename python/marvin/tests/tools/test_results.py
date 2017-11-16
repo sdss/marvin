@@ -10,7 +10,7 @@
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query
-from marvin.tools.results import Results, ResultSet
+from marvin.tools.results import Results, ResultSet, marvintuple
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
@@ -86,6 +86,34 @@ class TestResultsColumns(object):
         assert name in cols
         col = cols[name]
         assert col.full == full
+
+
+class TestMarvinTuple(object):
+
+    def test_create(self, results):
+        data = results.results[0].__dict__
+        mt = marvintuple('ResultRow', data.keys())
+        assert mt is not None
+        assert hasattr(mt, 'mangaid')
+        assert hasattr(mt, 'plateifu')
+
+        row = mt(**data)
+        assert row.plate == data['plate']
+        assert row.mangaid == data['mangaid']
+        assert row.plateifu == data['plateifu']
+
+    def test_add(self, results):
+        data = results.results[0].__dict__
+        mt = marvintuple('ResultRow', 'mangaid, plate, plateifu, ifu_name')
+        mt1 = marvintuple('ResultRow', 'z')
+
+        row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plate', 'plateifu', 'ifu_name']})
+        row1 = mt1(**{k: v for k, v in data.items()})
+        new_row = row + row1
+        assert new_row is not None
+        cols = ['mangaid', 'plate', 'plateifu', 'z']
+        assert set(cols).issubset(set(new_row.__dict__.keys()))
+        assert row.__dict__ <= new_row.__dict__
 
 
 class TestResultsGetParams(object):

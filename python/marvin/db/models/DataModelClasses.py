@@ -19,6 +19,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import select, func  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql import column
+from sqlalchemy_utils import Timestamp
 from marvin.db.ArrayUtils import ARRAY_D
 from marvin.core.caching_query import RelationshipCache
 import numpy as np
@@ -772,7 +773,18 @@ class MaskBit(Base):
     def __repr__(self):
         return '<MaskBit (pk={0},flag={1}, bit={2}, label={3})'.format(self.pk, self.flag, self.bit, self.label)
 
-# ========================
+
+# ================
+# Query Meta classes
+# ================
+class QueryMeta(Base, Timestamp):
+    __tablename__ = 'query'
+    __table_args__ = {'autoload': True, 'schema': 'history'}
+
+    def __repr__(self):
+        return '<QueryMeta (pk={0}, filter={1}), count={2}>'.format(self.pk, self.searchfilter, self.count)
+
+
 # Define relationships
 # ========================
 

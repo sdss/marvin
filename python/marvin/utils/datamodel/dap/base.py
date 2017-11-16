@@ -229,12 +229,12 @@ class PropertyList(FuzzyList):
         self.parent = parent
         self.extensions = []
 
-        super(PropertyList, self).__init__([], mapper=self._fuzzy_mapper)
+        super(PropertyList, self).__init__([])
 
         for item in the_list:
             self.append(item, copy=True)
 
-    def _fuzzy_mapper(self, value):
+    def mapper(self, value):
         """A helper for the FuzzyList to determine the query value."""
 
         return value.full()
@@ -352,12 +352,12 @@ class ModelList(FuzzyList):
 
         self.parent = parent
 
-        super(ModelList, self).__init__([], mapper=self._fuzzy_mapper)
+        super(ModelList, self).__init__([])
 
         for item in the_list:
             self.append(item, copy=True)
 
-    def _fuzzy_mapper(self, value):
+    def mapper(self, value):
         """A helper for the FuzzyList to determine the query value."""
 
         return value.full()
@@ -467,7 +467,7 @@ class Bintype(object):
 
     def __eq__(self, other):
 
-        return self.name == other or object.__eq__(self, other)
+        return self.name == other or super(Bintype, self) == other
 
 
 class Template(object):
@@ -489,7 +489,7 @@ class Template(object):
 
     def __eq__(self, other):
 
-        return self.name == other or object.__eq__(self, other)
+        return self.name == other or super(Template, self) == other
 
 
 class Property(object):
