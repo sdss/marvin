@@ -101,6 +101,7 @@ def spaxel_factory(cls, *args, **kwargs):
 
     if isinstance(maps, Maps) or isinstance(modelcube, ModelCube):
         bintype = getattr(maps, 'bintype', None) or getattr(modelcube, 'bintype', None)
+        spaxel_kwargs.update(bintype=bintype)
         if bintype.binned:
             return Bin(*args, **spaxel_kwargs)
         else:
@@ -109,12 +110,14 @@ def spaxel_factory(cls, *args, **kwargs):
     if maps:
         maps = Maps((maps if maps is not True else None) or plateifu or mangaid,
                     release=release, **kwargs)
+        spaxel_kwargs.update(bintype=maps.bintype)
         if maps.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
 
     if modelcube:
         modelcube = ModelCube((modelcube if modelcube is not True else None) or
                               plateifu or mangaid, release=release, **kwargs)
+        spaxel_kwargs.update(bintype=modelcube.bintype)
         if modelcube.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
 
@@ -427,22 +430,35 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
     def getMaps(self):
         """Returns the associated `~marvin.tools.maps.Maps`"""
 
-        if isinstance(self._cube, marvin.tools.maps.Maps):
+        if isinstance(self._maps, marvin.tools.maps.Maps):
             return self._maps
+
+        maps_kwargs = self.kwargs.copy()
+
+        bintype = maps_kwargs.pop('bintype', None) or self.bintype
+        template = maps_kwargs.pop('template', None) or self.template
+        release = maps_kwargs.pop('release', None) or self.release
 
         return marvin.tools.maps.Maps(
             (self._maps if self._maps is not True else None) or self._plateifu or self._mangaid,
-            **self.kwargs.copy())
+            bintype=bintype, template=template, release=release, **maps_kwargs)
 
     def getModelCube(self):
         """Returns the associated `~marvin.tools.modelcube.ModelCube`"""
 
-        if isinstance(self._cube, marvin.tools.modelcube.ModelCube):
+        if isinstance(self._modelcube, marvin.tools.modelcube.ModelCube):
             return self._modelcube
+
+        modelcube_kwargs = self.kwargs.copy()
+
+        bintype = modelcube_kwargs.pop('bintype', None) or self.bintype
+        template = modelcube_kwargs.pop('template', None) or self.template
+        release = modelcube_kwargs.pop('release', None) or self.release
 
         return marvin.tools.modelcube.ModelCube(
             ((self._modelcube if self._modelcube is not True else None) or
-             self._plateifu or self._mangaid), **self.kwargs.copy())
+             self._plateifu or self._mangaid),
+            bintype=bintype, template=template, release=release, **modelcube_kwargs)
 
     @property
     def plateifu(self):
