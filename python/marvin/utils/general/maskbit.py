@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-15 13:11:08
+# @Last modified time: 2017-11-16 15:11:19
 
 from __future__ import division, print_function, absolute_import
 
@@ -85,7 +85,11 @@ class Maskbit(object):
         self.mask = None
 
     def __repr__(self):
-        return '<Maskbit {0!r}>\n{1!r}'.format(self.name, self.schema)
+        if (isinstance(self.mask, int) or self.mask is None):
+            labels = self.labels
+        else:
+            labels = 'shape={}'.format(self.mask.shape)
+        return '<Maskbit {0!r} {1}>'.format(self.name, labels)
 
     def _load_schema(self, flag_name):
         """Load SDSS Maskbit schema from yanny file.
