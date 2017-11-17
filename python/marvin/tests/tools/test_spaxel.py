@@ -22,6 +22,8 @@ from marvin import config
 
 from marvin.core.exceptions import MarvinError
 
+from marvin.tests import marvin_test_if_class
+
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
@@ -116,7 +118,9 @@ class TestSpaxel(object):
 
         assert isinstance(spaxel.getCube(), Cube)
         assert isinstance(spaxel.getMaps(), Maps)
-        assert isinstance(spaxel.getModelCube(), ModelCube)
+
+        if release != 'MPL-4':
+            assert isinstance(spaxel.getModelCube(), ModelCube)
 
     def test_dir(self):
 
@@ -161,12 +165,14 @@ class TestSpaxel(object):
 
         assert isinstance(spaxel._cube, Cube)
         assert isinstance(spaxel._maps, Maps)
-        assert isinstance(spaxel._modelcube, ModelCube)
+
+        if galaxy_spaxel.release != 'MPL-4':
+            assert isinstance(spaxel._modelcube, ModelCube)
 
     def test_files_modelcube(self, galaxy_spaxel):
 
         if galaxy_spaxel.release == 'MPL-4':
-            modelcube_filename = None
+            pytest.skip()
         else:
             modelcube_filename = galaxy_spaxel.modelpath
 
@@ -179,7 +185,9 @@ class TestSpaxel(object):
 
         assert not isinstance(spaxel._cube, Cube)
         assert not isinstance(spaxel._maps, Maps)
-        assert isinstance(spaxel._modelcube, ModelCube)
+
+        if galaxy_spaxel.release != 'MPL-4':
+            assert isinstance(spaxel._modelcube, ModelCube)
 
     def test_files_maps(self, galaxy_spaxel):
 
@@ -451,7 +459,11 @@ class TestMapsGetSpaxel(object):
     def test_get_spaxel(self, galaxy, data_origin):
 
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+        try:
+            spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
+        except MarvinError as ee:
+            assert 'do not correspond to a valid binid' in str(ee)
+            pytest.skip()
 
         if maps.is_binned():
             assert isinstance(spaxel, Bin)
@@ -465,7 +477,12 @@ class TestMapsGetSpaxel(object):
     def test_get_spaxel_test2(self, galaxy, data_origin):
 
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=5, y=5)
+
+        try:
+            spaxel = maps.getSpaxel(x=5, y=5)
+        except MarvinError as ee:
+            assert 'do not correspond to a valid binid' in str(ee)
+            pytest.skip()
 
         if maps.is_binned():
             assert isinstance(spaxel, Bin)
@@ -478,7 +495,11 @@ class TestMapsGetSpaxel(object):
         """Tests getting an spaxel if there is no DB."""
 
         maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
-        spaxel = maps.getSpaxel(x=5, y=5)
+        try:
+            spaxel = maps.getSpaxel(x=5, y=5)
+        except MarvinError as ee:
+            assert 'do not correspond to a valid binid' in str(ee)
+            pytest.skip()
 
         assert spaxel.getMaps().data_origin == exporigin
 
@@ -490,7 +511,7 @@ class TestMapsGetSpaxel(object):
         assert len(spaxel.maps_quantities.keys()) > 0
 
 
-# @pytest.mark.slow
+@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestModelCubeGetSpaxel(object):
 
     def _test_getspaxel(self, spaxel, galaxy):
