@@ -451,8 +451,8 @@ def plot(*args, **kwargs):
 
     cblabel = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
     if isinstance(cblabel, units.UnitBase):
-        if dapmap.scale != 1:
-            scale_latex = units.format.Latex.format_exponential_notation(dapmap.scale)
+        if dapmap.unit.scale != 1:
+            scale_latex = units.format.Latex.format_exponential_notation(dapmap.unit.scale)
             cb_kws['label'] = r'${0}$\,'.format(scale_latex) + cblabel.to_string('latex_inline')
         else:
             cb_kws['label'] = cblabel.to_string('latex_inline')
