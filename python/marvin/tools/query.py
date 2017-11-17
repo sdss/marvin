@@ -392,30 +392,6 @@ class Query(object):
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
 
-    def _get_all_params(self):
-        if self.mode == 'local':
-            keys = list(self.marvinform._param_form_lookup.keys())
-            keys.sort()
-            rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
-            # simplify the spaxelprop list down to one set
-            mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
-            mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
-                      in k else k for k in mykeys]
-            # replace table names with shortcut names
-            newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
-            return newkeys
-        elif self.mode == 'remote':
-            # Get the query route
-            url = config.urlmap['api']['getparams']['url']
-            params = {'paramdisplay': 'all'}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query call to get params failed: {0}'.format(e))
-            else:
-                qparams = ii.getData()
-                return qparams
-
     def get_available_params(self, paramdisplay='best'):
         ''' Retrieve the available parameters to query on
 
@@ -825,10 +801,6 @@ class Query(object):
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
 
-    def _compute_page(self):
-        ''' Compute the page of the query '''
-        pass
-
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''
 
@@ -975,7 +947,7 @@ class Query(object):
 
         '''
 
-        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
+        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, tables, joins, or filter'
 
         if self.mode == 'local':
             if not prop or 'query' in prop:
