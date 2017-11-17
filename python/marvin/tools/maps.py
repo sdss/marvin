@@ -723,6 +723,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # temporarily get it.
         do_return_figure = True if return_figure or show_plot else False
 
+        from marvin.utils.general import turn_off_plt
+
+        # with turn_off_plt(show_plot=show_plot):
+        #     bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
+        #                                                    return_figure=do_return_figure,
+        #                                                    use_oi=use_oi)
+
         # Disables ion() if we are not showing the plot.
         plt_was_interactive = plt.isinteractive()
         if not show_plot and plt_was_interactive:

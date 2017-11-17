@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 11:43:39
+# @Last Modified time: 2017-11-17 15:06:50
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -24,7 +24,6 @@ import mpl_scatter_density
 import numpy as np
 import scipy.stats as stats
 import six
-import seaborn as sns
 import pandas as pd
 import itertools
 
@@ -348,7 +347,7 @@ def plot(x, y, **kwargs):
     use_density = True if count > 500000 else False
 
     # create figure and axes objects
-    with sns.axes_style('darkgrid'):
+    with plt.style.context('seaborn-darkgrid'):
         fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, use_density=use_density,
                                                             hist_axes_visible=hist_axes_visible)
 
@@ -491,7 +490,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
     orientation = kwargs.pop('orientation', 'vertical')
 
     # create a figure and axis if they don't exist
-    with sns.axes_style('darkgrid'):
+    with plt.style.context('seaborn-darkgrid'):
         if fig is None and ax is None:
             fig, ax = plt.subplots()
         elif fig is None:

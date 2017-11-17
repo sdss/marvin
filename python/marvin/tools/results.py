@@ -14,7 +14,7 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr, turn_off_plt
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 import marvin.utils.plot.scatter
@@ -1496,6 +1496,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            show_plot (bool):
+                Set to False to not show the interactive plot
             **kwargs (dict):
                 Any other keyword argument that will be passed to Marvin's
                 scatter and hist plotting methods
@@ -1515,6 +1517,7 @@ class Results(object):
         assert all([x_name, y_name]), 'Must provide both an x and y column'
         return_plateifus = kwargs.pop('return_plateifus', True)
         with_hist = kwargs.get('with_hist', True)
+        show_plot = kwargs.pop('show_plot', True)
 
         # get the named column
         x_col = self.columns[x_name]
@@ -1528,7 +1531,24 @@ class Results(object):
             x_data = self.results[x_name]
             y_data = self.results[y_name]
 
+        #with turn_off_plt(show_plot=show_plot):
+        #    output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
+
+        import matplotlib.pyplot as plt
+        # Disables ion() if we are not showing the plot.
+        plt_was_interactive = plt.isinteractive()
+        if not show_plot and plt_was_interactive:
+            plt.ioff()
+
         output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
+
+        if show_plot:
+            plt.ioff()
+            plt.show()
+
+        # Restores original ion() status
+        if plt_was_interactive and not plt.isinteractive():
+            plt.ion()
 
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:
