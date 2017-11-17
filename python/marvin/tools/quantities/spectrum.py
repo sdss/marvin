@@ -13,7 +13,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
-import seaborn as sns
 
 import matplotlib.pyplot as plt
 
@@ -188,7 +187,7 @@ class Spectrum(Quantity, QuantityMixIn):
 
         """
 
-        with sns.axes_style('darkgrid'):
+        with plt.style.context(['seaborn-darkgrid', 'seaborn-deep']):
             fig = plt.figure() if figure is None else figure
             ax = fig.add_subplot(111)
 
@@ -199,7 +198,7 @@ class Spectrum(Quantity, QuantityMixIn):
             value = self.value
             wave = self.wavelength.value
 
-        ax.plot(wave, value, color='0.3', lw=0.75)
+        ax.plot(wave, value, color='b', lw=0.8)
 
         if show_std and self.std is not None:
             if use_mask is False:
@@ -210,7 +209,7 @@ class Spectrum(Quantity, QuantityMixIn):
             ax.fill_between(wave,
                             value + n_sigma * std_masked,
                             value - n_sigma * std_masked,
-                            facecolor=sns.xkcd_rgb['windows blue'], alpha=0.5)
+                            facecolor='b', alpha=0.3)
 
         ax.set_xlim(xlim)
 
@@ -223,13 +222,13 @@ class Spectrum(Quantity, QuantityMixIn):
 
         if xlabel is not None:
             if show_units and isinstance(self.wavelength, Quantity):
-                xlabel = '$\\mathrm{{{}}}$\\,[{}]'.format(xlabel,
+                xlabel = '$\\mathrm{{{}}}\\,$[{}]'.format(xlabel,
                                                           self.wavelength.unit.to_string('latex'))
             ax.set_xlabel(xlabel)
 
         if ylabel is not None:
             if show_units:
-                ylabel = '$\\mathrm{{{}}}$\\,[{}]'.format(ylabel,
+                ylabel = '$\\mathrm{{{}}}\\,$[{}]'.format(ylabel,
                                                           self.unit.to_string('latex_inline'))
             ax.set_ylabel(ylabel)
 
