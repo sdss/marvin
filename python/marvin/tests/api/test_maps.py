@@ -65,7 +65,7 @@ class TestGetSingleMap(object):
     def test_map_success(self, galaxy, page, params, reqtype, prop, channel):
         params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype.name,
                        'template': galaxy.template.name, 'property_name': prop, 'channel': channel})
-        data = {'header': '', 'unit': '', 'value': '', 'mask': '', 'ivar': ''}
+        data = {'unit': '', 'value': '', 'mask': '', 'ivar': ''}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data, keys=True)
 
@@ -90,39 +90,4 @@ class TestGetSingleMap(object):
         else:
             url = page.url.format(**params)
             url = url.replace('None/', '') if missing == 'channel' else url
-            page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
-
-
-@pytest.mark.parametrize('page', [('api', 'getbinspaxels')], ids=['getbinspaxels'], indirect=True)
-class TestGetBinSpaxels(object):
-
-    @pytest.mark.parametrize('reqtype', [('get'), ('post')])
-    @pytest.mark.parametrize('binid', [(100)])
-    def test_binspax_success(self, galaxy, page, params, reqtype, binid):
-
-        params.update({'name': galaxy.plateifu, 'bintype': galaxy.bintype.name,
-                       'template': galaxy.template.name, 'binid': binid})
-        data = {'spaxels': galaxy.bins[binid][galaxy.bintemp]}
-        page.load_page(reqtype, page.url.format(**params), params=params)
-        page.assert_success(data)
-
-    @pytest.mark.parametrize('name, missing, errmsg, bintype, template, binid',
-                             [(None, 'release', 'Missing data for required field.', None, None, None),
-                              ('badname', 'name', 'String does not match expected pattern.', None, None, None),
-                              ('84', 'name', 'Shorter than minimum length 4.', None, None, None),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC', None),
-                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILESHC', None),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC', None),
-                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILES', None),
-                              ('8485-1901', 'binid', 'Must be between -1 and 5800.', 'SPX', 'GAU-MILESHC', 7000),
-                              ('8485-1901', 'binid', 'Not a valid integer.', 'SPX', 'GAU-MILESHC', None)],
-                             ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
-                                  'wrongmplbintype', 'wrongmpltemplate', 'badbinid', 'nobinid'])
-    def test_binspax_failures(self, galaxy, page, params, name, missing, errmsg,
-                              bintype, template, binid):
-        params.update({'name': name, 'bintype': bintype, 'template': template, 'binid': binid})
-        if name is None:
-            page.route_no_valid_params(page.url, missing, reqtype='post', errmsg=errmsg)
-        else:
-            url = page.url.format(**params)
             page.route_no_valid_params(url, missing, reqtype='post', params=params, errmsg=errmsg)
