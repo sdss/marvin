@@ -201,7 +201,7 @@ class TestBin(object):
             SpaxelBase(0, 0, plateifu='8485-1901', cube=True,
                        maps=True, modelcube=True, bintype='HYB10')
 
-        assert 'invalid bintype' in str(ee)
+        assert 'do not correspond to a valid binid' in str(ee)
 
     def test_load_all(self):
 
