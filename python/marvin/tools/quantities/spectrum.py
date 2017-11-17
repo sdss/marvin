@@ -222,14 +222,14 @@ class Spectrum(Quantity, QuantityMixIn):
 
         if xlabel is not None:
             if show_units and isinstance(self.wavelength, Quantity):
-                xlabel = '$\\mathrm{{{}}}\\,$[{}]'.format(xlabel,
-                                                          self.wavelength.unit.to_string('latex'))
+                xlabel = '$\\mathrm{{{}}}\\,[${}$]$'.format(
+                    xlabel, self.wavelength.unit.to_string('latex'))
             ax.set_xlabel(xlabel)
 
         if ylabel is not None:
             if show_units:
-                ylabel = '$\\mathrm{{{}}}\\,$[{}]'.format(ylabel,
-                                                          self.unit.to_string('latex_inline'))
+                ylabel = '$\\mathrm{{{}}}\\,[${}$]$'.format(ylabel,
+                                                            self.unit.to_string('latex_inline'))
             ax.set_ylabel(ylabel)
 
         if return_figure:
