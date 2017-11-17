@@ -742,6 +742,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         if show_plot:
             plt.ioff()
             plt.show()
+        else:
+            if return_figure:
+                plt.close(bpt_return[1])
+            else:
+                plt.close()
 
         # Restores original ion() status
         if plt_was_interactive and not plt.isinteractive():

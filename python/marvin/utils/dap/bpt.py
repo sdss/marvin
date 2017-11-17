@@ -64,7 +64,7 @@ def get_masked(maps, emline, snr=1):
 def _get_kewley06_axes(use_oi=True):
     """Creates custom axes for displaying Kewley06 plots."""
 
-    fig = plt.figure(1, (8.5, 10))
+    fig = plt.figure(None, (8.5, 10))
     fig.clf()
 
     plt.subplots_adjust(top=0.99, bottom=0.08, hspace=0.01)
