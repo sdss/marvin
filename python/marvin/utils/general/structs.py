@@ -113,6 +113,9 @@ class FuzzyDict(OrderedDict):
         if not isinstance(value, six.string_types):
             return self.values()[value]
 
+        if value in self.keys():
+            return dict.__getitem__(self, value)
+
         best = get_best_fuzzy(value, self.keys())
 
         return dict.__getitem__(self, best)
