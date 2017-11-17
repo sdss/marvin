@@ -128,6 +128,7 @@ class TestResultSet(object):
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results):
         redshift = results.expdata['queries']['nsa.z < 0.1']['sorted']['1'][-1]
+        results.getAll()
         results.results.sort('z')
         assert results.results['z'][0] == redshift
 
@@ -330,15 +331,21 @@ class TestResultsPaging(object):
         assert results.count == 1
         assert len(results.results) == 1
         results.extendSet(start=1, chunk=2)
-        assert results.count == 3
-        assert len(results.results) == 3
+        setcount = 3 if results.count > 3 else results.count
+        assert results.count == setcount
+        assert len(results.results) == setcount
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_loop(self, results):
         res = results.getSubset(0, limit=1)
         assert results.count == 1
-        results.loop()
+        results.loop(chunk=500)
         assert results.count == results.expdata['queries'][results.searchfilter]['count']
+        assert results.count == results.totalcount
+
+    @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
+    def test_get_all(self, results):
+        res = results.getAll()
         assert results.count == results.totalcount
 
 
