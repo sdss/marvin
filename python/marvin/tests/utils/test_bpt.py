@@ -20,7 +20,7 @@ import pytest
 
 from marvin.core.exceptions import MarvinError
 from marvin.tools.maps import Maps
-from marvin.tests import marvin_test_if_class, marvin_test_if
+from marvin.tests import marvin_test_if_class
 from marvin.utils.dap.bpt import get_snr, bpt_kewley06
 from marvin.core.exceptions import MarvinDeprecationWarning
 
