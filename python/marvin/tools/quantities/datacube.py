@@ -144,7 +144,7 @@ class DataCube(units.Quantity, QuantityMixIn):
         else:
             new_obj.binid = self.binid
 
-        if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength):
+        if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength.value):
             return Spectrum(new_obj.value, unit=new_obj.unit, wavelength=new_obj.wavelength,
                             ivar=new_obj.ivar, mask=new_obj.mask)
 

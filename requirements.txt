@@ -5,6 +5,7 @@ scipy>=0.18.1
 astropy>=1.2.1
 pandas>=0.18.1
 matplotlib>=1.5.3
+mpl-scatter-density>=0.3
 Pillow>=3.3.1
 requests>=2.10.0
 requests-futures>=0.9.7
@@ -23,7 +24,4 @@ webargs>=1.5.2
 raven>=5.32.0
 dogpile.cache>=0.6.2
 
-
-sphinx_bootstrap_theme>=0.4.12
-sphinxcontrib-httpdomain>=1.5.0
-m2r>=0.1.12
+future>=0.16.0
