@@ -480,8 +480,7 @@ class MapsView(marvin.api.base.BaseView):
         """
 
         # Pass the args in and get the cube
-        args = self._pop_args(args, arglist=['name', 'bintype', 'template',
-                                             'x', 'y'])
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
         maps, res = _getMaps(name, **args)
         self.update_results(res)
 

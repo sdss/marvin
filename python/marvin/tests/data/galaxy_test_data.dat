@@ -149,8 +149,8 @@
                 ra: 232.545752
                 dec: 48.688534
                 specidx: 200
-                x_cen: -5
-                y_cen: -12
+                x_cen: -1
+                y_cen: -2
                 flux: 0.016027471
                 ivar: 361.13596
                 mask: 1026
@@ -208,6 +208,8 @@
             MILES-THIN: 2.25913102153e-05
         MPL-5:
             GAU-MILESHC: 0.00031520479546875247
+        MPL-6:
+            GAU-MILESHC: 0.00019261586
 
 7443-12701:
     mangaid: 12-98126
@@ -367,4 +369,6 @@
             MIUSCAT-THIN: 0.0
             MILES-THIN: 0.0
         MPL-5:
+            GAU-MILESHC: 0.0
+        MPL-6:
             GAU-MILESHC: 0.0
