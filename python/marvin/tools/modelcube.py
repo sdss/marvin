@@ -391,6 +391,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         if self.data_origin == 'file' or self.data_origin == 'db':
 
+            _db_row = None
+
             for dm in self.datamodel:
 
                 data = {'value': None, 'ivar': None, 'mask': None}
@@ -410,13 +412,13 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                     elif self.data_origin == 'db':
 
                         colname = dm.db_column(None if key == 'value' else key)
-                        db_column = getattr(dapdb.ModelSpaxel, colname)
 
-                        spaxel_data = session.query(db_column).filter(
-                            dapdb.ModelSpaxel.modelcube_pk == self.data.pk,
-                            dapdb.ModelSpaxel.x == x, dapdb.ModelSpaxel.y == y).one()
+                        if not _db_row:
+                            _db_row = session.query(dapdb.ModelSpaxel).filter(
+                                dapdb.ModelSpaxel.modelcube_pk == self.data.pk,
+                                dapdb.ModelSpaxel.x == x, dapdb.ModelSpaxel.y == y).one()
 
-                        data[key] = np.array(spaxel_data[0])
+                        data[key] = np.array(getattr(_db_row, colname))
 
                 modelcube_quantities[dm.name] = Spectrum(data['value'],
                                                          ivar=data['ivar'],

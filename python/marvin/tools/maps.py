@@ -389,6 +389,9 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         if self.data_origin == 'file' or self.data_origin == 'db':
 
+            # Stores a dictionary of (table, row)
+            _db_rows = {}
+
             for dm in self.datamodel:
 
                 data = {'value': None, 'ivar': None, 'mask': None}
@@ -412,12 +415,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                     elif self.data_origin == 'db':
 
                         table = getattr(mdb.dapdb, dm.db_table)
+
+                        if table not in _db_rows:
+                            _db_rows[table] = mdb.session.query(table).filter(
+                                table.file_pk == self.data.pk, table.x == x, table.y == y).one()
+
                         colname = dm.db_column(ext=None if key == 'value' else key)
-
-                        value = mdb.session.query(getattr(table, colname)).filter(
-                            table.file_pk == self.data.pk, table.x == x, table.y == y).one()
-
-                        data[key] = value[0]
+                        data[key] = getattr(_db_rows[table], colname)
 
                 maps_quantities[dm.full()] = AnalysisProperty(data['value'],
                                                               unit=dm.unit,
