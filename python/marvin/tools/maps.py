@@ -37,7 +37,7 @@ import marvin.utils.dap.bpt
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Property, Channel
-from marvin.utils.general import FuzzyDict
+from marvin.utils.general import FuzzyDict, turn_off_ion
 
 from .quantities import AnalysisProperty
 
@@ -723,34 +723,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # temporarily get it.
         do_return_figure = True if return_figure or show_plot else False
 
-        from marvin.utils.general import turn_off_plt
-
-        # with turn_off_plt(show_plot=show_plot):
-        #     bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
-        #                                                    return_figure=do_return_figure,
-        #                                                    use_oi=use_oi)
-
-        # Disables ion() if we are not showing the plot.
-        plt_was_interactive = plt.isinteractive()
-        if not show_plot and plt_was_interactive:
-            plt.ioff()
-
-        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
-                                                       return_figure=do_return_figure,
-                                                       use_oi=use_oi)
-
-        if show_plot:
-            plt.ioff()
-            plt.show()
-        else:
-            if return_figure:
-                plt.close(bpt_return[1])
-            else:
-                plt.close()
-
-        # Restores original ion() status
-        if plt_was_interactive and not plt.isinteractive():
-            plt.ion()
+        with turn_off_ion(show_plot=show_plot):
+            bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
+                                                           return_figure=do_return_figure,
+                                                           use_oi=use_oi)
 
         # Returs what we actually asked for.
         if return_figure and do_return_figure:

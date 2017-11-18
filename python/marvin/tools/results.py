@@ -14,7 +14,8 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr, turn_off_plt
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
+from marvin.utils.general import temp_setattr, turn_off_ion
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 import marvin.utils.plot.scatter
@@ -1503,7 +1504,7 @@ class Results(object):
                 scatter and hist plotting methods
 
         Returns:
-            The histogram data, figure, and axes from the plotting function
+            The figure, axes, and histogram data from the plotting function
 
         Example:
             >>> # do a query and get the results
@@ -1531,24 +1532,8 @@ class Results(object):
             x_data = self.results[x_name]
             y_data = self.results[y_name]
 
-        #with turn_off_plt(show_plot=show_plot):
-        #    output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
-
-        import matplotlib.pyplot as plt
-        # Disables ion() if we are not showing the plot.
-        plt_was_interactive = plt.isinteractive()
-        if not show_plot and plt_was_interactive:
-            plt.ioff()
-
-        output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
-
-        if show_plot:
-            plt.ioff()
-            plt.show()
-
-        # Restores original ion() status
-        if plt_was_interactive and not plt.isinteractive():
-            plt.ion()
+        with turn_off_ion(show_plot=show_plot):
+            output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
 
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:
@@ -1577,6 +1562,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            show_plot (bool):
+                Set to False to not show the interactive plot
             **kwargs (dict):
                 Any other keyword argument that will be passed to Marvin's
                 hist plotting methods
@@ -1605,7 +1592,8 @@ class Results(object):
             data = self.results[name]
 
         # xhist, fig, ax_hist_x = output
-        output = marvin.utils.plot.scatter.hist(data, **kwargs)
+        with turn_off_ion(show_plot=show_plot):
+            output = marvin.utils.plot.scatter.hist(data, **kwargs)
 
         if return_plateifus:
             plateifus = self.getListOf('plateifu', return_all=True)

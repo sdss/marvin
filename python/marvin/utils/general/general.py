@@ -56,7 +56,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_plt')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion')
 
 drpTable = {}
 
@@ -1277,7 +1277,7 @@ def get_dapall_file(drpver, dapver):
 
 
 @contextlib.contextmanager
-def turn_off_plt(show_plot=True):
+def turn_off_ion(show_plot=True):
     ''' Turns off the Matplotlib plt interactive mode
 
     Context manager to temporarily disable the interactive
@@ -1290,7 +1290,7 @@ def turn_off_plt(show_plot=True):
 
     Example:
         >>>
-        >>> with turn_off_plt(show_plot=False):
+        >>> with turn_off_ion(show_plot=False):
         >>>     do_some_stuff
         >>>
 
@@ -1305,9 +1305,12 @@ def turn_off_plt(show_plot=True):
     if show_plot:
         plt.ioff()
         plt.show()
-    # else:
-    #     plt.clf()
-    #     plt.close(1)
+    else:
+        fignum = plt.get_fignums()
+        if fignum:
+            plt.close(fignum[0])
+        else:
+            plt.close()
 
     # Restores original ion() status
     if plt_was_interactive and not plt.isinteractive():
