@@ -76,11 +76,13 @@ code.descclassname + code.descname {
 span.sig-paren ~ em {
     font-weight: 600;
     font-family: sans-serif;
+    font-size: 9.5pt;
 }
 
 em.property {
     font-weight: 600;
     font-family: sans-serif;
+    font-size: 9.5pt;
 }
 
 /* .function dt {
