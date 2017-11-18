@@ -70,8 +70,7 @@ install:
 - source activate test_env
 - pip install -U pip wheel --quiet
 - pip install --upgrade setuptools --quiet
-- pip install numpy --quiet
-- pip install -r requirements_dev.txt
+- pip install -r requirements_dev.txt --quiet
 # - pip install psycopg2 --quiet
 # - pip install blinker --quiet
 # - pip install pytest --quiet
