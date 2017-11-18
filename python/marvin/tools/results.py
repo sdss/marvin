@@ -1581,6 +1581,7 @@ class Results(object):
         '''
 
         return_plateifus = kwargs.pop('return_plateifus', True)
+        show_plot = kwargs.pop('show_plot', True)
 
         # get the named column
         col = self.columns[name]
