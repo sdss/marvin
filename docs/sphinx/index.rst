@@ -85,6 +85,10 @@ Components
 
 * :doc:`web`
 
+* :doc:`datamodel/datamodels`
+
+  * :doc:`datamodel/mpl5`
+
 |
 
 General Reference

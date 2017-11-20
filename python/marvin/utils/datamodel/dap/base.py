@@ -342,6 +342,21 @@ class PropertyList(FuzzyList):
 
         return prop_table
 
+    def write_csv(self, filename=None, path=None, **kwargs):
+        ''' Write the property datamodel to a CSV '''
+
+        release = self.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'dapprops_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv')
+
 
 class ModelList(FuzzyList):
     """Creates a list containing models and their representation."""
@@ -443,6 +458,21 @@ class ModelList(FuzzyList):
             return
 
         return model_table
+
+    def write_csv(self, filename=None, path=None, **kwargs):
+        ''' Write the datamodel to a CSV '''
+
+        release = self.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'dapmodels_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv')
 
 
 class Bintype(object):

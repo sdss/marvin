@@ -12,6 +12,7 @@ from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
 from marvin import config, log
 import six
+import os
 
 
 class MetaDataModel(type):
@@ -167,5 +168,26 @@ class DataModelLookup(object):
             param = None
 
         return param
+
+    def write_csv(self, path=None, filename=None, model=None):
+        ''' Writes the datamodels out to CSV '''
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        release = self.release.lower().replace('-', '')
+        if not filename:
+            filename = '{0}_dm_{1}.csv'.format(model, release)
+        fullpath = os.path.join(path, filename)
+
+        if model == 'query':
+            qtable = self.querydm.to_table()
+            qtable.write_csv(fullpath, format='csv')
+        elif model == 'dap':
+            proptable = self.dapdm.properties.to_table()
+            modeltable = self.dapdm.models.to_table()
+            proptable.write_csv(fullpath, format='csv')
+            modeltable.write_csv(fullpath, format='csv')
+
 
 

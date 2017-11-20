@@ -432,19 +432,19 @@ insp = reflection.Inspector.from_engine(db.engine)
 fks = insp.get_foreign_keys(SpaxelProp.__table__.name, schema='mangadapdb')
 if fks:
     SpaxelProp.file = relationship(File, backref='spaxelprops')
-    SpaxelProp.binidfk = relationship(BinId, backref='spaxelprops')
+    #SpaxelProp.binidfk = relationship(BinId, backref='spaxelprops')
     CleanSpaxelProp.file = relationship(File, backref='cleanspaxelprops')
 
 fks = insp.get_foreign_keys(SpaxelProp5.__table__.name, schema='mangadapdb')
 if fks:
     SpaxelProp5.file = relationship(File, backref='spaxelprops5')
-    SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
+    #SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
     CleanSpaxelProp5.file = relationship(File, backref='cleanspaxelprops5')
 
 fks = insp.get_foreign_keys(SpaxelProp6.__table__.name, schema='mangadapdb')
 if fks:
     SpaxelProp6.file = relationship(File, backref='spaxelprops6')
-    SpaxelProp6.binidfk = relationship(BinId, backref='spaxelprops6')
+    #SpaxelProp6.binidfk = relationship(BinId, backref='spaxelprops6')
     CleanSpaxelProp6.file = relationship(File, backref='cleanspaxelprops6')
 
 fks = insp.get_foreign_keys(ModelCube.__table__.name, schema='mangadapdb')

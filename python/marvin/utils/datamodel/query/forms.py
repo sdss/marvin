@@ -127,6 +127,16 @@ class ParamFormLookupDict(dict):
         self._init_table_shortcuts()
         self._init_name_shortcuts()
 
+    def __contains__(self, value):
+        ''' Override the contains '''
+
+        try:
+            key = self[value]
+        except KeyError as e:
+            key = None
+
+        return key is not None
+
     def __getitem__(self, key):
         """Checks if `key` is a unique column name and return the value."""
 

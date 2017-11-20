@@ -247,6 +247,7 @@ class Query(object):
             # check if query if a dap query
             if self._isdapquery:
                 self._buildDapQuery()
+                self._check_dapall_query()
 
     def __repr__(self):
         return ('Marvin Query(filter={4}, mode={0}, limit={1}, sort={2}, order={3})'
@@ -268,6 +269,12 @@ class Query(object):
             raise MarvinError('No URL Map found.  Cannot make remote query calls!')
         else:
             self.mode = 'remote'
+
+    def _check_query(self, name):
+        ''' Check if string is inside the query statement '''
+
+        qstate = str(self.query.statement.compile(compile_kwargs={'literal_binds':True}))
+        return name in qstate
 
     def _checkInFilter(self, name='dapdb'):
         ''' Check if the given name is in the schema of any of the filter params '''
@@ -1044,6 +1051,25 @@ class Query(object):
                 isin = False
         return isin
 
+    def _group_by(self, params=None):
+        ''' Group the query by a set of parameters
+
+        Parameters:
+            params (list):
+                A list of string parameter names to group the query by
+
+        Returns:
+            A new SQLA Query object
+        '''
+
+        if not params:
+            params = [d for d in self.defaultparams if 'spaxelprop' not in d]
+
+        newdefaults = self.marvinform._param_form_lookup.mapToColumn(params)
+        self.params = params
+        newq = self.query.from_self(*newdefaults).group_by(*newdefaults)
+        return newq
+
     # ------------------------------------------------------
     #  DAP Specific Query Modifiers - subqueries, etc go below here
     #  -----------------------------------------------------
@@ -1076,7 +1102,14 @@ class Query(object):
                     methodcall = self.__getattribute__(methodname)
                     methodcall(fxn)
 
-    def getGoodSpaxels(self):
+    def _check_dapall_query(self):
+        ''' Checks if the query is on the DAPall table.  '''
+
+        isdapall = self._check_query('dapall')
+        if isdapall:
+            self.query = self._group_by()
+
+    def _getGoodSpaxels(self):
         ''' Subquery - Counts the number of good spaxels
 
         Counts the number of good spaxels with binid != -1
@@ -1101,7 +1134,7 @@ class Query(object):
 
         return bincount
 
-    def getCountOf(self, expression):
+    def _getCountOf(self, expression):
         ''' Subquery - Counts spaxels satisfying an expression
 
         Counts the number of spaxels of a given
@@ -1162,8 +1195,8 @@ class Query(object):
         op = opdict[ops]
 
         # Retrieve the necessary subqueries
-        bincount = self.getGoodSpaxels()
-        valcount = self.getCountOf(condition)
+        bincount = self._getGoodSpaxels()
+        valcount = self._getCountOf(condition)
 
         # Join to the main query
         self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
@@ -1173,9 +1206,10 @@ class Query(object):
         # Group the results by main defaultdatadb parameters,
         # so as not to include all spaxels
         newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
-        newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
-        self.params = newdefs
-        self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
+        self.query = self._group_by(params=newdefs)
+        # newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
+        # self.params = newdefs
+        # self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
     def _parseFxn(self, fxn):
         ''' Parse a fxn condition '''
