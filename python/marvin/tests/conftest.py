@@ -70,6 +70,12 @@ class TravisSubset(object):
 # ------------------------------
 releases = ['MPL-6', 'MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
 
+bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
+                     'MPL-5': ['SPX', 'VOR10'],
+                     'MPL-6': ['SPX', 'HYB10']}
+
+templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN']}
+
 
 def populate_bintypes_templates(releases):
     ''' Generates bintype and template dictionaries for each release '''
@@ -80,6 +86,10 @@ def populate_bintypes_templates(releases):
         for bintemp in bintemps:
             bintype = bintemp.split('-')[0]
             template = '-'.join(bintemp.split('-')[1:])
+            if release in bintypes_accepted and bintype not in bintypes_accepted[release]:
+                continue
+            if release in templates_accepted and template not in templates_accepted[release]:
+                continue
             if bintype not in bintypes[release]:
                 bintypes[release].append(bintype)
             if template not in templates[release]:

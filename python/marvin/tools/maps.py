@@ -37,8 +37,12 @@ import marvin.utils.dap.bpt
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Property, Channel
+<<<<<<< HEAD
 from marvin.utils.general import FuzzyDict
 from marvin.utils.general.maskbit import get_manga_target
+=======
+from marvin.utils.general import FuzzyDict, turn_off_ion
+>>>>>>> a92b8fd58004711ea0cf857c62b57989ca4aa292
 
 from .quantities import AnalysisProperty
 
@@ -392,6 +396,9 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         if self.data_origin == 'file' or self.data_origin == 'db':
 
+            # Stores a dictionary of (table, row)
+            _db_rows = {}
+
             for dm in self.datamodel:
 
                 data = {'value': None, 'ivar': None, 'mask': None}
@@ -415,12 +422,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                     elif self.data_origin == 'db':
 
                         table = getattr(mdb.dapdb, dm.db_table)
+
+                        if table not in _db_rows:
+                            _db_rows[table] = mdb.session.query(table).filter(
+                                table.file_pk == self.data.pk, table.x == x, table.y == y).one()
+
                         colname = dm.db_column(ext=None if key == 'value' else key)
-
-                        value = mdb.session.query(getattr(table, colname)).filter(
-                            table.file_pk == self.data.pk, table.x == x, table.y == y).one()
-
-                        data[key] = value[0]
+                        data[key] = getattr(_db_rows[table], colname)
 
                 maps_quantities[dm.full()] = AnalysisProperty(data['value'],
                                                               unit=dm.unit,
@@ -664,61 +672,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         bintype=self.datamodel.parent.get_unbinned(),
                         template=self.template, mode=self.mode)
 
-    def get_bin_spaxels(self, binid, load=False, only_list=False):
-        """Returns the list of spaxels belonging to a given ``binid``.
-
-        If ``load=True``, the spaxel objects are loaded. Otherwise, they can be
-        initiated by doing `~marvin.tools.spaxel.Spaxel.load()`. If
-        ``only_list=True``, the method will return just a tuple containing the
-        x and y coordinates of the spaxels.
-
-        """
-
-        if self.data_origin == 'file':
-            spaxel_coords = zip(*np.where(self.data['BINID'].data.T == binid))
-
-        elif self.data_origin == 'db':
-            mdb = marvin.marvindb
-
-            if self.datamodel.release == 'MPL-4':
-                table = mdb.dapdb.SpaxelProp
-            else:
-                table = mdb.dapdb.SpaxelProp5
-
-            spaxel_coords = mdb.session.query(table.x, table.y).join(mdb.dapdb.File).filter(
-                table.binid == binid, mdb.dapdb.File.pk == self.data.pk).order_by(
-                    table.x, table.y).all()
-
-        elif self.data_origin == 'api':
-            url = marvin.config.urlmap['api']['getbinspaxels']['url']
-
-            url_full = url.format(name=self.plateifu,
-                                  bintype=self.bintype,
-                                  template=self.template,
-                                  binid=binid)
-
-            try:
-                response = self._toolInteraction(url_full)
-            except Exception as ee:
-                raise marvin.core.exceptions.MarvinError(
-                    'found a problem requesting the spaxels for binid={0}: {1}'
-                    .format(binid, str(ee)))
-
-            response = response.getData()
-            spaxel_coords = response['spaxels']
-
-        spaxel_coords = list(spaxel_coords)
-        if len(spaxel_coords) == 0:
-            return []
-        else:
-            if only_list:
-                return tuple([tuple(cc) for cc in spaxel_coords])
-
-        spaxels = [marvin.tools.spaxel.Spaxel(x=cc[0], y=cc[1], maps=self, load=load)
-                   for cc in spaxel_coords]
-
-        return spaxels
-
     def get_bpt(self, method='kewley06', snr_min=3, return_figure=True,
                 show_plot=True, use_oi=True, **kwargs):
         """Returns the BPT diagram for this target.
@@ -810,22 +763,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # temporarily get it.
         do_return_figure = True if return_figure or show_plot else False
 
-        # Disables ion() if we are not showing the plot.
-        plt_was_interactive = plt.isinteractive()
-        if not show_plot and plt_was_interactive:
-            plt.ioff()
-
-        bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
-                                                       return_figure=do_return_figure,
-                                                       use_oi=use_oi)
-
-        if show_plot:
-            plt.ioff()
-            plt.show()
-
-        # Restores original ion() status
-        if plt_was_interactive and not plt.isinteractive():
-            plt.ion()
+        with turn_off_ion(show_plot=show_plot):
+            bpt_return = marvin.utils.dap.bpt.bpt_kewley06(self, snr_min=snr_min,
+                                                           return_figure=do_return_figure,
+                                                           use_oi=use_oi)
 
         # Returs what we actually asked for.
         if return_figure and do_return_figure:

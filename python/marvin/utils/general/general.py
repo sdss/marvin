@@ -25,7 +25,7 @@ from builtins import range
 import numpy as np
 
 from scipy.interpolate import griddata
-
+import matplotlib.pyplot as plt
 import PIL
 
 from astropy import table
@@ -56,7 +56,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion')
 
 drpTable = {}
 
@@ -1275,6 +1275,47 @@ def get_dapall_file(drpver, dapver):
     dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
 
     return dapall_path
+
+
+@contextlib.contextmanager
+def turn_off_ion(show_plot=True):
+    ''' Turns off the Matplotlib plt interactive mode
+
+    Context manager to temporarily disable the interactive
+    Matplotlib plotting functionality.  Useful for only returning
+    Figure and Axes objects
+
+    Parameters:
+        show_plot (bool):
+            If True, turns off the plotting
+
+    Example:
+        >>>
+        >>> with turn_off_ion(show_plot=False):
+        >>>     do_some_stuff
+        >>>
+
+    '''
+
+    plt_was_interactive = plt.isinteractive()
+    if not show_plot and plt_was_interactive:
+        plt.ioff()
+
+    yield plt
+
+    if show_plot:
+        plt.ioff()
+        plt.show()
+    else:
+        fignum = plt.get_fignums()
+        if fignum:
+            plt.close(fignum[0])
+        else:
+            plt.close()
+
+    # Restores original ion() status
+    if plt_was_interactive and not plt.isinteractive():
+        plt.ion()
 
 
 @contextlib.contextmanager

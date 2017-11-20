@@ -18,6 +18,7 @@ from marvin import config, marvindb
 from marvin.tools.results import Results
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import query_params
+from marvin.utils.general import temp_setattr
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 from marvin.tools.results import remote_mode_only
@@ -178,6 +179,7 @@ class Query(object):
         self._returnparams = []
         self._caching = kwargs.get('caching', True)
         self.verbose = kwargs.get('verbose', None)
+        self.count_threshold = kwargs.get('count_threshold', 1000)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 100))
@@ -390,30 +392,6 @@ class Query(object):
         self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
         self.queryparams_order = [q.key for q in self.queryparams]
 
-    def _get_all_params(self):
-        if self.mode == 'local':
-            keys = list(self.marvinform._param_form_lookup.keys())
-            keys.sort()
-            rev = {v: k for k, v in self.marvinform._param_form_lookup._tableShortcuts.items()}
-            # simplify the spaxelprop list down to one set
-            mykeys = [k.split('.', 1)[-1] for k in keys if 'cleanspaxel' not in k]
-            mykeys = [k.replace(k.split('.')[0], 'spaxelprop') if 'spaxelprop'
-                      in k else k for k in mykeys]
-            # replace table names with shortcut names
-            newkeys = [k.replace(k.split('.')[0], rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys() else k for k in mykeys]
-            return newkeys
-        elif self.mode == 'remote':
-            # Get the query route
-            url = config.urlmap['api']['getparams']['url']
-            params = {'paramdisplay': 'all'}
-            try:
-                ii = Interaction(route=url, params=params)
-            except MarvinError as e:
-                raise MarvinError('API Query call to get params failed: {0}'.format(e))
-            else:
-                qparams = ii.getData()
-                return qparams
-
     def get_available_params(self, paramdisplay='best'):
         ''' Retrieve the available parameters to query on
 
@@ -452,11 +430,6 @@ class Query(object):
                 The filepath and name of the pickled object
 
         '''
-        self.session = None
-        self.datamodel = None
-        self.marvinform = None
-        self.myforms = None
-        self._modelgraph = None
 
         sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
         # set the path
@@ -480,8 +453,13 @@ class Query(object):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
 
+        # set bad pickled attributes to None
+        attrs = ['session', 'datamodel', 'marvinform', 'myform', '_modelgraph']
+
+        # pickle the query
         try:
-            pickle.dump(self, open(path, 'wb'), protocol=-1)
+            with temp_setattr(self, attrs, None):
+                pickle.dump(self, open(path, 'wb'), protocol=-1)
         except Exception as ee:
             if os.path.exists(path):
                 os.remove(path)
@@ -755,14 +733,15 @@ class Query(object):
             if marvindb.isdbconnected:
                 query_meta = self._check_history()
 
-            if count > 1000 and self.return_all is False:
+            if count > self.count_threshold and self.return_all is False:
                 res = res[0:self.limit]
                 count = self.limit
-                warnings.warn('Results contain more than 1000 entries.  Only returning first {0}'.format(self.limit), MarvinUserWarning)
+                warnings.warn('Results contain more than {0} entries.  '
+                              'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
             elif self.return_all is True:
-                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
+                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
             elif start and end:
-                warnings.warn('Getting subset of data {0} to {1}'.format(start, end))
+                warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
             # get the runtime
             endtime = datetime.datetime.now()
@@ -821,10 +800,6 @@ class Query(object):
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
-
-    def _compute_page(self):
-        ''' Compute the page of the query '''
-        pass
 
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''
@@ -972,7 +947,7 @@ class Query(object):
 
         '''
 
-        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, joins, or filter'
+        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, tables, joins, or filter'
 
         if self.mode == 'local':
             if not prop or 'query' in prop:
@@ -1112,10 +1087,18 @@ class Query(object):
             bincount (subquery):
                 An SQLalchemy subquery to be joined into the main query object
         '''
+
+        spaxelname = self._junkclass.__name__
         bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
-                                      func.count(self._junkclass.pk).label('goodcount')).\
-            filter(self._junkclass.binid != -1).\
-            group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
+                                      func.count(self._junkclass.pk).label('goodcount'))
+
+        # optionally add the filter if the table is SpaxelProp
+        if 'CleanSpaxelProp' not in spaxelname:
+            bincount = bincount.filter(self._junkclass.binid != -1)
+
+        # group the results by file_pk
+        bincount = bincount.group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
+
         return bincount
 
     def getCountOf(self, expression):

@@ -171,7 +171,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     def _determine_inputs(self, input):
         """Determines what inputs to use in the decision tree."""
 
-        if input is not None:
+        if input:
 
             assert self.filename is None and self.plateifu is None and self.mangaid is None, \
                 'if input is set, filename, plateifu, and mangaid cannot be set.'

@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-14 20:11:84
+# @Last modified time: 2017-11-20 14:11:16
 
 import numpy as np
 import matplotlib
@@ -109,6 +109,14 @@ image_3_false = np.array([[1, 1, 1],
                           [0, 1, 0]])
 
 
+@pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
+                                        'specindex'])
+def bits(request, set_release):
+    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
+    return params['bitmasks']
+
+
+@pytest.mark.xfail
 class TestMasks(object):
 
     @pytest.mark.parametrize('ivar, expected',
@@ -176,6 +184,7 @@ class TestMasks(object):
             assert actual == expected
 
 
+@pytest.mark.xfail
 class TestMapPlot(object):
 
     @pytest.mark.parametrize('cube_size, sky_coords, expected',

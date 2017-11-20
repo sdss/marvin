@@ -81,48 +81,6 @@ class TestMaps(object):
         assert maps._drpver == galaxy.drpver
         assert maps._dapver == galaxy.dapver
 
-    # def test_get_spaxel(self, galaxy, data_origin):
-    #
-    #     maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-    #     spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
-    #
-    #     if maps.is_binned():
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
-    #     else:
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-    #
-    #     assert len(spaxel.maps_quantities.keys()) > 0
-    #
-    #     expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template.name]
-    #     assert spaxel.maps_quantities['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
-    #
-    # def test_get_spaxel_test2(self, galaxy, data_origin):
-    #
-    #     maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-    #     spaxel = maps.getSpaxel(x=5, y=5)
-    #
-    #     if maps.is_binned():
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
-    #     else:
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-    #
-    #     assert len(spaxel.maps_quantities.keys()) > 0
-    #
-    # def test_get_spaxel_no_db(self, galaxy, exporigin):
-    #     """Tests getting an spaxel if there is no DB."""
-    #
-    #     maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
-    #     spaxel = maps.getSpaxel(x=5, y=5)
-    #
-    #     assert spaxel.maps.data_origin == exporigin
-    #
-    #     if maps.is_binned():
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Bin)
-    #     else:
-    #         assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-    #
-    #     assert len(spaxel.maps_quantities.keys()) > 0
-
     def test_maps_redshift(self, maps, galaxy):
         redshift = maps.nsa.redshift \
             if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z

@@ -33,7 +33,7 @@ from marvin.api.maps import MapsView
 from marvin.api.modelcube import ModelCubeView
 from marvin.api.plate import PlateView
 from marvin.api.rss import RSSView
-from marvin.api.spaxel import SpaxelView
+# from marvin.api.spaxel import SpaxelView
 from marvin.api.query import QueryView
 from marvin.api.general import GeneralRequestsView
 
@@ -109,7 +109,7 @@ def register_api(app, api):
     ModelCubeView.register(api)
     PlateView.register(api)
     RSSView.register(api)
-    SpaxelView.register(api)
+    # SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
     limiter.limit("200/minute")(api)

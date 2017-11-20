@@ -128,7 +128,9 @@ class Map(units.Quantity, QuantityMixIn):
                       binid=deepcopy(self.binid, memo))
 
         new_map._maps = deepcopy(self._maps, memo)
-        new_map._datamodel = deepcopy(self._datamodel, memo)
+
+        # TODO: temporary fix because the datamodel daoes deepcopy. Fix.
+        new_map._datamodel = self._datamodel
 
         return new_map
 

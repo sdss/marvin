@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 18:04:23
+# @Last Modified time: 2017-11-17 12:54:33
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -96,9 +96,9 @@ class TestQuerySearches(object):
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
                               ('absmag_g_r > -1', 'absmag_g_r > -1'),
-                              ('haflux > 25', 'haflux > 25'),
+                              ('haflux > 25', 'emline_gflux_ha_6564 > 25'),
                               ('npergood(emline_gflux_ha_6564 > 5) > 20', 'npergood(emline_gflux_ha_6564 > 5) > 20'),
-                              ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and haflux > 25')],
+                              ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
         res = query.run()
@@ -117,6 +117,37 @@ class TestQuerySearches(object):
     #     elif qmode == 'first':
     #         assert len(r.results) == 1
     #         assert r.count == 1
+
+
+class TestQuerySort(object):
+
+    @pytest.mark.parametrize('query, sortparam, order',
+                             [('nsa.z < 0.1', 'z', 'asc'),
+                              ('nsa.z < 0.1', 'nsa.z', 'desc')], indirect=['query'])
+    def test_sort(self, query, sortparam, order):
+        data = query.expdata['queries']['nsa.z < 0.1']['sorted']
+        query = Query(searchfilter=query.searchfilter, mode=query.mode, sort=sortparam, order=order)
+        res = query.run()
+        if order == 'asc':
+            redshift = data['1'][-1]
+        else:
+            redshift = data['last'][-1]
+        assert res.results['z'][0] == redshift
+
+
+class TestQueryShow(object):
+
+    @pytest.mark.parametrize('query, show, exp',
+                             [('nsa.z < 0.1', 'query', 'SELECT mangadatadb.cube.mangaid'),
+                              ('nsa.z < 0.1', 'tables', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
+                              ('nsa.z < 0.1', 'joins', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
+                              ('nsa.z < 0.1', 'filter', 'mangasampledb.nsa.z < 0.1')], indirect=['query'])
+    def test_show(self, query, show, exp, capsys):
+        if query.mode == 'remote':
+            exp = 'Cannot show full SQL query in remote mode, use the Results showQuery'
+        query.show(show)
+        out, err = capsys.readouterr()
+        assert exp in out or exp == out.strip('\n')
 
 
 class TestQueryReturnParams(object):

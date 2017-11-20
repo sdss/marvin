@@ -432,8 +432,8 @@ class ModelList(FuzzyList):
             unit = model.unit.to_string()
 
             model_table.add_row((model.name,
-                                 model.extension_ivar is not None,
-                                 model.extension_mask is not None,
+                                 model._extension_ivar is not None,
+                                 model._extension_mask is not None,
                                  unit,
                                  model.description))
 
@@ -948,12 +948,12 @@ class Model(object):
 
         elif ext == 'ivar':
             if not self.has_ivar():
-                raise 'no ivar extension for datacube {0!r}'.format(self.full())
+                raise MarvinError('no ivar extension for datacube {0!r}'.format(self.full()))
             return self._extension_ivar.upper()
 
         elif ext == 'mask':
             if not self.has_mask():
-                raise 'no mask extension for datacube {0!r}'.format(self.full())
+                raise MarvinError('no mask extension for datacube {0!r}'.format(self.full()))
             return self._extension_mask
 
     def db_column(self, ext=None):

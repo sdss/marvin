@@ -418,6 +418,9 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         if self.data_origin == 'file' or self.data_origin == 'db':
 
+            # Stores a dictionary of (table, row)
+            _db_rows = {}
+
             for dm in self.datamodel.datacubes + self.datamodel.spectra:
 
                 data = {'value': None, 'ivar': None, 'mask': None, 'std': None}
@@ -449,18 +452,20 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
                         if dm in self.datamodel.datacubes:
 
-                            db_column = getattr(datadb.Spaxel, colname)
+                            if 'datacubes' not in _db_rows:
+                                _db_rows['datacubes'] = session.query(datadb.Spaxel).filter(
+                                    datadb.Spaxel.cube == self.data,
+                                    datadb.Spaxel.x == x, datadb.Spaxel.y == y).one()
 
-                            spaxel_data = session.query(db_column).filter(
-                                datadb.Spaxel.cube == self.data,
-                                datadb.Spaxel.x == x, datadb.Spaxel.y == y).one()
+                            spaxel_data = getattr(_db_rows['datacubes'], colname)
 
                         else:
 
-                            db_column = getattr(datadb.Cube, colname)
+                            if 'spectra' not in _db_rows:
+                                _db_rows['spectra'] = session.query(datadb.Cube).filter(
+                                    datadb.Cube.pk == self.data.pk).one()
 
-                            spaxel_data = session.query(db_column).filter(
-                                datadb.Cube.pk == self.data.pk).one()
+                            spaxel_data = getattr(_db_rows['spectra'], colname, None)
 
                         # In case the column was empty in the DB. At some point
                         # this can be removed.
@@ -471,7 +476,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
                             cube_quantities[dm.name] = None
                             continue
 
-                        data[key] = np.array(spaxel_data[0])
+                        data[key] = np.array(spaxel_data)
 
                 cube_quantities[dm.name] = Spectrum(data['value'],
                                                     ivar=data['ivar'],

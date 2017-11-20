@@ -14,7 +14,8 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
 from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column, temp_setattr
+from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
+from marvin.utils.general import temp_setattr, turn_off_ion
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 import marvin.utils.plot.scatter
@@ -203,8 +204,15 @@ class ResultSet(list):
                 return rows[0] if len(rows) == 1 else rows
             else:
                 raise ValueError('{0} not found in the list'.format(value))
-        else:
+        elif isinstance(value, int):
             return list.__getitem__(self, value)
+        elif isinstance(value, slice):
+            newset = list.__getitem__(self, value)
+            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns)
+
+    def __getslice__(self, start, stop):
+        newset = list.__getslice__(self, start, stop)
+        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns)
 
     def __add__(self, other):
         newresults = self._results
@@ -517,7 +525,9 @@ class Results(object):
 
         if self.mode == 'local':
             reverse = True if order == 'desc' else False
+            self.getAll()
             self.results.sort(remotename, reverse=reverse)
+            self.results = self.results[0:self.limit]
         elif self.mode == 'remote':
             # Fail if no route map initialized
             if not config.urlmap:
@@ -610,7 +620,7 @@ class Results(object):
         elif stackdir == 'horizontal':
             return hstack(tables, **kwargs)
 
-    def toFits(self, filename='myresults.fits'):
+    def toFits(self, filename='myresults.fits', overwrite=False):
         ''' Output the results as a FITS file
 
         Writes a new FITS file from search results using
@@ -619,16 +629,18 @@ class Results(object):
         Parameters:
             filename (str):
                 Name of FITS file to output
+            overwrite (bool):
+                Set to True to overwrite an existing file
 
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
             filename = filename + '.fits'
         table = self.toTable()
-        table.write(filename, format='fits')
+        table.write(filename, format='fits', overwrite=overwrite)
         print('Writing new FITS file {0}'.format(filename))
 
-    def toCSV(self, filename='myresults.csv'):
+    def toCSV(self, filename='myresults.csv', overwrite=False):
         ''' Output the results as a CSV file
 
         Writes a new CSV file from search results using
@@ -637,13 +649,15 @@ class Results(object):
         Parameters:
             filename (str):
                 Name of CSV file to output
+            overwrite (bool):
+                Set to True to overwrite an existing file
 
         '''
         myext = os.path.splitext(filename)[1]
         if not myext:
             filename = filename + '.csv'
         table = self.toTable()
-        table.write(filename, format='csv')
+        table.write(filename, format='csv', overwrite=overwrite)
         print('Writing new CSV file {0}'.format(filename))
 
     def toDF(self):
@@ -951,7 +965,7 @@ class Results(object):
             output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
-            output = self.results[name]
+            output = self.results[name] if self.results.count > 1 else [self.results[name]]
 
         if to_json:
             output = json.dumps(output) if output else None
@@ -1483,12 +1497,14 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            show_plot (bool):
+                Set to False to not show the interactive plot
             **kwargs (dict):
                 Any other keyword argument that will be passed to Marvin's
                 scatter and hist plotting methods
 
         Returns:
-            The histogram data, figure, and axes from the plotting function
+            The figure, axes, and histogram data from the plotting function
 
         Example:
             >>> # do a query and get the results
@@ -1502,6 +1518,7 @@ class Results(object):
         assert all([x_name, y_name]), 'Must provide both an x and y column'
         return_plateifus = kwargs.pop('return_plateifus', True)
         with_hist = kwargs.get('with_hist', True)
+        show_plot = kwargs.pop('show_plot', True)
 
         # get the named column
         x_col = self.columns[x_name]
@@ -1515,7 +1532,8 @@ class Results(object):
             x_data = self.results[x_name]
             y_data = self.results[y_name]
 
-        output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
+        with turn_off_ion(show_plot=show_plot):
+            output = marvin.utils.plot.scatter.plot(x_data, y_data, xlabel=x_col, ylabel=y_col, **kwargs)
 
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:
@@ -1544,6 +1562,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            show_plot (bool):
+                Set to False to not show the interactive plot
             **kwargs (dict):
                 Any other keyword argument that will be passed to Marvin's
                 hist plotting methods
@@ -1561,6 +1581,7 @@ class Results(object):
         '''
 
         return_plateifus = kwargs.pop('return_plateifus', True)
+        show_plot = kwargs.pop('show_plot', True)
 
         # get the named column
         col = self.columns[name]
@@ -1572,7 +1593,8 @@ class Results(object):
             data = self.results[name]
 
         # xhist, fig, ax_hist_x = output
-        output = marvin.utils.plot.scatter.hist(data, **kwargs)
+        with turn_off_ion(show_plot=show_plot):
+            output = marvin.utils.plot.scatter.hist(data, **kwargs)
 
         if return_plateifus:
             plateifus = self.getListOf('plateifu', return_all=True)
