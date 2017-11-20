@@ -37,12 +37,8 @@ import marvin.utils.dap.bpt
 from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Property, Channel
-<<<<<<< HEAD
-from marvin.utils.general import FuzzyDict
-from marvin.utils.general.maskbit import get_manga_target
-=======
 from marvin.utils.general import FuzzyDict, turn_off_ion
->>>>>>> a92b8fd58004711ea0cf857c62b57989ca4aa292
+from marvin.utils.general.maskbit import get_manga_target
 
 from .quantities import AnalysisProperty
 
