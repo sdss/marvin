@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-20 14:11:52
+# @Last modified time: 2017-11-20 14:11:63
 
 from copy import deepcopy
 
@@ -409,6 +409,7 @@ class TestMaskbit(object):
     def test_flag(self, flag, maps_release_only):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert getattr(ha, flag, None) is not None
+
 
 @pytest.mark.xfail
 class TestEnhancedMap(object):
