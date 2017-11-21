@@ -92,7 +92,7 @@ Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing th
 
 .. code-block:: python
 
-    spax = haflux_map.maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
+    spax = galaxies[0].getSpaxel(x=28, y=24, xyorig='lower', model=True)
 
 
 Now let's plot the spectrum and model fit:
