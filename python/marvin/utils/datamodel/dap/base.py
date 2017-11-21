@@ -674,6 +674,12 @@ class Property(object):
         return self.full()
 
     @property
+    def model(self):
+        ''' The ModelClass the property belongs to '''
+
+        return self.parent.property_table
+
+    @property
     def db_table(self):
         """The DB table to use to retrieve this property."""
 
