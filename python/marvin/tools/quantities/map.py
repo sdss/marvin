@@ -235,8 +235,8 @@ class Map(units.Quantity, QuantityMixIn):
         if sqlalchemy is None:
             raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
 
-        assert prop.db_table is not None
-        table = getattr(mdb.dapdb, prop.db_table)
+        assert prop.model is not None
+        table = getattr(mdb.dapdb, prop.model)
 
         fullname_value = prop.db_column()
         value = mdb.session.query(getattr(table, fullname_value)).filter(

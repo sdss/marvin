@@ -419,7 +419,7 @@ class SpectrumList(FuzzyList):
 
         return spectrum_table
 
-    def write_csv(self, filename=None, path=None, **kwargs):
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         ''' Write the datamodel to a CSV '''
 
         release = self.parent.release.lower().replace('-', '')
@@ -432,7 +432,7 @@ class SpectrumList(FuzzyList):
 
         fullpath = os.path.join(path, filename)
         table = self.to_table(**kwargs)
-        table.write(fullpath, format='csv')
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class Spectrum(object):

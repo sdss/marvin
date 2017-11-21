@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-17 16:43:48
+# @Last Modified time: 2017-11-21 11:11:13
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -264,9 +264,9 @@ def plot(x, y, **kwargs):
     setting the "with_hist" keyword to False, or "x", or "y" for displaying only that column.
     Accepts all the same keyword arguments as matplotlib scatter, hexbin, and hist methods.
 
-    See `scatter-density <https://github.com/astrofrog/mpl-scatter-density>_`.
+    See `scatter-density <https://github.com/astrofrog/mpl-scatter-density>`_
     See `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
-    See `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
+    See `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>`_
 
     Parameters:
         x (str|list|ndarray):
@@ -297,8 +297,8 @@ def plot(x, y, **kwargs):
             number is adopted for both x and y bins.  A tuple is used to customize per axis.
         kwargs (dict):
             Any other keyword arguments to be passed to `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
-            or `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>_` or
-            `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>_`.
+            or `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_ or
+            `matplotlib.pyplot.hexbin <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hexbin>`_.
 
     Returns:
         A tuple of the matplotlib figure, axes, and histogram data (if returned)
