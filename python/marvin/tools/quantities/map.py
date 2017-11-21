@@ -424,8 +424,7 @@ class Map(units.Quantity, QuantityMixIn):
             warnings.warn('Releases do not match in map arithmetic.')
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
-                           scale=self.scale, release=self.release, datamodel=self._datamodel,
-                           copy=True)
+                           datamodel=self._datamodel, copy=True)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -461,8 +460,8 @@ class Map(units.Quantity, QuantityMixIn):
         ivar = self._pow_ivar(self.ivar, self.value, power)
         unit = self.unit**power
 
-        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask, scale=self.scale,
-                           release=self.release, datamodel=self._datamodel, copy=True)
+        return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask,
+                           datamodel=self._datamodel, copy=True)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening.
@@ -472,7 +471,7 @@ class Map(units.Quantity, QuantityMixIn):
         """
         if self.property.name == 'stellar_sigma':
 
-            if self.release == 'MPL-4':
+            if self._datamodel.parent.release == 'MPL-4':
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
 
@@ -508,13 +507,11 @@ class EnhancedMap(Map):
     """Creates a Map that has been modified."""
 
     def __new__(cls, value, unit, *args, **kwargs):
-        ignore = ['release', 'scale', 'datamodel']
+        ignore = ['datamodel']
         [kwargs.pop(it) for it in ignore if it in kwargs]
         return cls._init_map_from_value(value, unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        self.release = kwargs.get('release', None)
-        self.scale = kwargs.get('scale', None)
         self._datamodel = kwargs.get('datamodel', None)
 
     def __repr__(self):
@@ -523,7 +520,6 @@ class EnhancedMap(Map):
     def __deepcopy__(self, memo):
         return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
                            ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
-                           scale=deepcopy(self.scale, memo), release=deepcopy(self.release, memo),
                            copy=True)
 
     def _init_map_from_maps(self):
