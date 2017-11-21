@@ -416,7 +416,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
                     elif self.data_origin == 'db':
 
-                        table = getattr(mdb.dapdb, dm.db_table)
+                        table = getattr(mdb.dapdb, dm.model)
 
                         if table not in _db_rows:
                             _db_rows[table] = mdb.session.query(table).filter(
