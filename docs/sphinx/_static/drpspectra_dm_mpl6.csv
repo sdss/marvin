@@ -1,0 +1,3 @@
+name,std,unit,db_table,db_column,fits_extension
+spectral_resolution,True,Angstrom,cube,specres,SPECRES
+spectral_resolution_,True,Angstrom,cube,prespecres,PRESPECRES

@@ -178,10 +178,10 @@ class DataCubeList(FuzzyList):
 
         return datacube_table
 
-    def write_csv(self, filename=None, path=None, **kwargs):
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         ''' Write the datamodel to a CSV '''
 
-        release = self.release.lower().replace('-', '')
+        release = self.parent.release.lower().replace('-', '')
 
         if not filename:
             filename = 'drpcubes_dm_{0}.csv'.format(release)
@@ -191,7 +191,7 @@ class DataCubeList(FuzzyList):
 
         fullpath = os.path.join(path, filename)
         table = self.to_table(**kwargs)
-        table.write(fullpath, format='csv')
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class DataCube(object):
@@ -420,7 +420,7 @@ class SpectrumList(FuzzyList):
     def write_csv(self, filename=None, path=None, **kwargs):
         ''' Write the datamodel to a CSV '''
 
-        release = self.release.lower().replace('-', '')
+        release = self.parent.release.lower().replace('-', '')
 
         if not filename:
             filename = 'drpspectra_dm_{0}.csv'.format(release)

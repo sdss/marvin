@@ -247,7 +247,7 @@ class QueryDataModel(object):
 
         return param_table
 
-    def write_csv(self, filename=None, path=None, **kwargs):
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         ''' Write the datamodel to a CSV '''
 
         release = self.release.lower().replace('-', '')
@@ -260,7 +260,7 @@ class QueryDataModel(object):
 
         fullpath = os.path.join(path, filename)
         table = self.to_table(**kwargs)
-        table.write(fullpath, format='csv')
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class QueryDataModelList(DataModelList):

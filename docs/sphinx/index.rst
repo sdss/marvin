@@ -87,7 +87,9 @@ Components
 
 * :doc:`datamodel/datamodels`
 
+  * :doc:`datamodel/mpl4`
   * :doc:`datamodel/mpl5`
+  * :doc:`datamodel/mpl6`
 
 |
 

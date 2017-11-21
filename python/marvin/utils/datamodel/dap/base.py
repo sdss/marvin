@@ -15,6 +15,7 @@ import copy as copy_mod
 import itertools
 import re
 import six
+import os
 
 import astropy.table as table
 from astropy import units as u
@@ -305,7 +306,7 @@ class PropertyList(FuzzyList):
             prop_table = table.Table(
                 None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description',
                              'db_table', 'db_column', 'fits_extension'],
-                dtype=['S20', 'S300', bool, bool, 'S20', 'S500', 'S20', 'S20', 'S20'])
+                dtype=['S20', 'S300', bool, bool, 'S20', 'S500', 'S20', 'S300', 'S20'])
         else:
             prop_table = table.Table(
                 None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description',
@@ -347,10 +348,10 @@ class PropertyList(FuzzyList):
 
         return prop_table
 
-    def write_csv(self, filename=None, path=None, **kwargs):
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         ''' Write the property datamodel to a CSV '''
 
-        release = self.release.lower().replace('-', '')
+        release = self.parent.aliases[0].lower().replace('-', '')
 
         if not filename:
             filename = 'dapprops_dm_{0}.csv'.format(release)
@@ -360,7 +361,7 @@ class PropertyList(FuzzyList):
 
         fullpath = os.path.join(path, filename)
         table = self.to_table(**kwargs)
-        table.write(fullpath, format='csv')
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class ModelList(FuzzyList):
@@ -468,10 +469,10 @@ class ModelList(FuzzyList):
 
         return model_table
 
-    def write_csv(self, filename=None, path=None, **kwargs):
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         ''' Write the datamodel to a CSV '''
 
-        release = self.release.lower().replace('-', '')
+        release = self.parent.aliases[0].lower().replace('-', '')
 
         if not filename:
             filename = 'dapmodels_dm_{0}.csv'.format(release)
@@ -481,7 +482,7 @@ class ModelList(FuzzyList):
 
         fullpath = os.path.join(path, filename)
         table = self.to_table(**kwargs)
-        table.write(fullpath, format='csv')
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class Bintype(object):
