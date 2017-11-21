@@ -509,7 +509,7 @@ class EnhancedMap(Map):
     def __new__(cls, value, unit, *args, **kwargs):
         ignore = ['datamodel']
         [kwargs.pop(it) for it in ignore if it in kwargs]
-        return cls._init_map_from_value(value, unit, *args, **kwargs)
+        return super(EnhancedMap, cls).__new__(cls, value, unit=unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         self._datamodel = kwargs.get('datamodel', None)
