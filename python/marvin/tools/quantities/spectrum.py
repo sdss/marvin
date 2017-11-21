@@ -53,7 +53,7 @@ class Spectrum(Quantity, QuantityMixIn):
     """
 
     def __new__(cls, flux, wavelength, scale=None, unit=Angstrom,
-                wavelength_unit=dimensionless_unscaled, ivar=None, std=None,
+                wavelength_unit=Angstrom, ivar=None, std=None,
                 mask=None, dtype=None, copy=True, **kwargs):
 
         flux = np.array(flux)
@@ -198,7 +198,7 @@ class Spectrum(Quantity, QuantityMixIn):
             value = self.value
             wave = self.wavelength.value
 
-        ax.plot(wave, value, color='b', lw=0.8)
+        ax.plot(wave, value)
 
         if show_std and self.std is not None:
             if use_mask is False:
