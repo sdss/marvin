@@ -420,8 +420,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
-        # TODO test this!
-        if self.release != map2.release:
+        if self._datamodel.parent.release != map2._datamodel.parent.release:
             warnings.warn('Releases do not match in map arithmetic.')
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
