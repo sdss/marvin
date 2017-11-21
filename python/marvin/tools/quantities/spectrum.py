@@ -16,7 +16,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled, Angstrom
+from astropy.units import CompositeUnit, Quantity, Angstrom
 
 from .base_quantity import QuantityMixIn
 
