@@ -20,7 +20,6 @@ import warnings
 
 import astropy.io.fits
 import astropy.wcs
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
