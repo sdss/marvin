@@ -12,6 +12,7 @@ from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
 from marvin import config, log
 import six
+import os
 
 
 class MetaDataModel(type):
@@ -83,6 +84,7 @@ class DataModelLookup(object):
         self.drpdm = drp_dms[release]
         self.querydm = query_dms[release]
         self._dm = None
+        self.model_map = ['drp', 'dap', 'query']
 
     def __repr__(self):
 
@@ -105,9 +107,8 @@ class DataModelLookup(object):
             returns the name of the model the value was found in.
         '''
 
-        model_map = ['drp', 'dap', 'query']
         assert isinstance(value, six.string_types), 'value must be a string'
-        assert model in model_map + [None], 'model must be drp, dap, or query'
+        assert model in self.model_map + [None], 'model must be drp, dap, or query'
 
         indrp = value in self.drpdm
         indap = value in self.dapdm
@@ -127,7 +128,7 @@ class DataModelLookup(object):
             # check all of them
             tootrue = sum([indrp, indap]) > 1
             if tootrue:
-                subset = [i for i in model_map if true_map[model_map.index(i)]]
+                subset = [i for i in model_map if true_map[self.model_map.index(i)]]
                 raise ValueError('{0} found in multiple datamodels {1}. '
                                  'Fine-tune your value or try a specific model'.format(value, subset))
             else:
@@ -167,5 +168,29 @@ class DataModelLookup(object):
             param = None
 
         return param
+
+    def write_csv(self, path=None, filename=None, model=None, overwrite=None, **kwargs):
+        ''' Writes the datamodels out to CSV '''
+
+        assert model in self.model_map + [None], 'model must be drp, dap, or query'
+
+        if model == 'query':
+            self.querydm.write_csv(path=path, filename=filename, overwrite=overwrite, db=True)
+        elif model == 'dap':
+            self.dapdm.properties.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.dapdm.models.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+        elif model == 'drp':
+            self.drpdm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.drpdm.datacubes.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+
+    def write_csvs(self, overwrite=None, **kwargs):
+        ''' Write out all models to CSV files '''
+
+        for model in self.model_map:
+            self.write_csv(model=model, overwrite=overwrite, **kwargs)
+
+
+
+
 
 

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 14:20:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-29 11:18:14
+# @Last Modified time: 2017-11-20 13:34:34
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel

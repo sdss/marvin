@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2017-11-14 11:11:27
 
 from __future__ import print_function, division, absolute_import
@@ -15,6 +15,8 @@ from marvin.utils.datamodel import DataModelList
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general.structs import FuzzyList
 
+from sqlalchemy_utils import get_hybrid_properties
+
 import copy as copy_mod
 import os
 import numpy as np
@@ -23,6 +25,7 @@ import yaml
 import yamlordereddictloader
 import inspect
 
+from astropy.table import Table
 from fuzzywuzzy import process
 from fuzzywuzzy import fuzz
 
@@ -79,6 +82,12 @@ class QueryDataModel(object):
         # final sort and set
         newkeys.sort()
         self._keys = newkeys
+
+        # remove keys from query_params best list here
+        origlist = query_params.list_params('full')
+        for okey in origlist:
+            if okey in self._keys:
+                self._keys.remove(okey)
 
         # # set parameters
         # self._parameters = [QueryParameter(k) for k in self._keys]
@@ -145,15 +154,15 @@ class QueryDataModel(object):
 
     def add_group(self, group, copy=True):
         ''' '''
-        self._groups.add_group(group, copy=copy)
+        self._groups.add_group(group, copy=copy, parent=self)
 
     def add_groups(self, groups, copy=True):
         ''' '''
-        self._groups.add_groups(groups, copy=copy)
+        self._groups.add_groups(groups, copy=copy, parent=self)
 
     @property
     def parameters(self):
-        return QueryList(sum([g.parameters for g in self.groups if g.name.lower() != 'other'], []))
+        return QueryList(sum([g.parameters for g in self.groups], []))
 
     def add_to_group(self, group, value=None):
         ''' Add free-floating Parameters into a Group '''
@@ -207,6 +216,51 @@ class QueryDataModel(object):
 
     def _reset_marvinform(self):
         self._marvinform = MarvinForm(release=self.release)
+
+    def to_table(self, pprint=False, max_width=1000, only_best=False, db=False):
+        ''' Write the datamodel to an Astropy table '''
+
+        param_table = Table(None, names=['group', 'full', 'best', 'name', 'display',
+                                         'db_schema', 'db_table', 'db_column', 'is_hybrid'],
+                            dtype=['S20', 'S300', bool, 'S30', 'S30', 'S30', 'S30', 'S30', bool])
+
+        iterable = self.groups.parameters
+
+        param_table.meta['release'] = self.release
+
+        for param in iterable:
+                param_table.add_row((param.group, param.full, param.best,
+                                     param.name, param.display,
+                                     param.db_schema, param.db_table,
+                                     param.db_column, param.is_hybrid()))
+
+        if only_best:
+            notbest = param_table['best'] is False
+            param_table.remove_rows(notbest)
+
+        if not db:
+            param_table.remove_columns(['db_schema', 'db_table', 'db_column', 'is_hybrid'])
+
+        if pprint:
+            param_table.pprint(max_width=max_width, max_lines=1e6)
+            return
+
+        return param_table
+
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
+        ''' Write the datamodel to a CSV '''
+
+        release = self.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'query_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class QueryDataModelList(DataModelList):
@@ -391,7 +445,7 @@ class ParameterGroupList(QueryFuzzyList):
         '''
         return [group.name for group in self]
 
-    def add_group(self, group, copy=True):
+    def add_group(self, group, copy=True, parent=None):
         ''' '''
 
         new_grp = copy_mod.copy(group) if copy else group
@@ -399,12 +453,13 @@ class ParameterGroupList(QueryFuzzyList):
             self.append(new_grp)
         else:
             new_grp = self._make_groups(new_grp)
+            new_grp.set_parent(parent)
             self.append(new_grp)
 
-    def add_groups(self, groups, copy=True):
+    def add_groups(self, groups, copy=True, parent=None):
         ''' '''
         for group in groups:
-            self.add_group(group, copy=copy)
+            self.add_group(group, copy=copy, parent=parent)
 
     def list_params(self, name_type='full', groups=None):
         '''Returns a list of parameters from all groups.
@@ -490,7 +545,7 @@ class ParameterGroup(QueryFuzzyList):
             else:
                 this_param = QueryParameter(item, group=self.name, best=False)
         if self.parent:
-            this_param.set_parent(self.parent)
+            this_param.set_parents(self.parent, self)
 
         return this_param
 
@@ -500,7 +555,7 @@ class ParameterGroup(QueryFuzzyList):
         assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
         self.parent = parent
         for item in self:
-            item.set_parent(parent)
+            item.set_parents(parent, self)
 
     @property
     def full(self):
@@ -656,6 +711,18 @@ class QueryParameter(object):
     def __str__(self):
         return self.full
 
+    def _split_full(self):
+        ''' Split the full name into parts '''
+        schema = table = column = None
+        if self.full.count('.') == 1:
+            table, column = self.full.split('.')
+        elif self.full.count('.') == 2:
+            schema, table, column = self.full.split('.')
+        else:
+            column = self.full
+
+        return schema, table, column
+
     def _set_names(self):
         ''' Sets alternate names if it can '''
         self._under = self.full.replace('.', '_')
@@ -668,21 +735,56 @@ class QueryParameter(object):
             else:
                 self.name = self.full
         if not self.short:
-            self.short = self._under if 'name' in self.name else self.name
+            self.short = self._under if 'name' == self.name else self.name
         if not self.display:
             self.display = self.name.title()
         if not self.remote:
-            self.remote = self._under if 'name' in self.name else self.name
+            self.remote = self._under if 'name' == self.name else self.name
         # correct the name if just name
-        self.name = self._under if 'name' in self.name else self.name
+        self.name = self._under if 'name' == self.name else self.name
         # used for a token string on the web
         self._joinedname = ', '.join([self.full, self.name, self.short, self.display])
 
-    def set_parent(self, parent):
+    def set_parents(self, parent, group):
         ''' Set the parent datamodel '''
 
         assert isinstance(parent, QueryDataModel), 'parent must be a QueryDataModel'
+        assert isinstance(group, ParameterGroup), 'group must be a ParameterGroup'
         self.parent = parent
+        self.parent_group = group
+
+    @property
+    def db_schema(self):
+        schema, table, column = self._split_full()
+        if not schema:
+            if self._in_form():
+                schema = self.parent._marvinform._param_form_lookup[self.full].Meta.model.__table__.schema
+            else:
+                schema = None
+        return schema
+
+    @property
+    def db_table(self):
+        schema, table, column = self._split_full()
+        release_num = self.parent.release.split('-')[1]
+        table = table + release_num if table == 'spaxelprop' else table
+        return table
+
+    @property
+    def db_column(self):
+        schema, table, column = self._split_full()
+        return column
+
+    def is_hybrid(self):
+        if self._in_form():
+            model = self.parent._marvinform._param_form_lookup[self.full].Meta.model
+            hybrids = get_hybrid_properties(model).keys()
+            return self.db_column in hybrids
+        return None
+
+    def _in_form(self):
+        ''' Check in parameters is in the Marvin Form '''
+        return self.full in self.parent._marvinform._param_form_lookup
 
 
 # # Get the Common Parameters from the filelist

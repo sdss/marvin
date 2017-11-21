@@ -1,0 +1,5 @@
+name,ivar,mask,unit,db_table,db_column,fits_extension
+binned_flux,True,True,1e-17 erg / (cm2 s s,modelspaxel,flux,FLUX
+full_fit,False,True,1e-17 erg / (cm2 s s,modelspaxel,model,MODEL
+emline_fit,False,True,1e-17 erg / (cm2 s s,modelspaxel,emline,EMLINE
+emline_base_fit,False,True,1e-17 erg / (cm2 s s,modelspaxel,emline_base,EMLINE_BASE

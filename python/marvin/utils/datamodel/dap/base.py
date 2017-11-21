@@ -15,6 +15,7 @@ import copy as copy_mod
 import itertools
 import re
 import six
+import os
 
 import astropy.table as table
 from astropy import units as u
@@ -305,12 +306,14 @@ class PropertyList(FuzzyList):
 
         if compact:
             prop_table = table.Table(
-                None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description'],
-                dtype=['S20', 'S300', bool, bool, 'S20', 'S500'])
+                None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description',
+                             'db_table', 'db_column', 'fits_extension'],
+                dtype=['S20', 'S300', bool, bool, 'S20', 'S500', 'S20', 'S300', 'S20'])
         else:
             prop_table = table.Table(
-                None, names=['name', 'channel', 'ivar', 'mask', 'unit', 'description'],
-                dtype=['S20', 'S20', bool, bool, 'S20', 'S500'])
+                None, names=['name', 'channels', 'ivar', 'mask', 'unit', 'description',
+                             'db_table', 'db_column', 'fits_extension'],
+                dtype=['S20', 'S20', bool, bool, 'S20', 'S500', 'S20', 'S20', 'S20'])
 
         if self.parent:
             prop_table.meta['release'] = self.parent.release
@@ -329,11 +332,14 @@ class PropertyList(FuzzyList):
                 channel = ', '.join([str(channel) for channel in prop.channels])
                 units = [pp.unit.to_string() for pp in prop]
                 unit = units[0] if len(set(units)) == 1 else 'multiple'
+                dbcolumn = ', '.join(prop.db_columns())
             else:
                 channel = '' if not prop.channel else prop.channel
                 unit = prop.unit.to_string()
+                dbcolumn = prop.db_column()
 
-            prop_table.add_row((prop.name, channel, prop.ivar, prop.mask, unit, prop.description))
+            prop_table.add_row((prop.name, channel, prop.ivar, prop.mask, unit, prop.description,
+                                prop.db_table, dbcolumn, prop.fits_extension()))
 
         if not description:
             prop_table.remove_column('description')
@@ -343,6 +349,21 @@ class PropertyList(FuzzyList):
             return
 
         return prop_table
+
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
+        ''' Write the property datamodel to a CSV '''
+
+        release = self.parent.aliases[0].lower().replace('-', '')
+
+        if not filename:
+            filename = 'dapprops_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class ModelList(FuzzyList):
@@ -418,8 +439,9 @@ class ModelList(FuzzyList):
         """
 
         model_table = table.Table(
-            None, names=['name', 'ivar', 'mask', 'unit', 'description'],
-            dtype=['S20', bool, bool, 'S20', 'S500'])
+            None, names=['name', 'ivar', 'mask', 'unit', 'description',
+                         'db_table', 'db_column', 'fits_extension'],
+            dtype=['S20', bool, bool, 'S20', 'S500', 'S20', 'S20', 'S20'])
 
         if self.parent:
             model_table.meta['release'] = self.parent.release
@@ -435,7 +457,10 @@ class ModelList(FuzzyList):
                                  model._extension_ivar is not None,
                                  model._extension_mask is not None,
                                  unit,
-                                 model.description))
+                                 model.description,
+                                 model.db_table,
+                                 model.db_column(),
+                                 model.fits_extension()))
 
         if not description:
             model_table.remove_column('description')
@@ -445,6 +470,21 @@ class ModelList(FuzzyList):
             return
 
         return model_table
+
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
+        ''' Write the datamodel to a CSV '''
+
+        release = self.parent.aliases[0].lower().replace('-', '')
+
+        if not filename:
+            filename = 'dapmodels_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class Bintype(object):
@@ -641,7 +681,16 @@ class Property(object):
 
         assert self.parent is not None, 'parent DAPDataModel is not set for this property.'
 
-        return self.parent.property_table
+        return self.parent.property_table.lower()
+
+    def fits_extension(self):
+        ''' The FITS extension this property belongs to '''
+
+        ext = self.name.upper()
+        if self.channel:
+            channel_num = self.channel.idx
+            ext = '{0}_{1}'.format(ext, channel_num)
+        return ext
 
     def to_string(self, mode='string', include_channel=True):
         """Return a string representation of the channel."""
@@ -766,6 +815,22 @@ class MultiChannelProperty(list):
             self.name, self.parent.release if self.parent else None,
             [channel.name for channel in self.channels])
 
+    @property
+    def db_table(self):
+        ''' Returns the db table this belongs to '''
+
+        return self.parent.property_table.lower()
+
+    def db_columns(self):
+        ''' Returns a list of db columns for this MultiChannelProperty '''
+
+        return [item.db_column() for item in self]
+
+    def fits_extension(self):
+        ''' Returns the FITS extension this belongs to '''
+
+        return self.name.upper()
+
 
 class Channel(object):
     """A class representing a channel in a property.
@@ -861,13 +926,15 @@ class Model(object):
             model. If not set, assumes the `.DAPDataModel` ``default_binid``.
         description (str):
             A description for the model.
+        db_table (str):
+            The database table the model belongs to.
 
     """
 
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, channels=[],
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 parent=None, binid=None, description=''):
+                 parent=None, binid=None, description='', db_table='modelspaxel'):
 
         self.name = name
 
@@ -882,6 +949,7 @@ class Model(object):
 
         self.formats = formats
         self.description = description
+        self.db_table = db_table
 
         self._binid = binid
 

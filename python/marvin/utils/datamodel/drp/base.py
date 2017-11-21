@@ -13,6 +13,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import copy as copy_mod
+import os
 
 import astropy.table as table
 from astropy import units as u
@@ -151,8 +152,9 @@ class DataCubeList(FuzzyList):
         """
 
         datacube_table = table.Table(
-            None, names=['name', 'ivar', 'mask', 'unit', 'description'],
-            dtype=['S20', bool, bool, 'S20', 'S500'])
+            None, names=['name', 'ivar', 'mask', 'unit', 'description',
+                         'db_table', 'db_column', 'fits_extension'],
+            dtype=['S20', bool, bool, 'S20', 'S500', 'S20', 'S20', 'S20'])
 
         if self.parent:
             datacube_table.meta['release'] = self.parent.release
@@ -161,10 +163,13 @@ class DataCubeList(FuzzyList):
             unit = datacube.unit.to_string()
 
             datacube_table.add_row((datacube.name,
-                                    datacube._extension_ivar is not None,
-                                    datacube._extension_mask is not None,
+                                    datacube.has_ivar(),
+                                    datacube.has_mask(),
                                     unit,
-                                    datacube.description))
+                                    datacube.description,
+                                    datacube.db_table,
+                                    datacube.db_column(),
+                                    datacube.fits_extension()))
 
         if not description:
             datacube_table.remove_column('description')
@@ -174,6 +179,21 @@ class DataCubeList(FuzzyList):
             return
 
         return datacube_table
+
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
+        ''' Write the datamodel to a CSV '''
+
+        release = self.parent.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'drpcubes_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv', overwrite=overwrite)
 
 
 class DataCube(object):
@@ -372,8 +392,9 @@ class SpectrumList(FuzzyList):
         """
 
         spectrum_table = table.Table(
-            None, names=['name', 'std', 'unit', 'description'],
-            dtype=['S20', bool, 'S20', 'S500'])
+            None, names=['name', 'std', 'unit', 'description',
+                         'db_table', 'db_column', 'fits_extension'],
+            dtype=['S20', bool, 'S20', 'S500', 'S20', 'S20', 'S20'])
 
         if self.parent:
             spectrum_table.meta['release'] = self.parent.release
@@ -382,9 +403,12 @@ class SpectrumList(FuzzyList):
             unit = spectrum.unit.to_string()
 
             spectrum_table.add_row((spectrum.name,
-                                    spectrum._extension_std is not None,
+                                    spectrum.has_std(),
                                     unit,
-                                    spectrum.description))
+                                    spectrum.description,
+                                    spectrum.db_table,
+                                    spectrum.db_column(),
+                                    spectrum.fits_extension()))
 
         if not description:
             spectrum_table.remove_column('description')
@@ -394,6 +418,21 @@ class SpectrumList(FuzzyList):
             return
 
         return spectrum_table
+
+    def write_csv(self, filename=None, path=None, **kwargs):
+        ''' Write the datamodel to a CSV '''
+
+        release = self.parent.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'drpspectra_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv')
 
 
 class Spectrum(object):
