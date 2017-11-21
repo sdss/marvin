@@ -545,6 +545,6 @@ class EnhancedMap(Map):
         See :ref:`marvin-utils-maskbit` for documentation and
         :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
         """
-        pixmask = self._datamodel.bitmasks['MANGA_DAPPIXMASK']
+        pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
         pixmask.mask = self.mask if self.mask is not None else None
         return pixmask
