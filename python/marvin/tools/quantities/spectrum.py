@@ -187,7 +187,7 @@ class Spectrum(Quantity, QuantityMixIn):
 
         """
 
-        with plt.style.context(['seaborn-darkgrid', 'seaborn-deep']):
+        with plt.style.context(['seaborn-darkgrid']):
             fig = plt.figure() if figure is None else figure
             ax = fig.add_subplot(111)
 
@@ -198,7 +198,7 @@ class Spectrum(Quantity, QuantityMixIn):
             value = self.value
             wave = self.wavelength.value
 
-        ax.plot(wave, value, color='b', lw=0.8)
+        ax.plot(wave, value, lw=0.8)
 
         if show_std and self.std is not None:
             if use_mask is False:
