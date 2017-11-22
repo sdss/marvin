@@ -9,7 +9,7 @@ Tutorials
    :maxdepth: 1
 
    tutorials/lean-tutorial
-   tutorials/plotting
+   tutorials/plotting-tutorial
    Example Queries <tutorials/query-examples>
    tutorials/query-practice
    tutorials/boolean-search-tutorial
