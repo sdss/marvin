@@ -55,7 +55,7 @@ Quick Spectrum Plot
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
     spax = maps[17, 17]
-    spax.spectrum.plot()
+    spax.flux.plot()
 
 .. image:: ../_static/quick_spectrum_plot.png
 
@@ -71,7 +71,7 @@ Quick Model Fit Plot
     maps = Maps(plateifu='8485-1901')
     # must use Maps.getSpaxel() to get modelcube
     # (the bracket slicing of Maps does not return the modelcube)
-    spax = maps.getSpaxel(x=17, y=17, xyorig='lower', modelcube=True)
+    spax = maps.getSpaxel(x=17, y=17, xyorig='lower', model=True)
     ax = spax.spectrum.plot()
     ax.plot(spax.model.wavelength, spax.model.flux)
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
