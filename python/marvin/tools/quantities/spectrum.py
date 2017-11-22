@@ -53,7 +53,7 @@ class Spectrum(Quantity, QuantityMixIn):
     """
 
     def __new__(cls, flux, wavelength, scale=None, unit=Angstrom,
-                wavelength_unit=dimensionless_unscaled, ivar=None, std=None,
+                wavelength_unit=Angstrom, ivar=None, std=None,
                 mask=None, dtype=None, copy=True, **kwargs):
 
         flux = np.array(flux)
