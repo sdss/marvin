@@ -215,10 +215,12 @@ class Spectrum(Quantity, QuantityMixIn):
 
         if ylim is None:
             # Uses percentiles to get the optimal limits
-            ylim_0 = -np.percentile(-value[value < 0], 90)
-            ylim_1 = np.percentile(value[value > 0], 99.5)
+            # ylim_0 = -np.percentile(-value[value < 0], 90)
+            # ylim_1 = np.percentile(value[value > 0], 99.5)
+            # ylim = (ylim_0, ylim_1)
+            ylim = (0, None)
 
-        ax.set_ylim(ylim_0, ylim_1)
+        ax.set_ylim(ylim)
 
         if xlabel is not None:
             if show_units and isinstance(self.wavelength, Quantity):
