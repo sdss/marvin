@@ -388,14 +388,9 @@ def plot(*args, **kwargs):
     mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
 
     if title is None:
-        if hasattr(dapmap, 'property'):
-            title = dapmap.property.to_string(title_mode)
-            prop = dapmap.property.full()
-        else:
-            title = getattr(dapmap, 'history', '')
-            prop = ''
-    else:
-        prop = dapmap.property.full() if hasattr(dapmap, 'property') else ''
+        title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
+
+    prop = dapmap.datamodel.full() if hasattr(dapmap, 'datamodel') else ''
 
     # get plotparams from datamodel
     dapver = config.lookUpVersions()[1]
