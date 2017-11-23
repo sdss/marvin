@@ -16,7 +16,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from astropy.units import CompositeUnit, Quantity, dimensionless_unscaled, Angstrom
+from astropy.units import CompositeUnit, Quantity, Angstrom
 
 from .base_quantity import QuantityMixIn
 
@@ -131,7 +131,7 @@ class Spectrum(Quantity, QuantityMixIn):
 
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
-             figure=None, return_figure=False):
+             plt_style='seaborn-darkgrid', figure=None, return_figure=False):
         """Plots the spectrum.
 
         Displays the spectrum showing, optionally, the :math:`n\\sigma` region,
@@ -160,6 +160,8 @@ class Spectrum(Quantity, QuantityMixIn):
                 The axis labels to be passed to the plot. If not defined, the y
                 axis will be labelled as ``Flux`` and the x axis as
                 ``Wavelength``.
+            plt_style (str):
+                Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
             figure (`~matplotlib.figure.Figure` or None):
                 The matplotlib `~matplotlib.figure.Figure` object from which
                 the axes must be created. If ``figure=None``, a new figure will
@@ -187,13 +189,13 @@ class Spectrum(Quantity, QuantityMixIn):
 
         """
 
-        with plt.style.context(['seaborn-darkgrid']):
+        with plt.style.context(plt_style):
             fig = plt.figure() if figure is None else figure
             ax = fig.add_subplot(111)
 
         if use_mask:
             value = self.masked
-            wave = np.ma.array(self.wavelength, mask=(self.mask > 0))
+            wave = np.ma.array(self.wavelength.value, mask=(self.mask > 0))
         else:
             value = self.value
             wave = self.wavelength.value
