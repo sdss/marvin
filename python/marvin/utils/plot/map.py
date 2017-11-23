@@ -406,7 +406,7 @@ def plot(*args, **kwargs):
     use_masks = _format_use_masks(use_masks, mask, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
-    nocov_conditions = (('NOCOV' in use_masks) and (ivar is not None))
+    nocov_conditions = (('NOCOV' in use_masks) or (ivar is not None))
     bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
 
     nocov = _mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true

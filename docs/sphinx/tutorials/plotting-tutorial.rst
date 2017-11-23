@@ -72,8 +72,8 @@ Quick Model Fit Plot
     # must use Maps.getSpaxel() to get modelcube
     # (the bracket slicing of Maps does not return the modelcube)
     spax = maps.getSpaxel(x=17, y=17, xyorig='lower', model=True)
-    ax = spax.spectrum.plot()
-    ax.plot(spax.model.wavelength, spax.model.flux)
+    ax = spax.flux.plot()
+    ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
 
 .. image:: ../_static/quick_model_plot.png
@@ -231,21 +231,19 @@ Custom Spectrum and Model Fit
     plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
 
     maps = Maps(mangaid='1-209232')
-    spax = maps.getSpaxel(x=0, y=0, xyorig='center', modelcube=True)
+    spax = maps.getSpaxel(x=0, y=0, xyorig='center', model=True)
 
     fig, ax = plt.subplots()
 
-    pObs = ax.plot(spax.spectrum.wavelength, spax.spectrum.value)
-    pModel = ax.plot(spax.spectrum.wavelength, spax.model.value)
-    pEmline = ax.plot(spax.spectrum.wavelength, spax.emline.value)
+    pObs = ax.plot(spax.flux.wavelength, spax.flux.value)
+    pModel = ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
+    pEmline = ax.plot(spax.emline_fit.wavelength, spax.emline_fit.value)
     plt.legend(pObs + pEmline + pModel, ['observed', 'emline model', 'model'])
 
-    ax.axis([6700, 7100, -0.1e-17, 3e-17])
-    ax.set_xlabel('observed wavelength [{}]'.format(spax.spectrum.wavelength.unit.to_string('latex')))
-    ax.set_ylabel('flux [{}]'.format(spax.spectrum.unit.to_string('latex')))
+    ax.axis([6700, 7100, -0.1, 3])
+    ax.set_xlabel('observed wavelength [{}]'.format(spax.flux.wavelength.unit.to_string('latex')))
+    ax.set_ylabel('flux [{}]'.format(spax.flux.unit.to_string('latex')))
 
-
-.. .. image:: ../_static/map_bpt_mask.png
 
 .. image:: ../_static/spec_8485-1901.png
 
@@ -266,7 +264,7 @@ Plot H\ :math:`\alpha` Map of Star-forming Spaxels
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
     # and set bit 30 (DONOTUSE) for those spaxels.
-    mask_non_sf = ~masks['sf']['global'] * ha.get_bit_int('DONOTUSE')
+    mask_non_sf = ~masks['sf']['global'] * ha.pixmask.labels_to_value('DONOTUSE')
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = ha.mask | mask_non_sf
@@ -293,7 +291,7 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)
     # and set bit 30 (DONOTUSE) for those spaxels.
-    mask_non_sf = ~masks['sf']['global'] * 2**30
+    mask_non_sf = ~masks['sf']['global'] * ha.pixmask.labels_to_value('DONOTUSE')
 
     # Do a bitwise OR between DAP mask and non-star-forming mask.
     mask = nii_ha.mask | mask_non_sf
@@ -325,8 +323,8 @@ Qualitative Colorbar (New in version 2.1.4)
     ha_class[np.where(ha.value > 20)] = 3
 
     cmap = ListedColormap(['#104e8b', '#5783ad', '#9fb8d0'])
-    fig, ax, cb = mapplot.plot(value=ha_class, cmap=cmap, mask=ha.mask, cbrange=(0.5, 3.5),
-                               return_cb=True)
+    fig, ax, cb = mapplot.plot(dapmap=ha, value=ha_class, cmap=cmap, cbrange=(0.5, 3.5),
+                               title='', cblabel='', return_cb=True)
     cb.set_ticks([1, 2, 3])
     cb.set_ticklabels(['I', 'II', 'III'])
 
@@ -348,10 +346,10 @@ Custom Values and Custom Mask
 
     # Mask spaxels without IFU coverage
     # nocov = ha.mask & 2**0
-    nocov = ha.get_mask('NOCOV')
+    nocov = ha.pixmask.get_mask('NOCOV')
 
     # Mask spaxels with low Halpha flux
-    low_ha = (ha.value < 6) * ha.get_bit_int('DONOTUSE')  # 2**30
+    low_ha = (ha.value < 6) * ha.pixmask.labels_to_value('DONOTUSE')
 
     # Combine masks using bitwise OR (`|`)
     mask = nocov | low_ha
