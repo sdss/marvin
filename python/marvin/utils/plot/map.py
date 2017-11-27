@@ -123,7 +123,7 @@ def mask_neg_values(value):
     return mask
 
 
-def _format_use_masks(use_masks, mask, default_masks):
+def _format_use_masks(use_masks, mask, dapmap, default_masks):
     """Convert input format of ``use_masks`` into list of strings.
 
     Parameters:
@@ -132,6 +132,8 @@ def _format_use_masks(use_masks, mask, default_masks):
             not use any masks. Otherwise, use a list of bitnames.
         mask (array):
             Mask values.
+        dapmap (marvin.tools.quantities.Map):
+            Marvin Map object.
         default_masks:
             Default bitmasks to use if ``use_mask == True``.
 
@@ -141,8 +143,14 @@ def _format_use_masks(use_masks, mask, default_masks):
     """
     if (mask is None) or (use_masks is False):
         return []
+    elif (dapmap is None) and isinstance(use_masks, bool):
+        return []
     else:
         return default_masks if isinstance(use_masks, bool) else use_masks
+    # elif isinstance(use_masks, bool):
+    #     return default_masks if dapmap is not None else []
+    # else:
+    #     return use_masks
 
 
 def _get_prop(title):
@@ -393,7 +401,7 @@ def plot(*args, **kwargs):
     prop = dapmap.datamodel.full() if hasattr(dapmap, 'datamodel') else ''
 
     # get plotparams from datamodel
-    dapver = config.lookUpVersions()[1]
+    dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
@@ -403,7 +411,7 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
-    use_masks = _format_use_masks(use_masks, mask, default_masks=params['bitmasks'])
+    use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
     nocov_conditions = (('NOCOV' in use_masks) or (ivar is not None))
