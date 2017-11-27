@@ -75,7 +75,7 @@ def _mask_nocov(mask, dapmap, ivar=None):
 
     try:
         return dapmap.pixmask.get_mask('NOCOV')
-    except (MarvinError, AttributeError):
+    except (MarvinError, AttributeError, IndexError):
         return ivar == 0
 
 
