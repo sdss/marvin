@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-14 21:11:01
+# @Last modified time: 2017-11-27 12:11:84
 
 
 from __future__ import division, print_function, absolute_import
@@ -148,7 +148,6 @@ class TestMaskbit(object):
         mb.mask = mask
         actual = mb.get_mask(labels, mask=custom_mask)
         assert (actual == expected).all()
-
 
     @pytest.mark.parametrize('labels, expected',
                              [('BITONE', np.array([[False, False], [True, True]])),
