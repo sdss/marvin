@@ -6,23 +6,23 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-20 14:11:63
+# @Last modified time: 2017-11-28 10:11:05
 
 from copy import deepcopy
 
 import numpy as np
-import astropy
 from astropy import units as u
 import matplotlib
 import pytest
 
 from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.datamodel.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.plotting import get_default_plot_params
+from marvin.utils.general.maskbit import Maskbit
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -138,6 +138,18 @@ class TestMap(object):
                     assert (np.isclose(value.data, value2.data).all() and
                             (value.mask == value2.mask).all())
 
+                elif isinstance(value, Maskbit) or isinstance(value[0], Maskbit):
+
+                    if isinstance(value, Maskbit):
+                        value = [value]
+                        value2 = [value2]
+
+                    for mb, mb2 in zip(value, value2):
+                        for it in ['bits', 'description', 'labels', 'mask', 'name']:
+                            assert getattr(mb, it) == getattr(mb2, it)
+
+                        assert (mb.schema == mb2.schema).all().all()
+
                 elif isinstance(value, Maps):
                     pass
 
@@ -159,7 +171,6 @@ class TestMap(object):
         assert 'Your input value is too ambiguous.' in str(ee.value)
 
 
-@pytest.mark.xfail
 class TestMapArith(object):
 
     @pytest.mark.parametrize('ivar1, ivar2, expected',
@@ -204,35 +215,6 @@ class TestMapArith(object):
     def test_unit_propagation_mismatch(self, unit1, unit2, op):
         with pytest.warns(UserWarning):
             assert Map._unit_propagation(unit1, unit2, op) is None
-
-    def test_create_history(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        nii = maps['emline_gflux_nii_6585']
-        ha = maps['emline_gflux_ha_6564']
-        sii = maps['emline_gflux_sii_6732']
-        n2ha = nii / ha
-        s2ha = sii / ha
-
-        expected_n2ha = '(emline_gflux_nii_6585 / emline_gflux_ha_6564)'
-        assert Map._create_history(nii, ha, '/') == expected_n2ha
-
-        expected_s2ha_nii = ('((emline_gflux_sii_6732 / emline_gflux_ha_6564) / '
-                             'emline_gflux_nii_6585)')
-        assert Map._create_history(s2ha, nii, '/') == expected_s2ha_nii
-
-        expected_n2ha_s2ha = ('((emline_gflux_nii_6585 / emline_gflux_ha_6564) / '
-                              '(emline_gflux_sii_6732 / emline_gflux_ha_6564))')
-        assert Map._create_history(n2ha, s2ha, '/') == expected_n2ha_s2ha
-
-    def test_create_parents(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        nii = maps['emline_gflux_nii_6585']
-        ha = maps['emline_gflux_ha_6564']
-        n2ha = nii / ha
-
-        assert Map._create_parents(nii, ha) == [nii, ha]
-        assert Map._create_parents(n2ha, ha) == [[nii, ha], ha]
-        assert Map._create_parents(n2ha, n2ha) == [[nii, ha], [nii, ha]]
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),

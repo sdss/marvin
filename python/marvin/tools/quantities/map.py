@@ -132,6 +132,13 @@ class Map(units.Quantity, QuantityMixIn):
         # TODO: temporary fix because the datamodel daoes deepcopy. Fix.
         new_map._datamodel = self._datamodel
 
+        new_map.manga_target1 = deepcopy(self.manga_target1)
+        new_map.manga_target2 = deepcopy(self.manga_target2)
+        new_map.manga_target3 = deepcopy(self.manga_target3)
+        new_map.target_flags = deepcopy(self.target_flags)
+
+        new_map.quality_flag = deepcopy(self.quality_flag)
+
         return new_map
 
     def __array_finalize__(self, obj):
@@ -469,21 +476,21 @@ class Map(units.Quantity, QuantityMixIn):
         Correct observed stellar or emission line velocity dispersion
         for instrumental broadening.
         """
-        if self.property.name == 'stellar_sigma':
+        if self.datamodel.name == 'stellar_sigma':
 
             if self._datamodel.parent.release == 'MPL-4':
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
 
-            map_corr = self.maps['stellar_sigmacorr']
+            map_corr = self.getMaps()['stellar_sigmacorr']
 
-        elif self.property.name == 'emline_gsigma':
-            map_corr = self.maps.getMap(property_name='emline_instsigma',
-                                        channel=self.channel.name)
+        elif self.datamodel.name == 'emline_gsigma':
+            map_corr = self.getMaps().getMap(property_name='emline_instsigma',
+                                             channel=self.datamodel.channel.name)
 
         else:
             raise marvin.core.exceptions.MarvinError(
-                'Cannot correct {0} for instrumental broadening.'.format(self.property.full()))
+                'Cannot correct {0} for instrumental broadening.'.format(self.datamodel.full()))
 
         return (self**2 - map_corr**2)**0.5
 
