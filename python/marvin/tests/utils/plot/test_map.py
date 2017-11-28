@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-20 14:11:16
+# @Last modified time: 2017-11-27 20:11:09
 
 import numpy as np
 import matplotlib
@@ -116,7 +116,6 @@ def bits(request, set_release):
     return params['bitmasks']
 
 
-@pytest.mark.xfail
 class TestMasks(object):
 
     @pytest.mark.parametrize('ivar, expected',
@@ -153,7 +152,7 @@ class TestMasks(object):
                               (False, None, []),
                               (True, None, []),
                               (['DONOTUSE'], None, []),
-                              (True, mask_daplike, ['DONOTUSE']),
+                              (True, mask_daplike, []),
                               (['DONOTUSE'], mask_daplike, ['DONOTUSE'])
                               ])
     def test_format_use_masks_mpl4(self, use_masks, mask, expected, set_release):
@@ -163,7 +162,8 @@ class TestMasks(object):
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
             params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
-            actual = mapplot._format_use_masks(use_masks, mask, params['bitmasks'])
+            actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
+                                               default_masks=params['bitmasks'])
             assert actual == expected
 
     @pytest.mark.parametrize('use_masks, mask, expected',
@@ -171,7 +171,7 @@ class TestMasks(object):
                               (False, None, []),
                               (True, None, []),
                               (['DONOTUSE'], None, []),
-                              (True, mask_daplike, ['NOCOV', 'UNRELIABLE', 'DONOTUSE']),
+                              (True, mask_daplike, []),
                               (['LOWCOV', 'DONOTUSE'], mask_daplike, ['LOWCOV', 'DONOTUSE'])])
     def test_format_use_masks(self, use_masks, mask, expected, set_release):
 
@@ -180,11 +180,12 @@ class TestMasks(object):
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
             params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
-            actual = mapplot._format_use_masks(use_masks, mask, params['bitmasks'])
+            actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
+                                               default_masks=params['bitmasks'])
             assert actual == expected
 
 
-@pytest.mark.xfail
+# @pytest.mark.xfail
 class TestMapPlot(object):
 
     @pytest.mark.parametrize('cube_size, sky_coords, expected',
@@ -196,14 +197,14 @@ class TestMapPlot(object):
         assert np.all(extent == expected)
 
     @matplotlib_2
-    def test_set_hatch_linewidth(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_set_hatch_linewidth(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.linewidth'] == 0.5
 
     @matplotlib_2
-    def test_set_hatch_color(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_set_hatch_color(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
@@ -239,8 +240,8 @@ class TestMapPlot(object):
                               ('stellar_vel', None),
                               ('stellar_sigma', None),
                               ('specindex', 'd4000')])
-    def test_plot_dapmap(self, maps, property_name, channel):
-        map_ = maps.getMap(property_name, channel=channel)
+    def test_plot_dapmap(self, maps_release_only, property_name, channel):
+        map_ = maps_release_only.getMap(property_name, channel=channel)
         fig, ax = mapplot.plot(dapmap=map_)
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
@@ -253,14 +254,14 @@ class TestMapPlot(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
-    def test_plot_matplotlib_rc_restore(self, maps):
+    def test_plot_matplotlib_rc_restore(self, maps_release_only):
         rcparams = matplotlib.rc_params()
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert rcparams == matplotlib.rc_params()
 
-    def test_plot_matplotlib_style_sheet(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_plot_matplotlib_style_sheet(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_, plt_style='ggplot')
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
@@ -274,7 +275,7 @@ class TestMapPlot(object):
     def test_get_prop(self, title, expected):
         assert mapplot._get_prop(title) == expected
 
-    def test_return_cb(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_return_cb(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)
         assert isinstance(cb, matplotlib.colorbar.Colorbar)

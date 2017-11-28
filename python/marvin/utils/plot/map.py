@@ -143,14 +143,10 @@ def _format_use_masks(use_masks, mask, dapmap, default_masks):
     """
     if (mask is None) or (use_masks is False):
         return []
-    elif (dapmap is None) and isinstance(use_masks, bool):
-        return []
+    elif isinstance(use_masks, bool):
+        return default_masks if dapmap is not None else []
     else:
-        return default_masks if isinstance(use_masks, bool) else use_masks
-    # elif isinstance(use_masks, bool):
-    #     return default_masks if dapmap is not None else []
-    # else:
-    #     return use_masks
+        return use_masks
 
 
 def _get_prop(title):
