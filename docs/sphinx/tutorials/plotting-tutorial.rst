@@ -181,6 +181,36 @@ Custom Map Colorbar Range Options
     fig, ax = ha.plot(log_cb=True)
 
 
+.. _marvin-plotting-multipanel-matching-cbrange:
+
+Multi-panel Map Plot with Matching Colorbar Ranges
+--------------------------------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+
+    maps = Maps(plateifu='8485-1901')
+    havel = maps['emline_gvel_ha_6564']
+    stvel = maps['stellar_vel']
+    vel_maps = [havel, stvel]
+
+    cbranges = [vel_map.plot(return_cbrange=True) for vel_map in vel_maps]
+    cb_max = np.max(np.abs(cbranges))
+    cbrange = (-cb_max, cb_max)
+
+    fig, axes = plt.subplots(ncols=2, figsize=(10, 4))
+    for ax, vel_map in zip(axes, vel_maps):
+        vel_map.plot(fig=fig, ax=ax, cbrange=cbrange)
+
+    fig.tight_layout()
+
+.. image:: ../_static/multipanel_matching_cbrange.png
+
+
 .. _marvin-plotting-custom-map-snr-min:
 
 Custom Minimum Signal-to-Noise Ratio

@@ -334,7 +334,9 @@ def plot(*args, **kwargs):
         cb_kws (dict):
             Keyword args to set and draw colorbar. Default is ``None``.
         return_cb (bool):
-            Return colorbar axis. Default it ``False``.
+            Return colorbar axis. Default is ``False``.
+        return_cbrange (bool):
+            Return colorbar range without drawing plot. Default is ``False``.
 
     Returns:
         fig, ax (tuple):
@@ -350,7 +352,8 @@ def plot(*args, **kwargs):
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
-                    'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws', 'return_cb']
+                    'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws', 'return_cb',
+                    'return_cbrange']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
@@ -380,6 +383,7 @@ def plot(*args, **kwargs):
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
     return_cb = kwargs.get('return_cb', False)
+    return_cbrange = kwargs.get('return_cbrange', False)
 
     assert (value is not None) or (dapmap is not None), \
         'Map.plot() requires specifying ``value`` or ``dapmap``.'
@@ -437,6 +441,9 @@ def plot(*args, **kwargs):
     cb_kws['log_cb'] = log_cb
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
+
+    if return_cbrange:
+        return cb_kws['cbrange']
 
     # setup unmasked spaxels
     extent = set_extent(value.shape, sky_coords)

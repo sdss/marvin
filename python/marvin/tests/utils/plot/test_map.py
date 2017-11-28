@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-27 20:11:09
+# @Last modified time: 2017-11-28 12:11:97
 
 import numpy as np
 import matplotlib
@@ -185,7 +185,6 @@ class TestMasks(object):
             assert actual == expected
 
 
-# @pytest.mark.xfail
 class TestMapPlot(object):
 
     @pytest.mark.parametrize('cube_size, sky_coords, expected',
@@ -279,3 +278,8 @@ class TestMapPlot(object):
         map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)
         assert isinstance(cb, matplotlib.colorbar.Colorbar)
+
+    def test_return_cbrange(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
+        cbrange = mapplot.plot(dapmap=map_, return_cbrange=True)
+        assert isinstance(cbrange, list)
