@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-28 10:11:05
+# @Last modified time: 2017-11-28 10:11:98
 
 from copy import deepcopy
 
@@ -101,7 +101,6 @@ class TestMap(object):
 
         assert datamodel[map_.getMaps()._dapver][map_.datamodel.full()].unit == map_.unit
 
-    @pytest.mark.xfail()
     def test_plot(self, map_):
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
@@ -393,7 +392,6 @@ class TestMaskbit(object):
         assert getattr(ha, flag, None) is not None
 
 
-@pytest.mark.xfail
 class TestEnhancedMap(object):
 
     def test_overridden_methods(self, galaxy):
