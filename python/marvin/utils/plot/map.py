@@ -351,9 +351,9 @@ def plot(*args, **kwargs):
 
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
-                    'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
-                    'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws', 'return_cb',
-                    'return_cbrange']
+                    'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'title_mode', 'cblabel',
+                    'sky_coords', 'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws',
+                    'return_cb', 'return_cbrange']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
