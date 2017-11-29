@@ -129,7 +129,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         new_map._maps = deepcopy(self._maps, memo)
 
-        # TODO: temporary fix because the datamodel daoes deepcopy. Fix.
+        # TODO: temporary fix because the datamodel does deepcopy. Fix.
         new_map._datamodel = self._datamodel
 
         new_map.manga_target1 = deepcopy(self.manga_target1)
@@ -454,11 +454,8 @@ class Map(units.Quantity, QuantityMixIn):
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
         map12_mask = map1_mask | map2_mask
 
-        nans = np.isnan(map12_value)
-        map12_mask[nans] = map12_mask[nans] | self.pixmask.labels_to_value('DONOTUSE')
-
-        infs = np.isinf(map12_value)
-        map12_mask[infs] = map12_mask[infs] | self.pixmask.labels_to_value('DONOTUSE')
+        bad = np.isnan(map12_value) | np.isinf(map12_value)
+        map12_mask[bad] = map12_mask[bad] | self.pixmask.labels_to_value('DONOTUSE')
 
         map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
