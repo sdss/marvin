@@ -308,7 +308,7 @@ def plot(*args, **kwargs):
             For no title, set to ''. Default is ``None``.
         title_mode (str):
             The mode to generate a title automatically, if ``title`` is not
-            set. Usually ``'string'`` or ``'latex'``.
+            set. Usually ``'string'`` or ``'latex'``. Default is ``'string'``.
             See :func:`~marvin.utils.datamodel.dap.base.Property.to_string`
             for details.
         cblabel (str):
@@ -373,7 +373,7 @@ def plot(*args, **kwargs):
     cbrange = kwargs.get('cbrange', None)
     log_cb = kwargs.get('log_cb', False)
     title = kwargs.get('title', None)
-    title_mode = kwargs.get('title_mode', 'latex')
+    title_mode = kwargs.get('title_mode', 'string')
     cblabel = kwargs.get('cblabel', None)
     sky_coords = kwargs.get('sky_coords', False)
     use_masks = kwargs.get('use_masks', True)
