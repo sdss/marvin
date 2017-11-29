@@ -404,7 +404,36 @@ class Map(units.Quantity, QuantityMixIn):
 
         return unit12
 
-    def _arith(self, map2, op):
+    def _arith(self, term2, op):
+        if isinstance(term2, (Map, EnhancedMap)):
+            map_out = self._map_arith(term2, op)
+        else:
+            map_out = self._scalar_arith(term2, op)
+        return map_out
+
+    def _scalar_arith(self, scalar, op):
+        """Do map arithmetic and correctly handle map attributes."""
+
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+
+        ivar_func = {'+': lambda ivar, c: ivar, '-': lambda ivar, c: ivar,
+                     '*': lambda ivar, c: ivar / c**2, '/': lambda ivar, c: ivar * c**2}
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            map_value = ops[op](self.value, scalar)
+
+        map1_ivar = self.ivar if self.ivar is not None else np.zeros(self.shape)
+        map_ivar = ivar_func[op](map1_ivar, scalar)
+
+        map_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
+
+        bad = np.isnan(map_value) | np.isinf(map_value)
+        map_mask[bad] = map_mask[bad] | self.pixmask.labels_to_value('DONOTUSE')
+
+        return EnhancedMap(value=map_value, unit=self.unit, ivar=map_ivar, mask=map_mask,
+                           datamodel=self._datamodel, copy=True)
+
+    def _map_arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
 
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
