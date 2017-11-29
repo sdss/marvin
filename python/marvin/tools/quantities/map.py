@@ -423,7 +423,13 @@ class Map(units.Quantity, QuantityMixIn):
 
         map1_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
-        map12_mask = map1_mask & map2_mask
+        map12_mask = map1_mask | map2_mask
+
+        nans = np.isnan(map12_value)
+        map12_mask[nans] = map12_mask[nans] | self.pixmask.labels_to_value('DONOTUSE')
+
+        infs = np.isinf(map12_value)
+        map12_mask[infs] = map12_mask[infs] | self.pixmask.labels_to_value('DONOTUSE')
 
         map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
