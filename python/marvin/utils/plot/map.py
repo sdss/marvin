@@ -398,7 +398,10 @@ def plot(*args, **kwargs):
     if title is None:
         title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
 
-    prop = dapmap.datamodel.full() if hasattr(dapmap, 'datamodel') else ''
+    try:
+        prop = dapmap.datamodel.full()
+    except (AttributeError, TypeError):
+        prop = ''
 
     # get plotparams from datamodel
     dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
