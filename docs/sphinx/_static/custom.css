@@ -91,3 +91,17 @@ em.property {
     -webkit-background-clip: content-box;
     background-clip: content-box;
 } */
+
+.rubric > .class-header-no-toc {
+  font-size: 200%;
+  font-weight: 120;
+  padding-bottom: 20px;
+  display: inline-block;
+}
+
+h1 { font-size: 200%; }
+h2 { font-size: 160%; }
+h3 { font-size: 130%; }
+h4 { font-size: 100%; }
+h5 { font-size: 80%; }
+h6 { font-size: 70%; }
