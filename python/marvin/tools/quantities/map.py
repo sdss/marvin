@@ -548,18 +548,7 @@ class EnhancedMap(Map):
         return super(EnhancedMap, cls).__new__(cls, value, unit=unit, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        self._datamodel = self._set_datamodel(kwargs.get('datamodel', None))
-
-    def _set_datamodel(self, datamodel):
-        for it in ['_binid', 'channel', 'db_column', '_db_table', 'description', 'fits_extension',
-                   'full', 'name']:
-            setattr(datamodel, it, None)
-
-        setattr(datamodel, 'formats', {'string': ''})
-
-        datamodel.parent.property_table = ''
-
-        return datamodel
+        self._datamodel = kwargs.get('datamodel', None)
 
     def __repr__(self):
         return ('<Marvin EnhancedMap>\n{0!r} {1!r}').format(self.value, self.unit.to_string())
