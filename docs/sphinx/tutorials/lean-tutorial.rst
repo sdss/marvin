@@ -104,8 +104,8 @@ Now let's plot the spectrum and model fit:
     import matplotlib.pyplot as plt
     plt.style.use('seaborn-darkgrid')
 
-    ax = spax.spectrum.plot()
-    ax.plot(spax.model.wavelength, spax.model.flux)
+    ax = spax.flux.plot()
+    ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
     ax.axis([7100, 7500, 0.3, 0.65])
 
@@ -122,7 +122,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig, axes = haflux_map.maps.get_bpt()
+    masks, fig = maps.get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 

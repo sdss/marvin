@@ -200,7 +200,7 @@ class Spectrum(Quantity, QuantityMixIn):
             value = self.value
             wave = self.wavelength.value
 
-        ax.plot(wave, value, lw=0.8)
+        ax.plot(wave, value)
 
         if show_std and self.std is not None:
             if use_mask is False:
