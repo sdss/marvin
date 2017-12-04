@@ -21,7 +21,9 @@ Tools
 
 * **Coordinates** - Although we have made significant effort to test them, spaxel selection from coordinates (both indices and spherical) should not be considered science-grade yet. +/- 1 pixel offsets around the real position position are not unexpected, and the behaviour of :func:`~marvin.tools.cube.Cube.getSpaxel()` may not be consistent in all access mode (file vs. API). This is especially true in case of spaxel indices measured from the centre of the cube. When doing science analysis on the data please be careful and, if possible, double check the retrieved values independently. If you find any discrepancy between the values retreived and the ones you expect, please `submit a new Github Issue <https://github.com/sdss/marvin/issues/new>`_.
 
-* **Ivar propagation in ratio maps** - Inverse variation propagation in the ratio maps is set to ``None``.
+* **Ivar propagation for np.log10() of maps** - Inverse variation propagation when appling ``np.log10`` or ``np.log`` to a ``Map`` does not produce correct values.
+
+* **Datamodel propagation for map arithmetic** - The datamodel of a ``Map`` is propagated during map arithmetic operations but is not updated for the resulting ``EnhancedMap``.
 
 * **Queries** - Marvin Queries are currently synchronous.  This means that within one iPython session, you can submit only one query at a time, and it will block your terminal until it responds or times out.
 
