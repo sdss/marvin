@@ -1,12 +1,14 @@
 Marvin's Change Log
 ===================
 
-[2.1.5] - unreleased
+[2.2.0] - unreleased
 --------------------
 
 Added
 ~~~~~
 
+-  Added ``Maskbit`` class for easy conversion between mask values, bits, and
+   labels.
 -  Better BPT documentation, in particular in the ``Modifying the plot``
    section.
 -  A hack function ``marvin.utils.plot.utils.bind_to_figure()`` that
