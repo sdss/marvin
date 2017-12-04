@@ -273,7 +273,7 @@ def plot(*args, **kwargs):
     """Make single panel map or one panel of multi-panel map plot.
 
     Please see the `Plotting Tutorial
-    <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting.html>`_
+    <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting-tutorial.html>`_
     for examples.
 
     Parameters:
