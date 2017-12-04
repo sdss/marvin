@@ -251,3 +251,28 @@ class TestPickling(object):
         assert cube_restored.data_origin == 'api'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is None
+
+
+class TestMaskbit(object):
+
+    def test_values_to_bits(self, cube):
+        assert cube.pixmask.values_to_bits(3) == [0, 1]
+
+    def test_values_to_labels(self, cube):
+        assert cube.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
+
+    @pytest.mark.parametrize('names, expected',
+                             [(['NOCOV', 'LOWCOV'], 3),
+                              ('DONOTUSE', 1024)])
+    def test_labels_to_value(self, cube, names, expected):
+        assert cube.pixmask.labels_to_value(names) == expected
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'quality_flag',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, cube):
+        assert getattr(cube, flag, None) is not None

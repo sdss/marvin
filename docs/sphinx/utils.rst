@@ -13,5 +13,6 @@ Utilities
    Colorbar Utilities <utils/plot-colorbar>
    Scatter Plot Utilities <utils/plot-scatter>
    Histogram Plot Utilities <utils/plot-hist>
+   Maskbit Utilities<utils/maskbit>
 
 |

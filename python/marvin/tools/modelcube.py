@@ -30,6 +30,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.dap import datamodel, Model
 from marvin.utils.general import FuzzyDict
+from marvin.utils.general.maskbit import get_manga_target
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
@@ -75,6 +76,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.bintype = bintype
         self.template = template
         self.datamodel = None
+        self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
                                   mangaid=mangaid, plateifu=plateifu,
@@ -134,6 +136,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         """Sets the datamodel, template, and bintype."""
 
         self.datamodel = datamodel[self.release].models
+        self._bitmasks = datamodel[self.release].bitmasks
         self.bintype = self.datamodel.parent.get_bintype(self.bintype)
         self.template = self.datamodel.parent.get_template(self.template)
 
@@ -289,6 +292,40 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
+
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+        return get_manga_target('1', self._bitmasks, self.header)
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+        return get_manga_target('2', self._bitmasks, self.header)
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+        return get_manga_target('3', self._bitmasks, self.header)
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
+
+    @property
+    def quality_flag(self):
+        """Return ModelCube DAPQUAL flag."""
+        dapqual = self._bitmasks['MANGA_DAPQUAL']
+        dapqual.mask = int(self.header['DAPQUAL'])
+        return dapqual
+
+    @property
+    def pixmask(self):
+        """Return the DAPSPECMASK flag."""
+        pixmask = self._bitmasks['MANGA_DAPSPECMASK']
+        pixmask.mask = getattr(self, 'mask', None)
+        return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, properties=True, **kwargs):

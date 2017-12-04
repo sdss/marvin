@@ -22,6 +22,7 @@ from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
 from marvin.utils.datamodel.dap.base import Property
+from marvin.tests import marvin_test_if
 
 
 def _assert_maps(maps, galaxy):
@@ -121,3 +122,25 @@ class TestMaps(object):
 
                 else:
                     assert value == value2, attr
+
+
+class TestMaskbit(object):
+
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag is None
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag.mask == 0
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags'])
+    def test_flag(self, flag, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert getattr(ha, flag, None) is not None

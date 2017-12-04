@@ -92,7 +92,7 @@ Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing th
 
 .. code-block:: python
 
-    spax = haflux_map.maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
+    spax = galaxies[0].getSpaxel(x=28, y=24, xyorig='lower', model=True)
 
 
 Now let's plot the spectrum and model fit:
@@ -138,11 +138,11 @@ Select the star-forming spaxels that are in the star-forming region of each diag
 
     sf = masks['sf']['global']
 
-Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and set bit 30 (DONOTUSE) for non-star-forming spaxels.
+Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and mark those spaxels as DONOTUSE since they are non-star-forming spaxels.
 
 .. code-block:: python
 
-    mask_non_sf = ~sf * 2**30
+    mask_non_sf = ~sf * haflux_map.pixmask.labels_to_value('DONOTUSE')
 
 
 Do a bitwise OR between the DAP mask and the non-star-forming mask:

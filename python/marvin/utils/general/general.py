@@ -189,7 +189,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
 
 def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
-    """Converts input coordinates to array indices.
+    """Convert input coordinates to array indices.
 
     Converts input positions in x, y or RA, Dec coordinates to array indices
     (in Numpy style) or spaxel extraction. In case of pixel coordinates, the
@@ -275,7 +275,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
 
 
 def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
-    """Returns the plate-ifu for a certain mangaid.
+    """Return the plate-ifu for a certain mangaid.
 
     Uses either the DB or the drpall file to determine the plate-ifu for
     a mangaid. If more than one plate-ifu are available for a certain ifu,
@@ -402,8 +402,10 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
 
 def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
-    '''
-    Finds the closest vector of array coordinates (x, y) from an input vector of pixel coordinates (x, y).
+    """Find the closest array coordinates from pixel coordinates.
+
+    Find the closest vector of array coordinates (x, y) from an input
+    vector of pixel coordinates (x, y).
 
     Parameters:
         point : tuple
@@ -413,21 +415,23 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
         pixel_shape : tuple
             Shape of image in pixels in (x,y) order
         xyorig : str
-            Indicates the origin point of coordinates.  Set to "relative" switches to an array coordinate
-            system relative to galaxy center.  Default is absolute array coordinates (x=0, y=0) = upper left corner
+            Indicates the origin point of coordinates.  Set to
+            "relative" switches to an array coordinate system relative
+            to galaxy center.  Default is absolute array coordinates
+            (x=0, y=0) = upper left corner
 
     Returns:
         minind : tuple
             A tuple of array coordinates in x, y order
-    '''
+    """
 
     # set as numpy arrays
     arr_shape = np.array(arr_shape, dtype=int)
     pixel_shape = np.array(pixel_shape, dtype=int)
 
     # compute midpoints
-    xmid, ymid = arr_shape/2
-    xpixmid, ypixmid = pixel_shape/2
+    xmid, ymid = arr_shape / 2
+    xpixmid, ypixmid = pixel_shape / 2
 
     # default absolute array coordinates
     xcoords = np.array([0, arr_shape[0]], dtype=int)
@@ -451,7 +455,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
     # find minimum array vector closest to input coordinate point
     diff = np.abs(point - final)
-    prod = diff[:, :, 0]*diff[:, :, 1]
+    prod = diff[:, :, 0] * diff[:, :, 1]
     minind = np.unravel_index(prod.argmin(), arr_shape)
 
     # toggle relative array coordinates
@@ -465,7 +469,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
 
 def getWCSFromPng(image):
-    ''' Extracts any WCS info from the metadata of a PNG image
+    """Extract any WCS info from the metadata of a PNG image.
 
     Extracts the WCS metadata info from the PNG optical
     image of the galaxy using PIL (Python Imaging Library).
@@ -478,8 +482,7 @@ def getWCSFromPng(image):
     Returns:
         pngwcs (WCS):
             an Astropy WCS object
-
-    '''
+    """
 
     pngwcs = None
     try:
@@ -513,7 +516,7 @@ def getWCSFromPng(image):
 
 
 def convertImgCoords(coords, image, to_pix=None, to_radec=None):
-    ''' Transform the WCS info in an image
+    """Transform the WCS info in an image.
 
     Convert image pixel coordinates to RA/Dec based on
     PNG image metadata or vice_versa
@@ -532,8 +535,7 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
         newcoords (tuple):
             Tuple of either (x, y) pixel coordinates
             or (RA, Dec) coordinates
-
-    '''
+    """
 
     try:
         wcs = getWCSFromPng(image)
@@ -554,7 +556,7 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
 
 
 def parseIdentifier(galid):
-    ''' Determines if a string input is a plate, plateifu, or manga-id
+    """Determine if a string input is a plate, plateifu, or manga-id.
 
     Parses a string object id and determines whether it is a
     plate ID, a plate-IFU, or MaNGA-ID designation.
@@ -566,8 +568,7 @@ def parseIdentifier(galid):
     Returns:
         idtype (str):
             String indicating either plate, plateifu, mangaid, or None
-
-    '''
+    """
 
     galid = str(galid)
     hasdash = '-' in galid
@@ -593,7 +594,7 @@ def parseIdentifier(galid):
 
 
 def getSpaxelXY(cube, plateifu, x, y):
-    """Gets and spaxel from a cube in the DB.
+    """Get a spaxel from a cube in the DB.
 
     This function is mostly intended for internal use.
 
@@ -627,7 +628,7 @@ def getSpaxelXY(cube, plateifu, x, y):
 
 
 def getDapRedux(release=None):
-    ''' Retrieve SAS url link to the DAP redux directory
+    """Retrieve SAS url link to the DAP redux directory.
 
     Parameters:
         release (str):
@@ -637,7 +638,7 @@ def getDapRedux(release=None):
     Returns:
         dapredux (str):
             The full redux path to the DAP MAPS
-    '''
+    """
 
     if not Path:
         raise MarvinError('sdss_access is not installed')
@@ -654,7 +655,7 @@ def getDapRedux(release=None):
 
 
 def getDefaultMapPath(**kwargs):
-    ''' Retrieve the default Maps path
+    """Retrieve the default Maps path.
 
     Uses sdss_access Path to generate a url download link to the
     default MAPS file for a given MPL.
@@ -675,7 +676,7 @@ def getDefaultMapPath(**kwargs):
     Returns:
         maplink (str):
             The sas url to download the default maps file
-    '''
+    """
 
     if not Path:
         raise MarvinError('sdss_access is not installed')
@@ -706,7 +707,7 @@ def getDefaultMapPath(**kwargs):
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):
-    ''' Download a list of MaNGA objects
+    """Download a list of MaNGA objects.
 
     Uses sdss_access to download a list of objects
     via rsync.  Places them in your local sas path mimicing
@@ -742,10 +743,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             Turns on verbosity during rsync
         limit (int):
             A limit to the number of items to download
+
     Returns:
         NA: Downloads
-
-    '''
+    """
 
     # Get some possible keywords
     # Necessary rsync variables:

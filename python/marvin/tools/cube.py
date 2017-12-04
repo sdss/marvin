@@ -30,6 +30,7 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import get_nsa_data, FuzzyDict
+from marvin.utils.general.maskbit import get_manga_target
 
 
 class Cube(MarvinToolsClass, NSAMixIn):
@@ -73,6 +74,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self._spectral_resolution_prepixel = None
         self._dispersion = None
         self._dispersion_prepixel = None
+        self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
                                   plateifu=plateifu, mode=mode, data=data, release=release,
@@ -100,6 +102,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
         """Sets the datamodel for DRP."""
 
         self.datamodel = datamodel[self.release.upper()]
+        self._bitmasks = datamodel[self.release.upper()].bitmasks
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -514,55 +517,38 @@ class Cube(MarvinToolsClass, NSAMixIn):
         return cube_quantities
 
     @property
-    def qualitybit(self):
-        """The Cube DRP3QUAL bits."""
-
-        # Python 2-3 compatibility
-        try:
-            bit = long(self.header['DRP3QUAL'])
-        except NameError:
-            bit = int(self.header['DRP3QUAL'])
-
-        labels = None
-
-        # get labels
-        if self.data_origin == 'db':
-            labels = self.data.getQualFlags()
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return 'DRP3QUAL', bit, labels
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+        return get_manga_target('1', self._bitmasks, self.header)
 
     @property
-    def targetbit(self):
-        """The Cube MNGTRG bits."""
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+        return get_manga_target('2', self._bitmasks, self.header)
 
-        try:
-            names = ['MNGTARG1', 'MNGTARG2', 'MNGTARG3']
-            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
-                     int(self.header[names[2]])]
-        except KeyError:
-            names = ['MNGTRG1', 'MNGTRG2', 'MNGTRG3']
-            targs = [int(self.header[names[0]]), int(self.header[names[1]]),
-                     int(self.header[names[2]])]
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+        return get_manga_target('3', self._bitmasks, self.header)
 
-        ind = np.nonzero(targs)[0]
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
-        finaltargs = {}
-        finaltargs['names'] = [names[i] for i in ind]
-        finaltargs['bits'] = [targs[i] for i in ind]
+    @property
+    def quality_flag(self):
+        """Return ModelCube DAPQUAL flag."""
+        drp3qual = self._bitmasks['MANGA_DRP3QUAL']
+        drp3qual.mask = int(self.header['DRP3QUAL'])
+        return drp3qual
 
-        # get labels
-        if self.data_origin == 'db':
-            finaltargs['labels'] = [self.data.getTargFlags(type=i + 1) for i in ind]
-        elif self.data_origin == 'file':
-            pass
-        elif self.data_origin == 'api':
-            pass
-
-        return finaltargs
+    @property
+    def pixmask(self):
+        """Return the DRP3PIXMASK flag."""
+        pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
+        pixmask.mask = getattr(self, 'mask', None)
+        return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   properties=True, models=False, **kwargs):

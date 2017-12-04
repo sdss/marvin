@@ -43,7 +43,7 @@ class TestModelCubeInit(object):
         assert model_cube.release == galaxy.release
         assert model_cube._drpver == galaxy.drpver
         assert model_cube._dapver == galaxy.dapver
-        assert model_cube.bintype == bintype if bintype else galaxy.bintype
+        assert model_cube.bintype.name == bintype if bintype else galaxy.bintype.name
         assert model_cube.template == template if template else galaxy.template
         assert model_cube.plateifu == galaxy.plateifu
         assert model_cube.mangaid == galaxy.mangaid
@@ -76,7 +76,7 @@ class TestModelCubeInit(object):
         assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
     def test_init_modelcube_bintype(self, galaxy, data_origin):
-        kwargs = {'bintype': galaxy.bintype}
+        kwargs = {'bintype': galaxy.bintype.name}
         if data_origin == 'file':
             kwargs['filename'] = galaxy.modelpath
         elif data_origin == 'db':
@@ -87,7 +87,7 @@ class TestModelCubeInit(object):
 
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
-        self._test_init(model_cube, galaxy, bintype=galaxy.bintype)
+        self._test_init(model_cube, galaxy, bintype=galaxy.bintype.name)
 
 
 class TestModelCube(object):
@@ -176,3 +176,20 @@ class TestPickling(object):
         assert modelcube_restored.data_origin == 'api'
         assert isinstance(modelcube_restored, ModelCube)
         assert modelcube_restored.data is None
+
+
+class TestMaskbit(object):
+
+    def test_quality_flag(self, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+        assert modelcube.quality_flag is not None
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, galaxy):
+        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+        assert getattr(modelcube, flag, None) is not None

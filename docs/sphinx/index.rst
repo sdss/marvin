@@ -80,6 +80,7 @@ Components
     * :doc:`Map Plotting <utils/plot-map>`
     * :doc:`Scatter Plotting <utils/plot-scatter>`
     * :doc:`Histogram Plotting <utils/plot-hist>`
+    * :doc:`Maskbit <utils/maskbit>`
 
 * :doc:`api`
 

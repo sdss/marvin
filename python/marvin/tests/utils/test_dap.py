@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 #
-# test_dap_pytest.py
+# test_dap.py
 #
 # Created by José Sánchez-Gallego on 19 Sep 2016.
 # Adpated to pytest by Brett Andrews on 15 Jun 2017.

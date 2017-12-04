@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 
-test_general_pytest.py
+test_general.py
 
 Created by José Sánchez-Gallego on 7 Apr 2016.
 Licensed under a 3-clause BSD license.
@@ -181,14 +181,6 @@ class TestPillowImage(object):
             with pytest.raises(ImportError) as cm:
                 err = 'No module named PIL'
                 assert err == str(e.args[0])
-
-
-@pytest.fixture(scope='session')
-def bitmask(dapver):
-    data = {'1.1.1': {'badData': {'doNotUse': 0}},
-            '2.0.2': {'nocov': 0, 'badData': {'unreliable': 5, 'doNotUse': 30}}
-            }
-    return data[dapver]
 
 
 class TestDataModelPlotParams(object):

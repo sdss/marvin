@@ -50,6 +50,7 @@ def pytest_configure(config):
     if option:
         travis = TravisSubset()
 
+
 # specific release instance
 travis = None
 
@@ -518,7 +519,7 @@ def galaxy(get_params, plateifu):
     gal = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def cube(galaxy, exporigin, mode):
     ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
@@ -532,7 +533,7 @@ def cube(galaxy, exporigin, mode):
     c = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def modelcube(galaxy, exporigin, mode):
     ''' Yield a Marvin ModelCube based on the expected origin combo of (mode+db).
         Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
@@ -546,7 +547,7 @@ def modelcube(galaxy, exporigin, mode):
     mc = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def maps(galaxy, exporigin, mode):
     ''' Yield a Marvin Maps based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
@@ -560,7 +561,17 @@ def maps(galaxy, exporigin, mode):
     m = None
 
 
-@pytest.fixture()
+modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
+dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
+origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
+
+
+@pytest.fixture(scope='class', params=releases)
+def maps_release_only(request):
+    return Maps(plateifu='8485-1901', release=request.param)
+
+
+@pytest.fixture(scope='function')
 def query(request, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
-#
-# MPL5.py
+# encoding: utf
 #
 # Created by José Sánchez-Gallego on 8 Aug 2017.
 
@@ -12,6 +10,7 @@ from __future__ import absolute_import
 
 from astropy import units as u
 
+from marvin.utils.datamodel.maskbit import get_maskbits
 from .base import Bintype, Template, DAPDataModel, Property, Model
 from .base import MultiChannelProperty, spaxel, Channel
 from .MPL4 import MPL4_emline_channels
@@ -226,6 +225,6 @@ MPL5_models = [
 ]
 
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
-                    templates=[GAU_MILESHC], properties=MPL5_maps, models=MPL5_models,
-                    default_bintype='SPX', default_template='GAU-MILESHC',
+                    templates=[GAU_MILESHC], properties=MPL5_maps, bitmasks=get_maskbits('MPL-5'),
+                    models=MPL5_models, default_bintype='SPX', default_template='GAU-MILESHC',
                     property_table='SpaxelProp5', default_binid=binid_property)

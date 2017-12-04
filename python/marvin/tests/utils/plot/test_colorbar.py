@@ -6,15 +6,15 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-26 11:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-07-30 00:07:14
+# @Last modified time: 2017-11-27 12:11:94
 
 import os
 
 import pytest
 import numpy as np
-import astropy
 
 from marvin.utils.plot import colorbar
+
 
 @pytest.fixture(scope='function')
 def image():
@@ -57,7 +57,7 @@ class TestRange(object):
                               (0.11, '0.1')])
     def test_log_tick_format(self, value, expected):
         assert colorbar._log_tick_format(value) == expected
-    
+
     @pytest.mark.parametrize('d, cbrange',
                              [({'vmin': 0, 'vmax': 1}, None),
                               ({'vmax': 1}, [0, 2]),
@@ -73,7 +73,3 @@ class TestRange(object):
                                [13, 29])])
     def test_cbrange_sigma_clip(self, image, sigma, expected):
         assert colorbar._cbrange_sigma_clip(image, sigma=sigma) == expected
-
-
-
-

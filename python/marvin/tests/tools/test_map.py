@@ -3,21 +3,26 @@
 #
 # test_map.py
 #
-# Created by Brett Andrews on 2 Jul 2017.
+# @Author: Brett Andrews <andrews>
+# @Date:   2017-07-02 13:08:00
+# @Last modified by:   andrews
+# @Last modified time: 2017-11-30 16:11:91
 
 from copy import deepcopy
 
 import numpy as np
-import astropy
 from astropy import units as u
 import matplotlib
 import pytest
 
+from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.utils.datamodel.dap import datamodel
 from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
+from marvin.utils.general.maskbit import Maskbit
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -96,14 +101,13 @@ class TestMap(object):
 
         assert datamodel[map_.getMaps()._dapver][map_.datamodel.full()].unit == map_.unit
 
-    @pytest.mark.xfail()
     def test_plot(self, map_):
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
         assert 'Make single panel map or one panel of multi-panel map plot.' in map_.plot.__doc__
 
-    @marvin_test_if(map_={'data_origin': ['db']}, mark='skip')
+    @marvin_test_if(mark='skip', map_={'data_origin': ['db']})
     def test_save_and_restore(self, temp_scratch, map_):
 
         fout = temp_scratch.join('test_map.mpf')
@@ -133,6 +137,18 @@ class TestMap(object):
                     assert (np.isclose(value.data, value2.data).all() and
                             (value.mask == value2.mask).all())
 
+                elif isinstance(value, Maskbit) or isinstance(value[0], Maskbit):
+
+                    if isinstance(value, Maskbit):
+                        value = [value]
+                        value2 = [value2]
+
+                    for mb, mb2 in zip(value, value2):
+                        for it in ['bits', 'description', 'labels', 'mask', 'name']:
+                            assert getattr(mb, it) == getattr(mb2, it)
+
+                        assert (mb.schema == mb2.schema).all().all()
+
                 elif isinstance(value, Maps):
                     pass
 
@@ -154,18 +170,53 @@ class TestMap(object):
         assert 'Your input value is too ambiguous.' in str(ee.value)
 
 
-@pytest.mark.xfail
 class TestMapArith(object):
+
+    def test_add_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = ha + 10.
+
+        assert pytest.approx(ha10.value, ha.value + 10.)
+        assert pytest.approx(ha10.ivar, ha.ivar)
+        assert pytest.approx(ha10.mask, ha.mask)
+
+    def test_subtract_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = ha - 10.
+
+        assert pytest.approx(ha10.value, ha.value - 10.)
+        assert pytest.approx(ha10.ivar, ha.ivar)
+        assert pytest.approx(ha10.mask, ha.mask)
+
+    def test_multiply_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = ha * 10.
+
+        assert pytest.approx(ha10.value, ha.value * 10.)
+        assert pytest.approx(ha10.ivar, ha.ivar / 10.**2)
+        assert pytest.approx(ha10.mask, ha.mask)
+
+    def test_divide_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = ha / 10.
+
+        assert pytest.approx(ha10.value, ha.value / 10.)
+        assert pytest.approx(ha10.ivar, ha.ivar * 10.**2)
+        assert pytest.approx(ha10.mask, ha.mask)
 
     @pytest.mark.parametrize('ivar1, ivar2, expected',
                              [(ivar1, ivar2, ivar_sum12)])
     def test_add_ivar(self, ivar1, ivar2, expected):
-        assert pytest.approx(Map._add_ivar(ivar1, ivar2) == expected)
+        assert pytest.approx(Map._add_ivar(ivar1, ivar2), expected)
 
     @pytest.mark.parametrize('ivar1, ivar2, value1, value2, value_prod12, expected',
                              [(ivar1, ivar2, value1, value2, value_prod12, ivar_prod12)])
     def test_mul_ivar(self, ivar1, ivar2, value1, value2, value_prod12, expected):
-        assert pytest.approx(Map._mul_ivar(ivar1, ivar2, value1, value2, value_prod12) == expected)
+        assert pytest.approx(Map._mul_ivar(ivar1, ivar2, value1, value2, value_prod12), expected)
 
     @pytest.mark.parametrize('power, expected',
                              [(2, ivar_pow_2),
@@ -177,11 +228,11 @@ class TestMapArith(object):
     @pytest.mark.parametrize('ivar, value,',
                              [(ivar1, value1)])
     def test_pow_ivar(self, ivar, value, power, expected):
-        assert pytest.approx(Map._pow_ivar(ivar, value, power) == expected)
+        assert pytest.approx(Map._pow_ivar(ivar, value, power), expected)
 
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
-        assert pytest.approx(Map._pow_ivar(None, np.arange(4), power) == np.zeros(4))
+        assert pytest.approx(Map._pow_ivar(None, np.arange(4), power), np.zeros(4))
 
     @pytest.mark.parametrize('unit1, unit2, op, expected',
                              [(u_flux, u_flux, '+', u_flux),
@@ -200,35 +251,6 @@ class TestMapArith(object):
         with pytest.warns(UserWarning):
             assert Map._unit_propagation(unit1, unit2, op) is None
 
-    def test_create_history(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        nii = maps['emline_gflux_nii_6585']
-        ha = maps['emline_gflux_ha_6564']
-        sii = maps['emline_gflux_sii_6732']
-        n2ha = nii / ha
-        s2ha = sii / ha
-
-        expected_n2ha = '(emline_gflux_nii_6585 / emline_gflux_ha_6564)'
-        assert Map._create_history(nii, ha, '/') == expected_n2ha
-
-        expected_s2ha_nii = ('((emline_gflux_sii_6732 / emline_gflux_ha_6564) / '
-                             'emline_gflux_nii_6585)')
-        assert Map._create_history(s2ha, nii, '/') == expected_s2ha_nii
-
-        expected_n2ha_s2ha = ('((emline_gflux_nii_6585 / emline_gflux_ha_6564) / '
-                              '(emline_gflux_sii_6732 / emline_gflux_ha_6564))')
-        assert Map._create_history(n2ha, s2ha, '/') == expected_n2ha_s2ha
-
-    def test_create_parents(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        nii = maps['emline_gflux_nii_6585']
-        ha = maps['emline_gflux_ha_6564']
-        n2ha = nii / ha
-
-        assert Map._create_parents(nii, ha) == [nii, ha]
-        assert Map._create_parents(n2ha, ha) == [[nii, ha], ha]
-        assert Map._create_parents(n2ha, n2ha) == [[nii, ha], [nii, ha]]
-
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
                               ('emline_gvel', 'ha_6564', 'stellar_vel', None)])
@@ -238,9 +260,9 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 + map2
 
-        assert pytest.approx(map12.value == map1.value + map2.value)
-        assert pytest.approx(map12.ivar == map1._add_ivar(map1.ivar, map2.ivar))
-        assert pytest.approx(map12.mask == map1.mask & map2.mask)
+        assert pytest.approx(map12.value, map1.value + map2.value)
+        assert pytest.approx(map12.ivar, map1._add_ivar(map1.ivar, map2.ivar))
+        assert pytest.approx(map12.mask, map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -251,9 +273,9 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 - map2
 
-        assert pytest.approx(map12.value == map1.value - map2.value)
-        assert pytest.approx(map12.ivar == map1._add_ivar(map1.ivar, map2.ivar))
-        assert pytest.approx(map12.mask == map1.mask & map2.mask)
+        assert pytest.approx(map12.value, map1.value - map2.value)
+        assert pytest.approx(map12.ivar, map1._add_ivar(map1.ivar, map2.ivar))
+        assert pytest.approx(map12.mask, map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -264,10 +286,10 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 * map2
 
-        assert pytest.approx(map12.value == map1.value * map2.value)
-        assert pytest.approx(map12.ivar == map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
-                                                          map2.value, map12.value))
-        assert pytest.approx(map12.mask == map1.mask & map2.mask)
+        assert pytest.approx(map12.value, map1.value * map2.value)
+        assert pytest.approx(map12.ivar, map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
+                                                        map2.value, map12.value))
+        assert pytest.approx(map12.mask, map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -279,11 +301,11 @@ class TestMapArith(object):
         map12 = map1 / map2
 
         with np.errstate(divide='ignore', invalid='ignore'):
-            assert pytest.approx(map12.value == map1.value / map2.value)
+            assert pytest.approx(map12.value, map1.value / map2.value)
 
-        assert pytest.approx(map12.ivar == map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
-                                                          map2.value, map12.value))
-        assert pytest.approx(map12.mask == map1.mask & map2.mask)
+        assert pytest.approx(map12.ivar, map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
+                                                        map2.value, map12.value))
+        assert pytest.approx(map12.mask, map1.mask | map2.mask)
 
     @pytest.mark.runslow
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
@@ -299,8 +321,8 @@ class TestMapArith(object):
         sig_new = map_new.value * power * sig_orig * map_orig.value
         ivar_new = 1 / sig_new**2.
 
-        assert pytest.approx(map_new.value == map_orig.value**power)
-        assert pytest.approx(map_new.ivar == ivar_new)
+        assert pytest.approx(map_new.value, map_orig.value**power)
+        assert pytest.approx(map_new.ivar, ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
@@ -310,8 +332,8 @@ class TestMapArith(object):
         stsigcorr = maps['stellar_sigmacorr']
         expected = (stsig**2 - stsigcorr**2)**0.5
         actual = stsig.inst_sigma_correction()
-        assert pytest.approx(actual.value == expected.value)
-        assert pytest.approx(actual.ivar == expected.ivar)
+        assert pytest.approx(actual.value, expected.value)
+        assert pytest.approx(actual.ivar, expected.ivar)
         assert (actual.mask == expected.mask).all()
 
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
@@ -337,14 +359,75 @@ class TestMapArith(object):
         maps = Maps(plateifu=galaxy.plateifu)
         hasig = maps['emline_gsigma_ha_6564']
         emsigcorr = maps['emline_instsigma_ha_6564']
+
         expected = (hasig**2 - emsigcorr**2)**0.5
         actual = hasig.inst_sigma_correction()
-        assert pytest.approx(actual.value == expected.value)
-        assert pytest.approx(actual.ivar == expected.ivar)
+
+        assert pytest.approx(actual.value, expected.value)
+        assert pytest.approx(actual.ivar, expected.ivar)
         assert (actual.mask == expected.mask).all()
 
 
-@pytest.mark.xfail
+class TestMaskbit(object):
+
+    def test_masked(self, maps_release_only):
+        __, dapver = config.lookUpVersions(maps_release_only.release)
+        params = get_default_plot_params(dapver)
+        ha = maps_release_only['emline_gflux_ha_6564']
+        expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
+
+        assert pytest.approx(ha.masked.data, ha.value)
+        assert (ha.masked.mask == expected).all()
+
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_bits_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_bits(1) == [0]
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_bits(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_bits(3) == [0, 1]
+
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_labels_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_labels(1) == ['DONOTUSE']
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_values_to_labels(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
+
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_labels_to_value_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.labels_to_value('DONOTUSE') == 1
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    @pytest.mark.parametrize('names, expected',
+                             [(['NOCOV', 'LOWCOV'], 3),
+                              ('DONOTUSE', 1073741824)])
+    def test_labels_to_value(self, maps_release_only, names, expected):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.pixmask.labels_to_value(names) == expected
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag is not None
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert getattr(ha, flag, None) is not None
+
+
 class TestEnhancedMap(object):
 
     def test_overridden_methods(self, galaxy):

@@ -23,6 +23,7 @@ import numpy as np
 import marvin
 import marvin.core.core
 import marvin.core.exceptions
+from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 import marvin.core.marvin_pickle
 import marvin.utils.general.general
 
@@ -31,9 +32,6 @@ import marvin.tools.maps
 import marvin.tools.modelcube
 
 from marvin.utils.general.structs import FuzzyDict
-
-from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
-
 from marvin.utils.datamodel.dap import datamodel as dap_datamodel
 from marvin.utils.datamodel.drp import datamodel as drp_datamodel
 
@@ -133,7 +131,7 @@ SpaxelABC.__call__ = spaxel_factory
 
 
 class DataModel(object):
-    """A single ibject that holds the DRP and DAP datamodel."""
+    """A single object that holds the DRP and DAP datamodel."""
 
     def __init__(self, release):
 
@@ -489,6 +487,39 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
         """Returns the template."""
 
         return self._check_versions('template')
+
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+        return self.datamodel.drp.bitmasks['MANGA_TARGET1']
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+        return self.datamodel.drp.bitmasks['MANGA_TARGET2']
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+        return self.datamodel.drp.bitmasks['MANGA_TARGET3']
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]
+
+    @property
+    def quality_flags(self):
+        """Bundle Cube DRP3QUAL and Maps DAPQUAL flags."""
+
+        drp3qual = self.datamodel.drp.bitmasks['MANGA_DRP3QUAL']
+        drp3qual.mask = int(self.cube.header['DRP3QUAL'])
+        qual_flags = [drp3qual]
+
+        if self.release != 'MPL-4':
+            qual_flags.append(self.datamodel.dap.bitmasks['MANGA_DAPQUAL'])
+
+        return qual_flags
 
 
 class Spaxel(SpaxelBase):

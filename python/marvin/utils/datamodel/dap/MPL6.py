@@ -5,13 +5,14 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-09-13 16:05:56
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-13 16:19:15
+# @Last modified by:   andrews
+# @Last modified time: 2017-11-14 19:11:99
 
 from __future__ import print_function, division, absolute_import
 
 from astropy import units as u
 
+from marvin.utils.datamodel.maskbit import get_maskbits
 from .base import Bintype, DAPDataModel, Property, MultiChannelProperty
 from .base import spaxel, Channel, Model
 from .base import spaxel as spaxel_unit
@@ -339,6 +340,7 @@ MPL6 = DAPDataModel('2.1', aliases=['MPL-6', 'MPL6'],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
                     models=MPL6_models,
+                    bitmasks=get_maskbits('MPL-6'),
                     default_bintype='SPX',
                     default_template='GAU-MILESHC',
                     property_table='SpaxelProp6',
