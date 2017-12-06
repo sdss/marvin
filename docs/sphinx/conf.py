@@ -52,7 +52,7 @@ extensions = [
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'ext', 'clickext']
+    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
