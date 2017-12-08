@@ -187,12 +187,10 @@ class gz3d_fits(object):
     def get_cube(self, maps=False):
         manga_id = self.metadata['MANGAID'][0]
         try:
-            with Suppressor():
-                # mute marvin so there are no `SDSS_ACCESS` prints to stdout
-                if (self.cube is None):
-                    self.cube = Cube(mangaid=manga_id)
-                if (maps) and (self.maps is None):
-                    self.maps = self.cube.getMaps()
+            if (self.cube is None):
+                self.cube = Cube(mangaid=manga_id)
+            if (maps) and (self.maps is None):
+                self.maps = self.cube.getMaps()
         except:
             self.cube = 'no_data'
             if maps:
