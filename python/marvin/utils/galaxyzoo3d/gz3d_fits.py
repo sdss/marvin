@@ -8,6 +8,7 @@ from scipy.interpolate import RectBivariateSpline
 import json
 import marvin.utils.dap.bpt as bpt
 from marvin.tools.cube import Cube
+from sdss_access.path import Path
 
 LUT = {7: 3, 19: 5, 37: 7, 61: 9, 91: 11, 127: 13}
 spaxel_grid = {7: 24, 19: 34, 37: 44, 61: 54, 91: 64, 127: 74}
@@ -40,7 +41,12 @@ def cov_to_ellipse(cov, pos, nstd=1, **kwargs):
 
 
 class gz3d_fits(object):
-    def __init__(self, filename):
+    def __init__(self, filename=None, zoover=None, mangaid=None, zooid=None, ifusize=None):
+
+        if not filename:
+            path = Path()
+            filename = path.full('mangagalaxyzoo3d', mangaid=mangaid, zooid=zooid, gz3dver=zoover, ifusize=ifusize)
+
         # get the subject id from the filename
         self.subject_id = filename.split('/')[-1].split('_')[-1].split('.')[0]
         # read in the fits file
