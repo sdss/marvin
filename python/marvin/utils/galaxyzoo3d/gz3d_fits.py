@@ -41,6 +41,21 @@ def cov_to_ellipse(cov, pos, nstd=1, **kwargs):
 
 
 class gz3d_fits(object):
+    '''
+
+    TODO:
+        credit Coleman
+        add docstrings
+        finish working with files
+        add in remote access with Utah files
+        do we import anything to the database?
+        make use with plateifu?
+        integrate a wrapper fxn into Maps?
+        clean up bits
+        move code to new contrib folder?
+        what else?
+
+    '''
     def __init__(self, filename=None, zoover=None, mangaid=None, zooid=None, ifusize=None):
 
         if not filename:
