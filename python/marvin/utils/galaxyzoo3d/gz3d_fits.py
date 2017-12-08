@@ -46,8 +46,10 @@ class gz3d_fits(object):
     TODO:
         credit Coleman
         add docstrings
+        add tests
         finish working with files
         add in remote access with Utah files
+        can we use the MMDAS?
         do we import anything to the database?
         make use with plateifu?
         integrate a wrapper fxn into Maps?
