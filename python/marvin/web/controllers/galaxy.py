@@ -45,11 +45,19 @@ galaxy = Blueprint("galaxy_page", __name__)
 def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' Get and format a spectrum for the web '''
     webspec = None
+
+    # set the spaxel kwargs
+    kwargs = {'xyorig': xyorig, 'properties': False}
+    if cube.release != 'MPL-4':
+        kwargs['models'] = True
+    if byradec:
+        kwargs.update({'ra': x, 'dec': y})
+    else:
+        kwargs.update({'x': x, 'y': y})
+
+    # get the spaxel
     try:
-        if byradec:
-            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, models=True, properties=False)
-        else:
-            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, models=True, properties=False)
+        spaxel = cube.getSpaxel(**kwargs)
     except Exception as e:
         specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
@@ -111,6 +119,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
 
     mapdict = []
     params = params if isinstance(params, list) else [params]
+    print('params', params)
     for param in params:
         param = str(param)
         try:
@@ -119,6 +128,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
             parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template=temp)
+        print(webmap)
         plotparams = get_plot_params(dapver=dapver, prop=parameter)
         mask = Maskbit('MANGA_DAPPIXMASK')
         baddata_labels = [it for it in plotparams['bitmasks'] if it != 'NOCOV']
@@ -359,6 +369,8 @@ class Galaxy(BaseWebView):
             output['error'] = 'Error: {0}'.format(specmsg)
         else:
             output['specstatus'] = 1
+
+        print('mapdict', mapdict, mapmsg)
 
         sdss_path = Path()
         output['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
