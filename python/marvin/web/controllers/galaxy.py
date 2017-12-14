@@ -23,6 +23,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
+from marvin.utils.general.maskbit import Maskbit
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
@@ -119,6 +120,11 @@ def buildMapDict(cube, params, dapver, bintemp=None):
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template=temp)
         plotparams = get_plot_params(dapver=dapver, prop=parameter)
+        mask = Maskbit('MANGA_DAPPIXMASK')
+        baddata_labels = [it for it in plotparams['bitmasks'] if it != 'NOCOV']
+        baddata_bits = {it.lower(): int(mask.labels_to_bits(it)[0]) for it in baddata_labels}
+        plotparams['bits'] = {'nocov': int(mask.labels_to_bits('NOCOV')[0]),
+                              'badData': baddata_bits}
         mapdict.append({'data': webmap, 'msg': mapmsg, 'plotparams': plotparams})
 
     anybad = [m['data'] is None for m in mapdict]
