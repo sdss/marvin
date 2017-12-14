@@ -34,6 +34,7 @@ except ValueError:
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../python/'))
 sys.path.insert(0, os.path.abspath('../../../marvin_brain/python/brain/'))
+sys.path.insert(0, os.path.abspath('../../python/marvin/utils/datamodel/'))
 
 # -- General configuration ------------------------------------------------
 
@@ -51,7 +52,7 @@ extensions = [
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx']
+    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -1,54 +1,47 @@
 
 .. _datamodel-mpl6:
 
-===============
 MPL-6 DataModel
-===============
-
-This datamodel corresponds to the MPL-6 (v2_3_1, 2.1.1) release of MaNGA data.
-
-DRP DataModel
--------------
-
-DataCubes
-^^^^^^^^^
-
-.. csv-table:: MPL-6 DRP DataCubes
-   :file: ../_static/drpcubes_dm_mpl6.csv
-   :header-rows: 1
-
-
-Spectra
-^^^^^^^
-
-.. csv-table:: MPL-6 DRP Spectra
-   :file: ../_static/drpspectra_dm_mpl6.csv
-   :header-rows: 1
-
-
-
-DAP DataModel
--------------
-
-Properties
-^^^^^^^^^^
-
-.. csv-table:: MPL-6 DAP Properties
-   :file: ../_static/dapprops_dm_mpl6.csv
-   :header-rows: 1
-
-
-Models
-^^^^^^
-
-.. csv-table:: MPL-6 DAP Models
-   :file: ../_static/dapmodels_dm_mpl6.csv
-   :header-rows: 1
-
-
-Query DataModel
 ---------------
 
-.. csv-table:: MPL-6 Query Parameters
-   :file: ../_static/query_dm_mpl6.csv
-   :header-rows: 1
+This datamodel corresponds to the MPL-6 (v2_2_1, 2.1.3) release of MaNGA data.
+
+
+.. datamodel:: marvin.utils.datamodel.drp.MPL:MPL6
+   :prog: DRP DataModel
+   :title: MPL-6 DataModel
+   :spectra:
+   :datacubes:
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL6
+   :prog: DAP DataModel
+   :title: MPL-6 DataModel
+   :bintypes:
+   :templates:
+   :models:
+   :properties:
+
+.. datamodel:: marvin.utils.datamodel.query:MPL6
+   :prog: Query DataModel
+   :title: MPL-6 DataModel
+   :parameters:
+
+
+MPL-6 Maskbits
+--------------
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL6
+   :prog: DRP Maskbits
+   :bitmasks:
+   :bittype: DRP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL6
+   :prog: DAP Maskbits
+   :bitmasks:
+   :bittype: DAP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL6
+   :prog: Targeting Maskbits
+   :bitmasks:
+   :bittype: Target
+
