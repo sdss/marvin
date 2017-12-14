@@ -144,16 +144,6 @@ To insert your histogram into an existing Matplotlib figure and axis obejct you 
     output = hist(x, fig=my_figure, ax=my_axis)
 
 
-Returning only the Data
-^^^^^^^^^^^^^^^^^^^^^^^
-
-You can return just the histogram data, and not the figure or axis objects.
-
-::
-
-    hist_data = hist(x, return_figure=False)
-
-
 Reference/API
 -------------
 

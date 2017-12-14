@@ -68,7 +68,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
             webspec = [[wave.value[i], [s, error[i]], [modelfit.value[i], 0.0]] for i, s in enumerate(spaxel.flux.value)]
         else:
             webspec = [[wave.value[i], [s, error[i]]] for i, s in enumerate(spaxel.flux.value)]
-        print(webspec)
+
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg
@@ -110,7 +110,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
         bintype, temp = (None, None)
 
     mapdict = []
-    params = params if type(params) == list else [params]
+    params = params if isinstance(params, list) else [params]
     for param in params:
         param = str(param)
         try:
