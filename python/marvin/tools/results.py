@@ -352,6 +352,11 @@ class Results(object):
         end (int):
             For paginated results, the ending index value of the resutls.  Defaults to start+chunk.
 
+    Attributes:
+        count (int):  The count of objects in your current page of results
+        totalcount (int): The total number of results in the query
+        query_time (datetime): A datetime TimeDelta representation of the query runtime
+
     Returns:
         results: An object representing the Results entity
 
@@ -1540,9 +1545,9 @@ class Results(object):
             plateifus = self.getListOf('plateifu', return_all=True)
             hdata = output[2]
             if 'xhist' in hdata:
-                hdata['xhist']['xbins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
+                hdata['xhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
             if 'yhist' in hdata:
-                hdata['yhist']['ybins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
+                hdata['yhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
             output = output[0:2] + (hdata,)
 
         return output

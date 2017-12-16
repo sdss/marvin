@@ -27,7 +27,7 @@ The Marvin hist function makes creating 1-d histograms an easy one-liner.
     from marvin.utils.scatter import hist
     output = hist(x)
 
-Change the binsize to 20.
+The default binsize is set to use `scott <http://docs.astropy.org/en/stable/visualization/histogram.html>`_ binning scheme.  Make a new histogram with a binsize of 20.
 
 ::
 
