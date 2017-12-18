@@ -787,8 +787,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        allprops = list(itertools.chain(*[[p.fullname(c) for c in p.channels]
-                                          if p.channels else [p.name] for p in self.properties]))
+        allprops = [p.full() for p in self.datamodel]
 
         if columns:
             allprops = [p for p in allprops if p in columns]
