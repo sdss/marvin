@@ -42,7 +42,7 @@ try:
 except ImportError:
     warnings.warn('Could not import pandas.', MarvinUserWarning)
 
-__all__ = ['Results']
+__all__ = ['Results', 'ResultSet']
 
 breadcrumb = MarvinBreadCrumb()
 
@@ -208,11 +208,13 @@ class ResultSet(list):
             return list.__getitem__(self, value)
         elif isinstance(value, slice):
             newset = list.__getitem__(self, value)
-            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns)
+            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns, results=self._results)
+        elif isinstance(value, np.ndarray):
+            return np.array(self)[value]
 
     def __getslice__(self, start, stop):
         newset = list.__getslice__(self, start, stop)
-        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns)
+        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns, results=self._results)
 
     def __add__(self, other):
         newresults = self._results
@@ -224,7 +226,8 @@ class ResultSet(list):
         if self.index == other.index:
             # column-wise add
             newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-            newcols = ColumnGroup('Columns', newcols, parent=self._results.datamodel)
+            parent = self._results.datamodel if self._results else None
+            newcols = ColumnGroup('Columns', newcols, parent=parent)
             newresults.columns = newcols
             new_set = map(add, self, other)
         else:

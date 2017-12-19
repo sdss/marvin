@@ -62,6 +62,7 @@ Minimum Default Parameters:
      <Marvin Cube (plateifu='7995-1902', mode='local', data_origin='file')>,
      <Marvin Cube (plateifu='8000-1901', mode='local', data_origin='file')>]
 
+.. _marvin-results_todf:
 
 To Pandas Dataframe
 """""""""""""""""""
@@ -75,6 +76,7 @@ To Pandas Dataframe
     2   1-605884   8439   8439-12703    12703  0.025108
     3   1-379741   8712   8712-12705    12705  0.032869
 
+.. _marvin-results_totable:
 
 To Astropy Tables
 """""""""""""""""
