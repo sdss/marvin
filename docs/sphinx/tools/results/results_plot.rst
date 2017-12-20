@@ -17,6 +17,7 @@ Use the Results :meth:`plot <marvin.tools.results.Results.plot>` method to quick
     # create a scatter plot of redshift vs g-r color, from a Results
     r.plot('z', 'absmag_g_r')
 
+By default, `plot` will also include the marginal distributions for the x and y parameters.  You can turn off the histogram options in the scatter plot with `with_hist=False`, or specify a single axis with `with_hist='x'`.
 
 Creating a histogram
 ^^^^^^^^^^^^^^^^^^^^
@@ -38,7 +39,7 @@ Let's create a scatter plot of redshift vs absolute magnitude g-r color, with th
 
     output = r.plot('z', 'absmag_g_r')
 
-This returns a tuple containing the (matplotlib Figure, the matplotlib Axes objects, the histogram output).  Let's extract the histogram data for redshift data.::
+This returns a tuple containing the (matplotlib Figure, the matplotlib Axes objects, the histogram output).  The histogram data is a dictionary, with each axis indicated as **xhist** and **yhist** keys, respectively.  Let's extract the histogram data for redshift data.::
 
     # get the histogram data
     hdata = output[3]
