@@ -60,8 +60,8 @@ If you have more than one group of `ResultSets`, you can merge them together usi
 column-wise direction, depending on the data one is adding.  Marvin will only add sets together that come from queries using the **same release** of data,
 as well as the **same searchfilter**.  These two parameters uniquely identify a query+results.  You cannot add results coming from different queries.
 
-**Note: This describes the underlying functionality of adding sets together.  However, in practice it is recommended to add Marvin Results together
-at the top level only.  See :ref:`marvin-results-add`.**
+**Note:** This describes the underlying functionality of adding sets together.  However, in practice it is recommended to add Marvin Results together
+at the top level only.  See :ref:`marvin-results-add`.
 
 row-wise
 """"""""
