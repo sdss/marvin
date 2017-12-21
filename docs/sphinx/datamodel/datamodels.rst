@@ -1,5 +1,5 @@
 
-.. _marvin-datamodels
+.. _marvin-datamodels:
 
 ==========
 DataModels

@@ -46,6 +46,10 @@ The returned object is a `ResultSet`, which is a fancy list of Python tuple obje
 `ResultSet` indicates some metadata like the total result count, the current set (page) of the total, the current count in the current set, and the array
 indices out of the total set.
 
+The `Results` object also contains the `Query Datamodel` which you can explore.  ::
+
+    r.datamodel
+    <QueryDataModel release='MPL-4', n_groups=7, n_parameters=565, n_total=0>
 
 .. _marvin-results-singlestep:
 
