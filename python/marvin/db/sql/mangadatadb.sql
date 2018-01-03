@@ -21,7 +21,8 @@ SET search_path TO mangadatadb;
 CREATE TABLE mangadatadb.cube (pk serial PRIMARY KEY NOT NULL, plate INTEGER, mangaid TEXT, designid INTEGER,
 					pipeline_info_pk INTEGER, wavelength_pk INTEGER, ifudesign_pk INTEGER, manga_target_pk integer,
 					specres double precision[], specresd double precision[], xfocal double precision,
-					yfocal double precision, ra DOUBLE PRECISION, dec DOUBLE PRECISION, cube_shape_pk INTEGER);
+					yfocal double precision, ra DOUBLE PRECISION, dec DOUBLE PRECISION, cube_shape_pk INTEGER,
+					prespecres double precision[], prespecresd double precision[]);
 
 CREATE INDEX q3c_cube_idx ON mangadatadb.cube (functions.q3c_ang2ipix(ra, dec));
 
@@ -32,10 +33,11 @@ CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk I
 CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux double precision[],
 				ivar double precision[], mask INTEGER[], xpos double precision[],
 				ypos double precision[], disp double precision[], exposure_no INTEGER, mjd INTEGER,
-				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER);
+				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp double precision[]);
 
 CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux double precision[], ivar double precision[],
-				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER);
+				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER,
+				predisp double precision[]);
 
 CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength double precision[],
 				bintype TEXT);
@@ -77,12 +79,12 @@ CREATE TABLE mangadatadb.obsinfo (pk serial PRIMARY KEY NOT NULL, cube_pk intege
 	mangaid varchar(20), airtemp real, humidity real, pressure real, seeing real, psffac real, transpar real,
 	plateid integer, designid integer, cartid integer, mjd integer, exptime real, expnum varchar(20), setnum integer,
 	mgdpos varchar(10), mgdra real, mgddec real, omegaset_u real, omegaset_g real, omegaset_r real, omegaset_i real,
-	omegaset_z real,  amfit_ra real, eamfit_dec real, eamfit_theta real, eamfit_theta0 rea , eamfit_a real eamfit_b real,
+	omegaset_z real,  eamfit_ra real, eamfit_dec real, eamfit_theta real, eamfit_theta0 real, eamfit_a real, eamfit_b real,
 	eamfit_raerr real, eamfit_decerr real, eamfit_thetaerr real, eamfit_theta0err real, eamfit_aerr real, eamfit_berr real,
-	taibeg varchar(50),  adrill real, lstmid real, hamid real, airmass real, ifura double precision,
+	taibeg varchar(50), hadrill real, lstmid real, hamid real, airmass real, ifura double precision,
 	ifudec double precision, cenra double precision, cendec double precision, xfocal real, yfocal real,
 	mngtarg1 integer, mngtarg2 integer, mngtarg3 integer, bluesn2 real, redsn2 real, bluepstat real, redpstat real,
-	drp2qual integer, thisbadifu integer, pf_fwhm_g real, pf_fwhm_r real, pf_fwhm_i real, pf_fwhm_z real)
+	drp2qual integer, thisbadifu integer, pf_fwhm_g real, pf_fwhm_r real, pf_fwhm_i real, pf_fwhm_z real);
 
 # DEPRECATED TABLE for mangasampledb.nsa
 -- CREATE TABLE mangadatadb.sample (pk serial PRIMARY KEY NOT NULL, manga_tileid INTEGER, ifu_ra double precision, ifu_dec double precision,
@@ -118,6 +120,11 @@ CREATE TABLE mangadatadb.wcs (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, c
 	naxis2 integer, naxis3 integer);
 
 CREATE TABLE mangadatadb.cube_shape (pk serial PRIMARY KEY NOT NULL, size INTEGER, total INTEGER, indices integer[][]);
+
+create schema history;
+create table history.query (pk serial primary key not null, searchfilter text, n_run integer, count integer,
+	release varchar(8), created timestamp, updated timestamp);
+create index concurrently filter_idx on history.query using btree(searchfilter);
 
 INSERT INTO mangadatadb.fiber_type VALUES (0, 'IFU'),(1,'SKY');
 INSERT INTO mangadatadb.target_type VALUES (0, 'science'),(1,'sky'),(2,'standard');
@@ -1714,6 +1721,7 @@ CREATE INDEX CONCURRENTLY fibers_pk_idx ON mangadatadb.rssfiber using BTREE(fibe
 CREATE INDEX CONCURRENTLY spaxel_cube_pk_idx ON mangadatadb.spaxel using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY spaxel_x_idx ON mangadatadb.spaxel using BTREE(x);
 CREATE INDEX CONCURRENTLY spaxel_y_idx ON mangadatadb.spaxel using BTREE(y);
+CREATE INDEX CONCURRENTLY spaxel_x_y_idx ON mangadatadb.spaxel using BTREE(x, y);
 CREATE INDEX CONCURRENTLY wcs_cube_pk_idx ON mangadatadb.wcs using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY obsinfo_cube_pk_idx ON mangadatadb.obsinfo using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY fitshead_cube_pk_idx ON mangadatadb.fits_header_value using BTREE(cube_pk);

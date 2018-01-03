@@ -5,30 +5,29 @@ import re
 
 import pytest
 import numpy as np
-from astropy.io import fits
 from astropy import wcs
 
 from marvin import config, marvindb
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.tests import marvin_test_if
 from marvin.tools.cube import Cube
-from marvin.core.core import DotableCaseInsensitive
-from marvin.core.exceptions import MarvinError
-from marvin.tests import skipIfNoDB, marvin_test_if
+from marvin.tools.quantities import DataCube, Spectrum
 
 
 @pytest.fixture(autouse=True)
 def skipbins(galaxy):
-    if galaxy.bintype not in ['SPX', 'NONE']:
+    if galaxy.bintype.name not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template not in ['MILES-THIN', 'GAU-MILESHC']:
+    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
 class TestCube(object):
 
     def test_cube_loadfail(self):
-        with pytest.raises(AssertionError) as cm:
+        with pytest.raises(MarvinError) as cm:
             Cube()
-        assert 'Enter filename, plateifu, or mangaid!' in str(cm.value)
+        assert 'no inputs defined' in str(cm.value)
 
     def test_cube_load_from_local_file_by_filename_success(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
@@ -36,7 +35,7 @@ class TestCube(object):
         assert os.path.realpath(galaxy.cubepath) == cube.filename
 
     def test_cube_load_from_local_file_by_filename_fail(self):
-        with pytest.raises(MarvinError):
+        with pytest.raises(AssertionError):
             Cube(filename='not_a_filename.fits')
 
     def test_cube_load_from_local_database_success(self, galaxy):
@@ -49,18 +48,31 @@ class TestCube(object):
         assert galaxy.ra == cube.ra
 
     @pytest.mark.parametrize('plateifu, mode, errmsg',
-                             [('8485-0923', 'local', 'Could not retrieve cube for plate-ifu 8485-0923: No Results Found')],
+                             [('8485-0923', 'local', 'Could not retrieve cube for '
+                                                     'plate-ifu 8485-0923: No Results Found')],
                              ids=['noresults'])
     def test_cube_from_db_fail(self, plateifu, mode, errmsg):
         with pytest.raises(MarvinError) as cm:
-            c = Cube(plateifu=plateifu, mode=mode)
+            Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
 
     # @pytest.mark.slow
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901'})
-    def test_cube_flux(self, cube):
+    def test_cube_quantities(self, cube):
+
         assert cube.flux is not None
+
         assert isinstance(cube.flux, np.ndarray)
+        assert isinstance(cube.flux, DataCube)
+
+        assert isinstance(cube.spectral_resolution, Spectrum)
+
+        if cube.release in ['MPL-4', 'MPL-5']:
+            with pytest.raises(AssertionError) as ee:
+                cube.spectral_resolution_prepixel
+            assert 'spectral_resolution_prepixel is not present in his MPL version' in str(ee)
+        else:
+            assert isinstance(cube.spectral_resolution_prepixel, Spectrum)
 
     @pytest.mark.parametrize('monkeyconfig',
                              [('release', 'MPL-5')],
@@ -74,7 +86,8 @@ class TestCube(object):
 
     def test_cube_redshift(self, cube, galaxy):
         assert cube.data_origin == cube.exporigin
-        redshift = cube.nsa.redshift if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
+        redshift = cube.nsa.redshift \
+            if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):
@@ -89,10 +102,10 @@ class TestCube(object):
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(AssertionError) as ee:
             Cube(filename='hola.fits', mode='auto')
 
-        assert re.match(r'input file .+hola.fits not found', str(ee.value)) is not None
+        assert re.match(r'filename .*hola.fits does not exist', str(ee.value)) is not None
 
     def test_load_filename_remote(self):
         """Tries to load a filename in remote mode and fails."""
@@ -101,133 +114,62 @@ class TestCube(object):
 
         assert 'filename not allowed in remote mode' in str(ee.value)
 
+    def test_getFullPath_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube._getFullPath() is None
 
-class TestGetSpaxel(object):
+    def test_download_no_plateifu(self, galaxy):
+        cube = Cube(mangaid=galaxy.mangaid)
+        cube.plateifu = None
+        assert cube.download() is None
 
-    def _dropNones(self, **kwargs):
-        for k, v in list(kwargs.items()):
-            if v is None:
-                del kwargs[k]
-        return kwargs
+    def test_repr(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        args = cube.plateifu, cube.mode, cube.data_origin
+        expected = "<Marvin Cube (plateifu='{0}', mode='{1}', data_origin='{2}')>".format(*args)
+        assert cube.__repr__() == expected
 
-    @pytest.mark.parametrize('x, y, ra, dec, excType, message',
-        [(1, None, 1, None, AssertionError, 'Either use (x, y) or (ra, dec)'),
-         (1, None, 1, 1, AssertionError, 'Either use (x, y) or (ra, dec)'),
-         (1, None, None, None, AssertionError, 'Specify both x and y'),
-         (None, 1, None, None, AssertionError, 'Specify both x and y'),
-         (None, None, 1, None, AssertionError, 'Specify both ra and dec'),
-         (None, None, None, 1, AssertionError, 'Specify both ra and dec'),
-         (None, None, None, None, ValueError, 'You need to specify either (x, y) or (ra, dec)'),
-         (-50, 1, None, None, MarvinError, 'some indices are out of limits'),
-         (50, 1, None, None, MarvinError, 'some indices are out of limits'),
-         (1, -50, None, None, MarvinError, 'some indices are out of limits'),
-         (1, 50, None, None, MarvinError, 'some indices are out of limits'),
-         (None, None, 1., 1., MarvinError, 'some indices are out of limits'),
-         (None, None, 100, 60, MarvinError, 'some indices are out of limits'),
-         (None, None, 232.546383, 1., MarvinError, 'some indices are out of limits'),
-         (None, None, 1., 48.6883954, MarvinError, 'some indices are out of limits')],
-        ids=['x-ra', 'x-ra-dec', 'x', 'y', 'ra', 'dec', 'no-inputs', '-50-1', '50-1', '1--50',
-             '1-50', '1-1', '100-60', '232.5-1', '1-48.6'])
-    def test_getSpaxel_inputs(self, galaxy, x, y, ra, dec, excType, message):
-        """Tests exceptions when getSpaxel gets inappropriate inputs."""
-        kwargs = self._dropNones(x=x, y=y, ra=ra, dec=dec)
+    def test_load_cube_from_file_with_data(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube._load_cube_from_file(data=cube.data)
 
-        with pytest.raises(excType) as ee:
-            cube = Cube(plateifu=galaxy.plateifu, release=galaxy.release)
-            cube.getSpaxel(**kwargs)
+    def test_load_cube_from_file_OSError(self, galaxy):
+        cube = Cube(filename=galaxy.cubepath)
+        cube.filename = 'hola.fits'
+        with pytest.raises((IOError, OSError)) as ee:
+            cube._load_cube_from_file()
 
-        assert message in str(ee.value)
+        assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
 
-    @pytest.mark.parametrize('coord, xyorig',
-                             [('xy', 'lower'),
-                              ('xy', 'center'),
-                              ('radec', None)])
-    def test_getSpaxel_flux(self, cube, galaxy, coord, xyorig):
-        if coord == 'xy':
-            x = galaxy.spaxel['x'] if xyorig == 'lower' else galaxy.spaxel['x_cen']
-            y = galaxy.spaxel['y'] if xyorig == 'lower' else galaxy.spaxel['y_cen']
-            params = {'x': x, 'y': y, 'xyorig': xyorig}
-        elif coord == 'radec':
-            ra = galaxy.spaxel['ra']
-            dec = galaxy.spaxel['dec']
-            params = {'ra': ra, 'dec': dec}
+    def test_load_cube_from_file_filever_ne_release(self, galaxy):
+        release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
+        with pytest.warns(MarvinUserWarning) as record:
+            cube = Cube(filename=galaxy.cubepath, release=release_wrong)
+        assert len(record) >= 1
+        assert record[-1].message.args[0] == (
+            'mismatch between file release={0} '.format(galaxy.release) +
+            'and object release={0}. '.format(release_wrong) +
+            'Setting object release to {0}'.format(galaxy.release))
 
-        spaxel = cube.getSpaxel(**params)
-        flux = spaxel.spectrum.flux
-        assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
+        assert cube._release == galaxy.release
 
-    @pytest.mark.parametrize('monkeyconfig',
-                             [('sasurl', 'http://www.averywrongurl.com')],
-                             ids=['wrongurl'], indirect=True)
-    def test_getSpaxel_remote_fail_badresponse(self, monkeyconfig):
-        assert config.urlmap is not None
+    def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
+        monkeypatch.setattr(marvindb, 'isdbconnected', False)
+        with pytest.raises(MarvinError) as ee:
+            Cube(plateifu=galaxy.plateifu)
 
-        with pytest.raises(MarvinError) as cm:
-            Cube(mangaid='1-209232', mode='remote')
+        assert 'No DB connected' in str(ee.value)
 
-        assert 'Failed to establish a new connection' in str(cm.value)
+    def test_load_cube_from_db_data(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._load_cube_from_db(data=cube.data)
 
-    def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
-        config.setMPL('MPL-5')
-        assert config.release == 'MPL-5'
-
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
-        expected = galaxy.spaxel['flux']
-
-        spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).spectrum
-        assert pytest.approx(spectrum.flux[galaxy.spaxel['specidx']], expected)
-
-    def test_getspaxel_matches_file_db_remote(self, galaxy):
-
-        cube_file = Cube(filename=galaxy.cubepath)
-        cube_db = Cube(plateifu=galaxy.plateifu)
-        cube_api = Cube(plateifu=galaxy.plateifu, mode='remote')
-
-        assert cube_file.data_origin == 'file'
-        assert cube_db.data_origin == 'db'
-        assert cube_api.data_origin == 'api'
-
-        xx = galaxy.spaxel['x']
-        yy = galaxy.spaxel['y']
-        spec_idx = galaxy.spaxel['specidx']
-        flux = galaxy.spaxel['flux']
-        ivar = galaxy.spaxel['ivar']
-        mask = galaxy.spaxel['mask']
-
-        spaxel_slice_file = cube_file[yy, xx]
-        spaxel_slice_db = cube_db[yy, xx]
-        spaxel_slice_api = cube_api[yy, xx]
-
-        assert pytest.approx(spaxel_slice_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.spectrum.flux[spec_idx], flux)
-
-        assert pytest.approx(spaxel_slice_file.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_db.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_api.spectrum.ivar[spec_idx], ivar)
-
-        assert pytest.approx(spaxel_slice_file.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_db.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_api.spectrum.mask[spec_idx], mask)
-
-        xx_cen = galaxy.spaxel['x_cen']
-        yy_cen = galaxy.spaxel['y_cen']
-
-        spaxel_getspaxel_file = cube_file.getSpaxel(x=xx_cen, y=yy_cen)
-        spaxel_getspaxel_db = cube_db.getSpaxel(x=xx_cen, y=yy_cen)
-        spaxel_getspaxel_api = cube_api.getSpaxel(x=xx_cen, y=yy_cen)
-
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.flux[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.flux[spec_idx], flux)
-
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.ivar[spec_idx], ivar)
-
-        assert pytest.approx(spaxel_getspaxel_file.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.spectrum.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.spectrum.mask[spec_idx], mask)
+    @marvin_test_if('include', data_origin=['db'])
+    @pytest.mark.slow
+    def test_getExtensionData_db(self, galaxy):
+        cube = Cube(plateifu=galaxy.plateifu)
+        cube._getExtensionData(extName='flux')
 
 
 class TestWCS(object):
@@ -249,7 +191,7 @@ class TestPickling(object):
 
         assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
         cube_file = temp_scratch.join('test_cube.mpf')
-        path = cube.save(str(cube_file))
+        cube.save(str(cube_file))
         assert cube_file.check() is True
         assert cube.data is not None
 
@@ -299,7 +241,7 @@ class TestPickling(object):
 
         test_path = temp_scratch.join('test_cube_api.mpf')
 
-        path = cube.save(str(test_path))
+        cube.save(str(test_path))
         assert test_path.check() is True
 
         cube = None
@@ -309,3 +251,28 @@ class TestPickling(object):
         assert cube_restored.data_origin == 'api'
         assert isinstance(cube_restored, Cube)
         assert cube_restored.data is None
+
+
+class TestMaskbit(object):
+
+    def test_values_to_bits(self, cube):
+        assert cube.pixmask.values_to_bits(3) == [0, 1]
+
+    def test_values_to_labels(self, cube):
+        assert cube.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
+
+    @pytest.mark.parametrize('names, expected',
+                             [(['NOCOV', 'LOWCOV'], 3),
+                              ('DONOTUSE', 1024)])
+    def test_labels_to_value(self, cube, names, expected):
+        assert cube.pixmask.labels_to_value(names) == expected
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'quality_flag',
+                              'target_flags',
+                              'pixmask'])
+    def test_flag(self, flag, cube):
+        assert getattr(cube, flag, None) is not None

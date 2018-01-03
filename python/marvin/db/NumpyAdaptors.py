@@ -148,6 +148,10 @@ register_adapter(numpy.float64, adapt_numpy_float64)
 #   return AsIs(numpy_complex512)
 # register_adapter(numpy.complex512, adapt_numpy_complex512)
 
+def adapt_numpy_bool(numpy_bool):
+    return AsIs(numpy_bool)
+register_adapter(numpy.bool_, adapt_numpy_bool)
+
 
 def adapt_numpy_nan(numpy_nan):
     return "'NaN'"

@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
-* @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-19 10:00:56
+ * @Last modified by:   andrews
+ * @Last modified time: 2017-12-13 23:12:53
 */
 
 //jshint esversion: 6
@@ -118,7 +118,7 @@ var HeatMap = function () {
                         signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
-                        var bitmasks = this.plotparams["bitmasks"];
+                        var bitmasks = this.plotparams["bits"];
                         noData = mask[ii][jj] & Math.pow(2, bitmasks["nocov"]);
                         badData = false;
                         for (var key in bitmasks["badData"]) {

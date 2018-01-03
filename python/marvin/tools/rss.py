@@ -23,7 +23,7 @@ import marvin
 from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
-from marvin.tools.spectrum import Spectrum
+from marvin.tools.quantities.spectrum import Spectrum
 
 
 class RSS(MarvinToolsClass, list):
@@ -240,7 +240,7 @@ class RSSFiber(Spectrum):
         rssfiber:
             An object representing the RSS fiber entity.
 
-    .. |spectrum| replace:: :class:`~marvin.tools.spectrum.Spectrum`
+    .. |spectrum| replace:: :class:`~marvin.tools.quantities.Spectrum`
 
     """
 
@@ -255,7 +255,7 @@ class RSSFiber(Spectrum):
         kwargs['units'] = flux_units
         kwargs['wavelength_unit'] = wavelength_unit
 
-        Spectrum.__init__(self, *args, **kwargs)
+        # Spectrum.__init__(self, **kwargs)
 
     def __repr__(self):
         """Representation for RSSFiber."""

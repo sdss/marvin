@@ -1,20 +1,42 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# @Author: José Sánchez-Gallego
+# @Date: Nov 1, 2017
+# @Filename: general.py
+# @License: BSD 3-Clause
+# @Copyright: José Sánchez-Gallego
+
+
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import collections
-import os
+import inspect
+import sys
 import warnings
+import contextlib
+import re
+
+from collections import OrderedDict
+from builtins import range
 
 import numpy as np
-import PIL
-from scipy.interpolate import griddata
 
-from astropy import wcs
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
+import PIL
+
 from astropy import table
+from astropy import wcs
+from astropy.units.quantity import Quantity
 
 import marvin
+
 from marvin import log
-from marvin.utils.dap.datamodel import get_default_plot_params
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from brain.core.exceptions import BrainError
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -31,13 +53,16 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params')
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
+           'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion')
 
 drpTable = {}
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,
-              x=None, y=None, ra=None, dec=None, xyorig=None):
+              x=None, y=None, ra=None, dec=None, xyorig=None, **kwargs):
     """Returns the |spaxel| matching certain coordinates.
 
     The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -77,6 +102,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
             lower-left corner. This keyword is ignored if ``ra`` and
             ``dec`` are defined. ``xyorig`` defaults to
             ``marvin.config.xyorig.``
+        kwargs (dict):
+            Arguments to be passed to `~marvin.tools.spaxel.SpaxelBase`.
 
     Returns:
         spaxels (list):
@@ -137,16 +164,13 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
     if isinstance(maps, marvin.tools.maps.Maps):
         ww = maps.wcs if inputMode == 'sky' else None
-        cube_shape = maps.shape
-        plateifu = maps.plateifu
+        cube_shape = maps._shape
     elif isinstance(cube, marvin.tools.cube.Cube):
         ww = cube.wcs if inputMode == 'sky' else None
-        cube_shape = cube.shape
-        plateifu = cube.plateifu
+        cube_shape = cube._shape
     elif isinstance(modelcube, marvin.tools.modelcube.ModelCube):
         ww = modelcube.wcs if inputMode == 'sky' else None
-        cube_shape = modelcube.shape
-        plateifu = modelcube.plateifu
+        cube_shape = modelcube._shape
 
     iCube, jCube = zip(convertCoords(coords, wcs=ww, shape=cube_shape,
                                      mode=inputMode, xyorig=xyorig).T)
@@ -154,8 +178,9 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.Spaxel(x=jCube[0][ii], y=iCube[0][ii],
-                                       cube=cube, maps=maps, modelcube=modelcube))
+            marvin.tools.spaxel.SpaxelBase(jCube[0][ii], iCube[0][ii],
+                                           cube=cube, maps=maps, modelcube=modelcube,
+                                           **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -164,7 +189,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
 
 
 def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
-    """Converts input coordinates to array indices.
+    """Convert input coordinates to array indices.
 
     Converts input positions in x, y or RA, Dec coordinates to array indices
     (in Numpy style) or spaxel extraction. In case of pixel coordinates, the
@@ -219,7 +244,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         x = coords[:, 0]
         y = coords[:, 1]
 
-        assert shape, 'if mode==pix, shape must be defined.'
+        assert shape is not None, 'if mode==pix, shape must be defined.'
         shape = np.atleast_1d(shape)
 
         if xyorig == 'center':
@@ -250,7 +275,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
 
 
 def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
-    """Returns the plate-ifu for a certain mangaid.
+    """Return the plate-ifu for a certain mangaid.
 
     Uses either the DB or the drpall file to determine the plate-ifu for
     a mangaid. If more than one plate-ifu are available for a certain ifu,
@@ -377,8 +402,10 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
 
 def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
-    '''
-    Finds the closest vector of array coordinates (x, y) from an input vector of pixel coordinates (x, y).
+    """Find the closest array coordinates from pixel coordinates.
+
+    Find the closest vector of array coordinates (x, y) from an input
+    vector of pixel coordinates (x, y).
 
     Parameters:
         point : tuple
@@ -388,21 +415,23 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
         pixel_shape : tuple
             Shape of image in pixels in (x,y) order
         xyorig : str
-            Indicates the origin point of coordinates.  Set to "relative" switches to an array coordinate
-            system relative to galaxy center.  Default is absolute array coordinates (x=0, y=0) = upper left corner
+            Indicates the origin point of coordinates.  Set to
+            "relative" switches to an array coordinate system relative
+            to galaxy center.  Default is absolute array coordinates
+            (x=0, y=0) = upper left corner
 
     Returns:
         minind : tuple
             A tuple of array coordinates in x, y order
-    '''
+    """
 
     # set as numpy arrays
     arr_shape = np.array(arr_shape, dtype=int)
     pixel_shape = np.array(pixel_shape, dtype=int)
 
     # compute midpoints
-    xmid, ymid = arr_shape/2
-    xpixmid, ypixmid = pixel_shape/2
+    xmid, ymid = arr_shape / 2
+    xpixmid, ypixmid = pixel_shape / 2
 
     # default absolute array coordinates
     xcoords = np.array([0, arr_shape[0]], dtype=int)
@@ -426,7 +455,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
     # find minimum array vector closest to input coordinate point
     diff = np.abs(point - final)
-    prod = diff[:, :, 0]*diff[:, :, 1]
+    prod = diff[:, :, 0] * diff[:, :, 1]
     minind = np.unravel_index(prod.argmin(), arr_shape)
 
     # toggle relative array coordinates
@@ -440,7 +469,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
 
 
 def getWCSFromPng(image):
-    ''' Extracts any WCS info from the metadata of a PNG image
+    """Extract any WCS info from the metadata of a PNG image.
 
     Extracts the WCS metadata info from the PNG optical
     image of the galaxy using PIL (Python Imaging Library).
@@ -453,8 +482,7 @@ def getWCSFromPng(image):
     Returns:
         pngwcs (WCS):
             an Astropy WCS object
-
-    '''
+    """
 
     pngwcs = None
     try:
@@ -488,7 +516,7 @@ def getWCSFromPng(image):
 
 
 def convertImgCoords(coords, image, to_pix=None, to_radec=None):
-    ''' Transform the WCS info in an image
+    """Transform the WCS info in an image.
 
     Convert image pixel coordinates to RA/Dec based on
     PNG image metadata or vice_versa
@@ -507,8 +535,7 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
         newcoords (tuple):
             Tuple of either (x, y) pixel coordinates
             or (RA, Dec) coordinates
-
-    '''
+    """
 
     try:
         wcs = getWCSFromPng(image)
@@ -529,7 +556,7 @@ def convertImgCoords(coords, image, to_pix=None, to_radec=None):
 
 
 def parseIdentifier(galid):
-    ''' Determines if a string input is a plate, plateifu, or manga-id
+    """Determine if a string input is a plate, plateifu, or manga-id.
 
     Parses a string object id and determines whether it is a
     plate ID, a plate-IFU, or MaNGA-ID designation.
@@ -541,8 +568,7 @@ def parseIdentifier(galid):
     Returns:
         idtype (str):
             String indicating either plate, plateifu, mangaid, or None
-
-    '''
+    """
 
     galid = str(galid)
     hasdash = '-' in galid
@@ -568,7 +594,7 @@ def parseIdentifier(galid):
 
 
 def getSpaxelXY(cube, plateifu, x, y):
-    """Gets and spaxel from a cube in the DB.
+    """Get a spaxel from a cube in the DB.
 
     This function is mostly intended for internal use.
 
@@ -602,7 +628,7 @@ def getSpaxelXY(cube, plateifu, x, y):
 
 
 def getDapRedux(release=None):
-    ''' Retrieve SAS url link to the DAP redux directory
+    """Retrieve SAS url link to the DAP redux directory.
 
     Parameters:
         release (str):
@@ -612,7 +638,7 @@ def getDapRedux(release=None):
     Returns:
         dapredux (str):
             The full redux path to the DAP MAPS
-    '''
+    """
 
     if not Path:
         raise MarvinError('sdss_access is not installed')
@@ -629,7 +655,7 @@ def getDapRedux(release=None):
 
 
 def getDefaultMapPath(**kwargs):
-    ''' Retrieve the default Maps path
+    """Retrieve the default Maps path.
 
     Uses sdss_access Path to generate a url download link to the
     default MAPS file for a given MPL.
@@ -650,7 +676,7 @@ def getDefaultMapPath(**kwargs):
     Returns:
         maplink (str):
             The sas url to download the default maps file
-    '''
+    """
 
     if not Path:
         raise MarvinError('sdss_access is not installed')
@@ -681,7 +707,7 @@ def getDefaultMapPath(**kwargs):
 
 
 def downloadList(inputlist, dltype='cube', **kwargs):
-    ''' Download a list of MaNGA objects
+    """Download a list of MaNGA objects.
 
     Uses sdss_access to download a list of objects
     via rsync.  Places them in your local sas path mimicing
@@ -717,10 +743,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             Turns on verbosity during rsync
         limit (int):
             A limit to the number of items to download
+
     Returns:
         NA: Downloads
-
-    '''
+    """
 
     # Get some possible keywords
     # Necessary rsync variables:
@@ -834,7 +860,6 @@ def _db_row_to_dict(row, remove_columns=False):
 
     from sqlalchemy.inspection import inspect as sa_inspect
     from sqlalchemy.ext.hybrid import hybrid_property
-    from sqlalchemy.orm.attributes import InstrumentedAttribute
 
     row_dict = collections.OrderedDict()
 
@@ -881,7 +906,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
     """
 
     from marvin import config, marvindb
-    from marvin.core.core import DotableCaseInsensitive
+    from .structs import DotableCaseInsensitive
 
     valid_modes = ['auto', 'local', 'remote']
     assert mode in valid_modes, 'mode must be one of {0}'.format(valid_modes)
@@ -985,7 +1010,7 @@ def _check_file_parameters(obj1, obj2):
 
 
 def get_plot_params(dapver, prop):
-    """Returns default plotting parameters for a property."""
+    """Return default plotting parameters for a property."""
     params = get_default_plot_params(dapver)
 
     if 'vel' in prop:
@@ -997,3 +1022,431 @@ def get_plot_params(dapver, prop):
 
     return params[key]
 
+
+def add_doc(value):
+    """Wrap method to programatically add docstring."""
+    def _doc(func):
+        func.__doc__ = value
+        return func
+    return _doc
+
+
+def use_inspect(func):
+    ''' Inspect a function of arguments and keywords.
+
+    Inspects a function or class method.  Uses a different inspect for Python 2 vs 3
+    Only tested to work with args and defaults.  varargs (variable arguments)
+    and varkw (keyword arguments) seem to always be empty.
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A tuple of arguments, variable arguments, keywords, and default values
+
+    '''
+    pyver = sys.version_info.major
+    if pyver == 2:
+        args, varargs, varkw, defaults = inspect.getargspec(func)
+    elif pyver == 3:
+        sig = inspect.signature(func)
+        args = []
+        defaults = []
+        varargs = varkw = None
+        for par in sig.parameters.values():
+            # most parameters seem to be of this kind
+            if par.kind == par.POSITIONAL_OR_KEYWORD:
+                args.append(par.name)
+                # parameters with default of inspect empty are required
+                if par.default != inspect._empty:
+                    defaults.append(par.default)
+
+    return args, varargs, varkw, defaults
+
+
+def getRequiredArgs(func):
+    ''' Gets the required arguments from a function or method
+
+    Uses this difference between arguments and defaults to indicate
+    required versus optional arguments
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of required arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getRequiredArgs(plt.scatter)
+        >>> ['x', 'y']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    if defaults:
+        args = args[:-len(defaults)]
+    return args
+
+
+def getKeywordArgs(func):
+    ''' Gets the keyword arguments from a function or method
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+
+    Returns:
+        A list of keyword arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> getKeywordArgs(plt.scatter)
+        >>> ['edgecolors', 'c', 'vmin', 'linewidths', 'marker', 's', 'cmap',
+        >>>  'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    req_args = getRequiredArgs(func)
+    opt_args = list(set(args) - set(req_args))
+    return opt_args
+
+
+def missingArgs(func, argdict, arg_type='args'):
+    ''' Return missing arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+
+    Returns:
+        A list of missing arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for missing required args
+        >>> missginArgs(plt.scatter, testdict)
+        >>> {'x', 'y'}
+        >>> # test for missing optional args
+        >>> missingArgs(plt.scatter, testdict, arg_type='opt')
+        >>> ['vmin', 'linewidths', 'marker', 's', 'cmap', 'verts', 'vmax', 'alpha', 'hold', 'data', 'norm']
+
+    '''
+    assert arg_type in ['args', 'req', 'kwargs', 'opt'], 'arg_type must be one of (args|req|kwargs|opt)'
+    if arg_type in ['args', 'req']:
+        return set(getRequiredArgs(func)).difference(argdict)
+    elif arg_type in ['kwargs', 'opt']:
+        return set(getKeywordArgs(func)).difference(argdict)
+
+
+def invalidArgs(func, argdict):
+    ''' Return invalid arguments from an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+
+    Returns:
+        A list of invalid arguments
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> invalidArgs(plt.scatter, testdict)
+        >>>  {'xlabel', 'xlim', 'ylabel', 'ylim'}
+
+    '''
+    args, varargs, varkw, defaults = use_inspect(func)
+    return set(argdict) - set(args)
+
+
+def isCallableWithArgs(func, argdict, arg_type='opt', strict=False):
+    ''' Test if the function is callable with the an input dictionary
+
+    Parameters:
+        func (func):
+            The function or method to inspect
+        argdict (dict):
+            The argument dictionary to test against
+        arg_type (str):
+            The type of arguments to test.  Either (args|kwargs|req|opt). Default is required.
+        strict (bool):
+            If True, validates input dictionary against both missing and invalid keyword arguments. Default is False
+
+    Returns:
+        Boolean indicating whether the function is callable
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> testdict = {'edgecolors': 'black', 'c': 'r', 'xlim': 5, 'xlabel': 9, 'ylabel': 'y', 'ylim': 6}
+        >>> # test for invalid args
+        >>> isCallableWithArgs(plt.scatter, testdict)
+        >>> False
+
+    '''
+    if strict:
+        return not missingArgs(func, argdict, arg_type=arg_type) and not invalidArgs(func, argdict)
+    else:
+        return not invalidArgs(func, argdict)
+
+
+def map_bins_to_column(column, indices):
+    ''' Maps a dictionary of array indices to column data
+
+    Takes a given data column and a dictionary of indices (see the indices key
+    from output of the histgram data in :meth:`marvin.utils.plot.scatter.hist`),
+    and produces a dictionary with the data values from column mapped in
+    individual bins.
+
+    Parameters:
+        column (list):
+            A column of data
+        indices (dict):
+            A dictionary of providing a list of array indices belonging to each
+            bin in a histogram.
+
+    Returns:
+        A dictionary containing, for each binid, a list of column data in that bin.
+
+    Example:
+        >>>
+        >>> # provide a list of data in each bin of an output histogram
+        >>> x = np.random.random(10)*10
+        >>> hdata = hist(x, bins=3, return_fig=False)
+        >>> inds = hdata['indices']
+        >>> pmap = map_bins_to_column(x, inds)
+        >>> OrderedDict([(1,
+        >>>   [2.5092488009906235,
+        >>>    1.7494530589363955,
+        >>>    2.5070840461208754,
+        >>>    2.188355400587354,
+        >>>    2.6987990403658992,
+        >>>    1.6023553861428441]),
+        >>>  (3, [7.9214280403215875, 7.488908995456573, 7.190598204420587]),
+        >>>  (4, [8.533028236560906])])
+
+    '''
+    assert isinstance(indices, dict) is True, 'indices must be a dictionary of binids'
+    assert len(column) == sum(map(len, indices.values())), 'input column and indices values must have same len'
+    coldict = OrderedDict()
+    colarr = np.array(column)
+    for key, val in indices.items():
+        coldict[key] = colarr[val].tolist()
+    return coldict
+
+
+def _sort_dir(instance, class_):
+    """Sort `dir()` to return child class attributes and members first.
+
+    Return the attributes and members of the child class, so that
+    ipython tab completion lists those first.
+
+    Parameters:
+        instance: Instance of `class_` (usually self).
+        class_: Class of `instance`.
+
+    Returns:
+        list: Child class attributes and members.
+    """
+    members_array = list(zip(*inspect.getmembers(np.ndarray)))[0]
+    members_quantity = list(zip(*inspect.getmembers(Quantity)))[0]
+    members_parents = members_array + members_quantity
+
+    return_list = [it[0] for it in inspect.getmembers(class_) if it[0] not in members_parents]
+    return_list += vars(instance).keys()
+    return_list += ['value']
+    return return_list
+
+
+def get_dapall_file(drpver, dapver):
+    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
+
+    assert Path is not None, 'sdss_access.path.Path is not available.'
+
+    dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
+
+    return dapall_path
+
+
+@contextlib.contextmanager
+def turn_off_ion(show_plot=True):
+    ''' Turns off the Matplotlib plt interactive mode
+
+    Context manager to temporarily disable the interactive
+    Matplotlib plotting functionality.  Useful for only returning
+    Figure and Axes objects
+
+    Parameters:
+        show_plot (bool):
+            If True, turns off the plotting
+
+    Example:
+        >>>
+        >>> with turn_off_ion(show_plot=False):
+        >>>     do_some_stuff
+        >>>
+
+    '''
+
+    plt_was_interactive = plt.isinteractive()
+    if not show_plot and plt_was_interactive:
+        plt.ioff()
+
+    yield plt
+
+    if show_plot:
+        plt.ioff()
+        plt.show()
+    else:
+        fignum = plt.get_fignums()
+        if fignum:
+            plt.close(fignum[0])
+        else:
+            plt.close()
+
+    # Restores original ion() status
+    if plt_was_interactive and not plt.isinteractive():
+        plt.ion()
+
+
+@contextlib.contextmanager
+def temp_setattr(ob, attrs, new_values):
+    """ Temporarily set attributed on an object
+
+    Temporarily set an attribute on an object for the duration of the
+    context manager.
+
+    Parameters:
+        ob (object):
+            A class instance to set attributes on
+        attrs (str|list):
+            A list of attribute names to replace
+        new_values (list):
+            A list of new values to set as new attribute.  If new_values is
+            None, all attributes in attrs will be set to None.
+
+    Example:
+        >>> c = Cube(plateifu='8485-1901')
+        >>> print('before', c.mangaid)
+        >>> with temp_setattr(c, 'mangaid', None):
+        >>>     # do stuff
+        >>>     print('new', c.mangaid)
+        >>> print('after' c.mangaid)
+        >>>
+        >>> # Output
+        >>> before '1-209232'
+        >>> new None
+        >>> after '1-209232'
+        >>>
+
+    """
+
+    # set up intial inputs
+    attrs = attrs if isinstance(attrs, list) else [attrs]
+    if new_values:
+        new_values = new_values if isinstance(new_values, list) else [new_values]
+    else:
+        new_values = [new_values] * len(attrs)
+
+    assert len(attrs) == len(new_values), 'attrs and new_values must have the same length'
+
+    replaced = []
+    old_values = []
+
+    # grab the old values
+    for i, attr in enumerate(attrs):
+        new_value = new_values[i]
+
+        replace = False
+        old_value = None
+        if hasattr(ob, attr):
+            try:
+                if attr in ob.__dict__:
+                    replace = True
+            except AttributeError:
+                if attr in ob.__slots__:
+                    replace = True
+            if replace:
+                old_value = getattr(ob, attr)
+        replaced.append(replace)
+        old_values.append(old_value)
+        setattr(ob, attr, new_value)
+
+    # yield
+    yield replaced, old_values
+
+    # replace the old values
+    for i, attr in enumerate(attrs):
+        if not replaced[i]:
+            delattr(ob, attr)
+        else:
+            setattr(ob, attr, old_values[i])
+
+
+def map_dapall(header, row):
+    ''' Retrieves a dictionary of DAPall db column names
+
+    For a given row in the DAPall file, returns a dictionary
+    of corresponding DAPall database columns names with the
+    appropriate values.
+
+    Parameters:
+        header (Astropy header):
+            The primary header of the DAPall file
+        row (recarray):
+            A row of the DAPall binary table data
+
+    Returns:
+        A dictionary with db column names as keys and row data as values
+
+    Example:
+        >>> hdu = fits.open('dapall-v2_3_1-2.1.1.fits')
+        >>> header = hdu[0].header
+        >>> row = hdu[1].data[0]
+        >>> dbdict = map_dapall(header, row)
+
+    '''
+
+    # get names from header
+    emline_schannels = []
+    emline_gchannels = []
+    specindex_channels = []
+    for key, val in header.items():
+        if 'ELS' in key:
+            emline_schannels.append(val.lower().replace('-', '_').replace('.', '_'))
+        elif 'ELG' in key:
+            emline_gchannels.append(val.lower().replace('-', '_').replace('.', '_'))
+        elif re.search('SPI([0-9])', key):
+            specindex_channels.append(val.lower().replace('-', '_').replace('.', '_'))
+
+    # File column names
+    names = row.array.names
+
+    dbdict = {}
+    for col in names:
+        name = col.lower()
+        shape = row[col].shape if hasattr(row[col], 'shape') else ()
+        array = ''
+        values = row[col]
+
+        if len(shape) > 0:
+            channels = shape[0]
+            for i in range(channels):
+                channame = emline_schannels[i] if 'emline_s' in name else \
+                    emline_gchannels[i] if 'emline_g' in name else \
+                    specindex_channels[i] if 'specindex' in name else i + 1
+                colname = '{0}_{1}'.format(name, channame)
+                dbdict[colname] = values[i]
+        else:
+            dbdict[name] = values
+
+    return dbdict

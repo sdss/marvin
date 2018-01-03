@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-20 16:36:37
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-30 18:19:10
+# @Last Modified time: 2017-11-13 15:16:57
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
@@ -110,13 +110,13 @@ def make_paths(request, rsync, mode, asurl, release):
 class TestImagesGetDir3d(object):
 
     @pytest.mark.parametrize('expval', [('stack')])
-    def test_getdir3d(self, galaxy, release, expval, mode, db):
-        dir3d = getDir3d(galaxy.plateifu, mode=mode, release=release)
+    def test_getdir3d(self, galaxy, expval, mode, db):
+        dir3d = getDir3d(galaxy.plateifu, mode=mode, release=galaxy.release)
         assert expval == dir3d
 
     @pytest.mark.parametrize('expval', [('stack')])
-    def test_getdir3d_plate(self, galaxy, release, expval, mode, db):
-        dir3d = getDir3d(galaxy.plate, mode=mode, release=release)
+    def test_getdir3d_plate(self, galaxy, expval, mode, db):
+        dir3d = getDir3d(galaxy.plate, mode=mode, release=galaxy.release)
         assert expval == dir3d
 
 
@@ -167,10 +167,10 @@ class TestImagesByPlate(object):
                              [('8485abcd', 'local', 'Plateid must be a numeric integer value'),
                               (None, 'notvalidmode', 'Mode must be either auto, local, or remote')],
                              ids=['badid', 'badmode'])
-    def test_failures(self, galaxy, plateid, mode, errmsg, release):
+    def test_failures(self, galaxy, plateid, mode, errmsg):
         plateid = plateid if plateid else galaxy.plate
         with pytest.raises(AssertionError) as cm:
-            image = getImagesByPlate(plateid, mode=mode, release=release)
+            image = getImagesByPlate(plateid, mode=mode, release=galaxy.release)
         assert cm.type == AssertionError
         assert errmsg in str(cm.value)
 

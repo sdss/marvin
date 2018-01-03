@@ -10,14 +10,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import pytest
+import copy
 
+import pytest
+import numpy as np
+import astropy
 import astropy.io.fits
 
 import marvin
 from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
+from marvin.utils.datamodel.dap.base import Property
 from marvin.tests import marvin_test_if
 
 
@@ -30,9 +34,9 @@ def _assert_maps(maps, galaxy):
     assert maps.wcs is not None
     assert maps.bintype == galaxy.bintype
 
-    assert len(maps.shape) == len(galaxy.shape)
-    for ii in range(len(maps.shape)):
-        assert maps.shape[ii] == galaxy.shape[ii]
+    assert len(maps._shape) == len(galaxy.shape)
+    for ii in range(len(maps._shape)):
+        assert maps._shape[ii] == galaxy.shape[ii]
 
 
 class TestMaps(object):
@@ -43,7 +47,7 @@ class TestMaps(object):
             maps_kwargs = dict(filename=galaxy.mapspath)
         else:
             maps_kwargs = dict(plateifu=galaxy.plateifu, release=galaxy.release,
-                               bintype=galaxy.bintype, template_kin=galaxy.template,
+                               bintype=galaxy.bintype, template=galaxy.template,
                                mode='local' if data_origin == 'db' else 'remote')
 
         return maps_kwargs
@@ -61,9 +65,11 @@ class TestMaps(object):
         elif exporigin == 'db':
             assert isinstance(maps.data, marvin.marvindb.dapdb.File)
 
-        assert maps.cube is not None
-        assert maps.cube.plateifu == galaxy.plateifu
-        assert maps.cube.mangaid == galaxy.mangaid
+        cube = maps.getCube()
+
+        assert cube is not None
+        assert cube.plateifu == galaxy.plateifu
+        assert cube.mangaid == galaxy.mangaid
 
     @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
@@ -71,45 +77,13 @@ class TestMaps(object):
         assert marvin.config.release == 'MPL-5'
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
-        assert maps._release == galaxy.release
+        assert maps.release == galaxy.release
         assert maps._drpver == galaxy.drpver
         assert maps._dapver == galaxy.dapver
 
-    def test_get_spaxel(self, galaxy, data_origin):
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=15, y=8, xyorig='lower')
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
-
-        expected = galaxy.stellar_vel_ivar_x15_y8_lower[galaxy.release][galaxy.template]
-        assert spaxel.properties['stellar_vel'].ivar == pytest.approx(expected, abs=1e-6)
-
-    def test_get_spaxel_test2(self, galaxy, data_origin):
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
-        spaxel = maps.getSpaxel(x=5, y=5)
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
-
-    def test_get_spaxel_no_db(self, galaxy, exporigin):
-        """Tests getting an spaxel if there is no DB."""
-
-        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
-        spaxel = maps.getSpaxel(x=5, y=5)
-
-        assert spaxel.maps.data_origin == exporigin
-
-        assert isinstance(spaxel, marvin.tools.spaxel.Spaxel)
-        assert spaxel.spectrum is not None
-        assert len(spaxel.properties.keys()) > 0
-
     def test_maps_redshift(self, maps, galaxy):
-        redshift = maps.nsa.redshift if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
+        redshift = maps.nsa.redshift \
+            if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
         assert pytest.approx(redshift, galaxy.redshift)
 
     def test_release(self, galaxy):
@@ -121,3 +95,52 @@ class TestMaps(object):
         with pytest.raises(MarvinError) as ee:
             maps.release = 'a'
             assert 'the release cannot be changed' in str(ee.exception)
+
+    def test_deepcopy(self, galaxy):
+        maps1 = Maps(plateifu=galaxy.plateifu)
+        maps2 = copy.deepcopy(maps1)
+
+        for attr in vars(maps1):
+            if not attr.startswith('_'):
+                value = getattr(maps1, attr)
+                value2 = getattr(maps2, attr)
+
+                if isinstance(value, np.ndarray):
+                    assert np.isclose(value, value2).all()
+
+                elif isinstance(value, astropy.wcs.wcs.WCS):
+                    for key in vars(value):
+                        assert getattr(value, key) == getattr(value2, key)
+
+                elif isinstance(value, marvin.tools.cube.Cube):
+                    pass
+
+                elif (isinstance(value, list) and len(value) > 0 and
+                      isinstance(value[0], Property)):
+                        for property1, property2 in zip(value, value2):
+                            assert property1 == property2
+
+                else:
+                    assert value == value2, attr
+
+
+class TestMaskbit(object):
+
+    @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag_mpl4(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag is None
+
+    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
+    def test_quality_flag(self, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert ha.quality_flag.mask == 0
+
+    @pytest.mark.parametrize('flag',
+                             ['manga_target1',
+                              'manga_target2',
+                              'manga_target3',
+                              'target_flags'])
+    def test_flag(self, flag, maps_release_only):
+        ha = maps_release_only['emline_gflux_ha_6564']
+        assert getattr(ha, flag, None) is not None

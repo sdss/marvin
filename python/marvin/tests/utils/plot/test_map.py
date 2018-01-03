@@ -6,14 +6,14 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-07-19 10:07:33
+# @Last modified time: 2017-11-28 12:11:97
 
 import numpy as np
 import matplotlib
 import pytest
 
 from marvin import config
-from marvin.tools.maps import Maps
+from marvin.tests import marvin_test_if
 import marvin.utils.plot.map as mapplot
 from marvin.utils.general import get_plot_params
 
@@ -29,9 +29,9 @@ ivar = np.array([[4, 10, 1],
                  [0.01, 0.04, 0.0001],
                  [100000, 0, 1]])
 
-ivar_mpl4 = np.array([[0, 0, 0],
-                      [0, 3, 0],
-                      [0, 0, 0.5]])
+ivar_simple = np.array([[0, 0, 0],
+                       [0, 3, 0],
+                       [0, 0, 0.5]])
 
 mask_simple = np.array([[0, 1, 0],
                         [1, 0, 1],
@@ -55,9 +55,9 @@ nocov = np.array([[0, 1, 0],
                   [1, 0, 1],
                   [0, 1, 0]], dtype=bool)
 
-nocov_mpl4 = np.array([[1, 1, 1],
-                       [1, 0, 1],
-                       [1, 1, 0]], dtype=bool)
+nocov_simple = np.array([[1, 1, 1],
+                         [1, 0, 1],
+                         [1, 1, 0]], dtype=bool)
 
 bad_data = np.array([[0, 0, 1],
                      [1, 1, 1],
@@ -88,11 +88,9 @@ snr_min_3 = np.array([[1, 0, 0],
                       [1, 1, 1],
                       [0, 1, 0]])
 
-log_cb_true = np.array([[0, 1, 0],
-                        [1, 0, 0],
-                        [0, 0, 0]])
-
-log_cb_false = np.zeros(value.shape, dtype=bool)
+neg_val = np.array([[0, 1, 0],
+                    [1, 0, 0],
+                    [0, 0, 0]])
 
 image_none_true = np.array([[0, 1, 1],
                             [1, 1, 1],
@@ -120,37 +118,18 @@ def bits(request, set_release):
 
 class TestMasks(object):
 
-    @pytest.mark.parametrize('mask, ivar, expected',
-                             [(mask_simple, ivar_mpl4, nocov_mpl4)])
-    def test_no_coverage_mask_mpl4(self, mask, ivar, expected):
-        if config.release != 'MPL-4':
-            pytest.skip('Use generic test for NOCOV bitmask in MPL-5+.')
-        nocov = mapplot.no_coverage_mask(mask=mask, bit=None, ivar=ivar)
-        assert np.all(nocov == expected)
+    @pytest.mark.parametrize('ivar, expected',
+                             [(ivar_simple, nocov_simple)])
+    def test_mask_nocov_ivar(self, ivar, expected):
+        actual = mapplot._mask_nocov(mask=None, dapmap=None, ivar=ivar)
+        assert np.all(actual == expected)
 
-    @pytest.mark.parametrize('mask, ivar, expected',
-                             [(mask_simple, ivar, nocov),
-                              (mask_binary, ivar, nocov),
-                              (mask_daplike, ivar, nocov)])
-    def test_no_coverage_mask(self, mask, bits, ivar, expected):
-        if config.release == 'MPL-4':
-            pytest.skip('NOCOV bitmask only exists in MPL-5+')
-        nocov = mapplot.no_coverage_mask(mask=mask, bit=bits['nocov'], ivar=ivar)
-        assert np.all(nocov == expected)
-
-    @pytest.mark.parametrize('mask, expected', [(mask_simple, bad_data_mpl4)])
-    def test_bad_data_mask_mpl4(self, mask, expected):
-        if config.release != 'MPL-4':
-            pytest.skip('Use generic test for bad data bitmasks in MPL-5+.')
-        bad_data = mapplot.bad_data_mask(mask=mask, bits={'doNotUse': 0})
-        assert np.all(bad_data == expected)
-
-    @pytest.mark.parametrize('mask, expected', [(mask_daplike, bad_data)])
-    def test_bad_data_mask(self, mask, bits, expected):
-        if config.release == 'MPL-4':
-            pytest.skip('UNRELIABLE bitmask only exists in MPL-5+')
-        bad_data = mapplot.bad_data_mask(mask=mask, bits=bits['badData'])
-        assert np.all(bad_data == expected)
+    @marvin_test_if(mark='skip', maps_release_only=dict(release='MPL-4'))
+    def test_mask_nocov_dapmap(self, maps_release_only):
+        ha = maps_release_only['emline_gvel_ha_6564']
+        actual = mapplot._mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
+        expected = (ha.mask & 2**0 > 0)
+        assert np.all(actual == expected)
 
     @pytest.mark.parametrize('value, ivar, snr_min, expected',
                              [(value, ivar, None, snr_min_none),
@@ -159,28 +138,51 @@ class TestMasks(object):
                               (value, ivar, 3, snr_min_3),
                               (value, None, None, np.zeros(value.shape, dtype=bool)),
                               (value, None, 1, np.zeros(value.shape, dtype=bool))])
-    def test_low_snr_mask(self, value, ivar, snr_min, expected):
-        low_snr = mapplot.low_snr_mask(value, ivar, snr_min)
-        assert np.all(low_snr == expected)
+    def test_mask_low_snr(self, value, ivar, snr_min, expected):
+        actual = mapplot.mask_low_snr(value, ivar, snr_min)
+        assert np.all(actual == expected)
 
-    @pytest.mark.parametrize('value, log_cb, expected',
-                             [(value, True, log_cb_true),
-                              (value, False, log_cb_false)])
-    def test_log_colorbar_mask(self, value, log_cb, expected):
-        log_colorbar = mapplot.log_colorbar_mask(value, log_cb)
-        assert np.all(log_colorbar == expected)
+    @pytest.mark.parametrize('value, expected', [(value, neg_val)])
+    def test_mask_neg_values(self, value, expected):
+        actual = mapplot.mask_neg_values(value)
+        assert np.all(actual == expected)
 
-    @pytest.mark.parametrize('value, nocov, bad_data, snr_min, log_cb, expected_mask',
-                             [(value, nocov, bad_data, snr_min_none, log_cb_true, image_none_true),
-                              (value, nocov, bad_data, snr_min_3, log_cb_true, image_3_true),
-                              (value, nocov, bad_data, snr_min_none, log_cb_false,
-                               image_none_false),
-                              (value, nocov, bad_data, snr_min_3, log_cb_false, image_3_false)])
-    def test_select_good_spaxels(self, value, nocov, bad_data, snr_min, log_cb, expected_mask):
-        image = mapplot.select_good_spaxels(value, nocov, bad_data, snr_min, log_cb)
-        expected = np.ma.array(value, mask=expected_mask)
-        assert np.all(image.data == expected.data)
-        assert np.all(image.mask == expected.mask)
+    @pytest.mark.parametrize('use_masks, mask, expected',
+                             [(False, mask_daplike, []),
+                              (False, None, []),
+                              (True, None, []),
+                              (['DONOTUSE'], None, []),
+                              (True, mask_daplike, []),
+                              (['DONOTUSE'], mask_daplike, ['DONOTUSE'])
+                              ])
+    def test_format_use_masks_mpl4(self, use_masks, mask, expected, set_release):
+
+        if config.release != 'MPL-4':
+            pytest.skip('Only include MPL-4.')
+
+        for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
+            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
+                                               default_masks=params['bitmasks'])
+            assert actual == expected
+
+    @pytest.mark.parametrize('use_masks, mask, expected',
+                             [(False, mask_daplike, []),
+                              (False, None, []),
+                              (True, None, []),
+                              (['DONOTUSE'], None, []),
+                              (True, mask_daplike, []),
+                              (['LOWCOV', 'DONOTUSE'], mask_daplike, ['LOWCOV', 'DONOTUSE'])])
+    def test_format_use_masks(self, use_masks, mask, expected, set_release):
+
+        if config.release == 'MPL-4':
+            pytest.skip('Skip MPL-4.')
+
+        for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
+            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
+                                               default_masks=params['bitmasks'])
+            assert actual == expected
 
 
 class TestMapPlot(object):
@@ -194,14 +196,14 @@ class TestMapPlot(object):
         assert np.all(extent == expected)
 
     @matplotlib_2
-    def test_set_hatch_linewidth(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_set_hatch_linewidth(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.linewidth'] == 0.5
 
     @matplotlib_2
-    def test_set_hatch_color(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_set_hatch_color(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert matplotlib.rcParams['hatch.color'] == 'w'
 
@@ -237,8 +239,8 @@ class TestMapPlot(object):
                               ('stellar_vel', None),
                               ('stellar_sigma', None),
                               ('specindex', 'd4000')])
-    def test_plot_dapmap(self, maps, property_name, channel):
-        map_ = maps.getMap(property_name, channel=channel)
+    def test_plot_dapmap(self, maps_release_only, property_name, channel):
+        map_ = maps_release_only.getMap(property_name, channel=channel)
         fig, ax = mapplot.plot(dapmap=map_)
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
@@ -251,14 +253,14 @@ class TestMapPlot(object):
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
 
-    def test_plot_matplotlib_rc_restore(self, maps):
+    def test_plot_matplotlib_rc_restore(self, maps_release_only):
         rcparams = matplotlib.rc_params()
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_)
         assert rcparams == matplotlib.rc_params()
 
-    def test_plot_matplotlib_style_sheet(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+    def test_plot_matplotlib_style_sheet(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax = mapplot.plot(dapmap=map_, plt_style='ggplot')
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, matplotlib.axes._axes.Axes)
@@ -271,9 +273,13 @@ class TestMapPlot(object):
                               ('stellar_sigma', 'sigma')])
     def test_get_prop(self, title, expected):
         assert mapplot._get_prop(title) == expected
-    
-    def test_return_cb(self, maps):
-        map_ = maps.getMap('emline_gflux', channel='ha_6564')
+
+    def test_return_cb(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         fig, ax, cb = mapplot.plot(dapmap=map_, return_cb=True)
         assert isinstance(cb, matplotlib.colorbar.Colorbar)
 
+    def test_return_cbrange(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
+        cbrange = mapplot.plot(dapmap=map_, return_cbrange=True)
+        assert isinstance(cbrange, list)

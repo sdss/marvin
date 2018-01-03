@@ -2,11 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-<<<<<<< HEAD
-* @Last Modified time: 2017-04-09 08:58:10
-=======
-* @Last Modified time: 2016-09-26 17:40:15
->>>>>>> upstream/marvin_refactor
+* @Last Modified time: 2017-09-27 13:49:19
 */
 
 //
@@ -141,6 +137,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.specmsg.show();
         }
+        specmsg = specmsg.replace('<', '').replace('>', '');
         let newmsg = `<strong>${specmsg}</strong>`;
         this.specmsg.empty();
         this.specmsg.html(newmsg);
@@ -161,9 +158,7 @@ class Galaxy {
     }
 
     initHeatmap(maps) {
-        console.log('initHeatmap', this.mapsdiv);
         let mapchildren = this.mapsdiv.children('div');
-        console.log('mapchildren', mapchildren);
         let _this = this;
         $.each(mapchildren, function(index, child) {
             let mapdiv = $(child).find('div').first();
@@ -264,37 +259,37 @@ class Galaxy {
                 let form = m.utils.buildForm(keys, _this.plateifu, _this.toggleon);
                 _this.toggleload.show();
 
-                $.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')
-                    .done(function(data) {
+                // send the form data
+                Promise.resolve($.post(Flask.url_for('galaxy_page.initdynamic'), form,'json'))
+                    .then((data)=>{
+                        if (data.result.error) {
+                            let err = data.result.error;
+                            throw new SpaxelError(`Error : ${err}`);
+                        }
+                        if (data.result.specstatus === -1) {
+                            throw new SpaxelError(`Error: ${data.result.specmsg}`);
+                        }
+                        if (data.result.mapstatus === -1) {
+                            throw new MapError(`Error: ${data.result.mapmsg}`);
+                        }
+
                         let image = data.result.image;
                         let spaxel = data.result.spectra;
                         let spectitle = data.result.specmsg;
                         let maps = data.result.maps;
                         let mapmsg = data.result.mapmsg;
-
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
 
-                        // Try to load the spaxel
-                        if (data.result.specstatus !== -1) {
-                            _this.loadSpaxel(spaxel, spectitle);
-                        } else {
-                            _this.updateSpecMsg(`Error: ${spectitle}`, data.result.specstatus);
-                        }
-
-                        // Try to load the Maps
-                        if (data.result.mapstatus !== -1) {
-                            _this.initHeatmap(maps);
-                        } else {
-                            _this.updateMapMsg(`Error: ${mapmsg}`, data.result.mapstatus);
-                        }
-
+                        // Load the Spaxel and Maps
+                        _this.loadSpaxel(spaxel, spectitle);
+                        _this.initHeatmap(maps);
                     })
-                    .fail(function(data) {
-                        _this.updateSpecMsg(`Error: ${data.result.specmsg}`, data.result.specstatus);
-                        _this.updateMapMsg(`Error: ${data.result.mapmsg}`, data.result.mapstatus);
-                        _this.toggleload.hide();
+                    .catch((error)=>{
+                        let errmsg = (error.message === undefined) ? this.makeError('initDynamic') : error.message;
+                        _this.updateSpecMsg(errmsg, -1);
+                        _this.updateMapMsg(errmsg, -1);
                     });
             }
         }
@@ -349,6 +344,7 @@ class Galaxy {
         if (status !== undefined && status === -1) {
             this.mapmsg.show();
         }
+        mapmsg = mapmsg.replace('<', '').replace('>', '');
         let newmsg = `<strong>${mapmsg}</strong>`;
         this.mapmsg.empty();
         this.mapmsg.html(newmsg);

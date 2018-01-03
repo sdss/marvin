@@ -41,7 +41,7 @@ Image Utilities
 DAP DataModel Utilities
 -----------------------
 
-.. automodule:: marvin.utils.dap.datamodel
+.. automodule:: marvin.utils.datamodel.dap
    :members:
    :undoc-members:
    :show-inheritance:
@@ -62,6 +62,26 @@ Colorbar Plotting Utilities
 ---------------------------
 
 .. automodule:: marvin.utils.plot.colorbar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. _marvin-utils-maskbit:
+
+Maskbit Utilities
+-----------------
+
+.. automodule:: marvin.utils.general.maskbit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. _marvin-utils-scatter-plot:
+
+Scatter/Histogram Plotting Utilities
+------------------------------------
+
+.. automodule:: marvin.utils.plot.scatter
    :members:
    :undoc-members:
    :show-inheritance:

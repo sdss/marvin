@@ -2,8 +2,8 @@
 MPL-4:
     params:
         all:
-            count: 634
-            subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.extname', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.specindex_nad']
+            count: 583
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.crpix1', 'spaxelprop.x', 'spaxelprop.specindex_nad']
         best:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
@@ -26,20 +26,21 @@ MPL-4:
                 '36': ['1-73670', 8244, '8244-12703', '12703', 0.0172316]
                 '41': ['1-596095', 8618, '8618-9101', '9101', 0.0175331]
                 '46': ['1-46494', 8243, '8243-12702', '12702', 0.0178715]
+                'last': ['1-22286', 7992, '7992-12704', '12704', 0.0999542]
             row: ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
         npergood(emline_gflux_ha_6564 > 5) > 20:
             count: 6
-        abs_g_r > -1:
+        absmag_g_r > -1:
             count: 1389
-        haflux > 25:
+        emline_gflux_ha_6564 > 25:
             count: 34
-        nsa.z < 0.1 and haflux > 25:
+        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
             count: 34
 MPL-5:
     params:
         all:
-            count: 754
-            subset: ['nsa.tile', 'anime.anime', 'cube.ra', 'wcs.extname', 'spaxelprop.spx_snr', 'spaxelprop.x', 'maskbit.bit', 'spaxelprop.emline_sew_ha_6564']
+            count: 716
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
@@ -59,13 +60,43 @@ MPL-5:
                 '3': ['1-209191', 8485, '8485-12701', '12701', 0.0234253]
                 '4': ['1-209113', 8485, '8485-1902', '1902', 0.0378877]
                 '5': ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
+                'last': ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
             row: ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
 
         npergood(emline_gflux_ha_6564 > 5) > 20:
             count: 1
-        abs_g_r > -1:
+        absmag_g_r > -1:
             count: 5
-        haflux > 25:
+        emline_gflux_ha_6564 > 25:
             count: 18
-        nsa.z < 0.1 and haflux > 25:
+        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
             count: 18
+MPL-6:
+    params:
+        all:
+            count: 1653
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
+        best:
+            count: 41
+            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
+    defaults: ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
+    queries:
+        nsa.z < 0.1:
+            count: 2
+            top5:
+                [['1-209232', 8485, '8485-1901', '1901', 0.0407447],
+                 ['12-98126', 7443, '7443-12701', '12701', 0.020478]]
+            sorted:
+                '1': ['12-98126', 7443, '7443-12701', '12701', 0.020478]
+                '2': ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
+                'last': ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
+            row: ['1-209232', 8485, '8485-1901', '1901', 0.0407447]
+
+        npergood(emline_gflux_ha_6564 > 5) > 20:
+            count: 0
+        absmag_g_r > -1:
+            count: 2
+        emline_gflux_ha_6564 > 25:
+            count: 27
+        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
+            count: 27

@@ -55,7 +55,21 @@ class File(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<File (pk={0},name={1})'.format(self.pk, self.filename)
+        return '<File (pk={0},name={1},tag={2})'.format(self.pk, self.filename, self.pipelineinfo.version.version)
+
+    @property
+    def is_map(self):
+        return self.filetype.value == 'MAPS'
+
+    @property
+    def ftype(self):
+        return self.filetype.value
+
+    @property
+    def partner(self):
+        session = db.Session.object_session(self)
+        return session.query(File).join(Structure, datadb.Cube, FileType).filter(
+            Structure.pk == self.structure.pk, datadb.Cube.pk == self.cube.pk, FileType.pk != self.filetype.pk).one()
 
     @property
     def primary_header(self):
@@ -197,12 +211,12 @@ def HybridRatio(line1, line2):
     def hybridRatio(self):
 
         if type(line1) == tuple:
-            myline1 = getattr(self, line1[0])+getattr(self, line1[1])
+            myline1 = getattr(self, line1[0]) + getattr(self, line1[1])
         else:
             myline1 = getattr(self, line1)
 
         if getattr(self, line2) > 0:
-            return myline1/getattr(self, line2)
+            return myline1 / getattr(self, line2)
         else:
             return -999.
 
@@ -210,11 +224,11 @@ def HybridRatio(line1, line2):
     def hybridRatio(cls):
 
         if type(line1) == tuple:
-            myline1 = getattr(cls, line1[0])+getattr(cls, line1[1])
+            myline1 = getattr(cls, line1[0]) + getattr(cls, line1[1])
         else:
             myline1 = getattr(cls, line1)
 
-        return cast(case([(getattr(cls, line2) > 0., myline1/getattr(cls, line2)),
+        return cast(case([(getattr(cls, line2) > 0., myline1 / getattr(cls, line2)),
                           (getattr(cls, line2) == 0., -999.)]), Float)
 
     return hybridRatio
@@ -246,6 +260,14 @@ class SpaxelProp5(Base, SpaxelAtts):
         return '<SpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
+class SpaxelProp6(Base, SpaxelAtts):
+    __tablename__ = 'spaxelprop6'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    def __repr__(self):
+        return '<SpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
+
+
 class CleanSpaxelProp(Base, SpaxelAtts):
     __tablename__ = 'cleanspaxelprop'
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
@@ -264,6 +286,16 @@ class CleanSpaxelProp5(Base, SpaxelAtts):
 
     def __repr__(self):
         return '<CleanSpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
+
+
+class CleanSpaxelProp6(Base, SpaxelAtts):
+    __tablename__ = 'cleanspaxelprop6'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    pk = Column(Integer, primary_key=True)
+
+    def __repr__(self):
+        return '<CleanSpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
 class BinMode(Base):
@@ -345,6 +377,14 @@ class RedCorr(Base):
         return '<RedCorr (pk={0}, modelcube={1})'.format(self.pk, self.modelcube_pk)
 
 
+class DapAll(Base):
+    __tablename__ = 'dapall'
+    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+    def __repr__(self):
+        return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
+
+
 # Now we create the remaining tables.
 insp = inspect(db.engine)
 schemaName = 'mangadapdb'
@@ -380,6 +420,7 @@ Hdu.exttype = relationship(ExtType, backref='hdus')
 Hdu.extcols = relationship(ExtCol, secondary=HduToExtCol.__table__, backref='hdus')
 Hdu.header_values = relationship(HeaderValue, secondary=HduToHeaderValue.__table__, backref='hdus')
 HeaderValue.keyword = relationship(HeaderKeyword, backref='values')
+DapAll.file = relationship(File, uselist=False, backref='dapall')
 
 Structure.executionplan = relationship(ExecutionPlan, backref='structures')
 Structure.binmode = relationship(BinMode, backref='structures')
@@ -391,14 +432,20 @@ insp = reflection.Inspector.from_engine(db.engine)
 fks = insp.get_foreign_keys(SpaxelProp.__table__.name, schema='mangadapdb')
 if fks:
     SpaxelProp.file = relationship(File, backref='spaxelprops')
-    SpaxelProp.binidfk = relationship(BinId, backref='spaxelprops')
+    #SpaxelProp.binidfk = relationship(BinId, backref='spaxelprops')
     CleanSpaxelProp.file = relationship(File, backref='cleanspaxelprops')
 
 fks = insp.get_foreign_keys(SpaxelProp5.__table__.name, schema='mangadapdb')
 if fks:
     SpaxelProp5.file = relationship(File, backref='spaxelprops5')
-    SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
+    #SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
     CleanSpaxelProp5.file = relationship(File, backref='cleanspaxelprops5')
+
+fks = insp.get_foreign_keys(SpaxelProp6.__table__.name, schema='mangadapdb')
+if fks:
+    SpaxelProp6.file = relationship(File, backref='spaxelprops6')
+    #SpaxelProp6.binidfk = relationship(BinId, backref='spaxelprops6')
+    CleanSpaxelProp6.file = relationship(File, backref='cleanspaxelprops6')
 
 fks = insp.get_foreign_keys(ModelCube.__table__.name, schema='mangadapdb')
 if fks:
@@ -428,6 +475,8 @@ dap_cache = RelationshipCache(File.cube).\
                and_(RelationshipCache(CleanSpaxelProp.file)).\
                and_(RelationshipCache(SpaxelProp5.file)).\
                and_(RelationshipCache(CleanSpaxelProp5.file)).\
+               and_(RelationshipCache(SpaxelProp6.file)).\
+               and_(RelationshipCache(CleanSpaxelProp6.file)).\
                and_(RelationshipCache(ModelCube.file)).\
                and_(RelationshipCache(ModelSpaxel.modelcube)).\
                and_(RelationshipCache(RedCorr.modelcube))

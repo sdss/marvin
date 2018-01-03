@@ -44,24 +44,25 @@ from __future__ import division, print_function, absolute_import
 
 import copy
 
+from astropy import units
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from marvin import config
+from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
 
-def no_coverage_mask(mask, bit, ivar=None):
+def _mask_nocov(mask, dapmap, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
-        mask (array):
-            Mask for value.
-        bit (int):
-            Bit for "NOCOV."
+        dapmap (marvin.tools.map.Map):
+            Marvin Map object.
         ivar (array):
             Inverse variance for image. Default is None.
 
@@ -69,38 +70,16 @@ def no_coverage_mask(mask, bit, ivar=None):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    assert (bit is not None) or (ivar is not None), 'Must provide a bit or ivar array.'
+    assert ((mask is not None) and (dapmap is not None)) or (ivar is not None), \
+        'Must provide either (``mask`` and ``dapmap``) or ``ivar``.'
 
-    return (mask & 2**bit).astype(bool) if bit is not None else (ivar == 0)
-
-
-def bad_data_mask(mask, bits):
-    """Mask spaxels that are flagged as bad data by the DAP.
-
-    The masks that are considered bad data are "UNRELIABLE" and "DONOTUSE."
-    Note: MPL-4 used only a good = 0 and bad = 1 mask. The "bad" flag
-    corresponds most closely to "DONOTUSE."
-
-    Parameters:
-        mask (array):
-            Mask for value.
-        bits (dict):
-            Bits that indicate bad data.
-
-    Returns:
-        array: Boolean array for mask (i.e., True corresponds to value to be
-        masked out).
-    """
-    if 'unreliable' in bits.keys():     
-        unreliable = (mask & 2**bits['unreliable']).astype(bool)
-    else:
-        unreliable = np.zeros(mask.shape, dtype=bool)
-
-    donotuse = (mask & 2**bits['doNotUse']).astype(bool)
-    return np.logical_or.reduce((unreliable, donotuse))
+    try:
+        return dapmap.pixmask.get_mask('NOCOV')
+    except (MarvinError, AttributeError, IndexError):
+        return ivar == 0
 
 
-def low_snr_mask(value, ivar, snr_min):
+def mask_low_snr(value, ivar, snr_min):
     """Mask spaxels with a signal-to-noise ratio below some threshold.
 
     Parameters:
@@ -126,33 +105,57 @@ def low_snr_mask(value, ivar, snr_min):
     return low_snr
 
 
-def log_colorbar_mask(value, log_cb):
-    """Mask spaxels with negative value when using logarithmic colorbar.
+def mask_neg_values(value):
+    """Mask spaxels with negative values.
+
+    This method is primarily for using a logarithmic colorbar.
 
     Parameters:
         value (array):
             Value for image.
-        log_cb (bool):
-            Use logarithmic colorbar.
 
     Returns:
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
     mask = np.zeros(value.shape, dtype=bool)
-
-    if log_cb:
-        mask[value <= 0.] = True
-
+    mask[value <= 0.] = True
     return mask
 
+
+def _format_use_masks(use_masks, mask, dapmap, default_masks):
+    """Convert input format of ``use_masks`` into list of strings.
+
+    Parameters:
+        use_masks (bool, list):
+            If ``True``, use the ``default_masks``. If ``False``, do
+            not use any masks. Otherwise, use a list of bitnames.
+        mask (array):
+            Mask values.
+        dapmap (marvin.tools.quantities.Map):
+            Marvin Map object.
+        default_masks:
+            Default bitmasks to use if ``use_mask == True``.
+
+    Returns:
+        list:
+            Names of bitmasks to apply.
+    """
+    if (mask is None) or (use_masks is False):
+        return []
+    elif isinstance(use_masks, bool):
+        return default_masks if dapmap is not None else []
+    else:
+        return use_masks
+
+
 def _get_prop(title):
-    """Gets property name from plot title.
-    
+    """Get property name from plot title.
+
     Parameters:
         title (str):
             Plot title.
-    
+
     Returns:
         str
     """
@@ -162,28 +165,6 @@ def _get_prop(title):
         return 'sigma'
     else:
         return 'default'
-
-def select_good_spaxels(value, nocov, bad_data, low_snr, log_cb_mask):
-    """Create masked array of spaxels to display.
-
-    Parameters:
-        value (array):
-            Value for image.
-        nocov (array):
-            Mask for spaxels without IFU coverage.
-        bad_data (array):
-            Mask for data flagged as bad (see
-            :ref:`marvin-utils-plot-map-default-params` for default bits).
-        low_snr (array):
-            Mask for data below the signal-to-noise ratio threshold.
-        low_cb_mask (array):
-            Mask for negative elements of ``value`` if using a logarithmic
-            colorbar.
-
-    Returns:
-        masked array: spaxels to display in plot.
-    """
-    return np.ma.array(value, mask=np.logical_or.reduce((nocov, bad_data, low_snr, log_cb_mask)))
 
 
 def set_extent(cube_size, sky_coords):
@@ -291,8 +272,12 @@ def set_title(title=None, property_name=None, channel=None):
 def plot(*args, **kwargs):
     """Make single panel map or one panel of multi-panel map plot.
 
+    Please see the `Plotting Tutorial
+    <http://sdss-marvin.readthedocs.io/en/latest/tutorials/plotting-tutorial.html>`_
+    for examples.
+
     Parameters:
-        dapmap (marvin.tools.map.Map):
+        dapmap (marvin.tools.quantities.Map):
             Marvin Map object. Default is ``None``.
         value (array):
             Data array. Default is ``None``.
@@ -321,14 +306,21 @@ def plot(*args, **kwargs):
         title (str):
             If ``None``, set automatically from property (and channel) name(s).
             For no title, set to ''. Default is ``None``.
+        title_mode (str):
+            The mode to generate a title automatically, if ``title`` is not
+            set. Usually ``'string'`` or ``'latex'``. Default is ``'string'``.
+            See :func:`~marvin.utils.datamodel.dap.base.Property.to_string`
+            for details.
         cblabel (str):
             If ``None``, set automatically from unit. For no colorbar label,
             set to ''. Default is ``None``.
         sky_coords (bool):
             If ``True``, show plot in sky coordinates (i.e., arcsec), otherwise
             show in spaxel coordinates. Default is ``False``.
-        use_mask (bool):
-            Use DAP bitmasks. Default is ``True``.
+        use_masks (bool, str, list):
+            Use DAP bitmasks. If ``True``, use the recommended DAP masks.
+            Otherwise provide a mask name as a string or multiple mask names as
+            a list of strings. Default is ``True``.
         plt_style (str):
             Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
         fig (matplotlib Figure object):
@@ -342,7 +334,9 @@ def plot(*args, **kwargs):
         cb_kws (dict):
             Keyword args to set and draw colorbar. Default is ``None``.
         return_cb (bool):
-            Return colorbar axis. Default it ``False``.
+            Return colorbar axis. Default is ``False``.
+        return_cbrange (bool):
+            Return colorbar range without drawing plot. Default is ``False``.
 
     Returns:
         fig, ax (tuple):
@@ -354,18 +348,20 @@ def plot(*args, **kwargs):
         >>> maps = Maps(plateifu='8485-1901')
         >>> ha = maps['emline_gflux_ha_6564']
         >>> fig, ax = mapplot.plot(dapmap=ha)
+
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
-                    'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'cblabel', 'sky_coords',
-                    'use_mask', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws', 'return_cb']
+                    'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'title_mode', 'cblabel',
+                    'sky_coords', 'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws',
+                    'return_cb', 'return_cbrange']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
     for kw in kwargs:
         assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
 
-    assert ((kwargs.get('percentile_clip', False)) +
-            (kwargs.get('sigma_clip', False)) +
+    assert ((kwargs.get('percentile_clip', None) is not None) +
+            (kwargs.get('sigma_clip', None) is not None) +
             (kwargs.get('cbrange', None) is not None) <= 1), \
         'Only set one of percentile_clip, sigma_clip, or cbrange!'
 
@@ -377,15 +373,17 @@ def plot(*args, **kwargs):
     cbrange = kwargs.get('cbrange', None)
     log_cb = kwargs.get('log_cb', False)
     title = kwargs.get('title', None)
+    title_mode = kwargs.get('title_mode', 'string')
     cblabel = kwargs.get('cblabel', None)
     sky_coords = kwargs.get('sky_coords', False)
-    use_mask = kwargs.get('use_mask', True)
+    use_masks = kwargs.get('use_masks', True)
     plt_style = kwargs.get('plt_style', 'seaborn-darkgrid')
     fig = kwargs.get('fig', None)
     ax = kwargs.get('ax', None)
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
     return_cb = kwargs.get('return_cb', False)
+    return_cbrange = kwargs.get('return_cbrange', False)
 
     assert (value is not None) or (dapmap is not None), \
         'Map.plot() requires specifying ``value`` or ``dapmap``.'
@@ -393,15 +391,20 @@ def plot(*args, **kwargs):
     # user-defined value, ivar, or mask overrides dapmap attributes
     value = value if value is not None else getattr(dapmap, 'value', None)
     ivar = ivar if ivar is not None else getattr(dapmap, 'ivar', None)
-    mask = mask if mask is not None else getattr(dapmap, 'mask', np.zeros(value.shape, dtype=bool))
 
-    title = set_title(title,
-                      property_name=getattr(dapmap, 'property_name', None),
-                      channel=getattr(dapmap, 'channel', None))
+    all_true = np.zeros(value.shape, dtype=bool)
+    mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
+
+    if title is None:
+        title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
+
+    try:
+        prop = dapmap.datamodel.full()
+    except (AttributeError, TypeError):
+        prop = ''
 
     # get plotparams from datamodel
-    dapver = config.lookUpVersions()[1]
-    prop = _get_prop(title)
+    dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
@@ -411,15 +414,19 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
-    # create no coverage, bad data, low SNR, and log colorbar masks
-    nocov_mask = no_coverage_mask(mask, params['bitmasks'].get('nocov', None), ivar)
-    badData = params['bitmasks']['badData']
-    bad_data = bad_data_mask(mask, badData) if use_mask else np.zeros(value.shape)
-    low_snr = low_snr_mask(value, ivar, snr_min) if use_mask else np.zeros(value.shape)
-    log_cb_mask = log_colorbar_mask(value, log_cb)
+    use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 
-    # final masked array to show
-    good_spax = select_good_spaxels(value, nocov_mask, bad_data, low_snr, log_cb_mask)
+    # Create no coverage, bad data, low SNR, and negative value masks.
+    nocov_conditions = (('NOCOV' in use_masks) or (ivar is not None))
+    bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
+
+    nocov = _mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
+    bad_data = dapmap.pixmask.get_mask(use_masks, mask=mask) if bad_data_conditions else all_true
+    low_snr = mask_low_snr(value, ivar, snr_min) if use_masks else all_true
+    neg_val = mask_neg_values(value) if log_cb else all_true
+
+    # Final masked array to show.
+    good_spax = np.ma.array(value, mask=np.logical_or.reduce((nocov, bad_data, low_snr, neg_val)))
 
     # setup colorbar
     cb_kws['cmap'] = cmap
@@ -427,10 +434,19 @@ def plot(*args, **kwargs):
     cb_kws['sigma_clip'] = sigma_clip
     cb_kws['cbrange'] = cbrange
     cb_kws['symmetric'] = symmetric
-    cb_kws['label'] = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+
+    cblabel = cblabel if cblabel is not None else getattr(dapmap, 'unit', '')
+    if isinstance(cblabel, units.UnitBase):
+        cb_kws['label'] = cblabel.to_string('latex_inline')
+    else:
+        cb_kws['label'] = cblabel
+
     cb_kws['log_cb'] = log_cb
     cb_kws = colorbar._set_cb_kws(cb_kws)
     cb_kws = colorbar._set_cbrange(good_spax, cb_kws)
+
+    if return_cbrange:
+        return cb_kws['cbrange']
 
     # setup unmasked spaxels
     extent = set_extent(value.shape, sky_coords)
@@ -441,7 +457,7 @@ def plot(*args, **kwargs):
 
     # setup background
     nocov_kws = copy.deepcopy(imshow_kws)
-    nocov = np.ma.array(np.ones(value.shape), mask=~nocov_mask)
+    nocov_image = np.ma.array(np.ones(value.shape), mask=~nocov.astype(bool))
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
@@ -466,7 +482,7 @@ def plot(*args, **kwargs):
         ax.add_patch(mpl.patches.Rectangle(**patch_kws))
 
         # plot regions without IFU coverage as a solid color (gray #A8A8A8)
-        ax.imshow(nocov, cmap=A8A8A8, zorder=1, **nocov_kws)
+        ax.imshow(nocov_image, cmap=A8A8A8, zorder=1, **nocov_kws)
 
         # plot unmasked spaxels
         p = ax.imshow(good_spax, cmap=cb_kws['cmap'], zorder=10, **imshow_kws)

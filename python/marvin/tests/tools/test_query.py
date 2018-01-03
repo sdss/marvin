@@ -6,10 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-14 17:13:58
+# @Last Modified time: 2017-11-17 12:54:33
 
 from __future__ import print_function, division, absolute_import
-from marvin.tools.query import Query
+from marvin.tools.query import Query, doQuery
 from marvin.core.exceptions import MarvinError
 from marvin import config
 from marvin.tools.cube import Cube
@@ -17,6 +17,14 @@ from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
 import pytest
+
+
+class TestDoQuery(object):
+
+    def test_success(self, release, mode):
+        q, r = doQuery(searchfilter='nsa.z < 0.1', release=release, mode=mode)
+        assert q is not None
+        assert r is not None
 
 
 class TestQueryVersions(object):
@@ -68,34 +76,78 @@ class TestQuerySearches(object):
             res = query.run()
         assert cm.type == MarvinError
         assert errmsg in str(cm.value)
-        if expmode != 'local':
-            assert config._traceback is not None
 
-    @pytest.mark.parametrize('query, allspax, table',
-                             [('haflux > 25', False, 'cleanspaxelprop'),
-                              ('haflux > 25', True, 'spaxelprop')],
-                             ids=['allspax', 'cleanspax'],
-                             indirect=['query'])
-    def test_spaxel_tables(self, query, expmode, allspax, table):
-        table = table + config.release.split('-')[1] if '4' not in config.release else table
-        query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode, release=query._release)
-        if expmode == 'local':
-            assert table in set(query.joins)
-        else:
-            res = query.run()
-            assert table in res.query
+    # Keeping this test for posterity
+    # @pytest.mark.parametrize('query, allspax, table',
+    #                          [('haflux > 25', False, 'cleanspaxelprop'),
+    #                           ('haflux > 25', True, 'spaxelprop')],
+    #                          ids=['allspax', 'cleanspax'],
+    #                          indirect=['query'])
+    # def test_spaxel_tables(self, query, expmode, allspax, table):
+    #     table = table + config.release.split('-')[1] if '4' not in config.release else table
+    #     print('creating new query')
+    #     query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode, release=query._release)
+    #     if expmode == 'local':
+    #         assert table in set(query.joins)
+    #     else:
+    #         res = query.run()
+    #         assert table in res.query
 
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
-                              ('abs_g_r > -1', 'abs_g_r > -1'),
-                              ('haflux > 25', 'haflux > 25'),
+                              ('absmag_g_r > -1', 'absmag_g_r > -1'),
+                              ('haflux > 25', 'emline_gflux_ha_6564 > 25'),
                               ('npergood(emline_gflux_ha_6564 > 5) > 20', 'npergood(emline_gflux_ha_6564 > 5) > 20'),
-                              ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and haflux > 25')],
+                              ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
         res = query.run()
         count = query.expdata['queries'][sfilter]
         assert count['count'] == res.totalcount
+
+    # @pytest.mark.parametrize('query, qmode',
+    #                          [('nsa.z < 0.1', 'count'),
+    #                           ('nsa.z < 0.1', 'first')],
+    #                          indirect=['query'])
+    # def test_qmodes(self, query, qmode):
+    #     mycount = query.expdata['queries']['nsa.z < 0.1']['count']
+    #     r = query.run(qmode)
+    #     if qmode == 'count':
+    #         assert r == mycount
+    #     elif qmode == 'first':
+    #         assert len(r.results) == 1
+    #         assert r.count == 1
+
+
+class TestQuerySort(object):
+
+    @pytest.mark.parametrize('query, sortparam, order',
+                             [('nsa.z < 0.1', 'z', 'asc'),
+                              ('nsa.z < 0.1', 'nsa.z', 'desc')], indirect=['query'])
+    def test_sort(self, query, sortparam, order):
+        data = query.expdata['queries']['nsa.z < 0.1']['sorted']
+        query = Query(searchfilter=query.searchfilter, mode=query.mode, sort=sortparam, order=order)
+        res = query.run()
+        if order == 'asc':
+            redshift = data['1'][-1]
+        else:
+            redshift = data['last'][-1]
+        assert res.results['z'][0] == redshift
+
+
+class TestQueryShow(object):
+
+    @pytest.mark.parametrize('query, show, exp',
+                             [('nsa.z < 0.1', 'query', 'SELECT mangadatadb.cube.mangaid'),
+                              ('nsa.z < 0.1', 'tables', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
+                              ('nsa.z < 0.1', 'joins', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
+                              ('nsa.z < 0.1', 'filter', 'mangasampledb.nsa.z < 0.1')], indirect=['query'])
+    def test_show(self, query, show, exp, capsys):
+        if query.mode == 'remote':
+            exp = 'Cannot show full SQL query in remote mode, use the Results showQuery'
+        query.show(show)
+        out, err = capsys.readouterr()
+        assert exp in out or exp == out.strip('\n')
 
 
 class TestQueryReturnParams(object):
@@ -105,7 +157,11 @@ class TestQueryReturnParams(object):
     def test_success(self, query, rps):
         query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
         assert 'nsa.z' in query.params
-        assert set(rps).issubset(set(query.params))
+        #assert set(rps).issubset(set(query.params))
+        res = query.run()
+        assert all([p in res.columns for p in rps]) is True
+        #assert set(rps).issubset(set(query.params))
+        #assert set(rps).issubset(set(res.paramtocol.keys()))
 
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('rps, errmsg',

@@ -107,21 +107,21 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template_kin': None},
+    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template': None},
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/', defaults={'template_kin': None},
+    @flask_classy.route('/<name>/<bintype>/', defaults={'template': None},
                         methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/',
                         methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
-    def get(self, args, name, bintype, template_kin):
+    def get(self, args, name, bintype, template):
         '''Returns the parameters needed to initialise a Maps remotely.
 
-        .. :quickref: Maps; Get a maps given a name, bintype, and template_kin
+        .. :quickref: Maps; Get a maps given a name, bintype, and template
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
         :form release: the release of MaNGA data
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -135,7 +135,7 @@ class MapsView(marvin.api.base.BaseView):
         :json list shape: the maps shape [x, y]
         :json string wcs: the maps wcs_header as a string
         :json string bintype: the bintype of the maps
-        :json string template_kin: the template library of the maps
+        :json string template: the template library of the maps
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -166,7 +166,7 @@ class MapsView(marvin.api.base.BaseView):
                        "wcs_header": "WCSAXES = 3 / Number of coordindate axes .... END",
                        "shape": [34, 34],
                        "bintype": "SPX",
-                       "template_kin": "GAU-MILESHC"
+                       "template": "GAU-MILESHC"
                        }
            }
 
@@ -184,9 +184,9 @@ class MapsView(marvin.api.base.BaseView):
 
         header = maps.header.tostring()
         wcs_header = maps.wcs.to_header_string()
-        shape = maps.shape
-        bintype = maps.bintype
-        template_kin = maps.template_kin
+        bintype = maps.bintype.name
+        template = maps.template.name
+        shape = maps._shape
 
         # Redefines plateifu and mangaid from the Maps
         mangaid = maps.mangaid
@@ -196,25 +196,25 @@ class MapsView(marvin.api.base.BaseView):
                                 'plateifu': plateifu,
                                 'header': header,
                                 'wcs': wcs_header,
-                                'shape': shape,
                                 'bintype': bintype,
-                                'template_kin': template_kin}
+                                'template': template,
+                                'shape': shape}
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/',
                         methods=['GET', 'POST'], endpoint='getmap', defaults={'channel': None})
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/map/<property_name>/<channel>/',
+    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/<channel>/',
                         methods=['GET', 'POST'], endpoint='getmap')
     @marvin.api.base.arg_validate.check_args()
-    def getMap(self, args, name, bintype, template_kin, property_name, channel):
+    def getMap(self, args, name, bintype, template, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
 
-        .. :quickref: Maps; Get map data given a name, bintype, template_kin, property, and channel
+        .. :quickref: Maps; Get map data given a name, bintype, template, property, and channel
 
         :param name: The name of the maps as plate-ifu or mangaid
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
+        :param template: The template associated with this maps.  If not defined, the default is used
         :param property_name: The property_name of the map to be extractred. E.g., `'emline_gflux'`.
         :param channel: If the ``property_name`` contains multiple channels, the channel to use, e.g., ``ha_6564'. Otherwise, ``None``
         :form release: the release of MaNGA data
@@ -281,33 +281,35 @@ class MapsView(marvin.api.base.BaseView):
             self.results['data']['value'] = mmap.value.tolist()
             self.results['data']['ivar'] = mmap.ivar.tolist() if mmap.ivar is not None else None
             self.results['data']['mask'] = mmap.mask.tolist() if mmap.mask is not None else None
-            self.results['data']['unit'] = mmap.unit
-            self.results['data']['header'] = {key: mmap.header[key] for key in mmap.header}
+            self.results['data']['unit'] = mmap.unit.to_string()
         except Exception as ee:
             self.results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template_kin>/spaxels/<binid>/',
-                        methods=['GET', 'POST'], endpoint='getbinspaxels')
+    @flask_classy.route('/<name>/dapall', defaults={'bintype': None, 'template': None},
+                        methods=['GET', 'POST'], endpoint='dapall')
+    @flask_classy.route('/<name>/<bintype>/dapall', defaults={'template': None},
+                        methods=['GET', 'POST'], endpoint='dapall')
+    @flask_classy.route('/<name>/<bintype>/<template>/dapall',
+                        methods=['GET', 'POST'], endpoint='dapall')
     @marvin.api.base.arg_validate.check_args()
-    def getBinSpaxels(self, args, name, bintype, template_kin, binid):
-        """Returns a list of x and y indices for spaxels belonging to ``binid``.
+    def get_dapall_data(self, args, name, bintype, template):
+        """Returns the DAPall data for a given mangaid or plateifu.
 
-        .. :quickref: Maps; Get a list of x, y indices for spaxels in a given ``binid``.
+        .. :quickref: General; Returns the DAPall data for a given mangaid or plateifu.
 
-        :param name: The name of the maps as plate-ifu or mangaid
+        :param name: The name of the observation as mangaid or plateifu
         :param bintype: The bintype associated with this maps.  If not defined, the default is used
-        :param template_kin: The template_kin associated with this maps.  If not defined, the default is used
-        :param binid: The binid to which the spaxels belong.
-        :form release: the release of MaNGA data
+        :param template: The template associated with this maps.  If not defined, the default is used
+        :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
         :resjson json inconfig: json of incoming configuration
         :resjson json utahconfig: json of outcoming configuration
         :resjson string traceback: traceback of an error, null if None
         :resjson json data: dictionary of returned data
-        :json list spaxels: a list of spaxel (x, y) coordinates within this binid
+        :json dict dapall_data: dict of the DAPall parameters
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -316,7 +318,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/spaxels/112/ HTTP/1.1
+           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/dapall HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -332,17 +334,17 @@ class MapsView(marvin.api.base.BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"spaxels": [[13, 19]]
+              "data": {"dapall_data": {"plate": 7443,
+                                       "ifudesign": 12701,
+                                       ... }
                       }
            }
 
         """
+
         # Pop any args we don't want going into Maps
-        args = self._pop_args(args, arglist=['name', 'binid'])
+        args = self._pop_args(args, arglist='name')
 
-        # kwargs = {'bintype': bintype, 'template_kin': template_kin}
-
-        # Initialises the Maps object
         maps, results = _getMaps(name, **args)
         self.update_results(results)
 
@@ -350,10 +352,83 @@ class MapsView(marvin.api.base.BaseView):
             return jsonify(self.results)
 
         try:
+            dapall = maps.dapall
+            self.results['data'] = {'dapall_data': dapall}
+        except marvin.core.exceptions.MarvinError as ee:
+            self.results['error'] = str(ee)
+
+        return jsonify(self.results)
+
+    @flask_classy.route('/<name>/<bintype>/<template>/quantities/<x>/<y>/',
+                        methods=['GET', 'POST'],
+                        endpoint='getMapsQuantitiesSpaxel')
+    @marvin.api.base.arg_validate.check_args()
+    def getMapsQuantitiesSpaxel(self, args, name, bintype, template, x, y):
+        """Returns a dictionary with all the quantities.
+
+        .. :quickref: Maps; Returns a dictionary with all the quantities
+
+        :param name: The name of the maps as plate-ifu or mangaid
+        :param x: The x coordinate of the spaxel (origin is ``lower``)
+        :param y: The y coordinate of the spaxel (origin is ``lower``)
+        :form release: the release of MaNGA
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson json data: dictionary of returned data
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/maps/8485-1901/quantities/10/12/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "data": {"emline_gflux_ha6564": {"value": 2.3, "ivar": ...},
+                       "binid": ...}
+              }
+           }
+        """
+
+        # Pass the args in and get the cube
+        args = self._pop_args(args, arglist=['name', 'x', 'y'])
+        maps, res = _getMaps(name, **args)
+        self.update_results(res)
+
+        if maps:
+
             self.results['data'] = {}
-            self.results['data']['spaxels'] = maps.get_bin_spaxels(binid, only_list=True)
-        except Exception as ee:
-            self.results['error'] = ('Failed to get spaxels for binid={0}: {1}'
-                                     .format(binid, str(ee)))
+
+            spaxel_quantities = maps._get_spaxel_quantities(x, y)
+
+            for quant in spaxel_quantities:
+
+                aprop = spaxel_quantities[quant]
+
+                value = aprop.value
+                ivar = aprop.ivar if aprop.ivar is not None else None
+                mask = aprop.mask if aprop.mask is not None else None
+
+                self.results['data'][quant] = {'value': value,
+                                               'ivar': ivar,
+                                               'mask': mask}
 
         return jsonify(self.results)

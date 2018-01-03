@@ -1,29 +1,40 @@
 from flask_classy import route
-from flask import request, jsonify, Response, current_app
+from flask import request, jsonify, Response, current_app, redirect, url_for
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.utils.db import get_traceback
-from marvin.tools.query.query_utils import bestparams
+from marvin.utils.datamodel.query.base import bestparams
 from marvin.web.extensions import limiter
 import json
 
 
-def _getCubes(searchfilter, **kwargs):
-    """Run query locally at Utah."""
+def _run_query(searchfilter, **kwargs):
+    ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
     kwargs['returnparams'] = kwargs.pop('params', None)
     kwargs['returntype'] = kwargs.pop('rettype', None)
 
     try:
-        # q, r = doQuery(searchfilter=searchfilter, returnparams=params, release=release,
-        #                mode='local', returntype=rettype, limit=limit, order=order, sort=sort)
         q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
+    else:
+        return q, r
 
-    results = r.results
+
+def _get_runtime(query):
+    ''' Retrive a dictionary of the runtime to pass back in JSON '''
+    runtime = {'days': query.runtime.days, 'seconds': query.runtime.seconds, 'microseconds': query.runtime.microseconds}
+    return runtime
+
+
+def _getCubes(searchfilter, **kwargs):
+    """Run query locally at Utah and format the output into the full JSON """
+
+    # run the query
+    q, r = _run_query(searchfilter, **kwargs)
 
     # get the subset keywords
     start = kwargs.get('start', None)
@@ -31,17 +42,42 @@ def _getCubes(searchfilter, **kwargs):
     limit = kwargs.get('limit', None)
     params = kwargs.get('params', None)
 
-    # get a subset
+    # retrieve a subset
     chunk = None
     if start:
         chunk = int(end) - int(start)
-        results = r.getSubset(int(start), limit=chunk)
+        # results = r.getSubset(int(start), limit=chunk)
     chunk = limit if not chunk else limit
-    runtime = {'days': q.runtime.days, 'seconds': q.runtime.seconds, 'microseconds': q.runtime.microseconds}
+
+    # get results
+    results = r.results
+
+    # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
-                  filter=searchfilter, params=q.params, returnparams=params, runtime=runtime,
+                  filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
                   queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
     return output
+
+
+def _get_column(results, colname, format_type=None):
+    ''' Gets a column from a Query '''
+
+    column = None
+    if format_type == 'list':
+        try:
+            column = results.getListOf(colname)
+        except MarvinError as e:
+            raise MarvinError('Cannot get list for column {0}: {1}'.format(colname, e))
+    elif format_type in ['listdict', 'dictlist']:
+        try:
+            if colname == 'None':
+                column = results.getDictOf(format_type=format_type)
+            else:
+                column = results.getDictOf(colname, format_type=format_type)
+        except MarvinError as e:
+            raise MarvinError('Cannot get dictionary for column {0}: {1}'.format(colname, e))
+
+    return column
 
 
 class QueryView(BaseView):
@@ -164,17 +200,8 @@ class QueryView(BaseView):
 
         '''
         searchfilter = args.pop('searchfilter', None)
-        # searchfilter = self.results['inconfig'].get('searchfilter', None)
-        # params = self.results['inconfig'].get('params', None)
-        # rettype = self.results['inconfig'].get('returntype', None)
-        # limit = self.results['inconfig'].get('limit', 100)
-        # sort = self.results['inconfig'].get('sort', None)
-        # order = self.results['inconfig'].get('order', 'asc')
-        # release = self.results['inconfig'].get('release', None)
 
         try:
-            # res = _getCubes(searchfilter, params=params, rettype=rettype,
-            #                 limit=limit, sort=sort, order=order, release=release)
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)
@@ -184,6 +211,75 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
+        return Response(json.dumps(self.results), mimetype='application/json')
+
+    @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
+    @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
+    @av.check_args(use_params='query', required='searchfilter')
+    def query_allcolumn(self, args, colname):
+        ''' Retrieves the entire result set for a single column
+
+        .. :quickref: Query; Retrieves the entire result set for a single column
+
+        :query string release: the release of MaNGA
+        :form searchfilter: your string searchfilter expression
+        :resjson int status: status of response. 1 if good, -1 if bad.
+        :resjson string error: error message, null if None
+        :resjson json inconfig: json of incoming configuration
+        :resjson json utahconfig: json of outcoming configuration
+        :resjson string traceback: traceback of an error, null if None
+        :resjson string data: dictionary of returned data
+        :json list column: the list of results for the specified column
+        :resheader Content-Type: application/json
+        :statuscode 200: no error
+        :statuscode 422: invalid input parameters
+
+        **Example request**:
+
+        .. sourcecode:: http
+
+           GET /marvin2/api/query/cubes/columns/plateifu/ HTTP/1.1
+           Host: api.sdss.org
+           Accept: application/json, */*
+
+        **Example response**:
+
+        .. sourcecode:: http
+
+           HTTP/1.1 200 OK
+           Content-Type: application/json
+           {
+              "status": 1,
+              "error": null,
+              "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1"},
+              "utahconfig": {"release": "MPL-5", "mode": "local"},
+              "traceback": null,
+              "chunk": 100,
+              "count": 4,
+              "data": ["8485-1901", "8485-1902", "8485-12701", "7443-12701", "8485-12702"],
+           }
+
+        '''
+        searchfilter = args.pop('searchfilter', None)
+        format_type = args.pop('format_type', 'list')
+
+        try:
+            query, results = _run_query(searchfilter, **args)
+        except MarvinError as e:
+            self.results['error'] = str(e)
+            self.results['traceback'] = get_traceback(asstring=True)
+        else:
+            print('column', colname, results.columns)
+            try:
+                column = _get_column(results, colname, format_type=format_type)
+            except MarvinError as e:
+                self.results['error'] = str(e)
+                self.results['traceback'] = get_traceback(asstring=True)
+            else:
+                self.results['status'] = 1
+                self.results['data'] = column
+                self.results['runtime'] = _get_runtime(query)
+
         return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
@@ -260,20 +356,8 @@ class QueryView(BaseView):
 
         '''
         searchfilter = args.pop('searchfilter', None)
-        # searchfilter = self.results['inconfig'].get('searchfilter', None)
-        # params = self.results['inconfig'].get('params', None)
-        # start = self.results['inconfig'].get('start', None)
-        # end = self.results['inconfig'].get('end', None)
-        # rettype = self.results['inconfig'].get('returntype', None)
-        # limit = self.results['inconfig'].get('limit', 100)
-        # sort = self.results['inconfig'].get('sort', None)
-        # order = self.results['inconfig'].get('order', 'asc')
-        # release = self.results['inconfig'].get('release', None)
 
         try:
-            # res = _getCubes(searchfilter, params=params, start=int(start),
-            #                 end=int(end), rettype=rettype, limit=limit,
-            #                 sort=sort, order=order, release=release)
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
             self.results['error'] = str(e)

@@ -9,7 +9,7 @@
 from collections import OrderedDict
 import itertools
 import os
-
+import copy
 import pytest
 
 from marvin import config, marvindb
@@ -18,8 +18,10 @@ from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
 from marvin.tools.query import Query
-from marvin.tools.maps import _get_bintemps, __BINTYPES_MPL4__, __TEMPLATES_KIN_MPL4__
+from marvin.utils.datamodel.dap import datamodel
+
 from sdss_access.path import Path
+
 import yaml
 
 
@@ -48,6 +50,7 @@ def pytest_configure(config):
     if option:
         travis = TravisSubset()
 
+
 # specific release instance
 travis = None
 
@@ -55,17 +58,23 @@ travis = None
 class TravisSubset(object):
     def __init__(self):
         self.new_gals = ['8485-1901']
-        self.new_releases = ['MPL-5']
-        self.new_bintypes = ['SPX']  # ['SPX', 'VOR10', 'NONE', 'STON']
-        self.new_templates = ['GAU-MILESHC', 'MILES-THIN']
+        self.new_releases = ['MPL-6']
+        self.new_bintypes = ['SPX', 'HYB10']  # ['SPX', 'VOR10', 'NONE', 'STON']
+        self.new_templates = ['GAU-MILESHC']
         self.new_dbs = ['nodb']
         self.new_origins = ['file', 'api']
-        self.new_modes = ['local', 'remote']
+        self.new_modes = ['local', 'remote', 'auto']
 
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-6', 'MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+
+bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
+                     'MPL-5': ['SPX', 'VOR10'],
+                     'MPL-6': ['SPX', 'HYB10']}
+
+templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN']}
 
 
 def populate_bintypes_templates(releases):
@@ -73,11 +82,14 @@ def populate_bintypes_templates(releases):
     bintypes = OrderedDict((release, []) for release in releases)
     templates = OrderedDict((release, []) for release in releases)
     for release in releases:
-        __, dapver = config.lookUpVersions(release)
-        bintemps = _get_bintemps(dapver)
+        bintemps = datamodel[release].get_bintemps()
         for bintemp in bintemps:
             bintype = bintemp.split('-')[0]
             template = '-'.join(bintemp.split('-')[1:])
+            if release in bintypes_accepted and bintype not in bintypes_accepted[release]:
+                continue
+            if release in templates_accepted and template not in templates_accepted[release]:
+                continue
             if bintype not in bintypes[release]:
                 bintypes[release].append(bintype)
             if template not in templates[release]:
@@ -125,10 +137,10 @@ def get_params(request):
         pytest.skip('Skipping non-requested release')
 
     if travis and bintype not in travis.new_bintypes:
-        pytest.skip('Skipping non-requested release')
+        pytest.skip('Skipping non-requested bintype')
 
     if travis and template not in travis.new_templates:
-        pytest.skip('Skipping non-requested release')
+        pytest.skip('Skipping non-requested template')
 
     return request.param
 
@@ -406,7 +418,7 @@ class Galaxy(object):
         if self.plateifu not in galaxy_data:
             return
 
-        data = galaxy_data[self.plateifu]
+        data = copy.deepcopy(galaxy_data[self.plateifu])
 
         for key in data.keys():
             setattr(self, key, data[key])
@@ -416,29 +428,35 @@ class Galaxy(object):
         for key in releasedata.keys():
             setattr(self, key, releasedata[key])
 
+        # remap NSA drpall names for MPL-4 vs 5+
+        for key, val in self.nsa_data['drpall'].items():
+            if isinstance(val, list):
+                newval, newkey = self.nsa_data['drpall'].pop(key)
+                if self.release == 'MPL-4':
+                    self.nsa_data['drpall'][newkey] = newval
+                else:
+                    self.nsa_data['drpall'][key] = newval
+
     def set_params(self, bintype=None, template=None, release=None):
         """Set bintype, template, etc."""
+
         self.release = release
+
         self.drpver, self.dapver = config.lookUpVersions(self.release)
         self.drpall = 'drpall-{0}.fits'.format(self.drpver)
 
-        default_bintemp = _get_bintemps(self.dapver, default=True)
-        default_bin, default_temp = default_bintemp.split('-', 1)
-
-        self.bintype = bintype if bintype is not None else default_bin
-        self.template = template if template is not None else default_temp
-
-        self.bintemp = '{0}-{1}'.format(self.bintype, self.template)
+        self.bintype = datamodel[self.dapver].get_bintype(bintype)
+        self.template = datamodel[self.dapver].get_template(template)
+        self.bintemp = '{0}-{1}'.format(self.bintype.name, self.template.name)
 
         if release == 'MPL-4':
-            self.niter = int('{0}{1}'.format(__TEMPLATES_KIN_MPL4__.index(self.template),
-                                             __BINTYPES_MPL4__[self.bintype]))
+            self.niter = int('{0}{1}'.format(self.template.n, self.bintype.n))
         else:
             self.niter = '*'
 
         self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver,
                               'dapver': self.dapver, 'dir3d': self.dir3d, 'mpl': self.release,
-                              'bintype': self.bintype, 'n': self.niter, 'mode': '*',
+                              'bintype': self.bintype.name, 'n': self.niter, 'mode': '*',
                               'daptype': self.bintemp}
 
     def set_filepaths(self, pathtype='full'):
@@ -452,7 +470,7 @@ class Galaxy(object):
             self.mapspath = self.path.__getattribute__(pathtype)('mangamap', **self.access_kwargs)
             self.modelpath = None
         else:
-            __ = self.access_kwargs.pop('mode')
+            self.access_kwargs.pop('mode')
             self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS',
                                                                  **self.access_kwargs)
             self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE',
@@ -501,7 +519,7 @@ def galaxy(get_params, plateifu):
     gal = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def cube(galaxy, exporigin, mode):
     ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
@@ -515,7 +533,7 @@ def cube(galaxy, exporigin, mode):
     c = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def modelcube(galaxy, exporigin, mode):
     ''' Yield a Marvin ModelCube based on the expected origin combo of (mode+db).
         Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
@@ -529,7 +547,7 @@ def modelcube(galaxy, exporigin, mode):
     mc = None
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def maps(galaxy, exporigin, mode):
     ''' Yield a Marvin Maps based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
@@ -543,7 +561,17 @@ def maps(galaxy, exporigin, mode):
     m = None
 
 
-@pytest.fixture()
+modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
+dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
+origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
+
+
+@pytest.fixture(scope='class', params=releases)
+def maps_release_only(request):
+    return Maps(plateifu='8485-1901', release=request.param)
+
+
+@pytest.fixture(scope='function')
 def query(request, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]
@@ -561,5 +589,3 @@ def query(request, release, mode, db):
 # @pytest.fixture(autouse=True)
 # def skipall():
 #     pytest.skip('skipping everything')
-
-

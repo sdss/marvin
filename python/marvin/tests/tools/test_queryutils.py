@@ -6,10 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-05-28 15:17:28
+# @Last Modified time: 2017-11-09 20:55:57
 
 from __future__ import print_function, division, absolute_import
-from marvin.tools.query.query_utils import query_params, QueryParameter
+from marvin.utils.datamodel.query.base import query_params, QueryParameter
 import pytest
 import itertools
 
@@ -19,8 +19,10 @@ def data():
     groups = ['Metadata', 'Spaxel Metadata', 'Emission Lines', 'Kinematics', 'Spectral Indices', 'NSA Catalog']
     spaxelparams = ['spaxelprop.x', 'spaxelprop.y', 'spaxelprop.spx_snr']
     specindparams = ['spaxelprop.specindex_d4000']
-    nsaparams = ['nsa.z', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r']
-    data = {'groups': groups, 'spaxelmeta': spaxelparams, 'nsa': nsaparams, 'specind': specindparams}
+    nsaparams = ['nsa.iauname', 'nsa.ra', 'nsa.dec', 'nsa.z', 'nsa.elpetro_ba', 'nsa.elpetro_mag_g_r',
+                 'nsa.elpetro_absmag_g_r', 'nsa.elpetro_logmass', 'nsa.elpetro_th50_r', 'nsa.sersic_logmass',
+                 'nsa.sersic_ba']
+    data = {'groups': groups, 'spaxelmeta': spaxelparams, 'nsa': nsaparams, 'spectral': specindparams}
 
     return data
 
@@ -51,12 +53,12 @@ class TestGroupList(object):
         group = query_params[name]
         assert group.name == 'NSA Catalog'
 
-    @pytest.mark.parametrize('groups', [(None), (['nsa']), (['specind', 'nsa']),
-                                        (['spaxelmeta', 'specind'])])
+    @pytest.mark.parametrize('groups', [(None), (['nsa']), (['spectral', 'nsa']),
+                                        (['spaxelmeta', 'spectral'])])
     def test_list_params(self, data, groups):
         params = query_params.list_params(groups=groups)
         if not groups:
-            myparams = data['spaxelmeta'] + data['nsa'] + data['specind']
+            myparams = data['spaxelmeta'] + data['nsa'] + data['spectral']
         else:
             paramlist = [data[g] for g in groups]
             myparams = list(itertools.chain.from_iterable(paramlist))
@@ -70,16 +72,18 @@ class TestGroupList(object):
         assert errmsg in str(cm.value)
 
     @pytest.mark.parametrize('name, result',
-                             [('coord', None),
-                              pytest.mark.xfail(raises=KeyError)(('meta', None))])
-    def test_failure(self, name, result):
-        res = query_params[name]
-        assert result == res, 'result should be the same as res'
+                             [('coord', None)])
+    def test_raises_valueerror(self, name, result):
+        errmsg = "Could not find a match for coord."
+        with pytest.raises(ValueError) as cm:
+            group = query_params[name]
+        assert cm.type == ValueError
+        assert errmsg in str(cm.value)
 
 
 class TestParamList(object):
 
-    @pytest.mark.parametrize('group, name, count', [('specind', 'Spectral Indices', 1),
+    @pytest.mark.parametrize('group, name, count', [('spectral', 'Spectral Indices', 1),
                                                     ('kin', 'Kinematics', 6)])
     def test_get_paramgroup(self, group, name, count):
         assert group in query_params
@@ -90,7 +94,7 @@ class TestParamList(object):
         assert mygroup.name == name
         assert len(mygroup) == count
 
-    @pytest.mark.parametrize('group, param, name', [('specind', 'd4000', 'specindex_d4000')])
+    @pytest.mark.parametrize('group, param, name', [('spectral', 'd4000', 'specindex_d4000')])
     def test_get_param(self, group, param, name):
         assert group in query_params
         assert param in query_params[group]
@@ -103,7 +107,7 @@ class TestParamList(object):
                               ('kin', 'havel', 'short', 'havel'),
                               ('kin', 'havel', 'display', 'Halpha Velocity')])
     def test_list_params(self, group, param, ltype, expname):
-        kwargs = {ltype: True} if ltype else {}
+        kwargs = {'name_type': ltype} if ltype else {}
         params = query_params[group].list_params(**kwargs)
         if not ltype:
             assert isinstance(params[0], QueryParameter)
@@ -113,7 +117,7 @@ class TestParamList(object):
     @pytest.mark.parametrize('group, params, expset',
                              [('metadata', ['ra', 'dec'], ['cube.ra', 'cube.dec'])])
     def test_list_subset(self, group, params, expset):
-        subset = query_params[group].list_params(params, full=True)
+        subset = query_params[group].list_params('full', subset=params)
         assert set(expset) == set(subset)
 
     @pytest.mark.parametrize('groups, params1, params2, expset',
@@ -123,7 +127,7 @@ class TestParamList(object):
         group1, group2 = groups
         g1 = query_params[group1]
         g2 = query_params[group2]
-        mylist = g1.list_params(params1, full=True) + g2.list_params(params2, full=True)
+        mylist = g1.list_params('full', subset=params1) + g2.list_params('full', subset=params2)
         assert set(expset) == set(mylist)
 
     def test_raises_keyerror(self):
@@ -140,11 +144,51 @@ class TestQueryParams(object):
                              [('nsa', 'z', 'nsa.z', 'z', 'z', 'Redshift'),
                               ('metadata', 'ra', 'cube.ra', 'ra', 'ra', 'RA'),
                               ('emission', 'gflux_ha', 'spaxelprop.emline_gflux_ha_6564', 'emline_gflux_ha_6564', 'haflux', 'Halpha Flux'),
-                              ('spaxelmeta', 'x', 'spaxelprop.x', 'x', 'x', 'Spaxel X')])
+                              ('spaxelmeta', 'spaxelprop.x', 'spaxelprop.x', 'x', 'x', 'Spaxel X')])
     def test_query_param(self, group, param, full, name, short, display):
         par = query_params[group][param]
         assert par.full == full
         assert par.name == name
         assert par.short == short
         assert par.display == display
+
+    def get_qp(name, grp):
+        qp = grp[name]
+        return qp
+
+    @pytest.mark.parametrize('full',
+                             [('nsa.iauname'), ('nsa.ra'), ('nsa.dec'), ('nsa.z'), ('nsa.elpetro_ba'),
+                              ('nsa.elpetro_mag_g_r'), ('nsa.elpetro_absmag_g_r'), ('nsa.elpetro_logmass'),
+                              ('nsa.elpetro_th50_r'), ('nsa.sersic_logmass'), ('nsa.sersic_ba')])
+    def test_nsa_names(self, full):
+        nsa = query_params['nsa']
+        assert full in nsa
+        assert full == nsa[full].full
+        short = full.split('.')[1]
+        assert full == nsa[short].full
+        nospace = short.replace(' ', '')
+        assert full == nsa[nospace].full
+
+    @pytest.mark.parametrize('grp, name', [('emisison', 'flux_ha')])
+    def test_datamodel(self, grp, name):
+        emgrp = query_params[grp]
+        param = emgrp[name]
+        assert param.property is None
+
+    @pytest.mark.parametrize('group, name, full',
+                             [('metadata', 'cube.plate', 'cube.plate'),
+                              #('metadata', 'cube.plateifu', 'cube.plateifu'),
+                              #('metadata', 'plate', 'cube.plate'),
+                              ('metadata', 'plateifu', 'cube.plateifu'),
+                              #('spaxelmeta', 'x', 'spaxelprop.x'),
+                              #('spaxelmeta', 'spaxelx', 'spaxelprop.x'),
+                              ('spaxelmeta', 'spaxelprop.x', 'spaxelprop.x'),
+                              ('spaxelmeta', 'spaxelpropx', 'spaxelprop.x'),
+                              ('nsa', 'nsa.elpetro_ba', 'nsa.elpetro_ba'),
+                              ('nsa', 'nsa.elpetroba', 'nsa.elpetro_ba'),
+                              ('nsa', 'elpetro_ba', 'nsa.elpetro_ba')])
+    def test_problem_names(self, group, name, full):
+        grp = query_params[group]
+        qp = grp[name]
+        assert qp.full == full
 

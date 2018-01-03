@@ -88,11 +88,11 @@ However, we can also plot the spectrum and model fits in Python. First, we can f
 Get Spectrum and Model Fit
 --------------------------
 
-Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing the parent :class:`~marvin.tools.maps.Maps` object from the :class:`~marvin.tools.map.Map` object (``haflux_map.maps``) and retrieve the model fit.
+Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing the parent :class:`~marvin.tools.maps.Maps` object from the :class:`~marvin.tools.quantities.Map` object (``haflux_map.maps``) and retrieve the model fit.
 
 .. code-block:: python
 
-    spax = haflux_map.maps.getSpaxel(x=28, y=24, xyorig='lower', modelcube=True)
+    spax = galaxies[0].getSpaxel(x=28, y=24, xyorig='lower', model=True)
 
 
 Now let's plot the spectrum and model fit:
@@ -104,8 +104,8 @@ Now let's plot the spectrum and model fit:
     import matplotlib.pyplot as plt
     plt.style.use('seaborn-darkgrid')
 
-    ax = spax.spectrum.plot()
-    ax.plot(spax.model.wavelength, spax.model.flux)
+    ax = spax.flux.plot()
+    ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
     ax.axis([7100, 7500, 0.3, 0.65])
 
@@ -122,7 +122,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig = haflux_map.maps.get_bpt()
+    masks, fig = maps.get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 
@@ -138,11 +138,11 @@ Select the star-forming spaxels that are in the star-forming region of each diag
 
     sf = masks['sf']['global']
 
-Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and set bit 30 (DONOTUSE) for non-star-forming spaxels.
+Return the complement of the BPT global star-forming mask (``True`` means star-forming) using ``~`` and mark those spaxels as DONOTUSE since they are non-star-forming spaxels.
 
 .. code-block:: python
 
-    mask_non_sf = ~sf * 2**30
+    mask_non_sf = ~sf * haflux_map.pixmask.labels_to_value('DONOTUSE')
 
 
 Do a bitwise OR between the DAP mask and the non-star-forming mask:
@@ -170,7 +170,9 @@ Calculate [NII]6585/H\ :math:`\alpha` flux ratio:
 .. code-block:: python
 
     maps_7992_6101 = galaxies[1]
-    nii_ha = maps_7992_6101.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
+    nii = maps_7992_6101['emline_gflux_nii_6585']
+    ha = maps_7992_6101['emline_gflux_ha_6564']
+    nii_ha = nii / ha
 
 
 Plot the [NII]/H\ :math:`\alpha` flux ratio for the star-forming spaxels:

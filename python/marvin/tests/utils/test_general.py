@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 
-test_general_pytest.py
+test_general.py
 
 Created by José Sánchez-Gallego on 7 Apr 2016.
 Licensed under a 3-clause BSD license.
@@ -18,19 +18,20 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
-from collections import OrderedDict
-import os
-
 import pytest
 import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 
 import marvin
-from marvin.core.core import DotableCaseInsensitive
+from marvin.tools.maps import Maps
+from marvin.tools.quantities import Map
+from marvin.tools.cube import Cube
+from marvin.tools.quantities import Spectrum
+from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import convertCoords, get_nsa_data, getWCSFromPng, get_plot_params
-from marvin.utils.dap.datamodel import get_default_plot_params
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
+                                  _sort_dir)
 
 
 @pytest.fixture(scope='function')
@@ -182,14 +183,6 @@ class TestPillowImage(object):
                 assert err == str(e.args[0])
 
 
-@pytest.fixture(scope='session')
-def bitmask(dapver):
-    data = {'1.1.1': {'badData': {'doNotUse': 0}},
-            '2.0.2': {'nocov': 0, 'badData': {'unreliable': 5, 'doNotUse': 30}}
-            }
-    return data[dapver]
-
-
 class TestDataModelPlotParams(object):
 
     @pytest.mark.parametrize('name, desired',
@@ -203,3 +196,29 @@ class TestDataModelPlotParams(object):
         assert desired == actual
 
 
+class TestSortDir(object):
+
+    @pytest.mark.parametrize('class_, expected',
+                             [(Map, ['error', 'inst_sigma_correction', 'ivar',
+                                     'getMaps', 'mask', 'masked', 'plot',
+                                     'restore', 'save', 'snr', 'value', 'from_maps',
+                                     'binid', 'descale', 'datamodel'])])
+    def test_sort_dir_map(self, galaxy, class_, expected):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+
+        dir_ = _sort_dir(ha, class_)
+        dir_public = [it for it in dir_ if it[0] is not '_']
+        assert set(dir_public) == set(expected)
+
+    @pytest.mark.parametrize('class_, expected',
+                             [(Spectrum, ['error', 'masked', 'plot', 'snr', 'ivar', 'mask',
+                                          'wavelength', 'value', 'descale'])])
+    def test_sort_dir_spectrum(self, galaxy, class_, expected):
+        cube = Cube(plateifu=galaxy.plateifu)
+        spax = cube[0, 0]
+        spec = spax.flux
+
+        dir_ = _sort_dir(spec, class_)
+        dir_public = [it for it in dir_ if it[0] is not '_']
+        assert set(dir_public) == set(expected)

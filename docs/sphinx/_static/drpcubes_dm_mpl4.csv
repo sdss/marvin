@@ -1,0 +1,2 @@
+name,ivar,mask,unit,db_table,db_column,fits_extension
+flux,True,True,1e-17 erg / (Angstro,spaxel,flux,FLUX

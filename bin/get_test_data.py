@@ -24,7 +24,7 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
     if 'mangaimage' not in exclude:
         rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
 
-    if release == 'MPL-5':
+    if release in ['MPL-5', 'MPL-6']:
         if 'mangadap5' not in exclude:
             rsync.add('mangadap5', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
     elif release == 'MPL-4':
@@ -34,6 +34,11 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
             rsync.add('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
 
     return rsync
+
+
+# MPL-6
+rsync_access = add_data(rsync_access, release='MPL-6', plate='8485', ifu='1901')
+rsync_access = add_data(rsync_access, release='MPL-6', plate='7443', ifu='12701')
 
 # MPL-5
 rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901')

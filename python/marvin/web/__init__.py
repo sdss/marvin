@@ -11,7 +11,6 @@ from flask import session, request, render_template, g, jsonify
 import sys
 import os
 import logging
-import flask_profiler
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
@@ -19,7 +18,7 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -34,7 +33,7 @@ from marvin.api.maps import MapsView
 from marvin.api.modelcube import ModelCubeView
 from marvin.api.plate import PlateView
 from marvin.api.rss import RSSView
-from marvin.api.spaxel import SpaxelView
+# from marvin.api.spaxel import SpaxelView
 from marvin.api.query import QueryView
 from marvin.api.general import GeneralRequestsView
 
@@ -110,7 +109,7 @@ def register_api(app, api):
     ModelCubeView.register(api)
     PlateView.register(api)
     RSSView.register(api)
-    SpaxelView.register(api)
+    # SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
     limiter.limit("200/minute")(api)
@@ -123,6 +122,7 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
+    cache.init_app(app, config=app.config)
 
     limiter.init_app(app)
     for handler in app.logger.handlers:
@@ -136,7 +136,7 @@ def register_extensions(app, app_base=None):
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/app_base/flask-profiler
     if app.config['USE_PROFILER']:
         try:
-            flask_profiler.init_app(app)
+            profiler.init_app(app)
         except Exception as e:
             pass
 
