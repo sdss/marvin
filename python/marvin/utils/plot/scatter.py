@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-21 11:11:13
+# @Last Modified time: 2018-01-03 13:16:38
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -20,12 +20,18 @@ from collections import defaultdict, OrderedDict
 from astropy.visualization import hist as ahist
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mpl_scatter_density
 import numpy as np
 import scipy.stats as stats
 import six
 import pandas as pd
 import itertools
+
+try:
+    import mpl_scatter_density as msd
+except ImportError as e:
+    msd = None
+    msderr = ('mpl-scatter-density is required to plot large results and was not found.  '
+              'To use this feature, please install the python package!')
 
 
 def compute_stats(data):
@@ -68,6 +74,10 @@ def _create_figure(hist=None, hist_axes_visible=None, use_density=None):
 
     # use a scatter density projection or not
     projection = 'scatter_density' if use_density else None
+
+    # check if mpl-scatter-density if installed
+    if not msd:
+        raise ImportError(msderr)
 
     # create the figure
     fig = plt.figure()
@@ -365,6 +375,10 @@ def plot(x, y, **kwargs):
         cb = fig.colorbar(main, ax=ax_scat, label='Number of points per pixel')
         ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
     else:
+        # abort if mpl-scatter-density is not installed
+        if not msd:
+            raise ImportError(msderr)
+
         # create the scatter plot
         scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
         main = ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
