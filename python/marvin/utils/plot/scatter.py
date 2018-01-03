@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-01-03 13:16:38
+# @Last Modified time: 2018-01-03 15:04:06
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -305,6 +305,8 @@ def plot(x, y, **kwargs):
         bins (int|tuple):
             A number or tuple specifying the number of bins to use in the histogram.  Default is 50.  An integer
             number is adopted for both x and y bins.  A tuple is used to customize per axis.
+        return_figure (bool):
+            If True, return the figure and axis object.  Default is True.
         kwargs (dict):
             Any other keyword arguments to be passed to `matplotlib.pyplot.scatter <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter>`_
             or `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_ or
@@ -331,6 +333,7 @@ def plot(x, y, **kwargs):
     use_datamodel = kwargs.pop('usemodel', None)
     xmask = kwargs.pop('xmask', None)
     ymask = kwargs.pop('ymask', None)
+    return_figure = kwargs.pop('return_figure', True)
 
     # scatterplot keyword arguments
     xlim = kwargs.pop('xlim', None)
@@ -426,7 +429,11 @@ def plot(x, y, **kwargs):
         axes.append(ax_hist_y)
         hist_data['yhist'] = yhist
 
-    output = (fig, axes, hist_data) if with_hist else (fig, axes)
+    if return_figure:
+        output = (fig, axes, hist_data) if with_hist else (fig, axes)
+    else:
+        output = hist_data if with_hist else None
+
     return output
 
 
@@ -458,7 +465,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
             The plot title
         rotate_title (bool):
             If True, moves the title text to the right y-axis during a horizontal histogram.  Default is False.
-        return_fig (bool):
+        return_figure (bool):
             If True, return the figure and axis object.  Default is True.
         kwargs (dict):
             Any other keyword arguments to be passed to `matplotlib.pyplot.hist <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist>`_.
@@ -494,7 +501,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
     ylabel = kwargs.pop('ylabel', 'Counts')
     title = kwargs.pop('title', None)
     rotate_title = kwargs.pop('rotate_title', False)
-    return_fig = kwargs.pop('return_fig', True)
+    return_figure = kwargs.pop('return_figure', True)
 
     # histogram keywords
     bins = bins if bins else 'scott'
@@ -547,7 +554,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
     hist_data = {'counts': counts, 'binedges': binedges, 'bins': bins,
                  'binids': binids, 'indices': indices}
 
-    output = (hist_data, fig, ax) if return_fig else hist_data
+    output = (hist_data, fig, ax) if return_figure else hist_data
     return output
 
 

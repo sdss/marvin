@@ -1505,6 +1505,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            return_figure (bool):
+                Set to False to not return the Figure and Axis object. Defaults to True.
             show_plot (bool):
                 Set to False to not show the interactive plot
             **kwargs (dict):
@@ -1527,6 +1529,7 @@ class Results(object):
         return_plateifus = kwargs.pop('return_plateifus', True)
         with_hist = kwargs.get('with_hist', True)
         show_plot = kwargs.pop('show_plot', True)
+        return_figure = kwargs.get('return_figure', True)
 
         # get the named column
         x_col = self.columns[x_name]
@@ -1546,12 +1549,12 @@ class Results(object):
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:
             plateifus = self.getListOf('plateifu', return_all=True)
-            hdata = output[2]
+            hdata = output[2] if return_figure else output
             if 'xhist' in hdata:
                 hdata['xhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
             if 'yhist' in hdata:
                 hdata['yhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
-            output = output[0:2] + (hdata,)
+            output = output[0:2] + (hdata,) if return_figure else hdata
 
         return output
 
@@ -1570,6 +1573,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            return_figure (bool):
+                Set to False to not return the Figure and Axis object. Defaults to True.
             show_plot (bool):
                 Set to False to not show the interactive plot
             **kwargs (dict):
@@ -1590,6 +1595,7 @@ class Results(object):
 
         return_plateifus = kwargs.pop('return_plateifus', True)
         show_plot = kwargs.pop('show_plot', True)
+        return_figure = kwargs.get('return_figure', True)
 
         # get the named column
         col = self.columns[name]
@@ -1606,9 +1612,9 @@ class Results(object):
 
         if return_plateifus:
             plateifus = self.getListOf('plateifu', return_all=True)
-            hdata = output[0]
+            hdata = output[0] if return_figure else output
             hdata['bins_plateifu'] = map_bins_to_column(plateifus, hdata['indices'])
-            output = (hdata,) + output[1:]
+            output = (hdata,) + output[1:] if return_figure else hdata
 
         return output
 
