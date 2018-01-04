@@ -1,25 +1,18 @@
 .. _whats-new:
 
-What's New in Marvin 2.2 (November 2017)
-========================================
+What's New in Marvin 2.2 (January 2018)
+=======================================
 
-Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data. In particular, it introduces the concept of :ref:`quantities <marvin-quantity>` as a way of encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance).
+Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.
 
-This version is fully compatible with the just-released MPL-6 ... blah.
-
-Enter the quantities
---------------------
-
-Describe what are quantities and provide a snippets about how to use them. Links to relevant sections.
-
-
-.. todo::
-
-  - Complete summary
-  - Complete section
-  - Add section about query changes
-  - Add section about maskbit class
-  - Add section about fuzzy search
+* MPL-6 compatible
+* New DRP, DAP, and Query Datamodels
+* Cubes, Maps, and ModelCubes now use Astropy Quantities, i.e. encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance)
+* Improved Bin class
+* Fuzzy Searching and Tab Completion
+* Scatter and Histogram Plotting
+* Improved Query Results Handling and Integrated Plotting
+* New MaskBit class
 
 |
 

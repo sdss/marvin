@@ -13,6 +13,10 @@ Added
    section.
 -  A hack function ``marvin.utils.plot.utils.bind_to_figure()`` that
    replicate the contents of a matplotlib axes in another figure.
+-  New scatter and histogram plotting utility functions
+-  Integrated scatter and histogram plotting into query Results
+-  New methods for easier query Results handling
+-  New Pythonic DRP, DAP, and Query DataModels
 
 Changed
 ~~~~~~~
@@ -22,9 +26,49 @@ Changed
    axes. Each axes contains a method pointing to the
    ``marvin.utils.plot.utils.bind_to_figure()`` function, for easily
    transfer the axes to a new figure.
+-  All Cubes, Maps, and Modelcubes use Astropy Quantities
+-  Refactored to the Bin class
+-  Bin and Spaxel are now subclassed from SpaxelBase
 
 Fixed
 ~~~~~
+
+- Issue `#24 <https://github.com/sdss/marvin/issues/24>`_
+- Issue `#99 <https://github.com/sdss/marvin/issues/99>`_
+- Issue `#110 <https://github.com/sdss/marvin/issues/110>`_
+- Issue `#111 <https://github.com/sdss/marvin/issues/111>`_
+- Issue `#131 <https://github.com/sdss/marvin/issues/131>`_
+- Issue `#133 <https://github.com/sdss/marvin/issues/133>`_
+- Issue `#173 <https://github.com/sdss/marvin/issues/173>`_
+- Issue `#178 <https://github.com/sdss/marvin/issues/178>`_
+- Issue `#180 <https://github.com/sdss/marvin/issues/180>`_
+- Issue `#190 <https://github.com/sdss/marvin/issues/190>`_
+- Issue `#191 <https://github.com/sdss/marvin/issues/191>`_
+- Issue `#233 <https://github.com/sdss/marvin/issues/233>`_
+- Issue `#235 <https://github.com/sdss/marvin/issues/235>`_
+- Issue `#246 <https://github.com/sdss/marvin/issues/246>`_
+- Issue `#248 <https://github.com/sdss/marvin/issues/248>`_
+- Issue `#261 <https://github.com/sdss/marvin/issues/261>`_
+- Issue `#263 <https://github.com/sdss/marvin/issues/263>`_
+- Issue `#269 <https://github.com/sdss/marvin/issues/269>`_
+- Issue `#279 <https://github.com/sdss/marvin/issues/279>`_
+- Issue `#281 <https://github.com/sdss/marvin/issues/281>`_
+- Issue `#286 <https://github.com/sdss/marvin/issues/286>`_
+- Issue `#287 <https://github.com/sdss/marvin/issues/287>`_
+- Issue `#290 <https://github.com/sdss/marvin/issues/290>`_
+- Issue `#291 <https://github.com/sdss/marvin/issues/291>`_
+- Issue `#294 <https://github.com/sdss/marvin/issues/294>`_
+- Issue `#295 <https://github.com/sdss/marvin/issues/295>`_
+- Issue `#296 <https://github.com/sdss/marvin/issues/296>`_
+- Issue `#297 <https://github.com/sdss/marvin/issues/297>`_
+- Issue `#299 <https://github.com/sdss/marvin/issues/299>`_
+- Issue `#301 <https://github.com/sdss/marvin/issues/301>`_
+- Issue `#302 <https://github.com/sdss/marvin/issues/302>`_
+- Issue `#303 <https://github.com/sdss/marvin/issues/303>`_
+- Issue `#304 <https://github.com/sdss/marvin/issues/304>`_
+- Issue `#308 <https://github.com/sdss/marvin/issues/308>`_
+- Issue `#311 <https://github.com/sdss/marvin/issues/311>`_
+- Issue `#312 <https://github.com/sdss/marvin/issues/312>`_
 
 
 [2.1.4] - 2017/08/02
