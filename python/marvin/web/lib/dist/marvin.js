@@ -512,7 +512,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-09-27 13:49:19
+* @Last Modified time: 2018-01-05 14:29:32
 */
 
 //

@@ -34,7 +34,7 @@ Introduction
 * :doc:`What's New in Marvin <whats-new>`
 * :doc:`Changelog <changelog>`
 * :ref:`Known issues <marvin-known-issues>`
-* :ref:`TODOs <marvin-todo>`
+.. * :ref:`TODOs <marvin-todo>`
 
 |
 
@@ -94,21 +94,21 @@ Components
 
 |
 
-General Reference
-=================
+.. General Reference
+.. =================
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
+.. .. toctree::
+..    :titlesonly:
+..    :maxdepth: 1
 
-   maps-properties-channels
-   Available Query Parameters <query-params>
-   tools/visual-guide
+..    maps-properties-channels
+..    Available Query Parameters <query-params>
+..    tools/visual-guide
 
 |
 
-Documentation
-=============
+API/Code Reference
+==================
 
 .. toctree::
    :maxdepth: 1

@@ -133,6 +133,15 @@ class Plate(MarvinToolsClass, FuzzyList):
 
         return listattr + sorted(class_members + instance_attr)
 
+    def __getattr__(self, value):
+
+        if 'cube' in value:
+            ifu = value.split('cube')[-1]
+            plateifu = '{0}-{1}'.format(self.plate, ifu)
+            return self[plateifu]
+
+        return super(Plate, self).__getattribute__(value)
+
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
         self.filename = super(Plate, self)._getFullPath('mangaplate', drpver=self._drpver,
@@ -241,7 +250,8 @@ class Plate(MarvinToolsClass, FuzzyList):
             plateifus = data['plateifus']
             _cubes = [Cube(plateifu=pifu, mode=self.mode, release=self.release) for pifu in plateifus]
 
-        FuzzyList.__init__(self, _cubes, mapper=lambda e: e.plateifu)
+        FuzzyList.__init__(self, _cubes)
+        self.mapper = (lambda e: e.plateifu)
 
     def _setParams(self):
         ''' Set the plate parameters '''

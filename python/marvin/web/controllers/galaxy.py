@@ -119,7 +119,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
 
     mapdict = []
     params = params if isinstance(params, list) else [params]
-    print('params', params)
+
     for param in params:
         param = str(param)
         try:
@@ -128,7 +128,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
             parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template=temp)
-        print(webmap)
+
         plotparams = get_plot_params(dapver=dapver, prop=parameter)
         mask = Maskbit('MANGA_DAPPIXMASK')
         baddata_labels = [it for it in plotparams['bitmasks'] if it != 'NOCOV']
@@ -370,8 +370,6 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        print('mapdict', mapdict, mapmsg)
-
         sdss_path = Path()
         output['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
         output['spectra'] = webspec
@@ -379,6 +377,7 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
+        output['dapmapselect'] = dapdefaults
 
         dm = datamodel[self._dapver]
         output['dapbintemps'] = dm.get_bintemps()
