@@ -202,7 +202,9 @@ class TestSortDir(object):
                              [(Map, ['error', 'inst_sigma_correction', 'ivar',
                                      'getMaps', 'mask', 'masked', 'plot',
                                      'restore', 'save', 'snr', 'value', 'from_maps',
-                                     'binid', 'descale', 'datamodel'])])
+                                     'binid', 'descale', 'datamodel', 'pixmask',
+                                     'quality_flag', 'target_flags', 'manga_target1',
+                                     'manga_target2', 'manga_target3'])])
     def test_sort_dir_map(self, galaxy, class_, expected):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
