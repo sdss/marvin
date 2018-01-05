@@ -17,6 +17,6 @@ update dependencies if marvin does need it.
 How do report a bug/request a feature?
 --------------------------------------
 
-As Marvin is on Github, we recommend submitting a Github Issue, `here <https://github.com/sdss/marvin/issues/new`_.
+As Marvin is on Github, we recommend submitting a `Github Issue <https://github.com/sdss/marvin/issues/new>`_.
 
 

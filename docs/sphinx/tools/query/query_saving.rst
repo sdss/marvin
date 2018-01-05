@@ -16,7 +16,7 @@ To save your query, use the **save** method on your query.  **save** accepts as 
     # make a query
     query = Query(searchfilter='nsa.z < 0.1')
     print(q)
-    Marvin Query(mode='remote', limit=100, sort=None, order='asc')
+    Marvin Query(filter=nsa.z < 0.1, mode=u'remote', limit=100, sort=None, order=u'asc')
 
     # save it for later
     q.save('myquery')
@@ -37,7 +37,7 @@ To restore a previously saved query, use the **restore** method.  Restoring is a
 
     # Your query is now loaded
     print(newq)
-    Marvin Query(mode='remote', limit=100, sort=None, order='asc')
+    Marvin Query(filter=nsa.z < 0.1, mode='remote', limit=100, sort=None, order='asc')
     newq.searchfilter
     'nsa.z < 0.1'
 
