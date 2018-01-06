@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-27 12:11:84
+# @Last modified time: 2018-01-06 12:01:68
 
 
 from __future__ import division, print_function, absolute_import
@@ -36,7 +36,7 @@ class TestMaskbit(object):
         assert np.all(mb.schema == schema)
         assert mb.name == name
         assert mb.description == description
-        assert str(mb) == "<Maskbit 'MYMASK'>\n{0!r}".format(schema)
+        assert str(mb) == "<Maskbit 'MYMASK' None>".format(schema)
 
     @pytest.mark.parametrize('name',
                              ['MANGA_TARGET1',
