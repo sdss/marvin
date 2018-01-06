@@ -32,6 +32,7 @@ from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
                                   _sort_dir)
+from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 
 @pytest.fixture(scope='function')
@@ -190,8 +191,17 @@ class TestDataModelPlotParams(object):
                               ('stellar_vel', {'cmap': 'RdBu_r', 'percentile_clip': [10, 90], 'symmetric': True, 'snr_min': None}),
                               ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
                              ids=['emline', 'stvel', 'stsig'])
-    def test_get_plot_params(self, bitmask, dapver, name, desired):
-        desired['bitmasks'] = bitmask
+    def test_get_plot_params(self, dapver, name, desired):
+        params = get_default_plot_params(dapver)
+
+        if 'vel' in name:
+            key = 'vel'
+        elif 'sigma' in name:
+            key = 'sigma'
+        else:
+            key = 'default'
+
+        desired['bitmasks'] = params[key]['bitmasks']
         actual = get_plot_params(dapver=dapver, prop=name)
         assert desired == actual
 

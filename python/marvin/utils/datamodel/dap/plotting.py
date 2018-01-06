@@ -94,6 +94,7 @@ def get_default_plot_params(dapver=None):
         '2.1': mpl6  # TODO Update to 2.1.0
     }
 
-    assert set(DAPKEYS).issubset(set(plot_defaults.keys())), 'DAP default_plot_param versions must be up-to-date with MPL versions'
+    assert set(DAPKEYS).issubset(set(plot_defaults.keys())), \
+        'DAP default_plot_param versions must be up-to-date with MPL versions'
 
     return plot_defaults[dapver] if dapver in plot_defaults else {}
