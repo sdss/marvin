@@ -288,7 +288,7 @@ class MarvinConfig(object):
     def _checkConfig(self):
         ''' Check the config '''
         # set and sort the base MPL dictionary
-        mpldict = {'MPL-6': ('v2_3_1', '2.1'),
+        mpldict = {'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1'),
                    'MPL-3': ('v1_3_3', 'v1_0_0'),
