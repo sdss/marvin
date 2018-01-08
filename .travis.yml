@@ -1,3 +1,4 @@
+filter_secrets: false
 language: python
 
 cache:
