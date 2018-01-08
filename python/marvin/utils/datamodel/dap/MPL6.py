@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-09-13 16:05:56
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2017-11-14 19:11:99
 
 from __future__ import print_function, division, absolute_import
@@ -335,7 +335,7 @@ MPL6_models = [
 
 
 # MPL-6 DapDataModel goes here
-MPL6 = DAPDataModel('2.1', aliases=['MPL-6', 'MPL6'],
+MPL6 = DAPDataModel('2.1.3', aliases=['MPL-6', 'MPL6'],
                     bintypes=[ALL, NRE, VOR10, SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
