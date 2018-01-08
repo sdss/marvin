@@ -513,7 +513,8 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
         """Bundle Cube DRP3QUAL and Maps DAPQUAL flags."""
 
         drp3qual = self.datamodel.drp.bitmasks['MANGA_DRP3QUAL']
-        drp3qual.mask = int(self.cube.header['DRP3QUAL'])
+        cube = self.getCube()
+        drp3qual.mask = int(cube.header['DRP3QUAL'])
         qual_flags = [drp3qual]
 
         if self.release != 'MPL-4':

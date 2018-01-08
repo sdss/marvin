@@ -58,6 +58,8 @@ class TestSpaxel(object):
         bintype = galaxy.bintype.name
         template = galaxy.template.name
         release = galaxy.release
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
 
         cube, maps, modelcube = cube_maps_modelcube_modes
 
@@ -77,7 +79,7 @@ class TestSpaxel(object):
         if cube is False and maps is False and modelcube is False:
             pytest.skip()
 
-        spaxel = SpaxelBase(15, 15, plateifu=plateifu,
+        spaxel = SpaxelBase(x, y, plateifu=plateifu,
                             cube=cube, maps=maps, modelcube=modelcube,
                             template=template, bintype=bintype)
 
@@ -113,9 +115,12 @@ class TestSpaxel(object):
         if release != 'MPL-4':
             assert isinstance(spaxel.getModelCube(), ModelCube)
 
-    def test_dir(self):
+    def test_dir(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y, plateifu='8485-1901', cube=True,
                             maps=True, modelcube=True)
 
         dir_list = dir(spaxel)
@@ -124,9 +129,12 @@ class TestSpaxel(object):
         assert 'emline_gflux_ha_6564' in dir_list
         assert 'binned_flux' in dir_list
 
-    def test_getattr(self):
+    def test_getattr(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y, plateifu='8485-1901', cube=True,
                             maps=True, modelcube=True)
 
         assert spaxel.flux is not None
@@ -142,12 +150,15 @@ class TestSpaxel(object):
 
     def test_files_maps_modelcube(self, galaxy):
 
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
         if galaxy.release == 'MPL-4':
             modelcube_filename = None
         else:
             modelcube_filename = galaxy.modelpath
 
-        spaxel = SpaxelBase(15, 15,
+        spaxel = SpaxelBase(x, y,
                             cube=galaxy.cubepath,
                             maps=galaxy.mapspath,
                             modelcube=modelcube_filename)
@@ -162,12 +173,15 @@ class TestSpaxel(object):
 
     def test_files_modelcube(self, galaxy):
 
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
         if galaxy.release == 'MPL-4':
             pytest.skip()
         else:
             modelcube_filename = galaxy.modelpath
 
-        spaxel = SpaxelBase(15, 15,
+        spaxel = SpaxelBase(x, y,
                             cube=False,
                             maps=False,
                             modelcube=modelcube_filename)
@@ -182,7 +196,10 @@ class TestSpaxel(object):
 
     def test_files_maps(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y,
                             cube=False,
                             maps=galaxy.mapspath,
                             modelcube=False)
@@ -202,7 +219,7 @@ class TestBin(object):
             SpaxelBase(0, 0, plateifu='8485-1901', cube=True,
                        maps=True, modelcube=True, bintype='HYB10')
 
-        assert 'do not correspond to a valid binid' in str(ee)
+        assert 'do not correspond to a valid binid' in str(ee) or 'invalid bintype' in str(ee)
 
     def test_load_all(self):
 
@@ -307,15 +324,15 @@ class TestPickling(object):
 
 class TestMaskbit(object):
 
-    @marvin_test_if(mark='include', galaxy_spaxel=dict(release=['MPL-4']))
-    def test_quality_flags_mpl4(self, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_quality_flags_mpl4(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, model=True)
         assert len(sp.quality_flags) == 1
 
-    @marvin_test_if(mark='skip', galaxy_spaxel=dict(release=['MPL-4']))
-    def test_quality_flags(self, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    def test_quality_flags(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, model=True)
         assert len(sp.quality_flags) == 2
 
@@ -324,8 +341,8 @@ class TestMaskbit(object):
                               'manga_target2',
                               'manga_target3',
                               'target_flags'])
-    def test_flag(self, flag, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    def test_flag(self, flag, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps[0, 0]
         assert getattr(sp, flag, None) is not None
 
