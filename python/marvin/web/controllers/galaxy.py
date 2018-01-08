@@ -512,7 +512,7 @@ class Galaxy(BaseWebView):
             else:
                 # get the sample nsa parameters
                 try:
-                    nsacache = 'nsa_mpl5' if self._drpver == 'v2_0_1' else 'nsa_mpl4' if self._drpver == 'v1_5_1' else None
+                    nsacache = 'nsa_{0}'.format(self._release.lower().replace('-', ''))
                     nsadict = get_nsa_dict(nsacache, self._drpver)
                 except Exception as e:
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}

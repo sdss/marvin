@@ -16,6 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
 from marvin.core import caching_query
+from marvin import config
 from hashlib import md5
 from dogpile.cache.region import make_region
 import os
@@ -71,8 +72,14 @@ regions['default'] = make_region(
             # "filename": os.path.join(dogroot, "cache.dbm") # file option
         }
     )
-regions['nsa_mpl5'] = make_nsa_region('nsa_mpl5')
-regions['nsa_mpl4'] = make_nsa_region('nsa_mpl4')
+
+for mpl in config._mpldict.keys():
+    nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
+    regions[nsacache] = make_nsa_region(nsacache)
+
+#regions['nsa_mpl5'] = make_nsa_region('nsa_mpl5')
+#regions['nsa_mpl4'] = make_nsa_region('nsa_mpl4')
+#regions['nsa_mpl6'] = make_nsa_region('nsa_mpl6')
 
 
 def clearSearchPathCallback(dbapi_con, connection_record):
