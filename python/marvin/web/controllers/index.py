@@ -45,6 +45,20 @@ class Marvin(BaseWebView):
     def test(self):
         return 'new test'
 
+    @route('/versions/')
+    def get_versions(self):
+        vers = {'sess_vers': current_session['versions'], 'config_vers': config._mpldict.keys()}
+        return jsonify(result=vers)
+
+    @route('/session/')
+    def get_session(self):
+        return jsonify(result=dict(current_session))
+
+    @route('/clear/')
+    def clear_session(self):
+        current_session.clear()
+        return jsonify(result=dict(current_session))
+
     def database(self):
         onecube = marvindb.session.query(marvindb.datadb.Cube).order_by(marvindb.datadb.Cube.pk).first()
         return jsonify(result={'plate': onecube.plate, 'status': 1})
