@@ -51,6 +51,27 @@ class Plate(MarvinToolsClass, FuzzyList):
             The MPL/DR version of the data to use.
         nocubes (bool):
             Set this to turn off the Cube loading
+
+    Attributes:
+        cubeXXXX (object):
+            The Marvin Cube object for the given ifu, e.g. cube1901 refers to the Cube for plateifu 8485-1901
+        plate/plateid (int):
+            The plate id for this plate
+        cartid (str):
+            The cart id for this plate
+        designid (int):
+            The design id for this plate
+        ra (float):
+            The RA of the plate center
+        dec (float):
+            The declination of the plate center
+        dateobs (str):
+            The date of observation for this plate
+        surveymode (str):
+            The survey mode for this plate
+        isbright (bool):
+            True if this is a bright time plate
+
     Return:
         plate:
             An object representing the Plate entity. The object is a list of
