@@ -15,7 +15,7 @@ from collections import OrderedDict
 from distutils.version import StrictVersion
 
 # Set the Marvin version
-__version__ = '2.1.5dev'
+__version__ = '2.2.0dev'
 # try:
 #     from marvin.version import get_version
 # except ImportError as e:

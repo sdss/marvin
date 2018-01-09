@@ -85,7 +85,7 @@ def remove_args(parser):
 
 NAME = 'sdss-marvin'
 # do not use x.x.x-dev.  things complain.  instead use x.x.xdev
-VERSION = '2.1.5dev'
+VERSION = '2.2.0dev'
 RELEASE = 'dev' not in VERSION
 
 
