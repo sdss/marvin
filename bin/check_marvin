@@ -70,7 +70,7 @@ else:
     print('Marvin version: {0}'.format(marvin.__version__))
     marvinmap = True if marvin.config.urlmap else False
     print('Does Marvin have a URLMap for API use? {0}'.format(marvinmap))
-    print('DB connected?', marvin.marvindb.isdbconnected)
+    print('DB connected?', marvin.marvindb.isdbconnected. marvin.config.db)
     print('DB models?', marvin.marvindb.has_models())
 
     # check for paths
