@@ -254,6 +254,7 @@ CREATE INDEX CONCURRENTLY mc_pk_idx ON mangadapdb.modelspaxel using BTREE(modelc
 CREATE INDEX CONCURRENTLY ms_x_idx ON mangadapdb.modelspaxel using BTREE(x);
 CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 
+CREATE INDEX CONCURRENTLY dapall_file_pk_idx ON mangadapdb.dapall using BTREE(file_pk);
 
 # CleanSpaxelProp after the initial load of SpaxelProp.  Run these only after populating the spaxeprop tables with
 # the new columns and data for each MPL.
