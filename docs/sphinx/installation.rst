@@ -224,7 +224,7 @@ Installation on Windows
 
 Marvin was originally designed to work on Mac or Linux operating systems. However it is possible at the moment to get Marvin working on Windows machines. The following guidelines have been tested on a Windows 10 machine running Python 3.6.
 
-* Install a `Python version for Windows <https://www.python.org/downloads/windows/>`_.  Make sure to check the box to include Python in your environment variable Paths.
+* Install a `Python version for Windows <https://www.python.org/downloads/windows/>`_.  Make sure to check the box to include Python in your environment variable Paths.  If you are using `Anaconda <https://conda.io/docs/user-guide/install/windows.html>`_ to install Python, make sure to check both the "Add Anaconda to my PATH environment variable" and "Register Anaconda as my default Python 3.6"
 * Marvin expects a HOME directory.  Add this snippet of code before any of use of Marvin.
 
 ::
@@ -233,7 +233,13 @@ Marvin was originally designed to work on Mac or Linux operating systems. Howeve
     os.environ['HOME'] = '/path/you/want/as/marvin/home/directory'
     os.environ['SAS_BASE_DIR'] = os.path.join(os.getenv("HOME"), 'sas')
 
-* Create the `.netrc` file and place it the directory you designated as `HOME`.  You will need to modify the permissons of this file to match the expected `chmod 600` permissions for Mac/Linux users.
+To add a permanent `HOME` path, follow these instructions.
+    * open File Explorer, right click "This PC" on the left scroll bar and click Properties
+    * on the left, click 'Advanced System Settings'.  You need Admin Privileges to do this.
+    * on the bottom, there should be an 'Environment Variables' box.  Below the User Variables column, click New.
+    * add a new HOME environment variable that points to /path/you/want/as/marvin/home/directory.
+
+* Create the `.netrc` file and place it the directory you designated as `HOME`.  You will need to modify the permissons of this file to match the expected `chmod 600` permissions for Mac/Linux users.  When creating the file, you can name it as anything but can rename it to `.netrc` from the command prompt.
 
 With this, you should be able to run Marvin in windows.  You can test it with `import marvin`.  Currently, Marvin cannot download files due to issues with forward slashes in `sdss-access` but this will be fixed soon.  We will continue to update these guidelines as we make further progress on a Windows-Marvin installation.
 

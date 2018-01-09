@@ -99,7 +99,7 @@ before_script:
 - $TRAVIS_BUILD_DIR/bin/run_marvin -l -d -p $LOCAL_MARVIN_PORT &
 - sleep 20
 # Various checks to ensure things properly start up
-- sh -e $TRAVIS_BUILD_DIR/bin/check_marvin
+- $TRAVIS_BUILD_DIR/bin/check_marvin
 #- lsof -Pnl +M -i4
 #- echo $MANGA_LOCALHOST
 #- curl http://localhost:$LOCAL_MARVIN_PORT/marvin2/api/general/getroutemap/
