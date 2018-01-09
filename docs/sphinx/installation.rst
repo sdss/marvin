@@ -239,7 +239,7 @@ To add a permanent `HOME` path, follow these instructions.
     * on the bottom, there should be an 'Environment Variables' box.  Below the User Variables column, click New.
     * add a new HOME environment variable that points to /path/you/want/as/marvin/home/directory.
 
-* Create the `.netrc` file and place it the directory you designated as `HOME`.  You will need to modify the permissons of this file to match the expected `chmod 600` permissions for Mac/Linux users.  When creating the file, you can name it as anything but can rename it to `.netrc` from the command prompt.
+* Create the ``.netrc`` file and place it the directory you designated as `HOME`.  You will need to modify the permissons of this file to match the expected `chmod 600` permissions for Mac/Linux users.  When creating the file, you can name it as anything but can rename it to ``.netrc`` from the command prompt.
 
 With this, you should be able to run Marvin in windows.  You can test it with `import marvin`.  Currently, Marvin cannot download files due to issues with forward slashes in `sdss-access` but this will be fixed soon.  We will continue to update these guidelines as we make further progress on a Windows-Marvin installation.
 
