@@ -41,12 +41,12 @@ rsync_access = add_data(rsync_access, release='MPL-6', plate='8485', ifu='1901')
 rsync_access = add_data(rsync_access, release='MPL-6', plate='7443', ifu='12701')
 
 # MPL-5
-rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901')
-rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangadap5'])
+#rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901')
+#rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangadap5'])
 
 # MPL-4
-rsync_access = add_data(rsync_access, release='MPL-4', plate='8485', ifu='1901')
-rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangamap', 'mangadefault'])
+#rsync_access = add_data(rsync_access, release='MPL-4', plate='8485', ifu='1901')
+#rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangamap', 'mangadefault'])
 
 # Download
 rsync_access.set_stream()
