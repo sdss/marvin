@@ -24,3 +24,5 @@ raven>=5.32.0
 dogpile.cache>=0.6.2
 
 future>=0.16.0
+sphinx_bootstrap_theme>=0.4.12
+sphinxcontrib-httpdomain>=1.5.0
