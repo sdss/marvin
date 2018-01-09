@@ -101,7 +101,7 @@ before_script:
 # Various checks to ensure things properly start up
 - $TRAVIS_BUILD_DIR/bin/check_marvin
 #- lsof -Pnl +M -i4
-#- echo $MANGA_LOCALHOST
+- echo $MANGA_LOCALHOST
 #- curl http://localhost:$LOCAL_MARVIN_PORT/marvin2/api/general/getroutemap/
 #- python -c "from marvin import config, marvindb; print(config.db, marvindb.db); from brain.utils.general.general import getDbMachine; print(getDbMachine()); import marvin.db.models.DataModelClasses as datadb;"
 #- python -c "from matplotlib import pyplot as plt;"
