@@ -88,6 +88,16 @@ class MarvinDB(object):
             self.dapdb = dapdb
             self.spaxelpropdict = self._setSpaxelPropDict()
 
+    def has_models(self):
+        ''' check if the marvin db has all the models properly loaded '''
+        isdata = self.datadb is not None
+        isdap = self.dapdb is not None
+        issample = self.sampledb is not None
+        log.info('datadb? {0}'.format(isdata))
+        log.info('dapdb? {0}'.format(isdap))
+        log.info('sampledb? {0}'.format(issample))
+        return all([isdata, isdap, issample])
+
     def _setSpaxelPropDict(self):
         ''' Set the SpaxelProp lookup dictionary '''
         newmpls = [m for m in config._mpldict.keys() if m > 'MPL-4']
