@@ -113,6 +113,9 @@ query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_
 @pytest.fixture(scope='session', params=releases)
 def release(request):
     """Yield a release."""
+    if travis and release not in travis.new_releases:
+        pytest.skip('Skipping non-requested release')
+
     return request.param
 
 
@@ -566,9 +569,9 @@ dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
 origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
 
 
-@pytest.fixture(scope='class', params=releases)
-def maps_release_only(request):
-    return Maps(plateifu='8485-1901', release=request.param)
+@pytest.fixture(scope='class')
+def maps_release_only(release):
+    return Maps(plateifu='8485-1901', release=release)
 
 
 @pytest.fixture(scope='function')

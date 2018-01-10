@@ -27,6 +27,9 @@ from marvin.core.exceptions import MarvinDeprecationWarning
 
 @pytest.fixture()
 def maps(galaxy, mode):
+    if galaxy.bintype.name != 'SPX':
+        pytest.skip('Only running one bintype for bpt tests')
+
     maps = Maps(plateifu=galaxy.plateifu, mode=mode)
     maps.bptsums = galaxy.bptsums if hasattr(galaxy, 'bptsums') else None
     yield maps
@@ -89,10 +92,8 @@ class TestBPT(object):
             assert mech in masks.keys()
             assert np.sum(masks[mech]['global']) == maps.bptsums['snrmin5'][mech]
 
-    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
-    def test_bind_to_figure(self, plateifu, mpl):
+    def test_bind_to_figure(self, maps):
 
-        maps = Maps(plateifu=plateifu, release=mpl)
         __, __, axes = maps.get_bpt(show_plot=False, return_figure=True)
 
         assert len(axes) == 4
@@ -102,10 +103,10 @@ class TestBPT(object):
             assert isinstance(new_fig, plt.Figure)
             assert new_fig.axes[0].get_ylabel() != ''
 
-    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
-    def test_kewley_snr_warning(self, plateifu, mpl):
+    #@pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
+    def test_kewley_snr_warning(self, maps):
 
-        maps = Maps(plateifu=plateifu, release=mpl)
+        #maps = Maps(plateifu=plateifu, release=mpl)
 
         with pytest.warns(MarvinDeprecationWarning) as record:
             bpt_kewley06(maps, snr=1, return_figure=False)
@@ -114,10 +115,7 @@ class TestBPT(object):
         assert record[0].message.args[0] == ('snr is deprecated. Use snr_min instead. '
                                              'snr will be removed in a future version of marvin')
 
-    @pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
-    def test_wrong_kw(self, plateifu, mpl):
-
-        maps = Maps(plateifu=plateifu, release=mpl)
+    def test_wrong_kw(self, maps):
 
         with pytest.raises(MarvinError) as error:
             maps.get_bpt(snr=5, return_figure=False, show_plot=False, extra_keyword='hola')
