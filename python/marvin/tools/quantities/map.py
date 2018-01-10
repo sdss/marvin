@@ -26,7 +26,6 @@ import marvin
 import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
-import marvin.tools.maps
 from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 import marvin.utils.plot.map

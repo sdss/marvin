@@ -279,9 +279,7 @@ class TestPickling(object):
         assert spaxel_restored._maps.data_origin == 'file'
         assert isinstance(spaxel_restored._maps.data, astropy.io.fits.HDUList)
 
-    #@pytest.mark.parametrize('mpl', ['MPL-5'])
     def test_pickling_all_api(self, temp_scratch, galaxy):
-        #monkeypatch.setattr(config, 'release', mpl)
         drpver, __ = config.lookUpVersions()
 
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
@@ -417,7 +415,6 @@ class TestCubeGetSpaxel(object):
                              [('release', 'MPL-5')],
                              ids=['mpl5'], indirect=True)
     def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
-        #config.setMPL('MPL-5')
         if galaxy.release == 'MPL-5':
             pytest.skip('Skipping release for forced global MPL-5')
 
