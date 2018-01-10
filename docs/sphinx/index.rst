@@ -58,7 +58,7 @@ Components
   * :doc:`core/config`
   * :doc:`core/data-access-modes`
   * :doc:`core/downloads`
-  * :doc:`api/quantities`
+  * :doc:`tools/quantities`
 
 * :doc:`tools`
 
@@ -74,6 +74,9 @@ Components
   * :doc:`tools/map`
 
     * :doc:`tools/enhanced-map`
+
+  * :doc:`tools/spaxel`
+  * :doc:`tools/bin`
 
   * :doc:`utils`
 
@@ -117,6 +120,7 @@ API/Code Reference
    api/general
    api/api
    api/tools
+   api/quantities
    api/queries
    api/utils
    api/web

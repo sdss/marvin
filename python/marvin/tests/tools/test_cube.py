@@ -79,10 +79,14 @@ class TestCube(object):
                              ids=['mpl5'], indirect=True)
     def test_cube_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
 
+        if galaxy.release == 'MPL-5':
+            pytest.skip('Skipping release for forced global MPL-5')
+
+        drpver, dapver = config.lookUpVersions(config.release)
         assert config.release == 'MPL-5'
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
-        assert cube._drpver == 'v1_5_1'
-        assert cube.header['VERSDRP3'].strip() == 'v1_5_0'
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release=galaxy.release)
+        assert cube.release != config.release
+        assert cube._drpver != drpver
 
     def test_cube_redshift(self, cube, galaxy):
         assert cube.data_origin == cube.exporigin
