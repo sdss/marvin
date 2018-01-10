@@ -56,7 +56,7 @@ class TestCube(object):
             Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
 
-    # @pytest.mark.slow
+    @pytest.mark.slow
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901'})
     def test_cube_quantities(self, cube):
 
