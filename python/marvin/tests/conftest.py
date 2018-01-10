@@ -23,6 +23,9 @@ from marvin.utils.datamodel.dap import datamodel
 from sdss_access.path import Path
 
 import yaml
+import warnings
+
+warnings.simplefilter('always')
 
 
 # PYTEST MODIFIERS
@@ -432,13 +435,15 @@ class Galaxy(object):
             setattr(self, key, releasedata[key])
 
         # remap NSA drpall names for MPL-4 vs 5+
+        drpcopy = self.nsa_data['drpall'].copy()
         for key, val in self.nsa_data['drpall'].items():
             if isinstance(val, list):
-                newval, newkey = self.nsa_data['drpall'].pop(key)
+                newval, newkey = drpcopy.pop(key)
                 if self.release == 'MPL-4':
-                    self.nsa_data['drpall'][newkey] = newval
+                    drpcopy[newkey] = newval
                 else:
-                    self.nsa_data['drpall'][key] = newval
+                    drpcopy[key] = newval
+        self.nsa_data['drpall'] = drpcopy
 
     def set_params(self, bintype=None, template=None, release=None):
         """Set bintype, template, etc."""

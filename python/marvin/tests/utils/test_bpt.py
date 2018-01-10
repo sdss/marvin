@@ -30,13 +30,16 @@ def maps(galaxy, mode):
     if galaxy.bintype.name != 'SPX':
         pytest.skip('Only running one bintype for bpt tests')
 
+    # if galaxy.release != 'MPL-6':
+    #     pytest.skip('Explicitly skipping here since marvin_test_if_class does not work in 2.7')
+
     maps = Maps(plateifu=galaxy.plateifu, mode=mode)
     maps.bptsums = galaxy.bptsums if hasattr(galaxy, 'bptsums') else None
     yield maps
     maps = None
 
 
-@marvin_test_if_class(mark='skip', maps=dict(release=['MPL-4']))
+@marvin_test_if_class(mark='skip', maps=dict(release=['MPL-4', 'MPL-5']))
 class TestBPT(object):
 
     mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
@@ -103,10 +106,7 @@ class TestBPT(object):
             assert isinstance(new_fig, plt.Figure)
             assert new_fig.axes[0].get_ylabel() != ''
 
-    #@pytest.mark.parametrize('plateifu, mpl', [('8485-1901', 'MPL-5')], ids=['8485-1901-MPL-5'])
     def test_kewley_snr_warning(self, maps):
-
-        #maps = Maps(plateifu=plateifu, release=mpl)
 
         with pytest.warns(MarvinDeprecationWarning) as record:
             bpt_kewley06(maps, snr=1, return_figure=False)
