@@ -547,7 +547,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
     def pixmask(self):
         """Return the DRP3PIXMASK flag."""
         pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
-        pixmask.mask = getattr(self, 'mask', None)
+        pixmask.mask = getattr(self.flux, 'mask', None)
         return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
