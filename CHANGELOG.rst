@@ -17,6 +17,7 @@ Added
 -  Integrated scatter and histogram plotting into query Results
 -  New methods for easier query Results handling
 -  New Pythonic DRP, DAP, and Query DataModels
+-  Access to DAPall data
 
 Changed
 ~~~~~~~

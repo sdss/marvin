@@ -10,6 +10,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 * Cubes, Maps, and ModelCubes now use Astropy Quantities, i.e. encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance)
 * Improved Bin class
 * Fuzzy Searching and Tab Completion
+* New access to DAPall data
 * :ref:`Scatter <marvin-utils-plot-scatter>` and :ref:`Histogram <marvin-utils-plot-hist>` Plotting
 * Improved Query :ref:`Results <marvin-results>` Handling and Integrated :ref:`Plotting <marvin-results_plot>`
 * New :ref:`MaskBit <marvin-utils-maskbit>` class

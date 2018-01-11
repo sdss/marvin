@@ -599,7 +599,7 @@ class Bin(SpaxelBase):
         y_centre = int(self.y - y_mid)
 
         return ('<Marvin Bin (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
-                'x_cen={1:d}, y_cen={2:d})>'.format(self, x_centre, y_centre))
+                'x_cen={1:d}, y_cen={2:d}, n_spaxels={3})>'.format(self, x_centre, y_centre, len(self.spaxels)))
 
     def _create_spaxels(self):
         """Returns a list of the unbinned spaxels associated with this bin."""

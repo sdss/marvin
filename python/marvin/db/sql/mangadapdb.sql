@@ -308,3 +308,12 @@ CREATE INDEX CONCURRENTLY dapall_file_pk_idx ON mangadapdb.dapall using BTREE(fi
 -- CREATE INDEX CONCURRENTLY clean_emline6_gflux_nii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_nii_6585);
 -- CREATE INDEX CONCURRENTLY clean_stvel6_idx ON mangadapdb.cleanspaxelprop6 using BTREE(stellar_vel);
 -- CREATE INDEX CONCURRENTLY clean_d40006_idx ON mangadapdb.cleanspaxelprop6 using BTREE(specindex_d4000);
+
+-- CREATE INDEX CONCURRENTLY clean_stsig6_idx ON mangadapdb.cleanspaxelprop6 using BTREE(stellar_sigma);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_ha_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_ha_6564);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_hb_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_hb_4862);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_oiii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_oiii_5008);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_sii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_sii_6718);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_oii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_oiid_3728);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_nii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_nii_6585);
+

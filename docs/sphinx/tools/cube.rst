@@ -109,7 +109,7 @@ However you can also initialize a `Cube` without the keyword argument and Marvin
 Basic Attributes
 ^^^^^^^^^^^^^^^^
 
-`Cubes` come with some basic attributes attached, like the full header (as an Astropy Header object), cube RA and Dec, and the NSA catalog information (as a dictionary).
+`Cubes` come with some basic attributes attached, like the full header (as an Astropy Header object), cube RA and Dec, the WCS info (as an Astropy WCS object), and the NSA catalog information (as a dictionary).
 ::
 
     # access the header
@@ -257,6 +257,8 @@ DataCubes and Spectra behave as quantities, so may have available `wavelength`, 
             [1027, 1027, 1027, ..., 1027, 1027, 1027],
             [1027, 1027, 1027, ..., 1027, 1027, 1027],
             ...
+
+.. _marvin-cube-extract:
 
 Extracting a Spaxel
 ^^^^^^^^^^^^^^^^^^^
