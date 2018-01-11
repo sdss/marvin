@@ -10,6 +10,8 @@ From your terminal, type ipython.  Ipython is an Interactive Python shell termin
 
     > ipython
 
+To jump right in, try the :ref:`marvin-lean-tutorial`.
+
 This page explains how to do the following:
 
 * :ref:`marvin-getstart_accessremote`

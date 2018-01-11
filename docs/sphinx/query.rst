@@ -91,6 +91,10 @@ Using Query
 Reference/API
 ^^^^^^^^^^^^^
 
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.query.Query
+
 .. rubric:: Class
 
 .. autosummary:: marvin.tools.query.Query

@@ -3,37 +3,332 @@
 Cube
 ====
 
-:ref:`marvin-tools-cube` is a class to interact with a fully reduced DRP data cube for a galaxy. First specify the galaxy that you want by creating a :ref:`marvin-tools-cube` object. If you have the DRP cube file on your machine and in the expected directory (see :ref:`marvin-sasdir`), then you're good to go! If not, don't worry because Marvin will simply retrieve the data from the :ref:`marvin-databases` at Utah. Let's grab a cube and plot the spectrum of its central spaxel.
+:ref:`marvin-tools-cube` is a class to interact with a fully reduced DRP data cube for a galaxy.
 
+.. _marvin-cube_getstart:
 
-.. If remote, fetches data on request: getSpaxel()
-   getWavelength doesn't work via API
-   AttributeError: 'Cube' object has no attribute '_useDB'
+Getting Started
+---------------
+
+To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or **filename** as input.  Marvin will attempt to open the file locally from a file, a database, or remotely over the API.
 
 ::
 
     from marvin.tools.cube import Cube
     cube = Cube(mangaid='1-209232')
-    cube[17, 17].spectrum.plot()
+
+    print(cube)
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
+
+You can quickly grab a spaxel by slicing the `Cube` like an array.
+::
+
+    # grab the central spaxel
+    spax_cen = cube[17, 17]
+    print(spax_cen)
+    <Marvin Spaxel (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0)>
+
+The `flux` is available as an attribute.  It is represented as a Marvin Spectrum, which is a Quantity.  To quickly plot the flux, use the `plot` method on the `flux`.
+::
+
+    # look at the flux
+    spax_cen.flux
+    <Spectrum [ 0.54676276, 0.46566465, 0.4622981 ,...,  0.        ,
+                0.        , 0.        ] 1e-17 erg / (Angstrom cm2 s spaxel)>
+
+    # plot the flux
+    spax_cen.flux.plot()
 
 .. image:: ../_static/spec_8485-1901_17-17.png
 
-
-Here ``cube[i, j]`` is a shorthand for ``cube.getSpaxel(x=j, y=i, xyorig='lower')``. This returns a :ref:`marvin-tools-spaxel` object. We then use the ``spectrum`` attribute of the :ref:`marvin-tools-spaxel` object to get a :ref:`marvin-tools-spectrum` object that has a ``plot`` method to show the spectrum.
-
-If we want the model spectrum, we must explicitly ask for it by setting ``modelcube=True`` when we initialize the :ref:`marvin-tools-spaxel` object.
+The `Cube` data quality and targeting flags are available as the `quality_flag` and `target_flags` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.  A **good** quality `Cube` has an empty (0) bit list.
 
 ::
 
-        spax = cube.getSpaxel(x=17, y=17, xyorig='lower', modelcube=True)
-        spax.model.plot()
+    # check the quality and bits
+    cube.quality_flag
+    <Maskbit 'MANGA_DRP3QUAL' []>
 
-.. image:: ../_static/modelspec_8485-1901_17-17.png
+    cube.quality_flag.bits
+    []
 
-Then we just access the model spectrum with the ``model`` attribute, which returns a :ref:`marvin-tools-spectrum` object, and call its ``plot`` method again.
+    # check the targeting flags
+    cube.target_flags
+    [<Maskbit 'MANGA_TARGET1' ['SECONDARY_v1_1_0', 'SECONDARY_COM2', 'SECONDARY_v1_2_0']>,
+     <Maskbit 'MANGA_TARGET2' []>,
+     <Maskbit 'MANGA_TARGET3' []>]
 
+The NSA catalog information is accessible via the `nsa` attribute.  It is a dictionary of the all the NSA parameters available for this target.  Use `nsa.keys()` to see all of the available parameters.
+::
 
+    # grab the NSA redshift
+    cube.nsa['z']
+    0.0407447
 
-If all of this jumping between Marvin objects is making your head spin, please consult this handy diagram: :ref:`visual-guide`.
+    # and the stellar mass in log units
+    cube.nsa['sersic_logmass']
+    9.629350465781462
+
+You can quickly navigate to the DAP MAPS using the `getMaps` method.  See the :ref:`Maps <marvin-maps>` reference on how to use a Marvin `Maps` object.
+::
+
+    # grab the unbinned maps object
+    maps = cube.getMaps()
+    print(maps)
+    <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='SPX', template='GAU-MILESHC')>
+
+.. _marvin-cube-using:
+
+Using Cube
+----------
+
+Initializing a Cube
+^^^^^^^^^^^^^^^^^^^
+
+A `Cube` can be initialized in several ways, by **filename**, in which case it will always be in `local` mode.
+::
+
+    cube = Cube(filename='/Users/Brian/Work/Manga/redux/v2_3_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz')
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
+
+by **plateifu** or **mangaid**, in which case it attempts to find a local database, otherwise will open it in `remote` mode.
+::
+
+    cube = Cube(plateifu='8485-1901')
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
+
+    cube = Cube(mangaid='1-209232')
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
+
+However you can also initialize a `Cube` without the keyword argument and Marvin will attempt to figure out what input you mean.
+::
+
+    cube = Cube('8485-1901')
+    <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
+
+Basic Attributes
+^^^^^^^^^^^^^^^^
+
+`Cubes` come with some basic attributes attached, like the full header (as an Astropy Header object), cube RA and Dec, and the NSA catalog information (as a dictionary).
+::
+
+    # access the header
+    cube.header
+
+    CHECKSUM= 'HLO1KLM1HLM1HLM1'   / HDU checksum updated 2017-10-17T06:02:42
+    DATASUM = '3722061489'         / data unit checksum updated 2017-10-17T06:02:42
+    EXTNAME = 'FLUX    '
+    QUALDATA= 'MASK    '           / Mask extension name
+    ERRDATA = 'IVAR    '           / Error extension name
+    HDUCLAS2= 'DATA    '
+    HDUCLAS1= 'CUBE    '
+    HDUCLASS= 'SDSS    '           / SDSS format class
+    CUNIT2  = 'deg     '
+    CUNIT1  = 'deg     '
+    CTYPE2  = 'DEC--TAN'
+    CTYPE1  = 'RA---TAN'
+    ...
+
+    # the cube RA and Dec (the OBJRA and OBJDEC)
+    cube.ra, cube.dec
+    (232.544703894, 48.6902009334)
+
+    # the NSA catalog information
+    cube.nsa['z']
+    0.0407447
+
+    c.nsa['elpetro_ba']
+    0.87454
+
+The `Cube` data quality and targeting flags are available as the `quality_flag` and `target_flags` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.  A **good** quality `Cube` has an empty (0) bit list.
+
+::
+
+    # check the quality and bits
+    cube.quality_flag
+    <Maskbit 'MANGA_DRP3QUAL' []>
+
+    cube.quality_flag.bits
+    []
+
+    # check the targeting flags
+    cube.target_flags
+    [<Maskbit 'MANGA_TARGET1' ['SECONDARY_v1_1_0', 'SECONDARY_COM2', 'SECONDARY_v1_2_0']>,
+     <Maskbit 'MANGA_TARGET2' []>,
+     <Maskbit 'MANGA_TARGET3' []>]
+
+You can manipulate the `Cube` pixel mask using the `pixmask` attribute.
+::
+
+    cube.pixmask
+    <Maskbit 'MANGA_DRP3PIXMASK' shape=(4563, 34, 34)>
+
+The DataModel
+^^^^^^^^^^^^^
+
+The :ref:`DRP datamodel <marvin-datamodels>` is attached to `Cube` as the `datamodel` attribute.  The datamodel describes the contents of the MaNGA DRP Cube, for a given release.
+::
+
+    cube.datamodel
+    <DRPDataModel release='MPL-6', n_datacubes=3, n_spectra=2>>
+
+The DRP datamodel contains both 1-d (Spectra) and 3-d (DataCubes) representations of the data within a DRP Cube.
+::
+
+    # see the available Datacubes
+    cube.datamodel.datacubes
+    [<DataCube 'flux', release='MPL-6', unit=u'1e-17 erg / (Angstrom cm2 s spaxel)'>,
+     <DataCube 'dispersion', release='MPL-6', unit=u'Angstrom'>,
+     <DataCube 'dispersion_prepixel', release='MPL-6', unit=u'Angstrom'>]
+
+     # see the available Spectra
+    [<Spectrum 'spectral_resolution', release='MPL-6', unit=u'Angstrom'>,
+     <Spectrum 'spectral_resolution_prepixel', release='MPL-6', unit=u'Angstrom'>]
+
+DataCubes and Spectra
+^^^^^^^^^^^^^^^^^^^^^
+
+The datamodel provides `DataCubes` and `Spectra` objects for each target for a given release.  These objects are :ref:`marvin-quantities`.  For example, in MPL-6, there are three available `DataCubes`, the `flux`, `dispersion`, and `dispersion_prepixel`, and two `Spectra`, the `spectral_resolution` and `spectral_resolution_prepixel`.
+::
+
+    # access the cube flux
+    cube.flux
+    <DataCube [[[ 0., 0., 0.,...,  0., 0., 0.],
+                [ 0., 0., 0.,...,  0., 0., 0.],
+                [ 0., 0., 0.,...,  0., 0., 0.],
+                ...,
+                [ 0., 0., 0.,...,  0., 0., 0.],
+                [ 0., 0., 0.,...,  0., 0., 0.],
+                [ 0., 0., 0.,...,  0., 0., 0.]]] 1e-17 erg / (Angstrom cm2 s spaxel)>
+
+    type(cube.flux)
+    marvin.tools.quantities.datacube.DataCube
+
+You can always get back the numpy array values using the `value` attribute.
+::
+
+    # retrieve the underlying data
+    cube.flux.value
+    array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            ...,
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            ...
+
+DataCubes and Spectra behave as quantities, so may have available `wavelength`, `ivar` and `mask` attached.
+::
+
+    # get the wavelength
+    cube.flux.wavelength
+    <Quantity [  3621.6 ,  3622.43,  3623.26,...,  10349.  , 10351.4 , 10353.8 ] Angstrom>
+
+    # get the flux ivar and mask
+    cube.flux.ivar
+    array([[[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            ...,
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+            ...
+
+    cube.flux.mask
+    array([[[1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            ...,
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027]],
+
+           [[1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            [1027, 1027, 1027, ..., 1027, 1027, 1027],
+            ...
+
+Extracting a Spaxel
+^^^^^^^^^^^^^^^^^^^
+
+From a `Cube` you can access Marvin objects related to this particular target.  To access a :ref:`Spaxel <marvin-tools-spaxel>`, you can slice like an array
+::
+
+    # slice a cube by i, j
+    spaxel = cube[17, 17]
+    <Marvin Spaxel (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0)>
+
+When slicing a `Cube`, the xy origin is always the lower left corner of the array, `xyorig="lower"`.  Remember Numpy arrays are in row-major.  You can also use the `getSpaxel` method, which provides addionional keyword options.  The ``cube[i, j]`` is a shorthand for ``cube.getSpaxel(x=j, y=i, xyorig='lower')``.
+::
+
+    # get the central spaxel
+    spaxel = cube.getSpaxel(x=17, y=17, xyorig='lower')
+    <Marvin Spaxel (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0)>
+
+By default, the xy origin in `getSpaxel` is the center of the `Cube`, `xyorig="center"`.
+::
+
+    spaxel = cube.getSpaxel(x=1, y=1)
+    <Marvin Spaxel (plateifu=8485-1901, x=18, y=18; x_cen=1, y_cen=1)>
+
+Accessing Maps
+^^^^^^^^^^^^^^
+
+`Maps` are also available from the `Cube` object, using the `getMaps` method.  By default, this grabs the unbinned **SPX** maps.
+::
+
+    # grab the Marvin Maps object
+    cube.getMaps()
+    <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='SPX', template='GAU-MILESHC')>
+
+Saving and Restoring
+^^^^^^^^^^^^^^^^^^^^
+
+You can save a `Cube` locally as a Python pickle object, using the `save` method.
+
+::
+
+    cube.save('mycube.mpf')
+
+as well as restore a Cube pickle object using the `restore` class method
+
+::
+
+    from marvin.tools.cube import Cube
+
+    cube = Cube.restore('mycube.mpf')
+
+.. _marvin-cube-api:
+
+Reference/API
+-------------
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.cube.Cube
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.cube.Cube
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.cube.Cube.getMaps
+    marvin.tools.cube.Cube.getSpaxel
+    marvin.tools.cube.Cube.download
+    marvin.tools.cube.Cube.save
+    marvin.tools.cube.Cube.restore
 
 |

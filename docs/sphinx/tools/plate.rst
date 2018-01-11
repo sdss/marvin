@@ -47,7 +47,7 @@ or, alternatively, the `cubeXXXX` attributes.  Each `Plate` maps its cubes onto 
     plate.cube12701
     <Marvin Cube (plateifu='8485-12701', mode='local', data_origin='db')>
 
-.. _marvin-plate-using
+.. _marvin-plate-using:
 
 Using Plate
 -----------
@@ -138,10 +138,14 @@ as well as restore a Plate pickle object using the `restore` class method
 
     plate = Plate.restore('myplate.mpf')
 
-.. _marvin-plate-api
+.. _marvin-plate-api:
 
 Reference/API
 -------------
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.plate.Plate
 
 .. rubric:: Class
 

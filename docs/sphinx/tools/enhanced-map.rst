@@ -23,7 +23,7 @@ We can create an :mod:`~marvin.tools.quantities.EnhancedMap` object by applying 
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
     nii = maps['emline_gflux_nii_6585']
-    
+
     # All are EnhancedMap's.
     sum_ = nii + ha
     diff = nii - ha
@@ -48,13 +48,13 @@ Map Arithmetic
 
     ha = maps['emline_gflux_ha_6564']
     nii = maps['emline_gflux_nii_6585']
-    
+
     sum_ = nii + ha
     diff = nii - ha
     prod = nii * ha
     quot = nii / ha
     pow_ = ha**0.5
-    
+
     prod
     # <Marvin EnhancedMap '(emline_gflux_nii_6585 * emline_gflux_ha_6564)'>
     # array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
@@ -95,6 +95,10 @@ In addition to performing the arithmetic operation on the ``value``, the resulti
 
 Reference/API
 -------------
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.quantities.EnhancedMap
 
 .. rubric:: Class
 

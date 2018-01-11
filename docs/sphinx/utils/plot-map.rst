@@ -97,7 +97,7 @@ For more in-depth discussion of using :mod:`~marvin.utils.plot.map`, please see 
 Plotting Tutorial
 `````````````````
 
-* :doc:`../tutorials/plotting`
+* :ref:`marvin-plotting-tutorial`
 
   * :ref:`marvin-plotting-quick-map`
   * :ref:`marvin-plotting-multipanel-single`

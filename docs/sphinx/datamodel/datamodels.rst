@@ -9,7 +9,7 @@ Marvin contains datamodels for each of the releases of MaNGA dataset.  The links
 
 * **DRP** datamodel: describes the output of the MaNGA Data Reduction Pipeline.
 * **DAP** datamodel: describes the output of the MaNGA Data Analysis Pipeline.
-* **Query** datamodel: describes all of the available parameters one can query on using Marvin.
+* :ref:`Query datamodel <query-dm>`: describes all of the available parameters one can query on using Marvin.
 * **Maskbit** datamodel: describes the designated targeting and quality bits and flags used by MaNGA
 
 Generally all datamodels provide a `parameter/property name`, `description`, `units`, its corresponding name in its respective FITS file, and corresponding database schema, table, and column name.

@@ -51,6 +51,7 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
+    'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel']
 

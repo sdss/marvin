@@ -96,6 +96,10 @@ Using Results
 Reference/API
 -------------
 
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.results
+
 .. rubric:: Class
 
 .. autosummary:: marvin.tools.results.Results

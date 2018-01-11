@@ -147,7 +147,7 @@ For more in-depth discussion of using :mod:`~marvin.tools.quantities.Map`, pleas
 Map Plotting
 ````````````
 
-* :doc:`../tutorials/plotting`
+* :ref:`marvin-plotting-tutorial`
 
   * :ref:`marvin-plotting-quick-map`
   * :ref:`marvin-plotting-multipanel-single`
@@ -235,6 +235,10 @@ Common Masking
 
 Reference/API
 -------------
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.quantities.Map
 
 .. rubric:: Class
 

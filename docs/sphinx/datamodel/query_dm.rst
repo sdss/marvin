@@ -234,6 +234,10 @@ We provide a small subset of most common parameters that have also been tested a
 Reference/API
 -------------
 
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.utils.datamodel.query.base
+
 .. rubric:: Class
 
 .. autosummary:: marvin.utils.datamodel.query.base.DataModel

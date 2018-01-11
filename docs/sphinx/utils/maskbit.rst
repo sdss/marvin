@@ -215,6 +215,10 @@ See the :doc:`../tutorials/plotting` (e.g., :ref:`marvin-plotting-custom-map-axe
 Reference/API
 -------------
 
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.utils.general.maskbit.Maskbit
+
 .. rubric:: Module
 
 .. autosummary:: marvin.utils.general.maskbit.
