@@ -275,7 +275,7 @@ MPL6_maps = [
                          binid=binid_properties[3],
                          description='Gaussian profile velocity for emission lines.'),
     MultiChannelProperty('emline_gew', ivar=True, mask=True,
-                         channels=[oiid_channel] + MPL6_emline_channels,
+                         channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian EW'},
                          unit=u.Angstrom,
                          binid=binid_properties[3],
