@@ -66,8 +66,7 @@ is not a specific place to cite the DOI:
 
 ::
 
-    *This research made use of Marvin, a core Python package and web framework for MaNGA data, developed by Brian Cherinka,
-    José Sánchez-Gallego, and Brett Andrews. (MaNGA Collaboration, 2016).*
+    *This research made use of Marvin, a core Python package and web framework for MaNGA data, developed by Brian Cherinka, José Sánchez-Gallego, Brett Andrews, and Joel Brownstein. (MaNGA Collaboration, 2018).*
 
 Marvin's Bibtex entry to use:
 
