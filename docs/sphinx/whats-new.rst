@@ -3,14 +3,14 @@
 What's New in Marvin 2.2 (January 2018)
 =======================================
 
-Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.
+Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.  Try the :ref:`Jupyter Notebook<marvin-jupyter-new22>` for a small sample.
 
 * `MPL-6 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-6>`_ compatible
 * New DRP, DAP, and Query :ref:`Datamodels <marvin-datamodels>`
-* Cubes, Maps, and ModelCubes now use Astropy Quantities, i.e. encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance)
+* :ref:`Cubes<marvin-cube>`, :ref:`Maps<marvin-maps>`, and :ref:`ModelCubes<marvin-modelcube>` now use Astropy Quantities, i.e. encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance)
 * Improved Bin class
 * Fuzzy Searching and Tab Completion
-* New access to DAPall data
+* New access to DAPall data on `Maps` and `ModelCubes`
 * :ref:`Scatter <marvin-utils-plot-scatter>` and :ref:`Histogram <marvin-utils-plot-hist>` Plotting
 * Improved Query :ref:`Results <marvin-results>` Handling and Integrated :ref:`Plotting <marvin-results_plot>`
 * New :ref:`MaskBit <marvin-utils-maskbit>` class

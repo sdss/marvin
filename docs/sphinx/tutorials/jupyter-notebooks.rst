@@ -4,6 +4,16 @@
 Jupyter Notebooks
 =================
 
+.. _marvin-jupyter-new22:
+
+What's New in Marvin 2.2
+------------------------
+
+This notebook briefly describes some of the new features seen in Marvin 2.2.
+
+:download:`What's New in Marvin 2.2 <../jupyter/whats_new_v22.ipynb>`
+
+
 What's New in Marvin 2.1
 ------------------------
 
