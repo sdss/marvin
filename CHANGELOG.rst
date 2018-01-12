@@ -1,6 +1,14 @@
 Marvin's Change Log
 ===================
 
+[2.2.1] - 2018/01/12
+--------------------
+
+Fixed
+~~~~~
+
+- bugfix in MPL-6 datamodel for gew OII lines
+
 [2.2.0] - 2018/01/12
 --------------------
 
