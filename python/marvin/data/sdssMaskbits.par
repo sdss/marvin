@@ -1089,6 +1089,13 @@ maskbits MANGA_DAPPIXMASK  9 NOCORRECTION "Appropriate correction not available"
 maskbits MANGA_DAPPIXMASK 10 MULTICOMP "Multi-component velocity features present"
 maskbits MANGA_DAPPIXMASK 30 DONOTUSE "Do not use this spaxel for science"
 
+# MaStar quality flag bitmask
+masktype MASTAR_QUAL 64 "Mask bits for MaStar spectra"
+maskbits MASTAR_QUAL  0 NODATA "No Data"
+maskbits MASTAR_QUAL  1 POORCAL "Poor flux calibration"
+maskbits MASTAR_QUAL  2 LOWCOV "PSF-covering fraction by fiber is too small (<10%)"
+maskbits MASTAR_QUAL  3 MANUAL "flagged as problematic by visual inspection"
+
 # MaNGA targeting bitmask for galaxy targets
 masktype MANGA_TARGET1     64 "Mask bits identifying galaxy samples."
 maskbits MANGA_TARGET1     0  NONE " "
