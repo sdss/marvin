@@ -50,7 +50,7 @@ class Plate(BaseWebView):
         # validate the input
         args = av.manual_parse(self, request)
         self.plate['plateid'] = args.get('plateid')
-        pinputs = {'plateid': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
+        pinputs = {'plate': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
             plate = mPlate(**pinputs)
         except MarvinError as e:
