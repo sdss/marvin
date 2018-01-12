@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-16 15:11:19
+# @Last modified time: 2018-01-11 17:01:35
 
 from __future__ import division, print_function, absolute_import
 
@@ -140,22 +140,25 @@ class Maskbit(object):
         values = np.array(self.mask) if values is None else np.array(values)
         ndim = values.ndim
 
-        assert ndim <= 2, '`value` must be int, 1-D array, or 2-D array.'
+        assert ndim <= 3, '`value` must be int, 1-D array, 2-D array, or 3-D array.'
 
         # expand up to 2 dimensions
-        while values.ndim < 2:
+        while values.ndim < 3:
             values = np.array([values])
 
         # create list of list of lists of bits set
         bits_set = []
         for ii in range(values.shape[0]):
-            row = []
+            row_ii = []
             for jj in range(values.shape[1]):
-                row.append(self._value_to_bits(values[ii, jj], self.schema.bit.values))
-            bits_set.append(row)
+                row_jj = []
+                for kk in range(values.shape[2]):
+                    row_jj.append(self._value_to_bits(values[ii, jj, kk], self.schema.bit.values))
+                row_ii.append(row_jj)
+            bits_set.append(row_ii)
 
         # condense back down to initial dimensions
-        for __ in range(2 - ndim):
+        for __ in range(3 - ndim):
             bits_set = bits_set[0]
 
         return bits_set
