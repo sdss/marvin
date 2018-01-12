@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-01-12 13:55:28
+# @Last Modified time: 2018-01-12 15:32:27
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -114,8 +114,8 @@ def update_git(ctx, version=None):
     os.chdir(verpath)
     ctx.run('git checkout {0}'.format(version))
     ctx.run('git submodule update --init --recursive')
-    ctx.run('python -c "from get_version import generate_version_py; '
-            'generate_version_py(\'sdss-marvin\', {0}, False)'.format(version))
+    # ctx.run('python -c "from get_version import generate_version_py; '
+    #         'generate_version_py(\'sdss-marvin\', {0}, False)'.format(version))
 
 
 @task
