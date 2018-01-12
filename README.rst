@@ -73,15 +73,16 @@ Marvin's Bibtex entry to use:
 
 ::
 
-      @misc{brian_cherinka_2017_292632,
+      @misc{brian_cherinka_2018_1146705,
         author       = {Brian Cherinka and
                         José Sánchez-Gallego and
-                        Brett Andrews},
-        title        = {sdss/marvin: Marvin Beta 2.1.0},
-        month        = feb,
-        year         = 2017,
-        doi          = {10.5281/zenodo.292632},
-        url          = {https://doi.org/10.5281/zenodo.292632}
+                        Brett Andrews and
+                        Joel Brownstein},
+        title        = {sdss/marvin: Marvin Beta 2.2.0},
+        month        = jan,
+        year         = 2018,
+        doi          = {10.5281/zenodo.1146705},
+        url          = {https://doi.org/10.5281/zenodo.1146705}
       }
 
 License
@@ -96,8 +97,8 @@ Marvin is licensed under a 3-clause BSD style license - see the
    :target: https://coveralls.io/github/sdss/marvin?branch=master
 .. |PyPI| image:: https://img.shields.io/pypi/v/sdss-marvin.svg
    :target: https://pypi.python.org/pypi/sdss-marvin
-.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.292632.svg
-   :target: https://doi.org/10.5281/zenodo.292632
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1146705.svg
+   :target: https://doi.org/10.5281/zenodo.1146705
 .. |astropy| image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
    :target: http://www.astropy.org/
 .. |BrowserStack Status| image:: https://www.browserstack.com/automate/badge.svg?badge_key=WWgyaGJBbW45aityUVJtYytDcHFydU9EZE9ObVdOVVpkaUxGZkxwbzdHQT0tLUNkcW5Hc3JaRTdqR0l6ajltSUdTRXc9PQ==--21b221b6714b852f8f4215c787ffa6e2812e2ad6
