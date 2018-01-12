@@ -66,6 +66,7 @@ To instantiate a `Plate`, specify the plate id.
 
 Marvin will attempt to load all available cubes for the given plate, using the multi-modal data access system.
 
+.. _marvin-plate_basic:
 
 Basic Attributes
 ^^^^^^^^^^^^^^^^
@@ -94,6 +95,8 @@ Some basic parameters for the `Plate` are made available as attributes, e.g. `ca
     plate.surveymode
     u'MaNGA dither'
 
+.. _marvin-plate_access:
+
 Accessing Cubes
 ^^^^^^^^^^^^^^^
 
@@ -120,6 +123,8 @@ or, alternatively, the `cubeXXXX` attributes.  Each `Plate` maps its cubes onto 
 
     plate.cube12701
     <Marvin Cube (plateifu='8485-12701', mode='local', data_origin='db')>
+
+.. _marvin-plate_save:
 
 Saving and Restoring
 ^^^^^^^^^^^^^^^^^^^^

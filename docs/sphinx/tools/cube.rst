@@ -82,6 +82,8 @@ You can quickly navigate to the DAP MAPS using the `getMaps` method.  See the :r
 Using Cube
 ----------
 
+.. _marvin-cube-init:
+
 Initializing a Cube
 ^^^^^^^^^^^^^^^^^^^
 
@@ -105,6 +107,8 @@ However you can also initialize a `Cube` without the keyword argument and Marvin
 
     cube = Cube('8485-1901')
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
+
+.. _marvin-cube-basic:
 
 Basic Attributes
 ^^^^^^^^^^^^^^^^
@@ -163,6 +167,8 @@ You can manipulate the `Cube` pixel mask using the `pixmask` attribute.
     cube.pixmask
     <Maskbit 'MANGA_DRP3PIXMASK' shape=(4563, 34, 34)>
 
+.. _marvin-cube-datamodel:
+
 The DataModel
 ^^^^^^^^^^^^^
 
@@ -184,6 +190,8 @@ The DRP datamodel contains both 1-d (Spectra) and 3-d (DataCubes) representation
      # see the available Spectra
     [<Spectrum 'spectral_resolution', release='MPL-6', unit=u'Angstrom'>,
      <Spectrum 'spectral_resolution_prepixel', release='MPL-6', unit=u'Angstrom'>]
+
+.. _marvin-cube-datacubes:
 
 DataCubes and Spectra
 ^^^^^^^^^^^^^^^^^^^^^
@@ -283,6 +291,8 @@ By default, the xy origin in `getSpaxel` is the center of the `Cube`, `xyorig="c
     spaxel = cube.getSpaxel(x=1, y=1)
     <Marvin Spaxel (plateifu=8485-1901, x=18, y=18; x_cen=1, y_cen=1)>
 
+.. _marvin-cube-access:
+
 Accessing Maps
 ^^^^^^^^^^^^^^
 
@@ -292,6 +302,8 @@ Accessing Maps
     # grab the Marvin Maps object
     cube.getMaps()
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='SPX', template='GAU-MILESHC')>
+
+.. _marvin-cube-save:
 
 Saving and Restoring
 ^^^^^^^^^^^^^^^^^^^^

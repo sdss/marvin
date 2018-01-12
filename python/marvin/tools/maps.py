@@ -527,7 +527,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, model=False, **kwargs):
-        """Returns the |spaxel|_ matching certain coordinates.
+        """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
@@ -618,7 +618,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         return marvin.tools.quantities.Map.from_maps(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
-        """Returns a ratio `~marvin.tools.quantities.Map`.
+        """Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`. Returns a ratio `~marvin.tools.quantities.Map`.
 
         For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
         which is the ratio of ``channel_1/channel_2``.

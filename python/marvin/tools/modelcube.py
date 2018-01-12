@@ -329,7 +329,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, properties=True, **kwargs):
-        """Returns the |spaxel|_ matching certain coordinates.
+        """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial

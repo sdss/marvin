@@ -95,6 +95,8 @@ The DAPall information is accessible via the `dapall` attribute.  It is a dictio
 Using ModelCube
 ---------------
 
+.. _marvin-modelcube-init:
+
 Initializing a ModelCube
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -119,6 +121,8 @@ However you can also initialize a `ModelCube` without the keyword argument and M
     modelcube = ModelCube('8485-1901', bintype='HYB10')
     <Marvin ModelCube (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
+.. _marvin-modelcube-basic:
+
 Basic Attributes
 ^^^^^^^^^^^^^^^^
 
@@ -140,6 +144,8 @@ Like 'Cubes', `ModelCubes` come with some basic attributes attached, e.g. the fu
     0.132697
 
 `ModelCube` also has the DAP data quality, targeting, and pixel masks available as the `quality_flag`, `target_flags`, and `pixmask` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.
+
+.. _marvin-modelcube-datamodel:
 
 The DataModel
 ^^^^^^^^^^^^^
@@ -175,6 +181,8 @@ Each `Model` also contains (and uses) the specific binid channel appropriate for
     <Property 'binid', channel='em_line_models', release='2.1.3', unit=u''>
 
 These are the available models used by DAP.  Each Model is 3-d DataCube representation of the data within a DAP Cube.  These models are available as attributes on your `ModelCube` object.
+
+.. _marvin-modelcube-models:
 
 Models
 ^^^^^^
@@ -227,6 +235,8 @@ If you slice the `DataCube` you get a `Spectrum` or another `DataCube` subset ba
                 [ 0.      , 0.      , 0.      , 0.      ],
                 [ 0.      , 0.      , 0.      , 0.      ]]] 1e-17 erg / (cm2 s spaxel)>
 
+.. _marvin-modelcube-getbins:
+
 Getting the Binids
 ^^^^^^^^^^^^^^^^^^
 
@@ -258,6 +268,7 @@ For binned `ModelCubes`, you can retrieve a 2-d array of the binids using the `g
        [-1, -1, -1, ..., -1, -1, -1],
        [-1, -1, -1, ..., -1, -1, -1]])
 
+.. _marvin-modelcube-extract:
 
 Extracting Spaxels/Bins
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -313,6 +324,8 @@ This new bin has id 35, a signal-to-noise of ~4 and contains 20 spaxels.  The `s
      <Marvin Spaxel (x=13, y=11, loaded=False),
      <Marvin Spaxel (x=13, y=12, loaded=False)]
 
+.. _marvin-modelcube-access:
+
 Accessing Related Objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -336,6 +349,8 @@ From a binned `ModelCube`, you can go back to the unbinned version with the `get
 
     modelcube.get_unbinned()
     <Marvin ModelCube (plateifu='8485-1901', mode='local', data_origin='db', bintype='SPX', template='GAU-MILESHC')>
+
+.. _marvin-modelcube-save:
 
 Saving and Restoring
 ^^^^^^^^^^^^^^^^^^^^
