@@ -5,7 +5,7 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-01-11 17:01:35
 
 from __future__ import division, print_function, absolute_import
@@ -135,33 +135,103 @@ class Maskbit(object):
               ...
               [0, 1, 4, 30]]]
         """
+        # assert (self.mask is not None) or (values is not None), 'Must provide values.'
+
+        # values = np.array(self.mask) if values is None else np.array(values)
+        # ndim = values.ndim
+
+        # assert ndim <= 3, '`value` must be int, 1-D array, 2-D array, or 3-D array.'
+
+        # # expand up to 2 dimensions
+        # while values.ndim < 3:
+        #     values = np.array([values])
+
+        # # create list of list of lists of bits set
+        # bits_set = []
+        # for ii in range(values.shape[0]):
+        #     row_ii = []
+        #     for jj in range(values.shape[1]):
+        #         row_jj = []
+        #         for kk in range(values.shape[2]):
+        #             row_jj.append(self._value_to_bits(values[ii, jj, kk], self.schema.bit.values))
+        #         row_ii.append(row_jj)
+        #     bits_set.append(row_ii)
+
+        # # condense back down to initial dimensions
+        # for __ in range(3 - ndim):
+        #     bits_set = bits_set[0]
+
+        bits_set = self._get_a_set(values, convert_to='bits')
+
+        return bits_set
+
+    def _get_uniq_bits(self, values):
+        ''' Return a dictionary of unique bits
+
+        Parameters:
+            values (list):
+                A flattened list of mask values
+
+        Returns:
+            dict:
+                A unique dictionary of {mask value: bit list} as {key: value}
+        '''
+        uniqvals = set(values)
+        vdict = {v: self._value_to_bits(v, self.schema.bit.values) for v in uniqvals}
+        return vdict
+
+    def _get_uniq_labels(self, values):
+        ''' Return a dictionary of unique labels
+
+        Parameters:
+            values (list):
+                A flattened list of mask values
+
+        Returns:
+            dict:
+                A unique dictionary of {mask value: labels list} as {key: value}
+        '''
+        uniqbits = self._get_uniq_bits(values)
+        uniqlabels = {k: self.schema.label[self.schema.bit.isin(v)].values.tolist() for k, v in uniqbits.items()}
+        return uniqlabels
+
+    def _get_a_set(self, values, convert_to='bits'):
+        ''' Convert mask values to a list of either bit or label sets.
+
+        Parameters:
+            values (int or array):
+                Mask values. If ``None``, apply to entire
+                ``Maskbit.mask`` array.  Default is ``None``.
+            convert_to (str):
+                Indicates what to convert to.  Either "bits" or "labels"
+
+        Returns:
+            list:
+                Bits/Labels that are set.
+
+        '''
         assert (self.mask is not None) or (values is not None), 'Must provide values.'
 
         values = np.array(self.mask) if values is None else np.array(values)
         ndim = values.ndim
+        shape = values.shape
 
         assert ndim <= 3, '`value` must be int, 1-D array, 2-D array, or 3-D array.'
 
-        # expand up to 2 dimensions
-        while values.ndim < 3:
-            values = np.array([values])
+        flatmask = values.flatten()
 
-        # create list of list of lists of bits set
-        bits_set = []
-        for ii in range(values.shape[0]):
-            row_ii = []
-            for jj in range(values.shape[1]):
-                row_jj = []
-                for kk in range(values.shape[2]):
-                    row_jj.append(self._value_to_bits(values[ii, jj, kk], self.schema.bit.values))
-                row_ii.append(row_jj)
-            bits_set.append(row_ii)
+        if convert_to == 'bits':
+            uniqvals = self._get_uniq_bits(flatmask)
+        elif convert_to == 'labels':
+            uniqvals = self._get_uniq_labels(flatmask)
 
-        # condense back down to initial dimensions
-        for __ in range(3 - ndim):
-            bits_set = bits_set[0]
+        vallist = list(map(lambda x: uniqvals[x], flatmask))
+        if ndim > 0:
+            vals_set = np.reshape(vallist, shape).tolist()
+        else:
+            vals_set = vallist[0]
 
-        return bits_set
+        return vals_set
 
     def _value_to_bits(self, value, bits_all):
         """Convert mask value to a list of bits.
@@ -199,8 +269,11 @@ class Maskbit(object):
                ...
               ['NOCOV', 'LOWCOV', 'NOVALUE', 'DONOTUSE']]]
         """
-        bits_set = self.values_to_bits(values=values)
-        labels_set = self._bits_to_labels(bits_set)
+        #bits_set = self.values_to_bits(values=values)
+        #labels_set = self._bits_to_labels(bits_set)
+
+        labels_set = self._get_a_set(values, convert_to='labels')
+
         return labels_set
 
     def _bits_to_labels(self, nested):
