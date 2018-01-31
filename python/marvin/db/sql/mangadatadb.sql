@@ -1775,4 +1775,14 @@ BEGIN
 END; $$;
 
 
+/* SampleDB indices */
+-- CREATE INDEX CONCURRENTLY nsa_elpetro_mass_idx ON mangasampledb.nsa using BTREE(elpetro_mass);
+-- CREATE INDEX CONCURRENTLY nsa_sersic_mass_idx ON mangasampledb.nsa using BTREE(sersic_mass);
+-- CREATE INDEX CONCURRENTLY nsa_z_idx ON mangasampledb.nsa using BTREE(z);
+-- CREATE INDEX CONCURRENTLY nsa_elpetro_ba_idx ON mangasampledb.nsa using BTREE(elpetro_ba);
+-- CREATE INDEX CONCURRENTLY nsa_elpetro_phi_idx ON mangasampledb.nsa using BTREE(elpetro_phi);
+-- CREATE INDEX CONCURRENTLY nsa_sersic_n_idx ON mangasampledb.nsa using BTREE(sersic_n);
+-- CREATE INDEX CONCURRENTLY nsa_elpetro_th50r_idx ON mangasampledb.nsa using BTREE(elpetro_th50_r);
+-- CREATE INDEX CONCURRENTLY nsa_elpetro_th90r_idx ON mangasampledb.nsa using BTREE(elpetro_th90_r);
+
 
