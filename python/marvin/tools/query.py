@@ -731,24 +731,46 @@ class Query(object):
                 qm = self._check_history(check_only=True)
                 self.totalcount = qm.count if qm else None
 
-            # run the query
-            res = self.query.slice(start, end).all()
-            count = len(res)
-            self.totalcount = count if not self.totalcount else self.totalcount
+            # run count if it doesn't exist
+            if self.totalcount is None:
+                self.totalcount = self.query.count()
+
+            # get the count
+            if start and end:
+                count = (end - start)
+            else:
+                count = self.totalcount
+
+            # start = start if start else 0
+            # end = end if end else self.limit
+            # res = self.query.slice(start, end).all()
+
+
+            # # run the query
+            # res = self.query.slice(start, end).all()
+            # count = len(res)
+            # self.totalcount = count if not self.totalcount else self.totalcount
 
             # check history
             if marvindb.isdbconnected:
                 query_meta = self._check_history()
 
             if count > self.count_threshold and self.return_all is False:
-                res = res[0:self.limit]
-                count = self.limit
+                #res = res[0:self.limit]
+                start = 0
+                end = self.limit
+                count = (end - start)
                 warnings.warn('Results contain more than {0} entries.  '
                               'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
             elif self.return_all is True:
                 warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
+                start = None
+                end = None
             elif start and end:
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
+
+            # get results
+            res = self.query.slice(start, end).all()
 
             # get the runtime
             endtime = datetime.datetime.now()
@@ -777,7 +799,8 @@ class Query(object):
                       'release': self._release,
                       'return_all': self.return_all,
                       'start': start,
-                      'end': end}
+                      'end': end,
+                      'caching': self._caching}
             try:
                 ii = Interaction(route=url, params=params)
             except Exception as e:

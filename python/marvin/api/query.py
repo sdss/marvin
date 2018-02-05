@@ -15,7 +15,7 @@ def _run_query(searchfilter, **kwargs):
     release = kwargs.pop('release', None)
     kwargs['returnparams'] = kwargs.pop('params', None)
     kwargs['returntype'] = kwargs.pop('rettype', None)
-
+    print(searchfilter, release, kwargs)
     try:
         q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
