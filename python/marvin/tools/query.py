@@ -711,17 +711,22 @@ class Query(object):
                     results from the Query.
 
         '''
-
+        from marvin.utils.general import memory_usage
         if self.mode == 'local':
 
             # Check for adding a sort
             self._sortQuery()
-
+            memory_usage('1 - before caching')
             # Check to add the cache
             if self._caching:
                 from marvin.core.caching_query import FromCache
                 self.query = self.query.options(FromCache("default")).\
                     options(*marvindb.cache_bits)
+
+            memory_usage('2 - after caching, before counting')
+
+            # turn on streaming of results
+            #self.query = self.query.execution_options(stream_results=True)
 
             # get total count, and if more than 150 results, paginate and only return the first 100
             starttime = datetime.datetime.now()
@@ -734,6 +739,8 @@ class Query(object):
             # run count if it doesn't exist
             if self.totalcount is None:
                 self.totalcount = self.query.count()
+
+            memory_usage('3 - after counting, before query')
 
             # get the count
             if start and end:
@@ -769,14 +776,27 @@ class Query(object):
             elif start and end:
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
+            memory_usage('4 - before query run')
+
             # get results
+            #from marvin.utils.general.structs import string_folding_wrapper
             res = self.query.slice(start, end).all()
+            #res = string_folding_wrapper(self.query.slice(start, end).all(), keys=self.params)
+
+            memory_usage('5 - after query run')
 
             # get the runtime
             endtime = datetime.datetime.now()
             self.runtime = (endtime - starttime)
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode,
+            memory_usage('6 - before session close')
+
+            # clear the session
+            self.session.close()
+
+            memory_usage('7 - after session close, before results dump')
+
+            return Results(results=list(res), query=self.query, count=count, mode=self.mode,
                            returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
                            chunk=self.limit, runtime=self.runtime, start=start, end=end)
 

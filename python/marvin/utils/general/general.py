@@ -48,6 +48,14 @@ try:
 except ImportError as e:
     Path = None
 
+try:
+    import pympler.summary
+    import pympler.muppy
+    import psutil
+except ImportError as e:
+    pympler = None
+    psutil = None
+
 
 # General utilities
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
@@ -56,7 +64,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage')
 
 drpTable = {}
 
@@ -1450,3 +1458,34 @@ def map_dapall(header, row):
             dbdict[name] = values
 
     return dbdict
+
+
+def get_virtual_memory_usage_kb():
+    """
+    The process's current virtual memory size in Kb, as a float.
+
+    Returns:
+        A float of the virtual memory usage
+
+    """
+
+    assert psutil is not None, 'the psutil python package is required to run this function'
+
+    return float(psutil.Process().memory_info().vms) / 1024.0
+
+
+def memory_usage(where):
+    """
+    Print out a basic summary of memory usage.
+
+    Parameters:
+        where (str):
+            A string description of where in the code you are summarizing memory usage
+    """
+
+    assert pympler is not None, 'the pympler python package is required to run this function'
+
+    mem_summary = pympler.summary.summarize(pympler.muppy.get_objects())
+    print("Memory summary: {0}".format(where))
+    pympler.summary.print_(mem_summary, limit=2)
+    print("VM: {0:.2f}Mb".format(get_virtual_memory_usage_kb() / 1024.0))
