@@ -261,8 +261,6 @@ def string_folding_wrapper(results, keys=None):
             print('No keys are accessible.  Cannot fold strings!: {0}'.format(e))
             yield results
 
-    #keys = results.keys()
-    print(keys)
     folder = StringFolder()
     for row in results:
         yield tuple(

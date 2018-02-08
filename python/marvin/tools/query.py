@@ -12,6 +12,7 @@
 
 from __future__ import print_function, division, unicode_literals
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
+from marvin.utils.general.structs import string_folding_wrapper
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
@@ -178,7 +179,7 @@ class Query(object):
         self._modelgraph = marvindb.modelgraph
         self._returnparams = []
         self._caching = kwargs.get('caching', True)
-        self.verbose = kwargs.get('verbose', None)
+        self.verbose = kwargs.get('verbose', True)
         self.count_threshold = kwargs.get('count_threshold', 1000)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
@@ -232,7 +233,6 @@ class Query(object):
             self._create_query_modelclasses()
             # this adds spaxel x, y into default for query 1 dap zonal query
             self._adjust_defaults()
-            # print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -693,7 +693,7 @@ class Query(object):
     @makeBaseQuery
     @checkCondition
     @updateConfig
-    def run(self, start=None, end=None):
+    def run(self, start=None, end=None, raw=None, orm=None, core=None):
         ''' Runs a Marvin Query
 
             Runs the query and return an instance of Marvin Results class
@@ -716,17 +716,15 @@ class Query(object):
 
             # Check for adding a sort
             self._sortQuery()
-            memory_usage('1 - before caching')
+
             # Check to add the cache
             if self._caching:
                 from marvin.core.caching_query import FromCache
                 self.query = self.query.options(FromCache("default")).\
                     options(*marvindb.cache_bits)
 
-            memory_usage('2 - after caching, before counting')
-
             # turn on streaming of results
-            #self.query = self.query.execution_options(stream_results=True)
+            self.query = self.query.execution_options(stream_results=True)
 
             # get total count, and if more than 150 results, paginate and only return the first 100
             starttime = datetime.datetime.now()
@@ -740,18 +738,11 @@ class Query(object):
             if self.totalcount is None:
                 self.totalcount = self.query.count()
 
-            memory_usage('3 - after counting, before query')
-
-            # get the count
+            # get the new count if start and end exist
             if start and end:
                 count = (end - start)
             else:
                 count = self.totalcount
-
-            # start = start if start else 0
-            # end = end if end else self.limit
-            # res = self.query.slice(start, end).all()
-
 
             # # run the query
             # res = self.query.slice(start, end).all()
@@ -763,7 +754,7 @@ class Query(object):
                 query_meta = self._check_history()
 
             if count > self.count_threshold and self.return_all is False:
-                #res = res[0:self.limit]
+                # res = res[0:self.limit]
                 start = 0
                 end = self.limit
                 count = (end - start)
@@ -776,27 +767,40 @@ class Query(object):
             elif start and end:
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
-            memory_usage('4 - before query run')
+            # run the query
+            if not any([raw, core, orm]):
+                raw = True
 
-            # get results
-            #from marvin.utils.general.structs import string_folding_wrapper
-            res = self.query.slice(start, end).all()
-            #res = string_folding_wrapper(self.query.slice(start, end).all(), keys=self.params)
-
-            memory_usage('5 - after query run')
+            if raw:
+                # use the db api cursor
+                sql = str(self.show())
+                conn = marvindb.db.engine.raw_connection()
+                cursor = conn.cursor()
+                cursor.execute(sql)
+                res = cursor.fetchall()
+                conn.close()
+            elif core:
+                # use the core connection
+                sql = str(self.show())
+                with marvindb.db.engine.connect() as conn:
+                    results = conn.execution_options(stream_results=True).execute(sql)
+                    res = results.fetchall()
+            elif orm:
+                # use the orm query
+                yield_num = int(10**(np.floor(np.log10(self.totalcount))))
+                results = string_folding_wrapper(self.query.slice(start, end).yield_per(yield_num), keys=self.params)
+                res = list(res)
 
             # get the runtime
             endtime = datetime.datetime.now()
             self.runtime = (endtime - starttime)
 
-            memory_usage('6 - before session close')
-
             # clear the session
             self.session.close()
 
-            memory_usage('7 - after session close, before results dump')
+            #memory_usage('7 - after session close, before results dump')
 
-            return Results(results=list(res), query=self.query, count=count, mode=self.mode,
+            return Results(results=res, query=self.query, count=count, mode=self.mode,
                            returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
                            chunk=self.limit, runtime=self.runtime, start=start, end=end)
 
@@ -837,16 +841,14 @@ class Query(object):
                 totalcount = ii.results['totalcount']
                 query_runtime = ii.results['runtime']
                 resp_runtime = ii.response_time
-                # close the session and engine
-                #self.session.close()
-                #marvindb.db.engine.dispose()
 
             if self.return_all:
                 msg = 'Returning all {0} results'.format(totalcount)
             else:
                 msg = 'Only returning the first {0} results.'.format(count)
 
-            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
+            if not self.quiet:
+                print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
@@ -1001,14 +1003,16 @@ class Query(object):
 
         if self.mode == 'local':
             if not prop or 'query' in prop:
-                print(self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+                sql = self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
             elif prop == 'tables':
-                print(self.joins)
+                sql = self.joins
             elif prop == 'filter':
                 '''oddly this does not update when bound parameters change, but the statement above does '''
-                print(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+                sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
             else:
-                print(self.__getattribute__(prop))
+                sql = self.__getattribute__(prop)
+
+            return str(sql)
         elif self.mode == 'remote':
             print('Cannot show full SQL query in remote mode, use the Results showQuery')
 
