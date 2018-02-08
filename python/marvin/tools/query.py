@@ -789,7 +789,7 @@ class Query(object):
                 # use the orm query
                 yield_num = int(10**(np.floor(np.log10(self.totalcount))))
                 results = string_folding_wrapper(self.query.slice(start, end).yield_per(yield_num), keys=self.params)
-                res = list(res)
+                res = list(results)
 
             # get the runtime
             endtime = datetime.datetime.now()
