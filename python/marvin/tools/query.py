@@ -767,6 +767,9 @@ class Query(object):
             elif start and end:
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
+            # slice the query
+            self.query = self.query.slice(start, end)
+
             # run the query
             if not any([raw, core, orm]):
                 raw = True
@@ -788,7 +791,7 @@ class Query(object):
             elif orm:
                 # use the orm query
                 yield_num = int(10**(np.floor(np.log10(self.totalcount))))
-                results = string_folding_wrapper(self.query.slice(start, end).yield_per(yield_num), keys=self.params)
+                results = string_folding_wrapper(self.query.yield_per(yield_num), keys=self.params)
                 res = list(results)
 
             # get the runtime
