@@ -798,11 +798,17 @@ class Query(object):
             # clear the session
             self.session.close()
 
-            #memory_usage('7 - after session close, before results dump')
+            # memory_usage('7 - after session close, before results dump')
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode,
-                           returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
-                           chunk=self.limit, runtime=self.runtime, start=start, end=end)
+            final = Results(results=res, query=self.query, count=count, mode=self.mode,
+                            returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
+                            chunk=self.limit, runtime=self.runtime, start=start, end=end)
+
+            # get the final time
+            posttime = datetime.datetime.now()
+            self.finaltime = (posttime - starttime)
+
+            return final
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
