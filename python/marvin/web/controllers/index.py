@@ -129,14 +129,30 @@ class Marvin(BaseWebView):
         try:
             inspection = Inspection(current_session, username=username, auth=auth)
         except Exception as e:
-            result['status'] = -1
-            result['message'] = e
-            current_session['loginready'] = False
+            result['status'] = 1
+            result['message'] = str(e)
+            current_session['loginready'] = True
         else:
             result = inspection.result()
             current_session['loginready'] = inspection.ready
             current_session['name'] = result.get('membername', None)
-        print('login result', result)
+
         return jsonify(result=result)
+
+    @route('/logout/', methods=['GET', 'POST'], endpoint='logout')
+    def logout(self):
+        ''' logout from the system
+        '''
+
+        result = {'logout': 'success'}
+
+        if 'loginready' in current_session:
+            ready = current_session.pop('loginready')
+
+        if 'name' in current_session:
+            name = current_session.pop('name')
+
+        return redirect(url_for('index_page.Marvin:index'))
+
 
 Marvin.register(index)
