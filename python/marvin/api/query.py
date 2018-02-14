@@ -1,4 +1,4 @@
-from flask_classy import route
+from flask_classful import route
 from flask import request, jsonify, Response, current_app, redirect, url_for, stream_with_context
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
@@ -7,6 +7,9 @@ from marvin.utils.db import get_traceback
 from marvin.utils.datamodel.query.base import bestparams
 from marvin.web.extensions import limiter
 import json
+import msgpack
+import msgpack_numpy as m
+m.patch()
 
 
 def _run_query(searchfilter, **kwargs):
@@ -211,7 +214,9 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
+        #return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
+        packed = msgpack.packb(self.results, use_bin_type=True)
+        return Response(stream_with_context(packed), mimetype='application/octet-stream')
 
     @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
     @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')

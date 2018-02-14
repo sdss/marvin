@@ -906,7 +906,7 @@ class Results(object):
 
         # send the request
         try:
-            ii = Interaction(route=url, params=params)
+            ii = Interaction(route=url, params=params, stream=True)
         except MarvinError as e:
             raise MarvinError('API Query {0} call failed: {1}'.format(calltype, e))
         else:
