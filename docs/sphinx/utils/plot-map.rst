@@ -206,7 +206,7 @@ Set Title
 .. code-block:: python
 
     import marvin.utils.plot.map as mapplot
-    title = mapplot.set_title(title=None, property_name=ha.property_name, channel=ha.channel)
+    title = mapplot.set_title(title=None, property_name=ha.datamodel.name, channel=ha.datamodel.channel.name)
 
 
 Reference/API
