@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 
-from flask_classy import route
+from flask_classful import route
 from flask import jsonify, request, Response
 import json
 

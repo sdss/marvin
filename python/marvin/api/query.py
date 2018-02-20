@@ -1,5 +1,5 @@
-from flask_classy import route
-from flask import request, jsonify, Response, current_app, redirect, url_for
+from flask_classful import route
+from flask import request, jsonify, Response, current_app, redirect, url_for, stream_with_context
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
@@ -7,6 +7,9 @@ from marvin.utils.db import get_traceback
 from marvin.utils.datamodel.query.base import bestparams
 from marvin.web.extensions import limiter
 import json
+import msgpack
+import msgpack_numpy as m
+m.patch()
 
 
 def _run_query(searchfilter, **kwargs):
@@ -15,7 +18,7 @@ def _run_query(searchfilter, **kwargs):
     release = kwargs.pop('release', None)
     kwargs['returnparams'] = kwargs.pop('params', None)
     kwargs['returntype'] = kwargs.pop('rettype', None)
-    print(searchfilter, release, kwargs)
+
     try:
         q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
     except Exception as e:
@@ -211,7 +214,9 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(json.dumps(self.results), mimetype='application/json')
+        #return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
+        packed = msgpack.packb(self.results, use_bin_type=True)
+        return Response(stream_with_context(packed), mimetype='application/octet-stream')
 
     @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
     @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
@@ -280,7 +285,7 @@ class QueryView(BaseView):
                 self.results['data'] = column
                 self.results['runtime'] = _get_runtime(query)
 
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -367,7 +372,7 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')

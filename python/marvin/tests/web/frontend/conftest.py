@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-05 12:22:37
+# @Last Modified time: 2018-02-14 15:19:42
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -26,6 +26,7 @@ if browserstack:
 else:
     osdict = {'OS X': ['El Capitan']}
     browserdict = {'chrome': ['55']}
+
 
 osstuff = [(k, i) for k, v in osdict.items() for i in v]
 browserstuff = [(k, i) for k, v in browserdict.items() for i in v]
@@ -49,13 +50,15 @@ def app():
     # app.config['TESTING'] = True
     # app.config['WTF_CSRF_ENABLED'] = False
     # app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-    app.config['LIVESERVER_PORT'] = 8943
+    app.config['LIVESERVER_PORT'] = 8443
     return app
 
 
 @pytest.fixture(scope='function')
 def base_url(live_server):
-    return '{0}/marvin2/'.format(live_server.url())
+    url = live_server.url()
+    #url = url.replace('localhost', '127.0.0.1')
+    return '{0}/marvin2/'.format(url)
 
 
 @pytest.fixture(scope='function')

@@ -12,7 +12,7 @@ Revision History:
 '''
 from __future__ import print_function, division
 from flask import Blueprint, render_template, session as current_session, request, jsonify, url_for
-from flask_classy import route
+from flask_classful import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.tools.query import doQuery, Query

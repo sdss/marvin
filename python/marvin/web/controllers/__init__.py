@@ -6,10 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-06-28 17:53:20
+# @Last Modified time: 2018-02-14 11:04:11
 
 from __future__ import print_function, division, absolute_import
-from flask_classy import FlaskView
+from flask_classful import FlaskView
 from flask import request
 from marvin.web.web_utils import parseSession
 import marvin
