@@ -461,7 +461,7 @@ def plot(*args, **kwargs):
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
-    patch_kws = set_patch_style(extent=extent)
+    patch_kws = set_patch_style(extent=imshow_kws['extent'])
 
     # finish setup of unmasked spaxels and colorbar range
     imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
