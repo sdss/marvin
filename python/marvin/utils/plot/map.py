@@ -168,7 +168,7 @@ def _get_prop(title):
         return 'default'
 
 
-def set_extent(cube_size, sky_coords):
+def _set_extent(cube_size, sky_coords):
     """Set extent of map.
 
     Parameters:
@@ -190,22 +190,27 @@ def set_extent(cube_size, sky_coords):
     return extent
 
 
-def set_patch_style(extent, facecolor='#A8A8A8'):
+def _set_patch_style(patch_kws, extent):
     """Set default parameters for a patch.
 
     Parameters:
+        patch_kws (dict):
+            Keyword args to pass to `matplotlib.patches.Rectangle
+            <https://matplotlib.org/api/_as_gen/matplotlib.patches.Rectangle.html>`_.
         extent (tuple):
             Extent of image (xmin, xmax, ymin, ymax).
-        facecolor (str):
-            Background color. Default is '#A8A8A8' (gray).
 
     Returns:
         dict
     """
-    patch_kws = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
-                     width=extent[1] - extent[0] - 0.02,
-                     height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
-                     fill=True, facecolor=facecolor, edgecolor='w', zorder=0)
+    patch_kws_default = dict(xy=(extent[0] + 0.01, extent[2] + 0.01),
+                             width=extent[1] - extent[0] - 0.02,
+                             height=extent[3] - extent[2] - 0.02, hatch='xxxx', linewidth=0,
+                             fill=True, facecolor='#A8A8A8', edgecolor='w', zorder=0)
+
+    for k, v in patch_kws_default.items():
+        if k not in patch_kws:
+            patch_kws[k] = v
 
     return patch_kws
 
@@ -328,6 +333,10 @@ def plot(*args, **kwargs):
             Use if creating subplot of a multi-panel plot. Default is ``None``.
         ax (matplotlib Axis object):
             Use if creating subplot of a multi-panel plot. Default is ``None``.
+        patch_kws (dict):
+            Keyword args to pass to `matplotlib.patches.Rectangle
+            <https://matplotlib.org/api/_as_gen/matplotlib.patches.Rectangle.html>`_.
+            Default is ``None``.
         imshow_kws (dict):
             Keyword args to pass to `ax.imshow
             <http://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow>`_.
@@ -353,8 +362,8 @@ def plot(*args, **kwargs):
     """
     valid_kwargs = ['dapmap', 'value', 'ivar', 'mask', 'cmap', 'percentile_clip', 'sigma_clip',
                     'cbrange', 'symmetric', 'snr_min', 'log_cb', 'title', 'title_mode', 'cblabel',
-                    'sky_coords', 'use_masks', 'plt_style', 'fig', 'ax', 'imshow_kws', 'cb_kws',
-                    'return_cb', 'return_cbrange']
+                    'sky_coords', 'use_masks', 'plt_style', 'fig', 'ax', 'patch_kws', 'imshow_kws',
+                    'cb_kws', 'return_cb', 'return_cbrange']
 
     assert len(args) == 0, 'Map.plot() does not accept arguments, only keywords.'
 
@@ -381,6 +390,7 @@ def plot(*args, **kwargs):
     plt_style = kwargs.get('plt_style', 'seaborn-darkgrid')
     fig = kwargs.get('fig', None)
     ax = kwargs.get('ax', None)
+    patch_kws = kwargs.get('patch_kws', {})
     imshow_kws = kwargs.get('imshow_kws', {})
     cb_kws = kwargs.get('cb_kws', {})
     return_cb = kwargs.get('return_cb', False)
@@ -452,7 +462,7 @@ def plot(*args, **kwargs):
         return cb_kws['cbrange']
 
     # setup unmasked spaxels
-    extent = set_extent(value.shape, sky_coords)
+    extent = _set_extent(value.shape, sky_coords)
     imshow_kws.setdefault('extent', extent)
     imshow_kws.setdefault('interpolation', 'nearest')
     imshow_kws.setdefault('origin', 'lower')
@@ -464,7 +474,7 @@ def plot(*args, **kwargs):
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
-    patch_kws = set_patch_style(extent=imshow_kws['extent'])
+    patch_kws = _set_patch_style(patch_kws, extent=imshow_kws['extent'])
 
     # finish setup of unmasked spaxels and colorbar range
     imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])
