@@ -415,10 +415,7 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
-    if symmetric and log_cb:
-        warnings.warn('Colorbar should not be both symmetric and logarithmic.  '
-                      'Please set either ``symmetric`` or ``log_cb`` to ``False``.',
-                      MarvinUserWarning)
+    assert (not symmetric) or (not log_cb), 'Colorbar cannot be both symmetric and logarithmic.'
 
     use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 

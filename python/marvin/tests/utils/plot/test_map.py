@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-28 12:11:97
+# @Last modified time: 2018-02-21 14:02:26
 
 import numpy as np
 import matplotlib
@@ -283,3 +283,11 @@ class TestMapPlot(object):
         map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
         cbrange = mapplot.plot(dapmap=map_, return_cbrange=True)
         assert isinstance(cbrange, list)
+
+    def test_symmetric_log_colorbar_error(self, maps_release_only):
+        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
+
+        with pytest.raises(AssertionError) as ee:
+            fig, ax = mapplot.plot(dapmap=map_, symmetric=True, log_cb=True)
+
+        assert ee.value.args[0] == 'Colorbar cannot be both symmetric and logarithmic.'
