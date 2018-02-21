@@ -43,6 +43,7 @@
 from __future__ import division, print_function, absolute_import
 
 import copy
+import warnings
 
 from astropy import units
 
@@ -52,7 +53,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from marvin import config
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
@@ -413,6 +414,11 @@ def plot(*args, **kwargs):
 
     if sigma_clip:
         percentile_clip = False
+
+    if symmetric and log_cb:
+        warnings.warn('Colorbar should not be both symmetric and logarithmic.  '
+                      'Please set either ``symmetric`` or ``log_cb`` to ``False``.',
+                      MarvinUserWarning)
 
     use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 
