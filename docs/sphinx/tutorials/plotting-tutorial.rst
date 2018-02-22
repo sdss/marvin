@@ -163,6 +163,24 @@ Multi-panel Map Plot (Multiple Galaxies)
 .. image:: ../_static/multipanel_kinematics.png
 
 
+.. _marvin-plotting-zoom-in:
+
+Zoom-in Map Plot
+----------------
+
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    fig, ax = ha.plot()
+    ax.axis([13, 21, 13, 21])
+
+.. image:: ../_static/zoom_in.png
+
+
 .. _marvin-plotting-custom-map-cbrange:
 
 Custom Map Colorbar Range Options
@@ -226,6 +244,30 @@ Custom Minimum Signal-to-Noise Ratio
     fig, ax = ha.plot(snr_min=10)
 
 .. image:: ../_static/custom_snr_min.png
+
+
+.. _marvin-plotting-custom-map-hatch:
+
+Custom No Usable IFU Data Region
+--------------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    # Defaults:
+    # gray background (facecolor=''#A8A8A8'),
+    # white lines (edgecolor='w'),
+    # dense hatching: (hatch= 'xxxx')
+
+    # Custom: black background, cyan lines, less dense hatching
+    fig, ax = ha.plot(patch_kws={'facecolor': 'k',
+                                 'edgecolor': 'c',
+                                 'hatch': 'xx'})
+
+.. image:: ../_static/custom_hatch.png
 
 
 .. _marvin-plotting-custom-map-axes:
