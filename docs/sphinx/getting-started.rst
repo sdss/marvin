@@ -304,9 +304,9 @@ When you open a Marvin Cube in local mode, Marvin provides convenient quick acce
     (4563, 34, 34)
 
     # access the inverse and mask arrays
-    cube.ivar
+    cube.flux.ivar
 
-    cube.mask
+    cube.flux.mask
 
 We just loaded this Cube locally using the identifier **plateifu**.  You can also use **mangaid** as a valid identifier.  When using these keywords, Marvin will look for the file in your local **SAS** directory system.  Alternatively you can specify a full filename and path using the **filename** keyword.  This keyword is for loading explicit files stored anywhere and named anything.
 
