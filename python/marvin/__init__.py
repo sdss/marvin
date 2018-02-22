@@ -230,6 +230,14 @@ class MarvinConfig(object):
     def _traceback(self, value):
         bconfig.traceback = value
 
+    @property
+    def compression(self):
+        return bconfig.compression
+
+    @compression.setter
+    def compression(self, value):
+        bconfig.compression = value
+
 #################################################
 
     @property

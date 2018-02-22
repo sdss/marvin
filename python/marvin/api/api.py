@@ -14,7 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
 
-configkeys = ['release', 'session_id']
+configkeys = ['release', 'session_id', 'compression']
 
 
 class Interaction(BrainInteraction):

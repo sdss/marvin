@@ -711,7 +711,6 @@ class Query(object):
                     results from the Query.
 
         '''
-        from marvin.utils.general import memory_usage
         if self.mode == 'local':
 
             # Check for adding a sort
@@ -780,7 +779,6 @@ class Query(object):
                 conn = marvindb.db.engine.raw_connection()
                 cursor = conn.cursor('query_cursor')
                 cursor.execute(sql)
-                #res = cursor.fetchall()
                 res = self._fetch_data(cursor)
                 conn.close()
             elif core:
@@ -788,7 +786,6 @@ class Query(object):
                 sql = str(self.show())
                 with marvindb.db.engine.connect() as conn:
                     results = conn.execution_options(stream_results=True).execute(sql)
-                    #res = results.fetchall()
                     res = self._fetch_data(results)
             elif orm:
                 # use the orm query
@@ -803,8 +800,7 @@ class Query(object):
             # clear the session
             self.session.close()
 
-            # memory_usage('7 - after session close, before results dump')
-
+            # create the Marvin Results
             final = Results(results=res, query=self.query, count=count, mode=self.mode,
                             returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
                             chunk=self.limit, runtime=self.runtime, start=start, end=end)
@@ -864,8 +860,19 @@ class Query(object):
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
 
-    def _fetch_data(self, obj):
-        ''' Fetch query using fetchall or fetchmany '''
+    def _fetch_data(self, obj, n_rows=100000):
+        ''' Fetch query results using fetchall or fetchmany
+
+        Parameters:
+            obj (object):
+                SQLAlchemy connection object or Pyscopg2 cursor object
+            n_rows (int):
+                The number of rows to fetch at a time
+
+        Returns:
+            A list of results from a query
+
+        '''
 
         res = []
 
@@ -873,7 +880,7 @@ class Query(object):
             res = obj.fetchall()
         else:
             while True:
-                rows = obj.fetchmany(100000)
+                rows = obj.fetchmany(n_rows)
                 if rows:
                     res.extend(rows)
                 else:
@@ -881,7 +888,19 @@ class Query(object):
         return res
 
     def _check_history(self, check_only=None):
-        ''' Check the query against the query history schema '''
+        ''' Check the query against the query history schema
+
+        Looks up the current query in the query table of
+        the history schema and if found, returns the SQLA object
+
+        Parameters:
+            check_only (bool):
+                If True, only checks the history schema but does not write to it
+
+        Returns:
+            The SQLAlchemy row from the query table of the history schema
+
+        '''
 
         sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
         stringfilter = self.searchfilter.strip().replace(' ', '')
