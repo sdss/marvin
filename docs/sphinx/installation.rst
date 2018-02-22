@@ -155,6 +155,9 @@ try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew
 permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
 you are not using the Mac OSX system version of Python.
 
+If you receive a permissions error regarding `pip` attempting to install a package in a different directory other
+than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicated in `Marvin Issue 373 <https://github.com/sdss/marvin/issues/373>`_
+
 
 How to test that marvin has been installed correctly
 ----------------------------------------------------
