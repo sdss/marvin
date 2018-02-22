@@ -86,6 +86,7 @@ Quick Image Plot
 
 .. code-block:: python
 
+    import matplotlib.pyplot as plt
     from marvin.utils.general.images import showImage
     image = showImage(plateifu='8553-12702', show_image=False)
     fig, ax = plt.subplots()
