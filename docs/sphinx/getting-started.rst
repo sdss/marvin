@@ -303,7 +303,7 @@ When you open a Marvin Cube in local mode, Marvin provides convenient quick acce
     cube.flux.shape
     (4563, 34, 34)
 
-    # access the inverse and mask array
+    # access the inverse and mask arrays
     cube.flux.ivar
 
     cube.flux.mask
