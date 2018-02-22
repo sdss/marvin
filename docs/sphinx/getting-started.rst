@@ -98,27 +98,27 @@ To plot the spectrum for this Marvin Spaxel, you must first access the Marvin Sp
 ::
 
     # get the spectrum
-    spectrum = spaxel.spectrum
+    flux = spaxel.flux
 
     # plot the spectrum
-    spectrum.plot()
+    flux.plot()
 
     # access the data as Numpy arrays
-    spectrum.flux
+    flux.value
     array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # the ivar array
-    spectrum.ivar
+    flux.ivar
     array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # the mask array
-    spectrum.mask
+    flux.mask
     array([   0,    0,    0, ..., 1026, 1026, 1026], dtype=int32)
 
     # the wavelength array
-    spectrum.wavelength
+    flux.wavelength
     array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
             10349.03843826,  10351.42166679,  10353.80544415])
 
