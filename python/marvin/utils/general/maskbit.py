@@ -5,8 +5,8 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-01-11 17:01:35
+# @Last modified by:   andrews
+# @Last modified time: 2018-02-22 16:02:75
 
 from __future__ import division, print_function, absolute_import
 
@@ -330,10 +330,10 @@ class Maskbit(object):
         Example:
             >>> maps = Maps(plateifu='8485-1901')
             >>> ha = maps['emline_gflux_ha_6564']
-            >>> ha.pixmask._labels_to_bits('DONOTUSE')
+            >>> ha.pixmask.labels_to_bits('DONOTUSE')
             [30]
 
-            >>> ha.pixmask._labels_to_value(['NOCOV', 'LOWCOV'])
+            >>> ha.pixmask.labels_to_value(['NOCOV', 'LOWCOV'])
             [0, 1]
         """
         return self.values_to_bits(self.labels_to_value(labels))
