@@ -4,6 +4,30 @@ Marvin's Change Log
 [2.2.2] - unreleased
 --------------------
 
+Fixed
+^^^^^
+
+- Issue `#324 <https://github.com/sdss/marvin/issues/324>`_
+- Issue `#325 <https://github.com/sdss/marvin/issues/325>`_
+- Issue `#326 <https://github.com/sdss/marvin/issues/326>`_
+- Issue `#327 <https://github.com/sdss/marvin/issues/327>`_
+- Issue `#330 <https://github.com/sdss/marvin/issues/330>`_
+- Issue `#333 <https://github.com/sdss/marvin/issues/333>`_
+- Issue `#343 <https://github.com/sdss/marvin/issues/343>`_
+- Issue `#351 <https://github.com/sdss/marvin/issues/351>`_
+- Issue `#353 <https://github.com/sdss/marvin/issues/353>`_
+- Issue `#357 <https://github.com/sdss/marvin/issues/357>`_
+- Issue `#358 <https://github.com/sdss/marvin/issues/358>`_
+- Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
+
+Added
+^^^^^
+
+- global compression option
+- (un)compress_data utility functions in the brain
+- msgpack compression option for response content data
+
+
 [2.2.1] - 2018/01/12
 --------------------
 
