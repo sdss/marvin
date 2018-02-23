@@ -122,7 +122,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 
