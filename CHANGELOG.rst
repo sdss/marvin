@@ -13,11 +13,15 @@ Fixed
 - Issue `#327 <https://github.com/sdss/marvin/issues/327>`_
 - Issue `#330 <https://github.com/sdss/marvin/issues/330>`_
 - Issue `#333 <https://github.com/sdss/marvin/issues/333>`_
+- Issue `#335 <https://github.com/sdss/marvin/issues/335>`_
+- Issue `#336 <https://github.com/sdss/marvin/issues/336>`_
 - Issue `#343 <https://github.com/sdss/marvin/issues/343>`_
 - Issue `#351 <https://github.com/sdss/marvin/issues/351>`_
 - Issue `#353 <https://github.com/sdss/marvin/issues/353>`_
 - Issue `#357 <https://github.com/sdss/marvin/issues/357>`_
 - Issue `#358 <https://github.com/sdss/marvin/issues/358>`_
+- Issue `#360 <https://github.com/sdss/marvin/issues/360>`_
+- Issue `#363 <https://github.com/sdss/marvin/issues/363>`_
 - Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
 
 Added
