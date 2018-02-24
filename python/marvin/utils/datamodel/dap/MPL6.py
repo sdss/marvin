@@ -25,7 +25,7 @@ HYB10 = Bintype('HYB10', description='Binning and stellar continuum fitting as V
 # The two lines in the OII doublet is fitted independently for gaussian
 # measurements. In that case oii_3727 and oii_3729 are populated. For summed
 # flux measurements, the lines cannot be separated so oiid_3728 contains
-# the summed flux. In that case, oii_3729 is null and only kept to maintain
+# the summed flux. In that case, oii_3729 is null and only kept to maintain`
 # the number of channels constant.
 oiid_channel = Channel('oiid_3728', formats={'string': 'OIId 3728',
                        'latex': r'$\forb{O\,IId}\;\lambda\lambda 3728$'}, idx=0)
@@ -68,7 +68,7 @@ MPL6_emline_channels = [
     Channel('nii_6549', formats={'string': 'NII 6549',
                                  'latex': r'$\forb{N\,II}\;\lambda 6549$'}, idx=17),
     Channel('ha_6564', formats={'string': 'H-alpha 6564',
-                                'latex': r'H$\alpha\;\lambda 6564$'}, idx=19),
+                                'latex': r'H$\alpha\;\lambda 6564$'}, idx=18),
     Channel('nii_6585', formats={'string': 'NII 6585',
                                  'latex': r'$\forb{N\,II}\;\lambda 6585$'}, idx=19),
     Channel('sii_6718', formats={'string': 'SII 6718',
@@ -174,9 +174,12 @@ MPL6_maps = [
                          channels=[Channel('elliptical_radius',
                                            formats={'string': 'Elliptical radius'},
                                            idx=0, unit=u.arcsec),
+                                   Channel('R/Re',
+                                           formats={'string': 'Radius/Effective Radius'},
+                                           idx=1, unit=None),
                                    Channel('elliptical_azimuth',
                                            formats={'string': 'Elliptical azimuth'},
-                                           idx=1, unit=u.deg)],
+                                           idx=2, unit=u.deg)],
                          formats={'string': 'Elliptical coordinates'},
                          description='Elliptical polar coordinates of each spaxel from '
                                      'the galaxy center.'),
@@ -200,9 +203,12 @@ MPL6_maps = [
                          channels=[Channel('lum_weighted_elliptical_radius',
                                            formats={'string': 'Light-weighted radial offset'},
                                            idx=0, unit=u.arcsec),
+                                   Channel('R/Re',
+                                           formats={'string': 'Radius/Effective Radius'},
+                                           idx=1, unit=None),
                                    Channel('lum_weighted_elliptical_azimuth',
                                            formats={'string': 'Light-weighted azimuthal offset'},
-                                           idx=1, unit=u.deg)],
+                                           idx=2, unit=u.deg)],
                          description='Light-weighted elliptical polar coordinates of each bin '
                                      'from the galaxy center.'),
     Property('bin_area', ivar=False, mask=False,
