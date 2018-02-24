@@ -16,7 +16,7 @@ from marvin.utils.datamodel.maskbit import get_maskbits
 from .base import Bintype, DAPDataModel, Property, MultiChannelProperty
 from .base import spaxel, Channel, Model
 from .base import spaxel as spaxel_unit
-from .MPL5 import GAU_MILESHC, ALL, NRE, SPX, VOR10
+from .MPL5 import GAU_MILESHC, SPX
 
 
 HYB10 = Bintype('HYB10', description='Binning and stellar continuum fitting as VOR10, '
@@ -346,7 +346,7 @@ MPL6_models = [
 
 # MPL-6 DapDataModel goes here
 MPL6 = DAPDataModel('2.1.3', aliases=['MPL-6', 'MPL6'],
-                    bintypes=[ALL, NRE, VOR10, SPX, HYB10],
+                    bintypes=[SPX, HYB10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,
                     models=MPL6_models,
