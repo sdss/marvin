@@ -1,12 +1,17 @@
 Marvin's Change Log
 ===================
 
-[2.2.2] - unreleased
+[2.2.3] - unreleased
+--------------------
+
+[2.2.2] - 2018/02/25
 --------------------
 
 Fixed
 ^^^^^
 
+- MPL-6 issue with all H-alpha extensions mapped to NII instead.  Indexing issue in MPL-6 datamodel.
+- MPL-6 issue with elliptical coordinate extensions;  missing R/Reff channel in MPL-6 datamodel.
 - Issue `#324 <https://github.com/sdss/marvin/issues/324>`_
 - Issue `#325 <https://github.com/sdss/marvin/issues/325>`_
 - Issue `#326 <https://github.com/sdss/marvin/issues/326>`_
@@ -23,13 +28,6 @@ Fixed
 - Issue `#360 <https://github.com/sdss/marvin/issues/360>`_
 - Issue `#363 <https://github.com/sdss/marvin/issues/363>`_
 - Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
-
-Added
-^^^^^
-
-- global compression option
-- (un)compress_data utility functions in the brain
-- msgpack compression option for response content data
 
 
 [2.2.1] - 2018/01/12
