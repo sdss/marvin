@@ -53,7 +53,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from marvin import config
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
@@ -76,7 +76,7 @@ def _mask_nocov(mask, dapmap, ivar=None):
 
     try:
         return dapmap.pixmask.get_mask('NOCOV')
-    except (MarvinError, AttributeError, IndexError):
+    except (MarvinError, AttributeError, IndexError, TypeError):
         return ivar == 0
 
 
