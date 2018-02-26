@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-26 13:42:08
+# @Last Modified time: 2018-02-26 13:46:30
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -63,7 +63,7 @@ def _make_masked(data, mask=None):
     arr_data = data
     if not isinstance(data, np.ma.MaskedArray):
         # mask out NaN values if a mask not provided
-        warnings.warn("Masking out NaN values!")
+        warnings.warn("Masking out NaN values!", MarvinUserWarning)
         mask = mask if mask else np.isnan(data)
         # create array
         arr_data = np.ma.MaskedArray(data, mask=mask)

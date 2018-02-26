@@ -141,6 +141,43 @@ class TestSpaxel(object):
         assert spaxel.emline_gflux_ha_6564 is not None
         assert spaxel.binned_flux is not None
 
+    @pytest.mark.parametrize('force',
+                             [('cube'),
+                              ('maps'),
+                              ('models')],
+                             ids=[])
+    def test_force_load(self, galaxy, force):
+
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        spaxel = SpaxelBase(x, y, plateifu=galaxy.plateifu, cube=True,
+                            maps=False, modelcube=False)
+
+        assert spaxel.cube_quantities is not None
+        assert spaxel.maps_quantities == {}
+        assert spaxel.modelcube_quantities == {}
+
+        spaxel.load(force=force)
+
+        if force == 'cube':
+            assert spaxel.cube_quantities is not None
+        elif force == 'maps':
+            assert spaxel.maps_quantities is not None
+        elif force == 'models':
+            assert spaxel.modelcube_quantities is not None
+
+    def test_wrong_force_load(self, galaxy):
+
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        spaxel = SpaxelBase(x, y, plateifu=galaxy.plateifu, cube=True,
+                            maps=False, modelcube=False)
+
+        with pytest.raises(AssertionError) as ee:
+            spaxel.load(force='crap')
+
+        assert 'force can only be cube, maps, or models' in str(ee)
+
     def test_no_inputs(self):
 
         with pytest.raises(MarvinError) as ee:
