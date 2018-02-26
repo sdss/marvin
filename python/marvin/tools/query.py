@@ -778,16 +778,18 @@ class Query(object):
                 # use the db api cursor
                 sql = str(self.show())
                 conn = marvindb.db.engine.raw_connection()
-                cursor = conn.cursor()
+                cursor = conn.cursor('query_cursor')
                 cursor.execute(sql)
-                res = cursor.fetchall()
+                #res = cursor.fetchall()
+                res = self._fetch_data(cursor)
                 conn.close()
             elif core:
                 # use the core connection
                 sql = str(self.show())
                 with marvindb.db.engine.connect() as conn:
                     results = conn.execution_options(stream_results=True).execute(sql)
-                    res = results.fetchall()
+                    #res = results.fetchall()
+                    res = self._fetch_data(results)
             elif orm:
                 # use the orm query
                 yield_num = int(10**(np.floor(np.log10(self.totalcount))))
@@ -835,7 +837,7 @@ class Query(object):
                       'end': end,
                       'caching': self._caching}
             try:
-                ii = Interaction(route=url, params=params)
+                ii = Interaction(route=url, params=params, stream=True)
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
                 # self._cleanUpQueries()
@@ -861,6 +863,22 @@ class Query(object):
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
+
+    def _fetch_data(self, obj):
+        ''' Fetch query using fetchall or fetchmany '''
+
+        res = []
+
+        if not self.return_all:
+            res = obj.fetchall()
+        else:
+            while True:
+                rows = obj.fetchmany(100000)
+                if rows:
+                    res.extend(rows)
+                else:
+                    break
+        return res
 
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''

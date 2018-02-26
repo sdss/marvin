@@ -14,7 +14,7 @@ from __future__ import print_function
 from __future__ import division
 
 from flask import Blueprint, render_template, request
-from flask_classy import route
+from flask_classful import route
 from marvin.core.exceptions import MarvinError
 from marvin.tools.plate import Plate as mPlate
 from marvin.utils.general import getImagesByPlate

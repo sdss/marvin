@@ -14,7 +14,7 @@ from __future__ import division
 from __future__ import print_function
 
 from flask import jsonify
-from flask_classy import route
+from flask_classful import route
 
 from marvin.tools.rss import RSS
 from marvin.api.base import BaseView, arg_validate as av

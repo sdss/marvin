@@ -13,7 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classy import FlaskView, route
+from flask_classful import FlaskView, route
 from brain.api.base import processRequest
 from marvin import marvindb
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,

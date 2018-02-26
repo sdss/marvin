@@ -13,7 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask import Blueprint, render_template, request
-from flask_classy import FlaskView, route
+from flask_classful import FlaskView, route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import getRandomImages

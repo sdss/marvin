@@ -16,7 +16,7 @@ from __future__ import print_function
 import json
 import os
 
-from flask_classy import route
+from flask_classful import route
 from flask import jsonify, Response
 
 from marvin import config

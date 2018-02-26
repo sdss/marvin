@@ -43,6 +43,7 @@
 from __future__ import division, print_function, absolute_import
 
 import copy
+import warnings
 
 from astropy import units
 
@@ -52,7 +53,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from marvin import config
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
 
@@ -414,6 +415,8 @@ def plot(*args, **kwargs):
     if sigma_clip:
         percentile_clip = False
 
+    assert (not symmetric) or (not log_cb), 'Colorbar cannot be both symmetric and logarithmic.'
+
     use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 
     # Create no coverage, bad data, low SNR, and negative value masks.
@@ -461,7 +464,7 @@ def plot(*args, **kwargs):
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
-    patch_kws = set_patch_style(extent=extent)
+    patch_kws = set_patch_style(extent=imshow_kws['extent'])
 
     # finish setup of unmasked spaxels and colorbar range
     imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])

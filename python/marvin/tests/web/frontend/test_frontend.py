@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 16:41:53
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 15:31:30
+# @Last Modified time: 2018-02-14 15:09:53
 
 from __future__ import print_function, division, absolute_import
 import time
@@ -20,10 +20,11 @@ from marvin.tests.web.frontend.models import IndexPage, SearchPage
 @pytest.fixture()
 def page(driver, base_url):
     page = IndexPage(driver, root_uri=base_url)
+    page.get('')
     return page
 
 
-@pytest.mark.xfail()
+# @pytest.mark.xfail()
 @pytest.mark.timeout(45)
 @pytest.mark.usefixtures('live_server')
 class TestIndexPage(object):
@@ -54,7 +55,7 @@ def search_page(driver, base_url):
     return page
 
 
-@pytest.mark.xfail()
+# @pytest.mark.xfail()
 @pytest.mark.timeout(45)
 @pytest.mark.usefixtures('live_server')
 class TestSearchPage(object):

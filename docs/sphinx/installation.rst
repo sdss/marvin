@@ -28,11 +28,6 @@ Installation
 
     If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
-.. admonition:: Attention
-    :class: attention
-
-    Marvin is, at this time, not supported in Windows installations. Please, use Linux or Mac instead. In the future, for education purposes, we may consider making marvin Windows-compatible.
-
 **or to upgrade an existing Marvin installation**::
 
     pip install --upgrade sdss-marvin
@@ -159,6 +154,9 @@ If your Marvin installation fails at any point during the pip install process wi
 try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew distribution will not require
 permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
 you are not using the Mac OSX system version of Python.
+
+If you receive a permissions error regarding `pip` attempting to install a package in a different directory other
+than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicated in `Marvin Issue 373 <https://github.com/sdss/marvin/issues/373>`_
 
 
 How to test that marvin has been installed correctly
