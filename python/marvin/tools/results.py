@@ -81,6 +81,10 @@ class ColumnGroup(ParameterGroup):
         return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
                 '{2}'.format(self, len(self), old))
 
+    def __str__(self):
+        ''' New string repr for prints '''
+        return self.__repr__()
+
 
 def marvintuple(name, params=None, **kwargs):
     ''' Custom namedtuple class factory for Marvin Results rows
