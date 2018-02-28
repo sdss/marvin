@@ -31,7 +31,7 @@ from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
-                                  _sort_dir)
+                                  _sort_dir, getDapRedux, getDefaultMapPath)
 from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 
@@ -234,3 +234,35 @@ class TestSortDir(object):
         dir_ = _sort_dir(spec, class_)
         dir_public = [it for it in dir_ if it[0] is not '_']
         assert set(dir_public) == set(expected)
+
+
+class TestGetDapRedux(object):
+
+    def test_success(self, release, versions):
+        path = getDapRedux(release)
+        verpath = '/'.join(versions)
+
+        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        full = '{0}/{1}'.format(base, verpath)
+        assert 'default' not in path
+        assert base in path
+        assert path == full
+
+
+class TestGetDefaultMapPath(object):
+
+    def test_success(self, galaxy):
+        path = getDefaultMapPath(release=galaxy.release, plate=galaxy.plate, ifu=galaxy.ifu,
+                                 daptype=galaxy.bintemp, mode='MAPS')
+        verpath = '/'.join((galaxy.drpver, galaxy.dapver))
+        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        full = '{0}/{1}'.format(base, verpath)
+
+        if galaxy.release == 'MPL-4':
+            assert 'default' in path
+        else:
+            assert 'MAPS' in path
+
+        assert full in path
+
+

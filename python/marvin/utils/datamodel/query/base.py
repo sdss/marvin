@@ -12,8 +12,9 @@ from __future__ import print_function, division, absolute_import
 
 from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.utils.datamodel import DataModelList
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.general.structs import FuzzyList
+from marvin import config
 
 from sqlalchemy_utils import get_hybrid_properties
 
@@ -24,6 +25,7 @@ import six
 import yaml
 import yamlordereddictloader
 import inspect
+import warnings
 
 from astropy.table import Table
 from fuzzywuzzy import process
@@ -48,13 +50,44 @@ class QueryDataModel(object):
         self._exclude = exclude
         self.dap_datamodel = kwargs.get('dapdm', None)
         self._marvinform = MarvinForm(release=release)
-        self._cleanup_keys()
+        self._mode = kwargs.get('mode', config.mode)
+        self._setup_mode()
         self._check_datamodels()
 
     def __repr__(self):
 
         return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}, n_total={3}>'
                 .format(self.release, len(self.groups), len(self.parameters), len(self._keys)))
+
+    def _setup_mode(self):
+        ''' Setup the mode the retrieve the query keys '''
+
+        if self._mode == 'local':
+            self._cleanup_keys()
+        elif self._mode == 'remote':
+            from marvin.api.api import Interaction
+            url = config.urlmap['api']['getparams']['url']
+            try:
+                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+            except Exception as e:
+                warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
+                self._keys = []
+            else:
+                self._keys = ii.getData()
+                self._remove_query_params()
+        elif self._mode == 'auto':
+            if config.db:
+                self._mode = 'local'
+            else:
+                self._mode = 'remote'
+            self._setup_mode()
+
+    def _remove_query_params(self):
+        ''' Remove keys from query_params best list '''
+        origlist = query_params.list_params('full')
+        for okey in origlist:
+            if okey in self._keys:
+                self._keys.remove(okey)
 
     def _cleanup_keys(self):
         ''' Cleans up the list for MarvinForm keys '''
@@ -84,13 +117,7 @@ class QueryDataModel(object):
         self._keys = newkeys
 
         # remove keys from query_params best list here
-        origlist = query_params.list_params('full')
-        for okey in origlist:
-            if okey in self._keys:
-                self._keys.remove(okey)
-
-        # # set parameters
-        # self._parameters = [QueryParameter(k) for k in self._keys]
+        self._remove_query_params()
 
     def _check_datamodels(self, parameters=None):
         ''' Check and match the datamodels '''

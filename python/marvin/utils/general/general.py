@@ -677,9 +677,9 @@ def getDefaultMapPath(**kwargs):
         ifu (int):
             The ifu number
         bintype (str):
-            The bintype of the default file to grab. Defaults to MAPS
+            The bintype of the default file to grab, i.e. MAPS or LOGCUBE. Defaults to MAPS
         daptype (str):
-            The daptype of the default map to grab.  Defaults to SPX-MILESHC
+            The daptype of the default map to grab.  Defaults to SPX-GAU-MILESHC
 
     Returns:
         maplink (str):
@@ -703,10 +703,8 @@ def getDefaultMapPath(**kwargs):
     # TODO: this is likely to break in future MPL/DRs. Just a heads up.
     if '4' in release:
         name = 'mangadefault'
-    elif '5' in release:
-        name = 'mangadap5'
     else:
-        return None
+        name = 'mangadap5'
 
     # construct the url link to default maps file
     maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,

@@ -512,7 +512,7 @@ var Carousel = function () {
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2018-01-05 14:29:32
+* @Last Modified time: 2018-02-26 11:37:15
 */
 
 //
@@ -678,7 +678,7 @@ var Galaxy = function () {
                 labels: labels,
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
-                xlabel: 'Wavelength [Ångströms]'
+                xlabel: 'Observed Wavelength [Ångströms]'
             });
         }
 

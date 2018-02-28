@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-01-03 15:04:06
+# @Last Modified time: 2018-02-26 13:46:30
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -25,6 +25,7 @@ import scipy.stats as stats
 import six
 import pandas as pd
 import itertools
+import warnings
 
 try:
     import mpl_scatter_density as msd
@@ -62,6 +63,7 @@ def _make_masked(data, mask=None):
     arr_data = data
     if not isinstance(data, np.ma.MaskedArray):
         # mask out NaN values if a mask not provided
+        warnings.warn("Masking out NaN values!", MarvinUserWarning)
         mask = mask if mask else np.isnan(data)
         # create array
         arr_data = np.ma.MaskedArray(data, mask=mask)

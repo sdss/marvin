@@ -4,6 +4,15 @@ Marvin's Change Log
 [2.2.3] - unreleased
 --------------------
 
+Fixed
+^^^^^
+
+- Issue `#341 <https://github.com/sdss/marvin/issues/341>`_
+- Issue `#348 <https://github.com/sdss/marvin/issues/348>`_
+- Issue `#354 <https://github.com/sdss/marvin/issues/354>`_
+- Issue `#355 <https://github.com/sdss/marvin/issues/355>`_
+
+
 [2.2.2] - 2018/02/25
 --------------------
 
