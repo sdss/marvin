@@ -11,6 +11,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import copy
+from os.path import join
+import re
 
 import pytest
 import numpy as np
@@ -70,6 +72,39 @@ class TestMaps(object):
         assert cube is not None
         assert cube.plateifu == galaxy.plateifu
         assert cube.mangaid == galaxy.mangaid
+
+    @pytest.mark.slow
+    def test_datamodel(self, galaxy, exporigin):
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
+
+        fin = 'manga-{0}-{1}-MAPS-{2}.fits.gz'.format(galaxy.plate, galaxy.ifu, galaxy.bintemp)
+        path = join(galaxy.mangaanalysis, galaxy.drpver, galaxy.dapver, galaxy.bintemp,
+                    str(galaxy.plate), galaxy.ifu, fin)
+        hdus = astropy.io.fits.open(path)
+
+        for hdu in hdus[1:]:
+
+            if ('IVAR' in hdu.name) or ('MASK' in hdu.name) or ('SIGMACORR' in hdu.name):
+                continue
+
+            name = hdu.name.lower()
+            data = hdu.data
+            header = hdu.header
+
+            if len(data.shape) < 3:
+                val = maps.getMap(name, exact=True).value
+                assert val == pytest.approx(data, 0.0001), name
+
+            else:
+                for kk, vv in header.items():
+                    channel_num = re.match('^[0-9]+$', kk[1:])
+
+                    if (kk[0] == 'C') and (channel_num is not None):
+                        channel = '_'.join(re.findall(r"[\w']+", vv)).lower()
+                        fullname = '_'.join((name, channel))
+                        val = maps.getMap(fullname, exact=True).value
+                        assert val == pytest.approx(data[int(kk[1:]) - 1], 0.0001), name
 
     @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
