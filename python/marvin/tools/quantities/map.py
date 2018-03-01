@@ -386,7 +386,9 @@ class Map(units.Quantity, QuantityMixIn):
         else:
             sig = np.sqrt(1. / ivar)
             sig_out = value**power * power * sig * value
-            return 1 / sig_out**2.
+            ivar = 1 / sig_out**2.
+            ivar[np.isnan(ivar) | np.isinf(ivar)] = 0
+            return ivar
 
     @staticmethod
     def _unit_propagation(unit1, unit2, op):
