@@ -309,7 +309,7 @@ class Galaxy(BaseWebView):
 
                 self.galaxy['dapmaps'] = daplist
                 dm = datamodel[self._dapver]
-                self.galaxy['dapbintemps'] = dm.get_bintemps()
+                self.galaxy['dapbintemps'] = dm.get_bintemps(db_only=True)
                 current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
@@ -380,7 +380,7 @@ class Galaxy(BaseWebView):
         output['dapmapselect'] = dapdefaults
 
         dm = datamodel[self._dapver]
-        output['dapbintemps'] = dm.get_bintemps()
+        output['dapbintemps'] = dm.get_bintemps(db_only=True)
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         # try to jsonify the result

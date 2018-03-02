@@ -225,6 +225,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             datadb = mdb.datadb
             dapdb = mdb.dapdb
 
+            dm = datamodel[self.release]
+            if dm.db_only:
+                if self.bintype not in dm.db_only:
+                    raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+
+
             if self.data:
                 assert isinstance(self.data, dapdb.ModelCube), \
                     'data is not an instance of marvindb.dapdb.ModelCube.'
