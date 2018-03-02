@@ -92,7 +92,7 @@ class TestCube(object):
         assert cube.data_origin == cube.exporigin
         redshift = cube.nsa.redshift \
             if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
-        assert pytest.approx(redshift, galaxy.redshift)
+        assert redshift == pytest.approx(galaxy.redshift)
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -182,7 +182,7 @@ class TestWCS(object):
         assert cube.data_origin == cube.exporigin
         assert isinstance(cube.wcs, wcs.WCS)
         comp = cube.wcs.wcs.pc if cube.data_origin == 'api' else cube.wcs.wcs.cd
-        assert pytest.approx(comp[1, 1], 0.000138889)
+        assert comp[1, 1] == pytest.approx(0.000138889)
 
 
 class TestPickling(object):
