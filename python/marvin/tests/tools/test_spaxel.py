@@ -435,7 +435,7 @@ class TestCubeGetSpaxel(object):
 
         spaxel = cube.getSpaxel(**params)
         flux = spaxel.flux.value
-        assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
+        assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
                              [('sasurl', 'http://www.averywrongurl.com')],
@@ -461,7 +461,7 @@ class TestCubeGetSpaxel(object):
         expected = galaxy.spaxel['flux']
 
         spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).flux
-        assert pytest.approx(spectrum.value[galaxy.spaxel['specidx']], expected)
+        assert spectrum.value[galaxy.spaxel['specidx']] == pytest.approx(expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
@@ -484,17 +484,17 @@ class TestCubeGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        assert pytest.approx(spaxel_slice_file.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.flux.value[spec_idx], flux)
+        assert spaxel_slice_file.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_slice_db.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_slice_api.flux.value[spec_idx] == pytest.approx(flux)
 
-        assert pytest.approx(spaxel_slice_file.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_db.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_api.flux.ivar[spec_idx], ivar)
+        assert spaxel_slice_file.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_slice_db.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_slice_api.flux.ivar[spec_idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_slice_file.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_db.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_api.flux.mask[spec_idx], mask)
+        assert spaxel_slice_file.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_slice_db.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_slice_api.flux.mask[spec_idx] == pytest.approx(mask)
 
         xx_cen = galaxy.spaxel['x_cen']
         yy_cen = galaxy.spaxel['y_cen']
@@ -507,17 +507,17 @@ class TestCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.flux.value[spec_idx], flux)
+        assert spaxel_getspaxel_file.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_db.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_api.flux.value[spec_idx] == pytest.approx(flux)
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.flux.ivar[spec_idx], ivar)
+        assert spaxel_getspaxel_file.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_db.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_api.flux.ivar[spec_idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.flux.mask[spec_idx], mask)
+        assert spaxel_getspaxel_file.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_db.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_api.flux.mask[spec_idx] == pytest.approx(mask)
 
 
 class TestMapsGetSpaxel(object):
@@ -659,14 +659,14 @@ class TestModelCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux[idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux[idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux[idx], flux)
+        assert spaxel_getspaxel_file.binned_flux[idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_db.binned_flux[idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_api.binned_flux[idx] == pytest.approx(flux)
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux.ivar[idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux.ivar[idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux.ivar[idx], ivar)
+        assert spaxel_getspaxel_file.binned_flux.ivar[idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_db.binned_flux.ivar[idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_api.binned_flux.ivar[idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux.mask[idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux.mask[idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux.mask[idx], mask)
+        assert spaxel_getspaxel_file.binned_flux.mask[idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_db.binned_flux.mask[idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_api.binned_flux.mask[idx] == pytest.approx(mask)

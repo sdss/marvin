@@ -119,7 +119,7 @@ class TestMaps(object):
     def test_maps_redshift(self, maps, galaxy):
         redshift = maps.nsa.redshift \
             if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
-        assert pytest.approx(redshift, galaxy.redshift)
+        assert redshift == pytest.approx(galaxy.redshift)
 
     def test_release(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
