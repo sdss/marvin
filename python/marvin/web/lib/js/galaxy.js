@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2018-03-01 14:47:51
+* @Last Modified time: 2018-03-02 17:22:31
 */
 
 //
@@ -88,7 +88,7 @@ var Galaxy = function () {
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
-        this.dapselect.selectpicker('deselectAll');
+        //this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
         // nsa elements
         this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
@@ -368,6 +368,8 @@ var Galaxy = function () {
                         // Load the Spaxel and Maps
                         _this.loadSpaxel(spaxel, spectitle);
                         _this.initHeatmap(maps);
+                        // refresh the map selectpicker
+                        _this.dapselect.selectpicker('refresh');
                     }).catch(function (error) {
                         var errmsg = error.message === undefined ? _this5.makeError('initDynamic') : error.message;
                         _this.updateSpecMsg(errmsg, -1);
