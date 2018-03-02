@@ -2,7 +2,7 @@
 MPL-4:
     params:
         all:
-            count: 565
+            count: 566
             subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.crpix1', 'spaxelprop.x', 'spaxelprop.specindex_nad']
         best:
             count: 41
@@ -39,7 +39,7 @@ MPL-4:
 MPL-5:
     params:
         all:
-            count: 697
+            count: 698
             subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
@@ -74,7 +74,7 @@ MPL-5:
 MPL-6:
     params:
         all:
-            count: 1634
+            count: 1671
             subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
         best:
             count: 41
