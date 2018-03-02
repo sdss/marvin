@@ -1,8 +1,45 @@
 Marvin's Change Log
 ===================
 
-[2.2.2] - unreleased
+[2.2.3] - unreleased
 --------------------
+
+Fixed
+^^^^^
+
+- Issue `#341 <https://github.com/sdss/marvin/issues/341>`_
+- Issue `#348 <https://github.com/sdss/marvin/issues/348>`_
+- Issue `#354 <https://github.com/sdss/marvin/issues/354>`_
+- Issue `#355 <https://github.com/sdss/marvin/issues/355>`_
+- Issue `#367 <https://github.com/sdss/marvin/issues/367>`_
+- Issue `#369 <https://github.com/sdss/marvin/issues/369>`_
+
+
+[2.2.2] - 2018/02/25
+--------------------
+
+Fixed
+^^^^^
+
+- MPL-6 issue with all H-alpha extensions mapped to NII instead.  Indexing issue in MPL-6 datamodel.
+- MPL-6 issue with elliptical coordinate extensions;  missing R/Reff channel in MPL-6 datamodel.
+- Issue `#324 <https://github.com/sdss/marvin/issues/324>`_
+- Issue `#325 <https://github.com/sdss/marvin/issues/325>`_
+- Issue `#326 <https://github.com/sdss/marvin/issues/326>`_
+- Issue `#327 <https://github.com/sdss/marvin/issues/327>`_
+- Issue `#330 <https://github.com/sdss/marvin/issues/330>`_
+- Issue `#333 <https://github.com/sdss/marvin/issues/333>`_
+- Issue `#335 <https://github.com/sdss/marvin/issues/335>`_
+- Issue `#336 <https://github.com/sdss/marvin/issues/336>`_
+- Issue `#343 <https://github.com/sdss/marvin/issues/343>`_
+- Issue `#351 <https://github.com/sdss/marvin/issues/351>`_
+- Issue `#353 <https://github.com/sdss/marvin/issues/353>`_
+- Issue `#357 <https://github.com/sdss/marvin/issues/357>`_
+- Issue `#358 <https://github.com/sdss/marvin/issues/358>`_
+- Issue `#360 <https://github.com/sdss/marvin/issues/360>`_
+- Issue `#363 <https://github.com/sdss/marvin/issues/363>`_
+- Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
+
 
 [2.2.1] - 2018/01/12
 --------------------

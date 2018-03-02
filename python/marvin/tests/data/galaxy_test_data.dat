@@ -149,14 +149,14 @@
                 ra: 232.545752
                 dec: 48.688534
                 specidx: 200
-                x_cen: -1
-                y_cen: -2
-                flux: 0.016027471
-                ivar: 361.13596
+                x_cen: -5
+                y_cen: -12
+                flux: -0.018191988
+                ivar: 323.38205
                 mask: 1026
-                model_flux: 0.016027471
-                model_ivar: 361.13596
-                model_mask: 33
+                model_flux: 0
+                model_ivar: 0
+                model_mask: 45
             dap:
                 x: 17
                 y: 17
@@ -277,8 +277,8 @@
                 ra: 230.511423
                 dec: 43.534076
                 specidx: 200
-                x_cen: -5
-                y_cen: -12
+                x_cen: -21
+                y_cen: -4
                 flux: 0.021661391
                 ivar: 2145.38110
                 mask: 0
@@ -311,10 +311,10 @@
                 ra: 230.511423
                 dec: 43.534076
                 specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: 0.021661391
-                ivar: 2145.38110
+                x_cen: -21
+                y_cen: -4
+                flux: 0.030110553
+                ivar: 1966.09070
                 mask: 0
                 model_flux: 0.021661391
                 model_ivar: 2145.38110

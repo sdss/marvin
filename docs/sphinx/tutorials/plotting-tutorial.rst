@@ -105,7 +105,7 @@ BPT Plot
 
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
 .. image:: ../_static/bpt.png
 
@@ -359,7 +359,7 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
     nii_ha = maps.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
 
     # Mask out non-star-forming spaxels
-    masks, __ = maps.get_bpt(show_plot=False)
+    masks, __, __ = maps.get_bpt(show_plot=False)
 
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)

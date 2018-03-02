@@ -62,7 +62,7 @@ class TestModelCubeInit(object):
 
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
-        assert pytest.approx(model_cube.nsa.z, galaxy.redshift)
+        assert model_cube.nsa.z == pytest.approx(galaxy.redshift)
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):

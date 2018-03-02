@@ -157,6 +157,8 @@ class ArgValidator(object):
         ''' Resets the final args dict '''
         self.final_args = {}
         self.final_args.update(self.base_args)
+        # also reset the bintemp validators so toggles between MPL-4 and 5+ don't cause validation errors
+        params['galaxy']['bintemp'].validators = []
 
     def _get_url(self):
         ''' Retrieve the URL route from the map based on the request endpoint '''
