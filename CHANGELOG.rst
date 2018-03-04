@@ -7,12 +7,24 @@ Marvin's Change Log
 Fixed
 ^^^^^
 
+- Issue `#182 <https://github.com/sdss/marvin/issues/182>`_
+- Issue `#202 <https://github.com/sdss/marvin/issues/202>`_
+- Issue `#319 <https://github.com/sdss/marvin/issues/319>`_
+- Issue `#334 <https://github.com/sdss/marvin/issues/334>`_
 - Issue `#341 <https://github.com/sdss/marvin/issues/341>`_
 - Issue `#348 <https://github.com/sdss/marvin/issues/348>`_
+- Issue `#352 <https://github.com/sdss/marvin/issues/352>`_
 - Issue `#354 <https://github.com/sdss/marvin/issues/354>`_
 - Issue `#355 <https://github.com/sdss/marvin/issues/355>`_
+- Issue `#362 <https://github.com/sdss/marvin/issues/362>`_
 - Issue `#367 <https://github.com/sdss/marvin/issues/367>`_
 - Issue `#369 <https://github.com/sdss/marvin/issues/369>`_
+- Issue `#372 <https://github.com/sdss/marvin/issues/372>`_
+- Issue `#375 <https://github.com/sdss/marvin/issues/375>`_
+- Issue `#378 <https://github.com/sdss/marvin/issues/378>`_
+- Issue `#379 <https://github.com/sdss/marvin/issues/379>`_
+- Issue `#385 <https://github.com/sdss/marvin/issues/385>`_
+- Issue `#386 <https://github.com/sdss/marvin/issues/386>`_
 
 
 [2.2.2] - 2018/02/25
