@@ -184,7 +184,7 @@ You can plot any map simply by using the **plot** method on your Map object.
     # plot the H-alpha flux map
     hamap.plot()
 
-You should see a pop-up window containing the H-alpha emission line flux map for 8485-1901.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.  To see a full list of available options, use **plot?**, or go here (describe in new page in Maps).  Help for all Marvin Tools and methods can be displayed by appending a **?** to the end of the name, excluding the parantheses.
+You should see a pop-up window containing the H-alpha emission line flux map for 8485-1901.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.  To see a full list of available options, use **plot?**, or see the :ref:`Maps page<marvin-tools-maps>`.  Help for all Marvin Tools and methods can be displayed by appending a **?** to the end of the name, excluding the parantheses.
 
 ::
 
@@ -247,7 +247,7 @@ In the previous section, you downloaded the data files for 8485-1901 directly to
     print(cube)
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
-Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.  Please see the Astropy documentation for a full description of FITS handling. (add link)
+Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.  Please see the Astropy documentation for a full description of `FITS handling <http://docs.astropy.org/en/stable/io/fits/>`_.
 
 ::
 
@@ -407,7 +407,7 @@ Sometimes it can helpful to see the optical SDSS image for the MaNGA target of i
     image.filename
     '/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/1901.png'
 
-This creates and returns a Python Image Library object (add link), which you can manipulate as you see fit.  These images contain full WCS information in the **info** attribute, if you need to overlay things.  **info** returns a standard Python dictionary.  If you wish to convert to
+This creates and returns a `Python Image Library object <https://pillow.readthedocs.io/en/latest/>`_, which you can manipulate as you see fit.  These images contain full WCS information in the **info** attribute, if you need to overlay things.  **info** returns a standard Python dictionary.  If you wish to convert to
 
 ::
 
