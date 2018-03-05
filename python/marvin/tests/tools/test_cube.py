@@ -38,6 +38,13 @@ class TestCube(object):
         with pytest.raises(AssertionError):
             Cube(filename='not_a_filename.fits')
 
+    @pytest.mark.parametrize('objtype', [('maps'), ('models')])
+    def test_cube_wrong_file(self, galaxy, objtype):
+        path = galaxy.mapspath if objtype == 'maps' else galaxy.modelpath
+        with pytest.raises(MarvinError) as cm:
+            Cube(filename=path)
+        assert 'Trying to open a DAP file with Marvin Cube' in str(cm.value)
+
     def test_cube_load_from_local_database_success(self, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)

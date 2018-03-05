@@ -73,6 +73,15 @@ class TestMaps(object):
         assert cube.plateifu == galaxy.plateifu
         assert cube.mangaid == galaxy.mangaid
 
+    @pytest.mark.parametrize('objtype, errmsg',
+                             [('cube', 'Trying to open a non DAP file with Marvin Maps'),
+                              ('models', 'Trying to open a DAP LOGCUBE with Marvin Maps')])
+    def test_maps_wrong_file(self, galaxy, objtype, errmsg):
+        path = galaxy.cubepath if objtype == 'cube' else galaxy.modelpath
+        with pytest.raises(MarvinError) as cm:
+            Maps(filename=path)
+        assert errmsg in str(cm.value)
+
     def test_nobintype_in_db(self, galaxy):
 
         if galaxy.release != 'MPL-6':

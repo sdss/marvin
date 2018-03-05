@@ -18,7 +18,9 @@ Fixed
 - Issue `#354 <https://github.com/sdss/marvin/issues/354>`_
 - Issue `#355 <https://github.com/sdss/marvin/issues/355>`_
 - Issue `#362 <https://github.com/sdss/marvin/issues/362>`_
+- Issue `#366 <https://github.com/sdss/marvin/issues/366>`_
 - Issue `#367 <https://github.com/sdss/marvin/issues/367>`_
+- Issue `#368 <https://github.com/sdss/marvin/issues/368>`_
 - Issue `#369 <https://github.com/sdss/marvin/issues/369>`_
 - Issue `#372 <https://github.com/sdss/marvin/issues/372>`_
 - Issue `#375 <https://github.com/sdss/marvin/issues/375>`_

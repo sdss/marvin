@@ -116,6 +116,15 @@ class TestModelCube(object):
 
         assert 'Specified bintype ALL is not available in the DB' in str(cm.value)
 
+    @pytest.mark.parametrize('objtype, errmsg',
+                             [('cube', 'Trying to open a non DAP file with Marvin ModelCube'),
+                              ('maps', 'Trying to open a DAP MAPS with Marvin ModelCube')])
+    def test_modelcube_wrong_file(self, galaxy, objtype, errmsg):
+        path = galaxy.cubepath if objtype == 'cube' else galaxy.mapspath
+        with pytest.raises(MarvinError) as cm:
+            ModelCube(filename=path)
+        assert errmsg in str(cm.value)
+
 
 class TestPickling(object):
 
