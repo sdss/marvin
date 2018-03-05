@@ -10,6 +10,7 @@ Tutorials
 
    tutorials/lean-tutorial
    tutorials/plotting-tutorial
+   First Steps <first-steps>
    Example Queries <tutorials/query-examples>
    tutorials/query-practice
    tutorials/boolean-search-tutorial

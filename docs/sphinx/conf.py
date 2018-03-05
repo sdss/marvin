@@ -169,7 +169,7 @@ html_theme_options = {
     # an arbitrary url.
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin2/", True),
-        ("First steps", "first-steps"),
+        ("Tutorials", "tutorials"),
         ("New Issue", "https://github.com/sdss/marvin/issues/new", True)
     ],
 
