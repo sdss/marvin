@@ -247,6 +247,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.mangaid = self.header['MANGAID'].strip()
         self.plateifu = self.header['PLATEIFU'].strip()
 
+        self._check_file(self.header, self.data, 'Maps')
+
         # We use EMLINE_GFLUX because is present in MPL-4 and 5 and is not expected to go away.
         header = self.data['EMLINE_GFLUX'].header
         naxis = header['NAXIS']

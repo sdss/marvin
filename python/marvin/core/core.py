@@ -348,6 +348,36 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         params = params or {'release': self._release}
         return marvin.api.api.Interaction(url, params=params)
 
+    @staticmethod
+    def _check_file(header, data, objtype):
+        ''' Check the file input to ensure correct tool '''
+
+        # get/check various header keywords
+        bininhdr = ('binkey' in header) or ('bintype' in header)
+        dapinhdr = 'dapfrmt' in header
+        dapfrmt = header['DAPFRMT'] if dapinhdr else None
+
+        # check the file
+        if objtype == 'Maps' or objtype == 'ModelCube':
+            # get indices in daptype
+            daptype = ['MAPS', 'LOGCUBE']
+            dapindex = daptype.index("MAPS") if objtype == 'Maps' else daptype.index("LOGCUBE")
+            altdap = 1 - dapindex
+
+            # check for emline_gflux extension
+            gfluxindata = 'EMLINE_GFLUX' in data
+            wronggflux = (gfluxindata and objtype == 'ModelCube') or \
+                         (not gfluxindata and objtype == 'Maps')
+
+            if not bininhdr:
+                raise MarvinError('Trying to open a non DAP file with Marvin {0}'.format(objtype))
+            else:
+                if (dapfrmt and dapfrmt != daptype[dapindex]) or (wronggflux):
+                    raise MarvinError('Trying to open a DAP {0} with Marvin {1}'.format(daptype[altdap], objtype))
+        elif objtype == 'Cube':
+            if bininhdr or dapinhdr:
+                raise MarvinError('Trying to open a DAP file with Marvin Cube')
+
     def __getstate__(self):
 
         if self.data_origin == 'db':

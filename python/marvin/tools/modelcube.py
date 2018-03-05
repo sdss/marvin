@@ -182,6 +182,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[0].header
+        self._check_file(self.header, self.data, 'ModelCube')
         self.wcs = WCS(self.data['FLUX'].header)
         self._wavelength = self.data['WAVE'].data
         self._redcorr = self.data['REDCORR'].data

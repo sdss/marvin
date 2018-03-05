@@ -11,6 +11,7 @@ Fixed
 - Issue `#202 <https://github.com/sdss/marvin/issues/202>`_
 - Issue `#319 <https://github.com/sdss/marvin/issues/319>`_
 - Issue `#334 <https://github.com/sdss/marvin/issues/334>`_
+- Issue `#339 <https://github.com/sdss/marvin/issues/339>`_
 - Issue `#341 <https://github.com/sdss/marvin/issues/341>`_
 - Issue `#348 <https://github.com/sdss/marvin/issues/348>`_
 - Issue `#352 <https://github.com/sdss/marvin/issues/352>`_
