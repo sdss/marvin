@@ -303,6 +303,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         if sqlalchemy is None:
             raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
 
+        dm = datamodel[self.release]
+        if dm.db_only:
+            if self.bintype not in dm.db_only:
+                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
         else:

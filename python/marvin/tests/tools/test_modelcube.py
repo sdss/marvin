@@ -106,6 +106,16 @@ class TestModelCube(object):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.getMaps(), Maps)
 
+    def test_nobintype_in_db(self, galaxy):
+
+        if galaxy.release != 'MPL-6':
+            pytest.skip('only running this test for MPL6')
+
+        with pytest.raises(MarvinError) as cm:
+            maps = ModelCube(plateifu=galaxy.plateifu, bintype='ALL', release=galaxy.release)
+
+        assert 'Specified bintype ALL is not available in the DB' in str(cm.value)
+
 
 class TestPickling(object):
 

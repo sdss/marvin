@@ -796,9 +796,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'plate':
         name = 'mangaplate'
     elif dltype == 'map':
+        # needs to change to include DR
         if '4' in release:
             name = 'mangamap'
-        elif '5' in release:
+        else:
             name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'

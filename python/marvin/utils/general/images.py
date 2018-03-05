@@ -297,7 +297,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
 
     '''
     # Check inputs
-    assert type(inputlist) == list or type(inputlist) == np.ndarray, 'Input must be of type list or Numpy array'
+    assert isinstance(inputlist, (list, np.ndarray)), 'Input must be of type list or Numpy array'
     idtype = parseIdentifier(inputlist[0])
     assert idtype in ['plateifu', 'mangaid'], 'Input must be of type plate-ifu or mangaid'
     # mode is checked via decorator

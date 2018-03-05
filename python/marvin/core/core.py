@@ -16,6 +16,7 @@ import os
 import re
 import six
 import warnings
+import time
 
 import astropy.io.fits
 
@@ -315,6 +316,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             rsync_access.set_stream()
             rsync_access.commit()
             paths = rsync_access.get_paths()
+            time.sleep(0.001)  # adding a millisecond pause for download to finish and file extistence to register
             self.filename = paths[0]  # doing this for single files, may need to change
 
     @abc.abstractmethod

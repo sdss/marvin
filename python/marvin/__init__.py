@@ -12,7 +12,6 @@ import warnings
 import sys
 import marvin
 from collections import OrderedDict
-from distutils.version import StrictVersion
 
 # Set the Marvin version
 __version__ = '2.2.3dev'
@@ -317,22 +316,12 @@ class MarvinConfig(object):
         self.release = version
 
     def setMPL(self, mplver):
-        """As :func:`setRelease` but check that the version is and MPL."""
-
-        mm = re.search('MPL-([0-9])', mplver)
-        assert mm is not None, 'MPL version must be of form "MPL-[X]"'
-
-        if mm:
-            self.setRelease(mplver)
+        """As :func:`setRelease` but check that the version is an MPL."""
+        self.setRelease(mplver)
 
     def setDR(self, drver):
-        """As :func:`setRelease` but check that the version is and MPL."""
-
-        mm = re.search('DR1([3-9])', drver)
-        assert mm is not None, 'DR version must be of form "DR[XX]"'
-
-        if mm:
-            self.setRelease(drver)
+        """As :func:`setRelease` but check that the version is a DR."""
+        self.setRelease(drver)
 
     def lookUpVersions(self, release=None):
         """Retrieve the DRP and DAP versions that make up a release version.
