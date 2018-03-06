@@ -397,7 +397,10 @@ def plot(*args, **kwargs):
     mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
 
     if title is None:
-        title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
+        if getattr(dapmap, 'datamodel', None) is not None:
+            title = dapmap.datamodel.to_string(title_mode)
+        else:
+            title = ''
 
     try:
         prop = dapmap.datamodel.full()
@@ -405,7 +408,7 @@ def plot(*args, **kwargs):
         prop = ''
 
     # get plotparams from datamodel
-    dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
+    dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
