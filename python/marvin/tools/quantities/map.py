@@ -586,3 +586,7 @@ class EnhancedMap(Map):
         pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
         pixmask.mask = self.mask if self.mask is not None else None
         return pixmask
+
+    @property
+    def datamodel(self):
+        return None
