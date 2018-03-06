@@ -43,6 +43,7 @@
 from __future__ import division, print_function, absolute_import
 
 import copy
+import warnings
 
 from astropy import units
 
@@ -75,7 +76,7 @@ def _mask_nocov(mask, dapmap, ivar=None):
 
     try:
         return dapmap.pixmask.get_mask('NOCOV')
-    except (MarvinError, AttributeError, IndexError):
+    except (MarvinError, AttributeError, IndexError, TypeError):
         return ivar == 0
 
 
@@ -396,7 +397,10 @@ def plot(*args, **kwargs):
     mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
 
     if title is None:
-        title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
+        if getattr(dapmap, 'datamodel', None) is not None:
+            title = dapmap.datamodel.to_string(title_mode)
+        else:
+            title = ''
 
     try:
         prop = dapmap.datamodel.full()
@@ -404,7 +408,7 @@ def plot(*args, **kwargs):
         prop = ''
 
     # get plotparams from datamodel
-    dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
+    dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
@@ -413,6 +417,8 @@ def plot(*args, **kwargs):
 
     if sigma_clip:
         percentile_clip = False
+
+    assert (not symmetric) or (not log_cb), 'Colorbar cannot be both symmetric and logarithmic.'
 
     use_masks = _format_use_masks(use_masks, mask, dapmap, default_masks=params['bitmasks'])
 
@@ -461,7 +467,7 @@ def plot(*args, **kwargs):
     A8A8A8 = colorbar._one_color_cmap(color='#A8A8A8')
 
     # setup masked spaxels
-    patch_kws = set_patch_style(extent=extent)
+    patch_kws = set_patch_style(extent=imshow_kws['extent'])
 
     # finish setup of unmasked spaxels and colorbar range
     imshow_kws = colorbar._set_vmin_vmax(imshow_kws, cb_kws['cbrange'])

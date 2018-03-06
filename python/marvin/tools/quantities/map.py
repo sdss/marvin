@@ -386,7 +386,9 @@ class Map(units.Quantity, QuantityMixIn):
         else:
             sig = np.sqrt(1. / ivar)
             sig_out = value**power * power * sig * value
-            return 1 / sig_out**2.
+            ivar = 1 / sig_out**2.
+            ivar[np.isnan(ivar) | np.isinf(ivar)] = 0
+            return ivar
 
     @staticmethod
     def _unit_propagation(unit1, unit2, op):
@@ -448,6 +450,7 @@ class Map(units.Quantity, QuantityMixIn):
         map1_ivar = self.ivar if self.ivar is not None else np.zeros(self.shape)
         map2_ivar = map2.ivar if map2.ivar is not None else np.zeros(map2.shape)
         map12_ivar = ivar_func[op](map1_ivar, map2_ivar, self.value, map2.value, map12_value)
+        map12_ivar[np.isnan(map12_ivar) | np.isinf(map12_ivar)] = 0
 
         map1_mask = self.mask if self.mask is not None else np.zeros(self.shape, dtype=int)
         map2_mask = map2.mask if map2.mask is not None else np.zeros(map2.shape, dtype=int)
@@ -583,3 +586,7 @@ class EnhancedMap(Map):
         pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
         pixmask.mask = self.mask if self.mask is not None else None
         return pixmask
+
+    @property
+    def datamodel(self):
+        return None

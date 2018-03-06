@@ -309,12 +309,25 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
                 elif obj.wcs.naxis == 3:
                     self.ra, self.dec, __ = obj.wcs.wcs_pix2world([[self.x, self.y, 0]], 0)[0]
 
-    def load(self):
-        """Loads the spaxel data."""
+    def load(self, force=None):
+        """Loads the spaxel data.
 
-        if self.loaded:
+        Loads the spaxel data for cubes/maps/modelcubes.  By default attempts
+        to load whatever is specified when spaxels are instantianted from other
+        Marvin Tools.  Can manually force load a data type with the force
+        keyword.
+
+        Parameters:
+            force ({cube|maps|models}):
+                Str datatype to force load
+        """
+
+        if self.loaded and force is None:
             warnings.warn('already loaded', MarvinUserWarning)
             return
+
+        # setup what will be loaded
+        self._setup_load(force=force)
 
         self._load_cube()
         self._load_maps()
@@ -410,6 +423,46 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
         self._parent_shape = self._modelcube._shape
 
         self.modelcube_quantities = self._modelcube._get_spaxel_quantities(self.x, self.y)
+
+    def _setup_load(self, force=None):
+        ''' Setup the loading for cube/maps/models
+
+        Can manually force load a data type.
+
+        Parameters:
+            force ({cube|maps|models}):
+                Str datatype to force load
+        '''
+
+        # get what is currently loaded
+        flag = self._get_loaded()
+
+        # only do something if force to set.  Otherwise do the original nothing.
+        if force:
+            assert force in ['cube', 'maps', 'models'], 'force can only be cube, maps, or models'
+
+            if force in flag:
+                warnings.warn('{0} is already loaded'.format(force), MarvinUserWarning)
+            else:
+                if force == 'cube' and not self._cube:
+                    self._cube = True
+                elif force == 'maps' and not self._maps:
+                    self._maps = True
+                elif force == 'models' and not self._modelcube:
+                    self._modelcube = True
+                else:
+                    # do nothing
+                    pass
+
+    def _get_loaded(self):
+        ''' Get a flag to indicate what is or is not loaded '''
+
+        dataloads = [self._cube, self._maps, self._modelcube]
+        flags = np.array(['cube', 'maps', 'models'])
+        load_idx = np.where(dataloads)[0]
+        flag = '/'.join(flags[load_idx])
+
+        return flag
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`"""
@@ -558,7 +611,8 @@ class Spaxel(SpaxelBase):
         y_centre = int(self.y - y_mid)
 
         return ('<Marvin Spaxel (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
-                'x_cen={1:d}, y_cen={2:d})>'.format(self, x_centre, y_centre))
+                'x_cen={1:d}, y_cen={2:d}, loaded={3})>'.format(self, x_centre, y_centre,
+                                                                self._get_loaded()))
 
 
 class Bin(SpaxelBase):
@@ -599,7 +653,9 @@ class Bin(SpaxelBase):
         y_centre = int(self.y - y_mid)
 
         return ('<Marvin Bin (plateifu={0.plateifu}, x={0.x:d}, y={0.y:d}; '
-                'x_cen={1:d}, y_cen={2:d}, n_spaxels={3})>'.format(self, x_centre, y_centre, len(self.spaxels)))
+                'x_cen={1:d}, y_cen={2:d}, n_spaxels={3}, loaded={4})>'.format(self, x_centre,
+                                                                               y_centre, len(self.spaxels),
+                                                                               self._get_loaded()))
 
     def _create_spaxels(self):
         """Returns a list of the unbinned spaxels associated with this bin."""

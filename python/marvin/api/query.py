@@ -343,7 +343,7 @@ class QueryView(BaseView):
                 self.results['data'] = column
                 self.results['runtime'] = _get_runtime(query)
 
-        return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
+        return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -430,7 +430,7 @@ class QueryView(BaseView):
             self.update_results(res)
 
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(stream_with_context(json.dumps(self.results)), mimetype='application/json')
+        return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')

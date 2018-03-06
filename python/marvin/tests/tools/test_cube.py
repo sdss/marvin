@@ -38,6 +38,13 @@ class TestCube(object):
         with pytest.raises(AssertionError):
             Cube(filename='not_a_filename.fits')
 
+    @pytest.mark.parametrize('objtype', [('maps'), ('models')])
+    def test_cube_wrong_file(self, galaxy, objtype):
+        path = galaxy.mapspath if objtype == 'maps' else galaxy.modelpath
+        with pytest.raises(MarvinError) as cm:
+            Cube(filename=path)
+        assert 'Trying to open a DAP file with Marvin Cube' in str(cm.value)
+
     def test_cube_load_from_local_database_success(self, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)
@@ -92,7 +99,7 @@ class TestCube(object):
         assert cube.data_origin == cube.exporigin
         redshift = cube.nsa.redshift \
             if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
-        assert pytest.approx(redshift, galaxy.redshift)
+        assert redshift == pytest.approx(galaxy.redshift)
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -182,7 +189,7 @@ class TestWCS(object):
         assert cube.data_origin == cube.exporigin
         assert isinstance(cube.wcs, wcs.WCS)
         comp = cube.wcs.wcs.pc if cube.data_origin == 'api' else cube.wcs.wcs.cd
-        assert pytest.approx(comp[1, 1], 0.000138889)
+        assert comp[1, 1] == pytest.approx(0.000138889)
 
 
 class TestPickling(object):

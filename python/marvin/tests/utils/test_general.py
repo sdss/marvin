@@ -31,7 +31,7 @@ from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
-                                  _sort_dir)
+                                  _sort_dir, getDapRedux, getDefaultMapPath)
 from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 
@@ -42,8 +42,28 @@ def wcs(galaxy):
 
 class TestConvertCoords(object):
 
-    def test_pix_center(self, galaxy):
+    @pytest.mark.parametrize('pifu, expected',
+                             [('7443-12701', [[36, 36],
+                                              [39, 41],
+                                              [37, 31],
+                                              [31, 37],
+                                              [46, 46],
+                                              [26, 26],
+                                              [38, 38],
+                                              [36, 36]]),
+                              ('8485-1901', [[17, 17],
+                                             [20, 22],
+                                             [18, 12],
+                                             [12, 18],
+                                             [27, 27],
+                                             [7, 7],
+                                             [20, 18],
+                                             [17, 17]])])
+    def test_pix_center(self, galaxy, pifu, expected):
         """Tests mode='pix', xyorig='center'."""
+
+        if galaxy.plateifu != pifu:
+            pytest.skip('Skipping non-matching plateifu.')
 
         coords = [[0, 0],
                   [5, 3],
@@ -54,17 +74,8 @@ class TestConvertCoords(object):
                   [1.5, 2.5],
                   [0.4, 0.25]]
 
-        expected = [[17, 17],
-                    [20, 22],
-                    [18, 12],
-                    [12, 18],
-                    [27, 27],
-                    [7, 7],
-                    [20, 18],
-                    [17, 17]]
-
         cubeCoords = convertCoords(coords, mode='pix', shape=galaxy.shape)
-        pytest.approx(cubeCoords, np.array(expected))
+        assert cubeCoords == pytest.approx(np.array(expected))
 
     def test_pix_lower(self, galaxy):
         """Tests mode='pix', xyorig='lower'."""
@@ -83,24 +94,32 @@ class TestConvertCoords(object):
 
         cubeCoords = convertCoords(coords, mode='pix', shape=galaxy.shape,
                                    xyorig='lower')
-        pytest.approx(cubeCoords, np.array(expected))
+        assert cubeCoords == pytest.approx(np.array(expected))
 
-    def test_sky(self, wcs):
+    @pytest.mark.parametrize('naxis0, coords',
+                             [(72, [[230.51104, 43.531993],
+                                    [230.50912, 43.530743],
+                                    [230.50797, 43.534215],
+                                    [230.50932, 43.534215]]),
+                              (34, [[232.5447, 48.690201],
+                                    [232.54259, 48.688948],
+                                    [232.54135, 48.692415],
+                                    [232.54285, 48.692372]])])
+    def test_sky(self, wcs, naxis0, coords):
         """Tests mode='sky'."""
 
-        coords = np.array([[232.5447, 48.690201],
-                           [232.54259, 48.688948],
-                           [232.54135, 48.692415],
-                           [232.54285, 48.692372]])
+        print('wcs', wcs._naxis[0])
+        if wcs._naxis[0] != naxis0:
+            pytest.skip('Skipping non-matching cube size.')
 
         expected = [[17, 17],
                     [8, 27],
                     [33, 33],
                     [33, 26]]
 
-        cubeCoords = convertCoords(coords, mode='sky', wcs=wcs)
+        cubeCoords = convertCoords(np.array(coords), mode='sky', wcs=wcs)
 
-        pytest.approx(cubeCoords, np.array(expected))
+        assert cubeCoords == pytest.approx(np.array(expected))
 
     @pytest.mark.parametrize('coords, mode, xyorig',
                              [([-100, 0], 'pix', 'center'),
@@ -234,3 +253,33 @@ class TestSortDir(object):
         dir_ = _sort_dir(spec, class_)
         dir_public = [it for it in dir_ if it[0] is not '_']
         assert set(dir_public) == set(expected)
+
+
+class TestGetDapRedux(object):
+
+    def test_success(self, release, versions):
+        path = getDapRedux(release)
+        verpath = '/'.join(versions)
+
+        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        full = '{0}/{1}'.format(base, verpath)
+        assert 'default' not in path
+        assert base in path
+        assert path == full
+
+
+class TestGetDefaultMapPath(object):
+
+    def test_success(self, galaxy):
+        path = getDefaultMapPath(release=galaxy.release, plate=galaxy.plate, ifu=galaxy.ifu,
+                                 daptype=galaxy.bintemp, mode='MAPS')
+        verpath = '/'.join((galaxy.drpver, galaxy.dapver))
+        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        full = '{0}/{1}'.format(base, verpath)
+
+        if galaxy.release == 'MPL-4':
+            assert 'default' in path
+        else:
+            assert 'MAPS' in path
+
+        assert full in path

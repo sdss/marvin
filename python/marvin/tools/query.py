@@ -1060,7 +1060,9 @@ class Query(object):
 
             return str(sql)
         elif self.mode == 'remote':
-            print('Cannot show full SQL query in remote mode, use the Results showQuery')
+            sql = 'Cannot show full SQL query in remote mode, use the Results showQuery'
+            warnings.warn(sql, MarvinUserWarning)
+            return sql
 
     def reset(self):
         ''' Resets all query attributes '''

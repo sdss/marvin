@@ -19,3 +19,6 @@ pympler>=0.5
 sphinx>=1.6
 sphinx_bootstrap_theme>=0.4.12
 sphinxcontrib-httpdomain>=1.5.0
+
+msgpack>=0.5.4
+msgpack-numpy>=0.4.2
