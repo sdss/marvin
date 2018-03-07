@@ -29,6 +29,7 @@ from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
 from brain import bconfig
 from brain.core.core import URLMapDict
+from brain.core.exceptions import BrainError
 
 # Inits the log
 from brain.core.logger import initLog
@@ -97,12 +98,15 @@ class MarvinConfig(object):
         self.add_github_message = True
         self._allowed_releases = {}
 
+        # perform some checks
+        self._check_netrc()
+        self._checkConfig()
+        self._setDbConfig()
+
+        # setup some paths
         self._plantTree()
         self._checkSDSSAccess()
         self._check_manga_dirs()
-        self._setDbConfig()
-        self._checkConfig()
-        self._check_netrc()
         self.setDefaultDrpAll()
 
     def _checkPaths(self, name):
@@ -113,14 +117,17 @@ class MarvinConfig(object):
             MANGA_SPECTRO_ANALYSIS directory
         '''
 
+        # set the access work path
+        workpath = 'mangawork' if self.access == 'collab' else self.release.lower()
+
         name = name.upper()
         if name not in os.environ:
             if name == 'SAS_BASE_DIR':
                 path_dir = os.path.expanduser('~/sas')
             elif name == 'MANGA_SPECTRO_REDUX':
-                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/redux')
+                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), '{0}/manga/spectro/redux'.format(workpath))
             elif name == 'MANGA_SPECTRO_ANALYSIS':
-                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), 'mangawork/manga/spectro/analysis')
+                path_dir = os.path.join(os.path.abspath(os.environ['SAS_BASE_DIR']), '{0}/manga/spectro/analysis'.format(workpath))
 
             if not os.path.exists(path_dir):
                 warnings.warn('no {0}_DIR found. Creating it in {1}'.format(name, path_dir))
@@ -130,19 +137,14 @@ class MarvinConfig(object):
     def _check_netrc(self):
         """Makes sure there is a valid netrc."""
 
-        netrc_path = os.path.join(os.environ['HOME'], '.netrc')
-
-        if not os.path.exists(netrc_path):
-            warnings.warn('cannot find a .netrc file in your HOME directory. '
-                          'Remote functionality may not work. Go to '
-                          'https://api.sdss.org/doc/manga/marvin/api.html#marvin-authentication '
-                          'for more information.', MarvinUserWarning)
-            return
-
-        if oct(os.stat(netrc_path).st_mode)[-3:] != '600':
-            warnings.warn('your .netrc file has not 600 permissions. Please fix it by '
-                          'running chmod 600 ~/.netrc. Authentication will not work with '
-                          'permissions different from 600.')
+        try:
+            valid_netrc = bconfig._check_netrc()
+        except BrainError as e:
+            pass
+        else:
+            # if it's valid, then auto set to collaboration
+            if valid_netrc:
+                self.access = 'collab'
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
@@ -237,6 +239,9 @@ class MarvinConfig(object):
     @access.setter
     def access(self, value):
         bconfig.access = value
+        if bconfig.access == 'collab':
+            self._update_releases()
+            self._check_manga_dirs()
 
 #################################################
 
@@ -445,7 +450,7 @@ class MarvinConfig(object):
 
     def _addExternal(self, name):
         ''' Adds an external product into the path '''
-        assert type(name) == str, 'name must be a string'
+        assert isinstance(name, str), 'name must be a string'
         externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
         extern_envvar = '{0}_DIR'.format(name.upper())
         os.environ[extern_envvar] = externdir
