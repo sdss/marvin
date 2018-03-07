@@ -100,7 +100,7 @@ class MarvinDB(object):
 
     def _setSpaxelPropDict(self):
         ''' Set the SpaxelProp lookup dictionary '''
-        newmpls = [m for m in config._mpldict.keys() if m > 'MPL-4']
+        newmpls = [m for m in config._allowed_releases.keys() if m > 'MPL-4']
         spdict = {'MPL-4': 'SpaxelProp'}
         newdict = {mpl: 'SpaxelProp{0}'.format(mpl.split('-')[1]) for mpl in newmpls}
         spdict.update(newdict)

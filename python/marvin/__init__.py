@@ -95,6 +95,7 @@ class MarvinConfig(object):
         self.download = False
         self.use_sentry = True
         self.add_github_message = True
+        self._allowed_releases = {}
 
         self._plantTree()
         self._checkSDSSAccess()
@@ -205,12 +206,12 @@ class MarvinConfig(object):
     @release.setter
     def release(self, value):
         value = value.upper()
-        if value not in self._mpldict:
+        if value not in self._allowed_releases:
             raise MarvinError('trying to set an invalid release version. Valid releases are: {0}'
-                              .format(', '.join(sorted(list(self._mpldict)))))
+                              .format(', '.join(self._allowed_releases)))
         self._release = value
 
-        drpver = self._mpldict[self.release][0]
+        drpver = self._allowed_releases[self.release][0]
         self.drpall = self._getDrpAllPath(drpver)
 
     @property
@@ -228,6 +229,14 @@ class MarvinConfig(object):
     @_traceback.setter
     def _traceback(self, value):
         bconfig.traceback = value
+
+    @property
+    def access(self):
+        return bconfig.access
+
+    @access.setter
+    def access(self, value):
+        bconfig.access = value
 
 #################################################
 
@@ -284,18 +293,37 @@ class MarvinConfig(object):
         ''' Set the db configuration '''
         self.db = getDbMachine()
 
-    def _checkConfig(self):
-        ''' Check the config '''
-        # set and sort the base MPL dictionary
+    def _update_releases(self):
+        ''' Update the allowed releases based on access '''
+
+        # define release dictionaries
         mpldict = {'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
-                   'MPL-4': ('v1_5_1', '1.1.1')}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_2', None)}
-        mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
-        self._mpldict = OrderedDict(mplsorted)
+                   'MPL-4': ('v1_5_1', '1.1.1')}
+
+        drdict = {'DR15': ('v2_4_0', '2.2.0')}
+
+        # set the allowed releases based on access
+        self._allowed_releases = {}
+        if self.access == 'public':
+            self._allowed_releases.update(drdict)
+        elif self.access == 'collab':
+            self._allowed_releases.update(drdict)
+            self._allowed_releases.update(mpldict)
+
+        # create and sort the final OrderedDict
+        relsorted = sorted(self._allowed_releases.items(), key=lambda p: p[1][0], reverse=True)
+        self._allowed_releases = OrderedDict(relsorted)
+
+    def _checkConfig(self):
+        ''' Check the config '''
+
+        # update the allowed releases
+        self._update_releases()
 
         # Check the versioning config
         if not self.release:
-            topkey = list(self._mpldict)[0]
+            topkey = list(self._allowed_releases)[0]
             log.info('No release version set. Setting default to {0}'.format(topkey))
             self.release = topkey
 
@@ -317,10 +345,12 @@ class MarvinConfig(object):
 
     def setMPL(self, mplver):
         """As :func:`setRelease` but check that the version is an MPL."""
+
         self.setRelease(mplver)
 
     def setDR(self, drver):
         """As :func:`setRelease` but check that the version is a DR."""
+
         self.setRelease(drver)
 
     def lookUpVersions(self, release=None):
@@ -341,7 +371,7 @@ class MarvinConfig(object):
         release = release or self.release
 
         try:
-            drpver, dapver = self._mpldict[release]
+            drpver, dapver = self._allowed_releases[release]
         except KeyError:
             raise MarvinError('MPL/DR version {0} not found in lookup table. '
                               'No associated DRP/DAP versions. '
@@ -361,7 +391,7 @@ class MarvinConfig(object):
         """
 
         # Flip the mpldict
-        verdict = {val[0]: key for key, val in self._mpldict.items()}
+        verdict = {val[0]: key for key, val in self._allowed_releases.items()}
 
         try:
             release = verdict[drpver]

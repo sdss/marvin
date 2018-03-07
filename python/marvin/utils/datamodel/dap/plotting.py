@@ -15,7 +15,7 @@ from marvin import config
 __ALL__ = ('get_dap_maplist', 'get_default_mapset', 'get_default_plot_params')
 
 
-DAPKEYS = [config.lookUpVersions(k)[1] for k in config._mpldict.keys()
+DAPKEYS = [config.lookUpVersions(k)[1] for k in config._allowed_releases.keys()
            if config.lookUpVersions(k)[1] and 'v' not in config.lookUpVersions(k)[1]]
 
 
