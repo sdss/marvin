@@ -1308,17 +1308,17 @@ def turn_off_ion(show_plot=True):
     if not show_plot and plt_was_interactive:
         plt.ioff()
 
+    fignum_init = plt.get_fignums()
+
     yield plt
 
     if show_plot:
         plt.ioff()
         plt.show()
     else:
-        fignum = plt.get_fignums()
-        if fignum:
-            plt.close(fignum[0])
-        else:
-            plt.close()
+        for ii in plt.get_fignums():
+            if ii not in fignum_init:
+                plt.close(ii)
 
     # Restores original ion() status
     if plt_was_interactive and not plt.isinteractive():
