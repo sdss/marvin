@@ -134,6 +134,23 @@ class MarvinConfig(object):
                 os.makedirs(path_dir)
             os.environ[name] = path_dir
 
+    @staticmethod
+    def set_custom_path(name, path):
+        ''' Set a temporary custom environment variable path
+
+        Custom define a new environment variable in the current
+        os session.  Puts it in your os.environ.  To permanently
+        set a custom variable, use your .bashrc or .cshrc file.
+
+        Parameters:
+            name (str):
+                The name of the environment variable
+            path (str):
+                The file path
+        '''
+        name = name.upper()
+        os.environ[name] = path
+
     def _check_netrc(self):
         """Makes sure there is a valid netrc."""
 
@@ -462,15 +479,20 @@ class MarvinConfig(object):
 
     def _plantTree(self):
         ''' Sets up the sdss tree product root '''
-        if 'TREE_DIR' not in os.environ:
-            # set up tree using marvin's extern package
-            self._addExternal('tree')
-            try:
-                from tree.tree import Tree
-            except ImportError:
-                self._tree = None
-            else:
-                self._tree = Tree(key='MANGA')
+
+        tree_config = 'sdsswork' if self.access == 'collab' else self.release.lower()
+
+        # if 'TREE_DIR' not in os.environ:
+
+        # testing always using the python Tree as override
+        # set up tree using marvin's extern package
+        self._addExternal('tree')
+        try:
+            from tree.tree import Tree
+        except ImportError:
+            self._tree = None
+        else:
+            self._tree = Tree(key='MANGA', config=tree_config)
 
     def _checkSDSSAccess(self):
         ''' Checks the client sdss_access setup '''
