@@ -163,7 +163,6 @@ class MarvinConfig(object):
             # if it's valid, then auto set to collaboration
             if valid_netrc:
                 self.access = 'collab'
-                #pass
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
@@ -248,12 +247,6 @@ class MarvinConfig(object):
 
         # update and recheck the releases
         self._check_config()
-
-        # # possible replant the tree based on release and access
-        # with self._replant_tree(self.release) as val:
-        #     pass
-
-        # self._check_manga_dirs()
 
     @property
     def session_id(self):
