@@ -10,6 +10,7 @@ import os
 import re
 import warnings
 import sys
+import contextlib
 import marvin
 from collections import OrderedDict
 
@@ -100,7 +101,7 @@ class MarvinConfig(object):
 
         # perform some checks
         self._check_netrc()
-        self._checkConfig()
+        self._check_config()
         self._setDbConfig()
 
         # setup some paths
@@ -162,6 +163,7 @@ class MarvinConfig(object):
             # if it's valid, then auto set to collaboration
             if valid_netrc:
                 self.access = 'collab'
+                #pass
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
@@ -228,10 +230,30 @@ class MarvinConfig(object):
         if value not in self._allowed_releases:
             raise MarvinError('trying to set an invalid release version. Valid releases are: {0}'
                               .format(', '.join(self._allowed_releases)))
-        self._release = value
 
-        drpver = self._allowed_releases[self.release][0]
+        # set the new release and possibly replant the tree
+        with self._replant_tree(value) as val:
+            self._release = val
+
+        drpver, __ = self.lookUpVersions(value)
         self.drpall = self._getDrpAllPath(drpver)
+
+    @property
+    def access(self):
+        return bconfig.access
+
+    @access.setter
+    def access(self, value):
+        bconfig.access = value
+
+        # update and recheck the releases
+        self._check_config()
+
+        # # possible replant the tree based on release and access
+        # with self._replant_tree(self.release) as val:
+        #     pass
+
+        # self._check_manga_dirs()
 
     @property
     def session_id(self):
@@ -248,17 +270,6 @@ class MarvinConfig(object):
     @_traceback.setter
     def _traceback(self, value):
         bconfig.traceback = value
-
-    @property
-    def access(self):
-        return bconfig.access
-
-    @access.setter
-    def access(self, value):
-        bconfig.access = value
-        if bconfig.access == 'collab':
-            self._update_releases()
-            self._check_manga_dirs()
 
 #################################################
 
@@ -323,7 +334,8 @@ class MarvinConfig(object):
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_0', '2.2.0')}
+        drdict = {'DR15': ('v2_4_0', '2.2.0'),
+                  'DR14': ('v2_2_0', '2.1.0')}
 
         # set the allowed releases based on access
         self._allowed_releases = {}
@@ -337,19 +349,32 @@ class MarvinConfig(object):
         relsorted = sorted(self._allowed_releases.items(), key=lambda p: p[1][0], reverse=True)
         self._allowed_releases = OrderedDict(relsorted)
 
-    def _checkConfig(self):
-        ''' Check the config '''
+    def _get_latest_release(self, mpl_only=None):
+        ''' Get the latest release from allowed list '''
+
+        if mpl_only:
+            return [r for r in list(self._allowed_releases) if 'MPL' in r][0]
+
+        return list(self._allowed_releases)[0]
+
+    def _check_config(self):
+        ''' Check the release in the config '''
 
         # update the allowed releases
         self._update_releases()
 
-        # Check the versioning config
+        # Check for release version and if in allowed list
+        latest = self._get_latest_release(mpl_only=self.access == 'collab')
         if not self.release:
-            topkey = list(self._allowed_releases)[0]
-            log.info('No release version set. Setting default to {0}'.format(topkey))
-            self.release = topkey
+            log.info('No release version set. Setting default to {0}'.format(latest))
+            self.setRelease(latest)
+        elif self.release and self.release not in self._allowed_releases:
+            # this toggles to latest DR when switching to public
+            warnings.warn('Release {0} is not in the allowed releases.  '
+                          'Switching to {1}'.format(self.release, latest), MarvinUserWarning)
+            self.setRelease(latest)
 
-    def setRelease(self, version):
+    def setRelease(self, version=None):
         """Set the release version.
 
         Parameters:
@@ -361,6 +386,10 @@ class MarvinConfig(object):
             >>> config.setRelease('DR13')
 
         """
+
+        # if no version is set, pull the latest one by default
+        if not version:
+            version = self._get_latest_release()
 
         version = version.upper()
         self.release = version
@@ -480,11 +509,10 @@ class MarvinConfig(object):
     def _plantTree(self):
         ''' Sets up the sdss tree product root '''
 
-        tree_config = 'sdsswork' if self.access == 'collab' else self.release.lower()
-
-        # if 'TREE_DIR' not in os.environ:
+        tree_config = 'sdsswork' if self.access == 'collab' and 'MPL' in self.release else self.release.lower()
 
         # testing always using the python Tree as override
+        # if 'TREE_DIR' not in os.environ:
         # set up tree using marvin's extern package
         self._addExternal('tree')
         try:
@@ -506,6 +534,44 @@ class MarvinConfig(object):
             else:
                 self._sdss_access_isloaded = True
 
+    @contextlib.contextmanager
+    def _replant_tree(self, value):
+        ''' Replants the tree based on release/access toggling
+
+        Context manager for use when setting a new release
+
+        Parameters:
+            value (str):
+                A new release
+        '''
+
+        # switch between public and collab access
+        if hasattr(self, '_tree'):
+            tocollab = self.access == 'collab' and self._tree.config_name != 'sdsswork'
+            topublic = self.access == 'public' and self._tree.config_name == 'sdsswork'
+
+        # switch trees based on release
+
+        # check if release is different
+        is_different = self._release and value != self._release
+
+        # remove and return similar characters from value in self._release
+        if self._release:
+            similar = re.sub('[^{0}]'.format(self._release.replace('-', '\-')), '', value)
+            stilldr = 'DR' in similar
+            stillmpl = 'MPL' in similar
+            relchange = stilldr is False and stillmpl is False
+
+        # yield the value (a release)
+        yield value
+
+        # set tree_config
+        tree_config = 'sdsswork' if 'MPL' in value else value.lower() if 'DR' in value else None
+
+        # replant the tree
+        if is_different:
+            if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
+                self._tree.replant_tree(tree_config)
 
 config = MarvinConfig()
 
