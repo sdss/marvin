@@ -188,7 +188,7 @@ Next Steps
 ----------
 
 - :doc:`../first-steps` (more general introduction to Marvin)
-- :doc:`plotting`
+- :doc:`plotting-tutorial`
 - :doc:`Download Data <../core/downloads>` (avoid repeating the same remote API calls every time you run your script)
 
 |
