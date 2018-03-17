@@ -43,7 +43,6 @@
 from __future__ import division, print_function, absolute_import
 
 import copy
-import warnings
 
 from astropy import units
 
@@ -56,14 +55,17 @@ from marvin import config
 from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
+from marvin.utils.general.maskbit import Maskbit
 
 
-def _mask_nocov(mask, dapmap, ivar=None):
+def _mask_nocov(dapmap, mask, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
         dapmap (marvin.tools.map.Map):
             Marvin Map object.
+        mask (array):
+            Mask for image.
         ivar (array):
             Inverse variance for image. Default is None.
 
@@ -71,11 +73,17 @@ def _mask_nocov(mask, dapmap, ivar=None):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    assert ((mask is not None) and (dapmap is not None)) or (ivar is not None), \
-        'Must provide either (``mask`` and ``dapmap``) or ``ivar``.'
+    assert (dapmap is not None) or (mask is not None) or (ivar is not None), \
+        'Must provide ``dapmap``, ``mask`` or ``ivar``.'
+
+    if dapmap is None:
+        pixmask = Maskbit('MANGA_DAPPIXMASK')
+        pixmask.mask = mask
+    else:
+        pixmask = dapmap.pixmask
 
     try:
-        return dapmap.pixmask.get_mask('NOCOV')
+        return pixmask.get_mask('NOCOV')
     except (MarvinError, AttributeError, IndexError, TypeError):
         return ivar == 0
 
@@ -426,7 +434,7 @@ def plot(*args, **kwargs):
     nocov_conditions = (('NOCOV' in use_masks) or (ivar is not None))
     bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
 
-    nocov = _mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
+    nocov = _mask_nocov(dapmap, mask, ivar) if nocov_conditions else all_true
     bad_data = dapmap.pixmask.get_mask(use_masks, mask=mask) if bad_data_conditions else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true
