@@ -161,6 +161,8 @@ class DataCube(units.Quantity, QuantityMixIn):
         self.redcorr = getattr(obj, 'redcorr', None)
         self.binid = getattr(obj, 'binid', None)
 
+        self._set_unit(getattr(obj, 'unit', None))
+
     def derredden(self):
         """Returns the derreddened datacube."""
 
