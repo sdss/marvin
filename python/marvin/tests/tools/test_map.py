@@ -169,6 +169,21 @@ class TestMap(object):
 
         assert 'Your input value is too ambiguous.' in str(ee.value)
 
+    @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'mode': 'local',
+                                          'data_origin': 'file'})
+    def test_quatities_reorder(self, maps):
+        """Asserts the unit survives a quantity reorder (issue #374)."""
+
+        ha = maps['emline_gflux_ha']
+
+        assert ha is not None
+        assert ha.unit is not None
+
+        reordered_ha = np.moveaxis(ha, 0, -1)
+        assert reordered_ha.unit is not None
+
 
 class TestMapArith(object):
 

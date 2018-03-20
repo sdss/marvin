@@ -59,3 +59,5 @@ class AnalysisProperty(Quantity, QuantityMixIn):
 
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
+
+        self._set_unit(getattr(obj, 'unit', None))
