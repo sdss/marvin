@@ -1,4 +1,4 @@
--r requirements.txt
+-r requirements_web.txt
 
 sphinx>=1.6
 sphinx_bootstrap_theme>=0.4.12
