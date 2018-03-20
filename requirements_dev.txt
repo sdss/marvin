@@ -1,3 +1,4 @@
+-r requirements_doc.txt
 -r requirements_web.txt
 pytest>=3.0.7
 pytest-cov>=2.4.0
@@ -15,10 +16,6 @@ selenium>=3.3.1
 page_objects>=1.1.0
 decorator>=4.1.2
 pympler>=0.5
-
-sphinx>=1.6
-sphinx_bootstrap_theme>=0.4.12
-sphinxcontrib-httpdomain>=1.5.0
 
 msgpack>=0.5.4
 msgpack-numpy>=0.4.2
