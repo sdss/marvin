@@ -34,6 +34,7 @@ Fixed
 - Issue `#374 <https://github.com/sdss/marvin/issues/374>`_: Cube units do not persist under axis reordering.
 - Fixed some problems with test_spaxel tests.
 - Issue `#382 <https://github.com/sdss/marvin/issues/382>`_: Is fuzzywuzzy too fuzzy?
+- Fixed an issue with Astropy 3 in `get_nsa_data()`.
 
 Removed
 ^^^^^^^

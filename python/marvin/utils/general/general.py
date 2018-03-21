@@ -983,7 +983,12 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     if isinstance(value, np.ndarray):
                         value = value.tolist()
                     else:
-                        value = np.asscalar(value)
+                        # In Astropy 2 the value would be an array of size 1
+                        # but in Astropy 3 value is already an scalar and asscalar fails.
+                        try:
+                            value = np.asscalar(value)
+                        except AttributeError:
+                            pass
                     nsa_data[col[4:]] = value
 
             return DotableCaseInsensitive(nsa_data)
