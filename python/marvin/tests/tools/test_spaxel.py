@@ -576,6 +576,34 @@ class TestMapsGetSpaxel(object):
 
         assert len(spaxel.maps_quantities.keys()) > 0
 
+    @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX', 'NONE']))
+    def test_values(self, galaxy, exporigin):
+
+        template = str(galaxy.template)
+
+        if template not in galaxy.dap:
+            pytest.skip()
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
+
+        xx = galaxy.dap['x']
+        yy = galaxy.dap['y']
+
+        for channel in galaxy.dap[template]:
+
+            if channel == 'model':
+                continue
+
+            channel_data = galaxy.dap[template][channel]
+            map = maps[channel]
+
+            assert map[yy, xx].value == pytest.approx(channel_data['value'], abs=1.e-4)
+            assert map.unit.scale == 1e-17
+            assert map.unit.to_string() == channel_data['unit']
+
+            assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=1.e-4)
+            assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=1.e-4)
+
 
 @marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestModelCubeGetSpaxel(object):

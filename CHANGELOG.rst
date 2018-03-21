@@ -4,6 +4,11 @@ Marvin's Change Log
 [2.2.3] - unreleased
 --------------------
 
+Added
+^^^^^
+
+- Added tests for `emline_gflux_ha_6564` and fixed values in galaxy_test_data.
+
 Fixed
 ^^^^^
 

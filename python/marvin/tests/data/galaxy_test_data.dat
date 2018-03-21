@@ -47,31 +47,31 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.925622344017
+                        ivar: 0.92562236
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 29.345
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 29.34503448
                 MILES-THIN:
                     model: []
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.921766579151
+                        ivar: 0.9217666
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 29.2763
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 29.27634775
                 MIUSCAT-THIN:
                     model: []
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.920904278755
+                        ivar: 0.9209043
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 29.4449
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 29.44485646
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[16, 23]]
@@ -106,11 +106,11 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 4.708968353269999e+35
+                        ivar: 47.08968516
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 3.14754e-16
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 31.47541953
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -165,11 +165,11 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 4.708968353269999e+35
+                        ivar: 62.48931
                         mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 3.14754e-16
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 30.744535
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -234,11 +234,11 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 16.4909667969
-                        mask: 0
+                        ivar: 0.0
+                        mask: 1
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 0.0573237
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 0.0
                 MILES-THIN:
                     model: []
                     emline_gflux_ha_6564:
@@ -247,18 +247,18 @@
                         ivar: 0.0
                         mask: 1
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
+                        unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 0.0
                 MIUSCAT-THIN:
                     model: []
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 5.71516084671
-                        mask: 0
+                        ivar: 0.0
+                        mask: 1
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 0.141774
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 0.0
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[31, 31]]
@@ -293,11 +293,11 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 680.29498291
+                        ivar: 680.29495619
                         mask: 32
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 0.0578471
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 0.05784708
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -327,11 +327,11 @@
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 680.29498291
-                        mask: 32
+                        ivar: 3740.394
+                        mask: 0
                         name: 'emline_gflux'
-                        unit: 'erg / (cm2 s spaxel)'
-                        value: 0.0578471
+                        unit: '1e-17 erg / (cm2 s spaxel)'
+                        value: 0.0
             bins:
                 100:
                     ALL-GAU-MILESHC: []
