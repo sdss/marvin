@@ -507,9 +507,9 @@ class TestCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert spaxel_getspaxel_file.flux.value[spec_idx] == pytest.approx(flux)
-        assert spaxel_getspaxel_db.flux.value[spec_idx] == pytest.approx(flux)
-        assert spaxel_getspaxel_api.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_file.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_db.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_api.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
 
         assert spaxel_getspaxel_file.flux.ivar[spec_idx] == pytest.approx(ivar)
         assert spaxel_getspaxel_db.flux.ivar[spec_idx] == pytest.approx(ivar)
@@ -630,6 +630,9 @@ class TestModelCubeGetSpaxel(object):
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
+        if galaxy.bintype != 'SPX':
+            pytest.skip()
+
         modelcube_file = ModelCube(filename=galaxy.modelpath,
                                    bintype=galaxy.bintype, template=galaxy.template,
                                    release=galaxy.release)
@@ -659,9 +662,9 @@ class TestModelCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert spaxel_getspaxel_file.binned_flux[idx] == pytest.approx(flux)
-        assert spaxel_getspaxel_db.binned_flux[idx] == pytest.approx(flux)
-        assert spaxel_getspaxel_api.binned_flux[idx] == pytest.approx(flux)
+        assert spaxel_getspaxel_file.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_db.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_api.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
 
         assert spaxel_getspaxel_file.binned_flux.ivar[idx] == pytest.approx(ivar)
         assert spaxel_getspaxel_db.binned_flux.ivar[idx] == pytest.approx(ivar)

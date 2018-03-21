@@ -31,12 +31,13 @@ Fixed
 - Issue `#383 <https://github.com/sdss/marvin/issues/383>`_
 - Issue `#385 <https://github.com/sdss/marvin/issues/385>`_
 - Issue `#386 <https://github.com/sdss/marvin/issues/386>`_
-- Issue `#374 <https://github.com/sdss/marvin/issues/374>`_: Cube units do not persist under axis reordering
+- Issue `#374 <https://github.com/sdss/marvin/issues/374>`_: Cube units do not persist under axis reordering.
+- Fixed some problems with test_spaxel tests.
 
 Removed
 ^^^^^^^
 
-- The banner that showed up in Safari has been removed since most versions should now work properly
+- The banner that showed up in Safari has been removed since most versions should now work properly.
 
 
 [2.2.2] - 2018/02/25
