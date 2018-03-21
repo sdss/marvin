@@ -152,6 +152,8 @@ class Map(units.Quantity, QuantityMixIn):
         self.mask = getattr(obj, 'mask', None)
         self.binid = getattr(obj, 'binid', None)
 
+        self._set_unit(getattr(obj, 'unit', None))
+
     def getMaps(self):
         """Returns the associated `~marvin.tools.maps.Maps`."""
 

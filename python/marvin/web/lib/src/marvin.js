@@ -29,7 +29,7 @@ class Marvin {
 
         // check the browser on page load
         this.window = $(window);
-        this.window.on('load', this.checkBrowser);
+        // this.window.on('load', this.checkBrowser);
     }
 
     // sets the Sentry raven for monitoring
