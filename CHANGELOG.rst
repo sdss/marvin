@@ -33,6 +33,7 @@ Fixed
 - Issue `#386 <https://github.com/sdss/marvin/issues/386>`_
 - Issue `#374 <https://github.com/sdss/marvin/issues/374>`_: Cube units do not persist under axis reordering.
 - Fixed some problems with test_spaxel tests.
+- Issue `#382 <https://github.com/sdss/marvin/issues/382>`_: Is fuzzywuzzy too fuzzy?
 
 Removed
 ^^^^^^^
