@@ -21,7 +21,7 @@ import warnings
 try:
     import pwd
 except ImportError:
-    pass
+    import winpwd as pwd
 
 import marvin
 
