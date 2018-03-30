@@ -13,7 +13,8 @@ import copy
 import pytest
 
 from marvin import config, marvindb
-from marvin.api.api import Interaction
+#from marvin.api.api import Interaction
+from marvin.tests import TestInteraction as Interaction
 from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
@@ -24,6 +25,9 @@ from sdss_access.path import Path
 
 import yaml
 import warnings
+
+import betamax
+from betamax_serializers import pretty_json
 
 warnings.simplefilter('always')
 
@@ -52,6 +56,20 @@ def pytest_configure(config):
     global travis
     if option:
         travis = TravisSubset()
+
+# configure betamax
+betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
+with betamax.Betamax.configure() as beta_config:
+    beta_config.cassette_library_dir = os.path.join(os.path.dirname(__file__), 'cassettes/')
+    beta_config.default_cassette_options['match_requests_on'] = ['method', 'uri', 'body']
+    beta_config.default_cassette_options['record_mode'] = 'new_episodes'
+    beta_config.default_cassette_options['serialize_with'] = 'prettyjson'
+pytest.mark.usefixtures('betamax_session')
+
+
+def test_beta(betamax_session):
+    path = 'http://localhost:5000' + config.urlmap['api']['getroutemap']['url']
+    betamax_session.get(path)
 
 
 # specific release instance

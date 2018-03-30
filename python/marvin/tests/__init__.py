@@ -177,3 +177,53 @@ def skipIfNoDB(test):
         else:
             return test(self, db, *args, **kwargs)
     return wrapper
+
+import betamax
+from betamax_serializers import pretty_json
+from marvin.api.api import Interaction
+pytest.mark.usefixtures('betamax_session', autouse=True)
+import requests
+from brain.core.exceptions import BrainError
+
+
+class TestInteraction(Interaction):
+
+    def _setup_betamax(self):
+        self.recorder = betamax.Betamax(self.session)
+
+    def _sendRequest(self, request_type):
+        ''' sends the api requests to the server '''
+        assert request_type in ['get', 'post'], 'Valid request types are "get" and "post".'
+
+        self._setup_betamax()
+
+        # Loads the local config parameters
+        self._loadConfigParams()
+        # Send the request
+        try:
+            if request_type == 'get':
+                with self.recorder.use_cassette('marvin_interaction'):
+                    self._response = self.session.get(self.url, params=self.params, timeout=self.timeout,
+                                                      headers=self.headers, stream=self.stream)
+            elif request_type == 'post':
+                with self.recorder.use_cassette('marvin_interaction'):
+                    self._response = self.session.post(self.url, data=self.params, timeout=self.timeout,
+                                                       headers=self.headers, stream=self.stream)
+        except requests.Timeout as rt:
+            self._closeRequestSession()
+            errmsg = 'Your request took longer than 5 minutes and timed out. Please try again or simplify your request.'
+            raise BrainError('Requests Timeout Error: {0}\n{1}'.format(rt, errmsg))
+        except requests.URLRequired as urlreq:
+            self._closeRequestSession()
+            raise BrainError('Requests Valid URL Required: {0}'.format(urlreq))
+        except requests.ConnectionError as con:
+            self._closeRequestSession()
+            raise BrainError('Requests Connection Error: {0}'.format(con))
+        except requests.RequestException as req:
+            self._closeRequestSession()
+            raise BrainError('Ambiguous Requests Error: {0}'.format(req))
+        else:
+            # Check the response if it's good
+            self._checkResponse(self._response)
+
+
