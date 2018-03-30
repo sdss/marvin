@@ -81,6 +81,13 @@ def get_best_fuzzy(value, choices, min_score=75, scorer=fuzz_fuzz.WRatio, return
     if len(value) < 3:
         raise ValueError('your fuzzy search value must be at least three characters long.')
 
+    # If the value contains _ivar or _mask this is probably and incorrect use
+    # of the fuzzy feature. We raise an error.
+    if '_ivar' in value:
+        raise ValueError('_ivar not allowd in search value.')
+    elif '_mask' in value:
+        raise ValueError('_mask not allowd in search value.')
+
     bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
 
     if len(bests) == 0:

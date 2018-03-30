@@ -28,11 +28,6 @@ Installation
 
     If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
-.. admonition:: Attention
-    :class: attention
-
-    Marvin is, at this time, not supported in Windows installations. Please, use Linux or Mac instead. In the future, for education purposes, we may consider making marvin Windows-compatible.
-
 **or to upgrade an existing Marvin installation**::
 
     pip install --upgrade sdss-marvin
@@ -90,7 +85,7 @@ Marvin depends on three pieces of SDSS-wide software:
 
 For convenience, marvin includes these products as external libraries. This means that
 you most likely do not need to worry about any of these products. However, if any
-of these libraries is already installed in your system (i.e., you have defined
+of these libraries are already installed in your system (i.e., you have defined
 ``$MARVIN_BRAIN_DIR``, ``$TREE_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
 wide products instead of its own versions. This is useful for development but note that
 it can also lead to confusions about what version marvin is using.
@@ -102,18 +97,30 @@ it can also lead to confusions about what version marvin is using.
 Local SAS directory structure
 -----------------------------
 
-By default, marvin will look for data files in a directory structure that mirrors the
-`Science Archive Server <https://data.sdss.org/sas>`_. Data downloaded via marvin will
+Marvin requires a certain environment structure to access and (optionally) download data.  By default,
+marvin will look for data files in a directory structure that mirrors the
+`Science Archive Server <https://data.sdss.org/sas>`_. :ref:`Data downloaded via marvin <marvin-download-objects>` will
 also be stored according to that structure. The root of this directory structure is
 defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
 to use the ``drpall`` file for MPL-5, it will try to find it in
 ``$SAS_BASE_DIR/mangawork/manga/spectro/redux/v2_0_1/drpall-v2_0_1.fits``.
 
-If ``$SAS_BASE_DIR`` is not defined, marvin will assume that the base directory is ``$HOME/sas``.
-You can also define your custom ``$MANGA_SPECTRO_REDUX`` and ``$MANGA_SPECTRO_ANALYSIS`` to
-point to the redux and analysis data directories, respectively. As a general advice, if you are
-not using other products that require setting those environment variables, you only want to
-define ``$SAS_BASE_DIR`` (or not define it and assume the data will be stored in ``$HOME/sas``).
+The Marvin environment structure is as follows::
+
+  ======================   ==============================================
+  Environment Variable     Default Path
+  ======================   ==============================================
+  SAS_BASE_DIR             $HOME/sas
+  MANGA_SPECTRO_REDUX      $SAS_BASE_DIR/mangawork/manga/spectro/redux
+  MANGA_SPECTRO_ANALYSIS   $SAS_BASE_DIR/mangawork/manga/spectro/analysis
+  ======================   ==============================================
+
+Marvin will check for these environment variables in your local system.  If the above environment variables are
+not already defined, Marvin will use the specifed default paths.  Otherwise Marvin will adopt your custom paths.
+If you wish to define custom paths, you can update the environment variable paths in your
+``.bashrc`` or ``.cshrc`` file.  As a general advice, if you are
+not using other products that require setting those environment variables, you should only
+define ``$SAS_BASE_DIR`` (or not define it and let Marvin configure itself).
 
 |
 
@@ -160,6 +167,9 @@ try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew
 permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
 you are not using the Mac OSX system version of Python.
 
+If you receive a permissions error regarding `pip` attempting to install a package in a different directory other
+than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicated in `Marvin Issue 373 <https://github.com/sdss/marvin/issues/373>`_
+
 
 How to test that marvin has been installed correctly
 ----------------------------------------------------
@@ -168,14 +178,26 @@ Marvin is built to have you started with minimum configuration on your part. Thi
 marvin is likely to import but maybe not all features will be available. Here are a few commands
 you can try that will inform you if there are problems with your installation.
 
-After installing marvin, start a python/ipython session and run::
+From a terminal window, type::
+
+    check_marvin
+
+This will perform a variety of checks with Marvin and output the results to the terminal.  We may ask you for this output when
+diagnosing any installation issues.  After installing marvin, start a python/ipython session and run::
 
     import marvin
     print(marvin.config.urlmap)
 
 If you get a dictionary with API routes, marvin is connecting correctly to the API server at
-Utah and you can use the remote features. However, if you get ``None``, you may want to
-check the steps in :ref:`setup-netrc`.
+Utah and you can use the remote features. If you get ``None``, you may want to
+check the steps in :ref:`setup-netrc`.  If you get an error message such as
+
+::
+
+    BrainError: Requests Timeout Error: HTTPSConnectionPool(host='api.sdss.org', port=443): Read timed out.
+    Your request took longer than 5 minutes and timed out. Please try again or simplify your request.
+
+this means the servers at Utah have timed out and may possibly be down.  Simply wait and try again later.
 
 Marvin Remote Access Problems
 -----------------------------

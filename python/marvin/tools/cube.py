@@ -163,6 +163,8 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.header = self.data[1].header
         self.wcs = WCS(self.header)
 
+        self._check_file(self.data[0].header, self.data, 'Cube')
+
         self._wavelength = self.data['WAVE'].data
         self._shape = (self.data['FLUX'].header['NAXIS2'],
                        self.data['FLUX'].header['NAXIS1'])

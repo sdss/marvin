@@ -1,8 +1,117 @@
 Marvin's Change Log
 ===================
 
-[2.2.2] - unreleased
+[2.2.3] - 2018/03/20
 --------------------
+
+Added
+^^^^^
+
+- Added tests for `emline_gflux_ha_6564` and fixed values in galaxy_test_data.
+
+Fixed
+^^^^^
+
+- Issue `#182 <https://github.com/sdss/marvin/issues/182>`_
+- Issue `#202 <https://github.com/sdss/marvin/issues/202>`_
+- Issue `#319 <https://github.com/sdss/marvin/issues/319>`_
+- Issue `#322 <https://github.com/sdss/marvin/issues/322>`_
+- Issue `#334 <https://github.com/sdss/marvin/issues/334>`_
+- Issue `#339 <https://github.com/sdss/marvin/issues/339>`_
+- Issue `#341 <https://github.com/sdss/marvin/issues/341>`_
+- Issue `#342 <https://github.com/sdss/marvin/issues/342>`_
+- Issue `#348 <https://github.com/sdss/marvin/issues/348>`_
+- Issue `#352 <https://github.com/sdss/marvin/issues/352>`_
+- Issue `#354 <https://github.com/sdss/marvin/issues/354>`_
+- Issue `#355 <https://github.com/sdss/marvin/issues/355>`_
+- Issue `#362 <https://github.com/sdss/marvin/issues/362>`_
+- Issue `#366 <https://github.com/sdss/marvin/issues/366>`_
+- Issue `#367 <https://github.com/sdss/marvin/issues/367>`_
+- Issue `#368 <https://github.com/sdss/marvin/issues/368>`_
+- Issue `#369 <https://github.com/sdss/marvin/issues/369>`_
+- Issue `#372 <https://github.com/sdss/marvin/issues/372>`_
+- Issue `#375 <https://github.com/sdss/marvin/issues/375>`_
+- Issue `#378 <https://github.com/sdss/marvin/issues/378>`_
+- Issue `#379 <https://github.com/sdss/marvin/issues/379>`_
+- Issue `#383 <https://github.com/sdss/marvin/issues/383>`_
+- Issue `#385 <https://github.com/sdss/marvin/issues/385>`_
+- Issue `#386 <https://github.com/sdss/marvin/issues/386>`_
+- Issue `#374 <https://github.com/sdss/marvin/issues/374>`_: Cube units do not persist under axis reordering.
+- Fixed some problems with test_spaxel tests.
+- Issue `#382 <https://github.com/sdss/marvin/issues/382>`_: Is fuzzywuzzy too fuzzy?
+- Fixed an issue with Astropy 3 in `get_nsa_data()`.
+- Fixed some issues with query results tests
+- Issue `#391 <https://github.com/sdss/marvin/issues/391>`_
+- Issue `#387 <https://github.com/sdss/marvin/issues/387>`_
+- Issue `#384 <https://github.com/sdss/marvin/issues/384>`_
+- Issue `#380 <https://github.com/sdss/marvin/issues/380>`_
+- Issue `#376 <https://github.com/sdss/marvin/issues/376>`_
+- Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
+- Issue `#371 <https://github.com/sdss/marvin/issues/371>`_
+- Issue `#370 <https://github.com/sdss/marvin/issues/370>`_
+- Issue `#363 <https://github.com/sdss/marvin/issues/363>`_
+- Issue `#361 <https://github.com/sdss/marvin/issues/361>`_
+- Issue `#360 <https://github.com/sdss/marvin/issues/360>`_
+- Issue `#359 <https://github.com/sdss/marvin/issues/359>`_
+- Issue `#358 <https://github.com/sdss/marvin/issues/358>`_
+- Issue `#357 <https://github.com/sdss/marvin/issues/357>`_
+- Issue `#353 <https://github.com/sdss/marvin/issues/353>`_
+- Issue `#351 <https://github.com/sdss/marvin/issues/351>`_
+- Issue `#349 <https://github.com/sdss/marvin/issues/349>`_
+- Issue `#346 <https://github.com/sdss/marvin/issues/346>`_
+- Issue `#345 <https://github.com/sdss/marvin/issues/345>`_
+- Issue `#344 <https://github.com/sdss/marvin/issues/344>`_
+- Issue `#343 <https://github.com/sdss/marvin/issues/343>`_
+- Issue `#340 <https://github.com/sdss/marvin/issues/340>`_
+- Issue `#337 <https://github.com/sdss/marvin/issues/337>`_
+- Issue `#336 <https://github.com/sdss/marvin/issues/336>`_
+- Issue `#335 <https://github.com/sdss/marvin/issues/335>`_
+- Issue `#333 <https://github.com/sdss/marvin/issues/333>`_
+- Issue `#331 <https://github.com/sdss/marvin/issues/331>`_
+- Issue `#330 <https://github.com/sdss/marvin/issues/330>`_
+- Issue `#329 <https://github.com/sdss/marvin/issues/329>`_
+- Issue `#328 <https://github.com/sdss/marvin/issues/328>`_
+- Issue `#327 <https://github.com/sdss/marvin/issues/327>`_
+- Issue `#326 <https://github.com/sdss/marvin/issues/326>`_
+- Issue `#325 <https://github.com/sdss/marvin/issues/325>`_
+- Issue `#324 <https://github.com/sdss/marvin/issues/324>`_
+- Issue `#320 <https://github.com/sdss/marvin/issues/320>`_
+- Issue `#307 <https://github.com/sdss/marvin/issues/307>`_
+- Issue `#395 <https://github.com/sdss/marvin/issues/395>`_
+- Issue `#390 <https://github.com/sdss/marvin/issues/390>`_
+
+
+Removed
+^^^^^^^
+
+- The banner that showed up in Safari has been removed since most versions should now work properly.
+
+
+[2.2.2] - 2018/02/25
+--------------------
+
+Fixed
+^^^^^
+
+- MPL-6 issue with all H-alpha extensions mapped to NII instead.  Indexing issue in MPL-6 datamodel.
+- MPL-6 issue with elliptical coordinate extensions;  missing R/Reff channel in MPL-6 datamodel.
+- Issue `#324 <https://github.com/sdss/marvin/issues/324>`_
+- Issue `#325 <https://github.com/sdss/marvin/issues/325>`_
+- Issue `#326 <https://github.com/sdss/marvin/issues/326>`_
+- Issue `#327 <https://github.com/sdss/marvin/issues/327>`_
+- Issue `#330 <https://github.com/sdss/marvin/issues/330>`_
+- Issue `#333 <https://github.com/sdss/marvin/issues/333>`_
+- Issue `#335 <https://github.com/sdss/marvin/issues/335>`_
+- Issue `#336 <https://github.com/sdss/marvin/issues/336>`_
+- Issue `#343 <https://github.com/sdss/marvin/issues/343>`_
+- Issue `#351 <https://github.com/sdss/marvin/issues/351>`_
+- Issue `#353 <https://github.com/sdss/marvin/issues/353>`_
+- Issue `#357 <https://github.com/sdss/marvin/issues/357>`_
+- Issue `#358 <https://github.com/sdss/marvin/issues/358>`_
+- Issue `#360 <https://github.com/sdss/marvin/issues/360>`_
+- Issue `#363 <https://github.com/sdss/marvin/issues/363>`_
+- Issue `#373 <https://github.com/sdss/marvin/issues/373>`_
+
 
 [2.2.1] - 2018/01/12
 --------------------

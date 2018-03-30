@@ -81,6 +81,10 @@ class ColumnGroup(ParameterGroup):
         return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
                 '{2}'.format(self, len(self), old))
 
+    def __str__(self):
+        ''' New string repr for prints '''
+        return self.__repr__()
+
 
 def marvintuple(name, params=None, **kwargs):
     ''' Custom namedtuple class factory for Marvin Results rows
@@ -399,7 +403,7 @@ class Results(object):
                         category=self.__class__)
 
         # Convert results to MarvinTuple
-        if self.count > 0:
+        if self.count > 0 and self.results:
             self._set_page()
             self._create_result_set(index=self.start)
 
@@ -1173,7 +1177,7 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': newstart, 'end': newend, 'limit': self.limit,
+                      'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getNext', create_set=True,
                               index=newstart)
@@ -1251,7 +1255,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': newstart, 'end': newend, 'limit': self.limit,
+                      'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getPrevious', create_set=True,
                               index=newstart)
@@ -1322,7 +1326,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': start, 'end': end, 'limit': self.limit,
+                      'start': start, 'end': end, 'limit': limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getSubset', create_set=True, index=start)
 

@@ -43,7 +43,6 @@
 from __future__ import division, print_function, absolute_import
 
 import copy
-import warnings
 
 from astropy import units
 
@@ -53,17 +52,20 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from marvin import config
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
 from marvin.utils.general import get_plot_params
+from marvin.utils.general.maskbit import Maskbit
 
 
-def _mask_nocov(mask, dapmap, ivar=None):
+def _mask_nocov(dapmap, mask, ivar=None):
     """Mask spaxels that are not covered by the IFU.
 
     Parameters:
         dapmap (marvin.tools.map.Map):
             Marvin Map object.
+        mask (array):
+            Mask for image.
         ivar (array):
             Inverse variance for image. Default is None.
 
@@ -71,12 +73,18 @@ def _mask_nocov(mask, dapmap, ivar=None):
         array: Boolean array for mask (i.e., True corresponds to value to be
         masked out).
     """
-    assert ((mask is not None) and (dapmap is not None)) or (ivar is not None), \
-        'Must provide either (``mask`` and ``dapmap``) or ``ivar``.'
+    assert (dapmap is not None) or (mask is not None) or (ivar is not None), \
+        'Must provide ``dapmap``, ``mask`` or ``ivar``.'
+
+    if dapmap is None:
+        pixmask = Maskbit('MANGA_DAPPIXMASK')
+        pixmask.mask = mask
+    else:
+        pixmask = dapmap.pixmask
 
     try:
-        return dapmap.pixmask.get_mask('NOCOV')
-    except (MarvinError, AttributeError, IndexError):
+        return pixmask.get_mask('NOCOV')
+    except (MarvinError, AttributeError, IndexError, TypeError):
         return ivar == 0
 
 
@@ -407,7 +415,10 @@ def plot(*args, **kwargs):
     mask = mask if mask is not None else getattr(dapmap, 'mask', all_true)
 
     if title is None:
-        title = dapmap.datamodel.to_string(title_mode) if hasattr(dapmap, 'datamodel') else ''
+        if getattr(dapmap, 'datamodel', None) is not None:
+            title = dapmap.datamodel.to_string(title_mode)
+        else:
+            title = ''
 
     try:
         prop = dapmap.datamodel.full()
@@ -415,7 +426,7 @@ def plot(*args, **kwargs):
         prop = ''
 
     # get plotparams from datamodel
-    dapver = dapmap.datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
+    dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
     params = get_plot_params(dapver, prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
@@ -433,7 +444,7 @@ def plot(*args, **kwargs):
     nocov_conditions = (('NOCOV' in use_masks) or (ivar is not None))
     bad_data_conditions = (use_masks and (dapmap is not None) and (mask is not None))
 
-    nocov = _mask_nocov(mask, dapmap, ivar) if nocov_conditions else all_true
+    nocov = _mask_nocov(dapmap, mask, ivar) if nocov_conditions else all_true
     bad_data = dapmap.pixmask.get_mask(use_masks, mask=mask) if bad_data_conditions else all_true
     low_snr = mask_low_snr(value, ivar, snr_min) if use_masks else all_true
     neg_val = mask_neg_values(value) if log_cb else all_true

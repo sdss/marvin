@@ -184,7 +184,7 @@ class Query(object):
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 100))
-        self.sort = kwargs.get('sort', None)
+        self.sort = kwargs.get('sort', 'mangaid')
         self.order = kwargs.get('order', 'asc')
         self.return_all = kwargs.get('return_all', False)
         self.datamodel = datamodel[self._release]
@@ -711,7 +711,6 @@ class Query(object):
                     results from the Query.
 
         '''
-        from marvin.utils.general import memory_usage
         if self.mode == 'local':
 
             # Check for adding a sort
@@ -768,7 +767,7 @@ class Query(object):
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
 
             # slice the query
-            self.query = self.query.slice(start, end)
+            query = self.query.slice(start, end)
 
             # run the query
             if not any([raw, core, orm]):
@@ -776,24 +775,22 @@ class Query(object):
 
             if raw:
                 # use the db api cursor
-                sql = str(self.show())
+                sql = str(self._get_sql(query))
                 conn = marvindb.db.engine.raw_connection()
                 cursor = conn.cursor('query_cursor')
                 cursor.execute(sql)
-                #res = cursor.fetchall()
                 res = self._fetch_data(cursor)
                 conn.close()
             elif core:
                 # use the core connection
-                sql = str(self.show())
+                sql = str(self._get_sql(query))
                 with marvindb.db.engine.connect() as conn:
                     results = conn.execution_options(stream_results=True).execute(sql)
-                    #res = results.fetchall()
                     res = self._fetch_data(results)
             elif orm:
                 # use the orm query
                 yield_num = int(10**(np.floor(np.log10(self.totalcount))))
-                results = string_folding_wrapper(self.query.yield_per(yield_num), keys=self.params)
+                results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
                 res = list(results)
 
             # get the runtime
@@ -803,9 +800,8 @@ class Query(object):
             # clear the session
             self.session.close()
 
-            # memory_usage('7 - after session close, before results dump')
-
-            final = Results(results=res, query=self.query, count=count, mode=self.mode,
+            # pass the results into Marvin Results
+            final = Results(results=res, query=query, count=count, mode=self.mode,
                             returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
                             chunk=self.limit, runtime=self.runtime, start=start, end=end)
 
@@ -1030,7 +1026,7 @@ class Query(object):
 
         if self.mode == 'local':
             if not prop or 'query' in prop:
-                sql = self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+                sql = self._get_sql(self.query)
             elif prop == 'tables':
                 sql = self.joins
             elif prop == 'filter':
@@ -1041,7 +1037,22 @@ class Query(object):
 
             return str(sql)
         elif self.mode == 'remote':
-            print('Cannot show full SQL query in remote mode, use the Results showQuery')
+            sql = 'Cannot show full SQL query in remote mode, use the Results showQuery'
+            warnings.warn(sql, MarvinUserWarning)
+            return sql
+
+    def _get_sql(self, query):
+        ''' Get the sql for a given query
+
+        Parameters:
+            query (object):
+                An SQLAlchemy Query object
+
+        Returms:
+            A raw sql string
+        '''
+
+        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
 
     def reset(self):
         ''' Resets all query attributes '''

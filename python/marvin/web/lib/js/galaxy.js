@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2018-01-05 14:29:32
+* @Last Modified time: 2018-03-02 17:22:31
 */
 
 //
@@ -76,6 +76,7 @@ var Galaxy = function () {
         this.webspec = null;
         this.staticdiv = this.specdiv.find('#staticdiv');
         this.dynamicdiv = this.specdiv.find('#dynamicdiv');
+        this.maptab = $('#maptab');
         // toggle elements
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
@@ -87,7 +88,7 @@ var Galaxy = function () {
         this.dapmapsbut = $('#dapmapsbut');
         this.dapselect = $('#dapmapchoices');
         this.dapbt = $('#dapbtchoices');
-        this.dapselect.selectpicker('deselectAll');
+        //this.dapselect.selectpicker('deselectAll');
         this.resetmapsbut = $('#resetmapsbut');
         // nsa elements
         this.nsadisplay = $('#nsadisp'); // the NSA Display tab element
@@ -110,6 +111,7 @@ var Galaxy = function () {
         //this.checkToggle();
 
         //Event Handlers
+        this.maptab.on('click', this, this.resizeSpecView); // this event fires when a user clicks the MapSpec View Tab
         this.dapmapsbut.on('click', this, this.getDapMaps); // this event fires when a user clicks the GetMaps button
         this.resetmapsbut.on('click', this, this.resetMaps); // this event fires when a user clicks the Maps Reset button
         this.togglediv.on('change', this, this.initDynamic); // this event fires when a user clicks the Spec/Map View Toggle
@@ -157,6 +159,19 @@ var Galaxy = function () {
             this.ifu = _plateifu$split2[1];
         }
 
+        // Resize the ouput MapSpec View when tab clicked
+
+    }, {
+        key: 'resizeSpecView',
+        value: function resizeSpecView(event) {
+            var _this = event.data;
+            // wait 10 milliseconds before resizing so divs will have the correct size
+            m.utils.window[0].setTimeout(function () {
+                _this.webspec.resize();
+                _this.olmap.map.updateSize();
+            }, 10);
+        }
+
         // Initialize and Load a DyGraph spectrum
 
     }, {
@@ -168,7 +183,7 @@ var Galaxy = function () {
                 labels: labels,
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
-                xlabel: 'Wavelength [Ångströms]'
+                xlabel: 'Observed Wavelength [Ångströms]'
             });
         }
 
@@ -353,6 +368,8 @@ var Galaxy = function () {
                         // Load the Spaxel and Maps
                         _this.loadSpaxel(spaxel, spectitle);
                         _this.initHeatmap(maps);
+                        // refresh the map selectpicker
+                        _this.dapselect.selectpicker('refresh');
                     }).catch(function (error) {
                         var errmsg = error.message === undefined ? _this5.makeError('initDynamic') : error.message;
                         _this.updateSpecMsg(errmsg, -1);
@@ -375,13 +392,12 @@ var Galaxy = function () {
                 var popid = value.id;
                 // split id and grab the mngtarg
 
-                var _popid$split = popid.split('_');
-
-                var _popid$split2 = _slicedToArray(_popid$split, 2);
-
-                var base = _popid$split2[0];
-                var targ = _popid$split2[1];
+                var _popid$split = popid.split('_'),
+                    _popid$split2 = _slicedToArray(_popid$split, 2),
+                    base = _popid$split2[0],
+                    targ = _popid$split2[1];
                 // build the label list id
+
 
                 var listid = '#list_' + targ;
                 // init the specific popover
@@ -669,19 +685,15 @@ var Galaxy = function () {
                 var parentdiv = this.maindiv.find('#' + parentid);
                 var index = parseInt(parentid[parentid.length - 1]);
 
-                var _updateNSAData = this.updateNSAData(index, 'galaxy');
+                var _updateNSAData = this.updateNSAData(index, 'galaxy'),
+                    _updateNSAData2 = _slicedToArray(_updateNSAData, 2),
+                    data = _updateNSAData2[0],
+                    options = _updateNSAData2[1];
 
-                var _updateNSAData2 = _slicedToArray(_updateNSAData, 2);
-
-                var data = _updateNSAData2[0];
-                var options = _updateNSAData2[1];
-
-                var _updateNSAData3 = this.updateNSAData(index, 'sample');
-
-                var _updateNSAData4 = _slicedToArray(_updateNSAData3, 2);
-
-                var sdata = _updateNSAData4[0];
-                var soptions = _updateNSAData4[1];
+                var _updateNSAData3 = this.updateNSAData(index, 'sample'),
+                    _updateNSAData4 = _slicedToArray(_updateNSAData3, 2),
+                    sdata = _updateNSAData4[0],
+                    soptions = _updateNSAData4[1];
 
                 options.altseries = { data: sdata, name: 'Sample' };
                 this.destroyChart(parentdiv, index);
@@ -692,19 +704,15 @@ var Galaxy = function () {
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _updateNSAData5 = _this10.updateNSAData(index + 1, 'galaxy');
+                    var _updateNSAData5 = _this10.updateNSAData(index + 1, 'galaxy'),
+                        _updateNSAData6 = _slicedToArray(_updateNSAData5, 2),
+                        data = _updateNSAData6[0],
+                        options = _updateNSAData6[1];
 
-                    var _updateNSAData6 = _slicedToArray(_updateNSAData5, 2);
-
-                    var data = _updateNSAData6[0];
-                    var options = _updateNSAData6[1];
-
-                    var _updateNSAData7 = _this10.updateNSAData(index + 1, 'sample');
-
-                    var _updateNSAData8 = _slicedToArray(_updateNSAData7, 2);
-
-                    var sdata = _updateNSAData8[0];
-                    var soptions = _updateNSAData8[1];
+                    var _updateNSAData7 = _this10.updateNSAData(index + 1, 'sample'),
+                        _updateNSAData8 = _slicedToArray(_updateNSAData7, 2),
+                        sdata = _updateNSAData8[0],
+                        soptions = _updateNSAData8[1];
 
                     options.altseries = { data: sdata, name: 'Sample' };
                     _this10.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
@@ -823,14 +831,13 @@ var Galaxy = function () {
             var _this = event.data;
             var param = event.originalEvent.dataTransfer.getData('Text');
 
-            var _param$split = param.split('+');
-
-            var _param$split2 = _slicedToArray(_param$split, 2);
-
-            var id = _param$split2[0];
-            var name = _param$split2[1];
+            var _param$split = param.split('+'),
+                _param$split2 = _slicedToArray(_param$split, 2),
+                id = _param$split2[0],
+                name = _param$split2[1];
 
             // Hide overlay elements
+
 
             $.each(_this.nsascatter, function (index, scat) {
                 scat.overgroup.hide();

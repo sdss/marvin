@@ -38,6 +38,13 @@ class TestCube(object):
         with pytest.raises(AssertionError):
             Cube(filename='not_a_filename.fits')
 
+    @pytest.mark.parametrize('objtype', [('maps'), ('models')])
+    def test_cube_wrong_file(self, galaxy, objtype):
+        path = galaxy.mapspath if objtype == 'maps' else galaxy.modelpath
+        with pytest.raises(MarvinError) as cm:
+            Cube(filename=path)
+        assert 'Trying to open a DAP file with Marvin Cube' in str(cm.value)
+
     def test_cube_load_from_local_database_success(self, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)
@@ -74,6 +81,25 @@ class TestCube(object):
         else:
             assert isinstance(cube.spectral_resolution_prepixel, Spectrum)
 
+    @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'mode': 'local',
+                                          'data_origin': 'file'})
+    def test_quatities_reorder(self, cube):
+        """Asserts the unit survives a quantity reorder (issue #374)."""
+
+        flux = cube.flux
+        spectral_resolution = cube.spectral_resolution
+
+        assert flux.unit is not None
+        assert spectral_resolution.unit is not None
+
+        reordered_flux = np.moveaxis(flux, 0, -1)
+        reordered_spectral_resolution = np.moveaxis(spectral_resolution, 0, -1)
+
+        assert reordered_flux.unit is not None
+        assert reordered_spectral_resolution.unit is not None
+
     @pytest.mark.parametrize('monkeyconfig',
                              [('release', 'MPL-5')],
                              ids=['mpl5'], indirect=True)
@@ -92,7 +118,7 @@ class TestCube(object):
         assert cube.data_origin == cube.exporigin
         redshift = cube.nsa.redshift \
             if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
-        assert pytest.approx(redshift, galaxy.redshift)
+        assert redshift == pytest.approx(galaxy.redshift)
 
     def test_release(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -182,7 +208,7 @@ class TestWCS(object):
         assert cube.data_origin == cube.exporigin
         assert isinstance(cube.wcs, wcs.WCS)
         comp = cube.wcs.wcs.pc if cube.data_origin == 'api' else cube.wcs.wcs.cd
-        assert pytest.approx(comp[1, 1], 0.000138889)
+        assert comp[1, 1] == pytest.approx(0.000138889)
 
 
 class TestPickling(object):
