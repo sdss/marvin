@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 16:41:53
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-14 15:09:53
+# @Last Modified time: 2018-03-29 18:35:09
 
 from __future__ import print_function, division, absolute_import
 import time
@@ -24,7 +24,7 @@ def page(driver, base_url):
     return page
 
 
-# @pytest.mark.xfail()
+@pytest.mark.xfail()
 @pytest.mark.timeout(45)
 @pytest.mark.usefixtures('live_server')
 class TestIndexPage(object):
@@ -55,7 +55,7 @@ def search_page(driver, base_url):
     return page
 
 
-# @pytest.mark.xfail()
+@pytest.mark.xfail()
 @pytest.mark.timeout(45)
 @pytest.mark.usefixtures('live_server')
 class TestSearchPage(object):
