@@ -39,7 +39,7 @@ from astropy.wcs import FITSFixedWarning
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
 else:
-    logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
+    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~', '.marvin', 'marvin.log'))
 
 log = initLog(logFilePath)
 
@@ -129,7 +129,7 @@ class MarvinConfig(object):
     def _check_netrc(self):
         """Makes sure there is a valid netrc."""
 
-        netrc_path = os.path.join(os.environ['HOME'], '.netrc')
+        netrc_path = os.path.join(os.path.expanduser('~'), '.netrc')
 
         if not os.path.exists(netrc_path):
             warnings.warn('cannot find a .netrc file in your HOME directory. '
