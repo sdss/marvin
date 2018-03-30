@@ -39,7 +39,7 @@ from astropy.wcs import FITSFixedWarning
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
 else:
-    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~', '.marvin', 'marvin.log'))
+    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 log = initLog(logFilePath)
 
