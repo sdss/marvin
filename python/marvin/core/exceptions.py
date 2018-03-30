@@ -18,7 +18,10 @@ from __future__ import print_function
 import os
 import sys
 import warnings
-import pwd
+try:
+    import pwd
+except ImportError:
+    pass
 
 import marvin
 
