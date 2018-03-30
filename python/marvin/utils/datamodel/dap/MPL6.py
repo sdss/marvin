@@ -235,12 +235,12 @@ MPL6_maps = [
              formats={'string': 'Stellar velocity dispersion', 'latex': r'Stellar $\sigma$'},
              description='Stellar velocity dispersion (must be corrected using '
                          'STELLAR_SIGMACORR)'),
-    MultiChannelProperty('stellar_sigmacorr', ivar=False, mask=False,
-                         unit=u.km / u.s,
-                         formats={'string': 'Stellar sigma correction',
-                                  'latex': r'Stellar $\sigma$ correction'},
-                         description='Quadrature correction for STELLAR_SIGMA to obtain the '
-                                     'astrophysical velocity dispersion.)'),
+    Property('stellar_sigmacorr', ivar=False, mask=False,
+             unit=u.km / u.s,
+             formats={'string': 'Stellar sigma correction',
+                      'latex': r'Stellar $\sigma$ correction'},
+             description='Quadrature correction for STELLAR_SIGMA to obtain the '
+                         'astrophysical velocity dispersion.)'),
     MultiChannelProperty('stellar_cont_fresid', ivar=False, mask=False,
                          channels=[Channel('68th_percentile',
                                            formats={'string': '68th percentile',

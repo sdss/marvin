@@ -66,15 +66,24 @@ class QueryDataModel(object):
             self._cleanup_keys()
         elif self._mode == 'remote':
             from marvin.api.api import Interaction
-            url = config.urlmap['api']['getparams']['url']
+            # try to get the url
             try:
-                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+                url = config.urlmap['api']['getparams']['url']
             except Exception as e:
-                warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
-                self._keys = []
-            else:
-                self._keys = ii.getData()
-                self._remove_query_params()
+                warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
+                              'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
+                url = None
+                self._cleanup_keys()
+            # make the call
+            if url:
+                try:
+                    ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+                except Exception as e:
+                    warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
+                    self._keys = []
+                else:
+                    self._keys = ii.getData()
+                    self._remove_query_params()
         elif self._mode == 'auto':
             if config.db:
                 self._mode = 'local'

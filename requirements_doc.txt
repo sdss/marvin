@@ -1,0 +1,5 @@
+-r requirements_web.txt
+
+sphinx>=1.6
+sphinx_bootstrap_theme>=0.4.12
+sphinxcontrib-httpdomain>=1.5.0

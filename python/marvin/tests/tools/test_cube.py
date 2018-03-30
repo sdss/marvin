@@ -81,6 +81,25 @@ class TestCube(object):
         else:
             assert isinstance(cube.spectral_resolution_prepixel, Spectrum)
 
+    @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'mode': 'local',
+                                          'data_origin': 'file'})
+    def test_quatities_reorder(self, cube):
+        """Asserts the unit survives a quantity reorder (issue #374)."""
+
+        flux = cube.flux
+        spectral_resolution = cube.spectral_resolution
+
+        assert flux.unit is not None
+        assert spectral_resolution.unit is not None
+
+        reordered_flux = np.moveaxis(flux, 0, -1)
+        reordered_spectral_resolution = np.moveaxis(spectral_resolution, 0, -1)
+
+        assert reordered_flux.unit is not None
+        assert reordered_spectral_resolution.unit is not None
+
     @pytest.mark.parametrize('monkeyconfig',
                              [('release', 'MPL-5')],
                              ids=['mpl5'], indirect=True)

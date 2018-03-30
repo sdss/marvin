@@ -983,7 +983,12 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     if isinstance(value, np.ndarray):
                         value = value.tolist()
                     else:
-                        value = np.asscalar(value)
+                        # In Astropy 2 the value would be an array of size 1
+                        # but in Astropy 3 value is already an scalar and asscalar fails.
+                        try:
+                            value = np.asscalar(value)
+                        except AttributeError:
+                            pass
                     nsa_data[col[4:]] = value
 
             return DotableCaseInsensitive(nsa_data)
@@ -1308,17 +1313,17 @@ def turn_off_ion(show_plot=True):
     if not show_plot and plt_was_interactive:
         plt.ioff()
 
+    fignum_init = plt.get_fignums()
+
     yield plt
 
     if show_plot:
         plt.ioff()
         plt.show()
     else:
-        fignum = plt.get_fignums()
-        if fignum:
-            plt.close(fignum[0])
-        else:
-            plt.close()
+        for ii in plt.get_fignums():
+            if ii not in fignum_init:
+                plt.close(ii)
 
     # Restores original ion() status
     if plt_was_interactive and not plt.isinteractive():
