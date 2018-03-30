@@ -92,6 +92,8 @@ class Spectrum(Quantity, QuantityMixIn):
         self.mask = getattr(obj, 'mask', None)
         self.wavelength = getattr(obj, 'wavelength', None)
 
+        self._set_unit(getattr(obj, 'unit', None))
+
     def __getitem__(self, sl):
 
         new_obj = super(Spectrum, self).__getitem__(sl)

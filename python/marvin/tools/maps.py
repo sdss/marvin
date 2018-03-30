@@ -247,6 +247,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.mangaid = self.header['MANGAID'].strip()
         self.plateifu = self.header['PLATEIFU'].strip()
 
+        self._check_file(self.header, self.data, 'Maps')
+
         # We use EMLINE_GFLUX because is present in MPL-4 and 5 and is not expected to go away.
         header = self.data['EMLINE_GFLUX'].header
         naxis = header['NAXIS']
@@ -302,6 +304,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         if sqlalchemy is None:
             raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
+
+        dm = datamodel[self.release]
+        if dm.db_only:
+            if self.bintype not in dm.db_only:
+                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'

@@ -98,27 +98,27 @@ To plot the spectrum for this Marvin Spaxel, you must first access the Marvin Sp
 ::
 
     # get the spectrum
-    spectrum = spaxel.spectrum
+    flux = spaxel.flux
 
     # plot the spectrum
-    spectrum.plot()
+    flux.plot()
 
     # access the data as Numpy arrays
-    spectrum.flux
+    flux.value
     array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # the ivar array
-    spectrum.ivar
+    flux.ivar
     array([ 0.47127277,  0.41220659,  0.47146896, ...,  0.        ,
             0.        ,  0.        ], dtype=float32)
 
     # the mask array
-    spectrum.mask
+    flux.mask
     array([   0,    0,    0, ..., 1026, 1026, 1026], dtype=int32)
 
     # the wavelength array
-    spectrum.wavelength
+    flux.wavelength
     array([  3621.59598486,   3622.42998417,   3623.26417553, ...,
             10349.03843826,  10351.42166679,  10353.80544415])
 
@@ -184,7 +184,7 @@ You can plot any map simply by using the **plot** method on your Map object.
     # plot the H-alpha flux map
     hamap.plot()
 
-You should see a pop-up window containing the H-alpha emission line flux map for 8485-1901.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.  To see a full list of available options, use **plot?**, or go here (describe in new page in Maps).  Help for all Marvin Tools and methods can be displayed by appending a **?** to the end of the name, excluding the parantheses.
+You should see a pop-up window containing the H-alpha emission line flux map for 8485-1901.  Marvin uses the Python package Matplotlib for all default plotting.  Many matplotlib plotting options are available in Marvin's **plot** method.  To see a full list of available options, use **plot?**, or see the :ref:`Maps page<marvin-tools-maps>`.  Help for all Marvin Tools and methods can be displayed by appending a **?** to the end of the name, excluding the parantheses.
 
 ::
 
@@ -247,7 +247,7 @@ In the previous section, you downloaded the data files for 8485-1901 directly to
     print(cube)
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
-Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.  Please see the Astropy documentation for a full description of FITS handling. (add link)
+Notice that the **mode** is now **local**, and the **data_origin** is now set to **file**.  You are now accessing the full FITS file for the 3d datacube for 8485-1901.  Marvin uses the **Astropy io.fits** package for all FITS handling.  Please see the Astropy documentation for a full description of `FITS handling <http://docs.astropy.org/en/stable/io/fits/>`_.
 
 ::
 
@@ -304,9 +304,9 @@ When you open a Marvin Cube in local mode, Marvin provides convenient quick acce
     (4563, 34, 34)
 
     # access the inverse and mask arrays
-    cube.ivar
+    cube.flux.ivar
 
-    cube.mask
+    cube.flux.mask
 
 We just loaded this Cube locally using the identifier **plateifu**.  You can also use **mangaid** as a valid identifier.  When using these keywords, Marvin will look for the file in your local **SAS** directory system.  Alternatively you can specify a full filename and path using the **filename** keyword.  This keyword is for loading explicit files stored anywhere and named anything.
 
@@ -407,7 +407,7 @@ Sometimes it can helpful to see the optical SDSS image for the MaNGA target of i
     image.filename
     '/Users/Brian/Work/sdss/sas/mangawork/manga/spectro/redux/v2_0_1/8485/stack/images/1901.png'
 
-This creates and returns a Python Image Library object (add link), which you can manipulate as you see fit.  These images contain full WCS information in the **info** attribute, if you need to overlay things.  **info** returns a standard Python dictionary.  If you wish to convert to
+This creates and returns a `Python Image Library object <https://pillow.readthedocs.io/en/latest/>`_, which you can manipulate as you see fit.  These images contain full WCS information in the **info** attribute, if you need to overlay things.  **info** returns a standard Python dictionary.  If you wish to convert to
 
 ::
 

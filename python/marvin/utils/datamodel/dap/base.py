@@ -37,11 +37,12 @@ class DAPDataModel(object):
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 default_binid=None, aliases=[], bitmasks=None):
+                 default_binid=None, aliases=[], bitmasks=None, db_only=[]):
 
         self.release = release
         self.bintypes = bintypes
         self.templates = templates
+        self.db_only = db_only
 
         self.aliases = aliases
 
@@ -204,7 +205,7 @@ class DAPDataModel(object):
 
         raise MarvinError('invalid template {0!r}'.format(value))
 
-    def get_bintemps(self, default=False):
+    def get_bintemps(self, default=False, db_only=False):
         """Returns a list of all combinations of bintype and template."""
 
         if default:
@@ -212,6 +213,9 @@ class DAPDataModel(object):
 
         bins = [bintype.name for bintype in self.bintypes]
         temps = [template.name for template in self.templates]
+
+        if db_only and self.db_only:
+            bins = [b for b in bins if b in self.db_only]
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 

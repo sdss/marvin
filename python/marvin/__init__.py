@@ -12,10 +12,9 @@ import warnings
 import sys
 import marvin
 from collections import OrderedDict
-from distutils.version import StrictVersion
 
 # Set the Marvin version
-__version__ = '2.2.2dev'
+__version__ = '2.2.3'
 # try:
 #     from marvin.version import get_version
 # except ImportError as e:
@@ -290,10 +289,7 @@ class MarvinConfig(object):
         # set and sort the base MPL dictionary
         mpldict = {'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
-                   'MPL-4': ('v1_5_1', '1.1.1'),
-                   'MPL-3': ('v1_3_3', 'v1_0_0'),
-                   'MPL-2': ('v1_2_0', None),
-                   'MPL-1': ('v1_0_0', None)}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_2', None)}
+                   'MPL-4': ('v1_5_1', '1.1.1')}  # , 'DR13': ('v1_5_4', None), 'DR14': ('v2_1_2', None)}
         mplsorted = sorted(mpldict.items(), key=lambda p: p[1][0], reverse=True)
         self._mpldict = OrderedDict(mplsorted)
 
@@ -320,22 +316,12 @@ class MarvinConfig(object):
         self.release = version
 
     def setMPL(self, mplver):
-        """As :func:`setRelease` but check that the version is and MPL."""
-
-        mm = re.search('MPL-([0-9])', mplver)
-        assert mm is not None, 'MPL version must be of form "MPL-[X]"'
-
-        if mm:
-            self.setRelease(mplver)
+        """As :func:`setRelease` but check that the version is an MPL."""
+        self.setRelease(mplver)
 
     def setDR(self, drver):
-        """As :func:`setRelease` but check that the version is and MPL."""
-
-        mm = re.search('DR1([3-9])', drver)
-        assert mm is not None, 'DR version must be of form "DR[XX]"'
-
-        if mm:
-            self.setRelease(drver)
+        """As :func:`setRelease` but check that the version is a DR."""
+        self.setRelease(drver)
 
     def lookUpVersions(self, release=None):
         """Retrieve the DRP and DAP versions that make up a release version.

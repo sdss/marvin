@@ -4,7 +4,7 @@
 Lean Tutorial
 =============
 
-This tutorial runs through all of the steps for doing a project with Marvin from start-to-finish with no extra fat.
+This tutorial runs through all of the steps for doing a project with Marvin from start-to-finish with no extra fat.  We recommend the use of `ipython` or `jupyter notebooks` when using Marvin.  You can start either from a terminal with `ipython` or `jupyter notebook`.
 
 Project Description
 -------------------
@@ -26,9 +26,9 @@ Create the query with :meth:`~marvin.tools.query.query.doQuery` and run it (limi
     from marvin.tools.query import doQuery
     q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
 
-**Tip**: see :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
+**Tip**: see :ref:`Marvin Query <marvin-query>` to learn the basics of querying.  See :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
 
-View the :class:`~marvin.tools.query.results.Results`:
+View the :class:`~marvin.tools.query.results.Results`.  You may see a different set of results.  That is ok as long as you see some set of results.:
 
 
 .. code-block:: python
@@ -122,7 +122,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = galaxies[0].get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 
@@ -188,7 +188,7 @@ Next Steps
 ----------
 
 - :doc:`../first-steps` (more general introduction to Marvin)
-- :doc:`plotting`
+- :doc:`plotting-tutorial`
 - :doc:`Download Data <../core/downloads>` (avoid repeating the same remote API calls every time you run your script)
 
 |

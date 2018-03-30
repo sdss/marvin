@@ -62,7 +62,7 @@ class TestModelCubeInit(object):
 
         model_cube = ModelCube(**kwargs)
         assert model_cube.data_origin == data_origin
-        assert pytest.approx(model_cube.nsa.z, galaxy.redshift)
+        assert model_cube.nsa.z == pytest.approx(galaxy.redshift)
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
@@ -105,6 +105,25 @@ class TestModelCube(object):
     def test_get_maps_api(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.getMaps(), Maps)
+
+    def test_nobintype_in_db(self, galaxy):
+
+        if galaxy.release != 'MPL-6':
+            pytest.skip('only running this test for MPL6')
+
+        with pytest.raises(MarvinError) as cm:
+            maps = ModelCube(plateifu=galaxy.plateifu, bintype='ALL', release=galaxy.release)
+
+        assert 'Specified bintype ALL is not available in the DB' in str(cm.value)
+
+    @pytest.mark.parametrize('objtype, errmsg',
+                             [('cube', 'Trying to open a non DAP file with Marvin ModelCube'),
+                              ('maps', 'Trying to open a DAP MAPS with Marvin ModelCube')])
+    def test_modelcube_wrong_file(self, galaxy, objtype, errmsg):
+        path = galaxy.cubepath if objtype == 'cube' else galaxy.mapspath
+        with pytest.raises(MarvinError) as cm:
+            ModelCube(filename=path)
+        assert errmsg in str(cm.value)
 
 
 class TestPickling(object):

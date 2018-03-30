@@ -182,6 +182,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[0].header
+        self._check_file(self.header, self.data, 'ModelCube')
         self.wcs = WCS(self.data['FLUX'].header)
         self._wavelength = self.data['WAVE'].data
         self._redcorr = self.data['REDCORR'].data
@@ -224,6 +225,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
             datadb = mdb.datadb
             dapdb = mdb.dapdb
+
+            dm = datamodel[self.release]
+            if dm.db_only:
+                if self.bintype not in dm.db_only:
+                    raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+
 
             if self.data:
                 assert isinstance(self.data, dapdb.ModelCube), \

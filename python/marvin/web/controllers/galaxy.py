@@ -288,6 +288,7 @@ class Galaxy(BaseWebView):
             # Get the initial spectrum
             if cube:
                 daplist = get_dap_maplist(self._dapver, web=True)
+                dapdefaults = get_default_mapset(self._dapver)
                 self.galaxy['cube'] = cube
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
@@ -308,8 +309,9 @@ class Galaxy(BaseWebView):
                     self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
+                self.galaxy['dapmapselect'] = dapdefaults
                 dm = datamodel[self._dapver]
-                self.galaxy['dapbintemps'] = dm.get_bintemps()
+                self.galaxy['dapbintemps'] = dm.get_bintemps(db_only=True)
                 current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
@@ -317,13 +319,13 @@ class Galaxy(BaseWebView):
                     cube.nsa<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
-                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>spec = \
-                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum<br>ivar = \
-                    spectrum.ivar<br>mask = spectrum.mask<br>spec.plot()<br></samp></html>".format(cube.plateifu))
+                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>flux = \
+                    spaxel.flux<br>wave = flux.wavelength<br>ivar = flux.ivar<br>mask = \
+                    flux.mask<br>flux.plot()<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.maps import Maps<br>maps = \
                     Maps(plateifu='{0}')<br>print(maps)<br># get an emission \
-                    line map<br>haflux = maps.getMap('emline_gflux', channel='ha_6564')<br>values = \
+                    line map<br>haflux = maps.emline_gflux_ha_6564<br>values = \
                     haflux.value<br>ivar = haflux.ivar<br>mask = haflux.mask<br>haflux.plot()<br>\
                     </samp></html>".format(cube.plateifu))
         else:
@@ -340,7 +342,6 @@ class Galaxy(BaseWebView):
 
         # get the form parameters
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
-        #self._drpver, self._dapver, self._release = parseSession()
 
         # turning toggle on
         current_session['toggleon'] = args.get('toggleon')
@@ -380,7 +381,7 @@ class Galaxy(BaseWebView):
         output['dapmapselect'] = dapdefaults
 
         dm = datamodel[self._dapver]
-        output['dapbintemps'] = dm.get_bintemps()
+        output['dapbintemps'] = dm.get_bintemps(db_only=True)
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         # try to jsonify the result
@@ -394,7 +395,6 @@ class Galaxy(BaseWebView):
     @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
-        #self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         maptype = args.get('type', None)
 

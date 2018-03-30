@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2017-11-30 16:11:91
+# @Last modified time: 2018-03-01 11:03:79
 
 from copy import deepcopy
 
@@ -41,20 +41,20 @@ ivar_sum12 = np.array([[2.85714286e+00, 9.99999990e-09],
                        [3.15759543e+36, 0]])
 
 ivar_prod12 = np.array([[1.10616234e-05, 1.56250000e-08],
-                        [np.nan, 0.]])
+                        [0, 0.]])
 
 ivar_pow_2 = np.array([[5.23472002e-08, 9.53674316e-01],
-                      [np.inf, 25]])
+                      [0, 25]])
 ivar_pow_05 = np.array([[3.66072168e-03, 7.81250000e+00],
-                       [np.inf, np.nan]])
-ivar_pow_0 = np.array([[np.inf, np.inf],
-                      [np.inf, np.inf]])
+                       [0, 0]])
+ivar_pow_0 = np.array([[0, 0],
+                      [0, 0]])
 ivar_pow_m1 = np.array([[4, 1.],
-                        [np.nan, 1e+08]])
+                        [0, 1e+08]])
 ivar_pow_m2 = np.array([[2.67322500e+02, 1.6e-01],
-                        [np.nan, 2.5e+09]])
+                        [0, 2.5e+09]])
 ivar_pow_m05 = np.array([[0.97859327, 5],
-                         [np.nan, np.nan]])
+                         [0, 0]])
 
 u_flux = u.erg / u.cm**2 / u.s / u.def_unit('spaxel')
 u_flux2 = u_flux * u_flux
@@ -97,7 +97,7 @@ class TestMap(object):
         assert (map_.masked.data == map_.value).all()
         assert (map_.masked.mask == map_.mask.astype(bool)).all()
 
-        assert pytest.approx(map_.snr, np.abs(map_.value * np.sqrt(map_.ivar)))
+        assert map_.snr == pytest.approx(np.abs(map_.value * np.sqrt(map_.ivar)))
 
         assert datamodel[map_.getMaps()._dapver][map_.datamodel.full()].unit == map_.unit
 
@@ -169,6 +169,21 @@ class TestMap(object):
 
         assert 'Your input value is too ambiguous.' in str(ee.value)
 
+    @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'mode': 'local',
+                                          'data_origin': 'file'})
+    def test_quatities_reorder(self, maps):
+        """Asserts the unit survives a quantity reorder (issue #374)."""
+
+        ha = maps['emline_gflux_ha']
+
+        assert ha is not None
+        assert ha.unit is not None
+
+        reordered_ha = np.moveaxis(ha, 0, -1)
+        assert reordered_ha.unit is not None
+
 
 class TestMapArith(object):
 
@@ -177,46 +192,49 @@ class TestMapArith(object):
         ha = maps['emline_gflux_ha_6564']
         ha10 = ha + 10.
 
-        assert pytest.approx(ha10.value, ha.value + 10.)
-        assert pytest.approx(ha10.ivar, ha.ivar)
-        assert pytest.approx(ha10.mask, ha.mask)
+        assert ha10.value == pytest.approx(ha.value + 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar)
+        assert ha10.mask == pytest.approx(ha.mask)
 
     def test_subtract_constant(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
         ha10 = ha - 10.
 
-        assert pytest.approx(ha10.value, ha.value - 10.)
-        assert pytest.approx(ha10.ivar, ha.ivar)
-        assert pytest.approx(ha10.mask, ha.mask)
+        assert ha10.value == pytest.approx(ha.value - 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar)
+        assert ha10.mask == pytest.approx(ha.mask)
 
     def test_multiply_constant(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
         ha10 = ha * 10.
 
-        assert pytest.approx(ha10.value, ha.value * 10.)
-        assert pytest.approx(ha10.ivar, ha.ivar / 10.**2)
-        assert pytest.approx(ha10.mask, ha.mask)
+        assert ha10.value == pytest.approx(ha.value * 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar / 10.**2)
+        assert ha10.mask == pytest.approx(ha.mask)
 
     def test_divide_constant(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
         ha10 = ha / 10.
 
-        assert pytest.approx(ha10.value, ha.value / 10.)
-        assert pytest.approx(ha10.ivar, ha.ivar * 10.**2)
-        assert pytest.approx(ha10.mask, ha.mask)
+        assert ha10.value == pytest.approx(ha.value / 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar * 10.**2)
+        assert ha10.mask == pytest.approx(ha.mask)
 
     @pytest.mark.parametrize('ivar1, ivar2, expected',
                              [(ivar1, ivar2, ivar_sum12)])
     def test_add_ivar(self, ivar1, ivar2, expected):
-        assert pytest.approx(Map._add_ivar(ivar1, ivar2), expected)
+        assert Map._add_ivar(ivar1, ivar2) == pytest.approx(expected)
 
     @pytest.mark.parametrize('ivar1, ivar2, value1, value2, value_prod12, expected',
                              [(ivar1, ivar2, value1, value2, value_prod12, ivar_prod12)])
     def test_mul_ivar(self, ivar1, ivar2, value1, value2, value_prod12, expected):
-        assert pytest.approx(Map._mul_ivar(ivar1, ivar2, value1, value2, value_prod12), expected)
+        ivar = Map._mul_ivar(ivar1, ivar2, value1, value2, value_prod12)
+        ivar[np.isnan(ivar)] = 0
+        ivar[np.isinf(ivar)] = 0
+        assert ivar == pytest.approx(expected)
 
     @pytest.mark.parametrize('power, expected',
                              [(2, ivar_pow_2),
@@ -228,11 +246,14 @@ class TestMapArith(object):
     @pytest.mark.parametrize('ivar, value,',
                              [(ivar1, value1)])
     def test_pow_ivar(self, ivar, value, power, expected):
-        assert pytest.approx(Map._pow_ivar(ivar, value, power), expected)
+        ivar = Map._pow_ivar(ivar, value, power)
+        ivar[np.isnan(ivar)] = 0
+        ivar[np.isinf(ivar)] = 0
+        assert ivar == pytest.approx(expected)
 
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
-        assert pytest.approx(Map._pow_ivar(None, np.arange(4), power), np.zeros(4))
+        assert Map._pow_ivar(None, np.arange(4), power) == pytest.approx(np.zeros(4))
 
     @pytest.mark.parametrize('unit1, unit2, op, expected',
                              [(u_flux, u_flux, '+', u_flux),
@@ -260,9 +281,9 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 + map2
 
-        assert pytest.approx(map12.value, map1.value + map2.value)
-        assert pytest.approx(map12.ivar, map1._add_ivar(map1.ivar, map2.ivar))
-        assert pytest.approx(map12.mask, map1.mask | map2.mask)
+        assert map12.value == pytest.approx(map1.value + map2.value)
+        assert map12.ivar == pytest.approx(map1._add_ivar(map1.ivar, map2.ivar))
+        assert map12.mask == pytest.approx(map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -273,9 +294,9 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 - map2
 
-        assert pytest.approx(map12.value, map1.value - map2.value)
-        assert pytest.approx(map12.ivar, map1._add_ivar(map1.ivar, map2.ivar))
-        assert pytest.approx(map12.mask, map1.mask | map2.mask)
+        assert map12.value == pytest.approx(map1.value - map2.value)
+        assert map12.ivar == pytest.approx(map1._add_ivar(map1.ivar, map2.ivar))
+        assert map12.mask == pytest.approx(map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -286,10 +307,13 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 * map2
 
-        assert pytest.approx(map12.value, map1.value * map2.value)
-        assert pytest.approx(map12.ivar, map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
-                                                        map2.value, map12.value))
-        assert pytest.approx(map12.mask, map1.mask | map2.mask)
+        ivar = map1._mul_ivar(map1.ivar, map2.ivar, map1.value, map2.value, map12.value)
+        ivar[np.isnan(ivar)] = 0
+        ivar[np.isinf(ivar)] = 0
+
+        assert map12.value == pytest.approx(map1.value * map2.value)
+        assert map12.ivar == pytest.approx(ivar)
+        assert map12.mask == pytest.approx(map1.mask | map2.mask)
 
     @pytest.mark.parametrize('property1, channel1, property2, channel2',
                              [('emline_gflux', 'ha_6564', 'emline_gflux', 'nii_6585'),
@@ -300,12 +324,19 @@ class TestMapArith(object):
         map2 = maps.getMap(property_name=property2, channel=channel2)
         map12 = map1 / map2
 
-        with np.errstate(divide='ignore', invalid='ignore'):
-            assert pytest.approx(map12.value, map1.value / map2.value)
+        ivar = map1._mul_ivar(map1.ivar, map2.ivar, map1.value, map2.value, map12.value)
+        ivar[np.isnan(ivar)] = 0
+        ivar[np.isinf(ivar)] = 0
 
-        assert pytest.approx(map12.ivar, map1._mul_ivar(map1.ivar, map2.ivar, map1.value,
-                                                        map2.value, map12.value))
-        assert pytest.approx(map12.mask, map1.mask | map2.mask)
+        mask = map1.mask | map2.mask
+        bad = np.isnan(map12.value) | np.isinf(map12.value)
+        mask[bad] = mask[bad] | map12.pixmask.labels_to_value('DONOTUSE')
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            assert map12.value == pytest.approx(map1.value / map2.value, nan_ok=True)
+
+        assert map12.ivar == pytest.approx(ivar)
+        assert map12.mask == pytest.approx(mask)
 
     @pytest.mark.runslow
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
@@ -320,9 +351,11 @@ class TestMapArith(object):
         sig_orig = np.sqrt(1. / map_orig.ivar)
         sig_new = map_new.value * power * sig_orig * map_orig.value
         ivar_new = 1 / sig_new**2.
+        ivar_new[np.isnan(ivar_new)] = 0
+        ivar_new[np.isinf(ivar_new)] = 0
 
-        assert pytest.approx(map_new.value, map_orig.value**power)
-        assert pytest.approx(map_new.ivar, ivar_new)
+        assert map_new.value == pytest.approx(map_orig.value**power, nan_ok=True)
+        assert map_new.ivar == pytest.approx(ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
@@ -332,8 +365,8 @@ class TestMapArith(object):
         stsigcorr = maps['stellar_sigmacorr']
         expected = (stsig**2 - stsigcorr**2)**0.5
         actual = stsig.inst_sigma_correction()
-        assert pytest.approx(actual.value, expected.value)
-        assert pytest.approx(actual.ivar, expected.ivar)
+        assert actual.value == pytest.approx(expected.value, nan_ok=True)
+        assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
 
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
@@ -363,8 +396,8 @@ class TestMapArith(object):
         expected = (hasig**2 - emsigcorr**2)**0.5
         actual = hasig.inst_sigma_correction()
 
-        assert pytest.approx(actual.value, expected.value)
-        assert pytest.approx(actual.ivar, expected.ivar)
+        assert actual.value == pytest.approx(expected.value, nan_ok=True)
+        assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
 
 
@@ -376,7 +409,7 @@ class TestMaskbit(object):
         ha = maps_release_only['emline_gflux_ha_6564']
         expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 
-        assert pytest.approx(ha.masked.data, ha.value)
+        assert ha.masked.data == pytest.approx(ha.value)
         assert (ha.masked.mask == expected).all()
 
     @marvin_test_if(mark='include', maps_release_only=dict(release=['MPL-4']))

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-17 12:54:33
+# @Last Modified time: 2018-03-01 15:13:44
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -145,9 +145,8 @@ class TestQueryShow(object):
     def test_show(self, query, show, exp, capsys):
         if query.mode == 'remote':
             exp = 'Cannot show full SQL query in remote mode, use the Results showQuery'
-        query.show(show)
-        out, err = capsys.readouterr()
-        assert exp in out or exp == out.strip('\n')
+        sql = query.show(show)
+        assert exp in sql or exp == sql.strip('\n')
 
 
 class TestQueryReturnParams(object):
