@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-10-26 11:14:51
+# @Last Modified time: 2018-04-03 16:03:55
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -15,7 +15,7 @@ import os
 class Config(object):
     SECRET_KEY = os.environ.get('MARVIN_SECRET', 'secret-key')
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
-    APP_BASE = os.environ.get('MARVIN_BASE', 'marvin2')
+    APP_BASE = os.environ.get('MARVIN_BASE', 'marvin')
     projroot = os.path.abspath(os.path.join(APP_DIR, os.pardir, os.pardir, os.pardir))
     PROJECT_ROOT = os.environ.get('MARVIN_DIR', projroot)
     BCRYPT_LOG_ROUNDS = 13
@@ -51,10 +51,10 @@ class Config(object):
             "enabled": False
         },
         "ignore": [
-            "/marvin2/jsglue.js",
-            "/marvin2/static/.*",
-            "/marvin2/lib/.*",
-            "/marvin2/getgalidlist/"
+            "/marvin/jsglue.js",
+            "/marvin/static/.*",
+            "/marvin/lib/.*",
+            "/marvin/getgalidlist/"
         ]
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
@@ -104,4 +104,4 @@ class CustomConfig(object):
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
-    os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
+    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr15/marvin'

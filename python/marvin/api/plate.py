@@ -66,7 +66,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plates/ HTTP/1.1
+           GET /marvin/api/plates/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -115,7 +115,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plate/8485/ HTTP/1.1
+           GET /marvin/api/plate/8485/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -173,7 +173,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plate/8485/cubes/ HTTP/1.1
+           GET /marvin/api/plate/8485/cubes/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

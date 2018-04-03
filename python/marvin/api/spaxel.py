@@ -97,7 +97,7 @@
 #
 #         .. sourcecode:: http
 #
-#            GET /marvin2/api/spaxels/8485-1901/spectra/10/10/ HTTP/1.1
+#            GET /marvin/api/spaxels/8485-1901/spectra/10/10/ HTTP/1.1
 #            Host: api.sdss.org
 #            Accept: application/json, */*
 #
@@ -170,7 +170,7 @@
 #
 #         .. sourcecode:: http
 #
-#            GET /marvin2/api/spaxels/8485-1901/properties/GAU-MILESHC/10/10/ HTTP/1.1
+#            GET /marvin/api/spaxels/8485-1901/properties/GAU-MILESHC/10/10/ HTTP/1.1
 #            Host: api.sdss.org
 #            Accept: application/json, */*
 #
@@ -266,7 +266,7 @@
 #
 #         .. sourcecode:: http
 #
-#            GET /marvin2/api/spaxels/8485-1901/models/GAU-MILESHC/10/10/ HTTP/1.1
+#            GET /marvin/api/spaxels/8485-1901/models/GAU-MILESHC/10/10/ HTTP/1.1
 #            Host: api.sdss.org
 #            Accept: application/json, */*
 #

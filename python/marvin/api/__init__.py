@@ -104,8 +104,8 @@ class ArgValidator(object):
     `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_.
 
     There are two global dictionaries defining the argument validations.  `view_args` defines the
-    list of all named arguments in the api/web Flask routes, e.g. `/marvin2/api/cubes/<name>/` or
-    `/marvin2/api/maps/<name>/<bintype>/<template>/`.   `params` defines the list of all parameters
+    list of all named arguments in the api/web Flask routes, e.g. `/marvin/api/cubes/<name>/` or
+    `/marvin/api/maps/<name>/<bintype>/<template>/`.   `params` defines the list of all parameters
     used in routes as form arguments in GET or POST requests, in both the web and api Flask routes.
     Each entry is a dictionary of {page: dict of parameter validators}.  For example, the `query` key contains
     parameters related to sending requests to the API or Web Query views.

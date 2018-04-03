@@ -9,12 +9,6 @@ from marvin.api.base import arg_validate as av
 from marvin.web.controllers import BaseWebView
 
 from hashlib import md5
-# try:
-#     print('importing main inspection')
-#     from inspection.marvin import Inspection
-# except ImportError as e:
-#     print('importing local inspection')
-#     from brain.core.inspection import Inspection
 
 index = Blueprint("index_page", __name__)
 

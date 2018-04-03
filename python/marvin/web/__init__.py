@@ -45,7 +45,7 @@ def create_app(debug=False, local=False, object_config=None):
 
     # ----------------------------------
     # Create App
-    marvin_base = os.environ.get('MARVIN_BASE', 'marvin2')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
     app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
     api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
@@ -66,7 +66,7 @@ def create_app(debug=False, local=False, object_config=None):
     # ----------------------------------
     # Set some other variables
     config._inapp = True
-    url_prefix = '/marvin2' if local else '/{0}'.format(marvin_base)
+    url_prefix = '/marvin' if local else '/{0}'.format(marvin_base)
 
     # ----------------------------------
     # Load the appropriate Flask configuration object for debug or production

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-01-12 15:32:27
+# @Last Modified time: 2018-04-03 16:17:17
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -132,7 +132,7 @@ def update_current(ctx, version=None):
 def switch_module(ctx, version=None):
     ''' Switch to the marvin module of the specified version and start it '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
-    ctx.run('uwsgi --stop /home/www/sas.sdss.org/mangawork/marvin/pid/uwsgi_marvin2.pid')
+    ctx.run('uwsgi --stop /home/www/sas.sdss.org/mangawork/marvin/pid/uwsgi_marvin.pid')
     ctx.run('module unload wrapmarvin')
     ctx.run('module load wrapmarvin/mangawork.marvin_{0}'.format(version))
     ctx.run('uwsgi /home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version))

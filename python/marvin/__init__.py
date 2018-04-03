@@ -462,16 +462,16 @@ class MarvinConfig(object):
             port (int):
                 The port of your localhost server
             test (bool):
-                If ``True``, sets the Utah sasurl to the test production, test/marvin2
+                If ``True``, sets the Utah sasurl to the test production, test/marvin
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         if sasmode == 'local':
             if ngrokid:
-                self.sasurl = 'http://{0}.ngrok.io/marvin2/'.format(ngrokid)
+                self.sasurl = 'http://{0}.ngrok.io/marvin/'.format(ngrokid)
             else:
-                self.sasurl = 'http://localhost:{0}/marvin2/'.format(port)
+                self.sasurl = 'http://localhost:{0}/marvin/'.format(port)
         elif sasmode == 'utah':
-            marvin_base = 'test/marvin2/' if test else 'marvin2/'
+            marvin_base = 'test/marvin/' if test else 'marvin/'
             self.sasurl = 'https://api.sdss.org/{0}'.format(marvin_base)
         self.urlmap = None
 
@@ -581,6 +581,6 @@ if not marvindir:
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-config.sasurl = 'https://api.sdss.org/marvin2/'
+config.sasurl = 'https://api.sdss.org/marvin/'
 
 from marvin.api.base import arg_validate

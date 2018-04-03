@@ -106,7 +106,7 @@ class CubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/cubes/ HTTP/1.1
+           GET /marvin/api/cubes/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -162,7 +162,7 @@ class CubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/cubes/8485-1901/ HTTP/1.1
+           GET /marvin/api/cubes/8485-1901/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -245,7 +245,7 @@ class CubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/cubes/8485-1901/extensions/flux/ HTTP/1.1
+           GET /marvin/api/cubes/8485-1901/extensions/flux/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -308,7 +308,7 @@ class CubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/cubes/8485-1901/quantities/10/12/ HTTP/1.1
+           GET /marvin/api/cubes/8485-1901/quantities/10/12/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

@@ -85,7 +85,7 @@ class RSSView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/rss/8485-1901/ HTTP/1.1
+           GET /marvin/api/rss/8485-1901/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -143,7 +143,7 @@ class RSSView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/rss/8485-1901/fibers/ HTTP/1.1
+           GET /marvin/api/rss/8485-1901/fibers/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

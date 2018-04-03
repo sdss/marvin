@@ -53,7 +53,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/general/mangaid2plateifu/1-209232/ HTTP/1.1
+           GET /marvin/api/general/mangaid2plateifu/1-209232/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -107,7 +107,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/general/nsa/full/1-209232/ HTTP/1.1
+           GET /marvin/api/general/nsa/full/1-209232/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -169,7 +169,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/general/nsa/drpall/1-209232/ HTTP/1.1
+           GET /marvin/api/general/nsa/drpall/1-209232/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
