@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 # @Last modified by:   andrews
-# @Last modified time: 2018-03-20 20:03:12
+# @Last modified time: 2018-04-03 10:04:19
 
 import numpy as np
 import matplotlib
@@ -192,7 +192,7 @@ class TestMapPlot(object):
                               ([35, 35], True, np.array([-17.5, 17.5, -17.5, 17.5])),
                               ([36, 36], False, np.array([0, 35, 0, 35]))])
     def test_set_extent(self, cube_size, sky_coords, expected):
-        extent = mapplot.set_extent(cube_size, sky_coords)
+        extent = mapplot._set_extent(cube_size, sky_coords)
         assert np.all(extent == expected)
 
     @matplotlib_2
