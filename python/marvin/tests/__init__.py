@@ -186,7 +186,7 @@ import requests
 from brain.core.exceptions import BrainError
 
 
-class TestInteraction(Interaction):
+class BetaInteraction(Interaction):
 
     def _setup_betamax(self):
         self.recorder = betamax.Betamax(self.session)

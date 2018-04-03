@@ -14,7 +14,7 @@ import pytest
 
 from marvin import config, marvindb
 #from marvin.api.api import Interaction
-from marvin.tests import TestInteraction as Interaction
+from marvin.tests import BetaInteraction
 from marvin.tools.cube import Cube
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
@@ -57,22 +57,9 @@ def pytest_configure(config):
     if option:
         travis = TravisSubset()
 
-# configure betamax
-betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
-with betamax.Betamax.configure() as beta_config:
-    beta_config.cassette_library_dir = os.path.join(os.path.dirname(__file__), 'cassettes/')
-    beta_config.default_cassette_options['match_requests_on'] = ['method', 'uri', 'body']
-    beta_config.default_cassette_options['record_mode'] = 'new_episodes'
-    beta_config.default_cassette_options['serialize_with'] = 'prettyjson'
-pytest.mark.usefixtures('betamax_session')
 
-
-def test_beta(betamax_session):
-    path = 'http://localhost:5000' + config.urlmap['api']['getroutemap']['url']
-    betamax_session.get(path)
-
-
-# specific release instance
+# Setup Travis Subset
+# -------------------
 travis = None
 
 
@@ -85,6 +72,28 @@ class TravisSubset(object):
         self.new_dbs = ['nodb']
         self.new_origins = ['file', 'api']
         self.new_modes = ['local', 'remote', 'auto']
+
+# Configure Betamax
+# -------------------
+betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
+with betamax.Betamax.configure() as beta_config:
+    beta_config.cassette_library_dir = os.path.join(os.path.dirname(__file__), 'cassettes/')
+    beta_config.default_cassette_options['match_requests_on'] = ['method', 'uri', 'body']
+    beta_config.default_cassette_options['record_mode'] = 'new_episodes'
+    beta_config.default_cassette_options['serialize_with'] = 'prettyjson'
+pytest.mark.usefixtures('betamax_session')
+
+
+def test_beta(request, betamax_session):
+    path = 'http://localhost:5000' + config.urlmap['api']['getroutemap']['url']
+    betamax_session.get(path)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def set_record():
+    ''' sets the betamax record method to none for Travis only '''
+    if travis:
+        beta_config.default_cassette_options['record_mode'] = 'none'
 
 
 # Global Parameters for FIXTURES
@@ -208,6 +217,7 @@ def check_config():
     """Check the config to see if a db is on."""
     return config.db is None
 
+URLMAP = config.urlmap
 
 @pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
@@ -216,9 +226,7 @@ def set_sasurl(loc='local', port=None):
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
     istest = True if loc == 'utah' else False
     config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get')
-    config.urlmap = response.getRouteMap()
-
+    config.urlmap = URLMAP
 
 @pytest.fixture(scope='session', autouse=True)
 def saslocal():
@@ -388,6 +396,15 @@ def monkeymanga(monkeypatch, temp_scratch):
                         str(temp_scratch.join('mangawork/manga/spectro/redux')))
     monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS',
                         str(temp_scratch.join('mangawork/manga/spectro/analysis')))
+
+
+@pytest.fixture(scope='function', autouse=True)
+def interaction(monkeypatch):
+    ''' Monkeypatch the Interaction class with the test Betamax Interaction class '''
+    try:
+        monkeypatch.setattr('marvin.api.api.Interaction', BetaInteraction)
+    except Exception as e:
+        pass
 
 
 # Temp Dir/File-based FIXTURES
