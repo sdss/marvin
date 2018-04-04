@@ -69,7 +69,7 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
                      },
           'index': {'galid': fields.String(allow_none=True, validate=[validate.Length(min=4), validate.Regexp('^[0-9-]*$')]),
-                    'mplselect': fields.String(allow_none=True, validate=validate.Regexp('MPL-[1-9]'))
+                    'mplselect': fields.String(allow_none=True, validate=validate.Regexp('^(MPL-|DR)([0-9]{1,2}$)'))
                     },
           'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Length(min=8, max=11)),
                      'toggleon': fields.String(allow_none=True, validate=validate.OneOf(['true', 'false'])),
@@ -141,7 +141,7 @@ class ArgValidator(object):
         self.dapver = None
         self.urlmap = urlmap
         self.base_args = {'release': fields.String(required=True,
-                          validate=validate.Regexp('MPL-[1-9]'))}
+                          validate=validate.Regexp('^(MPL-|DR)([0-9]{1,2}$)'))}
         self.use_params = None
         self._required = None
         self._setmissing = None
