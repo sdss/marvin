@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from brain.db.modelGraph import ModelGraph
 from marvin import config, log
+from marvin.utils.datamodel.dap import datamodel
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -100,16 +101,22 @@ class MarvinDB(object):
 
     def _setSpaxelPropDict(self):
         ''' Set the SpaxelProp lookup dictionary '''
-        newmpls = [m for m in config._allowed_releases.keys() if m > 'MPL-4']
-        spdict = {'MPL-4': 'SpaxelProp'}
-        newdict = {mpl: 'SpaxelProp{0}'.format(mpl.split('-')[1]) for mpl in newmpls}
-        spdict.update(newdict)
+        spdict = {}
+        for release in config._allowed_releases.keys():
+            if release in datamodel:
+                dm = datamodel[release]
+                spdict.update({release: dm.property_table})
         return spdict
 
     def _getSpaxelProp(self):
-        ''' Get the correct SpaxelProp class given an MPL '''
-        return {'full': self.spaxelpropdict[self._release], 'clean':
-                'Clean{0}'.format(self.spaxelpropdict[self._release])}
+        ''' Get the correct SpaxelProp class given an release '''
+        inspdict = self._release in self.spaxelpropdict
+        if inspdict:
+            specific_spaxelprop = {'full': self.spaxelpropdict[self._release], 'clean':
+                                   'Clean{0}'.format(self.spaxelpropdict[self._release])}
+        else:
+            specific_spaxelprop = {'full': None, 'clean': None}
+        return specific_spaxelprop
 
     def _setSession(self):
         ''' Sets the database session '''

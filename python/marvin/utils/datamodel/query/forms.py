@@ -252,15 +252,18 @@ class ParamFormLookupDict(dict):
     def _set_junk_shortcuts(self):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''
 
-        newmpls = [m for m in config._allowed_releases.keys() if m >= 'MPL-4']
         spaxname = 'spaxelprop' if self.allspaxels else 'cleanspaxelprop'
-        if '4' in self._release:
-            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): spaxname for m in newmpls}
-            dapcut.update({'spaxelprop': spaxname})
-        else:
-            mdigit = self._release.split('-')[1]
-            dapcut = {'spaxelprop{0}'.format(m.split('-')[1]): '{0}{1}'.format(spaxname, mdigit) for m in newmpls}
-            dapcut.update({'spaxelprop': '{0}{1}'.format(spaxname, mdigit)})
+
+        # available spaxel property tables
+        dapcut = {}
+        spdict = marvindb.spaxelpropdict
+        if spdict:
+            # create a shortcut for each table that points to the current release
+            current = spdict.get(self._release, None)
+            for release, name in spdict.items():
+                if current:
+                    cut = {name.lower(): current.lower().replace('spaxelprop', spaxname)}
+                    dapcut.update(cut)
 
         # add junk shortcuts
         junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
