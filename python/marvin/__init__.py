@@ -390,11 +390,13 @@ class MarvinConfig(object):
     def setMPL(self, mplver):
         """As :func:`setRelease` but check that the version is an MPL."""
 
+        assert 'MPL' in mplver.upper(), 'Must specify an MPL-X version!'
         self.setRelease(mplver)
 
     def setDR(self, drver):
         """As :func:`setRelease` but check that the version is a DR."""
 
+        assert 'DR' in drver.upper(), 'Must specify a DRXX version!'
         self.setRelease(drver)
 
     def lookUpVersions(self, release=None):
@@ -532,6 +534,13 @@ class MarvinConfig(object):
         ''' Replants the tree based on release/access toggling
 
         Context manager for use when setting a new release
+
+        Replants the tree only when
+        - A release is different than the previous value
+        - Toggling to public access from sdsswork
+        - Toggling to collab access from non-sdsswork
+        - Toggling between DR releases
+        - Toggling between DR and MPL releases
 
         Parameters:
             value (str):
