@@ -61,7 +61,7 @@ except ImportError as e:
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
            'getWCSFromPng', 'convertImgCoords', 'getSpaxelXY',
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
-           'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
+           'getDapRedux', 'get_nsa_data', '_check_file_parameters',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage')
@@ -1019,20 +1019,6 @@ def _check_file_parameters(obj1, obj2):
                       .format(param, obj1.__repr__, obj2.__repr__, getattr(obj1, param),
                               getattr(obj2, param)))
         assert getattr(obj1, param) == getattr(obj2, param), assert_msg
-
-
-def get_plot_params(dapver, prop):
-    """Return default plotting parameters for a property."""
-    params = get_default_plot_params(dapver)
-
-    if 'vel' in prop:
-        key = 'vel'
-    elif 'sigma' in prop:
-        key = 'sigma'
-    else:
-        key = 'default'
-
-    return params[key]
 
 
 def add_doc(value):

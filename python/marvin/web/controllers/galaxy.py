@@ -17,12 +17,11 @@ from flask_classful import FlaskView, route
 from brain.api.base import processRequest
 from marvin import marvindb
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
-                                          getDapRedux, _db_row_to_dict, get_plot_params)
+                                          getDapRedux, _db_row_to_dict)
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
 from marvin.utils.general.maskbit import Maskbit
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
@@ -129,7 +128,7 @@ def buildMapDict(cube, params, dapver, bintemp=None):
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template=temp)
 
-        plotparams = get_plot_params(dapver=dapver, prop=parameter)
+        plotparams = datamodel[dapver].get_plot_params(prop=parameter)
         mask = Maskbit('MANGA_DAPPIXMASK')
         baddata_labels = [it for it in plotparams['bitmasks'] if it != 'NOCOV']
         baddata_bits = {it.lower(): int(mask.labels_to_bits(it)[0]) for it in baddata_labels}
@@ -287,8 +286,9 @@ class Galaxy(BaseWebView):
 
             # Get the initial spectrum
             if cube:
-                daplist = get_dap_maplist(self._dapver, web=True)
-                dapdefaults = get_default_mapset(self._dapver)
+                dm = datamodel[self._dapver]
+                daplist = [p.full(web=True) for p in dm.properties]
+                dapdefaults = dm.get_default_mapset()
                 self.galaxy['cube'] = cube
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
@@ -343,6 +343,9 @@ class Galaxy(BaseWebView):
         # get the form parameters
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
 
+        # datamodel
+        dm = datamodel[self._dapver]
+
         # turning toggle on
         current_session['toggleon'] = args.get('toggleon')
 
@@ -353,8 +356,8 @@ class Galaxy(BaseWebView):
 
         # get web spectrum
         webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
-        daplist = get_dap_maplist(self._dapver, web=True)
-        dapdefaults = get_default_mapset(self._dapver)
+        daplist = [p.full(web=True) for p in dm.properties]
+        dapdefaults = dm.get_default_mapset()
 
         # build the uber map dictionary
         try:
@@ -380,7 +383,6 @@ class Galaxy(BaseWebView):
         output['dapmaps'] = daplist
         output['dapmapselect'] = dapdefaults
 
-        dm = datamodel[self._dapver]
         output['dapbintemps'] = dm.get_bintemps(db_only=True)
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 

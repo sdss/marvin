@@ -5,7 +5,7 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-03-20 20:03:12
 
 import numpy as np
@@ -15,7 +15,7 @@ import pytest
 from marvin import config
 from marvin.tests import marvin_test_if
 import marvin.utils.plot.map as mapplot
-from marvin.utils.general import get_plot_params
+from marvin.utils.datamodel.dap import datamodel
 
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
@@ -112,7 +112,7 @@ image_3_false = np.array([[1, 1, 1],
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
-    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
+    params = datamodel[config.lookUpVersions()[1]].get_plot_params(request.param)
     return params['bitmasks']
 
 
@@ -161,7 +161,7 @@ class TestMasks(object):
             pytest.skip('Only include MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected
@@ -179,7 +179,7 @@ class TestMasks(object):
             pytest.skip('Skip MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected

@@ -11,17 +11,11 @@ import re
 import warnings
 import sys
 import contextlib
-import marvin
 from collections import OrderedDict
 
 # Set the Marvin version
 __version__ = '2.2.4dev'
-# try:
-#     from marvin.version import get_version
-# except ImportError as e:
-#     __version__ = 'dev'
-# else:
-#     __version__ = get_version()
+
 
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
@@ -65,6 +59,8 @@ class MarvinConfig(object):
     Parameters:
         release (str):
             The release version of the MaNGA data you want to use.  Either MPL or DR.
+        access (str):
+            The type of access Marvin is allowed.  Either public or collab.
         download (bool):
             Set to turn on downloading of objects with sdss_access
         use_sentry (bool):
@@ -327,7 +323,7 @@ class MarvinConfig(object):
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_0', '2.2.0'),
+        drdict = {'DR15': ('v2_4_3', '2.2.0'),
                   'DR14': ('v2_2_0', '2.1.0')}
 
         # set the allowed releases based on access
@@ -590,6 +586,6 @@ if not marvindir:
 
 # Inits the URL Route Map
 from marvin.api.api import Interaction
-config.sasurl = 'https://api.sdss.org/marvin/'
+config.sasurl = 'https://api.sdss.org/marvin2/'
 
 from marvin.api.base import arg_validate

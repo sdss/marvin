@@ -54,8 +54,8 @@ from matplotlib.colors import LogNorm
 from marvin import config
 from marvin.core.exceptions import MarvinError
 import marvin.utils.plot.colorbar as colorbar
-from marvin.utils.general import get_plot_params
 from marvin.utils.general.maskbit import Maskbit
+from marvin.utils.datamodel.dap import datamodel
 
 
 def _mask_nocov(dapmap, mask, ivar=None):
@@ -427,7 +427,7 @@ def plot(*args, **kwargs):
 
     # get plotparams from datamodel
     dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
-    params = get_plot_params(dapver, prop)
+    params = datamodel[dapver].get_plot_params(prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
     symmetric = kwargs.get('symmetric', params['symmetric'])

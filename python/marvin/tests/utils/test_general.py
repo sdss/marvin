@@ -30,9 +30,9 @@ from marvin.tools.cube import Cube
 from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
                                   _sort_dir, getDapRedux, getDefaultMapPath)
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
+from marvin.utils.datamodel.dap import datamodel
 
 
 @pytest.fixture(scope='function')
@@ -211,8 +211,7 @@ class TestDataModelPlotParams(object):
                               ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
                              ids=['emline', 'stvel', 'stsig'])
     def test_get_plot_params(self, dapver, name, desired):
-        params = get_default_plot_params(dapver)
-
+        params = datamodel[dapver].get_default_plot_params()
         if 'vel' in name:
             key = 'vel'
         elif 'sigma' in name:
@@ -221,7 +220,7 @@ class TestDataModelPlotParams(object):
             key = 'default'
 
         desired['bitmasks'] = params[key]['bitmasks']
-        actual = get_plot_params(dapver=dapver, prop=name)
+        actual = datamodel[dapver].get_plot_params(prop=name)
         assert desired == actual
 
 
