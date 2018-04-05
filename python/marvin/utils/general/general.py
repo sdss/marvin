@@ -36,7 +36,6 @@ import marvin
 
 from marvin import log
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 
 try:
     from sdss_access import RsyncAccess, AccessError

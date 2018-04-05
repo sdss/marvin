@@ -9,5 +9,3 @@ from .MPL7 import MPL7
 # Defines the list of datamodels.
 datamodel = DAPDataModelList([MPL4, MPL5, MPL6, MPL7])
 
-
-from .plotting import *
