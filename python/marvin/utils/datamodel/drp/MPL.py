@@ -71,5 +71,9 @@ MPL6 = DRPDataModel('MPL-6', aliases=['MPL6'],
                     spectra=MPL4_spectra + MPL6_spectra,
                     bitmasks=get_maskbits('MPL-6'))
 
+MPL7 = DRPDataModel('MPL-7', aliases=['MPL7'],
+                    datacubes=MPL4_datacubes + MPL6_datacubes,
+                    spectra=MPL4_spectra + MPL6_spectra,
+                    bitmasks=get_maskbits('MPL-7'))
 
-datamodel = DRPDataModelList([MPL4, MPL5, MPL6])
+datamodel = DRPDataModelList([MPL4, MPL5, MPL6, MPL7])
