@@ -169,7 +169,8 @@ html_theme_options = {
     # an arbitrary url.
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin2/", True),
-        ("Tutorials", "tutorials"),
+        ("Cheatsheet", "cheatsheet"),
+        # ("Tutorials", "tutorials"),
         ("New Issue", "https://github.com/sdss/marvin/issues/new", True)
     ],
 
@@ -412,4 +413,3 @@ GoogleDocstring._parse = patched_parse
 # -- Use the custom css file in readthedocs --
 def setup(app):
     app.add_stylesheet('custom.css')
-
