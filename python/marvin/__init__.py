@@ -14,7 +14,7 @@ import contextlib
 from collections import OrderedDict
 
 # Set the Marvin version
-__version__ = '2.2.4dev'
+__version__ = '2.2.4'
 
 
 # Does this so that the implicit module definitions in extern can happen.

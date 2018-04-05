@@ -621,6 +621,9 @@ maskbits EBOSS_TARGET2 2 SPIDERS_ERASS_AGN         "ERASS AGN sources"
 maskbits EBOSS_TARGET2 3 SPIDERS_ERASS_CLUS            "ERASS Cluster sources"
 maskbits EBOSS_TARGET2 4 SPIDERS_XMMSL_AGN         "XMM Slew survey"
 maskbits EBOSS_TARGET2 5 SPIDERS_XCLASS_CLUS       "XMM serendipitous clusters"
+maskbits EBOSS_TARGET2 6 SPIDERS_CODEX_CLUS_CFHT       "CODEX clusters, CFHT photometry"
+maskbits EBOSS_TARGET2 7 SPIDERS_CODEX_CLUS_PS1       "CODEX clusters, PS1 photometry"
+maskbits EBOSS_TARGET2 8 SPIDERS_CODEX_CLUS_DECALS       "CODEX clusters, DECALS photometry"
 maskbits EBOSS_TARGET2 20 TDSS_A                "Main PanSTARRS selection for TDSS"
 maskbits EBOSS_TARGET2 21 TDSS_FES_DE               "QSOs with disk emitter broad line profiles"
 maskbits EBOSS_TARGET2 22 TDSS_FES_DWARFC           "dwarf carbon stars"
@@ -1002,8 +1005,22 @@ maskbits MANGA_DRP3QUAL  7 BADSET " One or more sets are bad"
 maskbits MANGA_DRP3QUAL  8 BADFLUX " Bad flux calibration"
 maskbits MANGA_DRP3QUAL  9 BADPSF " PSF estimate may be bad"
 maskbits MANGA_DRP3QUAL 10 MANYDEAD " Many dead fibers"
-maskbits MANGA_DRP3QUAL 11 BADHELIORV " MASTAR: High variance between stellar RVs"
+maskbits MANGA_DRP3QUAL 11 RETIRED2 " Bit retired, moved into MASTAR_QUAL instead"
 maskbits MANGA_DRP3QUAL 30 CRITICAL " Critical failure in one or more frames"
+
+# MaStar quality flag bitmask
+masktype MASTAR_QUAL 64 "Mask bits for MaStar spectra quality flags"
+maskbits MASTAR_QUAL  0 NODATA " No Data"
+maskbits MASTAR_QUAL  1 SKYSUBBAD " Bad sky subtraction in one or more frames"
+maskbits MASTAR_QUAL  2 HIGHSCAT " High scattered light in one or more frames"
+maskbits MASTAR_QUAL  3 BADFLUX " Bad flux calibration"
+maskbits MASTAR_QUAL  4 LOWCOV " PSF-covering fraction by fiber is too small (<10%)"
+maskbits MASTAR_QUAL  5 POORCAL " Poor throughput"
+maskbits MASTAR_QUAL  6 BADHELIORV " High variance between stellar RVs"
+maskbits MASTAR_QUAL  7 MANUAL " Flagged as problematic by visual inspection"
+maskbits MASTAR_QUAL  8 EMLINE " Spectrum contain emission lines"
+maskbits MASTAR_QUAL  9 LOWSN  " Per-MJD Spectrum has median S/N <= 15"
+maskbits MASTAR_QUAL 30 CRITICAL " Critical failure in one or more frames"
 
 # The following mask bits are for the 2D MANGA pipeline
 # 0-13 refer to each fiber, 15-30 refer to each pixel in a spectrum."
@@ -1088,13 +1105,6 @@ maskbits MANGA_DAPPIXMASK  8 NEARBOUND "Fitted value is too near an imposed boun
 maskbits MANGA_DAPPIXMASK  9 NOCORRECTION "Appropriate correction not available"
 maskbits MANGA_DAPPIXMASK 10 MULTICOMP "Multi-component velocity features present"
 maskbits MANGA_DAPPIXMASK 30 DONOTUSE "Do not use this spaxel for science"
-
-# MaStar quality flag bitmask
-masktype MASTAR_QUAL 64 "Mask bits for MaStar spectra"
-maskbits MASTAR_QUAL  0 NODATA "No Data"
-maskbits MASTAR_QUAL  1 POORCAL "Poor flux calibration"
-maskbits MASTAR_QUAL  2 LOWCOV "PSF-covering fraction by fiber is too small (<10%)"
-maskbits MASTAR_QUAL  3 MANUAL "flagged as problematic by visual inspection"
 
 # MaNGA targeting bitmask for galaxy targets
 masktype MANGA_TARGET1     64 "Mask bits identifying galaxy samples."
