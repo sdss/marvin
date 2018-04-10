@@ -30,14 +30,14 @@ CREATE TABLE mangadatadb.cart (pk serial PRIMARY KEY NOT NULL, id INTEGER);
 
 CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, cart_pk INTEGER);
 
-CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux double precision[],
-				ivar double precision[], mask INTEGER[], xpos double precision[],
-				ypos double precision[], disp double precision[], exposure_no INTEGER, mjd INTEGER,
-				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp double precision[]);
+CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux real[],
+				ivar real[], mask INTEGER[], xpos real[],
+				ypos real[], disp real[], exposure_no INTEGER, mjd INTEGER,
+				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp real[]);
 
-CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux double precision[], ivar double precision[],
-				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER,
-				predisp double precision[]);
+CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux real[], ivar real[],
+				mask integer[], disp real[], cube_pk INTEGER, x INTEGER, y INTEGER,
+				predisp real[]);
 
 CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength double precision[],
 				bintype TEXT);
