@@ -11,6 +11,7 @@ import re
 import warnings
 import sys
 import contextlib
+import yaml
 from collections import OrderedDict
 
 # Set the Marvin version
@@ -21,7 +22,7 @@ __version__ = '2.2.5dev'
 from marvin import extern
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from brain.utils.general.general import getDbMachine
+from brain.utils.general.general import getDbMachine, merge
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
@@ -81,6 +82,7 @@ class MarvinConfig(object):
     '''
     def __init__(self):
 
+        self._custom_config = None
         self._drpall = None
         self._inapp = False
 
@@ -96,6 +98,7 @@ class MarvinConfig(object):
         self._allowed_releases = {}
 
         # perform some checks
+        self._load_defaults()
         self._check_netrc()
         self._check_config()
         self._setDbConfig()
@@ -105,6 +108,19 @@ class MarvinConfig(object):
         self._checkSDSSAccess()
         self._check_manga_dirs()
         self.setDefaultDrpAll()
+
+    def _load_defaults(self):
+        config = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml')))
+        user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
+        if os.path.exists(user_config_path):
+            config = merge(yaml.load(open(user_config_path)), config)
+
+        # update any matching Config values
+        for key, value in config.items():
+            if hasattr(self, key):
+                self.__setattr__(key, value)
+
+        self._custom_config = config
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -151,14 +167,17 @@ class MarvinConfig(object):
     def _check_netrc(self):
         """Makes sure there is a valid netrc."""
 
-        try:
-            valid_netrc = bconfig._check_netrc()
-        except BrainError as e:
-            pass
-        else:
-            # if it's valid, then auto set to collaboration
-            if valid_netrc:
-                self.access = 'collab'
+        autocheck = self._custom_config.get('auto_check_netrc', None)
+
+        if autocheck:
+            try:
+                valid_netrc = bconfig._check_netrc()
+            except BrainError as e:
+                pass
+            else:
+                # if it's valid, then auto set to collaboration
+                if valid_netrc:
+                    self.access = 'collab'
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
