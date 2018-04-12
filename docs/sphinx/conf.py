@@ -170,6 +170,7 @@ html_theme_options = {
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin2/", True),
         ("Cheatsheet", "cheatsheet"),
+        ("Tutorials", "tutorials"),
         ("New Issue", "https://github.com/sdss/marvin/issues/new", True)
     ],
 
