@@ -1,0 +1,15 @@
+
+# Default Marvin config
+
+# automatically check for netrc on startup
+auto_check_netrc: False
+
+# use the Sentry error logging
+use_sentry: True
+
+# add a message to submit a new Github Issue on all MarvinErrors
+add_github_message: True
+
+# globally set downloads for all Marvin Tools
+download: False
+
