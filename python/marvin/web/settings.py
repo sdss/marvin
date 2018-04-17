@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-03 16:03:55
+# @Last Modified time: 2018-04-17 10:12:55
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -14,6 +14,7 @@ import os
 
 class Config(object):
     SECRET_KEY = os.environ.get('MARVIN_SECRET', 'secret-key')
+    FLASK_SECRET = SECRET_KEY
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     APP_BASE = os.environ.get('MARVIN_BASE', 'marvin')
     projroot = os.path.abspath(os.path.join(APP_DIR, os.pardir, os.pardir, os.pardir))

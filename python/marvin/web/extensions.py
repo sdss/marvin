@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:31:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-09-28 14:58:54
+# @Last Modified time: 2018-04-13 16:57:13
 
 from __future__ import print_function, division, absolute_import
 from flask_featureflags import FeatureFlag
@@ -15,6 +15,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_profiler import Profiler
 from flask_cache import Cache
+from flask_htpasswd import HtPasswdAuth
+from flask_login import LoginManager
 import flask_jsglue as jsg
 import logging
 
@@ -35,3 +37,9 @@ profiler = Profiler()
 
 # Flask Cache
 cache = Cache()
+
+# Flask HtpassdAuth
+htpasswd = HtPasswdAuth()
+
+# Flask Login
+login_manager = LoginManager()

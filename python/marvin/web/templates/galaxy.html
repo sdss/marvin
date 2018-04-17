@@ -28,7 +28,8 @@
     <div class='row'>
         <div class='col-md-12 galinfo'>
             {% if not cube %}
-                <h3 class='alert alert-danger'>{{error}}</h3>
+                <h3 class='alert alert-danger'>{{error}}. Did you mean <a href='{{url_for("galaxy_page.Galaxy:get",galid="8485-1901")}}
+                ' target="_blank">8485-1901</a>?</h3>
             {% else %}
                 <!-- Galaxy Meta Data -->
                 {# Galaxy Meta Data #}

@@ -4,11 +4,14 @@ from flask_classful import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
-from marvin.web.web_utils import parseSession
 from marvin.api.base import arg_validate as av
 from marvin.web.controllers import BaseWebView
+from marvin.web.extensions import login_manager
+from marvin.web.web_utils import setGlobalSession, set_session_versions
 
-from hashlib import md5
+from brain.utils.general import inspection_authenticate
+from passlib.apache import HtpasswdFile
+from flask_login import current_user, login_user, logout_user
 
 index = Blueprint("index_page", __name__)
 
@@ -26,7 +29,6 @@ class Marvin(BaseWebView):
 
     def index(self):
         current_app.logger.info('Welcome to Marvin Web!')
-
         return render_template("index.html", **self.main)
 
     def quote(self):
@@ -41,12 +43,13 @@ class Marvin(BaseWebView):
 
     @route('/versions/')
     def get_versions(self):
-        vers = {'sess_vers': current_session['versions'], 'config_vers': config._allowed_releases.keys()}
+        vers = {'sess_vers': current_session['versions'], 'config_vers': config._allowed_releases.keys(), 'access': config.access}
         return jsonify(result=vers)
 
     @route('/session/')
     def get_session(self):
-        return jsonify(result=dict(current_session))
+        extra = {'access': config.access}
+        return jsonify(result=dict(current_session, **extra))
 
     @route('/clear/')
     def clear_session(self):
@@ -98,40 +101,13 @@ class Marvin(BaseWebView):
         ''' Global selection of the MPL/DR versions '''
         args = av.manual_parse(self, request, use_params='index')
         version = args.get('release', None)
-        current_session['release'] = version
+        print('version select', config.release, config.access, config._allowed_releases)
+        set_session_versions(version)
         drpver, dapver = config.lookUpVersions(release=version)
-        current_session['drpver'] = drpver
-        current_session['dapver'] = dapver
         out = {'status': 1, 'msg': 'Success', 'current_release': version,
                'current_drpver': drpver, 'current_dapver': dapver}
 
         return jsonify(result=out)
-
-    @route('/login/', methods=['GET', 'POST'], endpoint='login')
-    def login(self):
-        ''' login for trac user '''
-        try:
-            from inspection.marvin import Inspection
-        except ImportError as e:
-            from brain.core.inspection import Inspection
-
-        form = processRequest(request=request)
-        result = {}
-        username = form['username'].strip()
-        password = form['password'].strip()
-        auth = md5("{0}:AS3Trac:{1}".format(username, password).encode('utf-8')).hexdigest() if username and password else None
-        try:
-            inspection = Inspection(current_session, username=username, auth=auth)
-        except Exception as e:
-            result['status'] = 1
-            result['message'] = str(e)
-            current_session['loginready'] = True
-        else:
-            result = inspection.result()
-            current_session['loginready'] = inspection.ready
-            current_session['name'] = result.get('membername', None)
-
-        return jsonify(result=result)
 
     @route('/logout/', methods=['GET', 'POST'], endpoint='logout')
     def logout(self):
@@ -146,7 +122,70 @@ class Marvin(BaseWebView):
         if 'name' in current_session:
             name = current_session.pop('name')
 
+        request.environ['REMOTE_USER'] = None
+        config.access = 'public'
+        set_session_versions(config.release)
+        setGlobalSession()
+        logout_user()
+
         return redirect(url_for('index_page.Marvin:index'))
 
+    @staticmethod
+    @login_manager.user_loader
+    def load_user(pk):
+        return marvindb.session.query(marvindb.datadb.User).get(int(pk))
+
+    @route('/login/', methods=['GET', 'POST'], endpoint='login')
+    def login(self):
+        form = processRequest(request=request)
+        result = {}
+        username = form['username'].strip()
+        password = form['password'].strip()
+
+        # do nothing if already validated
+        if current_user.is_authenticated:
+            return jsonify(result=result)
+
+        # validate the user with htpassfile or trac username
+        is_valid = False
+        user = None
+        htpassfile = request.environ.get('HTPASSFILE', None)
+        htpassfile = '/Users/Brian/www/.htpasswd'
+        if username == 'sdss':
+            if htpassfile:
+                htpass = HtpasswdFile(htpassfile)
+                is_valid = htpass.check_password(username, password)
+                user = username
+        else:
+            result = inspection_authenticate(current_session, username=username, password=password)
+            is_valid = result['is_valid']
+            user = result.get('membername', None)
+
+        # get User
+        if is_valid:
+            user = marvindb.session.query(marvindb.datadb.User).filter(marvindb.datadb.User.username == username).one_or_none()
+            if user and user.check_password(password):
+                login_user(user)
+            else:
+                # add new user
+                with marvindb.session.begin():
+                    user = marvindb.datadb.User(username=username)
+                    user.set_password(password)
+                    marvindb.session.add(user)
+        print('login', is_valid, user)
+        if is_valid:
+            result['status'] = 1
+            result['message'] = 'Login Successful!'
+            current_session['name'] = user.username
+            current_session['loginready'] = True
+            request.environ['REMOTE_USER'] = user.username
+            config.access = 'collab'
+            setGlobalSession()
+        else:
+            result['status'] = -1
+            result['message'] = 'Login {0} is not valid!'.format(username)
+
+        print('login', result)
+        return jsonify(result=result)
 
 Marvin.register(index)

@@ -126,6 +126,10 @@ create table history.query (pk serial primary key not null, searchfilter text, n
 	release varchar(8), created timestamp, updated timestamp);
 create index concurrently filter_idx on history.query using btree(searchfilter);
 
+create table history.user (pk serial primary key not null, username varchar(64), email varchar(120), password_hash varchar(256));
+create index concurrently user_idx on history.user using btree(username);
+
+
 INSERT INTO mangadatadb.fiber_type VALUES (0, 'IFU'),(1,'SKY');
 INSERT INTO mangadatadb.target_type VALUES (0, 'science'),(1,'sky'),(2,'standard');
 INSERT INTO mangadatadb.cart VALUES (0, '1'),(1, '2'),(2, '3'),(3, '4'),(4, '5'),(5,'6');

@@ -153,10 +153,21 @@ def make_nsa_dict(nsa, cols=None):
 
     # make dictionary
     nsadict = {c: nsa[c] for c in cols}
-    nsadict.update({'elpetro_absmag_i': nsadict['elpetro_absmag'][5]})
-    nsadict.update({'elpetro_mtol_i': nsadict['elpetro_mtol'][5]})
-    cols.append('elpetro_absmag_i')
+    absmag = nsadict.get('elpetro_absmag', None)
+    mtol = nsadict.get('elpetro_mtol', None)
+    if absmag:
+        nsadict.update({'elpetro_absmag_i': nsadict['elpetro_absmag'][5]})
+    if mtol:
+        nsadict.update({'elpetro_mtol_i': nsadict['elpetro_mtol'][5]})
+
+    # check for logmass
+    if 'elpetro_logmass' not in nsadict:
+        if 'elpetro_mass' in nsadict:
+            nsadict.update({'elpetro_logmass': np.log10(nsadict['elpetro_mass'])})
+            cols.append('elpetro_logmass')
+
     cols.append('elpetro_mtol_i')
+    cols.append('elpetro_absmag_i')
     cols.sort()
 
     return nsadict, cols
@@ -228,6 +239,7 @@ class Galaxy(BaseWebView):
         self.galaxy['mapmsg'] = None
         self.galaxy['toggleon'] = 'false'
         self.galaxy['nsamsg'] = None
+        self.galaxy['hasnsa'] = False
         self.galaxy['nsachoices'] = {'1': {'y': 'z', 'x': 'elpetro_logmass', 'xtitle': 'Stellar Mass',
                                            'ytitle': 'Redshift', 'title': 'Redshift vs Stellar Mass'},
                                      '2': {'y': 'elpetro_absmag_g_r', 'x': 'elpetro_absmag_i', 'xtitle': 'AbsMag_i',
@@ -303,7 +315,7 @@ class Galaxy(BaseWebView):
                 if hasnsa:
                     cols = self.galaxy.get('nsaplotcols')
                     nsadict, nsacols = make_nsa_dict(cube.nsa)
-                    nsatmp = [nsacols.pop(nsacols.index(i)) for i in cols]
+                    nsatmp = [nsacols.pop(nsacols.index(i)) for i in cols if i in nsacols]
                     nsatmp.extend(nsacols)
                     self.galaxy['nsacols'] = nsatmp
                     self.galaxy['nsadict'] = nsadict
