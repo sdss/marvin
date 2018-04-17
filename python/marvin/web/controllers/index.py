@@ -12,6 +12,7 @@ from marvin.web.web_utils import setGlobalSession, set_session_versions
 from brain.utils.general import inspection_authenticate
 from passlib.apache import HtpasswdFile
 from flask_login import current_user, login_user, logout_user
+import flask_featureflags as feature
 
 index = Blueprint("index_page", __name__)
 
@@ -48,7 +49,7 @@ class Marvin(BaseWebView):
 
     @route('/session/')
     def get_session(self):
-        extra = {'access': config.access}
+        extra = {'access': config.access, 'remote_user': request.environ['REMOTE_USER']}
         return jsonify(result=dict(current_session, **extra))
 
     @route('/clear/')
@@ -101,7 +102,6 @@ class Marvin(BaseWebView):
         ''' Global selection of the MPL/DR versions '''
         args = av.manual_parse(self, request, use_params='index')
         version = args.get('release', None)
-        print('version select', config.release, config.access, config._allowed_releases)
         set_session_versions(version)
         drpver, dapver = config.lookUpVersions(release=version)
         out = {'status': 1, 'msg': 'Success', 'current_release': version,
@@ -172,7 +172,7 @@ class Marvin(BaseWebView):
                     user = marvindb.datadb.User(username=username)
                     user.set_password(password)
                     marvindb.session.add(user)
-        print('login', is_valid, user)
+        print('login', is_valid, user, feature.is_active('public'))
         if is_valid:
             result['status'] = 1
             result['message'] = 'Login Successful!'

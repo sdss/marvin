@@ -16,7 +16,7 @@ import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
-from marvin.web.web_utils import updateGlobalSession, check_access
+from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
 from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, htpasswd, login_manager
@@ -128,6 +128,7 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
+    configFeatures(app)
     cache.init_app(app, config=app.config)
 
     limiter.init_app(app)

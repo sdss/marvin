@@ -6,10 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-17 10:12:55
+# @Last Modified time: 2018-04-17 14:32:59
 
 from __future__ import print_function, division, absolute_import
 import os
+import datetime
 
 
 class Config(object):
@@ -72,6 +73,7 @@ class ProdConfig(Config):
     USE_X_SENDFILE = True
     USE_SENTRY = True
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+    PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
 
 
 class DevConfig(Config):

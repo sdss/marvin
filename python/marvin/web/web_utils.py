@@ -12,27 +12,38 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from flask import session as current_session, render_template, request, g, jsonify
+from flask import session as current_session, request, current_app
 from marvin import config
-from marvin.utils.db import get_traceback
 from collections import defaultdict
+import flask_featureflags as feature
 import re
 
 
-def configFeatures(app, mode):
+def configFeatures(app):
     ''' Configure Flask Feature Flags '''
 
-    app.config['FEATURE_FLAGS']['collab'] = False if mode == 'dr13' else True
-    app.config['FEATURE_FLAGS']['new'] = False if mode == 'dr13' else True
-    app.config['FEATURE_FLAGS']['dev'] = True if config.db == 'local' else False
+    app.config['FEATURE_FLAGS']['public'] = True if config.access == 'public' else False
 
 
 def check_access():
     ''' Check the access mode in the session '''
-    logged_in = current_session.get('loginready', None)
-    if not logged_in and config.access == 'collab':
+
+    # check if on public server
+    public_server = request.environ.get('PUBLIC_SERVER', None) == 'True'
+    public_flag = public_server or current_app.config['FEATURE_FLAGS']['public']
+    current_app.config['FEATURE_FLAGS']['public'] = public_server
+    public_access = config.access == 'public'
+    print('public_flag', public_flag, public_access)
+
+    if public_flag:
         config.access = 'public'
-    elif logged_in is True and config.access == 'public':
+        return
+
+    # check for logged in status
+    logged_in = current_session.get('loginready', None)
+    if not logged_in and not public_access:
+        config.access = 'public'
+    elif logged_in is True and public_access:
         config.access = 'collab'
 
 
@@ -62,6 +73,8 @@ def updateGlobalSession():
         set_session_versions(config.release)
     elif 'release' not in current_session:
         current_session['release'] = config.release
+    elif feature.is_active('public'):
+        current_session['versions'] = update_allowed()
     # elif 'access' not in current_session:
     #     current_session['access'] = config.access
     # else:
