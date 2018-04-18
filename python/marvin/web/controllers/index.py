@@ -12,7 +12,6 @@ from marvin.web.web_utils import setGlobalSession, set_session_versions
 from brain.utils.general import inspection_authenticate
 from passlib.apache import HtpasswdFile
 from flask_login import current_user, login_user, logout_user
-import flask_featureflags as feature
 
 index = Blueprint("index_page", __name__)
 
@@ -44,12 +43,13 @@ class Marvin(BaseWebView):
 
     @route('/versions/')
     def get_versions(self):
-        vers = {'sess_vers': current_session['versions'], 'config_vers': config._allowed_releases.keys(), 'access': config.access}
+        vers = {'sess_vers': current_session['versions'], 'config_vers': config._allowed_releases.keys(),
+                'access': config.access, 'release': config.release, 'session_release': current_session['release']}
         return jsonify(result=vers)
 
     @route('/session/')
     def get_session(self):
-        extra = {'access': config.access, 'remote_user': request.environ['REMOTE_USER']}
+        extra = {'access': config.access}
         return jsonify(result=dict(current_session, **extra))
 
     @route('/clear/')
@@ -161,7 +161,7 @@ class Marvin(BaseWebView):
             is_valid = result['is_valid']
             user = result.get('membername', None)
 
-        # get User
+        # get User only if valid
         if is_valid:
             user = marvindb.session.query(marvindb.datadb.User).filter(marvindb.datadb.User.username == username).one_or_none()
             if user and user.check_password(password):
@@ -172,20 +172,18 @@ class Marvin(BaseWebView):
                     user = marvindb.datadb.User(username=username)
                     user.set_password(password)
                     marvindb.session.add(user)
-        print('login', is_valid, user, feature.is_active('public'))
+
         if is_valid:
             result['status'] = 1
             result['message'] = 'Login Successful!'
             current_session['name'] = user.username
             current_session['loginready'] = True
-            request.environ['REMOTE_USER'] = user.username
             config.access = 'collab'
             setGlobalSession()
         else:
             result['status'] = -1
             result['message'] = 'Login {0} is not valid!'.format(username)
 
-        print('login', result)
         return jsonify(result=result)
 
 Marvin.register(index)

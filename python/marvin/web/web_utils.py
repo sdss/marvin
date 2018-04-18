@@ -33,8 +33,8 @@ def check_access():
     public_flag = public_server or current_app.config['FEATURE_FLAGS']['public']
     current_app.config['FEATURE_FLAGS']['public'] = public_server
     public_access = config.access == 'public'
-    print('public_flag', public_flag, public_access)
 
+    # ensure always in public mode when using public server
     if public_flag:
         config.access = 'public'
         return
@@ -73,19 +73,18 @@ def updateGlobalSession():
         set_session_versions(config.release)
     elif 'release' not in current_session:
         current_session['release'] = config.release
-    elif feature.is_active('public'):
+    elif 'release' in current_session:
+        if current_session['release'] not in config._allowed_releases:
+            current_session['release'] = config.release
+
+    # reset the session versions if on public site
+    if feature.is_active('public'):
         current_session['versions'] = update_allowed()
-    # elif 'access' not in current_session:
-    #     current_session['access'] = config.access
-    # else:
-    #     # update versions based on access
-    #     current_session['versions'] = update_allowed()
+
 
 def setGlobalSession():
     ''' Sets the global session for Flask '''
 
-    # mpls = list(config._allowed_releases.keys())
-    # versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(release=mpl))} for mpl in mpls]
     current_session['versions'] = update_allowed()
 
     if 'release' not in current_session:
