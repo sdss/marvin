@@ -32,6 +32,9 @@ except ImportError as e:
 from marvin.db.database import db
 import marvin.db.models.SampleModelClasses as sampledb
 
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
 # ========================
 # Define database classes
 # ========================
@@ -785,11 +788,7 @@ class QueryMeta(Base, Timestamp):
         return '<QueryMeta (pk={0}, filter={1}), count={2}>'.format(self.pk, self.searchfilter, self.count)
 
 
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-
-
-class User(Base, UserMixin):
+class User(Base, UserMixin, Timestamp):
     __tablename__ = 'user'
     __table_args__ = {'autoload': True, 'schema': 'history'}
 
@@ -804,6 +803,13 @@ class User(Base, UserMixin):
 
     def get_id(self):
         return (self.pk)
+
+    def update_stats(self, request=None):
+        remote_addr = request.remote_addr or None
+        self.login_count += 1
+        old_current_ip, new_current_ip = self.current_ip, remote_addr
+        self.last_ip = old_current_ip
+        self.current_ip = new_current_ip
 
 # Define relationships
 # ========================

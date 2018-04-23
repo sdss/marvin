@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:31:51
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-18 18:02:52
+# @Last Modified time: 2018-04-20 13:46:41
 
 from __future__ import print_function, division, absolute_import
 from flask_featureflags import FeatureFlag
@@ -16,6 +16,7 @@ from flask_limiter.util import get_remote_address
 from flask_profiler import Profiler
 from flask_cache import Cache
 from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
 import flask_jsglue as jsg
 import logging
 
@@ -39,3 +40,6 @@ cache = Cache()
 
 # Flask Login
 login_manager = LoginManager()
+
+# Flask-JWT (JSON Web Token)
+jwt = JWTManager()

@@ -13,6 +13,8 @@ from __future__ import print_function
 from __future__ import division
 from brain.api.base import BrainBaseView
 from brain.api.general import BrainGeneralRequestsView
+from marvin.utils.general import validate_jwt
+from flask_jwt_extended import fresh_jwt_required
 from marvin import config
 from marvin.api import ArgValidator
 import json
@@ -22,6 +24,7 @@ arg_validate = ArgValidator(urlmap=None)
 
 class BaseView(BrainBaseView):
     '''Super Class for all API Views to handle all global API items of interest'''
+    decorators = [fresh_jwt_required, validate_jwt]
 
     def add_config(self):
         utahconfig = {'utahconfig': {'mode': config.mode, 'release': config.release}}

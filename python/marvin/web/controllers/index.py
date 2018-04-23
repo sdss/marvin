@@ -9,7 +9,7 @@ from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import login_manager
 from marvin.web.web_utils import setGlobalSession, set_session_versions
 
-from brain.utils.general import inspection_authenticate
+from brain.utils.general import validate_user, get_db_user
 from passlib.apache import HtpasswdFile
 from flask_login import current_user, login_user, logout_user
 
@@ -147,31 +147,13 @@ class Marvin(BaseWebView):
             return jsonify(result=result)
 
         # validate the user with htpassfile or trac username
-        is_valid = False
-        user = None
-        htpassfile = request.environ.get('HTPASSFILE', None)
-        htpassfile = '/Users/Brian/www/.htpasswd'
-        if username == 'sdss':
-            if htpassfile:
-                htpass = HtpasswdFile(htpassfile)
-                is_valid = htpass.check_password(username, password)
-                user = username
-        else:
-            result = inspection_authenticate(current_session, username=username, password=password)
-            is_valid = result['is_valid']
-            user = result.get('membername', None)
+        is_valid, user, result = validate_user(username, password, request=request, session=current_session)
 
         # get User only if valid
         if is_valid:
-            user = marvindb.session.query(marvindb.datadb.User).filter(marvindb.datadb.User.username == username).one_or_none()
+            user = get_db_user(username, password, dbsession=marvindb.session, user_model=marvindb.datadb.User, request=request)
             if user and user.check_password(password):
                 login_user(user)
-            else:
-                # add new user
-                with marvindb.session.begin():
-                    user = marvindb.datadb.User(username=username)
-                    user.set_password(password)
-                    marvindb.session.add(user)
 
         if is_valid:
             result['status'] = 1
@@ -185,5 +167,6 @@ class Marvin(BaseWebView):
             result['message'] = 'Login {0} is not valid!'.format(username)
 
         return jsonify(result=result)
+
 
 Marvin.register(index)

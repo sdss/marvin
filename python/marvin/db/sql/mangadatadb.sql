@@ -126,7 +126,8 @@ create table history.query (pk serial primary key not null, searchfilter text, n
 	release varchar(8), created timestamp, updated timestamp);
 create index concurrently filter_idx on history.query using btree(searchfilter);
 
-create table history.user (pk serial primary key not null, username varchar(64), email varchar(120), password_hash varchar(256));
+create table history.user (pk serial primary key not null, username varchar(64), email varchar(120), password_hash varchar(256),
+	created timestamp, updated timestamp, login_count integer, last_ip varchar(100), current_ip varchar(100));
 create index concurrently user_idx on history.user using btree(username);
 
 

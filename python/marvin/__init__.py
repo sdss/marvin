@@ -96,6 +96,7 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
+        self.token = None
 
         # perform some checks
         self._load_defaults()
@@ -287,7 +288,7 @@ class MarvinConfig(object):
 
         if self._urlmap is None or (isinstance(self._urlmap, dict) and len(self._urlmap) == 0):
             try:
-                response = Interaction('api/general/getroutemap', request_type='get')
+                response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
             except Exception as e:
                 warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
@@ -589,6 +590,30 @@ class MarvinConfig(object):
         if is_different:
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
+
+    def login(self, new=None):
+        ''' Login with netrc credentials to receive an API token '''
+
+        # do nothing if token already generated
+        if self.token and not new:
+            return
+
+        valid_netrc = bconfig._check_netrc()
+        if valid_netrc:
+            # get login info for api.sdss.org
+            user, password = bconfig._read_netrc('api.sdss.org')
+            data = {'username': user, 'password': password}
+
+            # send token request
+            url = self.urlmap['api']['login']['url']
+            try:
+                resp = Interaction(url, params=data, auth='netrc')
+            except Exception as e:
+                raise MarvinError('Error getting login token. {0}'.format(e))
+            else:
+                self.token = resp.results['access_token']
+                bconfig.token = self.token
+
 
 config = MarvinConfig()
 

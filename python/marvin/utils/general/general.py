@@ -21,6 +21,7 @@ import re
 
 from collections import OrderedDict
 from builtins import range
+from functools import wraps
 
 import numpy as np
 
@@ -36,6 +37,7 @@ import marvin
 
 from marvin import log
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from flask_jwt_extended import fresh_jwt_required, get_jwt_identity
 
 try:
     from sdss_access import RsyncAccess, AccessError
@@ -63,9 +65,23 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage', 'validate_jwt')
 
 drpTable = {}
+
+
+def validate_jwt(f):
+    ''' Decorator to validate a JWT and User '''
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        current_user = get_jwt_identity()
+        if not current_user:
+            raise MarvinError('Invalid user from API token!')
+        else:
+            marvin.config.access = 'collab'
+        return f(*args, **kwargs)
+    return wrapper
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,

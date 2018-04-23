@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-18 13:10:19
+# @Last Modified time: 2018-04-23 13:59:09
 
 from __future__ import print_function, division, absolute_import
 from flask_classful import FlaskView
@@ -31,6 +31,7 @@ class BaseWebView(FlaskView):
 
     def before_request(self, *args, **kwargs):
         ''' this runs before every single request '''
+
         self.base['error'] = None
         self._versions = update_allowed()
         self._endpoint = request.endpoint

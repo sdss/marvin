@@ -7,7 +7,7 @@ Licensed under a 3-clause BSD license.
 from __future__ import print_function, division
 import os
 # Flask imports
-from flask import Flask, Blueprint, send_from_directory
+from flask import Flask, Blueprint, send_from_directory, request
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
@@ -15,7 +15,7 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, login_manager
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, login_manager, jwt
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -143,9 +143,10 @@ def register_extensions(app, app_base=None):
         except Exception as e:
             pass
 
-    # Initialize the Login Manager
+    # Initialize the Login Manager and JWT
     login_manager.init_app(app)
     login_manager.session_protection = "strong"
+    jwt.init_app(app)
 
 
 def register_blueprints(app, url_prefix=None):
