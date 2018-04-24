@@ -6,12 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2016-09-28 16:21:17
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-14 11:04:46
+# @Last Modified time: 2018-04-24 13:26:54
 
 from __future__ import print_function, division, absolute_import
-from flask import Blueprint, render_template, request
-from flask_classful import route
-from marvin import config, marvindb
+from flask import Blueprint, render_template
 from marvin.web.controllers import BaseWebView
 
 

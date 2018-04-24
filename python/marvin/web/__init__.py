@@ -7,7 +7,7 @@ Licensed under a 3-clause BSD license.
 from __future__ import print_function, division
 import os
 # Flask imports
-from flask import Flask, Blueprint, send_from_directory, request
+from flask import Flask, Blueprint, send_from_directory
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine

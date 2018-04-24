@@ -10,7 +10,6 @@ from marvin.web.extensions import login_manager
 from marvin.web.web_utils import setGlobalSession, set_session_versions
 
 from brain.utils.general import validate_user, get_db_user
-from passlib.apache import HtpasswdFile
 from flask_login import current_user, login_user, logout_user
 
 index = Blueprint("index_page", __name__)

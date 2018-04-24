@@ -13,8 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classful import FlaskView, route
-from brain.api.base import processRequest
+from flask_classful import route
 from marvin import marvindb
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
                                           getDapRedux, _db_row_to_dict)
@@ -23,13 +22,11 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general.maskbit import Maskbit
-from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
 from marvin.api.base import arg_validate as av
 from marvin.core.caching_query import FromCache
 from marvin.core import marvin_pickle
-from collections import OrderedDict
 import os
 import numpy as np
 

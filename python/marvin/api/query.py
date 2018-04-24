@@ -1,5 +1,5 @@
 from flask_classful import route
-from flask import request, jsonify, Response, current_app, redirect, url_for
+from flask import jsonify, Response
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
