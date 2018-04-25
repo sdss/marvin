@@ -37,7 +37,7 @@ import marvin
 
 from marvin import log
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from flask_jwt_extended import fresh_jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 
 try:
     from sdss_access import RsyncAccess, AccessError

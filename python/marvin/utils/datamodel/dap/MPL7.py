@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-04-04 23:07:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-10 15:29:08
+# @Last Modified time: 2018-04-24 17:05:30
 
 from __future__ import print_function, division, absolute_import
 
@@ -16,7 +16,7 @@ from marvin.utils.datamodel.maskbit import get_maskbits
 import copy
 
 # MPL-7 DapDataModel goes here
-MPL7 = DAPDataModel('2.2.0', aliases=['MPL-7', 'MPL7', 'DR15'],
+MPL7 = DAPDataModel('2.2.1', aliases=['MPL-7', 'MPL7', 'DR15'],
                     bintypes=[HYB10, VOR10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,

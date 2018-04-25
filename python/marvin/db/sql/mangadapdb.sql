@@ -59,6 +59,8 @@ create table mangadapdb.spaxelprop5 (pk bigserial primary key not null, file_pk 
 
 create table mangadapdb.spaxelprop6 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
 
+create table mangadapdb.spaxelprop7 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
+
 create table mangadapdb.modelcube (pk serial primary key not null, file_pk integer);
 
 create table mangadapdb.modelspaxel (pk serial primary key not null, flux real[], ivar real[], mask integer[], model real[],
@@ -173,40 +175,46 @@ ALTER TABLE ONLY mangadapdb.modelspaxel
     FOREIGN KEY (modelcube_pk) REFERENCES mangadapdb.modelcube(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE ONLY mangadapdb.spaxelprop
-    ADD CONSTRAINT file_fk
-    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY mangadapdb.spaxelprop
-    ADD CONSTRAINT binid_fk
-    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY mangadapdb.spaxelprop5
-    ADD CONSTRAINT file_fk
-    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY mangadapdb.spaxelprop5
-    ADD CONSTRAINT binid_fk
-    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY mangadapdb.spaxelprop6
-    ADD CONSTRAINT file_fk
-    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY mangadapdb.spaxelprop6
-    ADD CONSTRAINT binid_fk
-    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
-    ON UPDATE CASCADE ON DELETE CASCADE;
-
 ALTER TABLE ONLY mangadapdb.dapall
     ADD CONSTRAINT file_fk
     FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop
+    ADD CONSTRAINT binid_fk
+    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop5
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop5
+    ADD CONSTRAINT binid_fk
+    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop6
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop6
+    ADD CONSTRAINT binid_fk
+    FOREIGN KEY (binid_pk) REFERENCES mangadapdb.binid(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY mangadapdb.spaxelprop7
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
 
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY pipeline_info_pk_idx ON mangadapdb.file using BTREE(pipeline_info_pk);

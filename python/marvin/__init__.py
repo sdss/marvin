@@ -14,23 +14,22 @@ import contextlib
 import yaml
 from collections import OrderedDict
 
-# Set the Marvin version
-__version__ = '2.2.5dev'
-
-
 # Does this so that the implicit module definitions in extern can happen.
 from marvin import extern
 
-from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine, merge
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
-
-# Inits the log
 from brain.core.logger import initLog
 
 from astropy.wcs import FITSFixedWarning
+
+# Set the Marvin version
+__version__ = '2.2.5dev'
+
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
+
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
@@ -38,6 +37,7 @@ if 'MARVIN_LOGS_DIR' in os.environ:
 else:
     logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
 
+# Inits the log
 log = initLog(logFilePath)
 
 warnings.simplefilter('once')
@@ -339,11 +339,12 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-6': ('v2_3_1', '2.1.3'),
+        mpldict = {'MPL-7': ('v2_4_3', '2.2.1'),
+                   'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_3', '2.2.0'),
+        drdict = {'DR15': ('v2_4_3', '2.2.1'),
                   'DR14': ('v2_2_0', '2.1.0')}
 
         # set the allowed releases based on access
@@ -464,8 +465,8 @@ class MarvinConfig(object):
 
         return release
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False):
-        ''' Switches the SAS url config attribute
+    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False, base=None, public=None):
+        ''' Switches the API SAS url config attribute
 
         Easily switch the sasurl configuration variable between
         utah and local.  utah sets it to the real API.  Local switches to
@@ -481,17 +482,25 @@ class MarvinConfig(object):
                 The port of your localhost server
             test (bool):
                 If ``True``, sets the Utah sasurl to the test production, test/marvin
+            base (str):
+                The name of the marvin base.  Gets appended to main url.  Defaults to "marvin"
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
+        base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
         if sasmode == 'local':
             if ngrokid:
-                self.sasurl = 'http://{0}.ngrok.io/marvin/'.format(ngrokid)
+                self.sasurl = 'http://{0}.ngrok.io/{1}/'.format(ngrokid, base)
             else:
-                self.sasurl = 'http://localhost:{0}/marvin/'.format(port)
+                self.sasurl = 'http://localhost:{0}/{1}/'.format(port, base)
         elif sasmode == 'utah':
-            marvin_base = 'test/marvin/' if test else 'marvin/'
-            self.sasurl = 'https://api.sdss.org/{0}'.format(marvin_base)
-        self.urlmap = None
+            marvin_base = 'test/{0}'.format(base) if test else '{0}'.format(base)
+            if public:
+                base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
+                public_api = os.path.join(base_url, marvin_base)
+                self.sasurl = os.path.join(public_api, 'api')
+            else:
+                self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
+        self._urlmap = None
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -591,8 +600,21 @@ class MarvinConfig(object):
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
 
+        # switch the API url depending on release
+        if 'MPL' in value:
+            self.switchSasUrl('utah')
+        elif 'DR' in value:
+            self.switchSasUrl('utah', public=True)
+
     def login(self, new=None):
-        ''' Login with netrc credentials to receive an API token '''
+        ''' Login with netrc credentials to receive an API token
+
+        Parameters:
+            new (bool):
+                Set to True to force a login to receive a new token
+        '''
+
+        assert config.access == 'collab', 'You must have collaboration access to login.'
 
         # do nothing if token already generated
         if self.token and not new:
@@ -628,8 +650,10 @@ if not marvindir:
     marvindir = moduledir.rsplit('/', 2)[0]
     os.environ['MARVIN_DIR'] = marvindir
 
-# Inits the URL Route Map
 from marvin.api.api import Interaction
-config.sasurl = 'https://api.sdss.org/marvin2/'
-
 from marvin.api.base import arg_validate
+
+# Inits the URL Route Map
+marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
+config.sasurl = 'https://api.sdss.org/{0}/'.format(marvin_base)
+
