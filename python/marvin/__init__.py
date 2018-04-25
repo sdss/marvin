@@ -653,7 +653,3 @@ if not marvindir:
 from marvin.api.api import Interaction
 from marvin.api.base import arg_validate
 
-# Inits the URL Route Map
-#marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
-#config.sasurl = 'https://api.sdss.org/{0}/'.format(marvin_base)
-
