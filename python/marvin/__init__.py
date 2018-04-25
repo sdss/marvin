@@ -493,11 +493,11 @@ class MarvinConfig(object):
             else:
                 self.sasurl = 'http://localhost:{0}/{1}/'.format(port, base)
         elif sasmode == 'utah':
-            marvin_base = 'test/{0}'.format(base) if test else '{0}'.format(base)
+            marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
             if public:
                 base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
                 public_api = os.path.join(base_url, marvin_base)
-                self.sasurl = os.path.join(public_api, 'api')
+                self.sasurl = os.path.join(public_api, 'api/')
             else:
                 self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
         self._urlmap = None
@@ -654,6 +654,6 @@ from marvin.api.api import Interaction
 from marvin.api.base import arg_validate
 
 # Inits the URL Route Map
-marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
-config.sasurl = 'https://api.sdss.org/{0}/'.format(marvin_base)
+#marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
+#config.sasurl = 'https://api.sdss.org/{0}/'.format(marvin_base)
 
