@@ -1,6 +1,13 @@
 Marvin's Change Log
 ===================
 
+[2.2.5] - unreleased
+--------------------
+
+Changed
+^^^^^^^
+- Galaxy Web page spaxel loading to be robust when no modelspaxels are present in the database.
+
 
 [2.2.4] - 2018/04/04
 --------------------
