@@ -26,7 +26,7 @@ from brain.core.logger import initLog
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.2.5dev'
+__version__ = '2.2.6dev'
 
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 
