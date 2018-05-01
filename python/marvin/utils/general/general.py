@@ -491,7 +491,7 @@ def findClosestVector(point, arr_shape=None, pixel_shape=None, xyorig=None):
     return minind
 
 
-def getWCSFromPng(image):
+def getWCSFromPng(filename=None, image=None):
     """Extract any WCS info from the metadata of a PNG image.
 
     Extracts the WCS metadata info from the PNG optical
@@ -499,7 +499,9 @@ def getWCSFromPng(image):
     Converts it to an Astropy WCS object.
 
     Parameters:
-        image (str):
+        image (object):
+            An existing PIL image object
+        filename (str):
             The full path to the image
 
     Returns:
@@ -507,11 +509,18 @@ def getWCSFromPng(image):
             an Astropy WCS object
     """
 
+    assert any([image, filename]), 'Must provide either a PIL image object, or the full image filepath'
+
     pngwcs = None
-    try:
-        image = PIL.Image.open(image)
-    except Exception as e:
-        raise MarvinError('Cannot open image {0}: {1}'.format(image, e))
+
+    if filename and not image:
+        try:
+            image = PIL.Image.open(filename)
+        except Exception as e:
+            raise MarvinError('Cannot open image {0}: {1}'.format(filename, e))
+        else:
+            # Close the image
+            image.close()
 
     # get metadata
     meta = image.info if image else None
@@ -531,9 +540,6 @@ def getWCSFromPng(image):
     # Construct Astropy WCS
     if mywcs:
         pngwcs = wcs.WCS(mywcs)
-
-    # Close the image
-    image.close()
 
     return pngwcs
 

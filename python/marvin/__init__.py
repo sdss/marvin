@@ -497,10 +497,12 @@ class MarvinConfig(object):
             if public:
                 base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
                 public_api = os.path.join(base_url, marvin_base)
-                self.sasurl = os.path.join(public_api, 'api/')
+                self.sasurl = public_api
+                self._authtype = None
             else:
                 self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-        self._urlmap = None
+                self._authtype = 'token'
+        #self._urlmap = None
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''

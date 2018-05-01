@@ -2,11 +2,14 @@
 import contextlib
 import re
 import functools
+import os
 from copy import deepcopy
 from marvin import config
 from marvin.utils.datamodel.dap import datamodel as dm
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
+from marvin.utils.general import validate_jwt
+from flask_jwt_extended import fresh_jwt_required
 
 
 def plate_in_range(val):
@@ -439,3 +442,13 @@ def db_off():
     config.forceDbOff()
     yield
     config.forceDbOn()
+
+
+def set_api_decorators():
+    ''' Sets the API decorators '''
+    if os.environ.get('PUBLIC_SERVER', None):
+        decorators = []
+    else:
+        decorators = [fresh_jwt_required, validate_jwt]
+
+    return decorators

@@ -7,7 +7,7 @@ Licensed under a 3-clause BSD license.
 from __future__ import print_function, division
 import os
 # Flask imports
-from flask import Flask, Blueprint, send_from_directory
+from flask import Flask, Blueprint, send_from_directory, request
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
@@ -25,6 +25,7 @@ from marvin.web.controllers.plate import plate
 from marvin.web.controllers.images import images
 from marvin.web.controllers.users import users
 # API Views
+from marvin.api.base import BaseView
 from marvin.api.cube import CubeView
 from marvin.api.maps import MapsView
 from marvin.api.modelcube import ModelCubeView
@@ -114,7 +115,11 @@ def register_api(app, api):
     # SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
+
+    # set the API rate limiting
     limiter.limit("200/minute")(api)
+
+    # register the API blueprint
     app.register_blueprint(api)
 
 
