@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-23 13:34:57
+# @Last Modified time: 2018-05-07 12:46:09
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -164,5 +164,11 @@ class TestConfig(object):
 
     def test_exists(self):
         assert config is not None
+
+    def test_bad_login(self):
+        config.access = 'public'
+        with pytest.raises(AssertionError) as cm:
+            config.login()
+        assert 'You must have collaboration access to login.' in str(cm.value)
 
 

@@ -198,7 +198,8 @@ def set_sasurl(loc='local', port=None):
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
     istest = True if loc == 'utah' else False
     config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get')
+    #config.login()
+    response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
     config.urlmap = response.getRouteMap()
 
 
