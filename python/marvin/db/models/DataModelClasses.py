@@ -6,6 +6,7 @@
 import sys
 import os
 import math
+import re
 from decimal import *
 from operator import *
 from astropy.io import fits
@@ -367,6 +368,32 @@ class Cube(Base, ArrayOps):
     def restwave(cls):
         restw = (func.rest_wavelength(sampledb.NSA.z))
         return restw
+
+    def has_modelspaxels(self, name=None):
+        if not name:
+            name = '(SPX|HYB)'
+        has_ms = False
+        model_cubes = [f.modelcube for f in self.dapfiles if re.search('LOGCUBE-{0}'.format(name), f.filename)]
+        if model_cubes:
+            mc = sum(model_cubes, [])
+            if mc:
+                from marvin.db.models.DapModelClasses import ModelSpaxel
+                session = Session.object_session(mc[0])
+                ms = session.query(ModelSpaxel).filter_by(modelcube_pk=mc[0].pk).first()
+                has_ms = True if ms else False
+        return has_ms
+
+    def has_spaxels(self):
+        if len(self.spaxels) > 0:
+            return True
+        else:
+            return False
+
+    def has_fibers(self):
+        if len(self.fibers) > 0:
+            return True
+        else:
+            return False
 
 
 class Wavelength(Base, ArrayOps):

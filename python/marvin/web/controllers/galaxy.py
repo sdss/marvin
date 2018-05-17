@@ -45,11 +45,12 @@ galaxy = Blueprint("galaxy_page", __name__)
 def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' Get and format a spectrum for the web '''
     webspec = None
+    default_bintype = datamodel[cube.release].default_bintype.name
+    has_models = cube.data.has_modelspaxels(name=default_bintype) if hasattr(cube.data, 'has_modelspaxels') else False
 
     # set the spaxel kwargs
     kwargs = {'xyorig': xyorig, 'properties': False}
-    if cube.release != 'MPL-4':
-        kwargs['models'] = True
+    kwargs['models'] = has_models
     if byradec:
         kwargs.update({'ra': x, 'dec': y})
     else:
