@@ -8,50 +8,51 @@
 
 .. title:: Marvin documentation
 
-:tocdepth: 2
+|
 
 .. image:: _static/logo5_lores.jpg
     :width: 600px
     :align: center
     :alt: MaNGA logo
 
-|
+.. rubric:: :header_no_toc:`Marvin`
 
-.. rubric:: :header_no_toc:`Welcome to Marvin's documentation!`
+.. warning:: Marvin 2.x is the last version that will support Python 2.
+  Marvin 3 and following will require Python 3.6+.
 
-Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
-developed and maintained by the MaNGA team.  Check out the
-`Marvin Github <https://github.com/sdss/marvin>`_ page.
+Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/manga>`_ data. It is
+developed and maintained by the MaNGA team. Marvin allows you to:
 
-If you are using Marvin in any way (Web, API, or Tools) to do your science, please
+* Access reduced MaNGA datacubes local, remotely, or via a web interface.
+* Access and visualise data analysis products.
+* Perform powerful queries on data and metadata.
+* Abstract the datamodel and forget where the data actually lives.
+* Make good visualisation and scientific decisions by preventing common mistakes when accessing the data.
+
+Marvin's code is publicly available in our `Github <https://github.com/sdss/marvin>`__ page. If you are using Marvin in any way (Web, API, or Tools) to do your science, please
 remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
-|
+To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
-Introduction
-============
+.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <http://www.apage.com>`_.
 
-* :doc:`What's New in Marvin <whats-new>`
-* :doc:`Changelog <changelog>`
-* :ref:`Known issues <marvin-known-issues>`
-.. * :ref:`TODOs <marvin-todo>`
+If you are new to Marvin check the following links before diving into the full documentation:
 
-|
+* The :ref:`lean tutorial <marvin-lean-tutorial>` is your quick start guide to Marvin.
+* :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <changelog>`, and :ref:`known issues <marvin-known-issues>`.
+* Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
+* More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
 
-Marvin at a Glance
-==================
 
-* :doc:`overview`
-* :doc:`installation`
-* :doc:`faq`
-* :doc:`getting-started`
-* :doc:`tutorials`
-* :doc:`exercises`
+Contents
+========
 
-|
+.. toctree::
+   :maxdepth: 2
+   :glob:
 
-Components
-==========
+   tools
+
 
 * :doc:`core`
 
@@ -96,7 +97,6 @@ Components
   * :doc:`datamodel/mpl5`
   * :doc:`datamodel/mpl6`
 
-|
 
 .. General Reference
 .. =================
@@ -109,7 +109,6 @@ Components
 ..    Available Query Parameters <query-params>
 ..    tools/visual-guide
 
-|
 
 API/Code Reference
 ==================
