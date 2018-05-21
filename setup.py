@@ -75,7 +75,7 @@ install_requires = [line.strip().replace('==', '>=') for line in open(requiremen
 
 NAME = 'sdss-marvin'
 # do not use x.x.x-dev.  things complain.  instead use x.x.xdev
-VERSION = '2.2.4dev'
+VERSION = '2.2.5dev'
 RELEASE = 'dev' not in VERSION
 
 
