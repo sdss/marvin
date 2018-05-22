@@ -1,12 +1,20 @@
 Marvin's Change Log
 ===================
 
-[2.2.5]
--------
+[2.2.6] - 2018/?/?
+--------------------
 
 Added
 ^^^^^
 - Added cheatsheet to docs.
+
+
+[2.2.5] - 2018/04/26
+--------------------
+
+Changed
+^^^^^^^
+- Galaxy Web page spaxel loading to be robust when no modelspaxels are present in the database.
 
 
 [2.2.4] - 2018/04/04
@@ -14,7 +22,7 @@ Added
 
 Fixed
 ^^^^^
-- Issue `#400 <https://github.com/sdss/marvin/issues/400>`: SII in BPT diagram should use sum of 6717 and 6732.
+- Issue `#400 <https://github.com/sdss/marvin/issues/400>`_: SII in BPT diagram should use sum of 6717 and 6732.
 
 
 [2.2.3] - 2018/03/20
