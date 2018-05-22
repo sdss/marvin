@@ -447,7 +447,8 @@ def db_off():
 def set_api_decorators():
     ''' Sets the API decorators '''
     if os.environ.get('PUBLIC_SERVER', None):
-        decorators = []
+        from brain.utils.general.decorators import public
+        decorators = [public]
     else:
         decorators = [fresh_jwt_required, validate_jwt]
 

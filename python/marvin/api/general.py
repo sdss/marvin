@@ -243,5 +243,6 @@ class GeneralRequestsView(BrainGeneralRequestsView):
                 access_token = create_access_token(identity=user.username, fresh=True)
                 return jsonify(access_token=access_token), 200
         else:
-            result['error'] = 'Not valid login. Bad username or password.'
+            msg = result['error'] if 'error' in result else ''
+            result['error'] = 'Not valid login. Bad username or password. {0}'.format(msg)
             return jsonify(result), 401

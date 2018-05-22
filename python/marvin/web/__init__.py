@@ -87,11 +87,12 @@ def create_app(debug=False, local=False, object_config=None):
     def global_update():
         ''' updates the global session / config '''
 
-        # check login/access status
-        check_access()
+        pass
+        # # check login/access status
+        # check_access()
 
-        # update the version/release info in the session
-        updateGlobalSession()
+        # # update the version/release info in the session
+        # updateGlobalSession()
 
     # ----------------------------------
     # Registration

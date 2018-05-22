@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-17 14:32:59
+# @Last Modified time: 2018-05-07 14:54:57
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -99,6 +99,7 @@ class TestConfig(Config):
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     USE_PROFILER = False  # Turn off the Flask Profiler extension
     RATELIMIT_ENABLED = False  # Turn off the Flask Rate Limiter
+    os.environ['PUBLIC_SERVER'] = 'True'
 
 
 class CustomConfig(object):

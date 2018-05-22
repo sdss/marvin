@@ -6,12 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-23 13:59:09
+# @Last Modified time: 2018-05-09 11:32:50
 
 from __future__ import print_function, division, absolute_import
 from flask_classful import FlaskView
 from flask import request
-from marvin.web.web_utils import parseSession, update_allowed
+from marvin.web.web_utils import parseSession, update_allowed, updateGlobalSession, check_access
 import marvin
 from brain.api.general import BrainGeneralRequestsView
 from marvin.api.base import arg_validate as av
@@ -31,6 +31,10 @@ class BaseWebView(FlaskView):
 
     def before_request(self, *args, **kwargs):
         ''' this runs before every single request '''
+
+        # check login/access status and update global session
+        check_access()
+        updateGlobalSession()
 
         self.base['error'] = None
         self._versions = update_allowed()
