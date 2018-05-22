@@ -89,7 +89,7 @@ class Marvin(BaseWebView):
                                             marvindb.datadb.Cube.plateifu).join(marvindb.datadb.PipelineInfo,
                                                                                 marvindb.datadb.PipelineVersion,
                                                                                 marvindb.datadb.IFUDesign).
-                     filter(marvindb.datadb.PipelineVersion.version == self._drpver).all())
+                     filter(marvindb.datadb.PipelineVersion.version == str(self._drpver)).all())
             out = [str(e) for l in cubes for e in l]
         out = list(set(out))
         out.sort()
