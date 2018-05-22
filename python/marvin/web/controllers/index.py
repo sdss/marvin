@@ -6,7 +6,6 @@ from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.api.base import arg_validate as av
 from marvin.web.controllers import BaseWebView
-from marvin.web.extensions import login_manager
 from marvin.web.web_utils import setGlobalSession, set_session_versions
 
 from brain.utils.general import validate_user, get_db_user
@@ -128,11 +127,6 @@ class Marvin(BaseWebView):
         logout_user()
 
         return redirect(url_for('index_page.Marvin:index'))
-
-    @staticmethod
-    @login_manager.user_loader
-    def load_user(pk):
-        return marvindb.session.query(marvindb.datadb.User).get(int(pk))
 
     @route('/login/', methods=['GET', 'POST'], endpoint='login')
     def login(self):

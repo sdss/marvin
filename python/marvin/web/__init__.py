@@ -11,7 +11,7 @@ from flask import Flask, Blueprint, send_from_directory, request
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
-from marvin import config, log
+from marvin import config, log, marvindb
 from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
@@ -166,3 +166,8 @@ def register_blueprints(app, url_prefix=None):
     app.register_blueprint(users, url_prefix=url_prefix)
     app.register_blueprint(jinjablue)
     app.register_blueprint(errors)
+
+
+@login_manager.user_loader
+def load_user(pk):
+    return marvindb.session.query(marvindb.datadb.User).get(int(pk))
