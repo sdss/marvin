@@ -5,7 +5,7 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-03-01 11:03:79
 
 from copy import deepcopy
@@ -15,13 +15,11 @@ from astropy import units as u
 import matplotlib
 import pytest
 
-from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.utils.general.maskbit import Maskbit
 
 value1 = np.array([[16.35, 0.8],
@@ -183,6 +181,20 @@ class TestMap(object):
 
         reordered_ha = np.moveaxis(ha, 0, -1)
         assert reordered_ha.unit is not None
+
+    def test_stellar_sigma_values(self, maps, galaxy):
+        ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
+
+        ss = maps.stellar_sigma
+        sc = maps.stellar_sigmacorr
+        compare = sum(ss == sc)
+        assert len(np.unique(compare)) > 1
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        ssvalue = galaxy.dap['stellar_sigma'][galaxy.bintype.name]
+        scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
+        assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
+        assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
 
 
 class TestMapArith(object):
@@ -404,8 +416,7 @@ class TestMapArith(object):
 class TestMaskbit(object):
 
     def test_masked(self, maps_release_only):
-        __, dapver = config.lookUpVersions(maps_release_only.release)
-        params = get_default_plot_params(dapver)
+        params = maps_release_only.datamodel.parent.get_default_plot_params()
         ha = maps_release_only['emline_gflux_ha_6564']
         expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 

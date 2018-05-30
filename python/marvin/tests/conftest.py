@@ -568,9 +568,9 @@ def modelcube(galaxy, exporigin, mode):
         Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        mc = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
+        mc = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     else:
-        mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+        mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     mc.exporigin = exporigin
     yield mc
     mc = None
@@ -582,9 +582,9 @@ def maps(galaxy, exporigin, mode):
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        m = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode)
+        m = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     else:
-        m = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+        m = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     m.exporigin = exporigin
     yield m
     m = None
