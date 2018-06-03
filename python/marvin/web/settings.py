@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-05-07 14:54:57
+# @Last Modified time: 2018-06-02 14:17:46
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -74,6 +74,7 @@ class ProdConfig(Config):
     USE_SENTRY = True
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=1)
 
 
 class DevConfig(Config):
