@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 
-from flask_classy import route
+from flask_classful import route
 from flask import jsonify, request, Response
 import json
 
@@ -224,7 +224,7 @@ class CubeView(BaseView):
     def getExtension(self, args, name, cube_extension):
         """Returns the extension for a cube given a plateifu/mangaid.
 
-        .. :quickref: Cube; Gets the  given a plate-ifu or mangaid
+        .. :quickref: Cube; Gets a specified cube extension for a given plate-ifu or mangaid
 
         :param name: The name of the cube as plate-ifu or mangaid
         :param cube_extension: The name of the cube extension.  Either flux, ivar, or mask.

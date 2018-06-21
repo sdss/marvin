@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 16:41:53
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 15:31:30
+# @Last Modified time: 2018-03-29 18:35:09
 
 from __future__ import print_function, division, absolute_import
 import time
@@ -20,6 +20,7 @@ from marvin.tests.web.frontend.models import IndexPage, SearchPage
 @pytest.fixture()
 def page(driver, base_url):
     page = IndexPage(driver, root_uri=base_url)
+    page.get('')
     return page
 
 

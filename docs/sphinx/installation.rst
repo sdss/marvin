@@ -28,11 +28,6 @@ Installation
 
     If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
-.. admonition:: Attention
-    :class: attention
-
-    Marvin is, at this time, not supported in Windows installations. Please, use Linux or Mac instead. In the future, for education purposes, we may consider making marvin Windows-compatible.
-
 **or to upgrade an existing Marvin installation**::
 
     pip install --upgrade sdss-marvin
@@ -90,7 +85,7 @@ Marvin depends on three pieces of SDSS-wide software:
 
 For convenience, marvin includes these products as external libraries. This means that
 you most likely do not need to worry about any of these products. However, if any
-of these libraries is already installed in your system (i.e., you have defined
+of these libraries are already installed in your system (i.e., you have defined
 ``$MARVIN_BRAIN_DIR``, ``$TREE_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
 wide products instead of its own versions. This is useful for development but note that
 it can also lead to confusions about what version marvin is using.
@@ -102,18 +97,30 @@ it can also lead to confusions about what version marvin is using.
 Local SAS directory structure
 -----------------------------
 
-By default, marvin will look for data files in a directory structure that mirrors the
-`Science Archive Server <https://data.sdss.org/sas>`_. Data downloaded via marvin will
+Marvin requires a certain environment structure to access and (optionally) download data.  By default,
+marvin will look for data files in a directory structure that mirrors the
+`Science Archive Server <https://data.sdss.org/sas>`_. :ref:`Data downloaded via marvin <marvin-download-objects>` will
 also be stored according to that structure. The root of this directory structure is
 defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
 to use the ``drpall`` file for MPL-5, it will try to find it in
 ``$SAS_BASE_DIR/mangawork/manga/spectro/redux/v2_0_1/drpall-v2_0_1.fits``.
 
-If ``$SAS_BASE_DIR`` is not defined, marvin will assume that the base directory is ``$HOME/sas``.
-You can also define your custom ``$MANGA_SPECTRO_REDUX`` and ``$MANGA_SPECTRO_ANALYSIS`` to
-point to the redux and analysis data directories, respectively. As a general advice, if you are
-not using other products that require setting those environment variables, you only want to
-define ``$SAS_BASE_DIR`` (or not define it and assume the data will be stored in ``$HOME/sas``).
+The Marvin environment structure is as follows::
+
+  ======================   ==============================================
+  Environment Variable     Default Path
+  ======================   ==============================================
+  SAS_BASE_DIR             $HOME/sas
+  MANGA_SPECTRO_REDUX      $SAS_BASE_DIR/mangawork/manga/spectro/redux
+  MANGA_SPECTRO_ANALYSIS   $SAS_BASE_DIR/mangawork/manga/spectro/analysis
+  ======================   ==============================================
+
+Marvin will check for these environment variables in your local system.  If the above environment variables are
+not already defined, Marvin will use the specifed default paths.  Otherwise Marvin will adopt your custom paths.
+If you wish to define custom paths, you can update the environment variable paths in your
+``.bashrc`` or ``.cshrc`` file.  As a general advice, if you are
+not using other products that require setting those environment variables, you should only
+define ``$SAS_BASE_DIR`` (or not define it and let Marvin configure itself).
 
 |
 
@@ -130,3 +137,133 @@ distributions, then you already have IPython installed.  Just run ``ipython`` in
 need to install it, do ``pip install jupyter``.
 
 |
+
+
+.. _marvin-install-issues:
+
+Install and Runtime Issues
+==========================
+
+.. important::
+
+    We can use your help to expand this section. If you have encountered an issue
+    or have questions that should be addressed here, please
+    `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
+
+How do I update marvin?
+-----------------------
+
+Just do ``pip install --upgrade sdss-marvin``. Marvin will get updated to the latest
+version, along with all the dependencies. If you want to update marvin but keep other
+packages in their currrent versions, do
+``pip install --upgrade --upgrade-strategy only-if-needed sdss-marvin``. This will only
+update dependencies if marvin does need it.
+
+
+Permissions Error
+-----------------
+If your Marvin installation fails at any point during the pip install process with permissions problems,
+try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew distribution will not require
+permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
+you are not using the Mac OSX system version of Python.
+
+If you receive a permissions error regarding `pip` attempting to install a package in a different directory other
+than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicated in `Marvin Issue 373 <https://github.com/sdss/marvin/issues/373>`_
+
+
+How to test that marvin has been installed correctly
+----------------------------------------------------
+
+Marvin is built to have you started with minimum configuration on your part. This means that
+marvin is likely to import but maybe not all features will be available. Here are a few commands
+you can try that will inform you if there are problems with your installation.
+
+From a terminal window, type::
+
+    check_marvin
+
+This will perform a variety of checks with Marvin and output the results to the terminal.  We may ask you for this output when
+diagnosing any installation issues.  After installing marvin, start a python/ipython session and run::
+
+    import marvin
+    print(marvin.config.urlmap)
+
+If you get a dictionary with API routes, marvin is connecting correctly to the API server at
+Utah and you can use the remote features. If you get ``None``, you may want to
+check the steps in :ref:`setup-netrc`.  If you get an error message such as
+
+::
+
+    BrainError: Requests Timeout Error: HTTPSConnectionPool(host='api.sdss.org', port=443): Read timed out.
+    Your request took longer than 5 minutes and timed out. Please try again or simplify your request.
+
+this means the servers at Utah have timed out and may possibly be down.  Simply wait and try again later.
+
+Marvin Remote Access Problems
+-----------------------------
+
+If the above test crashes, or you attempt to use a Marvin Tool remotely, and you see this error::
+
+    AttributeError: 'Extensions' object has no attribute 'get_extension_for_class'
+
+This is an issue with the Urllib and Requests python package.  See `this Issue <https://github.com/sdss/marvin/issues/102>`_ for an
+ongoing discussion if this problem has been solved.
+
+
+Matplotlib backend problems
+---------------------------
+
+Some users have reported that after installing marvin they get an error such as:
+
+**Python is not installed as a framework. The Mac OS X backend will not be able to function correctly if
+Python is not installed as a framework.**
+
+This problem is caused by matplotlib not being able to use the MacOS backend if you are using
+Anaconda. You need to switch your matplolib backend to ``Agg`` or ``TkAgg``.  Follow `these instructions
+<http://stackoverflow.com/questions/21784641/installation-issue-with-matplotlib-python>`_ to fix
+the problem. If you do want to use the MacOS backend, consider installing Python using
+`homebrew <http://brew.sh/>`_.
+
+Web Browser Oddities
+--------------------
+
+If the MPL dropdown list in the top menu bar is blank, or other elements appear to disappear, this is an indication
+your browser cache is creating conflicts.  The solution is to clear your browser cache, close and restart your browser from scratch.
+You can also clear your browser cookies.
+
+As a reminder, we recommend these browsers for the best Marvin web experience:
+
+* Google Chrome 53+ or higher
+* Mozilla Firefox 50+ or higher
+* Safari 10+ or Safari Technology Preview
+
+|
+
+.. _marvin-install-windows:
+
+Installation on Windows
+=======================
+
+Marvin was originally designed to work on Mac or Linux operating systems. However it is possible at the moment to get Marvin working on Windows machines. The following guidelines have been tested on a Windows 10 machine running Python 3.6.
+
+* Install a `Python version for Windows <https://www.python.org/downloads/windows/>`_.  Make sure to check the box to include Python in your environment variable Paths.  If you are using `Anaconda <https://conda.io/docs/user-guide/install/windows.html>`_ to install Python, make sure to check both the "Add Anaconda to my PATH environment variable" and "Register Anaconda as my default Python 3.6"
+* Marvin expects a HOME directory.  Add this snippet of code before any of use of Marvin.
+
+::
+
+    import os
+    os.environ['HOME'] = '/path/you/want/as/marvin/home/directory'
+    os.environ['SAS_BASE_DIR'] = os.path.join(os.getenv("HOME"), 'sas')
+
+To add a permanent `HOME` path, follow these instructions.
+    * open File Explorer, right click "This PC" on the left scroll bar and click Properties
+    * on the left, click 'Advanced System Settings'.  You need Admin Privileges to do this.
+    * on the bottom, there should be an 'Environment Variables' box.  Below the User Variables column, click New.
+    * add a new HOME environment variable that points to /path/you/want/as/marvin/home/directory.
+
+* Create the ``.netrc`` file and place it the directory you designated as `HOME`.  You will need to modify the permissons of this file to match the expected `chmod 600` permissions for Mac/Linux users.  When creating the file, you can name it as anything but can rename it to ``.netrc`` from the command prompt.
+
+With this, you should be able to run Marvin in windows.  You can test it with `import marvin`.  Currently, Marvin cannot download files due to issues with forward slashes in `sdss-access` but this will be fixed soon.  We will continue to update these guidelines as we make further progress on a Windows-Marvin installation.
+
+|
+

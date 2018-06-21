@@ -163,6 +163,8 @@ class Cube(MarvinToolsClass, NSAMixIn):
         self.header = self.data[1].header
         self.wcs = WCS(self.header)
 
+        self._check_file(self.data[0].header, self.data, 'Cube')
+
         self._wavelength = self.data['WAVE'].data
         self._shape = (self.data['FLUX'].header['NAXIS2'],
                        self.data['FLUX'].header['NAXIS1'])
@@ -362,11 +364,24 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         return self._spectral_resolution_prepixel
 
+    def _get_ext_name(self, model, ext):
+        ''' Get the extension name if it exists '''
+
+        hasext = 'has_{0}'.format(ext)
+        if hasattr(model, hasext):
+            hasmeth = model.__getattribute__(hasext)()
+            if not hasmeth:
+                return None
+
+        return model.fits_extension(ext)
+
     def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
 
         model = self.datamodel[name]
-        ext_name = model.fits_extension(ext)
+        ext_name = self._get_ext_name(model, ext)
+        if not ext_name:
+            return None
 
         if ext_name in self._extension_data:
             return self._extension_data[ext_name]
@@ -547,12 +562,12 @@ class Cube(MarvinToolsClass, NSAMixIn):
     def pixmask(self):
         """Return the DRP3PIXMASK flag."""
         pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
-        pixmask.mask = getattr(self, 'mask', None)
+        pixmask.mask = getattr(self.flux, 'mask', None)
         return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   properties=True, models=False, **kwargs):
-        """Returns the |spaxel| matching certain coordinates.
+        """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
@@ -584,7 +599,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
 
         Returns:
             spaxels (list):
-                The |spaxel| objects for this cube corresponding to the input
+                The |spaxel|_ objects for this cube corresponding to the input
                 coordinates. The length of the list is equal to the number
                 of input coordinates.
 

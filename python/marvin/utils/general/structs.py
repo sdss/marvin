@@ -19,7 +19,7 @@ from fuzzywuzzy import process as fuzz_proc
 
 
 __ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy',
-           'FuzzyList']
+           'FuzzyList', 'string_folding_wrapper']
 
 
 class Dotable(dict):
@@ -80,6 +80,13 @@ def get_best_fuzzy(value, choices, min_score=75, scorer=fuzz_fuzz.WRatio, return
 
     if len(value) < 3:
         raise ValueError('your fuzzy search value must be at least three characters long.')
+
+    # If the value contains _ivar or _mask this is probably and incorrect use
+    # of the fuzzy feature. We raise an error.
+    if '_ivar' in value:
+        raise ValueError('_ivar not allowd in search value.')
+    elif '_mask' in value:
+        raise ValueError('_mask not allowd in search value.')
 
     bests = fuzz_proc.extractBests(value, choices, scorer=scorer, score_cutoff=min_score)
 
@@ -200,3 +207,70 @@ class OrderedDefaultDict(FuzzyDict):
     def __missing__(self, key):
         result = self[key] = self.default_factory()
         return result
+
+
+class StringFolder(object):
+    """
+    Class that will fold strings. See 'fold_string'.
+    This object may be safely deleted or go out of scope when
+    strings have been folded.
+    """
+    def __init__(self):
+        self.unicode_map = {}
+
+    def fold_string(self, s):
+        """
+        Given a string (or unicode) parameter s, return a string object
+        that has the same value as s (and may be s). For all objects
+        with a given value, the same object will be returned. For unicode
+        objects that can be coerced to a string with the same value, a
+        string object will be returned.
+        If s is not a string or unicode object, it is returned unchanged.
+        :param s: a string or unicode object.
+        :return: a string or unicode object.
+        """
+        # If s is not a string or unicode object, return it unchanged
+        if not isinstance(s, basestring):
+            return s
+
+        # If s is already a string, then str() has no effect.
+        # If s is Unicode, try and encode as a string and use intern.
+        # If s is Unicode and can't be encoded as a string, this try
+        # will raise a UnicodeEncodeError.
+        try:
+            return intern(str(s))
+        except UnicodeEncodeError:
+            # Fall through and handle s as Unicode
+            pass
+
+        # Look up the unicode value in the map and return
+        # the object from the map. If there is no matching entry,
+        # store this unicode object in the map and return it.
+        t = self.unicode_map.get(s, None)
+        if t is None:
+            # Put s in the map
+            t = self.unicode_map[s] = s
+        return t
+
+
+def string_folding_wrapper(results, keys=None):
+    """
+    This generator yields rows from the results as tuples,
+    with all string values folded.
+    """
+    # Get the list of keys so that we build tuples with all
+    # the values in key order.
+
+    if keys is None:
+        try:
+            keys = results.keys()
+        except AttributeError as e:
+            print('No keys are accessible.  Cannot fold strings!: {0}'.format(e))
+            yield results
+
+    folder = StringFolder()
+    for row in results:
+        yield tuple(
+            folder.fold_string(row.__getattribute__(key))
+            for key in keys
+        )

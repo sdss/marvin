@@ -11,6 +11,9 @@ Known Issues in Marvin
 .. _report new issue: https://github.com/sdss/marvin/issues/new
 
 
+* **Marvin 2.2.1 MPL-6 Maps** - All H-alpha extensions in the Marvin MAPS, using MPL-6, map to NII_6585 extensions instead.  Additionally, the Marvin Maps for SPX_ELLCOO and BIN_LWELLCOO do not include the new channel R/Reff.  It is advisable to upgrade to Marvin 2.2.2, where these bugs have been fixed.
+
+
 FYIs
 ````
 
@@ -60,6 +63,8 @@ Here are a list of known bugs:
 
 Tools
 :::::
+
+* **Marvin 2.2.1 MPL-6 Maps** - All H-alpha extensions in the Marvin MAPS, using MPL-6, map to NII_6585 extensions instead.  Additionally, the Marvin Maps for SPX_ELLCOO and BIN_LWELLCOO do not include the new channel R/Reff.  It is advisable to upgrade to Marvin 2.2.2, where these bugs have been fixed.
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 

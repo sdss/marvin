@@ -12,6 +12,7 @@
 
 from __future__ import print_function, division, unicode_literals
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
+from marvin.utils.general.structs import string_folding_wrapper
 from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
 from sqlalchemy import func
 from marvin import config, marvindb
@@ -178,12 +179,12 @@ class Query(object):
         self._modelgraph = marvindb.modelgraph
         self._returnparams = []
         self._caching = kwargs.get('caching', True)
-        self.verbose = kwargs.get('verbose', None)
+        self.verbose = kwargs.get('verbose', True)
         self.count_threshold = kwargs.get('count_threshold', 1000)
         self.allspaxels = kwargs.get('allspaxels', None)
         self.mode = kwargs.get('mode', None)
         self.limit = int(kwargs.get('limit', 100))
-        self.sort = kwargs.get('sort', None)
+        self.sort = kwargs.get('sort', 'mangaid')
         self.order = kwargs.get('order', 'asc')
         self.return_all = kwargs.get('return_all', False)
         self.datamodel = datamodel[self._release]
@@ -232,7 +233,6 @@ class Query(object):
             self._create_query_modelclasses()
             # this adds spaxel x, y into default for query 1 dap zonal query
             self._adjust_defaults()
-            # print('my params', self.params)
 
             # join tables
             self._join_tables()
@@ -693,7 +693,7 @@ class Query(object):
     @makeBaseQuery
     @checkCondition
     @updateConfig
-    def run(self, start=None, end=None):
+    def run(self, start=None, end=None, raw=None, orm=None, core=None):
         ''' Runs a Marvin Query
 
             Runs the query and return an instance of Marvin Results class
@@ -711,7 +711,6 @@ class Query(object):
                     results from the Query.
 
         '''
-
         if self.mode == 'local':
 
             # Check for adding a sort
@@ -723,6 +722,9 @@ class Query(object):
                 self.query = self.query.options(FromCache("default")).\
                     options(*marvindb.cache_bits)
 
+            # turn on streaming of results
+            self.query = self.query.execution_options(stream_results=True)
+
             # get total count, and if more than 150 results, paginate and only return the first 100
             starttime = datetime.datetime.now()
 
@@ -731,32 +733,83 @@ class Query(object):
                 qm = self._check_history(check_only=True)
                 self.totalcount = qm.count if qm else None
 
-            # run the query
-            res = self.query.slice(start, end).all()
-            count = len(res)
-            self.totalcount = count if not self.totalcount else self.totalcount
+            # run count if it doesn't exist
+            if self.totalcount is None:
+                self.totalcount = self.query.count()
+
+            # get the new count if start and end exist
+            if start and end:
+                count = (end - start)
+            else:
+                count = self.totalcount
+
+            # # run the query
+            # res = self.query.slice(start, end).all()
+            # count = len(res)
+            # self.totalcount = count if not self.totalcount else self.totalcount
 
             # check history
             if marvindb.isdbconnected:
                 query_meta = self._check_history()
 
             if count > self.count_threshold and self.return_all is False:
-                res = res[0:self.limit]
-                count = self.limit
+                # res = res[0:self.limit]
+                start = 0
+                end = self.limit
+                count = (end - start)
                 warnings.warn('Results contain more than {0} entries.  '
                               'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
             elif self.return_all is True:
                 warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
+                start = None
+                end = None
             elif start and end:
                 warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
+
+            # slice the query
+            query = self.query.slice(start, end)
+
+            # run the query
+            if not any([raw, core, orm]):
+                raw = True
+
+            if raw:
+                # use the db api cursor
+                sql = str(self._get_sql(query))
+                conn = marvindb.db.engine.raw_connection()
+                cursor = conn.cursor('query_cursor')
+                cursor.execute(sql)
+                res = self._fetch_data(cursor)
+                conn.close()
+            elif core:
+                # use the core connection
+                sql = str(self._get_sql(query))
+                with marvindb.db.engine.connect() as conn:
+                    results = conn.execution_options(stream_results=True).execute(sql)
+                    res = self._fetch_data(results)
+            elif orm:
+                # use the orm query
+                yield_num = int(10**(np.floor(np.log10(self.totalcount))))
+                results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
+                res = list(results)
 
             # get the runtime
             endtime = datetime.datetime.now()
             self.runtime = (endtime - starttime)
 
-            return Results(results=res, query=self.query, count=count, mode=self.mode,
-                           returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
-                           chunk=self.limit, runtime=self.runtime, start=start, end=end)
+            # clear the session
+            self.session.close()
+
+            # pass the results into Marvin Results
+            final = Results(results=res, query=query, count=count, mode=self.mode,
+                            returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
+                            chunk=self.limit, runtime=self.runtime, start=start, end=end)
+
+            # get the final time
+            posttime = datetime.datetime.now()
+            self.finaltime = (posttime - starttime)
+
+            return final
 
         elif self.mode == 'remote':
             # Fail if no route map initialized
@@ -777,9 +830,10 @@ class Query(object):
                       'release': self._release,
                       'return_all': self.return_all,
                       'start': start,
-                      'end': end}
+                      'end': end,
+                      'caching': self._caching}
             try:
-                ii = Interaction(route=url, params=params)
+                ii = Interaction(route=url, params=params, stream=True)
             except Exception as e:
                 # if a remote query fails for any reason, then try to clean them up
                 # self._cleanUpQueries()
@@ -794,19 +848,33 @@ class Query(object):
                 totalcount = ii.results['totalcount']
                 query_runtime = ii.results['runtime']
                 resp_runtime = ii.response_time
-                # close the session and engine
-                #self.session.close()
-                #marvindb.db.engine.dispose()
 
             if self.return_all:
                 msg = 'Returning all {0} results'.format(totalcount)
             else:
                 msg = 'Only returning the first {0} results.'.format(count)
 
-            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
+            if not self.quiet:
+                print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
             return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
                            returntype=self.returntype, totalcount=totalcount, chunk=chunk,
                            runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
+
+    def _fetch_data(self, obj):
+        ''' Fetch query using fetchall or fetchmany '''
+
+        res = []
+
+        if not self.return_all:
+            res = obj.fetchall()
+        else:
+            while True:
+                rows = obj.fetchmany(100000)
+                if rows:
+                    res.extend(rows)
+                else:
+                    break
+        return res
 
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''
@@ -958,16 +1026,33 @@ class Query(object):
 
         if self.mode == 'local':
             if not prop or 'query' in prop:
-                print(self.query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+                sql = self._get_sql(self.query)
             elif prop == 'tables':
-                print(self.joins)
+                sql = self.joins
             elif prop == 'filter':
                 '''oddly this does not update when bound parameters change, but the statement above does '''
-                print(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
+                sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
             else:
-                print(self.__getattribute__(prop))
+                sql = self.__getattribute__(prop)
+
+            return str(sql)
         elif self.mode == 'remote':
-            print('Cannot show full SQL query in remote mode, use the Results showQuery')
+            sql = 'Cannot show full SQL query in remote mode, use the Results showQuery'
+            warnings.warn(sql, MarvinUserWarning)
+            return sql
+
+    def _get_sql(self, query):
+        ''' Get the sql for a given query
+
+        Parameters:
+            query (object):
+                An SQLAlchemy Query object
+
+        Returms:
+            A raw sql string
+        '''
+
+        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
 
     def reset(self):
         ''' Resets all query attributes '''

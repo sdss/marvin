@@ -37,7 +37,12 @@ You can optionally return parameters using the **returnparams** keyword, specifi
 
     query = Query(searchfilter=myfilter, returnparams=myparams)
 
-To see what parameters are available for returning and searching on, see the :ref:`marvin_parameter_list` on the :ref:`marvin-query-parameters` page.
+Queries contain a datamodel.  You can access the datamodel used for a given query and data release with the `datamodel` attribute::
+
+  query.datamodel
+  <QueryDataModel release='MPL-5', n_groups=7, n_parameters=697, n_total=0>
+
+To explore the query datamodel and see what parameters are available for returning and searching on, see the datamodel :ref:`How To Guide <query-dm>`
 
 Finally, you can run the query with **run**.  Queries produce results.  Go to :ref:`marvin-results` to see how to manage your query results.
 
@@ -55,7 +60,7 @@ Queries will always return a set of default parameters: the galaxy **mangaid**, 
 
     # look at the first row result
     print(results.results[0])
-    (u'1-209232', 8485, u'8485-1901', u'1901', 232.544703894, 48.6902009334, 0.0407447)
+    ResultRow(mangaid=u'1-109394', plate=8082, plateifu=u'8082-9102', ifu_name=u'9102', ra=50.179936141, dec=-1.0022917898, z=0.0361073)
 
 .. _marvin_query_using
 
@@ -65,6 +70,11 @@ Using Query
    :maxdepth: 2
 
    Using the Query <tools/query/query_using>
+
+.. toctree::
+   :maxdepth: 2
+
+   The Query Datamodel <datamodel/query_dm>
 
 .. toctree::
    :maxdepth: 2
@@ -80,6 +90,10 @@ Using Query
 
 Reference/API
 ^^^^^^^^^^^^^
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.query.Query
 
 .. rubric:: Class
 

@@ -34,7 +34,7 @@ Introduction
 * :doc:`What's New in Marvin <whats-new>`
 * :doc:`Changelog <changelog>`
 * :ref:`Known issues <marvin-known-issues>`
-* :ref:`TODOs <marvin-todo>`
+.. * :ref:`TODOs <marvin-todo>`
 
 |
 
@@ -47,6 +47,7 @@ Marvin at a Glance
 * :doc:`getting-started`
 * :doc:`tutorials`
 * :doc:`exercises`
+* :doc:`cheatsheet`
 
 |
 
@@ -58,12 +59,13 @@ Components
   * :doc:`core/config`
   * :doc:`core/data-access-modes`
   * :doc:`core/downloads`
-  * :doc:`api/quantities`
+  * :doc:`tools/quantities`
 
 * :doc:`tools`
 
   * :doc:`query`
   * :doc:`results`
+  * :doc:`tools/plate`
   * :doc:`tools/cube`
   * :doc:`tools/modelcube`
   * :doc:`tools/maps`
@@ -73,6 +75,9 @@ Components
   * :doc:`tools/map`
 
     * :doc:`tools/enhanced-map`
+
+  * :doc:`tools/spaxel`
+  * :doc:`tools/bin`
 
   * :doc:`utils`
 
@@ -94,21 +99,21 @@ Components
 
 |
 
-General Reference
-=================
+.. General Reference
+.. =================
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
+.. .. toctree::
+..    :titlesonly:
+..    :maxdepth: 1
 
-   maps-properties-channels
-   Available Query Parameters <query-params>
-   tools/visual-guide
+..    maps-properties-channels
+..    Available Query Parameters <query-params>
+..    tools/visual-guide
 
 |
 
-Documentation
-=============
+API/Code Reference
+==================
 
 .. toctree::
    :maxdepth: 1
@@ -116,6 +121,7 @@ Documentation
    api/general
    api/api
    api/tools
+   api/quantities
    api/queries
    api/utils
    api/web

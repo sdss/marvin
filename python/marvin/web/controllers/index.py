@@ -1,6 +1,6 @@
 from flask import current_app, Blueprint, render_template, jsonify
 from flask import session as current_session, request, redirect, url_for
-from flask_classy import route
+from flask_classful import route
 from marvin import config, marvindb
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
@@ -44,6 +44,20 @@ class Marvin(BaseWebView):
     @route('/test/')
     def test(self):
         return 'new test'
+
+    @route('/versions/')
+    def get_versions(self):
+        vers = {'sess_vers': current_session['versions'], 'config_vers': config._mpldict.keys()}
+        return jsonify(result=vers)
+
+    @route('/session/')
+    def get_session(self):
+        return jsonify(result=dict(current_session))
+
+    @route('/clear/')
+    def clear_session(self):
+        current_session.clear()
+        return jsonify(result=dict(current_session))
 
     def database(self):
         onecube = marvindb.session.query(marvindb.datadb.Cube).order_by(marvindb.datadb.Cube.pk).first()
@@ -115,14 +129,30 @@ class Marvin(BaseWebView):
         try:
             inspection = Inspection(current_session, username=username, auth=auth)
         except Exception as e:
-            result['status'] = -1
-            result['message'] = e
-            current_session['loginready'] = False
+            result['status'] = 1
+            result['message'] = str(e)
+            current_session['loginready'] = True
         else:
             result = inspection.result()
             current_session['loginready'] = inspection.ready
             current_session['name'] = result.get('membername', None)
-        print('login result', result)
+
         return jsonify(result=result)
+
+    @route('/logout/', methods=['GET', 'POST'], endpoint='logout')
+    def logout(self):
+        ''' logout from the system
+        '''
+
+        result = {'logout': 'success'}
+
+        if 'loginready' in current_session:
+            ready = current_session.pop('loginready')
+
+        if 'name' in current_session:
+            name = current_session.pop('name')
+
+        return redirect(url_for('index_page.Marvin:index'))
+
 
 Marvin.register(index)

@@ -58,6 +58,8 @@ class TestSpaxel(object):
         bintype = galaxy.bintype.name
         template = galaxy.template.name
         release = galaxy.release
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
 
         cube, maps, modelcube = cube_maps_modelcube_modes
 
@@ -77,7 +79,7 @@ class TestSpaxel(object):
         if cube is False and maps is False and modelcube is False:
             pytest.skip()
 
-        spaxel = SpaxelBase(15, 15, plateifu=plateifu,
+        spaxel = SpaxelBase(x, y, plateifu=plateifu,
                             cube=cube, maps=maps, modelcube=modelcube,
                             template=template, bintype=bintype)
 
@@ -113,9 +115,12 @@ class TestSpaxel(object):
         if release != 'MPL-4':
             assert isinstance(spaxel.getModelCube(), ModelCube)
 
-    def test_dir(self):
+    def test_dir(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y, plateifu='8485-1901', cube=True,
                             maps=True, modelcube=True)
 
         dir_list = dir(spaxel)
@@ -124,14 +129,54 @@ class TestSpaxel(object):
         assert 'emline_gflux_ha_6564' in dir_list
         assert 'binned_flux' in dir_list
 
-    def test_getattr(self):
+    def test_getattr(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y, plateifu='8485-1901', cube=True,
                             maps=True, modelcube=True)
 
         assert spaxel.flux is not None
         assert spaxel.emline_gflux_ha_6564 is not None
         assert spaxel.binned_flux is not None
+
+    @pytest.mark.parametrize('force',
+                             [('cube'),
+                              ('maps'),
+                              ('models')],
+                             ids=[])
+    def test_force_load(self, galaxy, force):
+
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        spaxel = SpaxelBase(x, y, plateifu=galaxy.plateifu, cube=True,
+                            maps=False, modelcube=False)
+
+        assert spaxel.cube_quantities is not None
+        assert spaxel.maps_quantities == {}
+        assert spaxel.modelcube_quantities == {}
+
+        spaxel.load(force=force)
+
+        if force == 'cube':
+            assert spaxel.cube_quantities is not None
+        elif force == 'maps':
+            assert spaxel.maps_quantities is not None
+        elif force == 'models':
+            assert spaxel.modelcube_quantities is not None
+
+    def test_wrong_force_load(self, galaxy):
+
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        spaxel = SpaxelBase(x, y, plateifu=galaxy.plateifu, cube=True,
+                            maps=False, modelcube=False)
+
+        with pytest.raises(AssertionError) as ee:
+            spaxel.load(force='crap')
+
+        assert 'force can only be cube, maps, or models' in str(ee)
 
     def test_no_inputs(self):
 
@@ -142,12 +187,15 @@ class TestSpaxel(object):
 
     def test_files_maps_modelcube(self, galaxy):
 
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
         if galaxy.release == 'MPL-4':
             modelcube_filename = None
         else:
             modelcube_filename = galaxy.modelpath
 
-        spaxel = SpaxelBase(15, 15,
+        spaxel = SpaxelBase(x, y,
                             cube=galaxy.cubepath,
                             maps=galaxy.mapspath,
                             modelcube=modelcube_filename)
@@ -162,12 +210,15 @@ class TestSpaxel(object):
 
     def test_files_modelcube(self, galaxy):
 
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
         if galaxy.release == 'MPL-4':
             pytest.skip()
         else:
             modelcube_filename = galaxy.modelpath
 
-        spaxel = SpaxelBase(15, 15,
+        spaxel = SpaxelBase(x, y,
                             cube=False,
                             maps=False,
                             modelcube=modelcube_filename)
@@ -182,7 +233,10 @@ class TestSpaxel(object):
 
     def test_files_maps(self, galaxy):
 
-        spaxel = SpaxelBase(15, 15,
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+
+        spaxel = SpaxelBase(x, y,
                             cube=False,
                             maps=galaxy.mapspath,
                             modelcube=False)
@@ -202,7 +256,7 @@ class TestBin(object):
             SpaxelBase(0, 0, plateifu='8485-1901', cube=True,
                        maps=True, modelcube=True, bintype='HYB10')
 
-        assert 'do not correspond to a valid binid' in str(ee)
+        assert 'do not correspond to a valid binid' in str(ee) or 'invalid bintype' in str(ee)
 
     def test_load_all(self):
 
@@ -262,9 +316,7 @@ class TestPickling(object):
         assert spaxel_restored._maps.data_origin == 'file'
         assert isinstance(spaxel_restored._maps.data, astropy.io.fits.HDUList)
 
-    @pytest.mark.parametrize('mpl', ['MPL-5'])
-    def test_pickling_all_api(self, monkeypatch, temp_scratch, galaxy, mpl):
-        monkeypatch.setattr(config, 'release', mpl)
+    def test_pickling_all_api(self, temp_scratch, galaxy):
         drpver, __ = config.lookUpVersions()
 
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
@@ -307,15 +359,15 @@ class TestPickling(object):
 
 class TestMaskbit(object):
 
-    @marvin_test_if(mark='include', galaxy_spaxel=dict(release=['MPL-4']))
-    def test_quality_flags_mpl4(self, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    def test_quality_flags_mpl4(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, model=True)
         assert len(sp.quality_flags) == 1
 
-    @marvin_test_if(mark='skip', galaxy_spaxel=dict(release=['MPL-4']))
-    def test_quality_flags(self, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    def test_quality_flags(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, model=True)
         assert len(sp.quality_flags) == 2
 
@@ -324,8 +376,8 @@ class TestMaskbit(object):
                               'manga_target2',
                               'manga_target3',
                               'target_flags'])
-    def test_flag(self, flag, galaxy_spaxel):
-        maps = Maps(plateifu=galaxy_spaxel.plateifu)
+    def test_flag(self, flag, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
         sp = maps[0, 0]
         assert getattr(sp, flag, None) is not None
 
@@ -383,7 +435,7 @@ class TestCubeGetSpaxel(object):
 
         spaxel = cube.getSpaxel(**params)
         flux = spaxel.flux.value
-        assert pytest.approx(flux[galaxy.spaxel['specidx']], galaxy.spaxel['flux'])
+        assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'])
 
     @pytest.mark.parametrize('monkeyconfig',
                              [('sasurl', 'http://www.averywrongurl.com')],
@@ -396,15 +448,20 @@ class TestCubeGetSpaxel(object):
 
         assert 'Failed to establish a new connection' in str(cm.value)
 
-    def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy):
-        config.setMPL('MPL-5')
+    @pytest.mark.parametrize('monkeyconfig',
+                             [('release', 'MPL-5')],
+                             ids=['mpl5'], indirect=True)
+    def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
+        if galaxy.release == 'MPL-5':
+            pytest.skip('Skipping release for forced global MPL-5')
+
         assert config.release == 'MPL-5'
 
-        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release='MPL-4')
+        cube = Cube(plateifu=galaxy.plateifu, mode='remote', release=galaxy.release)
         expected = galaxy.spaxel['flux']
 
         spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).flux
-        assert pytest.approx(spectrum.value[galaxy.spaxel['specidx']], expected)
+        assert spectrum.value[galaxy.spaxel['specidx']] == pytest.approx(expected)
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
@@ -427,17 +484,17 @@ class TestCubeGetSpaxel(object):
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
 
-        assert pytest.approx(spaxel_slice_file.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_db.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_slice_api.flux.value[spec_idx], flux)
+        assert spaxel_slice_file.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_slice_db.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_slice_api.flux.value[spec_idx] == pytest.approx(flux)
 
-        assert pytest.approx(spaxel_slice_file.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_db.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_slice_api.flux.ivar[spec_idx], ivar)
+        assert spaxel_slice_file.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_slice_db.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_slice_api.flux.ivar[spec_idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_slice_file.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_db.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_slice_api.flux.mask[spec_idx], mask)
+        assert spaxel_slice_file.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_slice_db.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_slice_api.flux.mask[spec_idx] == pytest.approx(mask)
 
         xx_cen = galaxy.spaxel['x_cen']
         yy_cen = galaxy.spaxel['y_cen']
@@ -450,17 +507,17 @@ class TestCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.flux.value[spec_idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.flux.value[spec_idx], flux)
+        assert spaxel_getspaxel_file.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_db.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_api.flux.value[spec_idx] == pytest.approx(flux, abs=1e-6)
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.flux.ivar[spec_idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.flux.ivar[spec_idx], ivar)
+        assert spaxel_getspaxel_file.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_db.flux.ivar[spec_idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_api.flux.ivar[spec_idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_getspaxel_file.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.flux.mask[spec_idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.flux.mask[spec_idx], mask)
+        assert spaxel_getspaxel_file.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_db.flux.mask[spec_idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_api.flux.mask[spec_idx] == pytest.approx(mask)
 
 
 class TestMapsGetSpaxel(object):
@@ -519,6 +576,34 @@ class TestMapsGetSpaxel(object):
 
         assert len(spaxel.maps_quantities.keys()) > 0
 
+    @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX', 'NONE']))
+    def test_values(self, galaxy, exporigin):
+
+        template = str(galaxy.template)
+
+        if template not in galaxy.dap:
+            pytest.skip()
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
+
+        xx = galaxy.dap['x']
+        yy = galaxy.dap['y']
+
+        for channel in galaxy.dap[template]:
+
+            if channel == 'model':
+                continue
+
+            channel_data = galaxy.dap[template][channel]
+            map = maps[channel]
+
+            assert map[yy, xx].value == pytest.approx(channel_data['value'], abs=1.e-4)
+            assert map.unit.scale == 1e-17
+            assert map.unit.to_string() == channel_data['unit']
+
+            assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=1.e-4)
+            assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=1.e-4)
+
 
 @marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
 class TestModelCubeGetSpaxel(object):
@@ -573,6 +658,9 @@ class TestModelCubeGetSpaxel(object):
 
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
+        if galaxy.bintype != 'SPX':
+            pytest.skip()
+
         modelcube_file = ModelCube(filename=galaxy.modelpath,
                                    bintype=galaxy.bintype, template=galaxy.template,
                                    release=galaxy.release)
@@ -602,14 +690,14 @@ class TestModelCubeGetSpaxel(object):
             assert 'do not correspond to a valid binid' in str(ee)
             pytest.skip()
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux[idx], flux)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux[idx], flux)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux[idx], flux)
+        assert spaxel_getspaxel_file.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_db.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
+        assert spaxel_getspaxel_api.binned_flux.value[idx] == pytest.approx(flux, abs=1e-6)
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux.ivar[idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux.ivar[idx], ivar)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux.ivar[idx], ivar)
+        assert spaxel_getspaxel_file.binned_flux.ivar[idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_db.binned_flux.ivar[idx] == pytest.approx(ivar)
+        assert spaxel_getspaxel_api.binned_flux.ivar[idx] == pytest.approx(ivar)
 
-        assert pytest.approx(spaxel_getspaxel_file.binned_flux.mask[idx], mask)
-        assert pytest.approx(spaxel_getspaxel_db.binned_flux.mask[idx], mask)
-        assert pytest.approx(spaxel_getspaxel_api.binned_flux.mask[idx], mask)
+        assert spaxel_getspaxel_file.binned_flux.mask[idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_db.binned_flux.mask[idx] == pytest.approx(mask)
+        assert spaxel_getspaxel_api.binned_flux.mask[idx] == pytest.approx(mask)

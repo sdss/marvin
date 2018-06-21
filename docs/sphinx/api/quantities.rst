@@ -1,11 +1,39 @@
 
-.. _marvin-quantity:
+.. _marvin-quantity-ref:
 
 
-Quantity-derived classes
-========================
+Marvin Quantity Classes
+=======================
 
-.. automodule:: marvin.tools.quantities
-   :members: DataCube, Spectrum, Map, AnalysisProperty
+Datacube
+--------
+
+.. automodule:: marvin.tools.quantities.datacube
+   :members:
    :undoc-members:
    :show-inheritance:
+
+Spectrum
+--------
+
+.. automodule:: marvin.tools.quantities.spectrum
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Map
+---
+
+.. automodule:: marvin.tools.quantities.map
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Analysis Property
+-----------------
+
+.. automodule:: marvin.tools.quantities.analysis_props
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

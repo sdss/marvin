@@ -247,6 +247,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.mangaid = self.header['MANGAID'].strip()
         self.plateifu = self.header['PLATEIFU'].strip()
 
+        self._check_file(self.header, self.data, 'Maps')
+
         # We use EMLINE_GFLUX because is present in MPL-4 and 5 and is not expected to go away.
         header = self.data['EMLINE_GFLUX'].header
         naxis = header['NAXIS']
@@ -302,6 +304,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         if sqlalchemy is None:
             raise marvin.core.exceptions.MarvinError('sqlalchemy required to access the local DB.')
+
+        dm = datamodel[self.release]
+        if dm.db_only:
+            if self.bintype not in dm.db_only:
+                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
@@ -527,7 +534,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, model=False, **kwargs):
-        """Returns the |spaxel| matching certain coordinates.
+        """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
@@ -561,7 +568,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         Returns:
             spaxels (list):
-                The |spaxel| objects for this cube/maps corresponding to the
+                The |spaxel|_ objects for this cube/maps corresponding to the
                 input coordinates. The length of the list is equal to the
                 number of input coordinates.
 
@@ -618,7 +625,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         return marvin.tools.quantities.Map.from_maps(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
-        """Returns a ratio `~marvin.tools.quantities.Map`.
+        """Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`. Returns a ratio `~marvin.tools.quantities.Map`.
 
         For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
         which is the ratio of ``channel_1/channel_2``.
@@ -787,8 +794,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
-        allprops = list(itertools.chain(*[[p.fullname(c) for c in p.channels]
-                                          if p.channels else [p.name] for p in self.properties]))
+        allprops = [p.full() for p in self.datamodel]
 
         if columns:
             allprops = [p for p in allprops if p in columns]

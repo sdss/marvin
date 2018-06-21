@@ -10,7 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import flask_classy
+from flask_classful import route
 from flask import jsonify
 
 import marvin.api.base
@@ -107,12 +107,12 @@ class MapsView(marvin.api.base.BaseView):
         self.results['data'] = 'this is a maps!'
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/', defaults={'bintype': None, 'template': None},
-                        methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/', defaults={'template': None},
-                        methods=['GET', 'POST'], endpoint='getMaps')
-    @flask_classy.route('/<name>/<bintype>/<template>/',
-                        methods=['GET', 'POST'], endpoint='getMaps')
+    @route('/<name>/', defaults={'bintype': None, 'template': None},
+           methods=['GET', 'POST'], endpoint='getMaps')
+    @route('/<name>/<bintype>/', defaults={'template': None},
+           methods=['GET', 'POST'], endpoint='getMaps')
+    @route('/<name>/<bintype>/<template>/',
+           methods=['GET', 'POST'], endpoint='getMaps')
     @marvin.api.base.arg_validate.check_args()
     def get(self, args, name, bintype, template):
         '''Returns the parameters needed to initialise a Maps remotely.
@@ -202,10 +202,10 @@ class MapsView(marvin.api.base.BaseView):
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/',
-                        methods=['GET', 'POST'], endpoint='getmap', defaults={'channel': None})
-    @flask_classy.route('/<name>/<bintype>/<template>/map/<property_name>/<channel>/',
-                        methods=['GET', 'POST'], endpoint='getmap')
+    @route('/<name>/<bintype>/<template>/map/<property_name>/',
+           methods=['GET', 'POST'], endpoint='getmap', defaults={'channel': None})
+    @route('/<name>/<bintype>/<template>/map/<property_name>/<channel>/',
+           methods=['GET', 'POST'], endpoint='getmap')
     @marvin.api.base.arg_validate.check_args()
     def getMap(self, args, name, bintype, template, property_name, channel):
         """Returns data, ivar, mask, and unit for a given map.
@@ -287,12 +287,12 @@ class MapsView(marvin.api.base.BaseView):
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/dapall', defaults={'bintype': None, 'template': None},
-                        methods=['GET', 'POST'], endpoint='dapall')
-    @flask_classy.route('/<name>/<bintype>/dapall', defaults={'template': None},
-                        methods=['GET', 'POST'], endpoint='dapall')
-    @flask_classy.route('/<name>/<bintype>/<template>/dapall',
-                        methods=['GET', 'POST'], endpoint='dapall')
+    @route('/<name>/dapall', defaults={'bintype': None, 'template': None},
+           methods=['GET', 'POST'], endpoint='dapall')
+    @route('/<name>/<bintype>/dapall', defaults={'template': None},
+           methods=['GET', 'POST'], endpoint='dapall')
+    @route('/<name>/<bintype>/<template>/dapall',
+           methods=['GET', 'POST'], endpoint='dapall')
     @marvin.api.base.arg_validate.check_args()
     def get_dapall_data(self, args, name, bintype, template):
         """Returns the DAPall data for a given mangaid or plateifu.
@@ -359,9 +359,9 @@ class MapsView(marvin.api.base.BaseView):
 
         return jsonify(self.results)
 
-    @flask_classy.route('/<name>/<bintype>/<template>/quantities/<x>/<y>/',
-                        methods=['GET', 'POST'],
-                        endpoint='getMapsQuantitiesSpaxel')
+    @route('/<name>/<bintype>/<template>/quantities/<x>/<y>/',
+           methods=['GET', 'POST'],
+           endpoint='getMapsQuantitiesSpaxel')
     @marvin.api.base.arg_validate.check_args()
     def getMapsQuantitiesSpaxel(self, args, name, bintype, template, x, y):
         """Returns a dictionary with all the quantities.

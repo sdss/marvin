@@ -74,7 +74,7 @@ Spaxel
 Bin
 ---
 
-.. automodule:: marvin.tools.bin
-   :members:
+.. automodule:: marvin.tools.spaxel
+   :members: Bin
    :undoc-members:
    :show-inheritance:

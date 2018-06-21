@@ -86,6 +86,7 @@ Quick Image Plot
 
 .. code-block:: python
 
+    import matplotlib.pyplot as plt
     from marvin.utils.general.images import showImage
     image = showImage(plateifu='8553-12702', show_image=False)
     fig, ax = plt.subplots()
@@ -104,7 +105,7 @@ BPT Plot
 
     from marvin.tools.maps import Maps
     maps = Maps(plateifu='8485-1901')
-    masks, fig = maps.get_bpt()
+    masks, fig, axes = maps.get_bpt()
 
 .. image:: ../_static/bpt.png
 
@@ -161,6 +162,24 @@ Multi-panel Map Plot (Multiple Galaxies)
     fig.tight_layout()
 
 .. image:: ../_static/multipanel_kinematics.png
+
+
+.. _marvin-plotting-zoom-in:
+
+Zoom-in Map Plot
+----------------
+
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    fig, ax = ha.plot()
+    ax.axis([13, 21, 13, 21])
+
+.. image:: ../_static/zoom_in.png
 
 
 .. _marvin-plotting-custom-map-cbrange:
@@ -226,6 +245,30 @@ Custom Minimum Signal-to-Noise Ratio
     fig, ax = ha.plot(snr_min=10)
 
 .. image:: ../_static/custom_snr_min.png
+
+
+.. _marvin-plotting-custom-map-hatch:
+
+Custom No Usable IFU Data Region
+--------------------------------
+
+.. code-block:: python
+
+    from marvin.tools.maps import Maps
+    maps = Maps(plateifu='8485-1901')
+    ha = maps['emline_gflux_ha_6564']
+
+    # Defaults:
+    # gray background (facecolor=''#A8A8A8'),
+    # white lines (edgecolor='w'),
+    # dense hatching: (hatch= 'xxxx')
+
+    # Custom: black background, cyan lines, less dense hatching
+    fig, ax = ha.plot(patch_kws={'facecolor': 'k',
+                                 'edgecolor': 'c',
+                                 'hatch': 'xx'})
+
+.. image:: ../_static/custom_hatch.png
 
 
 .. _marvin-plotting-custom-map-axes:
@@ -316,7 +359,7 @@ Plot [NII]/H\ :math:`\alpha` Flux Ratio Map of Star-forming Spaxels
     nii_ha = maps.getMapRatio(property_name='emline_gflux', channel_1='nii_6585', channel_2='ha_6564')
 
     # Mask out non-star-forming spaxels
-    masks, __ = maps.get_bpt(show_plot=False)
+    masks, __, __ = maps.get_bpt(show_plot=False)
 
     # Create a bitmask for non-star-forming spaxels by taking the
     # complement (`~`) of the BPT global star-forming mask (where True == star-forming)

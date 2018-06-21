@@ -51,6 +51,27 @@ class Plate(MarvinToolsClass, FuzzyList):
             The MPL/DR version of the data to use.
         nocubes (bool):
             Set this to turn off the Cube loading
+
+    Attributes:
+        cubeXXXX (object):
+            The Marvin Cube object for the given ifu, e.g. cube1901 refers to the Cube for plateifu 8485-1901
+        plate/plateid (int):
+            The plate id for this plate
+        cartid (str):
+            The cart id for this plate
+        designid (int):
+            The design id for this plate
+        ra (float):
+            The RA of the plate center
+        dec (float):
+            The declination of the plate center
+        dateobs (str):
+            The date of observation for this plate
+        surveymode (str):
+            The survey mode for this plate
+        isbright (bool):
+            True if this is a bright time plate
+
     Return:
         plate:
             An object representing the Plate entity. The object is a list of
@@ -132,6 +153,15 @@ class Plate(MarvinToolsClass, FuzzyList):
         listattr.sort()
 
         return listattr + sorted(class_members + instance_attr)
+
+    def __getattr__(self, value):
+
+        if 'cube' in value:
+            ifu = value.split('cube')[-1]
+            plateifu = '{0}-{1}'.format(self.plate, ifu)
+            return self[plateifu]
+
+        return super(Plate, self).__getattribute__(value)
 
     def _getFullPath(self, **kwargs):
         """Returns the full path of the file in the tree."""
@@ -241,7 +271,8 @@ class Plate(MarvinToolsClass, FuzzyList):
             plateifus = data['plateifus']
             _cubes = [Cube(plateifu=pifu, mode=self.mode, release=self.release) for pifu in plateifus]
 
-        FuzzyList.__init__(self, _cubes, mapper=lambda e: e.plateifu)
+        FuzzyList.__init__(self, _cubes)
+        self.mapper = (lambda e: e.plateifu)
 
     def _setParams(self):
         ''' Set the plate parameters '''

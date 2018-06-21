@@ -1,4 +1,4 @@
-from flask_classy import route
+from flask_classful import route
 from flask import request, jsonify, Response, current_app, redirect, url_for
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
@@ -269,7 +269,6 @@ class QueryView(BaseView):
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
         else:
-            print('column', colname, results.columns)
             try:
                 column = _get_column(results, colname, format_type=format_type)
             except MarvinError as e:

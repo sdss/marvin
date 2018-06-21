@@ -13,7 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classy import FlaskView, route
+from flask_classful import FlaskView, route
 from brain.api.base import processRequest
 from marvin import marvindb
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
@@ -23,6 +23,7 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap import get_dap_maplist, get_default_mapset
+from marvin.utils.general.maskbit import Maskbit
 from marvin.web.web_utils import parseSession
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
@@ -44,11 +45,20 @@ galaxy = Blueprint("galaxy_page", __name__)
 def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' Get and format a spectrum for the web '''
     webspec = None
+    default_bintype = datamodel[cube.release].default_bintype.name
+    has_models = cube.data.has_modelspaxels(name=default_bintype) if hasattr(cube.data, 'has_modelspaxels') else False
+
+    # set the spaxel kwargs
+    kwargs = {'xyorig': xyorig, 'properties': False}
+    kwargs['models'] = has_models
+    if byradec:
+        kwargs.update({'ra': x, 'dec': y})
+    else:
+        kwargs.update({'x': x, 'y': y})
+
+    # get the spaxel
     try:
-        if byradec:
-            spaxel = cube.getSpaxel(ra=x, dec=y, xyorig=xyorig, models=True, properties=False)
-        else:
-            spaxel = cube.getSpaxel(x=x, y=y, xyorig=xyorig, models=True, properties=False)
+        spaxel = cube.getSpaxel(**kwargs)
     except Exception as e:
         specmsg = 'Could not get spaxel: {0}'.format(e)
     else:
@@ -67,7 +77,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
             webspec = [[wave.value[i], [s, error[i]], [modelfit.value[i], 0.0]] for i, s in enumerate(spaxel.flux.value)]
         else:
             webspec = [[wave.value[i], [s, error[i]]] for i, s in enumerate(spaxel.flux.value)]
-        print(webspec)
+
         specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
 
     return webspec, specmsg
@@ -109,7 +119,8 @@ def buildMapDict(cube, params, dapver, bintemp=None):
         bintype, temp = (None, None)
 
     mapdict = []
-    params = params if type(params) == list else [params]
+    params = params if isinstance(params, list) else [params]
+
     for param in params:
         param = str(param)
         try:
@@ -118,7 +129,13 @@ def buildMapDict(cube, params, dapver, bintemp=None):
             parameter, channel = (param, None)
         webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel,
                                    bintype=bintype, template=temp)
+
         plotparams = get_plot_params(dapver=dapver, prop=parameter)
+        mask = Maskbit('MANGA_DAPPIXMASK')
+        baddata_labels = [it for it in plotparams['bitmasks'] if it != 'NOCOV']
+        baddata_bits = {it.lower(): int(mask.labels_to_bits(it)[0]) for it in baddata_labels}
+        plotparams['bits'] = {'nocov': int(mask.labels_to_bits('NOCOV')[0]),
+                              'badData': baddata_bits}
         mapdict.append({'data': webmap, 'msg': mapmsg, 'plotparams': plotparams})
 
     anybad = [m['data'] is None for m in mapdict]
@@ -272,6 +289,7 @@ class Galaxy(BaseWebView):
             # Get the initial spectrum
             if cube:
                 daplist = get_dap_maplist(self._dapver, web=True)
+                dapdefaults = get_default_mapset(self._dapver)
                 self.galaxy['cube'] = cube
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
@@ -292,8 +310,9 @@ class Galaxy(BaseWebView):
                     self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
+                self.galaxy['dapmapselect'] = dapdefaults
                 dm = datamodel[self._dapver]
-                self.galaxy['dapbintemps'] = dm.get_bintemps()
+                self.galaxy['dapbintemps'] = dm.get_bintemps(db_only=True)
                 current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
@@ -301,13 +320,13 @@ class Galaxy(BaseWebView):
                     cube.nsa<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
-                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>spec = \
-                    spaxel.spectrum<br>wave = spectrum.wavelength<br>flux = spectrum<br>ivar = \
-                    spectrum.ivar<br>mask = spectrum.mask<br>spec.plot()<br></samp></html>".format(cube.plateifu))
+                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>flux = \
+                    spaxel.flux<br>wave = flux.wavelength<br>ivar = flux.ivar<br>mask = \
+                    flux.mask<br>flux.plot()<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['mapstr'] = ("<html><samp>from marvin.tools.maps import Maps<br>maps = \
                     Maps(plateifu='{0}')<br>print(maps)<br># get an emission \
-                    line map<br>haflux = maps.getMap('emline_gflux', channel='ha_6564')<br>values = \
+                    line map<br>haflux = maps.emline_gflux_ha_6564<br>values = \
                     haflux.value<br>ivar = haflux.ivar<br>mask = haflux.mask<br>haflux.plot()<br>\
                     </samp></html>".format(cube.plateifu))
         else:
@@ -324,7 +343,6 @@ class Galaxy(BaseWebView):
 
         # get the form parameters
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
-        #self._drpver, self._dapver, self._release = parseSession()
 
         # turning toggle on
         current_session['toggleon'] = args.get('toggleon')
@@ -361,9 +379,10 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
+        output['dapmapselect'] = dapdefaults
 
         dm = datamodel[self._dapver]
-        output['dapbintemps'] = dm.get_bintemps()
+        output['dapbintemps'] = dm.get_bintemps(db_only=True)
         current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         # try to jsonify the result
@@ -377,7 +396,6 @@ class Galaxy(BaseWebView):
     @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
     def getSpaxel(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
-        #self._drpver, self._dapver, self._release = parseSession()
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         maptype = args.get('type', None)
 
@@ -495,7 +513,7 @@ class Galaxy(BaseWebView):
             else:
                 # get the sample nsa parameters
                 try:
-                    nsacache = 'nsa_mpl5' if self._drpver == 'v2_0_1' else 'nsa_mpl4' if self._drpver == 'v1_5_1' else None
+                    nsacache = 'nsa_{0}'.format(self._release.lower().replace('-', ''))
                     nsadict = get_nsa_dict(nsacache, self._drpver)
                 except Exception as e:
                     output = {'nsamsg': 'Failed to retrieve sample NSA: {0}'.format(e), 'status': -1, 'nsa': nsa, 'nsachoices': nsachoices}

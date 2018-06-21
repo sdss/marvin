@@ -212,7 +212,8 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
             the lines. Alternatively, a dictionary of signal-to-noise values, with the
             emission line channels as keys, can be used.
             E.g., ``snr_min={'ha': 5, 'nii': 3, 'oi': 1}``. If some values are not provided,
-            they will default to ``SNR>=3``.
+            they will default to ``SNR>=3``. Note that the value ``sii`` will be applied to both
+            ``[SII 6718]`` and ``[SII 6732]``.
         return_figure (bool):
             If ``True``, it also returns the matplotlib figure_ of the BPT diagram plot,
             which can be used to modify the style of the plot.
@@ -268,8 +269,11 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
     nii = get_masked(maps, 'nii_6585', snr=get_snr(snr_min, 'nii'))
     ha = get_masked(maps, 'ha_6564', snr=get_snr(snr_min, 'ha'))
     hb = get_masked(maps, 'hb_4862', snr=get_snr(snr_min, 'hb'))
-    sii = get_masked(maps, 'sii_6718', snr=get_snr(snr_min, 'sii'))
     oi = get_masked(maps, 'oi_6302', snr=get_snr(snr_min, 'oi'))
+
+    sii_6718 = get_masked(maps, 'sii_6718', snr=get_snr(snr_min, 'sii'))
+    sii_6732 = get_masked(maps, 'sii_6732', snr=get_snr(snr_min, 'sii'))
+    sii = sii_6718 + sii_6732
 
     # Calculate masked logarithms
     log_oiii_hb = np.ma.log10(oiii / hb)

@@ -51,6 +51,7 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
+    'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel']
 
@@ -168,7 +169,8 @@ html_theme_options = {
     # an arbitrary url.
     'navbar_links': [
         ("Go to Marvin &raquo;", "https://sas.sdss.org/marvin2/", True),
-        ("First steps", "first-steps"),
+        ("Cheatsheet", "cheatsheet"),
+        ("Tutorials", "tutorials"),
         ("New Issue", "https://github.com/sdss/marvin/issues/new", True)
     ],
 
@@ -406,3 +408,8 @@ def patched_parse(self):
     self._unpatched_parse()
 GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
+
+
+# -- Use the custom css file in readthedocs --
+def setup(app):
+    app.add_stylesheet('custom.css')

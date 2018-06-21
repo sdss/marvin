@@ -13,7 +13,7 @@
 from __future__ import print_function
 from __future__ import division
 from flask import jsonify, current_app, request
-from flask_classy import route
+from flask_classful import route
 from marvin.tools.plate import Plate
 from marvin.api.base import BaseView, arg_validate as av
 from marvin.core.exceptions import MarvinError

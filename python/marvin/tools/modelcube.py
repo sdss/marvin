@@ -182,6 +182,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
         self.header = self.data[0].header
+        self._check_file(self.header, self.data, 'ModelCube')
         self.wcs = WCS(self.data['FLUX'].header)
         self._wavelength = self.data['WAVE'].data
         self._redcorr = self.data['REDCORR'].data
@@ -224,6 +225,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
             datadb = mdb.datadb
             dapdb = mdb.dapdb
+
+            dm = datamodel[self.release]
+            if dm.db_only:
+                if self.bintype not in dm.db_only:
+                    raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+
 
             if self.data:
                 assert isinstance(self.data, dapdb.ModelCube), \
@@ -324,12 +331,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
     def pixmask(self):
         """Return the DAPSPECMASK flag."""
         pixmask = self._bitmasks['MANGA_DAPSPECMASK']
-        pixmask.mask = getattr(self, 'mask', None)
+        pixmask.mask = getattr(self.binned_flux, 'mask', None)
         return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, properties=True, **kwargs):
-        """Returns the |spaxel| matching certain coordinates.
+        """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
         relative to``xyorig`` in the cube, or as ``ra, dec`` celestial
@@ -364,7 +371,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         Returns:
             spaxels (list):
-                The |spaxel| objects for this cube/maps corresponding to the
+                The |spaxel|_ objects for this cube/maps corresponding to the
                 input coordinates. The length of the list is equal to the
                 number of input coordinates.
 

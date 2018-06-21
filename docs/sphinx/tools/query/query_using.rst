@@ -8,7 +8,7 @@ This page describes how to interact with a Marvin Query.
 Applying a Filter
 -----------------
 
-The **searchfilter** is a pseudo-natural language string dictating the filter conditions on your query.  It is most similar to an SQL where clause.  It's pseudo-natural language because you can type the condition almost as you would say it.  The pseudo-SQL syntax of the condition takes the form of **parameter operand value**.
+The **searchfilter** keyword is a pseudo-natural language string dictating the filter conditions on your query.  It is most similar to an SQL where clause.  It's pseudo-natural language because you can type the condition almost as you would say it.  The pseudo-SQL syntax of the condition takes the form of **"parameter operand value"**.
 
 Filters can be simple, using a single parameter: :code:`nsa.z < 0.1`.  Or complex, using a combination of many parameters: :code:`(nsa.sersic_logmass < 10 or nsa.sersic_n < 2) and (haflux > 25 or emline_sew_ha_6564 > 6)`.
 
@@ -26,7 +26,7 @@ Marvin can also accept filters in functional form.  We currently only have one a
 Handling Return Parameters
 --------------------------
 
-Queries will always return a set of default parameters: the galaxy **mangaid**, **plateifu**, **plate id**, and **ifu design name**.  You can return addtional parameters beyond the defaults and those used in the filter with the **returnparams** keyword.  This takes a list of paramater names.  To learn more about query parameters, see :ref:`marvin-query-parameters`.
+Queries will always return a set of default parameters: the galaxy **mangaid**, **plateifu**, **plate id**, and **ifu design name**.  You can return addtional parameters beyond the defaults and those used in the filter with the **returnparams** keyword.  This takes a list of paramater names.  All of the available parameters are contained in the Query `datamodel` attribute.  To learn more about query parameters, see :ref:`the Query Datamodel <query-dm>`.
 
 ::
 
@@ -34,10 +34,17 @@ Queries will always return a set of default parameters: the galaxy **mangaid**, 
     results = query.run()
 
     print(results.columns)
-    [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', 'cube.ra', 'cube.dec', 'nsa.z']
+    <ParameterGroup name=Columns, n_parameters=7>
+     [<QueryParameter full=cube.mangaid, name=mangaid, short=mangaid, remote=mangaid, display=Manga-ID>,
+     <QueryParameter full=cube.plate, name=plate, short=plate, remote=plate, display=Plate>,
+     <QueryParameter full=cube.plateifu, name=plateifu, short=plateifu, remote=plateifu, display=Plate-IFU>,
+     <QueryParameter full=ifu.name, name=ifu_name, short=ifu_name, remote=ifu_name, display=Name>,
+     <QueryParameter full=cube.ra, name=ra, short=ra, remote=ra, display=RA>,
+     <QueryParameter full=cube.dec, name=dec, short=dec, remote=dec, display=Dec>,
+     <QueryParameter full=nsa.z, name=z, short=z, remote=z, display=Redshift>]
 
     print(results.results[0])
-    (u'1-209232', 8485, u'8485-1901', u'1901', 232.544703894, 48.6902009334, 0.0407447)
+    ResultRow(mangaid=u'1-209232', plate=8485, plateifu=u'8485-1901', ifu_name=u'1901', ra=232.544703894, dec=48.6902009334, z=0.0407447)
 
 Alternatively you can set them after you create the query but before you run it.
 
@@ -48,9 +55,16 @@ Alternatively you can set them after you create the query but before you run it.
     results = query.run()
 
     print(results.columns)
-    [u'cube.mangaid', u'cube.plate', u'cube.plateifu', u'ifu.name', 'cube.ra', 'cube.dec', 'nsa.z']
+    <ParameterGroup name=Columns, n_parameters=7>
+     [<QueryParameter full=cube.mangaid, name=mangaid, short=mangaid, remote=mangaid, display=Manga-ID>,
+     <QueryParameter full=cube.plate, name=plate, short=plate, remote=plate, display=Plate>,
+     <QueryParameter full=cube.plateifu, name=plateifu, short=plateifu, remote=plateifu, display=Plate-IFU>,
+     <QueryParameter full=ifu.name, name=ifu_name, short=ifu_name, remote=ifu_name, display=Name>,
+     <QueryParameter full=cube.ra, name=ra, short=ra, remote=ra, display=RA>,
+     <QueryParameter full=cube.dec, name=dec, short=dec, remote=dec, display=Dec>,
+     <QueryParameter full=nsa.z, name=z, short=z, remote=z, display=Redshift>]
 
-To see which parameters are available for returning or filtering, use the **get_available_params** method.  This returns the **query_params** structure by default (see :ref:`marvin-query-parameters`).
+We provide a subset of common, "vetted" parameters we call **best**.  You can quickly access these parameters using the `get_available_params` method.  This returns the **best** subset of the query datamodel structure by default (see :ref:`Best Parameters<marvin_qdm_best>` and :ref:`the Query Datamodel <query-dm>`).
 
 ::
 
@@ -59,7 +73,7 @@ To see which parameters are available for returning or filtering, use the **get_
     params = query.get_available_params()
 
     # number of vetted parameters
-    len(query_params.list_params())
+    len(params.list_params())
     41
 
     params
@@ -70,7 +84,7 @@ To see which parameters are available for returning or filtering, use the **get_
      <ParameterGroup name=Spectral Indices, paramcount=1>,
      <ParameterGroup name=NSA Catalog, paramcount=11>]
 
-You can also retreive a list of all available parameters in Marvin.  A lot of these parameters have not yet been vetted and may not work, so use at your own risk.  Inform us if you want any of these parameters included in the vetted list.
+You can also retrieve a list of all available parameters in Marvin.  A lot of these parameters have not yet been vetted and may not work, so use at your own risk.  Inform us if you want any of these parameters included in the vetted list.
 
 ::
 
@@ -118,18 +132,15 @@ You can return your results pre-sorted by some parameter using the **sort** keyw
     results = query.run()
 
     print(results.results)
-    [NamedTuple(mangaid=u'1-209151', plate=8485, plateifu=u'8485-12702', name=u'12702', z=0.0185246),
-     NamedTuple(mangaid=u'1-209191', plate=8485, plateifu=u'8485-12701', name=u'12701', z=0.0234253),
-     NamedTuple(mangaid=u'1-209113', plate=8485, plateifu=u'8485-1902', name=u'1902', z=0.0378877),
-     NamedTuple(mangaid=u'1-209232', plate=8485, plateifu=u'8485-1901', name=u'1901', z=0.0407447),
-     ...,
-     ...]
+    <ResultSet(set=1/1, index=0:2, count_in_set=2, total=2)>
+    [ResultRow(mangaid=u'12-98126', plate=7443, plateifu=u'7443-12701', ifu_name=u'12701', ra=230.50746239, dec=43.53234133, z=0.020478),
+     ResultRow(mangaid=u'1-209232', plate=8485, plateifu=u'8485-1901', ifu_name=u'1901', ra=232.544703894, dec=48.6902009334, z=0.0407447)]
 
 
 Changing the Result Limit
 -------------------------
 
-For queries that contain less than 1000 results, Marvin will return the entire result set.  For results above 1000 rows, Marvin will paginate the results and return only the first **100** rows.  You can change this number with the **limit** keyword.
+For queries that contain less than 1000 results, Marvin will return the entire result set.  For results above 1000 rows, Marvin will paginate the results and return only the first **100** rows.  You can change this number with the `limit` keyword.
 
 ::
 
@@ -145,7 +156,7 @@ For queries that contain less than 1000 results, Marvin will return the entire r
 One-Step Querying
 -----------------
 
-You can create and run a query in a single step using the **doQuery** convienence function.  doQuery accepts all the same arguments and keywords as Query.
+You can create and run a query in a single step using the `doQuery` convienence function.  `doQuery` accepts all the same arguments and keywords as `Query`.
 
 ::
 

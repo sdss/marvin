@@ -254,6 +254,7 @@ CREATE INDEX CONCURRENTLY mc_pk_idx ON mangadapdb.modelspaxel using BTREE(modelc
 CREATE INDEX CONCURRENTLY ms_x_idx ON mangadapdb.modelspaxel using BTREE(x);
 CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 
+CREATE INDEX CONCURRENTLY dapall_file_pk_idx ON mangadapdb.dapall using BTREE(file_pk);
 
 # CleanSpaxelProp after the initial load of SpaxelProp.  Run these only after populating the spaxeprop tables with
 # the new columns and data for each MPL.
@@ -288,6 +289,17 @@ CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 -- CREATE INDEX CONCURRENTLY clean_emline5_gflux_nii_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_nii_6585);
 -- CREATE INDEX CONCURRENTLY clean_stvel5_idx ON mangadapdb.cleanspaxelprop5 using BTREE(stellar_vel);
 -- CREATE INDEX CONCURRENTLY clean_d40005_idx ON mangadapdb.cleanspaxelprop5 using BTREE(specindex_d4000);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_oi_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_oi_6302);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_siia_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_sii_6732);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_ha_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_ha_6564);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_hb_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_hb_4862);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_oiii_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_oiii_5008);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_sii_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_sii_6718);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_oiid_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_oiid_3728);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_nii_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_nii_6585);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_oi_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_oi_6302);
+-- CREATE INDEX CONCURRENTLY clean_emline5_gflux_ivar_siia_idx ON mangadapdb.cleanspaxelprop5 using BTREE(emline_gflux_ivar_sii_6732);
+
 
 -- # MPL-6
 
@@ -303,7 +315,30 @@ CREATE INDEX CONCURRENTLY ms_y_idx ON mangadapdb.modelspaxel using BTREE(y);
 -- CREATE INDEX CONCURRENTLY clean_emline6_gflux_hb_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_hb_4862);
 -- CREATE INDEX CONCURRENTLY clean_emline6_gflux_oiii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_oiii_5008);
 -- CREATE INDEX CONCURRENTLY clean_emline6_gflux_sii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_sii_6718);
--- CREATE INDEX CONCURRENTLY clean_emline6_gflux_oii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_oiid_3728);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_oii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_oii_3727);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_oiia_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_oii_3729);
 -- CREATE INDEX CONCURRENTLY clean_emline6_gflux_nii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_nii_6585);
 -- CREATE INDEX CONCURRENTLY clean_stvel6_idx ON mangadapdb.cleanspaxelprop6 using BTREE(stellar_vel);
 -- CREATE INDEX CONCURRENTLY clean_d40006_idx ON mangadapdb.cleanspaxelprop6 using BTREE(specindex_d4000);
+
+-- CREATE INDEX CONCURRENTLY clean_stsig6_idx ON mangadapdb.cleanspaxelprop6 using BTREE(stellar_sigma);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_ha_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_ha_6564);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_hb_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_hb_4862);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_oiii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_oiii_5008);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_sii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_sii_6718);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_oii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_oii_3727);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_oiia_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_oii_3729);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gew_nii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gew_nii_6585);
+
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_oi_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_oi_6302);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_siia_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_sii_6732);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_ha_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_ha_6564);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_hb_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_hb_4862);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_oiii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_oiii_5008);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_sii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_sii_6718);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_oii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_oii_3727);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_oiia_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_oii_3729);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_nii_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_nii_6585);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_oi_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_oi_6302);
+-- CREATE INDEX CONCURRENTLY clean_emline6_gflux_ivar_siia_idx ON mangadapdb.cleanspaxelprop6 using BTREE(emline_gflux_ivar_sii_6732);
+

@@ -48,6 +48,14 @@ try:
 except ImportError as e:
     Path = None
 
+try:
+    import pympler.summary
+    import pympler.muppy
+    import psutil
+except ImportError as e:
+    pympler = None
+    psutil = None
+
 
 # General utilities
 __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestVector',
@@ -56,7 +64,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters', 'get_plot_params',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage')
 
 drpTable = {}
 
@@ -669,9 +677,9 @@ def getDefaultMapPath(**kwargs):
         ifu (int):
             The ifu number
         bintype (str):
-            The bintype of the default file to grab. Defaults to MAPS
+            The bintype of the default file to grab, i.e. MAPS or LOGCUBE. Defaults to MAPS
         daptype (str):
-            The daptype of the default map to grab.  Defaults to SPX-MILESHC
+            The daptype of the default map to grab.  Defaults to SPX-GAU-MILESHC
 
     Returns:
         maplink (str):
@@ -695,10 +703,8 @@ def getDefaultMapPath(**kwargs):
     # TODO: this is likely to break in future MPL/DRs. Just a heads up.
     if '4' in release:
         name = 'mangadefault'
-    elif '5' in release:
-        name = 'mangadap5'
     else:
-        return None
+        name = 'mangadap5'
 
     # construct the url link to default maps file
     maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,
@@ -790,9 +796,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'plate':
         name = 'mangaplate'
     elif dltype == 'map':
+        # needs to change to include DR
         if '4' in release:
             name = 'mangamap'
-        elif '5' in release:
+        else:
             name = 'mangadap5'
     elif dltype == 'mastar':
         name = 'mangamastar'
@@ -976,7 +983,12 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
                     if isinstance(value, np.ndarray):
                         value = value.tolist()
                     else:
-                        value = np.asscalar(value)
+                        # In Astropy 2 the value would be an array of size 1
+                        # but in Astropy 3 value is already an scalar and asscalar fails.
+                        try:
+                            value = np.asscalar(value)
+                        except AttributeError:
+                            pass
                     nsa_data[col[4:]] = value
 
             return DotableCaseInsensitive(nsa_data)
@@ -1301,17 +1313,17 @@ def turn_off_ion(show_plot=True):
     if not show_plot and plt_was_interactive:
         plt.ioff()
 
+    fignum_init = plt.get_fignums()
+
     yield plt
 
     if show_plot:
         plt.ioff()
         plt.show()
     else:
-        fignum = plt.get_fignums()
-        if fignum:
-            plt.close(fignum[0])
-        else:
-            plt.close()
+        for ii in plt.get_fignums():
+            if ii not in fignum_init:
+                plt.close(ii)
 
     # Restores original ion() status
     if plt_was_interactive and not plt.isinteractive():
@@ -1450,3 +1462,34 @@ def map_dapall(header, row):
             dbdict[name] = values
 
     return dbdict
+
+
+def get_virtual_memory_usage_kb():
+    """
+    The process's current virtual memory size in Kb, as a float.
+
+    Returns:
+        A float of the virtual memory usage
+
+    """
+
+    assert psutil is not None, 'the psutil python package is required to run this function'
+
+    return float(psutil.Process().memory_info().vms) / 1024.0
+
+
+def memory_usage(where):
+    """
+    Print out a basic summary of memory usage.
+
+    Parameters:
+        where (str):
+            A string description of where in the code you are summarizing memory usage
+    """
+
+    assert pympler is not None, 'the pympler python package is required to run this function'
+
+    mem_summary = pympler.summary.summarize(pympler.muppy.get_objects())
+    print("Memory summary: {0}".format(where))
+    pympler.summary.print_(mem_summary, limit=2)
+    print("VM: {0:.2f}Mb".format(get_virtual_memory_usage_kb() / 1024.0))

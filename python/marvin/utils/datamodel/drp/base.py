@@ -15,6 +15,8 @@ from __future__ import absolute_import
 import copy as copy_mod
 import os
 
+from marvin.core.exceptions import MarvinError
+
 import astropy.table as table
 from astropy import units as u
 
@@ -37,8 +39,8 @@ class DRPDataModel(object):
 
     def __repr__(self):
 
-        return ('<DRPDataModel release={0!r}, n_datacubes={1}>'
-                .format(self.release, len(self.datacubes)))
+        return ('<DRPDataModel release={0!r}, n_datacubes={1}, n_spectra={2}>'
+                .format(self.release, len(self.datacubes), len(self.spectra)))
 
     def copy(self):
         """Returns a copy of the datamodel."""
@@ -291,12 +293,12 @@ class DataCube(object):
 
         elif ext == 'ivar':
             if not self.has_ivar():
-                raise 'no ivar extension for datacube {0!r}'.format(self.full())
+                raise MarvinError('no ivar extension for datacube {0!r}'.format(self.full()))
             return self._extension_ivar.upper()
 
         elif ext == 'mask':
             if not self.has_mask():
-                raise 'no mask extension for datacube {0!r}'.format(self.full())
+                raise MarvinError('no mask extension for datacube {0!r}'.format(self.full()))
             return self._extension_mask
 
     def db_column(self, ext=None):
@@ -525,12 +527,12 @@ class Spectrum(object):
 
         elif ext == 'std':
             if not self.has_std():
-                raise 'no std extension for spectrum {0!r}'.format(self.full())
+                raise MarvinError('no std extension for spectrum {0!r}'.format(self.full()))
             return self._extension_std.upper()
 
         elif ext == 'mask':
             if not self.has_mask():
-                raise 'no mask extension for spectrum {0!r}'.format(self.full())
+                raise MarvinError('no mask extension for spectrum {0!r}'.format(self.full()))
             return self._extension_mask
 
     def db_column(self, ext=None):

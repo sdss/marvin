@@ -1,8 +1,8 @@
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-08-30 11:28:26
-* @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-19 10:00:56
+ * @Last modified by:   andrews
+ * @Last modified time: 2017-12-13 23:12:53
 */
 
 //jshint esversion: 6
@@ -51,12 +51,10 @@ var HeatMap = function () {
     }, {
         key: 'parseTitle',
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 
@@ -118,7 +116,7 @@ var HeatMap = function () {
                         signalToNoiseThreshold = void 0;
 
                     if (mask !== null) {
-                        var bitmasks = this.plotparams["bitmasks"];
+                        var bitmasks = this.plotparams["bits"];
                         noData = mask[ii][jj] & Math.pow(2, bitmasks["nocov"]);
                         badData = false;
                         for (var key in bitmasks["badData"]) {

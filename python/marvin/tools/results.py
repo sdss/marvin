@@ -42,7 +42,7 @@ try:
 except ImportError:
     warnings.warn('Could not import pandas.', MarvinUserWarning)
 
-__all__ = ['Results']
+__all__ = ['Results', 'ResultSet']
 
 breadcrumb = MarvinBreadCrumb()
 
@@ -80,6 +80,10 @@ class ColumnGroup(ParameterGroup):
         old = old.replace('>,', '>,\n')
         return ('<ParameterGroup name={0.name}, n_parameters={1}>\n '
                 '{2}'.format(self, len(self), old))
+
+    def __str__(self):
+        ''' New string repr for prints '''
+        return self.__repr__()
 
 
 def marvintuple(name, params=None, **kwargs):
@@ -208,11 +212,13 @@ class ResultSet(list):
             return list.__getitem__(self, value)
         elif isinstance(value, slice):
             newset = list.__getitem__(self, value)
-            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns)
+            return ResultSet(newset, index=int(value.start), count=len(newset), total=self.total, columns=self.columns, results=self._results)
+        elif isinstance(value, np.ndarray):
+            return np.array(self)[value]
 
     def __getslice__(self, start, stop):
         newset = list.__getslice__(self, start, stop)
-        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns)
+        return ResultSet(newset, index=start, count=len(newset), total=self.total, columns=self.columns, results=self._results)
 
     def __add__(self, other):
         newresults = self._results
@@ -224,7 +230,8 @@ class ResultSet(list):
         if self.index == other.index:
             # column-wise add
             newcols = self.columns.full + [col.full for col in other.columns if col.full not in self.columns.full]
-            newcols = ColumnGroup('Columns', newcols, parent=self._results.datamodel)
+            parent = self._results.datamodel if self._results else None
+            newcols = ColumnGroup('Columns', newcols, parent=parent)
             newresults.columns = newcols
             new_set = map(add, self, other)
         else:
@@ -352,6 +359,11 @@ class Results(object):
         end (int):
             For paginated results, the ending index value of the resutls.  Defaults to start+chunk.
 
+    Attributes:
+        count (int):  The count of objects in your current page of results
+        totalcount (int): The total number of results in the query
+        query_time (datetime): A datetime TimeDelta representation of the query runtime
+
     Returns:
         results: An object representing the Results entity
 
@@ -391,7 +403,7 @@ class Results(object):
                         category=self.__class__)
 
         # Convert results to MarvinTuple
-        if self.count > 0:
+        if self.count > 0 and self.results:
             self._set_page()
             self._create_result_set(index=self.start)
 
@@ -898,7 +910,7 @@ class Results(object):
 
         # send the request
         try:
-            ii = Interaction(route=url, params=params)
+            ii = Interaction(route=url, params=params, stream=True)
         except MarvinError as e:
             raise MarvinError('API Query {0} call failed: {1}'.format(calltype, e))
         else:
@@ -1165,7 +1177,7 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': newstart, 'end': newend, 'limit': self.limit,
+                      'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getNext', create_set=True,
                               index=newstart)
@@ -1243,7 +1255,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': newstart, 'end': newend, 'limit': self.limit,
+                      'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getPrevious', create_set=True,
                               index=newstart)
@@ -1314,7 +1326,7 @@ class Results(object):
             url = config.urlmap['api']['getsubset']['url']
 
             params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
-                      'start': start, 'end': end, 'limit': self.limit,
+                      'start': start, 'end': end, 'limit': limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getSubset', create_set=True, index=start)
 
@@ -1497,6 +1509,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            return_figure (bool):
+                Set to False to not return the Figure and Axis object. Defaults to True.
             show_plot (bool):
                 Set to False to not show the interactive plot
             **kwargs (dict):
@@ -1519,6 +1533,7 @@ class Results(object):
         return_plateifus = kwargs.pop('return_plateifus', True)
         with_hist = kwargs.get('with_hist', True)
         show_plot = kwargs.pop('show_plot', True)
+        return_figure = kwargs.get('return_figure', True)
 
         # get the named column
         x_col = self.columns[x_name]
@@ -1538,12 +1553,12 @@ class Results(object):
         # computes a list of plateifus in each bin
         if return_plateifus and with_hist:
             plateifus = self.getListOf('plateifu', return_all=True)
-            hdata = output[2]
+            hdata = output[2] if return_figure else output
             if 'xhist' in hdata:
-                hdata['xhist']['xbins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
+                hdata['xhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['xhist']['indices'])
             if 'yhist' in hdata:
-                hdata['yhist']['ybins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
-            output = output[0:2] + (hdata,)
+                hdata['yhist']['bins_plateifu'] = map_bins_to_column(plateifus, hdata['yhist']['indices'])
+            output = output[0:2] + (hdata,) if return_figure else hdata
 
         return output
 
@@ -1562,6 +1577,8 @@ class Results(object):
             return_plateifus (bool):
                 If True, includes the plateifus in each histogram bin in the
                 histogram output.  Default is True.
+            return_figure (bool):
+                Set to False to not return the Figure and Axis object. Defaults to True.
             show_plot (bool):
                 Set to False to not show the interactive plot
             **kwargs (dict):
@@ -1582,6 +1599,7 @@ class Results(object):
 
         return_plateifus = kwargs.pop('return_plateifus', True)
         show_plot = kwargs.pop('show_plot', True)
+        return_figure = kwargs.get('return_figure', True)
 
         # get the named column
         col = self.columns[name]
@@ -1598,9 +1616,9 @@ class Results(object):
 
         if return_plateifus:
             plateifus = self.getListOf('plateifu', return_all=True)
-            hdata = output[0]
+            hdata = output[0] if return_figure else output
             hdata['bins_plateifu'] = map_bins_to_column(plateifus, hdata['indices'])
-            output = (hdata,) + output[1:]
+            output = (hdata,) + output[1:] if return_figure else hdata
 
         return output
 

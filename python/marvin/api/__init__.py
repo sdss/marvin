@@ -62,7 +62,8 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
                     'params': fields.DelimitedList(fields.String(), allow_none=True),
                     'return_all': fields.Boolean(allow_none=True),
-                    'format_type': fields.String(allow_none=True, validate=validate.OneOf(['list', 'listdict', 'dictlist']))
+                    'format_type': fields.String(allow_none=True, validate=validate.OneOf(['list', 'listdict', 'dictlist'])),
+                    'caching': fields.Boolean(allow_none=True)
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
@@ -156,6 +157,8 @@ class ArgValidator(object):
         ''' Resets the final args dict '''
         self.final_args = {}
         self.final_args.update(self.base_args)
+        # also reset the bintemp validators so toggles between MPL-4 and 5+ don't cause validation errors
+        params['galaxy']['bintemp'].validators = []
 
     def _get_url(self):
         ''' Retrieve the URL route from the map based on the request endpoint '''

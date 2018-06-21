@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-08-03 21:27:17
+# @Last Modified time: 2018-04-26 09:25:33
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -54,7 +54,7 @@ def clean(ctx):
 def deploy(ctx):
     ''' Deploy to pypi '''
     print('Deploying to Pypi!')
-    ctx.run("python setup.py sdist bdist_wheel --universal")
+    ctx.run("python setup.py --noweb sdist bdist_wheel --universal")
     # pre-registration is deprecated for new pypi releases [~July 2017]
     # ctx.run("twine register dist/sdss-marvin-*.tar.gz")
     # ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
@@ -114,8 +114,8 @@ def update_git(ctx, version=None):
     os.chdir(verpath)
     ctx.run('git checkout {0}'.format(version))
     ctx.run('git submodule update --init --recursive')
-    ctx.run('python -c "from get_version import generate_version_py; '
-            'generate_version_py(\'sdss-marvin\', {0}, False)'.format(version))
+    # ctx.run('python -c "from get_version import generate_version_py; '
+    #         'generate_version_py(\'sdss-marvin\', {0}, False)'.format(version))
 
 
 @task
@@ -139,6 +139,17 @@ def switch_module(ctx, version=None):
 
 
 @task
+def update_uwsgi(ctx, version=None):
+    ''' Reset the uwsgi symlink to the new version and touch the file to Emperor reload Marvin '''
+    assert version is not None, 'A version is required to setup Marvin at Utah!'
+    os.chdir('/etc/uwsgi/vassals')
+    new_path = '/home/manga/software/git/manga/marvin/{0}/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini'.format(version)
+    ctx.run('rm uwsgi_marvin_mangawork.ini')
+    ctx.run('ln -s {0} uwsgi_marvin_mangawork.ini'.format(new_path))
+    ctx.run('touch uwsgi_marvin_mangawork.ini')
+
+
+@task
 def setup_utah(ctx, version=None):
     ''' Setup the package at Utah and update the release '''
     assert version is not None, 'A version is required to setup Marvin at Utah!'
@@ -157,9 +168,11 @@ def setup_utah(ctx, version=None):
 
     # restart the new marvin
     # switch_module(ctx, version=version)
+    update_uwsgi(ctx, version=version)
     print('Marvin version {0} is set up!\n'.format(version))
-    print('Please run ...\n stopmarvin \n module switch wrapmarvin '
-          'wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
+    print('Check for the new Marvin version at the bottom of the Marvin Web main page!')
+    # print('Please run ...\n stopmarvin \n module switch wrapmarvin '
+    #       'wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
 
 
 ns = Collection(clean, deploy, setup_utah)

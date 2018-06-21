@@ -18,6 +18,7 @@ from __future__ import print_function
 import os
 import sys
 import warnings
+import pwd
 
 import marvin
 
@@ -46,7 +47,7 @@ class MarvinSentry(object):
                         )
                 )
             try:
-                self.client.context.merge({'user': {'name': os.getlogin(),
+                self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
                                                     'system': '_'.join(os.uname())}})
             except (OSError, IOError) as ee:
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
