@@ -60,7 +60,17 @@ def kwargsGet(kwargs, key, replacement):
 breadcrumb = MarvinBreadCrumb()
 
 
-class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
+class VACMeta(abc.ABCMeta):
+
+    def __new__(mcs, clsname, bases, attrs):
+        from marvin.contrib.vacs.base import VACMixIn
+        sub = VACMixIn.__subclasses__()
+        bases = bases + tuple(sub)
+        newclass = super(VACMeta, mcs).__new__(mcs, clsname, bases, attrs)
+        return newclass
+
+
+class MarvinToolsClass(object, six.with_metaclass(VACMeta)):
     """Marvin tools main base class.
 
     This super class implements the :ref:`decision tree <marvin-dma>`
@@ -168,6 +178,13 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         # Sanity check to make sure data_origin has been properly set.
         assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
+
+        # Load VACS
+        # self.vacs = {}
+        # from marvin.contrib.vacs import VACMixIn
+        # vacclasses = VACMixIn.__subclasses__()
+        # for vac in vacclasses:
+        #     self.vacs[vac.__name__.lower()] = vac().__getattribute__('vac_row')
 
     def _determine_inputs(self, input):
         """Determines what inputs to use in the decision tree."""
