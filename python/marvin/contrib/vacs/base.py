@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-06-22 11:22:39
+# @Last Modified time: 2018-06-22 12:08:48
 
 from __future__ import print_function, division, absolute_import
 import abc
@@ -20,10 +20,10 @@ from sdss_access.sync import RsyncAccess
 class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
     ''' This mixin allows for integrating a VAC into Marvin '''
 
-    @abc.abstractmethod
-    def _get_from_file(self):
-        ''' This method controls accessing a VAC from a local file '''
-        pass
+    # @abc.abstractmethod
+    # def _get_from_file(self):
+    #     ''' This method controls accessing a VAC from a local file '''
+    #     pass
 
     def download_vac(self, name=None, **path_params):
         """Download the VAC using rsync """
