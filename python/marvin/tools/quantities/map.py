@@ -542,6 +542,8 @@ class Map(units.Quantity, QuantityMixIn):
         sigcorr.ivar[map_corr.value >= self.value] = 0
         sigcorr.value[map_corr.value >= self.value] = 0
 
+        sigcorr._show_datamodel = True
+
         return sigcorr
 
     @property
@@ -570,6 +572,7 @@ class EnhancedMap(Map):
 
     def __init__(self, *args, **kwargs):
         self._datamodel = kwargs.get('datamodel', None)
+        self._show_datamodel = False
 
     def __repr__(self):
         return ('<Marvin EnhancedMap>\n{0!r} {1!r}').format(self.value, self.unit.to_string())
@@ -608,4 +611,12 @@ class EnhancedMap(Map):
 
     @property
     def datamodel(self):
-        return None
+        if self._show_datamodel:
+            return self._datamodel
+        else:
+            return None
+
+    @datamodel.setter
+    def datamodel(self, value):
+        self._datamodel = value
+        self._show_datamodel = True
