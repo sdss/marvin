@@ -354,7 +354,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         assert self.mask is not None, 'mask is None'
 
-        default_params = get_default_plot_params(self._datamodel.parent.release)
+        default_params = self._datamodel.parent.get_default_plot_params()
         labels = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
