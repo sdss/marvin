@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2018-07-03 10:07:52
+# @Last modified time: 2018-07-03 10:07:66
 
 from copy import deepcopy
 
@@ -21,7 +21,6 @@ from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.utils.general.maskbit import Maskbit
 
 value1 = np.array([[16.35, 0.8],
@@ -416,8 +415,7 @@ class TestMapArith(object):
 class TestMaskbit(object):
 
     def test_masked(self, maps_release_only):
-        __, dapver = config.lookUpVersions(maps_release_only.release)
-        params = get_default_plot_params(dapver)
+        params = maps_release_only.datamodel.parent.get_default_plot_params()
         ha = maps_release_only['emline_gflux_ha_6564']
         expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 
