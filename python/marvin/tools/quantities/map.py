@@ -536,7 +536,13 @@ class Map(units.Quantity, QuantityMixIn):
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.datamodel.full()))
 
-        return (self**2 - map_corr**2)**0.5
+        sigcorr = (self**2 - map_corr**2)**0.5
+        sigcorr.ivar = (sigcorr.value / self.value) * self.ivar
+        sigcorr.ivar[self.ivar == 0] = 0
+        sigcorr.ivar[map_corr.value >= self.value] = 0
+        sigcorr.value[map_corr.value >= self.value] = 0
+
+        return sigcorr
 
     @property
     def pixmask(self):

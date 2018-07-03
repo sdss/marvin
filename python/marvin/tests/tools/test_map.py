@@ -5,8 +5,8 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-13 13:04:55
+# @Last modified by:   andrews
+# @Last modified time: 2018-09-18 10:09:72
 
 from copy import deepcopy
 
@@ -378,8 +378,15 @@ class TestMapArith(object):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
         stsigcorr = maps['stellar_sigmacorr']
+
         expected = (stsig**2 - stsigcorr**2)**0.5
+        expected.ivar = (expected.value / stsig.value) * stsig.ivar
+        expected.ivar[stsig.ivar == 0] = 0
+        expected.ivar[stsigcorr.value >= stsig.value] = 0
+        expected.value[stsigcorr.value >= stsig.value] = 0
+
         actual = stsig.inst_sigma_correction()
+
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
@@ -415,6 +422,11 @@ class TestMapArith(object):
         emsigcorr = maps['emline_instsigma_ha_6564']
 
         expected = (hasig**2 - emsigcorr**2)**0.5
+        expected.ivar = (expected.value / hasig.value) * hasig.ivar
+        expected.ivar[hasig.ivar == 0] = 0
+        expected.ivar[emsigcorr.value >= hasig.value] = 0
+        expected.value[emsigcorr.value >= hasig.value] = 0
+
         actual = hasig.inst_sigma_correction()
 
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
