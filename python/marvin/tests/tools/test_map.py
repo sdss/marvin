@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2018-07-03 10:07:66
+# @Last modified time: 2018-07-03 20:07:12
 
 from copy import deepcopy
 
@@ -374,6 +374,7 @@ class TestMapArith(object):
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == stsig.datamodel
 
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
@@ -410,6 +411,7 @@ class TestMapArith(object):
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == hasig.datamodel
 
 
 class TestMaskbit(object):
