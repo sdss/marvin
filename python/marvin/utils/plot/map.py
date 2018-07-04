@@ -325,8 +325,6 @@ def plot(*args, **kwargs):
             set. Usually ``'string'`` or ``'latex'``. Default is ``'string'``.
             See :func:`~marvin.utils.datamodel.dap.base.Property.to_string`
             for details.
-        prop (str):
-            Set property. Default is ``None``.
         cblabel (str):
             If ``None``, set automatically from unit. For no colorbar label,
             set to ''. Default is ``None``.
