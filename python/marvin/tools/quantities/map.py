@@ -534,6 +534,36 @@ class Map(units.Quantity, QuantityMixIn):
 
         return sigcorr
 
+    def specindex_correction(self):
+        """Correct spectral index measurements for velocity dispersion.
+        """
+        if self.datamodel.name == 'specindex':
+
+            if self._datamodel.parent.release == 'MPL-4':
+                raise marvin.core.exceptions.MarvinError(
+                    'Velocity dispersion correction not implemented for MPL-4.')
+
+            corr_name = '_'.join((self.datamodel.name, 'corr', self.datamodel.channel.name))
+            map_corr = self.getMaps()[corr_name]
+
+        else:
+            raise marvin.core.exceptions.MarvinError(
+                'Cannot correct {0} for velocity dispersion.'.format(self.datamodel.full()))
+
+        if self.unit in ['Angstrom', '']:
+            specindex_corr = self * map_corr
+
+        elif self.unit == 'mag':
+            specindex_corr = self + map_corr
+
+        else:
+            raise marvin.core.exceptions.MarvinError(
+                'Specindex unit must be "Angstrom", "mag", or "" (i.e., dimensionless)')
+
+        specindex_corr._show_datamodel = True
+
+        return specindex_corr
+
     @property
     def pixmask(self):
         """Maskbit instance for the MANGA_DAPPIXMASK flag.
