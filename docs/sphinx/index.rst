@@ -15,7 +15,9 @@
     :align: center
     :alt: MaNGA logo
 
-.. rubric:: :header_no_toc:`Marvin`
+
+Marvin
+======
 
 .. warning:: Marvin 2.x is the last version that will support Python 2.
   Marvin 3 and following will require Python 3.6+.
@@ -39,13 +41,13 @@ To install marvin simply run ``pip install sdss-marvin``. More details and known
 If you are new to Marvin check the following links before diving into the full documentation:
 
 * The :ref:`lean tutorial <marvin-lean-tutorial>` is your quick start guide to Marvin.
-* :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <changelog>`, and :ref:`known issues <marvin-known-issues>`.
+* :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <marvin-changelog>`, and :ref:`known issues <marvin-known-issues>`.
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
 
 
-Contents
-========
+Quick Tools
+===========
 
 .. toctree::
    :maxdepth: 2
@@ -53,49 +55,56 @@ Contents
 
    tools
 
+Components
+==========
 
-* :doc:`core`
+:doc:`Core <core>`
+------------------
 
-  * :doc:`core/config`
-  * :doc:`core/data-access-modes`
-  * :doc:`core/downloads`
-  * :doc:`tools/quantities`
+* :doc:`core/config`
+* :doc:`core/data-access-modes`
+* :doc:`core/downloads`
+* :doc:`tools/quantities`
 
-* :doc:`tools`
+:doc:`Tools <tools>`
+--------------------
 
-  * :doc:`query`
-  * :doc:`results`
-  * :doc:`tools/plate`
-  * :doc:`tools/cube`
-  * :doc:`tools/modelcube`
-  * :doc:`tools/maps`
+* :doc:`query`
+* :doc:`results`
+* :doc:`tools/plate`
+* :doc:`tools/cube`
+* :doc:`tools/modelcube`
+* :doc:`tools/maps`
 
-    * :doc:`tools/bpt`
+  * :doc:`tools/bpt`
 
-  * :doc:`tools/map`
+* :doc:`tools/map`
 
-    * :doc:`tools/enhanced-map`
+  * :doc:`tools/enhanced-map`
 
-  * :doc:`tools/spaxel`
-  * :doc:`tools/bin`
+* :doc:`tools/spaxel`
+* :doc:`tools/bin`
 
-  * :doc:`utils`
+* :doc:`utils`
 
-    * :doc:`Image <utils/images>`
-    * :doc:`Map Plotting <utils/plot-map>`
-    * :doc:`Scatter Plotting <utils/plot-scatter>`
-    * :doc:`Histogram Plotting <utils/plot-hist>`
-    * :doc:`Maskbit <utils/maskbit>`
+  * :doc:`Image <utils/images>`
+  * :doc:`Map Plotting <utils/plot-map>`
+  * :doc:`Scatter Plotting <utils/plot-scatter>`
+  * :doc:`Histogram Plotting <utils/plot-hist>`
+  * :doc:`Maskbit <utils/maskbit>`
 
-* :doc:`api`
+:doc:`API <api>`
+----------------
 
-* :doc:`web`
+:doc:`Web <web>`
+----------------
 
-* :doc:`datamodel/datamodels`
+:doc:`Datamodels <datamodel/datamodels>`
+----------------------------------------
 
-  * :doc:`datamodel/mpl4`
-  * :doc:`datamodel/mpl5`
-  * :doc:`datamodel/mpl6`
+* :doc:`datamodel/mpl4`
+* :doc:`datamodel/mpl5`
+* :doc:`datamodel/mpl6`
 
 
 .. General Reference
@@ -129,10 +138,10 @@ API/Code Reference
 
 |
 
-Indices and tables
-==================
+.. Indices and tables
+.. ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
 
 .. * :ref:`search`

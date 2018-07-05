@@ -16,16 +16,17 @@ organization\:
 
 **Core Tools**: Directly importable and usable
 
-- :ref:`marvin-tools-cube`: Interface to the MaNGA DRP Cube
+- :ref:`marvin-cube`: Interface to the MaNGA DRP Cube
 - :ref:`marvin-tools-spaxel`: Explore individual spaxels
 - :ref:`marvin-tools-rss`: Interface to the MaNGA DRP RSS object
-- :ref:`marvin-tools-maps`: Interface to the MaNGA DAP Maps
+- :ref:`marvin-maps`: Interface to the MaNGA DAP Maps
 - :ref:`marvin-tools-bin`: Explore a bin of spaxels
-- :ref:`marvin-tools-modelcube`: Interface to the MaNGA DAP Modelcube object
+- :ref:`marvin-modelcube`: Interface to the MaNGA DAP Modelcube object
 - :doc:`tools/plate`: Explore all cubes for a given Plate
 
 **Helper Tools**: Not importable but still usable
 
+- :ref:`marvin-tools-datacube`: The object representing a generic cube
 - :ref:`marvin-tools-spectrum`: The object containing the spaxel flux, ivar, and mask
 - :ref:`marvin-tools-map`: Access individual maps
 - :ref:`marvin-tools-mapsprop`: Access MAPS extension information

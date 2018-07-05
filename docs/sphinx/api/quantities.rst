@@ -5,6 +5,8 @@
 Marvin Quantity Classes
 =======================
 
+.. _marvin-tools-datacube:
+
 Datacube
 --------
 
@@ -12,6 +14,8 @@ Datacube
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-tools-spectrum:
 
 Spectrum
 --------
@@ -21,6 +25,8 @@ Spectrum
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-tools-map:
+
 Map
 ---
 
@@ -28,6 +34,8 @@ Map
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-tools-mapsprop:
 
 Analysis Property
 -----------------
