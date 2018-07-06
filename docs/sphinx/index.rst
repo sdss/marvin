@@ -15,7 +15,6 @@
     :align: center
     :alt: MaNGA logo
 
-
 Marvin
 ======
 
@@ -38,6 +37,10 @@ To install marvin simply run ``pip install sdss-marvin``. More details and known
 
 .. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <http://www.apage.com>`_.
 
+
+Getting Started:
+----------------
+
 If you are new to Marvin check the following links before diving into the full documentation:
 
 * The :ref:`lean tutorial <marvin-lean-tutorial>` is your quick start guide to Marvin.
@@ -45,96 +48,99 @@ If you are new to Marvin check the following links before diving into the full d
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
 
-
-Quick Tools
-===========
+Contents:
+---------
 
 .. toctree::
    :maxdepth: 2
    :glob:
 
+   installation
+   cheatsheet
    tools
+   core
+   api
+   web
+   apiref
 
-Components
-==========
-
-:doc:`Core <core>`
-------------------
-
-* :doc:`core/config`
-* :doc:`core/data-access-modes`
-* :doc:`core/downloads`
-* :doc:`tools/quantities`
-
-:doc:`Tools <tools>`
---------------------
-
-* :doc:`query`
-* :doc:`results`
-* :doc:`tools/plate`
-* :doc:`tools/cube`
-* :doc:`tools/modelcube`
-* :doc:`tools/maps`
-
-  * :doc:`tools/bpt`
-
-* :doc:`tools/map`
-
-  * :doc:`tools/enhanced-map`
-
-* :doc:`tools/spaxel`
-* :doc:`tools/bin`
-
-* :doc:`utils`
-
-  * :doc:`Image <utils/images>`
-  * :doc:`Map Plotting <utils/plot-map>`
-  * :doc:`Scatter Plotting <utils/plot-scatter>`
-  * :doc:`Histogram Plotting <utils/plot-hist>`
-  * :doc:`Maskbit <utils/maskbit>`
-
-:doc:`API <api>`
-----------------
-
-:doc:`Web <web>`
-----------------
-
-:doc:`Datamodels <datamodel/datamodels>`
-----------------------------------------
-
-* :doc:`datamodel/mpl4`
-* :doc:`datamodel/mpl5`
-* :doc:`datamodel/mpl6`
-
-
-.. General Reference
-.. =================
+.. Quick Tools
+.. ===========
 
 .. .. toctree::
-..    :titlesonly:
-..    :maxdepth: 1
+..    :maxdepth: 2
+..    :glob:
 
-..    maps-properties-channels
-..    Available Query Parameters <query-params>
-..    tools/visual-guide
+..    tools
+
+.. Components
+.. ==========
+
+.. :doc:`Core <core>`
+.. ------------------
+
+.. * :doc:`core/config`
+.. * :doc:`core/data-access-modes`
+.. * :doc:`core/downloads`
+.. * :doc:`tools/quantities`
+
+.. :doc:`Tools <tools>`
+.. --------------------
+
+.. * :doc:`query`
+.. * :doc:`results`
+.. * :doc:`tools/plate`
+.. * :doc:`tools/cube`
+.. * :doc:`tools/modelcube`
+.. * :doc:`tools/maps`
+
+..   * :doc:`tools/bpt`
+
+.. * :doc:`tools/map`
+
+..   * :doc:`tools/enhanced-map`
+
+.. * :doc:`tools/spaxel`
+.. * :doc:`tools/bin`
+
+.. * :doc:`utils`
+
+..   * :doc:`Image <utils/images>`
+..   * :doc:`Map Plotting <utils/plot-map>`
+..   * :doc:`Scatter Plotting <utils/plot-scatter>`
+..   * :doc:`Histogram Plotting <utils/plot-hist>`
+..   * :doc:`Maskbit <utils/maskbit>`
+
+.. :doc:`API <api>`
+.. ----------------
+
+.. :doc:`Web <web>`
+.. ----------------
+
+.. :doc:`Datamodels <datamodel/datamodels>`
+.. ----------------------------------------
+
+.. * :doc:`datamodel/mpl4`
+.. * :doc:`datamodel/mpl5`
+.. * :doc:`datamodel/mpl6`
 
 
-API/Code Reference
-==================
+.. API/Code Reference
+.. ==================
 
-.. toctree::
-   :maxdepth: 1
+.. .. toctree::
+..    :maxdepth: 4
+..    :glob:
 
-   api/general
-   api/api
-   api/tools
-   api/quantities
-   api/queries
-   api/utils
-   api/web
-   api/db
-   api/brain/api
-   api/brain/utils
+..    api/general
+..    api/api
+..    api/tools
+..    api/quantities
+..    api/queries
+..    api/utils
+..    api/web
+..    api/db
+..    api/brain/api
+..    api/brain/utils
 
 |
 

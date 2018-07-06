@@ -14,10 +14,14 @@
 
 |
 
+
 .. _marvin-installation:
 
 Installation
 ============
+
+Pip Installation
+----------------
 
 **Painless Installation**::
 
@@ -52,7 +56,7 @@ If you experience problem after the installation, check the :ref:`marvin-faq`.
 .. _setup-netrc:
 
 Set up your netrc
------------------
+^^^^^^^^^^^^^^^^^
 
 While Marvin is now publicly available, not all MaNGA data is so. As a result,
 you need to add some configuration to allow you to access proprietary data. To
@@ -75,7 +79,7 @@ and replace ``<password>`` with the default SDSS data password. Finally, run
 .. _marvin-sdss-depends:
 
 Marvin dependencies on SDSS software
-------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin depends on three pieces of SDSS-wide software:
 
@@ -95,7 +99,7 @@ it can also lead to confusions about what version marvin is using.
 .. _marvin-sasdir:
 
 Local SAS directory structure
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin requires a certain environment structure to access and (optionally) download data.  By default,
 marvin will look for data files in a directory structure that mirrors the
@@ -127,7 +131,7 @@ define ``$SAS_BASE_DIR`` (or not define it and let Marvin configure itself).
 .. _marvin-install-ipython:
 
 Using IPython
--------------
+^^^^^^^^^^^^^
 
 If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
 `IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
@@ -142,7 +146,7 @@ need to install it, do ``pip install jupyter``.
 .. _marvin-install-issues:
 
 Install and Runtime Issues
-==========================
+--------------------------
 
 .. important::
 
@@ -151,7 +155,7 @@ Install and Runtime Issues
     `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
 
 How do I update marvin?
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Just do ``pip install --upgrade sdss-marvin``. Marvin will get updated to the latest
 version, along with all the dependencies. If you want to update marvin but keep other
@@ -161,7 +165,7 @@ update dependencies if marvin does need it.
 
 
 Permissions Error
------------------
+^^^^^^^^^^^^^^^^^
 If your Marvin installation fails at any point during the pip install process with permissions problems,
 try running ``sudo pip install sdss-marvin``.  Note that an Anaconda or Homebrew distribution will not require
 permissions when pip installing things, so if you are receiving permissions errors, you may want to check that
@@ -172,7 +176,7 @@ than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicat
 
 
 How to test that marvin has been installed correctly
-----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin is built to have you started with minimum configuration on your part. This means that
 marvin is likely to import but maybe not all features will be available. Here are a few commands
@@ -200,7 +204,7 @@ check the steps in :ref:`setup-netrc`.  If you get an error message such as
 this means the servers at Utah have timed out and may possibly be down.  Simply wait and try again later.
 
 Marvin Remote Access Problems
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If the above test crashes, or you attempt to use a Marvin Tool remotely, and you see this error::
 
@@ -211,7 +215,7 @@ ongoing discussion if this problem has been solved.
 
 
 Matplotlib backend problems
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some users have reported that after installing marvin they get an error such as:
 
@@ -225,7 +229,7 @@ the problem. If you do want to use the MacOS backend, consider installing Python
 `homebrew <http://brew.sh/>`_.
 
 Web Browser Oddities
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 If the MPL dropdown list in the top menu bar is blank, or other elements appear to disappear, this is an indication
 your browser cache is creating conflicts.  The solution is to clear your browser cache, close and restart your browser from scratch.
@@ -242,7 +246,7 @@ As a reminder, we recommend these browsers for the best Marvin web experience:
 .. _marvin-install-windows:
 
 Installation on Windows
-=======================
+-----------------------
 
 Marvin was originally designed to work on Mac or Linux operating systems. However it is possible at the moment to get Marvin working on Windows machines. The following guidelines have been tested on a Windows 10 machine running Python 3.6.
 

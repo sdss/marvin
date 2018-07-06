@@ -1,7 +1,7 @@
 
 .. _marvin-core:
 
-Marvin internals (marvin.core)
+Marvin Internals (marvin.core)
 ==============================
 
 This section describes how Marvin works internally. Most users do not need to understand all of these details. However, they are important if you plan to write contributed code or if you are forking Marvin.
@@ -51,11 +51,14 @@ note that we use a direct call to ``__init__`` instead of `super` to make sure t
    :members: NSAMixIn, DAPallMixIn
 
 
-|
+:ref:`marvin.config <marvin-config-info>`
 
-Further reading
-===============
 
-* The configuration class (:ref:`marvin.config <marvin-config-info>`)
-* :ref:`marvin-dma`
-* :ref:`marvin-download-objects`
+.. |
+
+.. Further reading
+.. ===============
+
+.. * The configuration class (:ref:`marvin.config <marvin-config-info>`)
+.. * :ref:`marvin-dma`
+.. * :ref:`marvin-download-objects`
