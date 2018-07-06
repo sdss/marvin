@@ -8,17 +8,16 @@
 # @Last modified by:   Brian Cherinka
 # @Last Modified time: 2018-06-21 17:18:21
 
-from __future__ import print_function, division, absolute_import
-import pkgutil
+from __future__ import absolute_import, division, print_function
+
 import importlib
 import os
+import pkgutil
+
+from marvin.contrib.vacs.base import VACMixIn  # noqa
 
 
 pkg_dir = os.path.dirname(__file__)
 for (module_loader, name, ispkg) in pkgutil.iter_modules([pkg_dir]):
     if name != 'base':
         importlib.import_module('marvin.contrib.vacs.{0}'.format(name), __package__)
-
-
-from marvin.contrib.vacs.base import VACMixIn
-

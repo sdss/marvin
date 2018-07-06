@@ -8,37 +8,99 @@
 # @Last modified by:   Brian Cherinka
 # @Last Modified time: 2018-06-22 11:22:39
 
-from __future__ import print_function, division, absolute_import
-import abc
-import six
-import time
+from __future__ import absolute_import, division, print_function
+
+import glob
 import os
-from marvin.core.exceptions import MarvinError
-from sdss_access.sync import RsyncAccess
+import time
+import warnings
+
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+
+import sdss_access.path
+import sdss_access.sync
 
 
-class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
-    ''' This mixin allows for integrating a VAC into Marvin '''
+class VACMixIn(object):
+    """This mixin allows for integrating a VAC into Marvin."""
 
-    @abc.abstractmethod
-    def _get_from_file(self):
-        ''' This method controls accessing a VAC from a local file '''
-        pass
+    # The name of the VAC.
+    name = None
 
-    def download_vac(self, name=None, **path_params):
-        """Download the VAC using rsync """
+    def __init__(self):
 
         if 'MANGA_SANDBOX' not in os.environ:
-            os.environ['MANGA_SANDBOX'] = os.path.join(os.getenv("SAS_BASE_DIR"), 'mangawork/manga/sandbox')
+            os.environ['MANGA_SANDBOX'] = os.path.join(os.getenv('SAS_BASE_DIR'),
+                                                       'mangawork/manga/sandbox')
 
-        if not RsyncAccess:
+        if not sdss_access.sync.RsyncAccess:
             raise MarvinError('sdss_access is not installed')
         else:
-            rsync_access = RsyncAccess()
-            rsync_access.remote()
-            rsync_access.add(name, **path_params)
-            rsync_access.set_stream()
-            rsync_access.commit()
-            paths = rsync_access.get_paths()
-            time.sleep(0.001)  # adding a millisecond pause for download to finish and file extistence to register
-            self.filename = paths[0]  # doing this for single files, may need to change
+            self.rsync_access = sdss_access.sync.RsyncAccess()
+
+    def get_vacs(self, parent_object):
+
+        class VACContainer(object):
+
+            def __getitem__(self, value):
+                return getattr(self, value)
+
+            def __iter__(self):
+                for value in self.__dir__():
+                    if not value.startswith('_'):
+                        yield value
+
+        vac_container = VACContainer()
+
+        for subvac in VACMixIn.__subclasses__():
+            # We need to set sv=subvac in the lambda function to prevent
+            # a cell-var-from-loop issue.
+            setattr(VACContainer, subvac.name,
+                    property(lambda self, sv=subvac: sv().get_data(parent_object)))
+
+        return vac_container
+
+    def download_vac(self, path_params={}, verbose=True):
+        """Download the VAC using rsync and returns the local path."""
+
+        assert self.name in self.rsync_access.templates, 'VAC path has not been set in the tree.'
+
+        if verbose:
+            warnings.warn('downloading file for VAC {0!r}'.format(self.name), MarvinUserWarning)
+
+        self.rsync_access.remote()
+        self.rsync_access.add(self.name, **path_params)
+        self.rsync_access.set_stream()
+        self.rsync_access.commit()
+        paths = self.rsync_access.get_paths()
+
+        # adding a millisecond pause for download to finish and file existence to register
+        time.sleep(0.001)
+
+        return paths[0]  # doing this for single files, may need to change
+
+    def set_sandbox_path(self, relative_path):
+        """Downloads a file using its path relative to ``MANGA_SANDBOX``."""
+
+        self.rsync_access.templates[self.name] = os.path.join('$MANGA_SANDBOX', relative_path)
+
+    def get_path(self, path_params={}):
+        """Returns the local path of the VAC file."""
+
+        # The full path could be a pattern (e.g., with stars), so we use glob
+        # to get a unique path
+        pattern = self.rsync_access.full(self.name, **path_params)
+
+        files = glob.glob(pattern)
+        if len(files) > 0:
+            return files[0]
+        else:
+            return pattern
+
+    def file_exists(self, path_params={}):
+        """Check whether a file exists."""
+
+        if os.path.exists(self.get_path(path_params=path_params)):
+            return True
+
+        return False

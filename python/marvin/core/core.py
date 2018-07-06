@@ -60,17 +60,7 @@ def kwargsGet(kwargs, key, replacement):
 breadcrumb = MarvinBreadCrumb()
 
 
-class VACMeta(abc.ABCMeta):
-
-    def __new__(mcs, clsname, bases, attrs):
-        from marvin.contrib.vacs.base import VACMixIn
-        sub = VACMixIn.__subclasses__()
-        bases = bases + tuple(sub)
-        newclass = super(VACMeta, mcs).__new__(mcs, clsname, bases, attrs)
-        return newclass
-
-
-class MarvinToolsClass(object, six.with_metaclass(VACMeta)):
+class MarvinToolsClass(object):
     """Marvin tools main base class.
 
     This super class implements the :ref:`decision tree <marvin-dma>`

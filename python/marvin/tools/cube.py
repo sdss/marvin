@@ -8,28 +8,25 @@
 # @Copyright: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import warnings
 
+import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 
-import numpy as np
-
 import marvin
 import marvin.core.exceptions
-import marvin.tools.spaxel
 import marvin.tools.maps
+import marvin.tools.spaxel
 import marvin.utils.general.general
-
+from marvin.contrib.vacs.base import VACMixIn
 from marvin.core.core import MarvinToolsClass, NSAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
-from marvin.utils.general import get_nsa_data, FuzzyDict
+from marvin.utils.general import FuzzyDict, get_nsa_data
 from marvin.utils.general.maskbit import get_manga_target
 
 
@@ -97,6 +94,8 @@ class Cube(MarvinToolsClass, NSAMixIn):
         assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
+
+        self.vacs = VACMixIn().get_vacs(self)
 
     def _set_datamodel(self):
         """Sets the datamodel for DRP."""
