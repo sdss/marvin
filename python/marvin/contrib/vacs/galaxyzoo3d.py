@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-07 13:08:20
+# @Last modified time: 2018-07-07 14:14:41
 
 
 from __future__ import absolute_import, division, print_function
@@ -21,9 +21,11 @@ class GalaxyZoo3DVAC(VACMixIn):
     """Provides access to the Galaxy Zoo: 3D VAC.
 
     VAC name: galaxyzoo3d
+
     URL: https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d
+
     Description: Returns people-powered classifications of internal structures
-                 of MaNGA galaxies.
+    of MaNGA galaxies.
 
     """
 

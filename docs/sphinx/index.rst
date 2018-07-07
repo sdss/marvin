@@ -48,7 +48,7 @@ Marvin at a Glance
 * :doc:`tutorials`
 * :doc:`exercises`
 * :doc:`cheatsheet`
-* :doc:`contributing`
+* :doc:`contributing/contributing`
 
 |
 

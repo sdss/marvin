@@ -70,7 +70,7 @@ Example 1: DAPall
 
 The file `marvin/contrib/vacs/dapall.py <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs/dapall.py>`__ shows how we would implement the contents of the `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`__ as a VAC. Note that the DAPall is **not** a VAC and it is implemented differently, but we use it here as an example. The code of the file is
 
-.. literalinclude:: ../../python/marvin/contrib/vacs/dapall.py
+.. literalinclude:: ../../../python/marvin/contrib/vacs/dapall.py
    :language: python
    :linenos:
 
@@ -90,7 +90,7 @@ Example 2: Galaxy Zoo: 3D
 
 Let us have a look at a different VAC, this time one that is really implemented as such in Marvin. Instead of a single file such as the DAPall, the `Galaxy Zoo: 3D project <https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d>`__ provides one file per observed galaxy (you can find all the files `here <https://data.sdss.org/sas/mangawork/manga/sandbox/galaxyzoo3d/>`__). The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/galaxyzoo3d.py <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs/galaxyzoo3d.py>`__:
 
-.. literalinclude:: ../../python/marvin/contrib/vacs/galaxyzoo3d.py
+.. literalinclude:: ../../../python/marvin/contrib/vacs/galaxyzoo3d.py
    :language: python
    :linenos:
 
@@ -143,7 +143,7 @@ Classes
 Available VACs
 ^^^^^^^^^^^^^^
 
-.. autosummary:: marvin.contrib.vacs
+.. include:: ./available_vacs.rst
 
 
 .. _new issue: https://github.com/sdss/marvin/issues/new

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 15:13:07
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-06 17:40:11
+# @Last Modified time: 2018-07-07 14:14:55
 
 from __future__ import absolute_import, division, print_function
 
@@ -20,12 +20,13 @@ class DapVAC(VACMixIn):
     """Provides access to the DAPall VAC.
 
     VAC name: dapall
+
     URL: https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile
+
     Description: The DAPall file contains a per-galaxy summary of the DAP
-                 output. This file is intended only as an example / template
-                 for other VACs, and it is not included in Marvin as a VAC.
-                 DAPall data can be access in Marvin using the .dapall
-                 attribute.
+    output. This file is intended only as an example / template for other VACs,
+    and it is not included in Marvin as a VAC. DAPall data can be access in
+    Marvin using the .dapall attribute.
 
     """
 
