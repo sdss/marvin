@@ -16,10 +16,6 @@ import warnings
 
 import astropy.io.fits
 import astropy.wcs
-import numpy as np
-import pandas as pd
-import six
-
 import marvin
 import marvin.api.api
 import marvin.core.exceptions
@@ -29,12 +25,16 @@ import marvin.tools.quantities.map
 import marvin.tools.spaxel
 import marvin.utils.dap.bpt
 import marvin.utils.general.general
+import numpy as np
+import six
 from marvin.contrib.vacs.base import VACMixIn
 from marvin.core.core import DAPallMixIn, MarvinToolsClass, NSAMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
 from marvin.utils.general.maskbit import get_manga_target
+
+import pandas as pd
 
 from .quantities import AnalysisProperty
 
@@ -114,7 +114,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self._check_versions(self)
 
-        self.vacs = VACMixIn().get_vacs(self)
+        self.vacs = VACMixIn.get_vacs(self)
 
     def __repr__(self):
         return ('<Marvin Maps (plateifu={0.plateifu!r}, mode={0.mode!r}, '

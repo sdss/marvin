@@ -115,7 +115,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # Confirm that drpver and dapver match the ones from the header.
         marvin.tools.maps.Maps._check_versions(self)
 
-        self.vacs = VACMixIn().get_vacs(self)
+        self.vacs = VACMixIn.get_vacs(self)
 
     def __repr__(self):
         """Representation for ModelCube."""

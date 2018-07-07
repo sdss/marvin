@@ -95,7 +95,7 @@ class Cube(MarvinToolsClass, NSAMixIn):
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
 
-        self.vacs = VACMixIn().get_vacs(self)
+        self.vacs = VACMixIn.get_vacs(self)
 
     def _set_datamodel(self):
         """Sets the datamodel for DRP."""
