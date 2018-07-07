@@ -16,6 +16,14 @@ from .base import VACMixIn
 
 
 class GalaxyZoo3DVAC(VACMixIn):
+    """Provides access to the DAPall VAC.
+
+    VAC name: galaxyzoo3d
+    URL: https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d
+    Description: Returns people-powered classifications of internal structures
+                 of MaNGA galaxies.
+
+    """
 
     name = 'galaxyzoo3d'
     version = 'v1_0_0'
