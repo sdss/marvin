@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-06 17:49:16
+# @Last Modified time: 2018-07-07 13:37:03
 
 from __future__ import absolute_import, division, print_function
 
@@ -104,6 +104,9 @@ class VACMixIn(object):
         """
 
         class VACContainer(object):
+
+            def __repr__(self):
+                return '<VACContainer ({0})>'.format(', '.join(map(repr, list(self))))
 
             def __getitem__(self, value):
                 return getattr(self, value)
