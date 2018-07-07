@@ -2,11 +2,13 @@
 # -*- coding:utf-8 -*-
 #
 # @Author: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Created: 2018-07-03
-# @LastModified: 2018-07-03
+# @Date: 2018-07-03
 # @Filename: galaxyzoo3d.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-# @Copyright: José Sánchez-Gallego
+#
+# @Last modified by: José Sánchez-Gallego
+# @Last modified time: 2018-07-07 12:27:11
+
 
 from __future__ import absolute_import, division, print_function
 
