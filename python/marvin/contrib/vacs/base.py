@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-06 17:46:12
+# @Last Modified time: 2018-07-06 17:49:16
 
 from __future__ import absolute_import, division, print_function
 
@@ -26,7 +26,7 @@ class VACMixIn(object):
 
     This parent class provides common tools for downloading data using
     sdss_access or directly from the sandbox. `~VACMixIn.get_vacs` returns a
-    container with properties pointinh to all the VACs that subclass from
+    container with properties pointing to all the VACs that subclass from
     `.VACMixIn`. In general, VACs can be added to a class in the following way:
 
     .. code-block:: python
