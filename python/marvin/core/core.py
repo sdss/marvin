@@ -498,7 +498,8 @@ class NSAMixIn(object):
             the drpall file will be used (as it is more likely that the user
             has that file in their system). Otherwise, ``nsa_source='nsa'``
             will be assumed. This behaviour can be modified during runtime by
-            modifying the ``nsa_mode`` attribute with one of the valid values.
+            modifying the ``nsa_source`` attribute with one of the valid
+            values.
 
     """
 
