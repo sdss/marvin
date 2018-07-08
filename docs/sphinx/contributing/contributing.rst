@@ -58,6 +58,8 @@ Code is only useful if it is well documented! An excellent way of contributing t
 * If you have used Marvin in the classroom and developed activities based on it we would love to hear about it!
 
 
+.. _marvin-contributing-vacs:
+
 Contributing a VAC
 ------------------
 
