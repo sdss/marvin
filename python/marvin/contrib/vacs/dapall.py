@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 15:13:07
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-08 13:11:34
+# @Last Modified time: 2018-07-08 13:13:48
 
 from __future__ import absolute_import, division, print_function
 
@@ -31,14 +31,16 @@ class DapVAC(VACMixIn):
     """
 
     name = 'dapall'
-    path_params = {'dapver': '2.1.3', 'drpver': 'v2_3_1'}
 
     def get_data(self, parent_object):
 
-        if not self.file_exists(path_params=self.path_params):
-            filename = self.download_vac(path_params=self.path_params)
+        path_params = {'drpver': parent_object._drpver,
+                       'dapver': parent_object._dapver}
+
+        if not self.file_exists(path_params=path_params):
+            filename = self.download_vac(path_params=path_params)
         else:
-            filename = self.get_path(path_params=self.path_params)
+            filename = self.get_path(path_params=path_params)
 
         dap_table = astropy.table.Table.read(filename)
 
