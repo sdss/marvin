@@ -61,7 +61,7 @@ Code is only useful if it is well documented! An excellent way of contributing t
 Contributing a VAC
 ------------------
 
-`Value Added Catalogues (VAC) <http://www.sdss.org/dr14/data_access/value-added-catalogs/>`__ are an important part of how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not provide direct support for VACs, but it does supply a framework for VAC owners to implement access to their catalogues from Marvin.
+`Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ are an important part of how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not provide direct support for VACs, but it does supply a framework for VAC owners to implement access to their catalogues from Marvin.
 
 At this time, only file-based access is supported (i.e., no querying or remote access is available) but the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it to the user. Very little knowledge of how Marvin internally works is required! The directory `marvin/contrib/vacs <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs>`__ contains the base code and a list of already implemented VACs that you can use as a template. Let up have a look at a couple of them.
 
