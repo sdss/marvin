@@ -6,22 +6,24 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-07 13:37:03
+# @Last Modified time: 2018-07-08 13:25:23
 
 from __future__ import absolute_import, division, print_function
 
+import abc
 import glob
 import os
 import time
 import warnings
 
+import six
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 import sdss_access.path
 import sdss_access.sync
 
 
-class VACMixIn(object):
+class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
     """MixIn  that allows VAC integration in Marvin.
 
     This parent class provides common tools for downloading data using
@@ -59,6 +61,7 @@ class VACMixIn(object):
         else:
             self.rsync_access = sdss_access.sync.RsyncAccess()
 
+    @abc.abstractmethod
     def get_data(self, parent_object):
         """Returns VAC data that matches the `parent_object` target.
 
