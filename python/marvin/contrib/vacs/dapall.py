@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 15:13:07
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-07 14:14:55
+# @Last Modified time: 2018-07-08 13:11:34
 
 from __future__ import absolute_import, division, print_function
 
@@ -42,11 +42,9 @@ class DapVAC(VACMixIn):
 
         dap_table = astropy.table.Table.read(filename)
 
-        plate = parent_object.plate
-        ifudesign = parent_object.ifu
+        plateifu = parent_object.plateifu
 
-        rows = dap_table[(dap_table['PLATE'] == plate) &
-                         (dap_table['IFUDESIGN'] == ifudesign)]
+        rows = dap_table[dap_table['PLATEIFU'] == plateifu]
 
         if len(rows) == 0:
             raise MarvinError('cannot match plate-ifu with VAC data.')
