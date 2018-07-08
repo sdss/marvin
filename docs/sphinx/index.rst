@@ -80,6 +80,8 @@ Components
   * :doc:`tools/spaxel`
   * :doc:`tools/bin`
 
+  * :doc:`tools/metadata`
+
   * :doc:`utils`
 
     * :doc:`Image <utils/images>`
