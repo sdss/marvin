@@ -345,9 +345,8 @@ class Map(units.Quantity, QuantityMixIn):
 
         assert self.mask is not None, 'mask is None'
 
-        prop = self._datamodel.full()
-        default_params = self._datamodel.parent.get_plot_params(prop)
-        labels = default_params['bitmasks']
+        default_params = self._datamodel.parent.get_default_plot_params()
+        labels = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
 
@@ -525,7 +524,15 @@ class Map(units.Quantity, QuantityMixIn):
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.datamodel.full()))
 
-        return (self**2 - map_corr**2)**0.5
+        sigcorr = (self**2 - map_corr**2)**0.5
+        sigcorr.ivar = (sigcorr.value / self.value) * self.ivar
+        sigcorr.ivar[self.ivar == 0] = 0
+        sigcorr.ivar[map_corr.value >= self.value] = 0
+        sigcorr.value[map_corr.value >= self.value] = 0
+
+        sigcorr._show_datamodel = True
+
+        return sigcorr
 
     @property
     def pixmask(self):
@@ -553,6 +560,7 @@ class EnhancedMap(Map):
 
     def __init__(self, *args, **kwargs):
         self._datamodel = kwargs.get('datamodel', None)
+        self._show_datamodel = False
 
     def __repr__(self):
         return ('<Marvin EnhancedMap>\n{0!r} {1!r}').format(self.value, self.unit.to_string())
@@ -591,4 +599,12 @@ class EnhancedMap(Map):
 
     @property
     def datamodel(self):
-        return None
+        if self._show_datamodel:
+            return self._datamodel
+        else:
+            return None
+
+    @datamodel.setter
+    def datamodel(self, value):
+        self._datamodel = value
+        self._show_datamodel = True
