@@ -47,6 +47,7 @@ Marvin at a Glance
 * :doc:`getting-started`
 * :doc:`tutorials`
 * :doc:`exercises`
+* :doc:`cheatsheet`
 
 |
 

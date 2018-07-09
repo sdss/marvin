@@ -6,8 +6,8 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
 
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-04-03 10:04:19
+# @Last modified by:   andrews
+# @Last modified time: 2018-07-06 15:07:79
 
 import numpy as np
 import matplotlib
@@ -195,18 +195,6 @@ class TestMapPlot(object):
     def test_set_extent(self, cube_size, sky_coords, expected):
         extent = mapplot._set_extent(cube_size, sky_coords)
         assert np.all(extent == expected)
-
-    @matplotlib_2
-    def test_set_hatch_linewidth(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.linewidth'] == 0.5
-
-    @matplotlib_2
-    def test_set_hatch_color(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.color'] == 'w'
 
     @matplotlib_2
     def test_ax_facecolor(self):

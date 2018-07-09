@@ -15,7 +15,6 @@ from astropy import units as u
 import matplotlib
 import pytest
 
-from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.tools.maps import Maps
 from marvin.tools.quantities import Map, EnhancedMap
@@ -182,6 +181,20 @@ class TestMap(object):
 
         reordered_ha = np.moveaxis(ha, 0, -1)
         assert reordered_ha.unit is not None
+
+    def test_stellar_sigma_values(self, maps, galaxy):
+        ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
+
+        ss = maps.stellar_sigma
+        sc = maps.stellar_sigmacorr
+        compare = sum(ss == sc)
+        assert len(np.unique(compare)) > 1
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        ssvalue = galaxy.dap['stellar_sigma'][galaxy.bintype.name]
+        scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
+        assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
+        assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
 
 
 class TestMapArith(object):
