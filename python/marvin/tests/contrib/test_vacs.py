@@ -7,10 +7,11 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-09 16:33:17
+# @Last modified time: 2018-07-09 16:36:20
 
 import importlib
 
+import astropy.io.fits
 import pytest
 
 import marvin
@@ -61,3 +62,11 @@ class TestVACs(object):
                 assert hasattr(obj, 'vacs')
                 assert hasattr(obj.vacs, vac.name)
                 assert getattr(obj.vacs, vac.name) is not None
+
+
+class TestGalaxyZoo3D(object):
+
+    def test_return_type(self, plateifu):
+
+        my_map = Maps(plateifu)
+        assert isinstance(my_map.vacs.galaxyzoo3d, astropy.io.fits.HDUList)
