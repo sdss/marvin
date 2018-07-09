@@ -10,7 +10,6 @@ import os
 import re
 import warnings
 import sys
-import marvin
 from collections import OrderedDict
 
 # Set the Marvin version
@@ -44,14 +43,17 @@ else:
 log = initLog(logFilePath)
 
 warnings.simplefilter('once')
-warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
-warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
+# warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
+# warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')
 warnings.filterwarnings('ignore', category=FITSFixedWarning)
 
-# Filters for PY3
-# TODO: undestand why these warnings are issued and fix the root of the problem (JSG)
+# This warning seems harmless (see https://github.com/astropy/astropy/issues/6025) so
+# will ignore it for now.
 warnings.filterwarnings('ignore', 'can\'t resolve package(.)+')
-warnings.filterwarnings('ignore', 'unclosed file <_io.TextIOWrapper+')
+
+# Ignore DeprecationWarnings that are not Marvin's
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('once', category=DeprecationWarning, module='marvin')
 
 
 class MarvinConfig(object):
