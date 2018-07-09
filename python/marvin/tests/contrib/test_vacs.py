@@ -7,7 +7,11 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-09 12:25:22
+# @Last modified time: 2018-07-09 16:33:17
+
+import importlib
+
+import pytest
 
 import marvin
 from marvin.contrib.vacs import VACMixIn
@@ -41,3 +45,19 @@ class TestVACs(object):
 
         assert my_map.vacs.__class__.__name__ == 'VACContainer'
         assert list(my_map.vacs) is not None
+
+    def test_vacs_return(self, plateifu, release):
+
+        if release in ['MPL-4', 'MPL-5']:
+            pytest.skip()
+
+        vacs = VACMixIn.__subclasses__()
+
+        for vac in vacs:
+            for include_class in vac.include:
+                __ = importlib.import_module(str(include_class.__module__))
+                obj = include_class(plateifu, release=release)
+
+                assert hasattr(obj, 'vacs')
+                assert hasattr(obj.vacs, vac.name)
+                assert getattr(obj.vacs, vac.name) is not None
