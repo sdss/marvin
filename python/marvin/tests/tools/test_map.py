@@ -6,9 +6,10 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
 # @Last modified by:   andrews
-# @Last modified time: 2018-07-03 20:07:12
+# @Last modified time: 2018-07-05 15:07:42
 
 from copy import deepcopy
+import operator
 
 import numpy as np
 from astropy import units as u
@@ -425,6 +426,27 @@ class TestMapArith(object):
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
         assert actual.datamodel == hasig.datamodel
+
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-5']))
+    @pytest.mark.parametrize('channel, op',
+                             [('hb', '*'),
+                              ('d4000', '*'),
+                              ('cn1', '+'),
+                              ])
+    def test_specindex_sigma_correction(self, galaxy, channel, op):
+        maps = Maps(plateifu=galaxy.plateifu)
+        si = maps['specindex_' + channel]
+        sicorr = maps['specindex_corr' + channel]
+
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+        expected = ops[op](si, sicorr)
+
+        actual = si.specindex_correction()
+
+        assert actual.value == pytest.approx(expected.value, nan_ok=True)
+        assert actual.ivar == pytest.approx(expected.ivar)
+        assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == si.datamodel
 
 
 class TestMaskbit(object):
