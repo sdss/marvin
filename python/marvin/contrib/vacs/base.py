@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-09 10:00:50
+# @Last Modified time: 2018-07-09 12:29:33
 
 from __future__ import absolute_import, division, print_function
 
@@ -112,13 +112,19 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             def __repr__(self):
                 return '<VACContainer ({0})>'.format(', '.join(map(repr, list(self))))
 
+            def __dir__(self):
+                props = []
+                for value in self.__class__.__dict__.keys():
+                    if not value.startswith('_'):
+                        props.append(value)
+                return props
+
             def __getitem__(self, value):
                 return getattr(self, value)
 
             def __iter__(self):
                 for value in self.__dir__():
-                    if not value.startswith('_'):
-                        yield value
+                    yield value
 
         vac_container = VACContainer()
 

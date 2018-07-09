@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-08 14:10:48
+# @Last modified time: 2018-07-09 12:25:22
 
 import marvin
 from marvin.contrib.vacs import VACMixIn
@@ -34,3 +34,10 @@ class TestVACs(object):
 
         drpver, dapver = marvin.config.lookUpVersions()
         assert dapall_vac.file_exists(path_params={'drpver': drpver, 'dapver': dapver})
+
+    def test_vac_container(self):
+
+        my_map = Maps('8485-1901')
+
+        assert my_map.vacs.__class__.__name__ == 'VACContainer'
+        assert list(my_map.vacs) is not None
