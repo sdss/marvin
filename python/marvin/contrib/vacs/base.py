@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-08 13:25:23
+# @Last Modified time: 2018-07-09 10:00:50
 
 from __future__ import absolute_import, division, print_function
 
@@ -16,6 +16,7 @@ import os
 import time
 import warnings
 
+import marvin.tools.plate
 import six
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
@@ -122,6 +123,16 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         vac_container = VACContainer()
 
         for subvac in VACMixIn.__subclasses__():
+
+            # Excludes VACs from showing up in Plate
+            if issubclass(parent_object.__class__, marvin.tools.plate.Plate):
+                continue
+
+            # Only shows VACs if in the include list.
+            if (hasattr(subvac, 'include') and subvac.include is not None and
+                    not issubclass(parent_object.__class__, subvac.include)):
+                continue
+
             # We need to set sv=subvac in the lambda function to prevent
             # a cell-var-from-loop issue.
             setattr(VACContainer, subvac.name,

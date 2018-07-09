@@ -21,7 +21,6 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
-from marvin.contrib.vacs.base import VACMixIn
 from marvin.core.core import MarvinToolsClass, NSAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
@@ -94,8 +93,6 @@ class Cube(MarvinToolsClass, NSAMixIn):
         assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
-
-        self.vacs = VACMixIn.get_vacs(self)
 
     def _set_datamodel(self):
         """Sets the datamodel for DRP."""

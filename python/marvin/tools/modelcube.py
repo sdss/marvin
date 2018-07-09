@@ -22,7 +22,6 @@ import marvin.core.exceptions
 import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
-from marvin.contrib.vacs.base import VACMixIn
 from marvin.core.core import DAPallMixIn, MarvinToolsClass, NSAMixIn
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
@@ -114,8 +113,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         # Confirm that drpver and dapver match the ones from the header.
         marvin.tools.maps.Maps._check_versions(self)
-
-        self.vacs = VACMixIn.get_vacs(self)
 
     def __repr__(self):
         """Representation for ModelCube."""

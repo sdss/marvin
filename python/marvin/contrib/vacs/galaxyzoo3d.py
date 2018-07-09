@@ -7,12 +7,13 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-07 14:14:41
+# @Last modified time: 2018-07-09 10:31:53
 
 
 from __future__ import absolute_import, division, print_function
 
 import astropy
+import marvin.tools
 
 from .base import VACMixIn
 
@@ -31,6 +32,10 @@ class GalaxyZoo3DVAC(VACMixIn):
 
     name = 'galaxyzoo3d'
     version = 'v1_0_0'
+
+    include = (marvin.tools.cube.Cube,
+               marvin.tools.maps.Maps,
+               marvin.tools.modelcube.ModelCube)
 
     def get_data(self, parent_object):
 

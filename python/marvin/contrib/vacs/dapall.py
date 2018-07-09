@@ -6,11 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 15:13:07
 # @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-08 13:28:26
+# @Last Modified time: 2018-07-09 10:34:47
 
 from __future__ import absolute_import, division, print_function
 
 import astropy
+import marvin
 from marvin.core.exceptions import MarvinError
 
 from .base import VACMixIn
@@ -32,6 +33,9 @@ class DapVAC(VACMixIn):
 
     name = 'dapall'
 
+    include = (marvin.tools.maps.Maps,
+               marvin.tools.modelcube.ModelCube)
+
     def get_data(self, parent_object):
 
         path_params = {'drpver': parent_object._drpver,
@@ -45,23 +49,16 @@ class DapVAC(VACMixIn):
         dap_table = astropy.table.Table.read(filename)
 
         plateifu = parent_object.plateifu
+        dap_type = (str(parent_object.bintype).upper() + '-' +
+                    str(parent_object.template).upper())
 
-        rows = dap_table[dap_table['PLATEIFU'] == plateifu]
+        rows = dap_table[(dap_table['PLATEIFU'] == plateifu) &
+                         (dap_table['DAPTYPE'] == dap_type)]
 
         if len(rows) == 0:
             raise MarvinError('cannot match plate-ifu with VAC data.')
-
-        if hasattr(parent_object, 'bintype') and hasattr(parent_object, 'template'):
-            dap_type = (str(parent_object.bintype).upper() + '-' +
-                        str(parent_object.template).upper())
-            row = rows[rows['DAPTYPE'] == dap_type]
-        else:
+        elif len(rows) == 1:
             return rows
-
-        if len(rows) == 0:
-            raise MarvinError('cannot match plate-ifu with VAC data.')
-        elif len(row) == 1:
-            return row[0]
         else:
             raise MarvinError('unexpected error matching plate-ifu to VAC data: '
                               'multiple rows found.')

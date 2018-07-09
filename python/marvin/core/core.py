@@ -6,31 +6,27 @@
 # @License: BSD 3-Clause
 # @Copyright: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import abc
 import distutils
 import os
 import re
-import six
-import warnings
 import time
+import warnings
 
 import astropy.io.fits
+import marvin
+import marvin.api.api
+import six
+from marvin.core import marvin_pickle
+from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError,
+                                    MarvinMissingDependency, MarvinUserWarning)
+from marvin.utils.db import testDbConnection
+from marvin.utils.general import get_dapall_file, get_nsa_data, mangaid2plateifu, map_dapall
 
 from brain.core.exceptions import BrainError
 
-import marvin
-import marvin.api.api
-
-from marvin.core import marvin_pickle
-from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
-
-from marvin.utils.db import testDbConnection
-from marvin.utils.general import mangaid2plateifu, get_nsa_data, get_dapall_file, map_dapall
 
 try:
     from sdss_access.path import Path
@@ -169,12 +165,9 @@ class MarvinToolsClass(object):
         # Sanity check to make sure data_origin has been properly set.
         assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
 
-        # Load VACS
-        # self.vacs = {}
-        # from marvin.contrib.vacs import VACMixIn
-        # vacclasses = VACMixIn.__subclasses__()
-        # for vac in vacclasses:
-        #     self.vacs[vac.__name__.lower()] = vac().__getattribute__('vac_row')
+        # Load VACs
+        from marvin.contrib.vacs.base import VACMixIn
+        self.vacs = VACMixIn.get_vacs(self)
 
     def _determine_inputs(self, input):
         """Determines what inputs to use in the decision tree."""
