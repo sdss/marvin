@@ -7,12 +7,13 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-09 10:31:53
+# @Last modified time: 2018-07-09 16:58:47
 
 
 from __future__ import absolute_import, division, print_function
 
 import astropy
+
 import marvin.tools
 
 from .base import VACMixIn
@@ -31,7 +32,8 @@ class GalaxyZoo3DVAC(VACMixIn):
     """
 
     name = 'galaxyzoo3d'
-    version = 'v1_0_0'
+    version = {'MPL-6': 'v1_0_0',
+               'DR15': 'v1_0_0'}
 
     include = (marvin.tools.cube.Cube,
                marvin.tools.maps.Maps,
@@ -40,7 +42,10 @@ class GalaxyZoo3DVAC(VACMixIn):
     def get_data(self, parent_object):
 
         mangaid = parent_object.mangaid.strip()
-        self.set_sandbox_path('galaxyzoo3d/{0}/{1}_*.fits.gz'.format(self.version, mangaid))
+        release = parent_object.release
+
+        self.set_sandbox_path('galaxyzoo3d/{0}/{1}_*.fits.gz'.format(self.version[release],
+                                                                     mangaid))
 
         if not self.file_exists():
             filename = self.download_vac()
