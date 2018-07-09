@@ -423,7 +423,7 @@ class yanny(OrderedDict):
                 definition = defl
             else:
                 definition = defu
-            typere = re.compile(r'(\S+)\s+{0}([[<].*[]>]|);'.format(variable))
+            typere = re.compile(r'(\S+)\s+{0}([\[<].*[\]>]|);'.format(variable))
             (typ,array) = typere.search(definition[0]).groups()
             var_type = typ + array.replace('<','[').replace('>',']')
             cache[variable] = var_type
@@ -478,7 +478,7 @@ class yanny(OrderedDict):
             result = cache[variable]
         except KeyError:
             typ = self.type(structure,variable)
-            character_array = re.compile(r'char[[<]\d*[]>][[<]\d*[]>]')
+            character_array = re.compile(r'char[\[<]\d*[\]>][\[<]\d*[\]>]')
             if ((character_array.search(typ) is not None) or
                 (typ.find('char') < 0 and (typ.find('[') >= 0
                 or typ.find('<') >= 0))):
@@ -940,7 +940,7 @@ class yanny(OrderedDict):
         This method is for use internally by the yanny object.  It is not
         meant to be called by users.
         Parsing proceeds in this order:
-        #. Lines that end with a backslash character ``\`` are reattached
+        #. Lines that end with a backslash character ``\\`` are reattached
            to following lines.
         #. Structure & enum definitions are identified, saved into the
            'symbols' dictionary & stripped from the contents.
@@ -998,7 +998,7 @@ class yanny(OrderedDict):
             for d in definitions:
                 d = d.replace(';','')
                 (datatype,column) = re.split(r'\s+',d)
-                column = re.sub(r'[[<].*[]>]$','',column)
+                column = re.sub(r'[\[<].*[\]>]$','',column)
                 self['symbols'][name.upper()].append(column)
                 self[name.upper()][column] = list()
         comments = re.compile(r'^\s*#') # Remove lines containing only comments

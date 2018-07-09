@@ -232,9 +232,9 @@ class MarvinToolsClass(object):
 
         return_dict = {'plate': None, 'ifu': None, 'mangaid': None}
 
-        plateifu_pattern = re.compile('([0-9]{4,5})\-([0-9]{4,9})')
+        plateifu_pattern = re.compile(r'([0-9]{4,5})-([0-9]{4,9})')
         ifu_pattern = re.compile('(7|127|[0-9]{2})([0-9]{2})')
-        mangaid_pattern = re.compile('[0-9]{1,3}\-[0-9]+')
+        mangaid_pattern = re.compile(r'[0-9]{1,3}-[0-9]+')
         plateid_pattern = re.compile('([0-9]{4,})(?!-)(?<!-)')
 
         plateid_match = re.match(plateid_pattern, value)
