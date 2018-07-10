@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 18:07:01
+# @Last Modified time: 2018-07-10 18:51:11
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -193,11 +193,34 @@ class Page(object):
         assert self.response.location == expected_location, message
 
 
+def _split_request(data):
+    ''' splits a page request params to check for login boolean '''
+    if len(data) == 2:
+        login = True
+        blue, endpoint = data
+    else:
+        blue, endpoint, login = data
+    return blue, endpoint, login
+
+
 @pytest.fixture()
-def page(client, config, request, init_web):
-    blue, endpoint = request.param
+def page(user, client, request, init_web):
+    ''' general page fixture to use for all web tests '''
+    blue, endpoint, dologin = _split_request(request.param)
     page = Page(client, blue, endpoint)
+    print('login config', config.sasurl, dologin)
+    if dologin:
+        login(page)
     yield page
+    url = page.get_url('index_page', 'Marvin:clear_session')
+    page.load_page('get', url)
+
+
+def login(page):
+    ''' perform a web login '''
+    data = {'username': 'test', 'password': 'test', 'release': 'MPL-6'}
+    url = page.get_url('index_page', 'login')
+    page.load_page('post', url, params=data)
 
 
 @contextmanager

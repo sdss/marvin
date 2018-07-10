@@ -41,6 +41,7 @@ def check_access():
 
     # check for logged in status
     logged_in = current_session.get('loginready', None)
+
     if not logged_in and not public_access:
         config.access = 'public'
     elif logged_in is True and public_access:

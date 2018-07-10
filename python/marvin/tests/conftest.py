@@ -360,6 +360,20 @@ def expmode(mode, db):
         return 'remote'
 
 
+@pytest.fixture()
+def user(maindb):
+    username = 'test'
+    password = 'test'
+    model = maindb.datadb.User
+    user = maindb.session.query(model).filter(model.username == username).one_or_none()
+    if not user:
+        user = model(username=username, login_count=1)
+        user.set_password(password)
+        maindb.session.add(user)
+    yield user
+    maindb.session.delete(user)
+
+
 # Monkeypatch-based FIXTURES
 # --------------------------
 @pytest.fixture()

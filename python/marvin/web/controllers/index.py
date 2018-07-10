@@ -91,6 +91,7 @@ class Marvin(BaseWebView):
                                                                                 marvindb.datadb.IFUDesign).
                      filter(marvindb.datadb.PipelineVersion.version == str(self._drpver)).all())
             out = [str(e) for l in cubes for e in l]
+
         out = list(set(out))
         out.sort()
         return jsonify(out)
