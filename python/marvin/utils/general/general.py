@@ -65,7 +65,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'getDapRedux', 'get_nsa_data', '_check_file_parameters',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage', 'validate_jwt')
+           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
+           'validate_jwt')
 
 drpTable = {}
 
@@ -76,6 +77,7 @@ def validate_jwt(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         current_user = get_jwt_identity()
+        print('current jwt user', current_user)
         if not current_user:
             raise MarvinError('Invalid user from API token!')
         else:

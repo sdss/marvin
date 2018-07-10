@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-30 19:46:40
+# @Last Modified time: 2018-07-10 10:31:31
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -40,6 +40,7 @@ except ImportError:
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
+    os.environ['PUBLIC_SERVER'] = 'True'
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app

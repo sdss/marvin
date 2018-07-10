@@ -1,8 +1,11 @@
 
 # Default Marvin config
 
-# automatically check for netrc on startup
-auto_check_netrc: False
+# automatically check for access on startup
+check_access: False
+
+# use a valid API token
+use_token: ''
 
 # use the Sentry error logging
 use_sentry: True

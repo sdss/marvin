@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-06-02 14:17:46
+# @Last Modified time: 2018-07-10 10:41:39
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -74,7 +74,7 @@ class ProdConfig(Config):
     USE_SENTRY = True
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
-    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=1)
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
 
 
 class DevConfig(Config):
@@ -100,7 +100,7 @@ class TestConfig(Config):
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     USE_PROFILER = False  # Turn off the Flask Profiler extension
     RATELIMIT_ENABLED = False  # Turn off the Flask Rate Limiter
-    os.environ['PUBLIC_SERVER'] = 'True'
+    #os.environ['PUBLIC_SERVER'] = 'True' # this breaks the debug server
 
 
 class CustomConfig(object):

@@ -86,8 +86,8 @@ def create_app(debug=False, local=False, object_config=None):
     @app.before_request
     def global_update():
         ''' updates the global session / config '''
-
         pass
+
         # # check login/access status
         # check_access()
 
@@ -118,7 +118,7 @@ def register_api(app, api):
     QueryView.register(api)
 
     # set the API rate limiting
-    limiter.limit("200/minute")(api)
+    limiter.limit("400/minute")(api)
 
     # register the API blueprint
     app.register_blueprint(api)

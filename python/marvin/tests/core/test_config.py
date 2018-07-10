@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-05-07 12:46:09
+# @Last Modified time: 2018-07-09 17:14:08
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -36,7 +36,7 @@ def goodnet(netrc):
 def bestnet(goodnet):
     goodnet.write(write('data.sdss.org'))
     goodnet.write(write('api.sdss.org'))
-    config._check_netrc()
+    config._check_access()
     config.access = 'collab'
     config.setRelease('MPL-6')
     yield goodnet

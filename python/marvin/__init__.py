@@ -12,6 +12,7 @@ import warnings
 import sys
 import contextlib
 import yaml
+import six
 from collections import OrderedDict
 
 # Does this so that the implicit module definitions in extern can happen.
@@ -96,11 +97,11 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
-        self.token = None
+        #self.token = None
 
         # perform some checks
         self._load_defaults()
-        self._check_netrc()
+        self._check_access()
         self._check_config()
         self._setDbConfig()
 
@@ -111,10 +112,19 @@ class MarvinConfig(object):
         self.setDefaultDrpAll()
 
     def _load_defaults(self):
-        config = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml')))
+        ''' Loads marvin configuration parameters
+
+        Loads Marvin config parameters from the default marvin.yml file
+        located in /data and merges with the user config parameters in
+        ~/.marvin/marvin.yml
+
+        '''
+        with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
+            config = yaml.load(f)
         user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
         if os.path.exists(user_config_path):
-            config = merge(yaml.load(open(user_config_path)), config)
+            with open(user_config_path, 'r') as f:
+                config = merge(yaml.load(f), config)
 
         # update any matching Config values
         for key, value in config.items():
@@ -165,10 +175,11 @@ class MarvinConfig(object):
         name = name.upper()
         os.environ[name] = path
 
-    def _check_netrc(self):
+    def _check_access(self):
         """Makes sure there is a valid netrc."""
 
-        autocheck = self._custom_config.get('auto_check_netrc', None)
+        autocheck = self._custom_config.get('check_access', None)
+        token = self._custom_config.get('use_token', None)
 
         if autocheck:
             try:
@@ -179,6 +190,10 @@ class MarvinConfig(object):
                 # if it's valid, then auto set to collaboration
                 if valid_netrc:
                     self.access = 'collab'
+
+            # check for a valid login token in the marvin config
+            if token and isinstance(token, six.string_types):
+                self.token = token
 
     def _check_manga_dirs(self):
         """Check if $SAS_BASE_DIR and MANGA dirs are defined.
@@ -279,6 +294,14 @@ class MarvinConfig(object):
     @_traceback.setter
     def _traceback(self, value):
         bconfig.traceback = value
+
+    @property
+    def token(self):
+        return bconfig.token
+
+    @token.setter
+    def token(self, value):
+        bconfig.token = value
 
 #################################################
 
@@ -608,18 +631,18 @@ class MarvinConfig(object):
         elif 'DR' in value:
             self.switchSasUrl('utah', public=True)
 
-    def login(self, new=None):
+    def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token
 
         Parameters:
-            new (bool):
-                Set to True to force a login to receive a new token
+            refresh (bool):
+                Set to True to refresh a login to receive a new token
         '''
 
         assert config.access == 'collab', 'You must have collaboration access to login.'
 
         # do nothing if token already generated
-        if self.token and not new:
+        if self.token and not refresh:
             return
 
         valid_netrc = bconfig._check_netrc()
@@ -636,7 +659,6 @@ class MarvinConfig(object):
                 raise MarvinError('Error getting login token. {0}'.format(e))
             else:
                 self.token = resp.results['access_token']
-                bconfig.token = self.token
 
 
 config = MarvinConfig()
