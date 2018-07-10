@@ -77,7 +77,7 @@ def validate_jwt(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         current_user = get_jwt_identity()
-        print('current jwt user', current_user)
+
         if not current_user:
             raise MarvinError('Invalid user from API token!')
         else:
