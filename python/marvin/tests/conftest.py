@@ -253,12 +253,11 @@ def set_the_config(release):
 
 
 def custom_login():
-    config.token = 'this_is_a_token!'
-    bconfig.token = config.token
+    config.token = 'this_is_a_token'
 
 
 def custom_auth(self, authtype=None):
-    authtype = None
+    authtype = 'token'
     super(Interaction, self).setAuth(authtype=authtype)
 
 

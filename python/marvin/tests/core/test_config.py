@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-09 17:14:08
+# @Last Modified time: 2018-07-10 13:18:52
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -151,12 +151,12 @@ class TestNetrc(object):
     def test_only_one_host(self, goodnet, host, msg):
         goodnet.write(write(host))
         with pytest.warns(BrainUserWarning) as cm:
-            config._check_netrc()
+            config._check_access()
 
         assert msg in str(cm[0].message)
 
     def test_good_netrc(self, bestnet):
-        config._check_netrc()
+        config._check_access()
         assert config.access == 'collab'
 
 

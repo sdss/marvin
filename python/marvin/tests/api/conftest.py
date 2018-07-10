@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-08 13:41:35
+# @Last Modified time: 2018-07-10 14:36:23
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -55,6 +55,7 @@ import six
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
+    #os.environ['PUBLIC_SERVER'] = 'True'
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 10:31:31
+# @Last Modified time: 2018-07-10 15:22:33
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -19,6 +19,7 @@ from flask import template_rendered, templating
 from contextlib import contextmanager
 import os
 import numpy as np
+from flask_jwt_extended import tokens
 try:
     from urllib.parse import urlparse, urljoin
 except ImportError:
@@ -40,7 +41,7 @@ except ImportError:
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
-    os.environ['PUBLIC_SERVER'] = 'True'
+    #os.environ['PUBLIC_SERVER'] = 'True'
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app
@@ -69,7 +70,7 @@ def test_db_stuff():
 
 
 @pytest.fixture(scope='function')
-def init_web(monkeypatch, set_config):
+def init_web(monkeypatch, monkeyauth, set_config):
     config.forceDbOn()
 
     # monkeypath the render templating to nothing
@@ -93,20 +94,26 @@ class Page(object):
     ''' Object representing a Web Page '''
     def __init__(self, client, blue, endpoint):
         self.app = app()
+        self._set_auth()
         self.url = self.get_url(blue, endpoint)
         self.json = None
         self.data = None
         self.response = None
         self.client = client
 
+    def _set_auth(self):
+        self.token = tokens.encode_access_token('test', self.app.config.get('FLASK_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
+
     def get_url(self, blue, endpoint):
         return config.urlmap[blue][endpoint]['url']
 
     def load_page(self, reqtype, page, params=None):
+        headers = {'Authorization': 'Bearer {0}'.format(self.token)}
         if reqtype == 'get':
-            self.response = self.client.get(page, query_string=params)
+            self.response = self.client.get(page, query_string=params, headers=headers)
         elif reqtype == 'post':
-            self.response = self.client.post(page, data=params, content_type='application/x-www-form-urlencoded')
+            self.response = self.client.post(page, data=params, headers=headers,
+                                             content_type='application/x-www-form-urlencoded')
         self.load_data()
 
     def load_data(self):
