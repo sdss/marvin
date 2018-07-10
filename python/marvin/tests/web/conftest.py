@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 15:22:33
+# @Last Modified time: 2018-07-10 15:33:15
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -19,7 +19,7 @@ from flask import template_rendered, templating
 from contextlib import contextmanager
 import os
 import numpy as np
-from flask_jwt_extended import tokens
+
 try:
     from urllib.parse import urlparse, urljoin
 except ImportError:
@@ -94,21 +94,21 @@ class Page(object):
     ''' Object representing a Web Page '''
     def __init__(self, client, blue, endpoint):
         self.app = app()
-        self._set_auth()
+        #self._set_auth()
         self.url = self.get_url(blue, endpoint)
         self.json = None
         self.data = None
         self.response = None
         self.client = client
 
-    def _set_auth(self):
-        self.token = tokens.encode_access_token('test', self.app.config.get('FLASK_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
+    # def _set_auth(self):
+    #     self.token = tokens.encode_access_token('test', self.app.config.get('FLASK_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
 
     def get_url(self, blue, endpoint):
         return config.urlmap[blue][endpoint]['url']
 
     def load_page(self, reqtype, page, params=None):
-        headers = {'Authorization': 'Bearer {0}'.format(self.token)}
+        headers = {'Authorization': 'Bearer {0}'.format(config.token)}
         if reqtype == 'get':
             self.response = self.client.get(page, query_string=params, headers=headers)
         elif reqtype == 'post':

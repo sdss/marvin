@@ -20,6 +20,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
 from brain import bconfig
+from flask_jwt_extended import tokens
 
 from sdss_access.path import Path
 
@@ -253,7 +254,7 @@ def set_the_config(release):
 
 
 def custom_login():
-    config.token = 'this_is_a_token'
+    config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
 
 
 def custom_auth(self, authtype=None):
