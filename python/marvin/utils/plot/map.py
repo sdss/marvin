@@ -423,7 +423,7 @@ def plot(*args, **kwargs):
     try:
         prop = dapmap.datamodel.full()
     except (AttributeError, TypeError):
-        prop = ''
+        prop = _get_prop(title)
 
     # get plotparams from datamodel
     dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
