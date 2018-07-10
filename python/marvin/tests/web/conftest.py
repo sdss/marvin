@@ -6,36 +6,23 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 15:33:15
+# @Last Modified time: 2018-07-10 18:07:01
 
 from __future__ import print_function, division, absolute_import
 import pytest
 from marvin.web import create_app
 from marvin.web.settings import TestConfig, CustomConfig
-from marvin.api.api import Interaction
 from marvin import marvindb, config
 from marvin.web.extensions import limiter
+from marvin.tests.conftest import set_the_config
 from flask import template_rendered, templating
 from contextlib import contextmanager
-import os
 import numpy as np
 
 try:
     from urllib.parse import urlparse, urljoin
 except ImportError:
     from urlparse import urlparse, urljoin
-
-
-# @pytest.fixture(scope='session')
-# def drpver(release):
-#     drpver, dapver = config.lookUpVersions(release)
-#     return drpver
-
-
-# @pytest.fixture(scope='session')
-# def dapver(release):
-#     drpver, dapver = config.lookUpVersions(release)
-#     return dapver
 
 
 @pytest.fixture(scope='session')
@@ -47,20 +34,6 @@ def app():
     return app
 
 
-# def set_sasurl(loc='local', port=None):
-#     if not port:
-#         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
-#     istest = True if loc == 'utah' else False
-#     config.switchSasUrl(loc, test=istest, port=port)
-#     response = Interaction('api/general/getroutemap', request_type='get')
-#     config.urlmap = response.getRouteMap()
-
-
-# @pytest.fixture()
-# def saslocal():
-#     set_sasurl(loc='local')
-
-
 def test_db_stuff():
     assert marvindb is not None
     assert marvindb.datadb is not None
@@ -70,8 +43,9 @@ def test_db_stuff():
 
 
 @pytest.fixture(scope='function')
-def init_web(monkeypatch, monkeyauth, set_config):
+def init_web(monkeypatch, monkeyauth, set_config, release):
     config.forceDbOn()
+    #set_the_config(release)
 
     # monkeypath the render templating to nothing
     def _empty_render(template, context, app):
@@ -94,15 +68,11 @@ class Page(object):
     ''' Object representing a Web Page '''
     def __init__(self, client, blue, endpoint):
         self.app = app()
-        #self._set_auth()
         self.url = self.get_url(blue, endpoint)
         self.json = None
         self.data = None
         self.response = None
         self.client = client
-
-    # def _set_auth(self):
-    #     self.token = tokens.encode_access_token('test', self.app.config.get('FLASK_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
 
     def get_url(self, blue, endpoint):
         return config.urlmap[blue][endpoint]['url']
