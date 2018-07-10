@@ -285,7 +285,9 @@ class Galaxy(BaseWebView):
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
-                    sdss_path = Path()
+                    is_public = 'DR' in self._release
+                    path_release = self._release.lower() if is_public else None
+                    sdss_path = Path(public=is_public, release=path_release)
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
@@ -384,7 +386,9 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        sdss_path = Path()
+        is_public = 'DR' in self._release
+        path_release = self._release.lower() if is_public else None
+        sdss_path = Path(public=is_public, release=path_release)
         output['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
         output['spectra'] = webspec
         output['specmsg'] = specmsg

@@ -137,7 +137,10 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     '''
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose)
+    is_public = 'DR' in release
+    rsync_release = release.lower() if is_public else None
+    rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose, public=is_public,
+                               release=rsync_release)
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -215,13 +218,16 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 
     assert str(plateid).isdigit(), 'Plateid must be a numeric integer value'
 
-    # setup Rsync Access
-    rsync_access = RsyncAccess(label='marvin_getplate', verbose=verbose)
-
     # setup marvin inputs
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
     dir3d = getDir3d(plateid, mode=mode, release=release)
+
+    # setup Rsync Access
+    is_public = 'DR' in release
+    rsync_release = release.lower() if is_public else None
+    rsync_access = RsyncAccess(label='marvin_getplate', verbose=verbose, public=is_public,
+                               release=rsync_release)
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -316,7 +322,10 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     # setup Rsync Access
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose)
+    is_public = 'DR' in release
+    rsync_release = release.lower() if is_public else None
+    rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose, public=is_public,
+                               release=rsync_release)
 
     # if mode is auto, set it to remote:
     if mode == 'auto':

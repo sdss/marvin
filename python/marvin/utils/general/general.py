@@ -674,7 +674,9 @@ def getDapRedux(release=None):
     if not Path:
         raise MarvinError('sdss_access is not installed')
     else:
-        sdss_path = Path()
+        is_public = 'DR' in release
+        path_release = release.lower() if is_public else None
+        sdss_path = Path(public=is_public, release=path_release)
 
     release = release or marvin.config.release
     drpver, dapver = marvin.config.lookUpVersions(release=release)
@@ -709,11 +711,6 @@ def getDefaultMapPath(**kwargs):
             The sas url to download the default maps file
     """
 
-    if not Path:
-        raise MarvinError('sdss_access is not installed')
-    else:
-        sdss_path = Path()
-
     # Get kwargs
     release = kwargs.get('release', marvin.config.release)
     drpver, dapver = marvin.config.lookUpVersions(release=release)
@@ -721,6 +718,14 @@ def getDefaultMapPath(**kwargs):
     ifu = kwargs.get('ifu', None)
     daptype = kwargs.get('daptype', 'SPX-GAU-MILESHC')
     bintype = kwargs.get('bintype', 'MAPS')
+
+    # get sdss_access Path
+    if not Path:
+        raise MarvinError('sdss_access is not installed')
+    else:
+        is_public = 'DR' in release
+        path_release = release.lower() if is_public else None
+        sdss_path = Path(public=is_public, release=path_release)
 
     # get the sdss_path name by MPL
     # TODO: this is likely to break in future MPL/DRs. Just a heads up.
@@ -1293,7 +1298,11 @@ def get_dapall_file(drpver, dapver):
 
     assert Path is not None, 'sdss_access.path.Path is not available.'
 
-    dapall_path = Path().full('dapall', dapver=dapver, drpver=drpver)
+    release = marvin.config.lookUpRelease(drpver)
+    is_public = 'DR' in release
+    path_release = release.lower() if is_public else None
+    path = Path(public=is_public, release=path_release)
+    dapall_path = path.full('dapall', dapver=dapver, drpver=drpver)
 
     return dapall_path
 
