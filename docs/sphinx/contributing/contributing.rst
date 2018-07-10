@@ -63,44 +63,38 @@ Code is only useful if it is well documented! An excellent way of contributing t
 Contributing a VAC
 ------------------
 
-`Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ are an important part of how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not provide direct support for VACs, but it does supply a framework for VAC owners to implement access to their catalogues from Marvin.
+`Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ are an important part of how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not directly support VACs, but it does supply a framework for VAC owners to implement access to their catalogues from Marvin.
 
-At this time, only file-based access is supported (i.e., no querying or remote access is available) but the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it to the user. Very little knowledge of how Marvin internally works is required! The directory `marvin/contrib/vacs <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs>`__ contains the base code and a list of already implemented VACs that you can use as a template. Let up have a look at a couple of them.
+At this time, only file-based access is supported (i.e., no querying or remote access is available) but the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it to the user. Very little knowledge of how Marvin internally works is required! The directory `marvin/contrib/vacs <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs>`__ contains the base code and a list of already implemented VACs that you can use as a template.
 
-Example 1: DAPall
-^^^^^^^^^^^^^^^^^
+Example: Galaxy Zoo: 3D
+^^^^^^^^^^^^^^^^^^^^^^^
 
-The file `marvin/contrib/vacs/dapall.py <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs/dapall.py>`__ shows how we would implement the contents of the `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`__ as a VAC. Note that the DAPall is **not** a VAC and it is implemented differently, but we use it here as an example. The code of the file is
-
-.. literalinclude:: ../../../python/marvin/contrib/vacs/dapall.py
-   :language: python
-   :linenos:
-
-In this example we assume that the path(s) to the VAC file(s) (in this case the DAPall file) are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_ product so that they can be readily access with `sdss_access <http://sdss-access.readthedocs.io/en/latest/>`. If that is not the case you will need to create a pull request in the `tree repository <https://github.com/sdss/tree>`__ to include the new path.
-
-The file itself contains just a class that must subclass from `~.VACMixIn`. In the docstring, make sure you include the name of your VAC, a URL with a description of its contents, and a short description of what the VAC provides and what the class returns.
-
-For our subclass, we define two global attributes: the ``name`` (required) of the VAC, and a list of Marvin Tools classes in which this VAC must be included. In this particular case we only want the DAPall to show in `~marvin.tools.maps.Maps` and `~marvin.tools.modelcube.ModelCube` (if ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`). `~.VACMixIn.get_data` is the only method that you need to override from `~.VACMixIn`. You will have noted that `~.VACMixIn.get_data` receives a single, ``parent_object`` argument, which is the object (`~marvin.tools.maps.Maps` or `~marvin.tools.modelcube.ModelCube` object) that is trying to access the VAC information. You can use it and its attributes to do the matching with your VAC information.
-
-At the beginning of ``get_data`` we define ``path_params`` as a dictionary with the keyword parameters that we need to pass to `sdss_access.path.Path.full`_ to obtain the full path of the VAC file. In this case the parameters are ``drpver`` and ``dapver``, which we can get from the ``parent_object``.
-
-We then use `~.VACMixIn.file_exists` to determine whether the VAC file exists in the local SAS. `~.VACMixIn.file_exists` uses the ``name`` we have defined for our VAC and ``path_params`` to make a call to `sdss_access.path.Path.full`_ and get the location of the file in the SAS. If `~.VACMixIn.file_exists` returns False, we use `~.VACMixIn.download_vac` in a similar way to download the file. Otherwise, we get the full path of the file in the local SAS using `~.VACMixIn.get_path`.
-
-The rest of the method is just Python and there are no Marvin magic involved. We open the file using `astropy.table.Table` and then select the rows that match the ``parent_object`` plate-ifu and bintype/template.
-
-
-Example 2: Galaxy Zoo: 3D
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Let us have a look at a different VAC, this time one that is really implemented as such in Marvin. Instead of a single file such as the DAPall, the `Galaxy Zoo: 3D project <https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d>`__ provides one file per observed galaxy (you can find all the files `here <https://data.sdss.org/sas/mangawork/manga/sandbox/galaxyzoo3d/>`__). The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/galaxyzoo3d.py <https://github.com/sdss/marvin/tree/python/marvin/contrib/vacs/galaxyzoo3d.py>`__:
+The `Galaxy Zoo: 3D project <https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d>`__ provides classifications of internal structures of MaNGA galaxies. For each observed MaNGA galaxy there is a Galaxy Zoo: 3D FITS file (you can find all the files `here <https://data.sdss.org/sas/mangawork/manga/sandbox/galaxyzoo3d/>`__) with the format ``<version>/<mangaid>-<ifusize>-<galzooid>.fits.gz``, where ``<version>`` is the version of the Galaxy Zoo VAC release, and ``<galzooid>`` is an internal identifier. The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/galaxyzoo3d.py <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/galaxyzoo3d.py>`__:
 
 .. literalinclude:: ../../../python/marvin/contrib/vacs/galaxyzoo3d.py
    :language: python
    :linenos:
 
-As in the previous example, we need to provide a name for the VAC. In this case we also define a ``version`` attribute globally (this is not necessary, but it is a good place to define it) and define that the VAC should be accessible for `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. The `~.VACMixIn.get_data` method is even simpler in this case. The main difference is that here we use the `~.VACMixIn.set_sandbox_path` method to define the path to the file, relative to the `MaNGA sandbox <https://data.sdss.org/sas/mangawork/manga/sandbox>`_. Note that the path contains the catalogue version as well as the mangaid of the target, but the last part is a wild card (*). This is because the last part of the filename is a unique identifier that we do not know how to determine (and we do not need to!) Now we can use `~.VACMixIn.get_path`, `~.VACMixIn.file_exists`, and `~.VACMixIn.download_vac` as in the previous example and they will use the path we just defined. Because of the wild card, if more than one file matching the patter were found (which should not happen for this VAC), only the first one would be returned.
+The file itself contains just a subclass of `~.VACMixIn`. In the docstring, we make sure to include the name of the VAC, a URL with a description of its contents, and a short description of what the VAC provides and what the class returns.
 
-Now that we have implemented the VAC, let's check if it works:
+The global section of the `~marvin.contrib.vacs.galaxyzoo3d.GalaxyZoo3DVAC` class defines :
+
+* The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required attribute that we need to override from the parent class.
+* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-6``, ``DR15``) and internal Galaxy Zoo: 3D versions.
+* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular case we only want the Galaxy Zoo VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`.
+
+`~.VACMixIn.get_data` is the only method that you need to override from `~.VACMixIn`. You will have noted that `~.VACMixIn.get_data` receives a single, ``parent_object`` argument, which is the object (e.g., a `~marvin.tools.maps.Maps` instance) that is trying to access the VAC information. You can use it and its attributes to do the matching with the VAC information.
+
+We use `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to download the necessary files, so we need to be sure that the paths to the VAC files are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_. For this particular filetype the entry in tree looks like::
+
+    mangagalaxyzoo3d = $MANGA_SANDBOX/galaxyzoo3d/{gz3dver}/{mangaid}_{ifusize}_{zooid}.fits.gz
+
+In addition to the tree path name (``mangagalaxyzoo3d``) we need to define a dictionary of path parameters. We use the ``parent_object`` to determine the release (and thus the Galaxy Zoo ``version``) and the ``mangaid``. Because for a given ``mangaid`` ``ifusize`` and ``zooid`` are fixed, we can replace them with wild cards.
+
+First, we use `~marvin.contrib.vacs.VACMixIn.get_path` to determine whether the file is already present in the local SAS. If that is not the case, we use `~marvin.contrib.vacs.VACMixIn.download_vac` to retrieve it. It only rests to open the FITS file and return it. Easy!
+
+Now that we have implemented the VAC, let's make sure it works:
 
 .. code-block:: python
 
@@ -129,10 +123,11 @@ Writing your own VAC
 If you are a VAC owner by now you will have hopefully decided that you want to provide access to it with Marvin. How do you do that?
 
 * First, make sure you read the :ref:`Coding standards` and :ref:`Development process` sections.
-* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that looks similar to what you need. Within the ``vacs/`` directory. duplicate that file and rename it to the name of your VAC.
+* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that looks similar to what you need. Within the ``vacs/`` directory. Duplicate that file and rename it to the name of your VAC.
 * Modify the name of the class that inherits from `.VACMixIn` (important!) and change the ``name`` attribute to the name of your VAC. Update the docstring with information about your VAC. Most importantly, make sure the description clearly states what your VAC is returning.
-* If the path to your VAC is already in the `tree`_, make sure you understand the ``path_params`` you need to use to retrieve if. If it is not, consider adding it (a product included in the tree can be accessed easily not only by Marvin but by any other piece of SDSS software). Alternatively, and if your VAC lives in the `MaNGA sandbox`_, you can use the `~.VACMixIn.set_sandbox_path` method.
+* To be able to use `~marvin.contrib.vacs.VACMixIn.download_vac` the archetype of your VAC's file path must have been added to `sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the `tree`_ documentation to learn how to do that.
 * Test you implementation by accessing your VAC as ``object.vacs.<your-vac-name>``.
+* As the VAC owner, you are responsible for making sure your class returns the correct information. We **strongly** suggest you implement unittests to make sure that is the case. You can see some examples `here <https://github.com/sdss/marvin/blob/master/python/marvin/tests/contrib/test_vacs.py>`__.
 * Once you are happy with the result, open a new pull request to integrate your changes.
 * If you have any doubt, contact the Marvin team, we will be happy to help you throughout the process.
 

@@ -43,7 +43,12 @@ The `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFil
 VACs
 ----
 
-`Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ provide analysis of MaNGA data created by collaborators and that are distributed as part of SDSS data releases. VAC owners can integrate their catalogues in Marvin following :ref:`this procedure <marvin-contributing-vacs>`. VACs can be accessed via the ``.vacs`` attribute. Available VACs are listed below.
+.. admonition:: Warning
+    :class: warning
+
+    Value Added Catalogues are supported by their owners. Please read the documentation for the VAC you are planning on using and make sure you understand the format of the data and any related caveat.
+
+`Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ provide analysis of MaNGA data created by collaborators and that are distributed as part of SDSS data releases. VAC owners can integrate their catalogues in Marvin following :ref:`this procedure <marvin-contributing-vacs>`. VACs can be accessed via the ``.vacs`` attribute. The first time you access a VAC (or, depending on the VAC, the first you access a VAC for a certain object) a download will be triggered and the catalogue will be downloaded to you local SAS. From that moment on the VAC will be accessible offline. Available VACs are listed below.
 
 
 Reference
