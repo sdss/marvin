@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-09 16:58:47
+# @Last modified time: 2018-07-09 17:23:24
 
 
 from __future__ import absolute_import, division, print_function
@@ -44,13 +44,14 @@ class GalaxyZoo3DVAC(VACMixIn):
         mangaid = parent_object.mangaid.strip()
         release = parent_object.release
 
-        self.set_sandbox_path('galaxyzoo3d/{0}/{1}_*.fits.gz'.format(self.version[release],
-                                                                     mangaid))
+        path_params = {'gz3dver': self.version[release], 'mangaid': mangaid,
+                       'ifusize': '*', 'zooid': '*'}
 
-        if not self.file_exists():
-            filename = self.download_vac()
-        else:
-            filename = self.get_path()
+        # get_path returns False if the files does not exist locally
+        filename = self.get_path('mangagalaxyzoo3d', path_params=path_params)
+
+        if not filename:
+            filename = self.download_vac('mangagalaxyzoo3d', path_params=path_params)
 
         galaxy_data = astropy.io.fits.open(filename)
 

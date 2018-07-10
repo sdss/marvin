@@ -7,16 +7,14 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-09 16:36:20
+# @Last modified time: 2018-07-09 17:27:59
 
 import importlib
 
 import astropy.io.fits
 import pytest
 
-import marvin
 from marvin.contrib.vacs import VACMixIn
-from marvin.contrib.vacs.dapall import DapVAC
 from marvin.tools.maps import Maps
 
 
@@ -32,13 +30,6 @@ class TestVACs(object):
 
         assert hasattr(my_map, 'vacs')
         assert my_map.vacs.galaxyzoo3d is not None
-
-    def test_file_exists(self):
-
-        dapall_vac = DapVAC()
-
-        drpver, dapver = marvin.config.lookUpVersions()
-        assert dapall_vac.file_exists(path_params={'drpver': drpver, 'dapver': dapver})
 
     def test_vac_container(self):
 
