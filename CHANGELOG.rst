@@ -4,9 +4,28 @@ Marvin's Change Log
 [2.2.6] - 2018/?/?
 --------------------
 
+Changed
+^^^^^^^
+- Integrated datamodel plotting params into actual datamodel structures
+- Moved netrc checks into the Brain
+- Expanded sasurl into public and collab urls
+- Changes personal emails to sdss helpdesk email in web
+- Added rawsql and return_params columns to history.query table in mangadb
+
 Added
 ^^^^^
 - Added cheatsheet to docs.
+- New Web authentication using Flask-Login
+- New API authentication using Flask-JWT-Extended
+- Adds MPL-7 / DR15 datamodel
+- New config.access attribute indicating public or collab access
+- New config.login method to handle token-based login
+- New marvin.yml config file for customization of configuration options
+- Adds User table into the history schema of mangadb.  Tracks user logins.
+
+Fixed
+^^^^^
+- Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
 
 
 [2.2.5] - 2018/04/26
