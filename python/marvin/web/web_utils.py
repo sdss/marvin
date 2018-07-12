@@ -118,7 +118,7 @@ def buildImageDict(imagelist, test=None, num=16):
             imdict['thumb'] = thumbs[i] if thumbs else None
             images.append(imdict)
     elif test and not imagelist:
-        for i in xrange(num):
+        for i in range(num):
             imdict = defaultdict(str)
             imdict['name'] = '4444-0000'
             imdict['image'] = 'http://placehold.it/470x480&text={0}'.format(i)
