@@ -470,3 +470,8 @@ from marvin.api.api import Interaction
 config.sasurl = 'https://api.sdss.org/marvin2/'
 
 from marvin.api.base import arg_validate
+
+# Provide access to base submodules from the marvin namespace
+from . import tools
+from . import db
+from . import utils
