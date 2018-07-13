@@ -6,56 +6,21 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-13 12:40:56
+# @Last Modified time: 2018-07-13 13:58:43
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
 from marvin import config
 from marvin.web import create_app
-from marvin.api.base import arg_validate as av
 from marvin.web.settings import TestConfig, CustomConfig
 from marvin.web.extensions import limiter
 import pytest
-import os
 import six
 
-# releases = ['MPL-5']
-
-
-# @pytest.fixture(scope='session', params=releases)
-# def release(request):
-#     return request.param
-
-
-# @pytest.fixture(scope='session')
-# def drpver(release):
-#     drpver, dapver = config.lookUpVersions(release)
-#     return drpver
-
-
-# @pytest.fixture(scope='session')
-# def dapver(release):
-#     drpver, dapver = config.lookUpVersions(release)
-#     return dapver
-
-
-# @pytest.fixture(scope='session')
-# def mode():
-#     return config.mode
-
-
-# @pytest.fixture(scope='session')
-# def app():
-#     app = create_app(debug=True, local=True, use_profiler=False)
-#     app.config['TESTING'] = True
-#     app.config['WTF_CSRF_ENABLED'] = False
-#     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-#     return app
 
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
-    #os.environ['PUBLIC_SERVER'] = 'True'
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app

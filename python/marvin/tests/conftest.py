@@ -247,6 +247,7 @@ def set_the_config(release):
     """Set config release without parametrizing.
 
     Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
+    config.access = 'collab'
     config.setRelease(release)
     set_sasurl(loc='local')
     config.login()
@@ -557,7 +558,6 @@ def galaxy(monkeyauth, get_params, plateifu):
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
     gal.set_galaxy_data()
-
     yield gal
     gal = None
 

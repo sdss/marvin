@@ -172,12 +172,12 @@ class TestGetNSAData(object):
     def test_nsa(self, galaxy, mode, db, source):
         if mode == 'local' and source == 'nsa' and marvin.config.db is None:
             with pytest.raises(MarvinError) as cm:
-                data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+                data = get_nsa_data(galaxy.mangaid, source=source, mode=mode, drpver=galaxy.drpver)
             errmsg = 'get_nsa_data: cannot find a valid DB connection.'
             assert cm.type == MarvinError
             assert errmsg in str(cm.value)
         else:
-            data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+            data = get_nsa_data(galaxy.mangaid, source=source, mode=mode, drpver=galaxy.drpver)
             if source == 'nsa':
                 self._test_nsa(galaxy, data)
             elif source == 'drpall':
@@ -185,7 +185,7 @@ class TestGetNSAData(object):
 
     @pytest.mark.parametrize('monkeyconfig', [('_drpall', None)], indirect=True, ids=['nodrpall'])
     def test_nodrpall(self, galaxy, monkeyconfig):
-        data = get_nsa_data(galaxy.mangaid, source='drpall', mode='auto')
+        data = get_nsa_data(galaxy.mangaid, source='drpall', mode='auto', drpver=galaxy.drpver)
         self._test_drpall(galaxy, data)
 
 
@@ -233,7 +233,7 @@ class TestSortDir(object):
                                      'restore', 'save', 'snr', 'value', 'from_maps',
                                      'binid', 'descale', 'datamodel', 'pixmask',
                                      'quality_flag', 'target_flags', 'manga_target1',
-                                     'manga_target2', 'manga_target3'])])
+                                     'manga_target2', 'manga_target3', 'specindex_correction'])])
     def test_sort_dir_map(self, galaxy, class_, expected):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']

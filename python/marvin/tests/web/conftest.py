@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-13 12:38:12
+# @Last Modified time: 2018-07-13 13:59:20
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -14,7 +14,6 @@ from marvin.web import create_app
 from marvin.web.settings import TestConfig, CustomConfig
 from marvin import marvindb, config
 from marvin.web.extensions import limiter
-from marvin.tests.conftest import set_the_config
 from flask import template_rendered, templating
 from contextlib import contextmanager
 import numpy as np
@@ -28,7 +27,6 @@ except ImportError:
 @pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
-    #os.environ['PUBLIC_SERVER'] = 'True'
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app
@@ -46,7 +44,6 @@ def test_db_stuff():
 def init_web(monkeypatch, monkeyauth, set_config):
     config.forceDbOn()
     config.login()
-    #set_the_config(release)
 
     # monkeypath the render templating to nothing
     def _empty_render(template, context, app):
