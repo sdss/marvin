@@ -67,7 +67,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt')
+           'validate_jwt', 'target_status', 'target_is_observed')
 
 drpTable = {}
 

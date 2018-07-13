@@ -31,7 +31,8 @@ from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
-                                  _sort_dir, getDapRedux, getDefaultMapPath)
+                                  _sort_dir, getDapRedux, getDefaultMapPath, target_status,
+                                  target_is_observed)
 from marvin.utils.datamodel.dap import datamodel
 
 
@@ -282,3 +283,22 @@ class TestGetDefaultMapPath(object):
             assert 'MAPS' in path
 
         assert full in path
+
+
+class TestTargetStatus(object):
+
+    @pytest.mark.parametrize('galid, exp', [('1-209232', True),
+                                            ('1-208345', False),
+                                            ('1-95058', False)])
+    def test_is_observed(self, galid, exp):
+        observed = target_is_observed(galid)
+        assert observed == exp
+
+    @pytest.mark.parametrize('galid, exp', [('1-209232', 'observed'),
+                                            ('1-208345', 'not valid target'),
+                                            ('1-95058', 'not yet observed')])
+    def test_status(self, galid, exp):
+        status = target_status(galid)
+        assert status == exp
+
+

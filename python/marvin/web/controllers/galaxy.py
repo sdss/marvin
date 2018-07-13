@@ -16,7 +16,7 @@ from flask import Blueprint, render_template, session as current_session, reques
 from flask_classful import route
 from marvin import marvindb
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
-                                          getDapRedux, _db_row_to_dict)
+                                          getDapRedux, _db_row_to_dict, target_status)
 from brain.utils.general.general import convertIvarToErr
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
@@ -278,7 +278,17 @@ class Galaxy(BaseWebView):
                 cube = Cube(**galaxyid)
             except MarvinError as e:
                 self.galaxy['cube'] = None
-                self.galaxy['error'] = 'MarvinError: {0}'.format(e)
+                errmsg = 'MarvinError: {0}'.format(e)
+
+                # check target status and fine-tune the error message
+                if idtype == 'mangaid':
+                    status = target_status(galid, drpver=self._drpver)
+                    if status == 'not yet observed':
+                        errmsg = '{0} is a valid target but has not yet been observed'.format(galid)
+                    elif status == 'not valid target':
+                        errmsg = '{0} is not valid MaNGA target.  Check your syntax'.format(galid)
+
+                self.galaxy['error'] = errmsg
                 return render_template("galaxy.html", **self.galaxy)
             else:
                 self.galaxy['cube'] = cube
