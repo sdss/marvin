@@ -45,7 +45,7 @@ before_install:
   -in etc/.netrc.enc -out ~/.netrc -d
 - chmod 600 ~/.netrc
 - mkdir ~/.marvin
-- printf "check_access: True\nadd_github_message: False\nuse_sentry: False" > ~/.marvin/marvin.yml
+- printf "check_access:\x20True\nadd_github_message:\x20False\nuse_sentry:\x20False" > ~/.marvin/marvin.yml
 - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
 - bash ~/miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
