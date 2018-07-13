@@ -1551,8 +1551,5 @@ def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=N
         nsa = None
 
     # return observed boolean
-    if plateifu and nsa:
-        return True
-    else:
-        return False
+    return bool(plateifu and nsa)
 
