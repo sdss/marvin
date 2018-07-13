@@ -8,29 +8,27 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import distutils
 import warnings
 
+import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
-import numpy as np
 
 import marvin
 import marvin.core.exceptions
+import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
-import marvin.tools.maps
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.datamodel.dap import datamodel, Model
+from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
 from marvin.utils.general.maskbit import get_manga_target
+
+from .core import DAPallMixIn, MarvinToolsClass, NSAMixIn
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):

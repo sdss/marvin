@@ -8,20 +8,18 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
 import itertools
-import six
 import warnings
 
 import astropy.io.fits
 import astropy.wcs
 import numpy as np
 import pandas as pd
+import six
 
 import marvin
 import marvin.api.api
@@ -30,16 +28,16 @@ import marvin.tools.cube
 import marvin.tools.modelcube
 import marvin.tools.quantities.map
 import marvin.tools.spaxel
-import marvin.utils.general.general
 import marvin.utils.dap.bpt
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
+import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.base import Property, Channel
+from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
 from marvin.utils.general.maskbit import get_manga_target
 
+from .core import DAPallMixIn, MarvinToolsClass, NSAMixIn
 from .quantities import AnalysisProperty
+
 
 try:
     import sqlalchemy

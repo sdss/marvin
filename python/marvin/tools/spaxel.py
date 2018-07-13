@@ -21,7 +21,6 @@ import warnings
 import numpy as np
 
 import marvin
-import marvin.core.core
 import marvin.core.exceptions
 from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 import marvin.core.marvin_pickle
