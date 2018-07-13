@@ -37,6 +37,7 @@ import marvin
 
 from marvin import log
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from brain.core.exceptions import BrainError
 from flask_jwt_extended import get_jwt_identity
 
 try:
@@ -834,8 +835,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'image':
         name = 'mangaimage'
 
+    # check for public release
+    is_public = 'DR' in release
+    rsync_release = release.lower() if is_public else None
+
     # create rsync
-    rsync_access = RsyncAccess(label='marvin_download', verbose=verbose)
+    rsync_access = RsyncAccess(label='marvin_download', verbose=verbose, public=is_public, release=rsync_release)
     rsync_access.remote()
 
     # Add objects
@@ -1513,13 +1518,15 @@ def memory_usage(where):
     print("VM: {0:.2f}Mb".format(get_virtual_memory_usage_kb() / 1024.0))
 
 
-def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
-    ''' Check if a MaNGA target has been observed or not
+def target_status(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
+    ''' Check the status of a MaNGA target
 
-    Given a mangaid, checks if the target has been observed or not.  Will check if
+    Given a mangaid, checks the status of a target.  Will check if
     target exists in the NSA catalog (i.e. is a proper target) and checks if
     target has a corresponding plate-IFU designation (i.e. has been observed).
-    Returns True if both conditions are met.
+
+    Returns a string status indicating if a target has been observed, has not
+    yet been observed, or is not a valid MaNGA target.
 
     Parameters:
         mangaid (str):
@@ -1534,22 +1541,42 @@ def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=N
             The DRP version to use.  See drpver in :func:`mangaid2plateifu` and :func:`get_nsa_data`.
 
     Returns:
-        True if the target has been observed.
+        A status of "observed", "not yet observed", or "not valid target"
 
     '''
 
     # check for plateifu - target has been observed
     try:
-        plateifu = mangaid2plateifu(mangaid)
-    except MarvinError as e:
+        plateifu = mangaid2plateifu(mangaid, mode=mode, drpver=drpver, drpall=drpall)
+    except (MarvinError, BrainError) as e:
         plateifu = None
 
     # check if target in NSA catalog - proper manga target
     try:
         nsa = get_nsa_data(mangaid, source=source, mode=mode, drpver=drpver, drpall=drpall)
-    except MarvinError as e:
+    except (MarvinError, BrainError) as e:
         nsa = None
 
     # return observed boolean
-    return bool(plateifu and nsa)
+    if plateifu and nsa:
+        status = 'observed'
+    elif not plateifu and nsa:
+        status = 'not yet observed'
+    elif not plateifu and not nsa:
+        status = 'not valid target'
 
+    return status
+
+
+def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
+    ''' Check if a MaNGA target has been observed or not
+
+    See :func:`target_status` for full documentation.
+
+    Returns:
+        True if the target has been observed.
+
+    '''
+    # check the target status
+    status = target_status(mangaid, source=source, mode=mode, drpver=drpver, drpall=drpall)
+    return status == 'observed'
