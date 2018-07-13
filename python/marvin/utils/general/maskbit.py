@@ -5,8 +5,8 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-02-22 16:02:75
+# @Last modified by: José Sánchez-Gallego
+# @Last modified time: 2018-07-13 08:57:23
 
 from __future__ import division, print_function, absolute_import
 
@@ -19,14 +19,23 @@ import marvin
 from marvin.utils.general.yanny import yanny
 
 
+# Stores the maskbits yanny file structure so that we don't need to open it more than once.
+_maskbits_from_yanny = None
+
+
 def _read_maskbit_schemas():
     """Read all available SDSS maskbit schemas from yanny file.
 
     Returns:
         Record Array: all bits for all schemas.
     """
-    path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-    sdss_maskbits = yanny(path_maskbits, np=True)
+
+    global _maskbits_from_yanny
+
+    if _maskbits_from_yanny is None:
+        path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
+        sdss_maskbits = yanny(path_maskbits, np=True)
+
     return sdss_maskbits['MASKBITS']
 
 
