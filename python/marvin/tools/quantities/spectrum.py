@@ -133,7 +133,8 @@ class Spectrum(Quantity, QuantityMixIn):
 
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
-             plt_style='seaborn-darkgrid', figure=None, return_figure=False):
+             plt_style='seaborn-darkgrid', figure=None, return_figure=False,
+             **kwargs):
         """Plots the spectrum.
 
         Displays the spectrum showing, optionally, the :math:`n\\sigma` region,
@@ -171,6 +172,8 @@ class Spectrum(Quantity, QuantityMixIn):
             return_figure (bool):
                 If ``True``, the matplotlib `~matplotlib.figure.Figure` object
                 used will be returned along with the axes object.
+            kwargs (dict):
+                Keyword arguments to be passed to `~matplotlib.axes.Axes.plot`.
 
         Returns:
             axes:
@@ -202,7 +205,7 @@ class Spectrum(Quantity, QuantityMixIn):
             value = self.value
             wave = self.wavelength.value
 
-        ax.plot(wave, value)
+        ax.plot(wave, value, **kwargs)
 
         if show_std and self.std is not None:
             if use_mask is False:
