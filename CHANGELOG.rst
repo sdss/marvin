@@ -8,6 +8,11 @@ Added
 ^^^^^
 - Added cheatsheet to docs.
 
+Changed
+^^^^^^^
+- Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
+- Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
+
 
 [2.2.5] - 2018/04/26
 --------------------
