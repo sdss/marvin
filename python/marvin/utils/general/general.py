@@ -1511,3 +1511,48 @@ def memory_usage(where):
     print("Memory summary: {0}".format(where))
     pympler.summary.print_(mem_summary, limit=2)
     print("VM: {0:.2f}Mb".format(get_virtual_memory_usage_kb() / 1024.0))
+
+
+def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
+    ''' Check if a MaNGA target has been observed or not
+
+    Given a mangaid, checks if the target has been observed or not.  Will check if
+    target exists in the NSA catalog (i.e. is a proper target) and checks if
+    target has a corresponding plate-IFU designation (i.e. has been observed).
+    Returns True if both conditions are met.
+
+    Parameters:
+        mangaid (str):
+            The mangaid of the target to check for observed status
+        mode ({'auto', 'drpall', 'db', 'remote', 'local'}):
+            See mode in :func:`mangaid2plateifu` and :func:`get_nsa_data`.
+        source ({'nsa', 'drpall'}):
+            The NSA catalog data source. See source in :func:`get_nsa_data`.
+        drpall (str or None):
+            The drpall file to use.  See drpall in :func:`mangaid2plateifu` and :func:`get_nsa_data`.
+        drpver (str or None):
+            The DRP version to use.  See drpver in :func:`mangaid2plateifu` and :func:`get_nsa_data`.
+
+    Returns:
+        True if the target has been observed.
+
+    '''
+
+    # check for plateifu - target has been observed
+    try:
+        plateifu = mangaid2plateifu(mangaid)
+    except MarvinError as e:
+        plateifu = None
+
+    # check if target in NSA catalog - proper manga target
+    try:
+        nsa = get_nsa_data(mangaid, source=source, mode=mode, drpver=drpver, drpall=drpall)
+    except MarvinError as e:
+        nsa = None
+
+    # return observed boolean
+    if plateifu and nsa:
+        return True
+    else:
+        return False
+
