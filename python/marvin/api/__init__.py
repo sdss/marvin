@@ -10,6 +10,8 @@ from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
 from marvin.utils.general import validate_jwt
 from flask_jwt_extended import fresh_jwt_required
+from brain.utils.general import build_routemap
+from flask import current_app
 
 
 def plate_in_range(val):
@@ -153,6 +155,12 @@ class ArgValidator(object):
         self.use_args = use_args
         self.use_kwargs = use_kwargs
 
+    def _check_urlmap(self):
+        ''' Check that urlmap exists and build it if not '''
+        if not self.urlmap:
+            urlmap = build_routemap(current_app)
+            self.urlmap = urlmap
+
     def _reset_final_args(self):
         ''' Resets the final args dict '''
         self.final_args = {}
@@ -162,6 +170,7 @@ class ArgValidator(object):
 
     def _get_url(self):
         ''' Retrieve the URL route from the map based on the request endpoint '''
+        self._check_urlmap()
         blue, end = self.endpoint.split('.', 1)
         url = self.urlmap[blue][end]['url']
         # if the blueprint is not api, add/remove session option location

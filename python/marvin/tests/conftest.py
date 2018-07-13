@@ -192,6 +192,8 @@ def check_config():
     """Check the config to see if a db is on."""
     return config.db is None
 
+URLMAP = None
+
 
 @pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
@@ -200,8 +202,11 @@ def set_sasurl(loc='local', port=None):
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
     istest = True if loc == 'utah' else False
     config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
-    config.urlmap = response.getRouteMap()
+    global URLMAP
+    if not URLMAP:
+        response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+        config.urlmap = response.getRouteMap()
+        URLMAP = config.urlmap
 
 
 @pytest.fixture(scope='session', autouse=True)

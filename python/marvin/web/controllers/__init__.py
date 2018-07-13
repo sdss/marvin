@@ -6,14 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 18:58:39
+# @Last Modified time: 2018-07-13 18:21:26
 
 from __future__ import print_function, division, absolute_import
 from flask_classful import FlaskView
-from flask import request
+from flask import request, current_app
 from marvin.web.web_utils import parseSession, update_allowed, updateGlobalSession, check_access
 import marvin
 from brain.api.general import BrainGeneralRequestsView
+from brain.utils.general import build_routemap
 from marvin.api.base import arg_validate as av
 import json
 
@@ -43,10 +44,9 @@ class BaseWebView(FlaskView):
 
         # try to get a local version of the urlmap for the arg_validator
         if not av.urlmap:
-            bv = BrainGeneralRequestsView()
-            resp = bv.buildRouteMap()
-            marvin.config.urlmap = json.loads(resp.get_data())['urlmap']
-            av.urlmap = marvin.config.urlmap
+            urlmap = build_routemap(current_app)
+            marvin.config.urlmap = urlmap
+            av.urlmap = urlmap
 
     def after_request(self, name, response):
         ''' this runs after every single request '''

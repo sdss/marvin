@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-13 13:58:43
+# @Last Modified time: 2018-07-13 18:24:09
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -14,6 +14,7 @@ from marvin import config
 from marvin.web import create_app
 from marvin.web.settings import TestConfig, CustomConfig
 from marvin.web.extensions import limiter
+from brain.utils.general import build_routemap
 import pytest
 import six
 
@@ -31,9 +32,17 @@ def app():
 #     config.urlmap = urlmap
 #     config.forceDbOn()
 #     config.login()
+#
+
+@pytest.fixture()
+def urlmap(app):
+    ''' fixture for building a new urlmap without nonsense '''
+    urlmap = build_routemap(app)
+    config.urlmap = urlmap
+
 
 @pytest.fixture(scope='function')
-def init_api(monkeyauth, set_config):
+def init_api(monkeyauth, set_config, urlmap):
     config.forceDbOn()
     config.login()
 

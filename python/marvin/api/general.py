@@ -24,12 +24,21 @@ from brain.api.base import processRequest
 from brain.api.general import BrainGeneralRequestsView
 from brain.utils.general import validate_user, get_db_user
 from brain.utils.general.decorators import public
-from marvin import marvindb
+from marvin import marvindb, config
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 from marvin.utils.general import get_nsa_data
 from marvin.api.base import arg_validate as av
 from flask_jwt_extended import create_access_token
 import json
+
+
+def get_drpver(release=None):
+    ''' Get the drpver from the input release from the request '''
+    if not release:
+        release = config.release
+
+    drpver, dapver = config.lookUpVersions(release)
+    return drpver
 
 
 class GeneralRequestsView(BrainGeneralRequestsView):
@@ -78,8 +87,11 @@ class GeneralRequestsView(BrainGeneralRequestsView):
            }
 
         """
+        # get drpver
+        drpver = get_drpver(release=args.get('release', None))
+
         try:
-            plateifu = mangaid2plateifu(mangaid, mode='db')
+            plateifu = mangaid2plateifu(mangaid, mode='db', drpver=drpver)
             self.results['data'] = plateifu
             self.results['status'] = 1
         except Exception as ee:
@@ -136,9 +148,11 @@ class GeneralRequestsView(BrainGeneralRequestsView):
            }
 
         """
+        # get drpver
+        drpver = get_drpver(release=args.get('release', None))
 
         try:
-            nsa_data = get_nsa_data(mangaid, mode='local', source='nsa')
+            nsa_data = get_nsa_data(mangaid, mode='local', source='nsa', drpver=drpver)
             self.results['data'] = nsa_data
             self.results['status'] = 1
         except Exception as ee:
@@ -198,9 +212,11 @@ class GeneralRequestsView(BrainGeneralRequestsView):
            }
 
         """
+        # get drpver
+        drpver = get_drpver(release=args.get('release', None))
 
         try:
-            nsa_data = get_nsa_data(mangaid, mode='local', source='drpall')
+            nsa_data = get_nsa_data(mangaid, mode='local', source='drpall', drpver=drpver)
             self.results['data'] = nsa_data
             self.results['status'] = 1
         except Exception as ee:
