@@ -26,6 +26,7 @@ Added
 Fixed
 ^^^^^
 - Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
+- Bugfix - Python 3 xrange syntax bug in buildImageDict
 
 
 [2.2.5] - 2018/04/26
