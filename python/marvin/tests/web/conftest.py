@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-28 11:34:06
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 18:51:11
+# @Last Modified time: 2018-07-13 12:38:12
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -43,8 +43,9 @@ def test_db_stuff():
 
 
 @pytest.fixture(scope='function')
-def init_web(monkeypatch, monkeyauth, set_config, release):
+def init_web(monkeypatch, monkeyauth, set_config):
     config.forceDbOn()
+    config.login()
     #set_the_config(release)
 
     # monkeypath the render templating to nothing

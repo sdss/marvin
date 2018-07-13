@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-07 13:48:11
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 14:36:23
+# @Last Modified time: 2018-07-13 12:40:56
 
 from __future__ import print_function, division, absolute_import
 from marvin.tests.web.conftest import Page
@@ -61,10 +61,16 @@ def app():
     return app
 
 
-@pytest.fixture(scope='session')
-def init_api(urlmap):
-    config.urlmap = urlmap
+# @pytest.fixture(scope='session')
+# def init_api(urlmap):
+#     config.urlmap = urlmap
+#     config.forceDbOn()
+#     config.login()
+
+@pytest.fixture(scope='function')
+def init_api(monkeyauth, set_config):
     config.forceDbOn()
+    config.login()
 
 
 class ApiPage(Page):
