@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-13 08:57:23
+# @Last modified time: 2018-07-13 09:07:21
 
 from __future__ import division, print_function, absolute_import
 
@@ -34,9 +34,9 @@ def _read_maskbit_schemas():
 
     if _maskbits_from_yanny is None:
         path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-        sdss_maskbits = yanny(path_maskbits, np=True)
+        _maskbits_from_yanny = yanny(path_maskbits, np=True)
 
-    return sdss_maskbits['MASKBITS']
+    return _maskbits_from_yanny['MASKBITS']
 
 
 def get_available_maskbits():
