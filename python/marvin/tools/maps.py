@@ -35,7 +35,8 @@ from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
 from marvin.utils.general.maskbit import get_manga_target
 
-from .core import DAPallMixIn, MarvinToolsClass, NSAMixIn
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, NSAMixIn
 from .quantities import AnalysisProperty
 
 

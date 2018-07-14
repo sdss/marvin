@@ -28,7 +28,8 @@ from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
 from marvin.utils.general.maskbit import get_manga_target
 
-from .core import DAPallMixIn, MarvinToolsClass, NSAMixIn
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, NSAMixIn
 
 
 class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):

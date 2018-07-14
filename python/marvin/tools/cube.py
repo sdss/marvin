@@ -27,7 +27,8 @@ from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import FuzzyDict, get_nsa_data
 from marvin.utils.general.maskbit import get_manga_target
 
-from .core import MarvinToolsClass, NSAMixIn
+from .core import MarvinToolsClass
+from .mixins import NSAMixIn
 
 
 class Cube(MarvinToolsClass, NSAMixIn):
