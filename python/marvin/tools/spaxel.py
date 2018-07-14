@@ -346,7 +346,7 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
             path (str):
                 The path of the file to which the `.Spaxel` will be saved.
                 Unlike for other Marvin Tools that derive from
-                `~marvin.core.core.MarvinToolsClass`, ``path`` is
+                `~marvin.tools.core.MarvinToolsClass`, ``path`` is
                 mandatory for `.Spaxel.save` as there is no default path for a
                 given spaxel.
             overwrite (bool):
