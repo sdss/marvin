@@ -26,7 +26,6 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
-from marvin.utils.general.maskbit import get_manga_target
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, NSAMixIn
@@ -298,26 +297,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
     @property
     def quality_flag(self):

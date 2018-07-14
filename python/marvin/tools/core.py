@@ -9,7 +9,6 @@
 from __future__ import absolute_import, division, print_function
 
 import abc
-
 import os
 import re
 import time
@@ -25,6 +24,7 @@ from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError,
                                     MarvinMissingDependency, MarvinUserWarning)
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
+from marvin.utils.general.maskbit import get_manga_target
 
 
 try:
@@ -468,3 +468,23 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 self.data.close()
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
+
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+        return get_manga_target('1', self._bitmasks, self.header)
+
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+        return get_manga_target('2', self._bitmasks, self.header)
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+        return get_manga_target('3', self._bitmasks, self.header)
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]

@@ -25,7 +25,6 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import FuzzyDict, get_nsa_data
-from marvin.utils.general.maskbit import get_manga_target
 
 from .core import MarvinToolsClass
 from .mixins import NSAMixIn
@@ -530,38 +529,18 @@ class Cube(MarvinToolsClass, NSAMixIn):
         return cube_quantities
 
     @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
-
-    @property
-    def quality_flag(self):
-        """Return ModelCube DAPQUAL flag."""
-        drp3qual = self._bitmasks['MANGA_DRP3QUAL']
-        drp3qual.mask = int(self.header['DRP3QUAL'])
-        return drp3qual
-
-    @property
     def pixmask(self):
         """Return the DRP3PIXMASK flag."""
         pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
         pixmask.mask = getattr(self.flux, 'mask', None)
         return pixmask
+
+    @property
+    def quality_flag(self):
+        """Return ModelCube DRP3QUAL flag."""
+        drp3qual = self._bitmasks['MANGA_DRP3QUAL']
+        drp3qual.mask = int(self.header['DRP3QUAL'])
+        return drp3qual
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   properties=True, models=False, **kwargs):

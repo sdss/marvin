@@ -33,7 +33,6 @@ import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
-from marvin.utils.general.maskbit import get_manga_target
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, NSAMixIn
@@ -497,26 +496,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                 release=self.release,
                                                 bintype=self.bintype,
                                                 template=self.template)
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
     @property
     def quality_flag(self):
