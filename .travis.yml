@@ -33,7 +33,7 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-  - python: '3.6'
+  - python: '3.4'
 notifications:
   slack:
     secure: FZXERPoPv4n52hBx3bvEjJ5T0Ey2Es7Sa7sd/MA4AMr7l1771YZ1VTLpVtpw4qJR8vrt4NtSFbBowJiovDmx6FCjEb/2N6RipjbLowAtFRqjalOGO3KZOi3UPeiytP/IYD1DG7YmeYJOL8aof2awns8ckAWRSz6HO3cDpqg+hycDXasZQdQfIKgY17UZvONBJZCZGeC3lMw4IrbhkfhW7aQvhUhcXDtfEyObNt2+FGE6y7WDeOEjtfArKc/Iz4gybWLkYPpA6rtQfQciQvpZv94sanxli8vq4mXIpu/dxn73jfKSYsYIl7+OYrXKJQBy/8muwwuSe2et15mG90KGUsDOJ+PXKCLOSl8JohO/pH0l3hZKno6nX7byL6orEbBuQjpMJO0QFUs7o6hLSv3q4tgtuV0M99I8UHcIgmBYL9oXI4BHIsSwreTXHfV/8LiuZfyaB2NzwKuRHQTZQfCD+ujqXaspyQX70Xew2L7rruRuBuKLTntgklMFtAPYJYbW/4z6HsZ//X6Z2BHwe0Etv4FZaKsf8IK81p//oYi/3kw2ENRYNARu0HzU0Edba6ugBPjzw6wFyWsL35IFTSosby50iAWo7xYfRXBv1kH0tPOcmPoJzFcrdAmvEqt6K8bNwqgx72/qsBp4fhmGfQM5G07dkyQM+hu+e9OPEfTwOo4=
