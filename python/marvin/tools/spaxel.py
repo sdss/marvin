@@ -60,15 +60,13 @@ def spaxel_factory(cls, *args, **kwargs):
 
     """
 
-    Maps = marvin.tools.maps.Maps
-    ModelCube = marvin.tools.modelcube.ModelCube
-
     if cls is not SpaxelBase:
         return type.__call__(cls, *args, **kwargs)
 
     cube = kwargs.pop('cube', None)
     maps = kwargs.pop('maps', None)
     modelcube = kwargs.pop('modelcube', None)
+    lazy = kwargs.pop('lazy', False)
 
     plateifu = kwargs.pop('plateifu', (getattr(cube, 'plateifu', None) or
                                        getattr(maps, 'plateifu', None) or
@@ -84,7 +82,8 @@ def spaxel_factory(cls, *args, **kwargs):
 
     spaxel_kwargs = kwargs.copy()
     spaxel_kwargs.update(cube=cube, maps=maps, modelcube=modelcube,
-                         plateifu=plateifu, mangaid=mangaid, release=release)
+                         plateifu=plateifu, mangaid=mangaid, release=release,
+                         lazy=lazy)
 
     if not cube and not maps and not modelcube:
         raise MarvinError('no inputs defined.')
@@ -92,7 +91,8 @@ def spaxel_factory(cls, *args, **kwargs):
     if not maps and not modelcube:
         return Spaxel(*args, **spaxel_kwargs)
 
-    if isinstance(maps, Maps) or isinstance(modelcube, ModelCube):
+    if (isinstance(maps, marvin.tools.maps.Maps) or
+            isinstance(modelcube, marvin.tools.modelcube.ModelCube)):
         bintype = getattr(maps, 'bintype', None) or getattr(modelcube, 'bintype', None)
         spaxel_kwargs.update(bintype=bintype)
         if bintype.binned:
@@ -101,15 +101,16 @@ def spaxel_factory(cls, *args, **kwargs):
             return Spaxel(*args, **spaxel_kwargs)
 
     if maps:
-        maps = Maps((maps if maps is not True else None) or plateifu or mangaid,
-                    release=release, **kwargs)
+        maps = marvin.tools.maps.Maps((maps if maps is not True else None) or plateifu or mangaid,
+                                      release=release, **kwargs)
         spaxel_kwargs.update(bintype=maps.bintype)
         if maps.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
 
     if modelcube:
-        modelcube = ModelCube((modelcube if modelcube is not True else None) or
-                              plateifu or mangaid, release=release, **kwargs)
+        modelcube = marvin.tools.modelcube.ModelCube(
+            (modelcube if modelcube is not True else None) or
+            plateifu or mangaid, release=release, **kwargs)
         spaxel_kwargs.update(bintype=modelcube.bintype)
         if modelcube.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
