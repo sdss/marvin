@@ -12,7 +12,6 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
-import itertools
 import warnings
 
 import astropy.io.fits
@@ -35,7 +34,7 @@ from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
 
 from .core import MarvinToolsClass
-from .mixins import DAPallMixIn, NSAMixIn
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 from .quantities import AnalysisProperty
 
 
@@ -48,7 +47,7 @@ except ImportError:
 __all__ = ['Maps']
 
 
-class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class that represents a DAP MAPS file.
 
     Provides access to the data stored in a DAP MAPS file. In addition to

@@ -28,10 +28,10 @@ from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
 
 from .core import MarvinToolsClass
-from .mixins import DAPallMixIn, NSAMixIn
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 
 
-class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class to interface with MaNGA DAP model cubes.
 
     This class represents a DAP model cube, initialised either from a file,
