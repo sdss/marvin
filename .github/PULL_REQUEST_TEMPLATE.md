@@ -7,4 +7,4 @@ This pull request:
 - [ ] Works with Python 2.7 and 3.6 (and ideally with Python 3.7).
 - [ ] Updates the [CHANGELOG](https://github.com/sdss/marvin/blob/master/CHANGELOG.rst).
 - [ ] Removes more lines of code than it adds.
-- [ ] If relevant, adds a new entry to the `What's new?` page.
+- [ ] If relevant, adds a new entry to the [What's new?](https://github.com/sdss/marvin/blob/master/docs/sphinx/whats-new.rst) page.
