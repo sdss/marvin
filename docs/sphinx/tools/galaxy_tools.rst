@@ -33,7 +33,9 @@ Marvin Tools provide:
 Getting started
 ---------------
 
-We call Marvin Galaxy Tools to the three main classes (`Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.ModelCube`) All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP cube ::
+We call Marvin galaxy Tools to the three main classes (`~cube.Cube`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The three main Tools classes inherit from `~core.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here can also be applied to the `~maps.Maps` and `~modelcube.ModelCube`.
+
+All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP cube ::
 
     >>> import marvin
     >>> my_cube = marvin.tools.Cube('7443-12703')
