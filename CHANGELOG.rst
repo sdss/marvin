@@ -1,7 +1,7 @@
 Marvin's Change Log
 ===================
 
-[2.2.6] - 2018/?/?
+[2.3.0] - 2018/?/?
 --------------------
 
 Changed
@@ -27,6 +27,11 @@ Fixed
 ^^^^^
 - Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
 - Bugfix - Python 3 xrange syntax bug in buildImageDict
+
+Changed
+^^^^^^^
+- Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
+- Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
 
 
 [2.2.5] - 2018/04/26

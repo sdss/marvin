@@ -72,9 +72,10 @@ Quick Model Fit Plot
     # must use Maps.getSpaxel() to get modelcube
     # (the bracket slicing of Maps does not return the modelcube)
     spax = maps.getSpaxel(x=17, y=17, xyorig='lower', model=True)
-    ax = spax.flux.plot()
-    ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
-    ax.legend(list(ax.get_lines()), ['observed', 'model'])
+    # extra arguments to plot are passed to the matplotlib routine
+    ax = spax.flux.plot(label='observed)
+    ax.plot(spax.full_fit.wavelength, spax.full_fit.value, label='model')
+    ax.legend()
 
 .. image:: ../_static/quick_model_plot.png
 

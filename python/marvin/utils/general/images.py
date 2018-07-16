@@ -151,7 +151,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     # do a local or remote thing
     if mode == 'local':
         full = rsync_access.full('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
-        listofimages = rsync_access.random('', full=full, num=num, refine='\d{4,5}.png', as_url=as_url)
+        listofimages = rsync_access.random('', full=full, num=num, refine=r'\d{4,5}.png', as_url=as_url)
 
         # if download, issue warning that cannot do it
         if download:
@@ -167,7 +167,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
             raise MarvinError('Error with sdss_access rsync.set_stream. AccessError: {0}'.format(e))
 
         # refine and randomize
-        rsync_access.refine_task('\d{4,5}.png')
+        rsync_access.refine_task(r'\d{4,5}.png')
         rsync_access.shuffle()
         listofimages = rsync_access.get_urls(limit=num) if as_url else rsync_access.get_paths(limit=num)
 
