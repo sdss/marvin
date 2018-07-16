@@ -20,3 +20,11 @@
 }
 
 .rubric > .rubric-h1 {font-size: 175%;}
+
+div.highlight {
+    background-color: white;
+}
+
+dt:target, .highlight {
+    background: #FAF3E8;
+}
