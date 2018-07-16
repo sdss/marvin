@@ -1,7 +1,7 @@
 .. _marvin-map:
 
 =================================
-Map (:mod:`marvin.tools.quantities.Map`)
+Map (`marvin.tools.quantities.map.Map`)
 =================================
 
 .. _marvin-map-intro:

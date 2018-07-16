@@ -3,10 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. role:: header_no_toc
-  :class: class_header_no_toc
-
 .. title:: Marvin documentation
+
+.. warning:: Marvin documentation is in the process of being restructured and improved. Some content can be missing while this task continue. In the meantime, please use the `stable version <http://sdss-marvin.readthedocs.io/en/stable/>`__ of the documentation. If you have suggestions to improve Marvin documentation, please `open an issue <https://github.com/sdss/marvin/issues/new/choose>`__.
 
 |
 
@@ -15,14 +14,12 @@
     :align: center
     :alt: MaNGA logo
 
-Marvin
-======
+|
 
-.. warning:: Marvin 2.x is the last version that will support Python 2.
-  Marvin 3 and following will require Python 3.6+.
+Marvin Documentation
+====================
 
-Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/manga>`_ data. It is
-developed and maintained by the MaNGA team. Marvin allows you to:
+Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/manga>`_ data. It is developed and maintained by the MaNGA team. Marvin allows you to:
 
 * Access reduced MaNGA datacubes local, remotely, or via a web interface.
 * Access and visualise data analysis products.
@@ -30,16 +27,18 @@ developed and maintained by the MaNGA team. Marvin allows you to:
 * Abstract the datamodel and forget where the data actually lives.
 * Make good visualisation and scientific decisions by preventing common mistakes when accessing the data.
 
-Marvin's code is publicly available in our `Github <https://github.com/sdss/marvin>`__ page. If you are using Marvin in any way (Web, API, or Tools) to do your science, please
-remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
+Marvin's code is publicly available in our `Github <https://github.com/sdss/marvin>`__ page. If you are using Marvin in any way (Web, API, or Tools) to do your science, please remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
 
 To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
 .. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <http://www.apage.com>`_.
 
+.. warning:: Marvin 2.x is the last version that will support Python 2.
+  Marvin 3 and following will require Python 3.6+.
 
-Getting Started:
-----------------
+
+Getting Started
+---------------
 
 If you are new to Marvin check the following links before diving into the full documentation:
 
@@ -48,20 +47,14 @@ If you are new to Marvin check the following links before diving into the full d
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
 
-Contents:
----------
 
 .. toctree::
    :maxdepth: 2
    :glob:
+   :caption: Marvin at a Glance
 
    installation
    cheatsheet
-   tools
-   core
-   api
-   web
-   apiref
 
 .. Quick Tools
 .. ===========
@@ -113,6 +106,13 @@ Contents:
 .. :doc:`API <api>`
 .. ----------------
 
+.. toctree::
+   :maxdepth: 3
+   :caption: User Docs
+
+   tools/index
+
+
 .. :doc:`Web <web>`
 .. ----------------
 
@@ -124,25 +124,12 @@ Contents:
 .. * :doc:`datamodel/mpl6`
 
 
-.. API/Code Reference
-.. ==================
+.. toctree::
+   :maxdepth: 1
+   :caption: API/Code Reference
 
-.. .. toctree::
-..    :maxdepth: 4
-..    :glob:
+   api/index
 
-..    api/general
-..    api/api
-..    api/tools
-..    api/quantities
-..    api/queries
-..    api/utils
-..    api/web
-..    api/db
-..    api/brain/api
-..    api/brain/utils
-
-|
 
 .. Indices and tables
 .. ==================
