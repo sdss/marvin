@@ -1,8 +1,7 @@
 .. _marvin-utils-plot-colorbar:
 
-=======================================
-Map (:mod:`marvin.utils.plot.colorbar`)
-=======================================
+Colorbar (:mod:`marvin.utils.plot.colorbar`)
+============================================
 
 
 .. _marvin-utils-plot-colorbar-intro:

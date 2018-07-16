@@ -1,3 +1,4 @@
+.. danger:: This section needs to be restructured to fit the new tools documentation
 
 .. _marvin-plate:
 
@@ -162,5 +163,3 @@ Reference/API
 
     marvin.tools.plate.Plate.save
     marvin.tools.plate.Plate.restore
-
-

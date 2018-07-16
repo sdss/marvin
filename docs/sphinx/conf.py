@@ -351,6 +351,11 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
+# Matplolib plot directive
+import matplotlib.sphinxext.plot_directive
+extensions += [matplotlib.sphinxext.plot_directive.__name__]
+
+
 # -- Use the custom css file in readthedocs --
 def setup(app):
     app.add_stylesheet('custom.css')

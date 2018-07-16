@@ -57,6 +57,7 @@ Similarly we can access the `header <astropy.io.fits.Header>` of the file and th
     NAXIS   =                    3 / Number of data axes
     NAXIS1  =                   74 /
     NAXIS2  =                   74 /
+
     >>> my_cube.wcs
     WCS Keywords
 
@@ -74,10 +75,12 @@ What is more, we can access the datamodel of the cube file, which show us what e
     >>> datamodel = my_cube.datamodel
     >>> datamodel
     <DRPDataModel release='MPL-6', n_datacubes=3, n_spectra=2>
+
     >>> datamodel.datacubes
     [<DataCube 'flux', release='MPL-6', unit='1e-17 erg / (Angstrom cm2 s spaxel)'>,
      <DataCube 'dispersion', release='MPL-6', unit='Angstrom'>,
      <DataCube 'dispersion_prepixel', release='MPL-6', unit='Angstrom'>]
+
     >>> datamodel.spectra
     [<Spectrum 'spectral_resolution', release='MPL-6', unit='Angstrom'>,
      <Spectrum 'spectral_resolution_prepixel', release='MPL-6', unit='Angstrom'>]
@@ -101,24 +104,139 @@ In ``my_cube``, we can use the name of each of these datacubes and spectra to ac
                 [0., 0., 0., ..., 0., 0., 0.],
                 [0., 0., 0., ..., 0., 0., 0.]]] 1e-17 erg / (Angstrom cm2 s spaxel)>
 
-The flux is represented as a 3D array with units. We can also get the inverse variance and the mask
+The flux is represented as a 3D array with units. We can also access the inverse variance and the mask using ``flux.ivar`` and ``flux.mask``, respectively. We can slice this datacube to get another datacube ::
+
+    >>> flux[:, 50:60, 50:60]
+    <DataCube [[[ 0.23239002,  0.21799691,  0.1915081 , ...,  0.06516988,
+              0.03220467,  0.02613733],
+            [ 0.2511523 ,  0.25672358,  0.24318442, ...,  0.07530793,
+              0.0505379 ,  0.05970671],
+            [ 0.24604724,  0.23915106,  0.24392547, ...,  0.1116344 ,
+              0.08573902,  0.10379973],
+            ...,
+            [ 0.        ,  0.        ,  0.        , ...,  0.        ,
+              0.        ,  0.        ],
+            [ 0.        ,  0.        ,  0.        , ...,  0.        ,
+              0.        ,  0.        ],
+            [ 0.        ,  0.        ,  0.        , ...,  0.        ,
+              0.        ,  0.        ]]] 1e-17 erg / (Angstrom cm2 s spaxel)>
+
+Or get a single spectrum and plot it::
+
+    >>> spectrum = flux[:, 50, 55]
+    >>> spectrum
+    <Spectrum [0.1060614 , 0.07801704, 0.02460545, ..., 0.16328742, 0.13772544,
+           0.        ] 1e-17 erg / (Angstrom cm2 s spaxel)>
+
+    >>> spectrum.plot(show_std=True)
+
+.. image:: ../_static/plots/tools/getting_started_flux_spectrum.png
+    :width: 50%
+    :align: center
+
+We will talk more about quantities in the :ref:`marvin-quantities` section, and about more advance plotting in :ref:`marvin-plotting`.
+
+
+Left to do in Getting started:
+
+- Targeting bits
+- Quality bits
+- Downloading a file
+- Get spaxel + slicing
 
 .. _marvin-quantities:
 
 Working with quantities
 -----------------------
 
+TBD
 
-----------
+
+Using the tools
+---------------
+
+Data access modes
+^^^^^^^^^^^^^^^^^
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    cube
-    maps
-    map
-    modelcube
+    data-access-modes
+
+Storing data
+^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    downloads
+    pickling
+
+Accessing catalogue data
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    catalogues
+
+Defining apertures
+^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    aperture
+
+
+Maskbits
+^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    utils/maskbit
+
+Datamodels
+^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    datamodel
+
+Using Maps and ModelCubes
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    dap_tools
+
+The Plate class
+^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
     plate
+
+Plotting
+^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    utils/plotting
+
+Image utilities
+^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 2
+
+    utils/images
+
 
 .. _visual-guide:
 

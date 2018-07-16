@@ -1,7 +1,7 @@
 .. _marvin-bpt:
 
 BPT Diagrams
-============
+------------
 
 Marvin now includes the ability to generate BPT (`Baldwin, Phillips, & Terlevich 1981 <https://ui.adsabs.harvard.edu/#abs/1981PASP...93....5B/abstract>`_) diagrams for a particular galaxy.  Marvin makes use of the classification system defined by |kewley2006|_  to return classification masks for different ionisation mechanisms.  By default, the Marvin BPT uses a strict selection criteria, utilizing all three BPT diagnostic criteria (NII, SII, and OI) from |kewley2006|_.  A spaxel only becomes classified if it meets the criteria in all three.
 
@@ -66,7 +66,7 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
 
 
 Minimum Signal-To-Noise Ratio
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin's BPT code allows you to impose a minimum SNR over any or all of the emission line diagnostics used in spaxel classification.  Marvin accepts either a single number, which will be applied to all emission lines, or a dictionary of values for specific emission lines.  **Marvin uses a default minimum SNR of 3.**
 
@@ -85,7 +85,7 @@ When using a dictionary to define your minimum SNR, it takes the form of ``{emis
 
 
 Using the Masks
----------------
+^^^^^^^^^^^^^^^
 
 Marvin always returns the BPT classifications as masks.  These masks are boolean arrays of the same shape as :ref:`marvin-tools-maps`, i.e. 2d-arrays. These masks can be used to filter on any other :ref:`marvin-tools-map` or :ref:`marvin-tools-cube` property.  Marvin returns a dictionary of all the classifications, with two tiers.  At the top level, the BPT mask contains a key for each classfication category.  Within each category, there are four sub-groups, described as follows:
 
@@ -96,17 +96,17 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
 
 .. code-block:: python
 
-    maps = Maps(plateifu='8485-1901')
+    >>> maps = Maps(plateifu='8485-1901')
 
     # generate a bpt plot and retrieve the masks
-    masks, fig, axes = maps.get_bpt()
+    >>> masks, fig, axes = maps.get_bpt()
 
     # look at the masks included in this dictionary
-    print(masks.keys())
+    >>> print(masks.keys())
     dict_keys(['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous'])
 
     # each mask is a boolean 2-d array of the same shape as the Maps
-    masks['sf']['global']
+    >>> masks['sf']['global']
     array([[False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False],
@@ -115,14 +115,14 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
            [False, False, False, ..., False, False, False],
            [False, False, False, ..., False, False, False]], dtype=bool)
 
-    print(masks['sf']['global'].shape)
+    >>> print(masks['sf']['global'].shape)
     (34, 34)
 
     # let's look at the H-alpha EW values for all spaxels classified as star-Forming (sf)
 
     # get the Ha EW map
-    haew = maps.getMap('emline_sew', channel='ha_6564')
-    haew
+    >>> haew = maps.getMap('emline_sew', channel='ha_6564')
+    >>> haew
     <Marvin Map (property='emline_sew_ha_6564')>
     [[ 0.  0.  0. ...,  0.  0.  0.]
      [ 0.  0.  0. ...,  0.  0.  0.]
@@ -133,8 +133,8 @@ Marvin always returns the BPT classifications as masks.  These masks are boolean
      [ 0.  0.  0. ...,  0.  0.  0.]] Angstrom
 
     # select and view the ew for star-forming spaxels
-    sfewha = haew.value[masks['sf']['global']]
-    sfewha
+    >>> sfewha = haew.value[masks['sf']['global']]
+    >>> sfewha
     array([ 23.04647827,  22.36664963,  23.70358849,  23.62845421,
             24.51483345,  25.4575119 ,  25.2571373 ,  24.0802269 ,
             22.67666435,  19.39162827,  16.50460052,  23.33211136,
@@ -173,19 +173,19 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
 .. code-block:: python
 
     # get a mask
-    masks, fig, axes = maps.get_bpt()
+    >>> masks, fig, axes = maps.get_bpt()
 
     # get the spaxel x, y coordinates of our star-forming spaxels
-    import numpy as np
-    y, x = np.where(masks['sf']['global'])
-    print(y)
+    >>> import numpy as np
+    >>> y, x = np.where(masks['sf']['global'])
+    >>> print(y)
     [11 11 12 12 12 12 12 12 12 12 12 13 13 13 13 13 13 13 13 13 13 14 14 14 14
      14 14 14 14 14 14 14 14 15 15 15 15 15 15 15 15 15 15 15 15 16 16 16 16 16
      16 16 16 16 16 16 17 17 17 17 17 17 17 17 17 17 18 18 18 18 18 18 18 18 18
      18 19 19 19 19 19 19 19 19 19 19 20 20 20 20 20 20 20 20 20 21 21 21 21 21
      21 21 21 22 22 22 22 22 22 22 22 23 23 23 23 23 23 23 24 24 24 24 24 24 25
      25 25 25]
-    print(x)
+    >>> print(x)
     [17 18 14 15 16 17 18 19 20 21 22 13 14 15 16 17 18 19 20 21 22 11 12 13 14
      15 16 17 18 19 20 21 22 11 12 13 14 15 16 17 18 19 20 21 22 11 13 14 15 16
      17 18 19 20 21 22 13 14 15 16 17 18 19 20 21 22 13 14 15 16 17 18 19 20 21
@@ -194,12 +194,12 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
      17 18 19]
 
     # alternatively, if you want a list of coordinate pairs of [y, x]
-    coordlist = np.asarray(np.where(masks['sf']['global'])).T.tolist()
-    print(coordlist[0:2])
+    >>> coordlist = np.asarray(np.where(masks['sf']['global'])).T.tolist()
+    >>> print(coordlist[0:2])
     [[11, 17], [11, 18]]
 
     # using the star-forming HaEW selection from before
-    print(sfewha)
+    >>> print(sfewha)
     array([ 23.04647827,  22.36664963,  23.70358849,  23.62845421,
             24.51483345,  25.4575119 ,  25.2571373 ,  24.0802269 ,
             22.67666435,  19.39162827,  16.50460052,  23.33211136,
@@ -236,13 +236,13 @@ If you want to know the spaxel x, y coordinates for the spaxels in given mask, y
     # Let's verify this, by looking at the individual spaxel values
 
     # let's check the first one y=11, x=17.
-    spaxel = maps[y[0], x[0]]
-    spaxel.emline_sew_ha_6564
+    >>> spaxel = maps[y[0], x[0]]
+    >>> spaxel.emline_sew_ha_6564
     <AnalysisProperty 23.0464782715 Angstrom>
 
     # the value property matches the first element in our sfewha array.
     # Let's check the 2nd one at y=11, x=18
-    spaxel = maps[y[1], x[1]]
+    >>> spaxel = maps[y[1], x[1]]
     <AnalysisProperty 22.3666496277 Angstrom>
 
     # It matches!
@@ -252,57 +252,57 @@ If you want to examine the emission-line ratios up close for spaxels in a given 
 .. code-block:: python
 
     # get a mask
-    masks, fig = maps.get_bpt()
+    >>> masks, fig = maps.get_bpt()
 
     # get the nii_to_ha emission-line map
-    niihamap = maps['emline_gflux_nii_6585'] / maps['emline_gflux_ha_6564']
+    >>> niihamap = maps['emline_gflux_nii_6585'] / maps['emline_gflux_ha_6564']
 
     # we need Numpy to take the log.  Let's look at the nii_to_ha values for the star-forming spaxels
-    import numpy as np
-    np.log10(niihamap.value)[masks['sf']['global']]
+    >>> import numpy as np
+    >>> np.log10(niihamap.value)[masks['sf']['global']]
     array([-0.36083685, -0.35050373, -0.39707415, -0.38970575, -0.37744072,
-       -0.37097652, -0.36574841, -0.36696256, -0.36225319, -0.33948732,
-       -0.30500662, -0.40887598, -0.41479702, -0.39309623, -0.38104635,
-       -0.38231165, -0.38451816, -0.38412328, -0.3857764 , -0.37604272,
-       -0.34847514, -0.31711751, -0.35483825, -0.40735977, -0.40479966,
-       -0.38222836, -0.38626824, -0.38634657, -0.38754567, -0.39089759,
-       -0.3982011 , -0.39197492, -0.37097201, -0.33713065, -0.3631672 ,
-       -0.34368277, -0.34618552, -0.36599119, -0.38414863, -0.39020342,
-       -0.39107684, -0.39222271, -0.39853205, -0.40006774, -0.37997194,
-       -0.31424691, -0.29854483, -0.32601963, -0.37445885, -0.39861996,
-       -0.39477471, -0.39359296, -0.39470471, -0.39647526, -0.40258077,
-       -0.39138844, -0.3133486 , -0.34971283, -0.39177572, -0.41063068,
-       -0.40759568, -0.39895744, -0.39861426, -0.39984535, -0.3981232 ,
-       -0.38876243, -0.35298488, -0.35936414, -0.38920991, -0.40590224,
-       -0.40736318, -0.40316663, -0.40298403, -0.39821834, -0.39684668,
-       -0.37994032, -0.32071932, -0.36007734, -0.35631489, -0.3751666 ,
-       -0.39455306, -0.40756206, -0.4116578 , -0.407691  , -0.40524402,
-       -0.39893425, -0.31499792, -0.37081046, -0.36776286, -0.38306517,
-       -0.4016823 , -0.41746188, -0.41947571, -0.4122563 , -0.40695845,
-       -0.39373964, -0.39819061, -0.41112913, -0.41787224, -0.41352376,
-       -0.40112084, -0.39164215, -0.39380887, -0.40587672, -0.38928626,
-       -0.36933511, -0.36749658, -0.37164245, -0.37851832, -0.39489105,
-       -0.3905921 , -0.3793572 , -0.36021624, -0.35846105, -0.36491075,
-       -0.37559935, -0.38373461, -0.36757445, -0.36945931, -0.37848095,
-       -0.37983738, -0.38301111, -0.36772385, -0.35984961, -0.38521887,
-       -0.41257482, -0.41853841, -0.40275782])
+           -0.37097652, -0.36574841, -0.36696256, -0.36225319, -0.33948732,
+           -0.30500662, -0.40887598, -0.41479702, -0.39309623, -0.38104635,
+           -0.38231165, -0.38451816, -0.38412328, -0.3857764 , -0.37604272,
+           -0.34847514, -0.31711751, -0.35483825, -0.40735977, -0.40479966,
+           -0.38222836, -0.38626824, -0.38634657, -0.38754567, -0.39089759,
+           -0.3982011 , -0.39197492, -0.37097201, -0.33713065, -0.3631672 ,
+           -0.34368277, -0.34618552, -0.36599119, -0.38414863, -0.39020342,
+           -0.39107684, -0.39222271, -0.39853205, -0.40006774, -0.37997194,
+           -0.31424691, -0.29854483, -0.32601963, -0.37445885, -0.39861996,
+           -0.39477471, -0.39359296, -0.39470471, -0.39647526, -0.40258077,
+           -0.39138844, -0.3133486 , -0.34971283, -0.39177572, -0.41063068,
+           -0.40759568, -0.39895744, -0.39861426, -0.39984535, -0.3981232 ,
+           -0.38876243, -0.35298488, -0.35936414, -0.38920991, -0.40590224,
+           -0.40736318, -0.40316663, -0.40298403, -0.39821834, -0.39684668,
+           -0.37994032, -0.32071932, -0.36007734, -0.35631489, -0.3751666 ,
+           -0.39455306, -0.40756206, -0.4116578 , -0.407691  , -0.40524402,
+           -0.39893425, -0.31499792, -0.37081046, -0.36776286, -0.38306517,
+           -0.4016823 , -0.41746188, -0.41947571, -0.4122563 , -0.40695845,
+           -0.39373964, -0.39819061, -0.41112913, -0.41787224, -0.41352376,
+           -0.40112084, -0.39164215, -0.39380887, -0.40587672, -0.38928626,
+           -0.36933511, -0.36749658, -0.37164245, -0.37851832, -0.39489105,
+           -0.3905921 , -0.3793572 , -0.36021624, -0.35846105, -0.36491075,
+           -0.37559935, -0.38373461, -0.36757445, -0.36945931, -0.37848095,
+           -0.37983738, -0.38301111, -0.36772385, -0.35984961, -0.38521887,
+           -0.41257482, -0.41853841, -0.40275782])
 
     # how about the ambiguous spaxels?
-    np.log10(niihamap.value)[masks['ambiguous']['global']]
+    >>> np.log10(niihamap.value)[masks['ambiguous']['global']]
     array([-0.22853627, -0.22545481, -0.37888335, -0.39616408])
 
 
 Ambiguous Spaxels
------------------
+^^^^^^^^^^^^^^^^^
 
 Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` based on all three BPTs, are classified as ambiguous.  You can determine how ambiguous spaxels were classified in the individual BPT diagrams using the individual BPT masks.
 
 .. code-block:: python
 
     # get the spaxels classified as ambiguous
-    ambig = masks['ambiguous']['global']
-    y, x = np.where(ambig)
-    print(x, y)
+    >>> ambig = masks['ambiguous']['global']
+    >>> y, x = np.where(ambig)
+    >>> print(x, y)
     [11 11 16 17] [13 18 26 26]
 
     # we have 4 ambiguous spaxels. why are they ambiguous?
@@ -311,29 +311,29 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
     # by filtering the individual BPT boolean maps using the ambiguous spaxel map
 
     # they are star-forming in the NII BPT
-    masks['sf']['nii'][ambig]
+    >>> masks['sf']['nii'][ambig]
     array([False, False,  True,  True], dtype=bool)
 
     # they are star-forming in the SII BPT
-    masks['sf']['sii'][ambig]
+    >>> masks['sf']['sii'][ambig]
     array([ True,  True,  True,  True], dtype=bool)
 
     # they are not star-forming in the OI BPT
-    masks['sf']['oi'][ambig]
+    >>> masks['sf']['oi'][ambig]
     array([False, False, False, False], dtype=bool)
 
     # they are agn in the OI BPT
-    masks['agn']['oi'][ambig]
+    >>> masks['agn']['oi'][ambig]
     array([ True,  True,  True,  True], dtype=bool)
 
     # If you want a new full 2d-boolean array to use elsewhere, use the bitwise & operator
 
-    niisf_ambig = masks['sf']['nii'] & ambig
+    >>> niisf_ambig = masks['sf']['nii'] & ambig
 
 
 
 Modifying the Plot
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram ::
 
@@ -446,15 +446,14 @@ Ultimately, you can use the masks to generate brand-new plots with your preferre
     :alt: nii_custom
 
 
-Things to Try
--------------
+..    Things to Try
+      ^^^^^^^^^^^^^
 
-Now that you know about Marvin's BPT, try to do these things
+    Now that you know about Marvin's BPT, try to do these things
 
-* For a given BPT mask, compute an average spectrum using Marvin Spaxel and the BPT spaxel coordinates.
+    * For a given BPT mask, compute an average spectrum using Marvin Spaxel and the BPT spaxel coordinates.
 
-Did you do them? :) Now you can contribute your code into Marvin for others to use.  Hurray!
-
+    Did you do them? :) Now you can contribute your code into Marvin for others to use.  Hurray!
 
 
 .. |kewley2006| replace:: Kewley et al. (2006)

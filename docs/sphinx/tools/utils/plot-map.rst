@@ -1,6 +1,7 @@
+.. danger:: This section needs to be restructured to fit the new tools documentation.
+
 .. _marvin-utils-plot-map:
 
-==================================
 Map (:mod:`marvin.utils.plot.map`)
 ==================================
 
