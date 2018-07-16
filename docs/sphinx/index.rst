@@ -125,7 +125,7 @@ If you are new to Marvin check the following links before diving into the full d
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API/Code Reference
 
    api/index

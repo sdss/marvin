@@ -2,7 +2,8 @@
     :class: rubric-h1
 
 
-.. rubric:: :notoc-h1:`Reference`
+Reference
+=========
 
 .. toctree::
     :maxdepth: 2
