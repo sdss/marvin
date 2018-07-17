@@ -1,6 +1,6 @@
 
-Marvin API Reference
-====================
+API
+===
 
 .. _marvin-api-interaction:
 

@@ -1,8 +1,8 @@
 
 .. _marvin-tools-ref:
 
-Marvin Tools Reference
-======================
+Tools
+=====
 
 .. _marvin-tools-cube:
 

@@ -1,11 +1,7 @@
-
-Marvin General
-==============
-
 .. _marvin-config-class:
 
 Config
-------
+======
 
 .. automodule:: marvin
    :members:

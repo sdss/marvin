@@ -1,7 +1,18 @@
 .. _whats-new:
 
+
+.. error:: Many of the links in this page have changed and need to be redirected.
+
+
 What's new in Marvin
 ====================
+
+.. toctree::
+    :hidden:
+
+    changelog
+
+This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
 2.3.0 (unreleased)
 ------------------
@@ -112,7 +123,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
   * Map plotting no longer masks spaxels near zero velocity contour because by default (in tools and web), there is no minimum signal-to-noise ratio for velocity plots.
 
-* New tutorials: :doc:`tutorials/plotting` and :doc:`tutorials/lean-tutorial`.
+* New tutorials: :doc:`tutorials/plotting-tutorial` and :doc:`tutorials/lean-tutorial`.
 
 |
 
@@ -177,7 +188,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
 Marvin 2.0 is a complete overhaul of Marvin 1.0, converting Marvin into a full suite of interaction tools.
 
-Marvin 2.0 introduces two new modes of operations, :doc:`tools` and :doc:`api`, to the Marvin
+Marvin 2.0 introduces two new modes of operations, :doc:`tools/index` and :doc:`api`, to the Marvin
 environment, and introduces an extensive redesign of the `Marvin web app
 <https://sas.sdss.org/marvin/>`_.
 

@@ -1,8 +1,8 @@
 
 .. _marvin-query-ref:
 
-Marvin Query Reference
-======================
+Query
+=====
 
 .. _marvin-queries-ref:
 
@@ -33,4 +33,3 @@ Results
    :members:
    :undoc-members:
    :show-inheritance:
-

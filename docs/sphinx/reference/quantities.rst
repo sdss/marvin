@@ -2,8 +2,8 @@
 .. _marvin-quantity-ref:
 
 
-Marvin Quantity Classes
-=======================
+Quantity Classes
+================
 
 .. _marvin-tools-datacube:
 
@@ -44,4 +44,3 @@ Analysis Property
    :members:
    :undoc-members:
    :show-inheritance:
-

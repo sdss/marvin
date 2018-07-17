@@ -1,11 +1,8 @@
 
-Marvin-Brain Utilities
-======================
-
 .. _marvin-brain-utils:
 
-General
--------
+Utilities
+---------
 
 .. automodule:: brain.utils.general.general
    :members:

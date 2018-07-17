@@ -1,6 +1,6 @@
 
-Marvin Utilities Reference
-==========================
+Utilities
+=========
 
 .. _marvin-utils-general-general:
 

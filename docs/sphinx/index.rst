@@ -31,7 +31,7 @@ Marvin's code is publicly available in our `Github <https://github.com/sdss/marv
 
 To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
-.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <http://www.apage.com>`_.
+.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/manga/getting-started/>`_.
 
 .. warning:: Marvin 2.x is the last version that will support Python 2.
   Marvin 3 and following will require Python 3.6+.
@@ -43,6 +43,7 @@ Getting Started
 If you are new to Marvin check the following links before diving into the full documentation:
 
 * The :ref:`lean tutorial <marvin-lean-tutorial>` is your quick start guide to Marvin.
+* For quick reference, download the :ref:`cheatsheet <marvin-cheatsheet>`.
 * :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <marvin-changelog>`, and :ref:`known issues <marvin-known-issues>`.
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
@@ -50,91 +51,46 @@ If you are new to Marvin check the following links before diving into the full d
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    :caption: Marvin at a Glance
+   :hidden:
 
    installation
+   whats-new
+   tutorials/lean-tutorial
    cheatsheet
+   tutorials/index
+   known-issues
+   faq
 
-.. Quick Tools
-.. ===========
-
-.. .. toctree::
-..    :maxdepth: 2
-..    :glob:
-
-..    tools
-
-.. Components
-.. ==========
-
-.. :doc:`Core <core>`
-.. ------------------
-
-.. * :doc:`core/config`
-.. * :doc:`core/data-access-modes`
-.. * :doc:`core/downloads`
-.. * :doc:`tools/quantities`
-
-.. :doc:`Tools <tools>`
-.. --------------------
-
-.. * :doc:`query`
-.. * :doc:`results`
-.. * :doc:`tools/plate`
-.. * :doc:`tools/cube`
-.. * :doc:`tools/modelcube`
-.. * :doc:`tools/maps`
-
-..   * :doc:`tools/bpt`
-
-.. * :doc:`tools/map`
-
-..   * :doc:`tools/enhanced-map`
-
-.. * :doc:`tools/spaxel`
-.. * :doc:`tools/bin`
-
-.. * :doc:`utils`
-
-..   * :doc:`Image <utils/images>`
-..   * :doc:`Map Plotting <utils/plot-map>`
-..   * :doc:`Scatter Plotting <utils/plot-scatter>`
-..   * :doc:`Histogram Plotting <utils/plot-hist>`
-..   * :doc:`Maskbit <utils/maskbit>`
-
-.. :doc:`API <api>`
-.. ----------------
 
 .. toctree::
    :maxdepth: 3
    :caption: User Docs
 
    tools/index
+   query/index
+   web
+   api
 
 
-.. :doc:`Web <web>`
-.. ----------------
+.. toctree::
+   :maxdepth: 3
+   :caption: Datamodel
 
-.. :doc:`Datamodels <datamodel/datamodels>`
-.. ----------------------------------------
-
-.. * :doc:`datamodel/mpl4`
-.. * :doc:`datamodel/mpl5`
-.. * :doc:`datamodel/mpl6`
+   datamodel/datamodels
 
 
 .. toctree::
    :maxdepth: 2
    :caption: API/Code Reference
 
-   api/index
+   reference/index
 
 
-.. Indices and tables
-.. ==================
+Indices and tables
+==================
 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
+* :ref:`genindex`
+* :ref:`modindex`
 
-.. * :ref:`search`
+* :ref:`search`

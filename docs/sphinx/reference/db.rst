@@ -1,8 +1,8 @@
 
 .. _marvin-databases:
 
-Marvin Databases
-================
+Databases
+=========
 
 Marvin relies heavily on databases throughout itself.  Databases allow for fast access to data across the entire sample, and can be
 constructed to easily extract complex sets of data, or complete complex tasks.  All Marvin Queries, Marvin API calls, and Marvin Web
@@ -51,5 +51,3 @@ catalog.  The schema for this database is
     :alt: MangaSampleDb Schema
 
 |
-
-
