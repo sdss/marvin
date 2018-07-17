@@ -74,7 +74,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         else:
             webspec = [[wave.value[i], [s, error[i]]] for i, s in enumerate(spaxel.flux.value)]
 
-        specmsg = "Spectrum in Spaxel ({2},{3}) at RA, Dec = ({0}, {1})".format(x, y, spaxel.x, spaxel.y)
+        specmsg = "Spectrum in Spaxel (j, i)=({2},{3}) at RA, Dec = ({0}, {1})".format(spaxel.ra, spaxel.dec, spaxel.x, spaxel.y)
 
     return webspec, specmsg
 
@@ -341,7 +341,7 @@ class Galaxy(BaseWebView):
                     cube.nsa<br></samp></html>".format(cube.plateifu))
 
                 self.galaxy['spaxelstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
-                    Cube(plateifu='{0}')<br># get a spaxel<br>spaxel=cube[16, 16]<br>flux = \
+                    Cube(plateifu='{0}')<br># get a spaxel by slicing cube[i,j]<br>spaxel=cube[16, 16]<br>flux = \
                     spaxel.flux<br>wave = flux.wavelength<br>ivar = flux.ivar<br>mask = \
                     flux.mask<br>flux.plot()<br></samp></html>".format(cube.plateifu))
 
