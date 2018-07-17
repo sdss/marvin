@@ -30,9 +30,9 @@ designations given the typed entry.
 **Version Dropdown Select**:
 
 A dropdown select button indicating what version of MaNGA data you are
-currently working with.
+currently working with.  The default available releases are public data releases.
 
-**Login**
+**Login**:
 
 The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and password to
 access collaboration data.
