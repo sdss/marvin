@@ -5,11 +5,13 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
-# @Last modified by:   Brian Cherinka
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
 # @Last Modified time: 2018-04-26 09:25:33
 
-from __future__ import print_function, division, absolute_import
+from __future__ import absolute_import, division, print_function
+
 import os
+
 from invoke import Collection, task
 
 
@@ -174,6 +176,8 @@ def setup_utah(ctx, version=None):
     # print('Please run ...\n stopmarvin \n module switch wrapmarvin '
     #       'wrapmarvin/mangawork.marvin_{0} \n startmarvin \n'.format(version))
 
+
+os.chdir(os.path.dirname(__file__))
 
 ns = Collection(clean, deploy, setup_utah)
 docs = Collection('docs')
