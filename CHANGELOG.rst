@@ -150,7 +150,7 @@ Fixed
 --------------------
 
 Fixed
-~~~~~
+^^^^^
 
 - bugfix in MPL-6 datamodel for gew OII lines
 
@@ -158,7 +158,7 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Added ``Maskbit`` class for easy conversion between mask values, bits, and
    labels.
@@ -173,7 +173,7 @@ Added
 -  Access to DAPall data
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Issue `#190 <https://github.com/sdss/marvin/issues/190>`_: ``Maps.get_bpt()`` and
    ``marvin.utils.dap.bpt.bpt_kewley06()`` now also return a list of
@@ -185,7 +185,7 @@ Changed
 -  Bin and Spaxel are now subclassed from SpaxelBase
 
 Fixed
-~~~~~
+^^^^^
 
 - Issue `#24 <https://github.com/sdss/marvin/issues/24>`_
 - Issue `#99 <https://github.com/sdss/marvin/issues/99>`_
@@ -229,7 +229,7 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Added new query_params object, for easier navigation of available
    query parameters. Added new tests.
@@ -241,7 +241,7 @@ Added
    routes and 60/minute for query api calls and web searches
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Changed call signature for
    :meth:``marvin.utils.plot.map.no_coverage_mask`` (removed ``value``
@@ -261,7 +261,7 @@ Changed
    SkyServer and updated link to public up-to-date link
 
 Fixed
-~~~~~
+^^^^^
 
 -  Issue `#102 <https://github.com/sdss/marvin/issues/102>`_: problem with urllib package when attempting to retrieve
    the Marvin URLMap
@@ -301,7 +301,7 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Issue `#204 <https://github.com/sdss/marvin/issues/204>`_: added elpetro_absmag colours to mangaSampleDB models.
 -  Issue `#253 <https://github.com/sdss/marvin/issues/253>`_: Plotting tutorial.
@@ -318,7 +318,7 @@ Added
 -  Added ``tools.map`` doc page.
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Issue `#243 <https://github.com/sdss/marvin/issues/243>`_: inverted ``__getitem__`` behaviour for
    Cube/Maps/ModelCube and fixed tests.
@@ -343,7 +343,7 @@ Changed
    onto second line and overlap plot.
 
 Fixed
-~~~~~
+^^^^^
 
 -  Interactive prompt for username in sdss_access now works for Python
    3.
@@ -363,7 +363,7 @@ Fixed
 -  Highcharts draggable legend cdn.
 
 Removed
-~~~~~~~
+^^^^^^^
 
 -  Issue #232 and Issue `#251 <https://github.com/sdss/marvin/issues/251>`_: Automatic setting of matplotlib style
    sheets via seaborn import or ``plt.style.use()``.
@@ -373,13 +373,13 @@ Removed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  API and Web argument validation using webargs and marshmallow. If
    parameters invalid, returns 422 status.
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Per Issue `#186 <https://github.com/sdss/marvin/issues/186>`_: Switched to using the elpetro version of stellar
    mass, absolute magnitude i-band, and i-band mass-to-light ratio for
@@ -393,7 +393,7 @@ Changed
    all Marvin web documenation links to point to readthedocs.
 
 Fixed
-~~~~~
+^^^^^
 
 -  A bug in the calculation of the composite mask for BPT.
 -  Issue `#179 <https://github.com/sdss/marvin/issues/179>`_: Fixed a python 2/3 exception error compatibility with the
@@ -404,13 +404,13 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Added query runtime output in search page html. And a warning if
    query is larger than 20 seconds.
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Removed the python 3 raise Exception in the check_marvin bin
 -  Reverted the api/query return output from jsonify back to json.dumps
@@ -418,7 +418,7 @@ Changed
    -  This is an issue with python 2.7.3 namedtuple vs 2.7.11+
 
 Fixed
-~~~~~
+^^^^^
 
 -  Issue `#181 <https://github.com/sdss/marvin/issues/181>`_: web display of maps were inverted; changed to xyz[jj, ii,
    val] in heatmap.js
@@ -429,7 +429,7 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Restructured documentation index page.
 -  Improved installation documentation:
@@ -478,7 +478,7 @@ Added
    mangaSampleDB or drpall.
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  When marvin is running from source (not dist), ``marvin.__version__``
    is ``dev``.
@@ -533,7 +533,7 @@ Changed
    1024 mb for production environment
 
 Fixed
-~~~~~
+^^^^^
 
 -  Issue `#115 <https://github.com/sdss/marvin/issues/115>`_: drpall does not get updated when a tool sets a custom
    release.
@@ -556,12 +556,12 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Docs now use ``marvin.__version__``.
 
 Fixed
-~~~~~
+^^^^^
 
 -  Fixed #100, `#103 <https://github.com/sdss/marvin/issues/103>`_: problem with getMap for properties without ivar.
 -  Fixed `#101 <https://github.com/sdss/marvin/issues/101>`_: problem with marvin query.
@@ -571,7 +571,7 @@ Fixed
 --------------------
 
 Fixed
-~~~~~
+^^^^^
 
 -  Now really fixing #98
 
@@ -582,7 +582,7 @@ Fixed
 --------------------
 
 Fixed
-~~~~~
+^^^^^
 
 -  Fixed issue #98
 
@@ -591,7 +591,7 @@ Fixed
 --------------------
 
 Fixed
-~~~~~
+^^^^^
 
 -  Bug in Queries with dap query check running in remote mode. Param
    form is empty.
@@ -601,13 +601,13 @@ Fixed
 --------------------
 
 Added
-~~~~~
+^^^^^
 
 -  Added netrc configuration to installation documentation.
 -  Added netrc check on init.
 
 Fixed
-~~~~~
+^^^^^
 
 -  Added mask to model spaxel.
 -  Bug in Cube tool when a galaxy loaded from db does not have NSA info;
@@ -627,13 +627,13 @@ Fixed
 --------
 
 Changed
-~~~~~~~
+^^^^^^^
 
 -  Full refactoring of Marvin 1.0
 -  Refactored web
 
 Added
-~~~~~
+^^^^^
 
 -  Marvin Tools
 -  Queries (only global properties, for now)
@@ -642,6 +642,6 @@ Added
 -  Many more changes
 
 Fixed
-~~~~~
+^^^^^
 
 -  Issue albireox/marvin#2: Change how matplotlib gets imported.
