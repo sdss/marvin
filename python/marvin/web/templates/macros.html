@@ -240,3 +240,33 @@
     <!--/Slider-->
 </div>
 {% endmacro %}
+
+{# Dygraphs Help Popup #}
+{% macro dygraph_popup() %}
+<div class="modal fade" id="dyghelp_modal" tabindex="-1" role="dialog" aria-labelledby="gLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Graph: Zoom, Pan, Values</h4>
+            </div>
+            <div id="gbody" class="modal-body">
+              <div class='row'>
+                <div class='col-md-12'>
+                <ul>
+                  <li>Select a region from left to right to <em>zoom in</em> on the horizontal axis.</li>
+                  <li>Select a region from top to bottom to <em>zoom in</em> on the vertical axis.</li>
+                  <li>Double click on the plot to <em>zoom out</em>.</li>
+                  <li>Hold SHIFT key and drag to pan right, left, up, down.</li>
+                  <li>Hover for wavelength vs. flux values.</li>
+                </ul>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+                <span class="glyphicon glyphicon-info-sign"></span> Contact <a href="mailto:helpdesk@sdss.org?subject=Science%20Archive%20Webapp%20Help%20">helpdesk@sdss.org</a> for further assistance
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
