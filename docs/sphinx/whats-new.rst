@@ -1,6 +1,6 @@
 .. _whats-new:
 
-What's New in Marvin 2.3.0 (unreleased)
+What's New in Marvin 2.2.6 (unreleased)
 =======================================
 
 
