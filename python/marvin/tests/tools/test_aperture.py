@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-16 17:59:38
+# @Last modified time: 2018-07-17 16:39:15
 
 import numpy
 import pytest
@@ -94,6 +94,10 @@ def test_get_aperture(inputs, outputs):
     assert len(spaxels) == n_spaxels
 
     assert spaxels[0].loaded is False
+
+    # Check that we can load the spaxel
+    spaxels[0].load()
+    assert spaxels[0].loaded is True
 
 
 def test_get_aperture_no_lazy():
