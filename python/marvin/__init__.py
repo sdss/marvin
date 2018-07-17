@@ -494,7 +494,8 @@ class MarvinConfig(object):
 
         return release
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False, base=None, public=None):
+    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False,
+                     base=None, public=None):
         ''' Switches the API SAS url config attribute
 
         Easily switch the sasurl configuration variable between
@@ -513,6 +514,8 @@ class MarvinConfig(object):
                 If ``True``, sets the Utah sasurl to the test production, test/marvin
             base (str):
                 The name of the marvin base.  Gets appended to main url.  Defaults to "marvin"
+            public (bool):
+                If ``True``, sets the API url to the public domain
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
@@ -531,7 +534,6 @@ class MarvinConfig(object):
             else:
                 self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
                 self._authtype = 'token'
-        #self._urlmap = None
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -616,8 +618,11 @@ class MarvinConfig(object):
         # remove and return similar characters from value in self._release
         if self._release:
             similar = re.sub('[^{0}]'.format(self._release.replace('-', '\-')), '', value)
+            # are we still a DR?
             stilldr = 'DR' in similar
+            # are we still an MPL?
             stillmpl = 'MPL' in similar
+            # have we changed releases?
             relchange = stilldr is False and stillmpl is False
 
         # yield the value (a release)
@@ -640,9 +645,14 @@ class MarvinConfig(object):
     def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token
 
+        Copy this token into the "use_token" parameter in your
+        custom marvin.yml file to ensure preserve authentication
+        across iPython user sessions.
+
         Parameters:
             refresh (bool):
                 Set to True to refresh a login to receive a new token
+
         '''
 
         assert config.access == 'collab', 'You must have collaboration access to login.'
