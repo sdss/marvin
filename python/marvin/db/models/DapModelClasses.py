@@ -260,8 +260,11 @@ def spaxel_factory(classname, clean=None):
     def newrepr(self):
         return '<{2} (pk={0}, file={1})'.format(self.pk, self.file_pk, classname)
 
-    newclass = type(classname, (Base, SpaxelAtts,), params)
-    newclass.__repr__ = newrepr
+    try:
+        newclass = type(classname, (Base, SpaxelAtts,), params)
+        newclass.__repr__ = newrepr
+    except Exception as e:
+        newclass = None
 
     return newclass
 
@@ -271,8 +274,11 @@ for dm in datamodel:
     classname = datamodel[dm].property_table
     newclass = spaxel_factory(classname)
     cleanclass = spaxel_factory(classname, clean=True)
-    locals()[classname] = newclass
-    locals()[cleanclass.__name__] = cleanclass
+    if newclass:
+        locals()[cleanclass.__name__] = cleanclass
+        locals()[classname] = newclass
+    if cleanclass:
+        locals()[cleanclass.__name__] = cleanclass
 
 
 class BinMode(Base):
