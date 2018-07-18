@@ -27,8 +27,13 @@ def clean_docs(ctx):
 
 
 @task
-def build_docs(ctx):
+def build_docs(ctx, clean=False):
     ''' Builds the Sphinx docs '''
+
+    if clean:
+        print('Cleaning the docs')
+        ctx.run("rm -rf docs/sphinx/_build")
+
     print('Building the docs')
     os.chdir('docs/sphinx')
     ctx.run("make html")
