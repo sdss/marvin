@@ -135,7 +135,7 @@ Or get a single spectrum and plot it::
     import marvin
     import matplotlib.pyplot as plt
 
-    my_cube = marvin.tools.Cube('7443-12701')
+    my_cube = marvin.tools.Cube('8485-1901')
     flux = my_cube.flux
     spectrum = flux[:, 50, 55]
     spectrum.plot(show_std=True)
