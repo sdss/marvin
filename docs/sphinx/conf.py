@@ -14,6 +14,7 @@
 
 import sys
 import os
+import subprocess
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
@@ -360,7 +361,31 @@ import matplotlib.sphinxext.plot_directive
 extensions += [matplotlib.sphinxext.plot_directive.__name__]
 
 
+def get_test_data():
+
+    url = 'http://faculty.washington.edu/gallegoj/test_rtd/mangawork_rtd.tar.gz'
+
+    os.mkdir(os.path.expanduser('~/sas'))
+    os.chdir(os.path.expanduser('~/sas'))
+
+    ret = subprocess.run(['wget', url, os.path.expanduser('~/sas')])
+    if ret.returncode != 0:
+        raise RuntimeError('failed to download file')
+
+    ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz'])
+    if ret.returncode != 0:
+        raise RuntimeError('failed to uncompress file')
+
+    print('SAS data uncompressed')
+
+    cube = marvin.tools.Cube('8485-1901')
+    print(cube)
+
+
 # -- Use the custom css file in readthedocs --
 def setup(app):
     app.add_stylesheet('custom.css')
     app.add_javascript('copybutton.js')
+
+    if os.environ.get('READTHEDOCS') == 'True':
+        get_test_data()
