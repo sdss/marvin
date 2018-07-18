@@ -365,8 +365,12 @@ def get_test_data():
 
     url = 'http://faculty.washington.edu/gallegoj/test_rtd/mangawork_rtd.tar.gz'
 
-    os.mkdir(os.path.expanduser('~/sas'))
-    os.chdir(os.path.expanduser('~/sas'))
+    sas_path = os.path.expanduser('~/sas')
+
+    if not os.path.exists(sas_path):
+        os.mkdir(sas_path)
+
+    os.chdir(sas_path)
 
     ret = subprocess.run(['wget', url, os.path.expanduser('~/sas')])
     if ret.returncode != 0:
