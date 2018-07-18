@@ -133,11 +133,14 @@ Or get a single spectrum and plot it::
 .. plot::
 
     import marvin
+    import matplotlib.pyplot as plt
+
     my_cube = marvin.tools.Cube('7443-12701')
     flux = my_cube.flux
     spectrum = flux[:, 50, 55]
     spectrum.plot(show_std=True)
 
+    plt.show()
 
 .. .. image:: ../_static/plots/tools/getting_started_flux_spectrum.png
     :width: 50%
