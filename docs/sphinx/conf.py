@@ -376,17 +376,8 @@ def get_test_data():
     os.chdir(sas_path)
 
     ret = subprocess.run(['wget', url, os.path.expanduser('~/sas')])
-    # if ret.returncode != 0:
-    #     raise RuntimeError('failed to download file')
-
     ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz'])
-    # if ret.returncode != 0:
-    #     raise RuntimeError('failed to uncompress file')
-
     print('SAS data uncompressed')
-
-    cube = marvin.tools.Cube('8485-1901')
-    print(cube)
 
 
 # -- Use the custom css file in readthedocs --
