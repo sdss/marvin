@@ -130,7 +130,16 @@ Or get a single spectrum and plot it::
 
     >>> spectrum.plot(show_std=True)
 
-.. image:: ../_static/plots/tools/getting_started_flux_spectrum.png
+.. plot::
+
+    import marvin
+    my_cube = marvin.tools.Cube('7443-12701')
+    flux = my_cube.flux
+    spectrum = flux[:, 50, 55]
+    spectrum.plot(show_std=True)
+
+
+.. .. image:: ../_static/plots/tools/getting_started_flux_spectrum.png
     :width: 50%
     :align: center
 

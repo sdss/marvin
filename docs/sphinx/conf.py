@@ -12,17 +12,23 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
 import subprocess
+import sys
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
-matplotlib.use('agg')
-
+# Matplolib plot directive
+import matplotlib.sphinxext.plot_directive
 # Comment if you do not want to use bootstrap themes.
 import sphinx_rtd_theme
+from sphinx.ext.napoleon.docstring import GoogleDocstring
+
 import marvin
+
+
+matplotlib.use('agg')
+
 
 try:
     marvin_version = marvin.__version__
@@ -338,7 +344,6 @@ texinfo_documents = [
 
 # -- Extensions to the  Napoleon GoogleDocstring class ---------------------
 
-from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 
 # first, we define new methods for any new sections and add them to the class
@@ -356,8 +361,6 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
-# Matplolib plot directive
-import matplotlib.sphinxext.plot_directive
 extensions += [matplotlib.sphinxext.plot_directive.__name__]
 
 
@@ -373,12 +376,12 @@ def get_test_data():
     os.chdir(sas_path)
 
     ret = subprocess.run(['wget', url, os.path.expanduser('~/sas')])
-    if ret.returncode != 0:
-        raise RuntimeError('failed to download file')
+    # if ret.returncode != 0:
+    #     raise RuntimeError('failed to download file')
 
     ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz'])
-    if ret.returncode != 0:
-        raise RuntimeError('failed to uncompress file')
+    # if ret.returncode != 0:
+    #     raise RuntimeError('failed to uncompress file')
 
     print('SAS data uncompressed')
 
