@@ -366,7 +366,7 @@ extensions += [matplotlib.sphinxext.plot_directive.__name__]
 
 def get_test_data():
 
-    url = 'https://www.dropbox.com/s/tugebjvdqxgi074/mangawork_rtd.tar.gz?dl=0'
+    url = 'https://www.dropbox.com/s/vk2vv34faexnon5/mangawork_rtd.tar.gz?dl=0'
 
     sas_path = os.path.expanduser('~/sas')
 
@@ -376,7 +376,10 @@ def get_test_data():
     os.chdir(sas_path)
 
     subprocess.run(['wget', url, os.path.expanduser('~/sas')])
-    subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz?dl=0'])
+    ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz?dl=0'])
+
+    assert ret.returncode == 0, 'failed to download or uncompress the test data.'
+
     print('SAS data uncompressed')
 
 
