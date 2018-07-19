@@ -6,7 +6,7 @@
 # @Filename: galaxyzoo3d.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-09 17:23:24
 
 
@@ -32,6 +32,7 @@ class GalaxyZoo3DVAC(VACMixIn):
     """
 
     name = 'galaxyzoo3d'
+    description = 'Returns people-powered classifications of internal structures of MaNGA galaxies.'
     version = {'MPL-6': 'v1_0_0',
                'DR15': 'v1_0_0'}
 

@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
-# @Last modified by: José Sánchez-Gallego
-# @Last Modified time: 2018-07-09 17:26:07
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-07-18 22:36:29
 
 from __future__ import absolute_import, division, print_function
 
@@ -57,6 +57,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             raise MarvinError('sdss_access is not installed')
         else:
             self.rsync_access = sdss_access.sync.RsyncAccess()
+
+    def __repr__(self):
+        return '<VAC (name={0})>'.format(self.name)
 
     @abc.abstractmethod
     def get_data(self, parent_object):
