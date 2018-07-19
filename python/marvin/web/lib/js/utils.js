@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-23 17:36:14
+* @Last Modified time: 2018-04-13 16:05:17
 */
 
 // Javascript code for general things
@@ -126,7 +126,7 @@ var Utils = function () {
             var form = $('#loginform').serialize();
             Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json')).then(function (data) {
                 if (data.result.status < 0) {
-                    throw new Error('Bad status login');
+                    throw new Error('Bad status login. ' + data.result.message);
                 }
                 if (data.result.message !== '') {
                     var stat = data.result.status === 0 ? 'danger' : 'success';
@@ -138,7 +138,7 @@ var Utils = function () {
                 }
             }).catch(function (error) {
                 _this2.resetLogin();
-                alert('Bad login attempt');
+                alert('Bad login attempt! ' + error);
             });
         }
 

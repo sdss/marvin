@@ -6,11 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-02-12 20:46:42
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-13 16:41:23
+# @Last Modified time: 2018-06-06 14:38:39
 
 from __future__ import print_function, division, absolute_import
 import pytest
-from marvin.tests.web.conftest import Page
 from marvin import marvindb
 from flask import url_for
 
@@ -59,7 +58,7 @@ class TestGetGalIdList(object):
 
     def test_getgalid_success(self, page, release):
         page.load_page('post', page.url, params={'release': release})
-        data = ['8485', '8485-1901', '7443', '7443-12701', '1-209232', '12-98126']
+        data = ['8485', '8485-1901', '1-209232']
         page.assert200(message='response status should be 200 for ok')
         page.assertListIn(data, page.json)
 
@@ -99,12 +98,12 @@ class TestGalIdSelect(object):
             page.assert422(message='response should be 422 for no name input')
 
 
-@pytest.mark.parametrize('page', [('index_page', 'login')], ids=['login'], indirect=True)
+@pytest.mark.parametrize('page', [('index_page', 'login', False)], ids=['login'], indirect=True)
 @pytest.mark.parametrize('data, exp',
-                         [({'username': '', 'password': ''}, {'ready': False, 'status': -1, 'message': ''}),
-                          ({'username': 'sdss', 'password': 'password'}, {'ready': False, 'status': 0, 'message': 'Failed login for sdss. Please retry.', 'membername': 'Unknown user'}),
-                          ({'username': 'bac29', 'password': 'password'}, {'ready': False, 'status': 0, 'message': 'Failed login for bac29. Username unrecognized.', 'membername': 'Unknown user'}),
-                          pytest.mark.xfail(reason="not real login")(({'username': 'sdss', 'password': 'password'}, {'ready': True, 'status': 1, 'message': 'Logged in as sdss. ', 'membername': 'SDSS User'}))],
+                         [({'username': '', 'password': ''}, {'ready': False, 'status': -1, 'message': 'Login  is not valid!'}),
+                          ({'username': 'sdss', 'password': 'password'}, {'ready': False, 'status': -1, 'message': 'Login sdss is not valid!'}),
+                          ({'username': 'bac29', 'password': 'password'}, {'ready': False, 'status': -1, 'message': 'Login bac29 is not valid!'}),
+                          ({'username': 'test', 'password': 'test'}, {'ready': True, 'status': 1, 'message': 'Login Successful!', 'membername': 'SDSS User'})],
                          ids=['no_input', 'wrong_pass', 'wrong_user', 'success'])
 class TestLogin(object):
 
@@ -114,6 +113,6 @@ class TestLogin(object):
         page.assert200('response status should be 200 for ok')
         assert exp['status'] == page.json['result']['status']
         assert exp['message'] == page.json['result']['message']
-        if 'membername' in exp:
+        if 'membername' in exp and 'membername' in page.json['result']:
             assert exp['membername'] == page.json['result']['membername']
 
