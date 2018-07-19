@@ -131,20 +131,17 @@ Or get a single spectrum and plot it::
     >>> spectrum.plot(show_std=True)
 
 .. plot::
+    :align: center
 
     import marvin
     import matplotlib.pyplot as plt
 
-    my_cube = marvin.tools.Cube('8485-1901')
+    my_cube = marvin.tools.Cube('7443-12703')
     flux = my_cube.flux
-    spectrum = flux[:, 17, 17]
-    spectrum.plot(show_std=True)
+    spectrum = flux[:, 50, 55]
+    ax = spectrum.plot(show_std=True)
+    ax.set_xlim(6000, 8000)
 
-    plt.show()
-
-.. .. image:: ../_static/plots/tools/getting_started_flux_spectrum.png
-    :width: 50%
-    :align: center
 
 We will talk more about quantities in the :ref:`marvin-quantities` section, and about more advance plotting in :ref:`marvin-plotting`.
 

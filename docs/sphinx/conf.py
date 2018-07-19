@@ -25,6 +25,7 @@ import sphinx_rtd_theme
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
+marvin.config.forceDbOff()
 
 
 matplotlib.use('agg')
