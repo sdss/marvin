@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-17 23:36:31
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-18 23:22:22
+# @Last Modified time: 2018-07-19 00:37:28
 
 from __future__ import print_function, division, absolute_import
 
@@ -164,7 +164,7 @@ class VACList(FuzzyList):
         release = self.parent.release.lower().replace('-', '')
 
         if not filename:
-            filename = 'drpcubes_dm_{0}.csv'.format(release)
+            filename = 'vacs_dm_{0}.csv'.format(release)
 
         if not path:
             path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')

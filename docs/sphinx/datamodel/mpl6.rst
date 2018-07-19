@@ -45,3 +45,10 @@ MPL-6 Maskbits
    :bitmasks:
    :bittype: Target
 
+MPL-6 VACs
+----------
+
+.. datamodel:: marvin.utils.datamodel.vacs:datamodel
+   :prog: Available VACs
+   :vac: MPL-6
+
