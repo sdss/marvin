@@ -8,32 +8,27 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import abc
 import inspect
 import itertools
-import six
 import warnings
 
 import numpy as np
+import six
 
 import marvin
-import marvin.core.core
 import marvin.core.exceptions
-from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 import marvin.core.marvin_pickle
-import marvin.utils.general.general
-
 import marvin.tools.cube
 import marvin.tools.maps
 import marvin.tools.modelcube
-
-from marvin.utils.general.structs import FuzzyDict
+import marvin.utils.general.general
+from marvin.core.exceptions import MarvinBreadCrumb, MarvinError, MarvinUserWarning
 from marvin.utils.datamodel.dap import datamodel as dap_datamodel
 from marvin.utils.datamodel.drp import datamodel as drp_datamodel
+from marvin.utils.general.structs import FuzzyDict
 
 
 breadcrumb = MarvinBreadCrumb()
@@ -351,7 +346,7 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
             path (str):
                 The path of the file to which the `.Spaxel` will be saved.
                 Unlike for other Marvin Tools that derive from
-                `~marvin.core.core.MarvinToolsClass`, ``path`` is
+                `~marvin.tools.core.MarvinToolsClass`, ``path`` is
                 mandatory for `.Spaxel.save` as there is no default path for a
                 given spaxel.
             overwrite (bool):

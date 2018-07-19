@@ -311,7 +311,7 @@ class Map(units.Quantity, QuantityMixIn):
             path (str):
                 The path of the file to which the ``Map`` will be saved.
                 Unlike for other Marvin Tools that derive from
-                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
+                :class:`~marvin.tools.core.MarvinToolsClass`, ``path`` is
                 mandatory for ``Map`` given that the there is no default
                 path for a given map.
             overwrite (bool):
