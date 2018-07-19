@@ -191,7 +191,7 @@ See the :ref:`datamodel <marvin-datamodel>` section for more information on how 
     :align: center
 
     import marvin
-    my_maps = marvin.tools.Maps('7443-12703')
+    my_maps = marvin.tools.Maps('7443-12703', bintype='HYB10')
     my_maps.emline_gflux_ha_6564.plot()
 
 Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib `~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters, colour maps, and dynamic ranges. You can modify those by passing extra arguments to `~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>` section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities` and in :ref:`marvin-map`.
