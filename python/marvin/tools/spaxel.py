@@ -611,7 +611,15 @@ class Spaxel(SpaxelBase):
 
 
 class Bin(SpaxelBase):
-    """A class that represents a bin."""
+    """A class that represents a bin.
+
+    Attributes
+    ----------
+    spaxels : list
+        A list of `.Spaxel` instances that provides access to the unbinned
+        spaxels that are associated with the bin.
+
+    """
 
     def __init__(self, *args, **kwargs):
 
@@ -674,7 +682,7 @@ class Bin(SpaxelBase):
         spaxel_coords = zip(*np.where(binid_map == self.binid))
         self.spaxels = []
 
-        for jj, ii in spaxel_coords:
+        for ii, jj in spaxel_coords:
             self.spaxels.append(Spaxel(x=jj, y=ii, plateifu=self.plateifu, release=self.release,
                                        cube=self._cube, maps=True if self._maps else False,
                                        modelcube=True if self._modelcube else False,
