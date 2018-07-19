@@ -323,7 +323,9 @@ class Plate(MarvinToolsClass, FuzzyList):
             if not Path:
                 raise MarvinError('sdss_access is not installed')
             else:
-                sdss_path = Path()
+                is_public = 'DR' in self._release
+                path_release = self._release.lower() if is_public else None
+                sdss_path = Path(public=is_public, release=path_release)
 
             # try a cube
             full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*')

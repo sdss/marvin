@@ -72,6 +72,10 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 29.44485646
+                stellar_sigma:
+                    MIUSCAT-THIN: 0.0
+                stellar_sigmacorr:
+                    MIUSCAT-THIN: 0.0
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[16, 23]]
@@ -111,6 +115,12 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 31.47541953
+                stellar_sigma:
+                    SPX: 89.046
+                    VOR10: 90.596771373123403
+                stellar_sigmacorr:
+                    SPX: 62.3983
+                    VOR10: 62.576822691528562
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -170,6 +180,14 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 30.744535
+                stellar_sigma:
+                    SPX: 90.53972625732422
+                    VOR10: 0.0
+                    HYB10: 90.539726
+                stellar_sigmacorr:
+                    SPX: 0.0
+                    VOR10: 0.0
+                    HYB10: 0.0
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -259,6 +277,10 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 0.0
+                stellar_sigma:
+                    MIUSCAT-THIN: 0.0
+                stellar_sigmacorr:
+                    MIUSCAT-THIN: 0.0
             bins:
                 100:
                     NONE-M11-STELIB-ZSOL: [[31, 31]]
@@ -298,6 +320,12 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 0.05784708
+                stellar_sigma:
+                    SPX: 19.441884916319285
+                    VOR10: 31.735091988650336
+                stellar_sigmacorr:
+                    SPX: 52.358176822585364
+                    VOR10: 52.357828737363242
             bins:
                 100:
                     ALL-GAU-MILESHC: []
@@ -332,6 +360,14 @@
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 0.0
+                stellar_sigma:
+                    SPX: 25.610834
+                    VOR10: 31.963898
+                    HYB10: 31.963898
+                stellar_sigmacorr:
+                    SPX: 0.0
+                    VOR10: 0.0
+                    HYB10: 0.0
             bins:
                 100:
                     ALL-GAU-MILESHC: []

@@ -2,14 +2,16 @@
 import contextlib
 import re
 import functools
+import os
 from copy import deepcopy
-from flask import request
-from brain.api.base import processRequest
 from marvin import config
-from marvin.core.exceptions import MarvinError
 from marvin.utils.datamodel.dap import datamodel as dm
 from webargs import fields, validate, ValidationError
 from webargs.flaskparser import use_args, use_kwargs, parser
+from marvin.utils.general import validate_jwt
+from flask_jwt_extended import fresh_jwt_required
+from brain.utils.general import build_routemap
+from flask import current_app
 
 
 def plate_in_range(val):
@@ -69,7 +71,7 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)
                      },
           'index': {'galid': fields.String(allow_none=True, validate=[validate.Length(min=4), validate.Regexp('^[0-9-]*$')]),
-                    'mplselect': fields.String(allow_none=True, validate=validate.Regexp('MPL-[1-9]'))
+                    'mplselect': fields.String(allow_none=True, validate=validate.Regexp('^(MPL-|DR)([0-9]{1,2}$)'))
                     },
           'galaxy': {'plateifu': fields.String(allow_none=True, validate=validate.Length(min=8, max=11)),
                      'toggleon': fields.String(allow_none=True, validate=validate.OneOf(['true', 'false'])),
@@ -104,8 +106,8 @@ class ArgValidator(object):
     `marshmallow <https://marshmallow.readthedocs.io/en/latest/>`_.
 
     There are two global dictionaries defining the argument validations.  `view_args` defines the
-    list of all named arguments in the api/web Flask routes, e.g. `/marvin2/api/cubes/<name>/` or
-    `/marvin2/api/maps/<name>/<bintype>/<template>/`.   `params` defines the list of all parameters
+    list of all named arguments in the api/web Flask routes, e.g. `/marvin/api/cubes/<name>/` or
+    `/marvin/api/maps/<name>/<bintype>/<template>/`.   `params` defines the list of all parameters
     used in routes as form arguments in GET or POST requests, in both the web and api Flask routes.
     Each entry is a dictionary of {page: dict of parameter validators}.  For example, the `query` key contains
     parameters related to sending requests to the API or Web Query views.
@@ -141,7 +143,7 @@ class ArgValidator(object):
         self.dapver = None
         self.urlmap = urlmap
         self.base_args = {'release': fields.String(required=True,
-                          validate=validate.Regexp('MPL-[1-9]'))}
+                          validate=validate.Regexp('^(MPL-|DR)([0-9]{1,2}$)'))}
         self.use_params = None
         self._required = None
         self._setmissing = None
@@ -153,6 +155,12 @@ class ArgValidator(object):
         self.use_args = use_args
         self.use_kwargs = use_kwargs
 
+    def _check_urlmap(self):
+        ''' Check that urlmap exists and build it if not '''
+        if not self.urlmap:
+            urlmap = build_routemap(current_app)
+            self.urlmap = urlmap
+
     def _reset_final_args(self):
         ''' Resets the final args dict '''
         self.final_args = {}
@@ -162,6 +170,7 @@ class ArgValidator(object):
 
     def _get_url(self):
         ''' Retrieve the URL route from the map based on the request endpoint '''
+        self._check_urlmap()
         blue, end = self.endpoint.split('.', 1)
         url = self.urlmap[blue][end]['url']
         # if the blueprint is not api, add/remove session option location
@@ -442,3 +451,14 @@ def db_off():
     config.forceDbOff()
     yield
     config.forceDbOn()
+
+
+def set_api_decorators():
+    ''' Sets the API decorators '''
+    if os.environ.get('PUBLIC_SERVER', None):
+        from brain.utils.general.decorators import public
+        decorators = [public]
+    else:
+        decorators = [fresh_jwt_required, validate_jwt]
+
+    return decorators

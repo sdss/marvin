@@ -302,10 +302,14 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     def download(self, pathType=None, **pathParams):
         """Download using sdss_access Rsync"""
 
+        # check for public release
+        is_public = 'DR' in self._release
+        rsync_release = self._release.lower() if is_public else None
+
         if not RsyncAccess:
             raise MarvinError('sdss_access is not installed')
         else:
-            rsync_access = RsyncAccess()
+            rsync_access = RsyncAccess(public=is_public, release=rsync_release)
             rsync_access.remote()
             rsync_access.add(pathType, **pathParams)
             rsync_access.set_stream()
@@ -324,14 +328,19 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         """
 
+        # check for public release
+        is_public = 'DR' in self._release
+        path_release = self._release.lower() if is_public else None
+
         if not Path:
             raise MarvinMissingDependency('sdss_access is not installed')
         else:
+            path = Path(public=is_public, release=path_release)
             try:
                 if url:
-                    fullpath = Path().url(pathType, **pathParams)
+                    fullpath = path.url(pathType, **pathParams)
                 else:
-                    fullpath = Path().full(pathType, **pathParams)
+                    fullpath = path.full(pathType, **pathParams)
             except Exception as ee:
                 warnings.warn('sdss_access was not able to retrieve the full path of the file. '
                               'Error message is: {0}'.format(str(ee)), MarvinUserWarning)

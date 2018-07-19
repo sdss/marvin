@@ -38,6 +38,12 @@ several attributes that control how you interact with MaNGA data.
     This attribute is set automatically.  If you not using the Marvin API :ref:`marvin-api-interaction` class directly,
     then **you do not have to do anything with this attribute**.
 
+* **access**:
+    This attribute informs Marvin of the type of access it has.  The allowed values are either "public" or "collab", for public and collaborationa access, respectively.  Public access provides access only to MaNGA public Data Releases, while collaboration access provides access to all MaNGA data release, DRs and MPLs.  The default value is **public**.
+
+* **login**:
+    This method
+
 .. _marvin-modes:
 
 Data Access Modes
@@ -75,5 +81,90 @@ You can also individually set MPLs or DRs separately with similar methods.
 ::
 
     from marvin import config
-    config.setDR('DR13') # sets the global version to DR13
+    config.setDR('DR15') # sets the global version to DR15
+
+.. _marvin-access:
+
+Public vs Collab Access
+=======================
+
+There are two access modes in Marvin, one for the public, and one for members of the SDSS collaboration.  The default access mode in Marvin is **public**.  Public access only provides access to MaNGA released in public Data Releases (DRs).
+
+::
+
+    # the default release with public access is the latest DR
+    from marvin import config
+    INFO: No release version set. Setting default to DR15
+
+    # the data release is DR15
+    config.release
+    'DR15'
+
+If you are a member of the SDSS collaboration and have properly set up your netrc authentication, you can switch access to **collab** and get access to MaNGA collaboration data, MPLs, as well as DRs.
+
+::
+
+    # switch to collaboration access
+    from marvin import config
+    config.access = 'collab'
+
+    # switch to an MPL
+    config.setRelease('MPL-7')
+
+.. _marvin-api-login:
+
+Logging In
+==========
+
+The Marvin API requires authentication with a token for access.  To receive a token, use the ``login`` method
+::
+
+    # to receive an API token
+    config.login()
+
+    # check you have a token
+    config.token
+
+A valid token lasts for 300 days.  When your token expires, you will need to login again to receive a new token.
+::
+
+    # receive a fresh token
+    config.login(refresh=True)
+
+Note, by default your token will disappear upon exiting your iPython terminal session.  You will need to login again within a new session.  To preserve your token between iPython sessions, copy your token into the **use_token** attribute of your custom Marvin config file.
+
+Attempting to use Marvin with invalid credentials or an invalid token will produce the following error.
+::
+
+    # access a cube remotely without proper credentials
+    cube = Cube('8485-1901', mode='remote')
+
+    MarvinError: found a problem when checking if remote cube exists: API Authentication Error: Token has expired. Please check your token or login again for a fresh one.
+
+
+.. _marvin_custom_yaml:
+
+Marvin Custom Configuration File
+================================
+
+Most Marvin configuration options can be set using the Marvin ``config`` object within iPython.  You can also set configuration parameters using a custom YAML configuration file, ``marvin.yml``.  This file must be placed in the following directory in your HOME, ``~/.marvin/marvin.yml``.  Currently configurable options are:
+
+* **check_access**:
+    Set to **True** to have Marvin automatically check for proper netrc collaboration access and switch to **collab** access mode on startup.  Default is **False**.
+
+* **use_sentry**:
+    Set to **False** to disable Sentry error logging in Marvin.  Default is **True**.
+
+* **add_github_message**:
+    Set to **False** to disable the Github Issue message on all Marvin Errors.  Default is **True**.
+
+* **use_token**:
+    Set this value to your valid API token.  This ensures proper API authentication across iPython sessions.
+
+
+
+
+
+
+
 

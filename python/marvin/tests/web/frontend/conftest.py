@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-04-06 15:30:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-14 15:19:42
+# @Last Modified time: 2018-04-03 16:08:48
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -58,7 +58,7 @@ def app():
 def base_url(live_server):
     url = live_server.url()
     #url = url.replace('localhost', '127.0.0.1')
-    return '{0}/marvin2/'.format(url)
+    return '{0}/marvin/'.format(url)
 
 
 @pytest.fixture(scope='function')

@@ -563,6 +563,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         channel = channel.name if isinstance(channel, Channel) else channel
 
+        channel = None if channel == 'None' else channel
         if channel is not None:
             property_name = property_name + '_' + channel
 

@@ -227,4 +227,5 @@ MPL5_models = [
 MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR10, SPX],
                     templates=[GAU_MILESHC], properties=MPL5_maps, bitmasks=get_maskbits('MPL-5'),
                     models=MPL5_models, default_bintype='SPX', default_template='GAU-MILESHC',
-                    property_table='SpaxelProp5', default_binid=binid_property)
+                    property_table='SpaxelProp5', default_binid=binid_property,
+                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'])
