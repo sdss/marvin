@@ -22,6 +22,7 @@ Added
 - New config.login method to handle token-based login
 - New marvin.yml config file for customization of configuration options
 - Adds User table into the history schema of mangadb.  Tracks user logins.
+- ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 
 Fixed
 ^^^^^

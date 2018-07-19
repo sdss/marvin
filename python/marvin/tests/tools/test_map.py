@@ -5,23 +5,24 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-05 15:07:42
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-19 14:28:48
 
-from copy import deepcopy
 import operator
+from copy import deepcopy
 
-import numpy as np
-from astropy import units as u
 import matplotlib
+import numpy as np
 import pytest
+from astropy import units as u
 
 from marvin.core.exceptions import MarvinError
-from marvin.tools.maps import Maps
-from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.tools.maps import Maps
+from marvin.tools.quantities import EnhancedMap, Map
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general.maskbit import Maskbit
+
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -182,6 +183,19 @@ class TestMap(object):
 
         reordered_ha = np.moveaxis(ha, 0, -1)
         assert reordered_ha.unit is not None
+
+    @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'bintype': ['SPX']})
+    def test_get_spaxel(self, maps):
+        """Tests `.Map.getSpaxel`."""
+
+        ha = maps['emline_gflux_ha']
+
+        spaxel = ha.getSpaxel(x=10, y=10, xyorig='lower')
+
+        assert spaxel is not None
+        assert spaxel.x == 10 and spaxel.y == 10
 
     def test_stellar_sigma_values(self, maps, galaxy):
         ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''

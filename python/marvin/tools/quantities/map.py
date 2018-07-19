@@ -301,6 +301,14 @@ class Map(units.Quantity, QuantityMixIn):
 
         return value, ivar, mask
 
+    def getSpaxel(self, **kwargs):
+        """Returns a `~marvin.tools.spaxel.Spaxel`."""
+
+        if not self._maps:
+            raise ValueError('this Map does not have an associate parent Maps.')
+
+        return self._maps.getSpaxel(**kwargs)
+
     def save(self, path, overwrite=False):
         """Pickle the map to a file.
 
