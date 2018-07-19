@@ -137,7 +137,7 @@ Or get a single spectrum and plot it::
 
     my_cube = marvin.tools.Cube('8485-1901')
     flux = my_cube.flux
-    spectrum = flux[:, 50, 55]
+    spectrum = flux[:, 17, 17]
     spectrum.plot(show_std=True)
 
     plt.show()
