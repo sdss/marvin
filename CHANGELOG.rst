@@ -7,6 +7,7 @@ Marvin's Change Log
 Added
 ^^^^^
 - Added cheatsheet to docs.
+- ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 
 Changed
 ^^^^^^^
