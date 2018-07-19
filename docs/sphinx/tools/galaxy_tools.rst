@@ -70,7 +70,7 @@ Similarly we can access the `header <astropy.io.fits.Header>` of the file and th
     CD3_1 CD3_2 CD3_3  : 0.0  0.0  8.33903304339e-11
     NAXIS : 74  74  4563
 
-What is more, we can access the datamodel of the cube file, which show us what extensions are available, how they are named in Marvin, and what they contain ::
+What is more, we can access the :ref:`datamodel <marvin-datamodel>` of the cube file, which show us what extensions are available, how they are named in Marvin, and what they contain ::
 
     >>> datamodel = my_cube.datamodel
     >>> datamodel
@@ -134,7 +134,6 @@ Or get a single spectrum and plot it::
     :align: center
 
     import marvin
-    import matplotlib.pyplot as plt
 
     my_cube = marvin.tools.Cube('7443-12703')
     flux = my_cube.flux
@@ -145,8 +144,57 @@ Or get a single spectrum and plot it::
 
 We will talk more about quantities in the :ref:`marvin-quantities` section, and about more advance plotting in :ref:`marvin-plotting`.
 
+From a DRP cube we can get the associated DAP `~marvin.tools.maps.Maps` object for a certain bintype ::
 
-Left to do in Getting started:
+    >>> hyb_maps = my_cube.getMaps(bintype='HYB10')
+    <Marvin Maps (plateifu='7443-12703', mode='local', data_origin='file', bintype='HYB10', template='GAU-MILESHC')>
+
+A `~marvin.tools.maps.Maps` behaves very similarly to a `~marvin.tools.cube.Cube` and everything we have discussed above will still work. Instead of datacubes and spectra, a Maps object contains a set of 2D quantities called `~marvin.tools.quantities.map.Map`, each one of them representing a different ``property`` measured by the DAP. One can get a full list of all the properties available using the :ref:`datamodel <marvin-datamodel>` ::
+
+    >>> hyb_maps.datamodel
+    [<Property 'spx_skycoo', channel='on_sky_x', release='2.1.3', unit='arcsec'>,
+     <Property 'spx_skycoo', channel='on_sky_y', release='2.1.3', unit='arcsec'>,
+     <Property 'spx_ellcoo', channel='elliptical_radius', release='2.1.3', unit='arcsec'>,
+     <Property 'spx_ellcoo', channel='r_re', release='2.1.3', unit=''>,
+     <Property 'spx_ellcoo', channel='elliptical_azimuth', release='2.1.3', unit='deg'>,
+     <Property 'spx_mflux', channel='None', release='2.1.3', unit='1e-17 erg / (cm2 s spaxel)'>,
+     <Property 'spx_snr', channel='None', release='2.1.3', unit=''>,
+     <Property 'binid', channel='binned_spectra', release='2.1.3', unit=''>,
+     ...
+    ]
+
+Note that some properties such as ``'spx_skycoo'`` have multiple channels (in this case the on-sky x and y coordinates). We can get more information about a property ::
+
+    >>> hyb_maps.datamodel.spx_skycoo_on_sky_x.description
+    'Offsets of each spaxel from the galaxy center.'
+
+See the :ref:`datamodel <marvin-datamodel>` section for more information on how to use this feature. We can retrieve the map associated to a specific property directly from the `~marvin.tools.maps.Maps` instance. For example, let's get the H :math:`\alpha` emission line flux (fitted by a Gaussian) ::
+
+    >>> ha = hyb_maps.emline_gflux_ha_6564
+    >>> ha
+    <Marvin Map (property='emline_gflux_ha_6564')>
+    [[0. 0. 0. ... 0. 0. 0.]
+     [0. 0. 0. ... 0. 0. 0.]
+     [0. 0. 0. ... 0. 0. 0.]
+     ...
+     [0. 0. 0. ... 0. 0. 0.]
+     [0. 0. 0. ... 0. 0. 0.]
+     [0. 0. 0. ... 0. 0. 0.]] 1e-17 erg / (cm2 s spaxel)
+
+.. hint:: In IPython, you can use tab-completion to autocomplete the name of the property. If you press tab after writing ``hyb_maps.emline_`` you will get a list of all the emission line properties available.
+
+`~marvin.tools.quantities.map.Map` quantities are similar to `~marvin.tools.quantities.datacube.DataCube` but wrap a 2D array. We can plot the Map as ::
+
+    >>> fig, ax = ha.plot()
+
+.. plot::
+    :align: center
+
+    import marvin
+    my_maps = marvin.tools.Maps('7443-12703')
+    my_maps.emline_gflux_ha_6564.plot()
+
+Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib `~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters, colour maps, and dynamic ranges. You can modify those by passing extra arguments to `~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>` section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities` and in :ref:`marvin-map`.
 
 - Targeting bits
 - Quality bits
