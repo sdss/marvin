@@ -15,13 +15,12 @@ from __future__ import absolute_import
 import copy as copy_mod
 import os
 
-from marvin.core.exceptions import MarvinError
-
 import astropy.table as table
 from astropy import units as u
 
-from .. import DataModelList
-from ...general.structs import FuzzyList
+from marvin.core.exceptions import MarvinError
+from marvin.utils.datamodel import DataModelList
+from marvin.utils.general.structs import FuzzyList
 
 
 class DRPDataModel(object):

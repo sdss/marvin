@@ -6,12 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-18 22:36:29
+# @Last Modified time: 2018-07-18 23:33:56
 
 from __future__ import absolute_import, division, print_function
 
 import abc
-import glob
 import os
 import time
 
@@ -173,11 +172,12 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         if name is None:
             name = self.name
 
-        # The full path could be a pattern (e.g., with stars), so we use glob
-        # to get a unique path
-        pattern = self.rsync_access.full(name, **path_params)
+        # Expand any wildcards present in the path_params
+        if '*' in path_params.values():
+            files = self.rsync_access.expand(name, **path_params)
+        else:
+            files = self.rsync_access.full(name, **path_params)
 
-        files = glob.glob(pattern)
         if len(files) > 0:
             return files[0]
         else:
