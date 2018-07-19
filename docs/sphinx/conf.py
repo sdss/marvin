@@ -376,7 +376,7 @@ def get_test_data():
     os.chdir(sas_path)
 
     subprocess.run(['wget', url, os.path.expanduser('~/sas')])
-    subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz'])
+    subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz?dl=0'])
     print('SAS data uncompressed')
 
 
